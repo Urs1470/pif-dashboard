@@ -143,11 +143,21 @@ code, pre {
    --font-body), deci fiecare cautare si fiecare formular declansa asta.
    `!important` din acelasi motiv ca la `input[type=date]` mai jos: stilurile scoped
    Svelte (.mf-input.svelte-xxx) au doua clase, deci bat un selector de element.
-   Nu atinge bifele si comutatoarele — acolo font-size nu inseamna nimic. */
+   Nu atinge bifele si comutatoarele — acolo font-size nu inseamna nimic.
+
+   `.camp-peste-16` E SINGURA IESIRE, si inseamna un lucru precis: „campul asta e
+   DEJA cel putin 16px, nu-l atinge". Regula spune „cel putin 16px", dar e scrisa ca
+   o atribuire exacta, deci MICSORA si campurile care erau deja peste prag — adica
+   facea fix ce trebuia sa previna, o reasezare la focus. Masurat pe titlul editabil
+   din foaia de task (`--font-h3`, 16.8px pe telefon): la atingere se strangea la
+   16px, interlinia cadea de la 21.84 la 20.8, si tot blocul urca 2px sub deget in
+   clipa in care incepeai sa scrii — se citea ca si cum ai fi atins alt rand.
+   Nu pune clasa pe un camp sub 16px: acolo n-ai prevenit nimic, ai reintrodus
+   zoom-ul din Safari. */
 @media (max-width: 768px) {
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
-  select,
-  textarea {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(.camp-peste-16),
+  select:not(.camp-peste-16),
+  textarea:not(.camp-peste-16) {
     font-size: 16px !important;
   }
 }

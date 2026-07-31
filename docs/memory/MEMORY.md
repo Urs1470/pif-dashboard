@@ -56,6 +56,49 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-07-31 (4) — Foaia de task inghite modalul de editare; o singura scara de
+  tipografie pe subtaskuri.** Ion: „consolideaza modalul de editare task in foaia de
+  task (titlu editabil la atingere, categorie + recurenta ca randuri sub termen,
+  scoate butonul «Editează»)".
+  Pe telefon, ca sa schimbi categoria deschideai foaia, apasai „Editează", si peste
+  ea se ridica **un al doilea sertar** care repeta titlul si termenul de la 40px mai
+  sus si se salva cu buton, in timp ce tot restul foii se salva la atingere — doua
+  modele de salvare in acelasi obiect. Acum fiecare camp e un rand care se salveaza
+  singur: titlul la atingere (textarea in loc de `h2`), termen/categorie/recurenta ca
+  trei `.ts-rand` identice, cu **un singur** panou deschis odata (`randDeschis`).
+  Categoria ofera valorile deja folosite ca chipuri + un camp pentru una noua.
+  Antetul foii scrie „Task", nu categoria: de cand categoria e un rand editabil trei
+  linii mai jos, acelasi cuvant aparea de doua ori si doar unul raspundea la atingere.
+  **Modalul „Editează Task" ramane pe DESKTOP** (creionul de pe rand) — acolo nu
+  exista foaie, deci era singura cale spre categorie si recurenta.
+  Tipografie: cele trei texte suprapuse (titlu task / antet sectiune / titlu subtask)
+  aveau MARIMI corecte, dar `line-height` era declarat doar la primul — celelalte
+  mosteneau 1.55 din `body`, adica interlinie de paragraf pe o eticheta de 10px.
+  Toate trei sunt titluri => toate trei pe `--lh-snug`; titlul subtaskului trece de la
+  `--fw-normal` la `--fw-medium` (ca `.ttitle`).
+  **Patru capcane, toate masurate, niciuna vizibila intr-o verificare de prezenta:**
+  1. `.sub-row` era declarat de DOUA ori la ~50 de linii distanta, iar al doilea
+     impunea `padding: 3px 0` peste `4px 8px` — cardul de subtask ramanea fara padding
+     lateral si bifa statea lipita de rama.
+  2. `Escape` intr-un camp inline urca pana la backdrop-ul lui `Modal` si inchidea
+     TOATA foaia in loc sa renunte la redenumire. `stopPropagation` in cele patru
+     editoare inline (titlu foaie, categorie noua, redenumire subtask, subtask nou).
+  3. Regula globala „orice camp are cel putin 16px pe telefon" (anti-zoom Safari) e
+     scrisa ca atribuire EXACTA, deci **micsora** si campurile deja peste prag:
+     titlul foii se strangea 16.8 -> 16px la atingere si tot blocul urca 2px sub deget.
+     Iesire noua si documentata in `global.css`: **`.camp-peste-16`** — se pune DOAR
+     pe campuri care sunt deja >= 16px.
+  4. Treapta titlului de subtask NU e o chestiune de latime de ecran, ci de container:
+     `taskDetail` se randeaza si in foaie (sub `--font-h3`) si in randul desfasurat de
+     pe desktop (sub `--font-body`). Regula „o treapta sub titlul containerului" sta
+     acum ca `--sub-titlu` pe `.subtask-body`, nu intr-un `@media` pierdut printre
+     reparatii de tinta de atingere.
+  Verificat pe 390px cu CAPTURA, nu doar cu masuratori: titlul are metrici identice
+  in citire si in editare (16.8px / lh 21.84 / acelasi `top`), zero depasiri, zero
+  tinte sub 40px in foaie. `audit_design` curat, `smoke_ui` verde, `test_suite` 11/11.
+  Cele doua esecuri din `audit_mobil` (reordonare nesalvata, iesirea randului din
+  „Astăzi") EXISTA IDENTIC pe master — verificat prin stash + rebuild.
+
 - **2026-07-31 (3) — Dock-ul pe telefon: tinte de 56px si ascundere la derulare,
   ca bara de adresa.** Ion: „sensul era sa le faci si putin mai mari iconitele din
   dock acum, tinand cont de spatiul aparut" + „poti sa faci cu autohide dockul pe

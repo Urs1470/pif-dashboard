@@ -4,7 +4,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, DUR_FAST } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check, Tag } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
@@ -294,16 +294,126 @@
   // si tastatura fizica nu acopera nimic — o foaie ar fi un clic in plus degeaba.
   let sheetTaskId = $state('')
   let showSheet = $state(false)
-  let termenDeschis = $state(false)   // panoul de replanificare din foaie
   // Derivat din lista, NU o copie: altfel bifarea unui subtask sau schimbarea
   // termenului din foaie ar lasa antetul foii pe valorile vechi.
   const sheetTask = $derived(globalTasks.items.find(x => x.id === sheetTaskId) || null)
 
+  // ===== FOAIA E SINGURUL LOC IN CARE SE EDITEAZA TASKUL (pe telefon) =====
+  // Ion: „consolideaza modalul de editare in foaia de task".
+  //
+  // Pana acum, pe telefon, ca sa schimbi categoria unui task deschideai foaia,
+  // apasai „Editează", si peste foaie se ridica UN AL DOILEA sertar cu titlu,
+  // descriere, categorie, termen si recurenta — adica un formular care repeta
+  // titlul si termenul deja scrise cu 40px mai sus, si care se salva cu un
+  // buton, in timp ce tot restul foii se salveaza la atingere. Doua modele de
+  // salvare in acelasi obiect, la doua atingeri distanta.
+  //
+  // Acum fiecare camp e un RAND in foaie si se salveaza singur:
+  //   titlul     — atingi textul, devine camp, blur/Enter salveaza
+  //   termenul   — rand pliabil (era deja asa)
+  //   categoria  — acelasi rand pliabil, cu categoriile deja folosite ca optiuni
+  //   recurenta  — la fel, cu cele patru valori pe care le accepta serverul
+  // Descrierea ramane in modalul ei de sine statator: e text lung, cu editor
+  // bogat, singurul lucru din task care chiar are nevoie de tot ecranul.
+  //
+  // Modalul „Editează Task" ramane pe DESKTOP, deschis din creionul de pe rand:
+  // acolo nu exista foaie (vezi `toggleTaskExpand`), deci era singura cale spre
+  // categorie si recurenta.
+
+  // UN SINGUR rand desfasurat: '' | 'termen' | 'categorie' | 'recurenta'.
+  // Doua panouri deschise simultan ar impinge subtaskurile sub pliu pe 390px.
+  let randDeschis = $state('')
+  let titluEdit = $state(false)
+  let titluDraft = $state('')
+  let titluId = $state('')
+  let catDraft = $state('')
+
+  const RECURENTE = [
+    { value: '', label: 'Fără' },
+    { value: 'zilnic', label: 'Zilnic' },
+    { value: 'saptamanal', label: 'Săptămânal' },
+    { value: 'lunar', label: 'Lunar' },
+  ]
+  function etichetaRecurenta(v) {
+    return RECURENTE.find(r => r.value === (v || ''))?.label || v
+  }
+
+  // Categoriile care EXISTA, nu o lista inchisa: campul e liber text in DB, iar
+  // pe telefon a alege dintr-un rand de chipuri e mai rapid si mai sigur decat a
+  // retasta „Achizitii" si a-l scrie „Achizitie" din greseala.
+  const categorii = $derived(
+    [...new Set(globalTasks.items.map(t => (t.categorie || '').trim()).filter(Boolean))].sort()
+  )
+
+  function comutaRand(care) {
+    randDeschis = randDeschis === care ? '' : care
+    if (randDeschis === 'categorie') catDraft = ''
+  }
+
   async function deschideFoaia(taskId) {
     sheetTaskId = taskId
-    termenDeschis = false
+    randDeschis = ''
+    titluEdit = false
     showSheet = true
     await incarcaSubtaskuri(taskId)
+  }
+
+  /** O scriere din foaie: optimista, cu reincarcare, ca sa nu astepti serverul
+   *  pentru un chip pe care tocmai l-ai atins. */
+  async function scrieInFoaie(id, patch) {
+    globalTasks.items = globalTasks.items.map(t => t.id === id ? { ...t, ...patch } : t)
+    try {
+      await updateGlobalTask(id, patch)
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    }
+    await loadGlobalTasks({ arhiva: showArchive })
+  }
+
+  function incepeTitlu(t) {
+    titluId = t.id
+    titluDraft = t.titlu || ''
+    titluEdit = true
+  }
+
+  async function salveazaTitlu() {
+    if (!titluEdit) return
+    const id = titluId
+    const nou = titluDraft.trim()
+    titluEdit = false
+    const vechi = globalTasks.items.find(t => t.id === id)?.titlu
+    // Un titlu gol ar lasa randul fara nimic de citit in lista — nu se salveaza,
+    // se renunta (la fel ca la redenumirea unui subtask).
+    if (!nou || nou === vechi) return
+    await scrieInFoaie(id, { titlu: nou })
+  }
+
+  async function setCategorie(t, v) {
+    const val = (v || '').trim()
+    randDeschis = ''
+    catDraft = ''
+    if (!val || val === (t.categorie || '')) return
+    await scrieInFoaie(t.id, { categorie: val })
+  }
+
+  async function setRecurenta(t, v) {
+    randDeschis = ''
+    if ((v || '') === (t.recurenta || '')) return
+    // `null`, nu `''`: acelasi contract pe care il folosea modalul de editare
+    // ca sa STEARGA recurenta (COALESCE pe server ignora un camp lipsa).
+    await scrieInFoaie(t.id, { recurenta: v || null })
+  }
+
+  /** Campul de titlu creste cu textul si primeste cursorul la CAPAT, nu selectie
+   *  totala ca la subtaskuri: un titlu de task e lung si de obicei il corectezi,
+   *  iar o selectie totala inseamna ca prima tasta il sterge. */
+  function campTitlu(node) {
+    const creste = () => { node.style.height = 'auto'; node.style.height = `${node.scrollHeight}px` }
+    creste()
+    node.focus()
+    node.setSelectionRange(node.value.length, node.value.length)
+    node.addEventListener('input', creste)
+    return { destroy: () => node.removeEventListener('input', creste) }
   }
 
   async function incarcaSubtaskuri(taskId) {
@@ -438,13 +548,15 @@
        in loc sa fie imprastiate pe doua gesturi diferite. -->
   <!-- CHIPURI DE ACTIUNE, ca randul „Description / Reminders / Labels" din
        Todoist: lucrurile pe care le faci RAR cu un task stau grupate si mici,
-       ca sa nu concureze cu subtaskurile, care sunt continutul. -->
+       ca sa nu concureze cu subtaskurile, care sunt continutul.
+       „Editează" a plecat de aici. In FOAIE nu mai avea ce deschide: titlul se
+       editeaza la atingere, iar categoria si recurenta sunt randuri sub termen.
+       In randul desfasurat de pe DESKTOP era un al doilea buton pentru creionul
+       aflat la 30px in dreapta, pe acelasi rand — acela deschide in continuare
+       modalul. Ramane nota: e singurul camp care chiar are nevoie de alt ecran. -->
   <div class="td-actiuni">
     <button class="td-btn" class:areNota={!!t.descriere} onclick={() => openNoteModal(t)}>
       <SolidIcon name="notes" size={13} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
-    </button>
-    <button class="td-btn" onclick={() => openEditModal(t)}>
-      <SolidIcon name="pencil" size={13} /> Editează
     </button>
   </div>
 
@@ -482,7 +594,10 @@
                    onblur={() => salveazaRedenumirea(sub)}
                    onkeydown={(e) => {
                      if (e.key === 'Enter') e.currentTarget.blur()
-                     else if (e.key === 'Escape') { editSubId = '' }
+                     // Vezi titlul foii: fara `stopPropagation`, Escape ajungea la
+                     // backdrop-ul modalului si inchidea foaia in loc sa renunte
+                     // doar la redenumirea subtaskului.
+                     else if (e.key === 'Escape') { e.stopPropagation(); editSubId = '' }
                    }} />
           {:else}
             <button class="sub-title" onclick={() => incepeRedenumirea(sub)}
@@ -505,7 +620,7 @@
           <input type="text" placeholder="Ce pas urmează?" bind:value={newSubtaskTitle} use:focalizeaza
                  onkeydown={(e) => {
                    if (e.key === 'Enter') addSubtask(t.id)
-                   else if (e.key === 'Escape') { adaugSubLa = ''; newSubtaskTitle = '' }
+                   else if (e.key === 'Escape') { e.stopPropagation(); adaugSubLa = ''; newSubtaskTitle = '' }
                  }} />
           <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
             <Plus size={16} />
@@ -724,27 +839,55 @@
      `Modal` e deja sertar lipit de marginea de jos pe telefon, deci foaia nu e o
      componenta noua, e acelasi modal cu alt continut. -->
 {#if sheetTask}
-  <!-- Antetul modalului primeste CONTEXTUL taskului (categoria), ca „Inbox" la
-       Todoist. Fara titlu, `Modal` randa oricum bara cu butonul de inchidere, deci
-       ramanea o banda goala de ~60px deasupra taskului — spatiu platit degeaba,
-       exact acolo unde ochiul cade prima data. -->
-  <Modal bind:open={showSheet} size="md" title={sheetTask.categorie || 'Task'}>
+  <!-- Antetul e o LINIE DE CONTEXT, nu un titlu de fereastra (vezi `.modal.sheet
+       .modal-title` in Modal.svelte). Fara text, `Modal` randa oricum bara cu
+       butonul de inchidere, deci ramanea o banda goala de ~60px deasupra
+       taskului — spatiu platit degeaba, exact acolo unde ochiul cade prima data.
+       Scria CATEGORIA; de cand categoria e un rand editabil trei linii mai jos,
+       acelasi cuvant aparea de doua ori pe un ecran de 390px si doar unul din
+       ele raspundea la atingere — adica exact cel gresit invata sa fie apasat. -->
+  <Modal bind:open={showSheet} size="md" title="Task">
+    <!-- TITLUL SE EDITEAZA PE LOC. Era singurul motiv real pentru care foaia mai
+         avea nevoie de butonul „Editează": restul formularului fie se dubla cu
+         randurile de dedesubt, fie a devenit unul dintre ele. -->
     <div class="ts-cap">
       <button class="ts-check" onclick={() => { toggleStatus(sheetTask); showSheet = false }}
               aria-label={sheetTask.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
         {#if sheetTask.status === 'done'}<CheckCircle2 size={24} />{:else}<div class="check-empty big"></div>{/if}
       </button>
-      <h2 class="ts-titlu" class:gata={sheetTask.status === 'done'}>{sheetTask.titlu}</h2>
+      <h2 class="ts-titlu-h">
+        {#if titluEdit}
+          <!-- `camp-peste-16`: titlul e `--font-h3` (16.8px pe telefon), deci e
+               deja peste pragul de zoom din Safari, iar regula globala l-ar fi
+               STRANS la 16 — vezi global.css. -->
+          <textarea class="ts-titlu ts-titlu-inp camp-peste-16" bind:value={titluDraft} use:campTitlu
+                    aria-label="Titlul taskului"
+                    onblur={salveazaTitlu}
+                    onkeydown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.currentTarget.blur() }
+                      // `stopPropagation`: `Modal` asculta Escape pe backdrop, iar
+                      // tasta urca pana acolo. Fara oprire, „renunt la redenumire"
+                      // inchidea TOATA foaia — adica pierdeai si locul, nu doar
+                      // modificarea. Escape anuleaza cel mai apropiat lucru deschis.
+                      else if (e.key === 'Escape') { e.stopPropagation(); titluEdit = false }
+                    }}></textarea>
+        {:else}
+          <button class="ts-titlu" class:gata={sheetTask.status === 'done'}
+                  onclick={() => incepeTitlu(sheetTask)}
+                  title="Atinge ca să redenumești">{sheetTask.titlu}</button>
+        {/if}
+      </h2>
     </div>
 
-    <!-- TERMENUL, UN SINGUR RAND — ca la Todoist („📅 28 Feb 11:00"), nu un bloc.
-         Prima varianta lasa cele patru actiuni desfacute permanent: pe 390px se
-         rupeau pe doua randuri, calendarul lua jumatate de latime si `×`-ul
-         ramanea singur pe randul al doilea. Un panou de replanificare deschis tot
-         timpul plateste spatiu pentru ceva ce faci O DATA per deschidere.
-         Acum randul ARATA data; atingerea lui desface actiunile dedesubt. -->
-    <button class="ts-rand" class:activ={termenDeschis}
-            onclick={() => termenDeschis = !termenDeschis}>
+    <!-- TREI RANDURI DE ACELASI FEL — ca „📅 28 Feb 11:00" la Todoist, nu blocuri.
+         Prima varianta lasa cele patru actiuni de termen desfacute permanent: pe
+         390px se rupeau pe doua randuri, calendarul lua jumatate de latime si
+         `×`-ul ramanea singur pe randul al doilea. Un panou deschis tot timpul
+         plateste spatiu pentru ceva ce faci O DATA per deschidere.
+         Randul ARATA valoarea; atingerea lui desface optiunile dedesubt, si doar
+         unul e deschis odata. -->
+    <button class="ts-rand" class:activ={randDeschis === 'termen'}
+            onclick={() => comutaRand('termen')}>
       <CalendarDays size={16} />
       {#if sheetTask.data_scadenta}
         <span class="ts-val" class:overdue={isOverdue(sheetTask.data_scadenta)}
@@ -752,17 +895,55 @@
       {:else}<span class="ts-val ts-fara">Fără termen</span>{/if}
       <ChevronDown size={15} class="ts-chev" />
     </button>
-    {#if termenDeschis}
-      <div class="ts-zile" transition:slide|local={{ duration: motionDuration(DUR_FAST) }}>
-        <button class="ts-zi" onclick={() => { setTermen(sheetTask, 0); termenDeschis = false }}>Azi</button>
-        <button class="ts-zi" onclick={() => { setTermen(sheetTask, 1); termenDeschis = false }}>Mâine</button>
+    {#if randDeschis === 'termen'}
+      <div class="ts-optiuni" transition:slide|local={{ duration: motionDuration(DUR_FAST) }}>
+        <button class="ts-zi" onclick={() => { setTermen(sheetTask, 0); randDeschis = '' }}>Azi</button>
+        <button class="ts-zi" onclick={() => { setTermen(sheetTask, 1); randDeschis = '' }}>Mâine</button>
         <span class="ts-zi ts-data"><DatePicker value={sheetTask.data_scadenta} placeholder="Alege"
-              onchange={(v) => { setTermenData(sheetTask, v); termenDeschis = false }} /></span>
+              onchange={(v) => { setTermenData(sheetTask, v); randDeschis = '' }} /></span>
         {#if sheetTask.data_scadenta}
-          <button class="ts-zi ts-scoate" onclick={() => { setTermen(sheetTask, null); termenDeschis = false }}>
+          <button class="ts-zi ts-scoate" onclick={() => { setTermen(sheetTask, null); randDeschis = '' }}>
             <X size={14} /> Scoate
           </button>
         {/if}
+      </div>
+    {/if}
+
+    <button class="ts-rand ts-rand-cat" class:activ={randDeschis === 'categorie'}
+            onclick={() => comutaRand('categorie')}>
+      <Tag size={16} />
+      <span class="ts-val" class:ts-fara={!sheetTask.categorie}>{sheetTask.categorie || 'Fără categorie'}</span>
+      <ChevronDown size={15} class="ts-chev" />
+    </button>
+    {#if randDeschis === 'categorie'}
+      <div class="ts-optiuni" transition:slide|local={{ duration: motionDuration(DUR_FAST) }}>
+        {#each categorii as c (c)}
+          <button class="ts-zi" class:ales={c === sheetTask.categorie}
+                  onclick={() => setCategorie(sheetTask, c)}>{c}</button>
+        {/each}
+        <!-- Campul de la coada, nu din capul randului: aproape mereu alegi una
+             existenta, iar o categorie noua se scrie o data la cateva luni. -->
+        <input class="ts-camp" type="text" placeholder="Categorie nouă"
+               aria-label="Categorie nouă" bind:value={catDraft}
+               onkeydown={(e) => {
+                 if (e.key === 'Enter') setCategorie(sheetTask, catDraft)
+                 else if (e.key === 'Escape') { e.stopPropagation(); randDeschis = ''; catDraft = '' }
+               }} />
+      </div>
+    {/if}
+
+    <button class="ts-rand ts-rand-rec" class:activ={randDeschis === 'recurenta'}
+            onclick={() => comutaRand('recurenta')}>
+      <Repeat size={16} />
+      <span class="ts-val" class:ts-fara={!sheetTask.recurenta}>{sheetTask.recurenta ? etichetaRecurenta(sheetTask.recurenta) : 'Fără recurență'}</span>
+      <ChevronDown size={15} class="ts-chev" />
+    </button>
+    {#if randDeschis === 'recurenta'}
+      <div class="ts-optiuni" transition:slide|local={{ duration: motionDuration(DUR_FAST) }}>
+        {#each RECURENTE as r (r.value)}
+          <button class="ts-zi" class:ales={(sheetTask.recurenta || '') === r.value}
+                  onclick={() => setRecurenta(sheetTask, r.value)}>{r.label}</button>
+        {/each}
       </div>
     {/if}
 
@@ -977,7 +1158,20 @@
      (randul isi pierde colturile de jos si marginea), preia bordura de severitate
      din stanga si sta pe acelasi fundal. Inainte pareau doua obiecte fara legatura. */
   /* Extinderea: continut in acelasi card, separat doar de o linie subtire. */
-  .subtask-body { margin: 0; padding: var(--space-sm) var(--space-sm) var(--space-sm) 40px;
+  /* TREAPTA SUBTASKULUI E DATA DE CONTAINER, NU DE LATIMEA ECRANULUI.
+     `taskDetail` se randeaza in doua locuri cu titluri de ranguri diferite:
+       - in FOAIE, sub un titlu `--font-h3`  -> subtaskul sta pe `--font-body`
+       - AICI, sub `.ttitle`, care e `--font-body` -> subtaskul coboara la `--font-small`
+     Regula e una singura, „o treapta sub titlul containerului", si acesta e singurul
+     container care are nevoie s-o spuna (foaia foloseste valoarea implicita).
+     Inainte, aceeasi diferenta era obtinuta dintr-un `@media (max-width: 768px)`
+     asezat intre reparatii de tinta de atingere — corect ca rezultat, dar scris ca
+     si cum ar fi fost o chestiune de deget. Legatura reala e cu vecinul de deasupra:
+     daca `.ttitle` urca vreodata un rang, aici e locul unde se vede ce trebuie mutat.
+     `.subtask-body` nu exista pe telefon (vezi `toggleTaskExpand`), deci nu e nevoie
+     de nicio conditie de latime. */
+  .subtask-body { --sub-titlu: var(--font-small);
+    margin: 0; padding: var(--space-sm) var(--space-sm) var(--space-sm) 40px;
     border-top: 1px solid var(--border-subtle);
     display: flex; flex-direction: column; gap: 4px; }
 
@@ -986,14 +1180,47 @@
 
 
   /* ===== Foaia taskului ===== */
+  /* ===== O SINGURA SCARA PENTRU CELE TREI TEXTE SUPRAPUSE =====
+     Unul sub altul stau TITLUL TASKULUI, ANTETUL SECTIUNII si TITLURILE
+     SUBTASKURILOR — trei ranguri dintr-o singura ierarhie. Fiecare isi lua insa
+     metricile din alta parte, iar masurat pe 390px iesea asa:
+
+       titlu task      16.8px / 600 / lh 1.30 / Space Grotesk   (--font-h3, explicit)
+       antet sectiune  10.4px / 600 / lh 1.55 / Inter           (--font-micro, lh MOSTENIT)
+       titlu subtask   14.4px / 400 / lh 1.55 / Inter           (--font-body, doar pe telefon)
+
+     MARIMILE erau corecte — vezi `--sub-titlu` mai jos. Ce nu se tinea:
+
+     1. `line-height` era declarat DOAR la titlul taskului; celelalte doua mosteneau
+        1.55 din `body` — interlinie de PARAGRAF pusa pe o eticheta de 10px si pe
+        titluri de o linie. De aceea „SUBTASKURI" plutea in propriul rand si fiecare
+        card de subtask era cu ~4px mai inalt decat textul din el. Toate trei sunt
+        titluri, deci toate trei stau pe `--lh-snug`.
+     2. Titlul subtaskului era `--fw-normal` — singurul TITLU din pagina scris cu
+        greutatea corpului de text, desi randul de task din lista, care e acelasi fel
+        de obiect cu un rang mai sus, e `--fw-medium`. Acum e si el `--fw-medium`.
+     3. Campul de redenumire nu impartea metricile cu butonul pe care il inlocuia,
+        deci textul sarea sub deget cand intrai in editare (vezi `.sub-edit`).
+
+     Antetul sectiunii ramane `--font-micro`/uppercase/`--tracking-wide`: e exact
+     reteta lui `.grup-cap`, care e acelasi rol (reper de citire, nu titlu), si e
+     rangul de eticheta al aplicatiei. */
   .sub-cap { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 6px; }
-  .sub-cap-t { font-size: var(--font-micro); text-transform: uppercase;
-    letter-spacing: var(--tracking-wide); font-weight: var(--fw-semibold); color: var(--text-faint); flex: none; }
-  .sub-gol { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm) 0; }
+  .sub-cap-t { font-size: var(--font-micro); line-height: var(--lh-snug);
+    text-transform: uppercase; letter-spacing: var(--tracking-wide);
+    font-weight: var(--fw-semibold); color: var(--text-faint); flex: none; }
+  .sub-gol { font-size: var(--font-small); line-height: var(--lh-snug);
+    color: var(--text-dim); padding: var(--space-sm) 0; }
   /* Fiecare subtask e un card, ca la Todoist: pe fundalul foii randurile fara
-     suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate. */
-  .sub-row { background: var(--bg-panel); border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md); padding: 4px 8px; margin-bottom: 5px; }
+     suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate.
+     O SINGURA declaratie. `.sub-row` era scrisa de doua ori, la ~50 de linii
+     distanta, iar a doua impunea `padding: 3px 0` peste `4px 8px` — deci cardul
+     ramanea fara padding lateral si bifa statea lipita de propria lui rama. Doua
+     reguli pentru acelasi selector nu se citesc ca un conflict cand le vezi
+     separat; se vad doar cand le pui una langa alta sau cand masori randul. */
+  .sub-row { display: flex; align-items: center; gap: 6px;
+    background: var(--bg-panel); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md); padding: 3px 8px; margin-bottom: 5px; }
   .sub-row.sub-done { background: transparent; border-color: transparent; }
   .sub-nou { display: flex; align-items: center; justify-content: center; gap: 6px;
     width: 100%; min-height: var(--tap-min); margin-top: 2px;
@@ -1009,10 +1236,30 @@
     display: flex; align-items: center; justify-content: flex-start; color: var(--success);
     background: none; border: none; cursor: pointer; padding: 0; }
   .check-empty.big { width: 22px; height: 22px; border: 2px solid var(--border-strong); border-radius: 50%; }
-  .ts-titlu { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-semibold);
-    color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; padding-top: 9px; }
+  .ts-titlu-h { flex: 1; min-width: 0; }
+  /* TREAPTA 1 DIN SCARA FOII (vezi blocul de tipografie de la subtaskuri).
+     Titlul e si buton (atingi = redenumesti) si camp, iar cele doua stari trebuie
+     sa aiba ACELEASI metrici — altfel textul sare cu cateva px sub deget exact in
+     clipa in care incepi sa scrii, si pare ca ai atins altceva.
+     `padding-top` nu mai e „9px pentru ca asa arata bine": e jumatatea spatiului
+     ramas dupa ce prima linie de titlu se aseaza intr-o caseta de atingere de
+     `--tap-min`, adica alinierea optica cu bifa de alaturi. Scris ca formula, se
+     recalculeaza singur cand `--font-h3` scade pe telefon (1.15rem -> 1.05rem) —
+     inainte, la orice schimbare de token, titlul se descentra in tacere. */
+  .ts-titlu { display: block; width: 100%; text-align: left;
+    background: none; border: none; cursor: text;
+    font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-semibold);
+    line-height: var(--lh-snug); letter-spacing: var(--tracking-tight);
+    color: var(--text); overflow-wrap: anywhere;
+    padding: calc((var(--tap-min) - var(--font-h3) * var(--lh-snug)) / 2) 0 0; }
   .ts-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
-  /* Randul de termen: UN card de o linie, ca „📅 28 Feb 11:00" la Todoist. */
+  .ts-titlu-inp { resize: none; overflow: hidden;
+    border-bottom: 1px solid var(--accent); border-radius: 0; }
+  .ts-titlu-inp:focus { outline: none; }
+  /* Randurile de proprietati: carduri de o linie, ca „📅 28 Feb 11:00" la Todoist.
+     Termen, categorie si recurenta folosesc EXACT aceeasi reteta — sunt acelasi
+     fel de lucru (o valoare a taskului, pliabila), deci n-au voie sa arate ca
+     trei controale diferite. */
   .ts-rand { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
     min-height: var(--tap-min); padding: 0 var(--space-12); margin-bottom: var(--space-sm);
     background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -1021,14 +1268,15 @@
   .ts-rand:hover { border-color: var(--border-strong); }
   .ts-rand:active { transform: scale(0.995); }
   .ts-rand.activ { border-color: var(--accent); }
-  .ts-val { flex: 1; color: var(--text); font-weight: var(--fw-medium); }
+  .ts-val { flex: 1; min-width: 0; color: var(--text); font-weight: var(--fw-medium);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ts-val.overdue { color: var(--danger); }
   .ts-val.today { color: var(--accent); }
   .ts-fara { color: var(--text-dim); font-weight: var(--fw-normal); }
   .ts-rand :global(.ts-chev) { flex: none; opacity: 0.5; transition: transform var(--dur-fast) var(--ease); }
   .ts-rand.activ :global(.ts-chev) { transform: rotate(180deg); }
 
-  .ts-zile { display: flex; gap: 6px; flex-wrap: wrap; margin: -2px 0 var(--space-sm); }
+  .ts-optiuni { display: flex; gap: 6px; flex-wrap: wrap; margin: -2px 0 var(--space-sm); }
   .ts-zi { display: inline-flex; align-items: center; justify-content: center; gap: 4px;
     min-height: 40px; padding: 0 var(--space-12); border-radius: var(--radius-md);
     background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
@@ -1037,20 +1285,50 @@
   .ts-zi:hover { border-color: var(--accent); color: var(--text); }
   .ts-zi:active { transform: scale(0.97); }
   .ts-scoate { color: var(--danger); }
+  /* Valoarea curenta e MARCATA, nu doar prezenta: „Săptămânal" langa „Zilnic" nu
+     spune singur pe care il are taskul, iar randul de deasupra e acoperit de
+     degetul care tocmai l-a deschis. */
+  .ts-zi.ales { background: var(--accent-subtle); border-color: var(--accent);
+    color: var(--accent-on-subtle); }
+  .ts-camp { flex: 1; min-width: 130px; min-height: 40px; padding: 0 var(--space-12);
+    background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md);
+    color: var(--text); font-family: inherit; font-size: var(--font-small); }
+  .ts-camp:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
 
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .sub-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   /* Titlul e BUTON (atingi = redenumesti), dar trebuie sa arate ca text: fara
-     fundal, aliniat la stanga, pe toata latimea ramasa. */
-  .sub-title { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text);
-    background: none; border: none; padding: 0; text-align: left; cursor: text;
-    overflow-wrap: anywhere; }
-  .sub-edit { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text);
+     fundal, aliniat la stanga, pe toata latimea ramasa.
+     TREAPTA 3 DIN SCARA — aceleasi metrici cu `.ttitle` din lista, fiindca un
+     subtask si un task sunt acelasi fel de obiect, la doua ranguri.
+     `align-self: stretch` + `min-height`: butonul avea 22px inaltime (masurat) in
+     mijlocul unui card de ~50 — adica jumatate din cardul pe care il atingi nu
+     raspundea, iar atingerile de la margine cadeau pe nimic. Acum tinta e cardul. */
+  .sub-title { flex: 1; min-width: 0; align-self: stretch; min-height: 34px;
+    display: flex; align-items: center;
+    font-size: var(--sub-titlu, var(--font-body)); font-weight: var(--fw-medium);
+    line-height: var(--lh-snug);
+    color: var(--text); background: none; border: none; padding: 0;
+    text-align: left; cursor: text; overflow-wrap: anywhere; }
+  /* Campul de redenumire poarta ACELEASI metrici ca butonul de deasupra lui, iar
+     marginea negativa anuleaza exact padding-ul si bordura pe care le adauga
+     (2+1 pe verticala, 6+1 pe orizontala). Fara asta, textul se muta cu cativa px
+     sub deget in clipa in care intri in editare — se citeste ca si cum ai atins
+     alt rand.
+     PE TELEFON potrivirea nu e perfecta si NU trebuie fortata: regula globala urca
+     orice camp la 16px ca sa nu declanseze zoom-ul din Safari, iar titlul subtaskului
+     e la 14.4. Diferenta de 1.6px o platim cu buna stiinta — alternativa ar fi sa
+     urc si titlul CITIT la 16px, adica sa-l lipesc de titlul taskului (16.8) si sa
+     sterg treapta dintre ele. Nu pune `camp-peste-16` aici: campul chiar e sub prag,
+     iar clasa doar ar reintroduce zoom-ul. */
+  .sub-edit { flex: 1; min-width: 0; align-self: center;
+    font-family: inherit; font-size: var(--sub-titlu, var(--font-body));
+    font-weight: var(--fw-medium);
+    line-height: var(--lh-snug); color: var(--text);
     background: var(--bg-input); border: 1px solid var(--accent); border-radius: var(--radius-xs);
-    padding: 2px 6px; }
+    padding: 2px 6px; margin: -3px -7px; }
   /* Bara de progres: subtire, aceeasi latime cu randurile de sub ea. */
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
@@ -1221,7 +1499,9 @@
        deci sunt tinte ca oricare altele. Erau 28-39px. */
     .sub-add input, .sub-add-btn { min-height: var(--tap-min); }
     .sub-add-btn { width: var(--tap-min); }
-    .sub-row { padding: 2px 0; }
+    /* Doar verticala se strange; padding-ul lateral RAMANE, altfel bifa se lipeste
+       de rama cardului (vezi declaratia unica a lui `.sub-row`). */
+    .sub-row { padding: 2px 8px; }
     /* ACEEASI SOCOTEALA CA LA RANDUL PARINTE, care a coborat de la 96px la 66px
        pana la prima litera. Masurat pe 390px, un subtask incepea la x=111: 28%
        din latimea ecranului consumata inainte de primul cuvant, pe fiecare rand.
@@ -1241,7 +1521,11 @@
        rand. Ramane un semn stins intr-o tinta mare. */
     .sub-del { opacity: 1; width: var(--tap-min); height: var(--tap-min);
                color: var(--text-faint); background: none; }
-    .sub-title, .sub-edit { font-size: var(--font-body); }
+    /* Aici statea si `.sub-title, .sub-edit { font-size: var(--font-body) }` — o
+       regula de IERARHIE ratacita intr-un bloc de reparatii de deget. S-a mutat la
+       `.subtask-body`, unde se vede fata de ce e treapta (vezi `--sub-titlu`).
+       Ramane ce chiar tine de deget: tinta. */
+    .sub-title { min-height: 40px; }
     .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); padding: 0 16px;
       font-size: var(--font-small); }
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */
