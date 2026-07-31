@@ -3,6 +3,7 @@
   import { Search } from '@lucide/svelte'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { router, link } from '../../lib/router.svelte.js'
+  import { ecran } from '../../lib/ecran.svelte.js'
 
   // Vizibilitate dock:
   //  - DESKTOP (autohide v4): ascuns by default; apare DOAR cat timp cursorul e
@@ -106,6 +107,25 @@
     { path: '/calculator', label: 'Calculator', icon: 'calculator' },
   ]
 
+  // PE TELEFON, DOCK-UL TINE CINCI LUCRURI (cerinta Ion).
+  //
+  // Sapte iconite plus cautarea inseamna opt tinte pe latimea unui telefon: la
+  // 390px raman ~44px de tinta, adica exact minimul, fara aer intre ele — si
+  // tocmai degetul mare, care ajunge acolo, e cel mai gros instrument de atins.
+  // Raman rutele pe care le deschizi zilnic de pe teren; Proiecte, Departament si
+  // Calculator sunt lucruri pe care le faci asezat, si raman la o cautare distanta
+  // (butonul de cautare NU pleaca — vezi si lista din CommandPalette, unde
+  // Departament tocmai a fost adaugata ca sa nu ramana fara drum).
+  //
+  // Filtrul citeste `ecran.telefon`, sursa unica a pragului de 768px, NU o a doua
+  // definitie locala: `isMobile` de mai sus include si `pointer: coarse`, fiindca
+  // raspunde la alta intrebare — „dock fix sau autohide", nu „cate incap pe lat".
+  // Pe o tableta lata cu ecran tactil vrei dock fix, dar ai loc de toate sapte.
+  const PE_TELEFON = new Set(['/', '/tasks', '/plan', '/calendar'])
+  const itemsVizibile = $derived(
+    ecran.telefon ? items.filter((i) => PE_TELEFON.has(i.path)) : items
+  )
+
   function isActive(path) {
     if (path === '/') return router.path === '/'
     return router.path.startsWith(path)
@@ -118,7 +138,7 @@
 
 <nav class="dock" class:hidden aria-label="Navigație principală">
   <button class="dock-grip" aria-label="Arată navigația" title="Navigație" onclick={revealFromPeek}></button>
-  {#each items as item (item.path)}
+  {#each itemsVizibile as item (item.path)}
     <a
       href={item.path}
       use:link

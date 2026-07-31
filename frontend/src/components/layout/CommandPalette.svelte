@@ -20,6 +20,11 @@
     { label: 'Taskuri', path: '/tasks', solid: 'tasks', keywords: 'tasks todo' },
     { label: 'Planificator', path: '/plan', solid: 'plan', keywords: 'plan gantt planificator perioade' },
     { label: 'Calendar', path: '/calendar', solid: 'calendar', keywords: 'calendar unde sunt deplasare perioade zile teren replanifica' },
+    // Departament lipsea de aici. Pe desktop nu se vedea, fiindca era in Dock;
+    // pe telefon Dock-ul tine acum doar cinci lucruri, deci paleta e SINGURUL
+    // drum catre ea. O ruta scoasa din navigatie fara sa fie si in paleta e o
+    // ruta pe care nu o mai poti deschide de pe telefon.
+    { label: 'Departament', path: '/departament', solid: 'departament', keywords: 'departament echipa plan cine e unde powerpoint' },
     { label: 'Calculator', path: '/calculator', solid: 'calculator', keywords: 'calculator actionari motor cuplu putere afinitate drive' },
   ]
 
@@ -49,6 +54,17 @@
   const flatResults = $derived.by(() => {
     if (!isSearchMode) return []
     const items = []
+    // PAGINILE INTAI, si in modul de cautare.
+    // Pana acum lista de rute disparea de indata ce scriai a doua litera, deci
+    // `keywords` de pe comenzi nu se putea folosi niciodata: cautand „calculator"
+    // primeai note si proiecte, dar nu si PAGINA Calculator. Se vedea putin cat
+    // timp toate rutele stateau in Dock; de cand pe telefon Dock-ul tine cinci,
+    // paleta e singurul drum spre celelalte — iar reflexul e sa scrii unde vrei
+    // sa ajungi, nu sa cauti ruta intr-o lista.
+    if (navFiltered.length) {
+      items.push({ _group: true, type: 'ruta', label: 'Pagini' })
+      for (const c of navFiltered) items.push({ ...c, _nav: true })
+    }
     let lastType = null
     for (const r of searchResults) {
       if (r.type !== lastType) {
@@ -117,6 +133,9 @@
   }
 
   function activateResult(r) {
+    // O ruta din grupul „Pagini" nu e un rezultat de cautare: nu are id si nu se
+    // deschide, se NAVIGHEAZA la ea.
+    if (r._nav) { go(r); return }
     close()
     switch (r.type) {
       case 'proiect':
@@ -219,13 +238,28 @@
         {:else if flatResults.length === 0}
           <div class="palette-empty">Niciun rezultat pentru „{query.trim()}"</div>
         {:else}
-          {#each flatResults as item, i (item._group ? 'g:' + item.type : item.type + ':' + item.id)}
+          {#each flatResults as item, i (item._group ? 'g:' + item.type : item._nav ? 'n:' + item.path : item.type + ':' + item.id)}
             {#if item._group}
               {@const Icon = TYPE_META[item.type]?.icon || Search}
               <div class="group-label">
                 <Icon size={12} />
                 {item.label}
               </div>
+            {:else if item._nav}
+              <button
+                class="palette-item"
+                class:selected={i === selected}
+                onclick={() => go(item)}
+                onmouseenter={() => selected = i}
+                role="option"
+                aria-selected={i === selected}
+              >
+                <SolidIcon name={item.solid} size={16} />
+                <span>{item.label}</span>
+                {#if router.path === item.path || (item.path !== '/' && router.path.startsWith(item.path))}
+                  <span class="current">curent</span>
+                {/if}
+              </button>
             {:else}
               <button
                 class="palette-item result"
