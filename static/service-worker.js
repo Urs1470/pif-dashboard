@@ -9,14 +9,28 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v97';
+const VERSION = 'v98';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
 // App shell to cache on install. The legacy vanilla-JS app and the /m mobile
 // twin were removed; the Svelte SPA shell is served at '/'.
+//
+// '/calc' is the standalone public calculator (app.py: calc_public). It is the
+// page most likely to be opened with no signal — on site, in a hall — so it is
+// part of the shell, not something you have to visit first to get cached.
+// '/' is @login_required: for a logged-out visitor its fetch returns a login
+// redirect, which precacheShell skips quietly (per-item, never aborts install).
 const APP_SHELL = [
-  '/'
+  '/',
+  '/calc'
+];
+
+// Same-origin files the shell needs but does not reference as /assets/ or
+// /static/ (those are discovered by parsing the HTML — see precacheShell).
+const EXTRA_SHELL = [
+  '/favicon.svg',
+  '/manifest.json'
 ];
 
 // Cross-origin CDN hosts whose assets we cache-first at runtime. Fonts are now
@@ -25,22 +39,56 @@ const CDN_HOSTS = [
   'cdn.jsdelivr.net'
 ];
 
+// Cache one shell page AND the build assets it references.
+//
+// Vite emits content-hashed bundles (/assets/calc-KANpVbZQ.js …) whose names
+// change on every build, so they cannot be listed here. They are referenced
+// only from the built HTML — so parse the HTML we just fetched and cache what
+// it points at. Without this the shell HTML was cached but its JS was not, and
+// the PWA could not start offline at all.
+async function precacheShell(cache, url) {
+  let res;
+  try {
+    res = await fetch(url, { credentials: 'same-origin' });
+  } catch (_) {
+    return;
+  }
+  if (!res || !res.ok) return;   // '/' when logged out → login redirect: skip quietly
+
+  let html = '';
+  try {
+    html = await res.clone().text();
+  } catch (_) {
+    /* keep going — worst case we cache the page without its assets */
+  }
+  await cache.put(url, res).catch(() => {});
+
+  const refs = new Set();
+  for (const m of html.matchAll(/(?:src|href)="(\/(?:assets|static)\/[^"]+)"/g)) {
+    refs.add(m[1]);
+  }
+  await Promise.all([...refs].map((u) =>
+    fetch(u, { credentials: 'same-origin' })
+      .then((r) => (r && r.ok ? cache.put(u, r) : null))
+      .catch(() => {})
+  ));
+}
+
 // Install — cache the app shell. No skipWaiting(): the new worker waits until
 // the user accepts the update.
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing', VERSION);
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      // Per-item cache.put with catch: one missing/redirected asset (e.g. /m
-      // returning a login redirect when unauthenticated) must not abort the
-      // whole install the way cache.addAll() would.
-      .then((cache) => Promise.all(
-        APP_SHELL.map((u) =>
-          fetch(u, { credentials: 'same-origin' })
-            .then((res) => (res && res.ok ? cache.put(u, res) : null))
-            .catch(() => {})
-        )
-      ))
+    caches.open(STATIC_CACHE).then((cache) => Promise.all([
+      // Per-item, each with its own catch: one missing or redirected page must
+      // not abort the whole install the way cache.addAll() would.
+      ...APP_SHELL.map((u) => precacheShell(cache, u)),
+      ...EXTRA_SHELL.map((u) =>
+        fetch(u, { credentials: 'same-origin' })
+          .then((r) => (r && r.ok ? cache.put(u, r) : null))
+          .catch(() => {})
+      )
+    ]))
   );
   // No skipWaiting() — let the new SW wait until all tabs close, avoiding
   // mismatches between cached HTML and new JS/CSS assets.
@@ -91,6 +139,20 @@ self.addEventListener('fetch', (event) => {
   // API requests: network-first with cache fallback
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirstWithCache(request, API_CACHE, event));
+    return;
+  }
+
+  // Vite build output: cache-first. Everything under /assets/ is a build
+  // artifact with a content hash in its name (app.py: dist_assets), so it is
+  // immutable and safe to serve from cache forever — a new build produces new
+  // filenames, and the old ones are dropped with the old cache on activate.
+  //
+  // GOTCHA that made the PWA useless offline before v98: the built HTML points
+  // at /assets/…, NOT /static/dist/… . The rule below only matched /static/,
+  // so the app's own JS and CSS were never cached and every offline start died
+  // on the first module import.
+  if (url.origin === self.location.origin && url.pathname.startsWith('/assets/')) {
+    event.respondWith(cacheFirstWithNetwork(request, STATIC_CACHE, event));
     return;
   }
 
@@ -149,9 +211,11 @@ async function cacheFirstWithNetwork(request, cacheName, event) {
   } catch (error) {
     console.log('[SW] Network request failed:', error);
     // Only fall back to the app shell for actual page navigations —
-    // never return HTML where JS/CSS was expected.
+    // never return HTML where JS/CSS was expected. Prefer the shell for THIS
+    // page (a /calc navigation must not be answered with the dashboard shell,
+    // which would then redirect a logged-out colleague to the login page).
     if (request.mode === 'navigate') {
-      return cache.match('/');
+      return (await cache.match(new URL(request.url).pathname)) || (await cache.match('/'));
     }
     throw error;
   }
