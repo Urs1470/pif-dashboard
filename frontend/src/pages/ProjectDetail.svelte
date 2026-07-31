@@ -28,6 +28,7 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
+  import Textarea from '../components/ui/Textarea.svelte'
   import Select from '../components/ui/Select.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
@@ -845,18 +846,12 @@
 <Modal bind:open={showTaskEditModal} title="Editează Task" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
     <Input label="Titlu" bind:value={taskFormTitle} placeholder="Titlu task" />
-    <label class="mf-field">
-      <span class="mf-label">Descriere</span>
-      <textarea class="mf-textarea" bind:value={taskFormDesc} placeholder="Detalii (opțional)" rows="3"></textarea>
-    </label>
-    <div class="mf-row">
-      <div class="mf-field">
-      </div>
-      <div class="mf-field">
-        <span class="mf-label">Termen</span>
-        <DatePicker bind:value={taskFormDeadline} />
-      </div>
-    </div>
+    <!-- Componentele librariei, ca in modalul din /tasks — acelasi formular,
+         acelasi desen. Aici mai statea si un `mf-field` GOL: perechea campului
+         de prioritate, plecat in v34, care impingea Termenul in dreapta ca sa
+         faca loc unui nimic. -->
+    <Textarea label="Descriere" bind:value={taskFormDesc} placeholder="Detalii (opțional)" rows={3} />
+    <DatePicker label="Termen" bind:value={taskFormDeadline} />
     <Select label="Recurență" bind:value={taskFormRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
   {#snippet footer()}
@@ -1004,7 +999,6 @@
      iar severitatea se citeste din bordura din stanga, dupa termen. */
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
-  .mf-textarea { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; min-height: 60px; }
   /* LA VEDERE, PALIDE — nu ascunse pana la hover.
      Aici erau `opacity: 0` pana la `.trow:hover`, in timp ce aceleasi butoane din
      /tasks stau mereu la vedere (decizia din 2026-06-18). Doua liste de taskuri cu
@@ -1068,9 +1062,6 @@
   .rdet dt { font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; }
   .rdet dd { margin: 0; font-size: var(--font-tiny); color: var(--text-secondary); overflow-wrap: anywhere; }
 
-  .mf-row { display: flex; gap: var(--space-md); }
-  .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-  .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
 
   /* Equipment import/copy */
 

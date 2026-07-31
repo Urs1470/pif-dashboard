@@ -768,14 +768,12 @@
     <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de făcut?" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
     <div class="form-row-2">
-      <label class="mf-field">
-        <span class="mf-label">Categorie</span>
-        <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
-      </label>
-      <div class="mf-field">
-        <span class="mf-label">Termen</span>
-        <DatePicker bind:value={formDeadline} />
-      </div>
+      <!-- Componentele librariei, nu campuri de mana: regula din CLAUDE.md
+           („NU <input> brut in formulare"). Categoria era singurul camp brut
+           din modal — fara focus-ring-ul si fara fontul de 16px pe telefon pe
+           care Input le aduce singur. -->
+      <Input label="Categorie" bind:value={formCategory} placeholder="General" />
+      <DatePicker label="Termen" bind:value={formDeadline} />
     </div>
     <Select label="Recurență" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
@@ -792,14 +790,12 @@
     <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
     <div class="form-row-2">
-      <label class="mf-field">
-        <span class="mf-label">Categorie</span>
-        <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
-      </label>
-      <div class="mf-field">
-        <span class="mf-label">Termen</span>
-        <DatePicker bind:value={formDeadline} />
-      </div>
+      <!-- Componentele librariei, nu campuri de mana: regula din CLAUDE.md
+           („NU <input> brut in formulare"). Categoria era singurul camp brut
+           din modal — fara focus-ring-ul si fara fontul de 16px pe telefon pe
+           care Input le aduce singur. -->
+      <Input label="Categorie" bind:value={formCategory} placeholder="General" />
+      <DatePicker label="Termen" bind:value={formDeadline} />
     </div>
     <Select label="Recurență" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
@@ -1077,10 +1073,6 @@
   .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .sub-loading { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-xs) 0; }
 
-  .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-  .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-  .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 40px; }
-  .mf-input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
 
   .task-edit.areNota { color: var(--accent-on-subtle); }
   .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
@@ -1172,7 +1164,6 @@
     .chip { min-height: var(--tap-min); padding: 4px 16px; font-size: var(--font-small); }
     .filters { gap: var(--space-xs); }
     .tmain { min-height: var(--tap-min); }
-    .mf-input { min-height: var(--tap-min); }
     .page-header :global(.btn) { min-height: var(--tap-min); }
 
     /* Capul de grupa se lipeste SUB antetul paginii, nu de marginea ferestrei:
