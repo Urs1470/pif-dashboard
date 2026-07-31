@@ -919,7 +919,11 @@
      pagina de proiect, unde deplasarea de hover se face lin — aici lipsea din
      lista si randul SAREA 4px la intrarea cursorului. Doua liste cu acelasi rand
      n-au voie sa raspunda diferit la acelasi gest. */
-  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: none; border: 0; transition: transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
+  /* Ion: „poti face putin mai inguste pe desktop taskurile, pe inaltime?"
+     8px sus / 10px jos -> 5/7: randul scade de la ~62 la ~56px, fara sa se
+     atinga fontul sau meta-randul. Doar desktop — pe telefon padding-ul
+     vertical e al lui `.gl-fata` si ramane cum e. */
+  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 5px var(--space-sm) 7px; background: none; border: 0; transition: transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
   /* Doar unde exista cursor — pe touch :hover ramane lipit dupa atingere si randul
      ar rămâne impins la dreapta. (Fara `border-color`: randul are `border: 0`,
      rama e a wrapperului — declaratia de aici nu facea nimic.) */
