@@ -139,7 +139,16 @@
     if (triggerEl?.contains(e.target) || popupEl?.contains(e.target)) return
     close()
   }
-  function onKey(e) { if (e.key === 'Escape') close() }
+  // Pe faza de CAPTURA, nu de bubbling: ascultatorul de window pe bubbling ar
+  // rula DUPA backdrop-ul Modalului (care sta pe drumul de urcare al focusului
+  // din declansator), deci Escape inchidea si calendarul, si tot modalul.
+  // In captura, fereastra e prima — inchidem calendarul si oprim propagarea,
+  // iar modalul ramane deschis. Escape inchide UN strat.
+  function onKey(e) {
+    if (e.key !== 'Escape' || !open) return
+    e.stopPropagation()
+    close()
+  }
 
   // Ridica pop-up-ul la <body> ca sa scape din orice stacking-context al unui
   // stramos (transform-ul tranzitiei de pagina, backdrop-filter-ul cardurilor,
@@ -152,7 +161,7 @@
   }
 </script>
 
-<svelte:window onclick={onWindowClick} onkeydown={onKey} onresize={() => open && positionPopup()} />
+<svelte:window onclick={onWindowClick} onkeydowncapture={onKey} onresize={() => open && positionPopup()} />
 
 <div class="dp" class:has-label={label}>
   {#if label}<span class="dp-label">{label}</span>{/if}

@@ -39,7 +39,10 @@
       e.preventDefault(); toggle(); return
     }
     if (!open) return
-    if (e.key === 'Escape') { e.preventDefault(); open = false }
+    // `stopPropagation`, nu doar `preventDefault`: preventDefault NU opreste
+    // urcarea, deci Escape ajungea si la backdrop-ul Modalului, care se inchidea
+    // odata cu dropdown-ul. Escape inchide UN strat — cel mai de sus.
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); open = false }
     else if (e.key === 'ArrowDown') { e.preventDefault(); hi = Math.min(items.length - 1, hi + 1) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); hi = Math.max(0, hi - 1) }
     else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (items[hi]) pick(items[hi].value) }

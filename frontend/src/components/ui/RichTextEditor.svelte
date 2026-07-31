@@ -264,7 +264,9 @@
 
   function onMathKeydown(e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveMath() }
-    else if (e.key === 'Escape') { e.preventDefault(); closeMathBar() }
+    // `stopPropagation`: editorul sta de obicei intr-un Modal (notitele), iar
+    // fara ea Escape inchidea si bara de formule, si modalul de deasupra ei.
+    else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeMathBar() }
   }
 
   // butoanele nu fura selectia din editor

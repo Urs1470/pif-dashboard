@@ -482,7 +482,9 @@
                    onblur={() => salveazaRedenumirea(sub)}
                    onkeydown={(e) => {
                      if (e.key === 'Enter') e.currentTarget.blur()
-                     else if (e.key === 'Escape') { editSubId = '' }
+                     // `stopPropagation`: altfel Escape urca la backdrop si
+                     // inchidea TOATA foaia, nu doar redenumirea. Un strat.
+                     else if (e.key === 'Escape') { e.stopPropagation(); editSubId = '' }
                    }} />
           {:else}
             <button class="sub-title" onclick={() => incepeRedenumirea(sub)}
@@ -505,7 +507,9 @@
           <input type="text" placeholder="Ce pas urmează?" bind:value={newSubtaskTitle} use:focalizeaza
                  onkeydown={(e) => {
                    if (e.key === 'Enter') addSubtask(t.id)
-                   else if (e.key === 'Escape') { adaugSubLa = ''; newSubtaskTitle = '' }
+                   // Acelasi motiv ca la redenumire: Escape inchide compozitorul,
+                   // nu foaia din jurul lui.
+                   else if (e.key === 'Escape') { e.stopPropagation(); adaugSubLa = ''; newSubtaskTitle = '' }
                  }} />
           <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
             <Plus size={16} />
