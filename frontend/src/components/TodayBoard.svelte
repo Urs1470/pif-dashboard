@@ -6,7 +6,7 @@
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
-  import { dueColor, formatDate } from '../lib/formatters.js'
+  import { dueColor, formatDate, esteDepasit as isOverdue, esteCurand as isSoon } from '../lib/formatters.js'
   import { etichetaTermen } from '../lib/grupare.js'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { reordonare } from '../lib/reordonare.js'
@@ -16,9 +16,10 @@
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import TaskPickerModal from './TaskPickerModal.svelte'
   import EmptyState from './ui/EmptyState.svelte'
+  import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
-  import { motionDuration, DUR_BASE, plecare } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire } from '../lib/motion.svelte.js'
 
   // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
   // "deadline-uri" dupa ce bifez / mut / scot un task (altfel ramaneau stale
@@ -37,10 +38,8 @@
 
   const restanteCount = $derived(agenda.items.filter(i => i.is_restant).length)
 
-  function dateOnly(d) { return new Date(new Date(d).toDateString()) }
-  function isOverdue(d) { if (!d) return false; return dateOnly(d) < new Date(new Date().toDateString()) }
-  function isToday(d) { if (!d) return false; return new Date(d).toDateString() === new Date().toDateString() }
-  function isSoon(d) { if (!d) return false; const diff = (dateOnly(d) - new Date(new Date().toDateString())) / 86400000; return diff > 0 && diff <= 7 }
+  // isOverdue/isSoon vin din formatters.js — aceeasi axa si aceleasi praguri ca
+  // dueColor(), o singura definitie pentru toate listele.
 
   async function doQuickAdd() {
     const t = quickTitle.trim()
@@ -180,7 +179,11 @@
   {#if agenda.loading && agenda.items.length === 0}
     <div class="a-skel">{#each Array(3) as _}<Skeleton height="40px" />{/each}</div>
   {:else if agenda.error}
-    <p class="a-error">Eroare: {agenda.error}</p>
+    <!-- ErrorState cu retry, ca in restul aplicatiei (regula de design: „erori:
+         <ErrorState> (cu retry)"). Aici era un paragraf rosu fara niciun drum
+         inainte — singura lista din aplicatie care la esec te lasa sa dai
+         refresh din browser. -->
+    <ErrorState message={agenda.error} onretry={() => loadAgendaToday()} />
   {:else if agenda.items.length === 0}
     <EmptyState icon={CalendarCheck} title="Nimic planificat azi" description="Adaugă un task rapid sau alege din taskurile existente." />
   {:else}
@@ -197,6 +200,7 @@
           ondragover={(e) => onDragOver(e, i)}
           ondrop={(e) => onDrop(e, i)}
           animate:flip={{ duration: flipDur }}
+          in:sosire|local
           out:plecare
           use:glisare={{ latime: peTelefon ? 176 : 0, activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it) }}
         >
@@ -305,21 +309,24 @@
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .a-skel { display: flex; flex-direction: column; gap: var(--space-xs); }
-  .a-error { color: var(--danger); font-size: var(--font-small); padding: var(--space-sm); }
 
   .a-list { display: flex; flex-direction: column; }
-  /* Insula (V3+V2): fara bara pe stanga — underline scurt de severitate jos
-     + index mono ghost; delimitare prin spatiu, nu linii. */
-  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  .arow::after { content: ''; position: absolute; left: 12px; bottom: 0; height: 2px; width: 40px; border-radius: 2px 2px 0 0; background: var(--sev, var(--border-strong)); box-shadow: 0 0 8px color-mix(in srgb, var(--sev, transparent) 45%, transparent); }
+  /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia
+     (CLAUDE.md/MEMORY: „severitatea se citeste din bordura din stanga, dupa
+     termen"). Aici supravietuia varianta veche — un underline scurt jos
+     (`::after`) — deci ACELASI task avea doua limbaje de severitate pe doua
+     ecrane. Un task trebuie sa arate la fel oriunde apare. */
+  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong)); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch :hover se aplica la atingere si RAMANE
      aplicat pana atingi altceva — randul bifat ar rămâne impins 4px la dreapta,
      ceea ce se citeste ca „s-a stricat", nu ca „am atins". */
+  /* `border-left-color` redeclarat: `border-color` scurt vopseste TOATE laturile,
+     deci hover-ul ar sterge tocmai bordura de severitate — culoarea rezervata. */
   @media (hover: hover) {
-    .arow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+    .arow:hover { transform: translateX(4px); border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
   }
   /* Raspunsul la atingere e apasarea, nu deplasarea. */
-  .arow:active { border-color: var(--border-strong); }
+  .arow:active { border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
   /* ===== O SINGURA AXA DE CULOARE PE RAND =====
      Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
      stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele
@@ -370,7 +377,10 @@
   /* Ca in /tasks: eticheta de context pleaca la capatul din dreapta. */
   .ainfo .tag { margin-left: auto; flex: none; }
   .deadline { display: inline-flex; align-items: center; gap: 3px; }
-  .tag { padding: 0 6px; background: var(--bg-elevated); border-radius: var(--radius-xs); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+  /* ACEEASI PASTILA CA `.task-cat` DIN /tasks: acelasi obiect (contextul
+     taskului — categorie sau proiect) avea aici colturi de radius-xs si acolo
+     radius-full. Un obiect, un desen, pe orice ecran apare. */
+  .tag { padding: 1px 8px; background: var(--bg-elevated); border-radius: var(--radius-full); font-weight: var(--fw-medium); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
   .tag.proj { color: var(--text-dim); background: var(--bg-elevated); }
   .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
   .deadline { font-size: var(--font-tiny); color: var(--text-dim); }
@@ -477,7 +487,10 @@
              mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent);
              -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 18px), transparent); }
     .ainfo > * { flex-shrink: 0; }
-    .tag { max-width: 96px; }
+    /* Ca in /tasks pe telefon: contextul devine TEXT, nu pastila — pe un rand
+       ingust pastila era cel mai tare lucru dupa titlu, adica invers decat
+       conteaza. (Acolo regula exista deja; aici ramasese pastila.) */
+    .tag { max-width: 96px; background: none; padding: 0; font-weight: var(--fw-normal); color: var(--text-faint); }
 
     /* Din cele sase butoane raman doua la vedere: bifa (actiunea principala) si
        reordonarea. Restul stau in panoul de sub rand. */

@@ -38,6 +38,27 @@ export function motionDuration(ms) {
 // Toate valorile se citesc din nodul REAL inainte de animatie: randurile n-au
 // aceeasi inaltime (unul cu titlu pe doua linii e mai inalt), deci o inaltime
 // fixa ar sari la inceputul tranzitiei.
+// SOSIREA UNUI RAND NOU — perechea lui `plecare`.
+//
+// Iesirea exista (randul bifat se stinge si se strange), dar intrarea lipsea:
+// un task adaugat sau mutat intr-o alta grupa APAREA intre doua cadre, fara
+// nicio legatura vizibila cu gestul care l-a nascut. Standardul actual (si
+// regula deja scrisa la `plecare`): fiecare mutare pe care ai provocat-o tu
+// se vede intamplandu-se.
+//
+// Doar opacitate + o ridicare mica (transform — se compune pe GPU): vecinii
+// isi fac singuri loc prin `animate:flip`, deci nu animam inaltimea aici —
+// doua animatii de layout pe acelasi eveniment s-ar calca una pe alta.
+// Se foloseste cu `|local`, ca prima incarcare a listei sa NU se joace:
+// intrarea e pentru randul nou, nu pentru pagina noua.
+export function sosire(node, { duration = 190 } = {}) {
+  const d = motionDuration(duration)
+  return {
+    duration: d,
+    css: (t) => `opacity: ${t}; transform: translateY(${(1 - t) * 5}px);`,
+  }
+}
+
 export function plecare(node, { duration = 190 } = {}) {
   const d = motionDuration(duration)
   const s = getComputedStyle(node)

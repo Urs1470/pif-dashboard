@@ -959,7 +959,9 @@
 
   @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
 
-  .hint { text-align: center; font-size: var(--font-micro); color: var(--text-faint); padding: 8px; border-top: 1px solid var(--border-subtle); }
+  /* dim, nu faint: indicatiile de gest sunt text de citit (masurat 3.18:1 la
+     10.4px, sub AA) — faint e doar pentru etichete/large. */
+  .hint { text-align: center; font-size: var(--font-micro); color: var(--text-dim); padding: 8px; border-top: 1px solid var(--border-subtle); }
 
   .drag-label { position: fixed; z-index: var(--z-tooltip); pointer-events: none; background: var(--bg-overlay);
     border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 3px 8px;
@@ -985,7 +987,7 @@
   .ms-cols { position: relative; height: 14px; }
   .ms-c { position: absolute; top: 0; display: flex; align-items: center; justify-content: center;
     height: 14px; font-family: var(--font-mono); font-size: var(--font-micro);
-    color: var(--text-faint); font-variant-numeric: tabular-nums;
+    color: var(--text-dim); font-variant-numeric: tabular-nums;
     overflow: hidden; white-space: nowrap; border-left: 1px solid var(--border-subtle); }
   .ms-c.we { color: var(--purple); }
   .ms-c.today { color: var(--accent); font-weight: var(--fw-bold); }
@@ -1094,7 +1096,7 @@
   .bl-head { width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 12px 16px; background: none; border: none; cursor: pointer; color: var(--text); }
   .bl-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); }
   .bl-count { font-size: var(--font-tiny); font-family: var(--font-mono); background: var(--accent-subtle); color: var(--accent); padding: 1px 8px; border-radius: var(--radius-full); }
-  .bl-hint { font-size: var(--font-micro); color: var(--text-faint); margin-left: 4px; }
+  .bl-hint { font-size: var(--font-micro); color: var(--text-dim); margin-left: 4px; }
   .bl-head :global(.bl-chev) { margin-left: auto; color: var(--text-faint); transition: transform var(--dur-fast) var(--ease); }
   .backlog.open .bl-head :global(.bl-chev) { transform: rotate(90deg); }
   .bl-items { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 16px; }

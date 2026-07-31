@@ -312,10 +312,15 @@
 
     /* Deplasarea din deget, pe `translate` (vezi nota din <script>). Cat timp
        tragi NU exista tranzitie — altfel sheet-ul ramane in urma degetului si se
-       simte ca lag. La ridicare revine animat spre 0. */
+       simte ca lag. La ridicare revine animat spre 0.
+       Revenirea foloseste ARCUL (--ease-spring): un obiect pe care l-ai tras si
+       l-ai eliberat se aseaza cu o depasire mica, nu se opreste mecanic — de
+       aceea si durata e --dur-slow, arcul are nevoie de loc sa se aseze.
+       Prima linie e rezerva pentru browserele fara `linear()`. */
     .modal.sheet {
       translate: 0 var(--trasY, 0px);
       transition: translate var(--dur-base) var(--ease), max-height var(--dur-base) var(--ease);
+      transition: translate var(--dur-slow) var(--ease-spring), max-height var(--dur-base) var(--ease);
       will-change: translate;
     }
     .modal.sheet.trage { transition: none; }

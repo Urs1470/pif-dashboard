@@ -3,11 +3,11 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare, DUR_FAST } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire, DUR_FAST } from '../lib/motion.svelte.js'
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
+  import { formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
   import { grupeazaDupaTermen, etichetaTermen, ORDINE_GRUPE } from '../lib/grupare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { router } from '../lib/router.svelte.js'
@@ -405,19 +405,8 @@
 
 
 
-  function isOverdue(d) {
-    if (!d) return false
-    return new Date(d) < new Date(new Date().toDateString())
-  }
-  function isToday(d) {
-    if (!d) return false
-    return new Date(d).toDateString() === new Date().toDateString()
-  }
-  function isSoon(d) {
-    if (!d) return false
-    const diff = (new Date(d) - new Date(new Date().toDateString())) / 86400000
-    return diff > 0 && diff <= 7
-  }
+  // isOverdue/isToday/isSoon vin din formatters.js (esteDepasit/esteAzi/esteCurand):
+  // aceeasi axa si aceleasi praguri ca dueColor(), o singura definitie.
 
   // Banda de carduri urgente a plecat (Ion, 2026-07-27: „cardurile astea ce apar
   // nu am nevoie de ele"): repeta primele randuri din lista de imediat dedesubt,
@@ -482,7 +471,9 @@
                    onblur={() => salveazaRedenumirea(sub)}
                    onkeydown={(e) => {
                      if (e.key === 'Enter') e.currentTarget.blur()
-                     else if (e.key === 'Escape') { editSubId = '' }
+                     // `stopPropagation`: altfel Escape urca la backdrop si
+                     // inchidea TOATA foaia, nu doar redenumirea. Un strat.
+                     else if (e.key === 'Escape') { e.stopPropagation(); editSubId = '' }
                    }} />
           {:else}
             <button class="sub-title" onclick={() => incepeRedenumirea(sub)}
@@ -505,7 +496,9 @@
           <input type="text" placeholder="Ce pas urmează?" bind:value={newSubtaskTitle} use:focalizeaza
                  onkeydown={(e) => {
                    if (e.key === 'Enter') addSubtask(t.id)
-                   else if (e.key === 'Escape') { adaugSubLa = ''; newSubtaskTitle = '' }
+                   // Acelasi motiv ca la redenumire: Escape inchide compozitorul,
+                   // nu foaia din jurul lui.
+                   else if (e.key === 'Escape') { e.stopPropagation(); adaugSubLa = ''; newSubtaskTitle = '' }
                  }} />
           <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
             <Plus size={16} />
@@ -617,7 +610,7 @@
                     <div class="trow-wrap" class:deschis={expandedTask === t.id}
              style="--sev: {dueColor(t.data_scadenta)}"
              animate:flip={{ duration: motionDuration(DUR_BASE) }}
-             out:plecare>
+             in:sosire|local out:plecare>
           <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}
                use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t) }}>
             <!-- Actiunile de intretinere (notita / editare / stergere) stau in
@@ -774,15 +767,13 @@
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
     <Input label="Titlu" bind:value={formTitle} placeholder="Ce ai de făcut?" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
-    <div class="form-row-3">
-      <label class="mf-field">
-        <span class="mf-label">Categorie</span>
-        <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
-      </label>
-      <div class="mf-field">
-        <span class="mf-label">Termen</span>
-        <DatePicker bind:value={formDeadline} />
-      </div>
+    <div class="form-row-2">
+      <!-- Componentele librariei, nu campuri de mana: regula din CLAUDE.md
+           („NU <input> brut in formulare"). Categoria era singurul camp brut
+           din modal — fara focus-ring-ul si fara fontul de 16px pe telefon pe
+           care Input le aduce singur. -->
+      <Input label="Categorie" bind:value={formCategory} placeholder="General" />
+      <DatePicker label="Termen" bind:value={formDeadline} />
     </div>
     <Select label="Recurență" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
@@ -798,15 +789,13 @@
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>
     <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
-    <div class="form-row-3">
-      <label class="mf-field">
-        <span class="mf-label">Categorie</span>
-        <input type="text" class="mf-input" bind:value={formCategory} placeholder="General" />
-      </label>
-      <div class="mf-field">
-        <span class="mf-label">Termen</span>
-        <DatePicker bind:value={formDeadline} />
-      </div>
+    <div class="form-row-2">
+      <!-- Componentele librariei, nu campuri de mana: regula din CLAUDE.md
+           („NU <input> brut in formulare"). Categoria era singurul camp brut
+           din modal — fara focus-ring-ul si fara fontul de 16px pe telefon pe
+           care Input le aduce singur. -->
+      <Input label="Categorie" bind:value={formCategory} placeholder="General" />
+      <DatePicker label="Termen" bind:value={formDeadline} />
     </div>
     <Select label="Recurență" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
@@ -920,16 +909,22 @@
     border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong));
     border-radius: var(--radius-md); margin-bottom: 6px; overflow: hidden;
     transition: border-color var(--dur-fast) var(--ease); }
-  .trow-wrap:hover { border-color: var(--border-strong); }
-  /* Insula (V3+V2): fara bara pe stanga — underline de severitate jos + index mono ghost */
+  /* `border-left-color` redeclarat: `border-color` scurt vopseste TOATE laturile,
+     deci hover-ul stergea tocmai bordura de severitate — culoarea rezervata. */
+  .trow-wrap:hover { border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
   /* UN SINGUR obiect: rama, fundalul si colturile stau pe WRAPPER. Randul si
      extinderea sunt continutul lui, fara rame proprii — altfel se citeau ca doua
      cutii lipite („de parca sunt rupte in doua"). */
-  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: none; border: 0; transition: opacity var(--dur-base) var(--ease); }
+  /* Tranzitia acopera si `transform`: acelasi rand exista pe Acasa (.arow) si in
+     pagina de proiect, unde deplasarea de hover se face lin — aici lipsea din
+     lista si randul SAREA 4px la intrarea cursorului. Doua liste cu acelasi rand
+     n-au voie sa raspunda diferit la acelasi gest. */
+  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: none; border: 0; transition: transform var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
   /* Doar unde exista cursor — pe touch :hover ramane lipit dupa atingere si randul
-     ar rămâne impins la dreapta. */
+     ar rămâne impins la dreapta. (Fara `border-color`: randul are `border: 0`,
+     rama e a wrapperului — declaratia de aici nu facea nimic.) */
   @media (hover: hover) {
-    .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+    .trow:hover { transform: translateX(4px); }
   }
   /* ===== O SINGURA AXA DE CULOARE PE RAND =====
      Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
@@ -991,8 +986,14 @@
     letter-spacing: var(--tracking-wide); font-weight: var(--fw-semibold); color: var(--text-faint); flex: none; }
   .sub-gol { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm) 0; }
   /* Fiecare subtask e un card, ca la Todoist: pe fundalul foii randurile fara
-     suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate. */
-  .sub-row { background: var(--bg-panel); border: 1px solid var(--border-subtle);
+     suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate.
+     O SINGURA declaratie: mai jos exista pana acum o a doua `.sub-row` (ramasa
+     de la designul de lista), care la specificitate egala castiga fiind ultima
+     si rescria TACUT padding-ul cardului la `3px 0` — adica un card desenat cu
+     rama la 0px de text. Masurat inainte: padding calculat `3px 0` pe desktop,
+     `2px 0` in foaie. Exact felul de abatere care nu arunca nicio eroare. */
+  .sub-row { display: flex; align-items: center; gap: 6px;
+    background: var(--bg-panel); border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md); padding: 4px 8px; margin-bottom: 5px; }
   .sub-row.sub-done { background: transparent; border-color: transparent; }
   .sub-nou { display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -1029,8 +1030,10 @@
   .ts-rand.activ :global(.ts-chev) { transform: rotate(180deg); }
 
   .ts-zile { display: flex; gap: 6px; flex-wrap: wrap; margin: -2px 0 var(--space-sm); }
+  /* `--tap-min`, nu 40: foaia exista DOAR pe telefon (vezi toggleTaskExpand),
+     deci butoanele astea sunt intotdeauna tinte de deget. */
   .ts-zi { display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-    min-height: 40px; padding: 0 var(--space-12); border-radius: var(--radius-md);
+    min-height: var(--tap-min); padding: 0 var(--space-12); border-radius: var(--radius-md);
     background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
     font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer;
     transition: var(--transition-pressable); }
@@ -1041,16 +1044,22 @@
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .sub-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   /* Titlul e BUTON (atingi = redenumesti), dar trebuie sa arate ca text: fara
      fundal, aliniat la stanga, pe toata latimea ramasa. */
   .sub-title { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text);
     background: none; border: none; padding: 0; text-align: left; cursor: text;
     overflow-wrap: anywhere; }
+  /* ACELEASI METRICI ca `.sub-title`, plus doar o linie de accent dedesubt.
+     Inainte inputul aducea caseta lui (padding 2px 6px + rama 1px), deci textul
+     SAREA 7px la dreapta exact in clipa in care il atingeai ca sa-l corectezi.
+     Redenumirea inline trebuie sa arate ca textul care era acolo, nu ca un camp
+     nou; `:focus` e redeclarat fiindca regula globala pe `input:focus` i-ar pune
+     inel si rama de camp. */
   .sub-edit { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text);
-    background: var(--bg-input); border: 1px solid var(--accent); border-radius: var(--radius-xs);
-    padding: 2px 6px; }
+    background: none; border: none; border-radius: 0; padding: 0;
+    box-shadow: 0 1px 0 var(--accent); }
+  .sub-edit:focus { border: none; box-shadow: 0 1px 0 var(--accent); outline: none; }
   /* Bara de progres: subtire, aceeasi latime cu randurile de sub ea. */
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
@@ -1064,10 +1073,6 @@
   .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .sub-loading { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-xs) 0; }
 
-  .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-  .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-  .mf-input { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; min-height: 40px; }
-  .mf-input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
 
   .task-edit.areNota { color: var(--accent-on-subtle); }
   .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
@@ -1079,7 +1084,10 @@
   .tdeadline.soon { color: var(--warning); }
 
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
-  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md); }
+  /* DOUA coloane pentru DOUA campuri. Grila era `1fr 1fr 1fr` cu numele
+     `form-row-3` — al treilea camp (prioritatea) a plecat in v34, dar coloana
+     lui a ramas: o treime din latimea modalului, goala, pe ambele formulare. */
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
 
   .task-skeleton { padding: var(--space-sm) var(--space-md); }
 
@@ -1101,7 +1109,7 @@
     .quick-add input, .quick-add-btn { min-height: 44px; }
     .quick-add-btn { width: 44px; }
     .task-del, .task-edit { opacity: 1; }
-    .form-row-3 { grid-template-columns: 1fr; }
+    .form-row-2 { grid-template-columns: 1fr; }
     /* O LINIE, ca in aplicatiile de to-do.
        Inainte: titlul sus, cele trei actiuni de intretinere pe o linie proprie
        dedesubt = 110px pe task. Acum randul are ~56px si actiunile vin din gest
@@ -1134,8 +1142,8 @@
       align-items: center; justify-content: center; padding: 0; }
     .check::after { content: ''; position: absolute; inset: -7px; }
     .tix { display: none; }
-    .tmain { min-height: 0; }
-    .ttitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* (`.tmain`/`.ttitle` se declara o singura data, mai jos in acelasi bloc —
+       aici statusera doua declaratii moarte pe care ultima le anula.) */
     .tinfo { flex-wrap: nowrap; overflow: hidden; }
     .tinfo > * { flex-shrink: 0; }
 
@@ -1156,7 +1164,6 @@
     .chip { min-height: var(--tap-min); padding: 4px 16px; font-size: var(--font-small); }
     .filters { gap: var(--space-xs); }
     .tmain { min-height: var(--tap-min); }
-    .mf-input { min-height: var(--tap-min); }
     .page-header :global(.btn) { min-height: var(--tap-min); }
 
     /* Capul de grupa se lipeste SUB antetul paginii, nu de marginea ferestrei:
@@ -1210,7 +1217,7 @@
        taierea e corecta, fiindca acolo chiar e o descriere, nu un titlu. */
     .ttitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2;
       line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-      text-overflow: initial; line-height: 1.32; }
+      text-overflow: initial; line-height: var(--lh-snug); }
 
     /* Agenda „7 zile" e acum o a doua copie a aceleiasi liste: gruparea de
        deasupra spune deja azi/mâine/zilele astea, cu actiuni cu tot. Pe desktop
@@ -1221,7 +1228,10 @@
        deci sunt tinte ca oricare altele. Erau 28-39px. */
     .sub-add input, .sub-add-btn { min-height: var(--tap-min); }
     .sub-add-btn { width: var(--tap-min); }
-    .sub-row { padding: 2px 0; }
+    /* Cardul isi pastreaza padding-ul orizontal si pe telefon — `2px 0` de aici
+       anula (a doua oara) rama-la-0px reparata mai sus. Vertical ramane strans:
+       inaltimea o da oricum bifa de 40px. */
+    .sub-row { padding: 2px 8px; }
     /* ACEEASI SOCOTEALA CA LA RANDUL PARINTE, care a coborat de la 96px la 66px
        pana la prima litera. Masurat pe 390px, un subtask incepea la x=111: 28%
        din latimea ecranului consumata inainte de primul cuvant, pe fiecare rand.
@@ -1241,7 +1251,11 @@
        rand. Ramane un semn stins intr-o tinta mare. */
     .sub-del { opacity: 1; width: var(--tap-min); height: var(--tap-min);
                color: var(--text-faint); background: none; }
-    .sub-title, .sub-edit { font-size: var(--font-body); }
+    /* 1rem = 16px, aceeasi valoare pe CITIRE si pe SCRIERE. Regula globala urca
+       oricum orice input la 16px pe telefon (zoom-ul Safari la focus), deci cu
+       titlul la `--font-body` (14.4px) textul crestea cu 1.6px fix cand incepeai
+       sa-l editezi. Egalarea se face in sus, nu in jos — sub 16 nu se poate. */
+    .sub-title, .sub-edit { font-size: 1rem; }
     .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); padding: 0 16px;
       font-size: var(--font-small); }
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */

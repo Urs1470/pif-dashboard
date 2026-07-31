@@ -260,7 +260,12 @@
     {/if}
   </div>
 
-  {#if projects.loading}
+  <!-- SCHELETELE SUNT PENTRU PRIMA INCARCARE, NU PENTRU FIECARE ACTIUNE —
+       aceeasi regula pe care o au deja Taskuri, boardul „Astăzi" si
+       Planificatorul. `loadProjects()` se cheama dupa comutarea statusului de pe
+       card, dupa stergere si la fiecare filtru, iar fara garda toata grila era
+       inlocuita cu sase schelete si reconstruita la fiecare atingere. -->
+  {#if projects.loading && projects.items.length === 0}
     <div class="cards-grid">
       {#each Array(6) as _}
         <div class="pcard skeleton-card"><Skeleton width="40%" height="14px" /><Skeleton width="70%" height="18px" /><Skeleton width="50%" height="12px" /></div>
@@ -380,7 +385,10 @@
   .pcard:active { border-color: var(--border-strong); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .pcard.batch-selected { background: var(--accent-subtle); border-color: var(--accent); }
-  .pcard.new-card { border-style: dashed; align-items: center; justify-content: center; gap: 6px; color: var(--text-faint); background: transparent; }
+  /* dim, nu faint: „Proiect nou" e o actiune de citit, nu o eticheta —
+     masurat 3.18:1 la 12.8px, sub AA. Cardul ramane discret prin rama
+     punctata si fundalul gol, nu prin text ilizibil. */
+  .pcard.new-card { border-style: dashed; align-items: center; justify-content: center; gap: 6px; color: var(--text-dim); background: transparent; }
   .pcard.new-card:hover { color: var(--accent); border-color: var(--accent); box-shadow: none; }
   .new-plus { font-size: 1.5rem; line-height: 1; }
   .new-label { font-size: var(--font-small); font-weight: var(--fw-semibold); }
@@ -389,7 +397,10 @@
   .card-top .status-pill { margin-left: auto; }
   .card-check { width: auto; height: auto; }
   .card-name { font-family: var(--font-heading); font-size: 1.05rem; font-weight: var(--fw-bold); letter-spacing: -0.02em; color: var(--text); line-height: 1.25; overflow-wrap: anywhere; }
-  .card-client { font-size: var(--font-tiny); color: var(--text-faint); margin-top: 2px; }
+  /* --text-dim, nu faint: numele clientului e INFORMATIE, nu eticheta —
+     iar faint e documentat „doar etichete/large" (3:1). Masurat: 3.18:1 la
+     11.2px, sub pragul AA de 4.5 pentru text mic. */
+  .card-client { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; }
   .card-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
   .deadline.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
   .skeleton-card { gap: 8px; cursor: default; }
@@ -429,7 +440,13 @@
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
-    .toolbar { flex-direction: column; align-items: stretch; }
+    /* ACELASI RITM CA /tasks (decizia din 2026-07-30: „aceleasi elemente, ~30px
+       mai sus"). Masurat aici inainte: primul card incepea la y=314 pe 390×844 —
+       37% din ecran, exact procentul pentru care /tasks a fost strans; pagina
+       asta ramasese in urma. Nimic nu dispare, doar distantele. */
+    .page { padding-top: var(--space-12); }
+    .page-header, .toolbar, .batch-bar { margin-bottom: 10px; }
+    .toolbar { flex-direction: column; align-items: stretch; gap: var(--space-sm); }
     /* Caseta are 44px, dar inputul dinauntru avea 25 — iar el e singurul care
        primeste focus (caseta e un <div>, nu un <label>), deci tinta reala era de
        25px. `align-self: stretch` il face sa umple caseta. */

@@ -57,6 +57,16 @@ export function dueColor(d) {
   return 'var(--border-strong)'
 }
 
+/* Starea termenului fata de azi — ACEEASI axa si ACELEASI praguri ca dueColor().
+   Traiau in trei copii locale (Tasks, TodayBoard, ProjectDetail), toate cu
+   `soon <= 7 zile` — in timp ce dueColor() da warning doar pana la 2. Rezultatul,
+   masurabil: un task scadent in 5 zile avea bordura gri si data amber — doua
+   raspunsuri la aceeasi intrebare, pe acelasi rand. Pragul e unul singur, aici.
+   (Si parsarea e cea din zilePanaLa — pe campuri locale, nu new Date(iso) in UTC.) */
+export function esteDepasit(d) { const k = zilePanaLa(d); return k !== null && k < 0 }
+export function esteAzi(d) { return zilePanaLa(d) === 0 }
+export function esteCurand(d) { const k = zilePanaLa(d); return k !== null && k > 0 && k <= 2 }
+
 /** Eticheta scurta si relativa: „depășit", „azi", „mâine" — altfel nimic, ca sa
  *  nu repete data deja afisata pe rand. */
 export function dueLabel(d) {

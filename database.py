@@ -318,7 +318,7 @@ def migrate_v5_to_v6():
 def migrate_v6_to_v7():
     """Add `pdf_extra` JSON column to parametri_master for value enums,
     notes, dependencies, examples, formulae extracted from PDF manuals.
-    Format: see HERMES.md / audit_pdf.py for schema."""
+    Format: see audit_pdf.py for schema."""
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='parametri_master'")

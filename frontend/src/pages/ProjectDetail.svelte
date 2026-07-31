@@ -11,13 +11,13 @@
   } from '../stores/projects.svelte.js'
   import { apiJson } from '../lib/api.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
+  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
   import { etichetaTermen } from '../lib/grupare.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate, router } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, plecare } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
@@ -28,6 +28,7 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
+  import Textarea from '../components/ui/Textarea.svelte'
   import Select from '../components/ui/Select.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
@@ -298,7 +299,12 @@
       return
     }
     expandedTask = taskId
-    loadAtt(taskId)
+    // Aici statea `loadAtt(taskId)` — fosila de la atasamente (sterse in v28).
+    // Functia NU mai exista, deci apelul arunca ReferenceError in mijlocul
+    // functiei async: extinderea se vedea (era setata mai sus), dar incarcarea
+    // subtaskurilor de sub apel NU se mai executa niciodata. Chipul spunea
+    // „0/1", lista era mereu goala, si nicio eroare nu ajungea in consola —
+    // respingerea promisiunii ramanea neascultata.
     if (!subtasksCache[taskId]) {
       subtaskLoading = true
       try {
@@ -375,19 +381,8 @@
     }
   }
 
-  function isOverdue(d) {
-    if (!d) return false
-    return new Date(d) < new Date(new Date().toDateString())
-  }
-  function isToday(d) {
-    if (!d) return false
-    return new Date(d).toDateString() === new Date().toDateString()
-  }
-  function isSoon(d) {
-    if (!d) return false
-    const diff = (new Date(d) - new Date(new Date().toDateString())) / 86400000
-    return diff > 0 && diff <= 7
-  }
+  // isOverdue/isToday/isSoon vin din formatters.js — aceeasi axa si aceleasi
+  // praguri ca dueColor(), o singura definitie pentru toate listele.
 
   function openFieldEdit(field, label) {
     editField = field
@@ -568,7 +563,7 @@
         {:else}
           <div class="task-list">
             {#each activeTasks as t, i (t.id)}
-              <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }} out:plecare>
+              <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }} in:sosire|local out:plecare>
                 <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {dueColor(t.data_scadenta)}"
                      use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: () => toggleTaskStatus(t) }}>
                   <!-- Editarea si stergerea stau in panoul de sub rand (glisare
@@ -648,30 +643,34 @@
                     </div>
 
                     <div class="sub-section">
+                      <!-- ACELASI ANTET CA IN /tasks: titlu + bara + „1/4" pe un
+                           singur rand. Inainte numarul aparea de DOUA ori (o data
+                           in cap, o data langa bara de pe randul urmator) — aceeasi
+                           informatie, spusa de doua ori la 20px distanta. -->
                       <div class="sub-head">
                         <span class="sub-cap">Subtaskuri</span>
-                        {#if subs.length}<span class="sub-prog">{doneCount}/{subs.length}</span>{/if}
+                        {#if subs.length}
+                          <div class="sub-bara" role="img"
+                               aria-label="{doneCount} din {subs.length} subtaskuri făcute">
+                            <span style="width: {(doneCount / subs.length) * 100}%"></span>
+                          </div>
+                          <span class="sub-num">{doneCount}/{subs.length}</span>
+                        {/if}
                       </div>
                       {#if subtaskLoading && !subtasksCache[t.id]}
                         <div class="sub-loading">Se încarcă...</div>
                       {:else}
-                        {#if subs.length}
-                          {@const gataSub = subs.filter(s => s.done).length}
-                          <!-- Aceeasi bara ca in /tasks: „1/4" spune cifra, nu si
-                               cat de departe esti. -->
-                          <div class="sub-progres">
-                            <div class="sub-bara" role="img"
-                                 aria-label="{gataSub} din {subs.length} subtaskuri făcute">
-                              <span style="width: {(gataSub / subs.length) * 100}%"></span>
-                            </div>
-                            <span class="sub-num">{gataSub}/{subs.length}</span>
-                          </div>
-                        {/if}
                         {#each subs as sub (sub.id)}
                           <div class="sub-row" class:sub-done={sub.done}>
-                            <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
+                            <!-- Bifa ROTUNDA, ca subtaskurile din /tasks si din
+                                 foaie: acelasi obiect, acelasi semn peste tot.
+                                 Patratul amber (cbx) e al selectiilor de lista
+                                 (batch pe /projects), nu al lui „făcut". -->
+                            <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
+                              {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
+                            </button>
                             <span class="sub-title">{sub.titlu}</span>
-                            <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><SolidIcon name="trash" size={12} /></button>
+                            <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)} aria-label="Șterge subtaskul"><SolidIcon name="trash" size={12} /></button>
                           </div>
                         {/each}
                         <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
@@ -847,18 +846,12 @@
 <Modal bind:open={showTaskEditModal} title="Editează Task" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
     <Input label="Titlu" bind:value={taskFormTitle} placeholder="Titlu task" />
-    <label class="mf-field">
-      <span class="mf-label">Descriere</span>
-      <textarea class="mf-textarea" bind:value={taskFormDesc} placeholder="Detalii (opțional)" rows="3"></textarea>
-    </label>
-    <div class="mf-row">
-      <div class="mf-field">
-      </div>
-      <div class="mf-field">
-        <span class="mf-label">Termen</span>
-        <DatePicker bind:value={taskFormDeadline} />
-      </div>
-    </div>
+    <!-- Componentele librariei, ca in modalul din /tasks — acelasi formular,
+         acelasi desen. Aici mai statea si un `mf-field` GOL: perechea campului
+         de prioritate, plecat in v34, care impingea Termenul in dreapta ca sa
+         faca loc unui nimic. -->
+    <Textarea label="Descriere" bind:value={taskFormDesc} placeholder="Detalii (opțional)" rows={3} />
+    <DatePicker label="Termen" bind:value={taskFormDeadline} />
     <Select label="Recurență" bind:value={taskFormRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
   </form>
   {#snippet footer()}
@@ -964,14 +957,18 @@
   /* Task list */
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; }
-  /* Insula (V3+V2): fara bara pe stanga — underline de severitate jos + index mono ghost */
-  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
-  .trow::after { content: ''; position: absolute; left: 12px; bottom: 0; height: 2px; width: 40px; border-radius: 2px 2px 0 0; background: var(--sev, var(--border-strong)); box-shadow: 0 0 8px color-mix(in srgb, var(--sev, transparent) 45%, transparent); }
+  /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia
+     (MEMORY (8): „severitatea se citeste din bordura din stanga, dupa termen").
+     Aici supravietuia varianta veche — underline scurt jos (`::after`) — deci
+     ACELASI task vorbea doua limbaje de severitate pe doua ecrane. */
+  .trow { position: relative; display: flex; align-items: center; gap: var(--space-sm); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong)); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
   /* Doar unde exista cursor — pe touch :hover ramane lipit dupa atingere. */
+  /* `border-left-color` redeclarat: `border-color` scurt vopseste TOATE laturile,
+     deci hover-ul ar sterge tocmai bordura de severitate — culoarea rezervata. */
   @media (hover: hover) {
-    .trow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+    .trow:hover { transform: translateX(4px); border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
   }
-  .trow:active { border-color: var(--border-strong); }
+  .trow:active { border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
   /* ===== O SINGURA AXA DE CULOARE PE RAND =====
      Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
      stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele
@@ -1002,7 +999,6 @@
      iar severitatea se citeste din bordura din stanga, dupa termen. */
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
-  .mf-textarea { padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-body); font-family: inherit; resize: vertical; min-height: 60px; }
   /* LA VEDERE, PALIDE — nu ascunse pana la hover.
      Aici erau `opacity: 0` pana la `.trow:hover`, in timp ce aceleasi butoane din
      /tasks stau mereu la vedere (decizia din 2026-06-18). Doua liste de taskuri cu
@@ -1040,10 +1036,12 @@
   .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-xs); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
-  .sub-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-  .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); }
-  .sub-prog { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  /* Antetul sectiunii de subtaskuri — aceeasi reteta ca in /tasks (titlu + bara
+     + numar pe un rand); .sub-bara/.sub-num vin din global.css. */
+  .sub-head { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 4px; }
+  .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); flex: none; }
   .sub-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+  .check-empty.small { width: 14px; height: 14px; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; overflow-wrap: anywhere; }
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
@@ -1064,9 +1062,6 @@
   .rdet dt { font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; }
   .rdet dd { margin: 0; font-size: var(--font-tiny); color: var(--text-secondary); overflow-wrap: anywhere; }
 
-  .mf-row { display: flex; gap: var(--space-md); }
-  .mf-field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-  .mf-label { font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
 
   /* Equipment import/copy */
 
@@ -1134,7 +1129,11 @@
     .check { position: relative; min-width: 30px; width: 30px; min-height: var(--tap-min);
       align-items: center; justify-content: center; padding: 0; }
     .check::after { content: ''; position: absolute; inset: -7px; }
+    /* Pe touch nu exista hover, deci un buton `opacity: 0` pana la hover nu
+       apare NICIODATA — „sterge subtask" era de neatins pe telefon. /tasks are
+       deja regula asta; aici ramasese varianta veche. */
     .sub-del, .sub-add-btn { min-width: var(--tap-min); min-height: var(--tap-min); }
+    .sub-del { opacity: 1; background: none; }
     .sub-add input { min-height: var(--tap-min); }
     /* Filtrele de fisier din tabul Wiki — 29px. */
     .wiki-chip { min-height: var(--tap-min); padding: 4px 14px; }

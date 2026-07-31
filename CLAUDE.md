@@ -24,7 +24,7 @@ To avoid re-exploring the codebase every session, start here instead of scanning
 - `docs/memory/MEMORY.md` — curated memory: DB map, feature status, gotchas, recent decisions
 - `docs/memory/CODE_MAP.md` — auto-generated: top-level functions per Python module with line numbers (e.g. database.py is ~1200 lines — find the function here, then read only that range)
 - `docs/memory/API_MAP.md` — auto-generated: all Flask routes (method, path, handler, line)
-- `SCHEMA_REFERENCE.md` — full SQL schema; `HERMES.md` — multi-agent rules + design system
+- `SCHEMA_REFERENCE.md` — full SQL schema. Design system: sectiunea „Design system" de mai jos + `frontend/src/styles/tokens.css` (sursa unica).
 
 The maps regenerate automatically on commit via a versioned pre-commit hook (`.githooks/pre-commit`). Activate it once per clone:
 
@@ -525,7 +525,41 @@ Shared working tree → shared git index, so coordinate before staging/committin
 - **Import session:** `scripts/parse_params/*`
 - Always `git fetch && git pull --rebase` before push. No force push.
 
-> See `HERMES.md` (architecture + design system + git protocol) and `AGENT_BRIEFING.md` (spawn template) for the full multi-agent workflow.
+> See `AGENT_BRIEFING.md` (spawn template) for the multi-agent workflow.
+
+## Design system (frontend)
+
+**Sursa unică: `frontend/src/styles/tokens.css`** — citește-l înainte să atingi CSS. Estetica e
+**Bento** (dark warm + amber, celule rotunjite, dock plutitor). Două teme (`dark` default,
+`light` warm-paper), ambele definite în tokens — dacă atingi culori, păstrează ambele.
+
+- **Suprafețe (elevație):** `--bg` (pagină) < `--bg-surface` (card) — `--bg-panel/--bg-input`
+  sunt INSET < `--bg-overlay` (modal/toast/popover). Text: `--text/-secondary/-dim/-faint`
+  (faint DOAR etichete/large — e 3:1). Cerneala pe fill saturat: `--on-color`.
+- **Culoarea e semantică, nu decor:** amber = accent/warning (identitate), `--danger`,
+  `--success`, `--info` (violet). Pe rândurile de task **culoarea e rezervată severității**
+  (bordura din stânga + termenul, prin `dueColor()`); restul metadatelor sunt gri.
+- **Identitatea proiectului:** `lib/culori.js` — `culoareProiect(id)`, SINGURA sursă (paleta
+  e rezolvată numeric de `scripts/solve_paleta.py`, nu aleasă din ochi; NU o copia în pagini).
+  Locația: `--loc-site/--loc-sediu` (chroma mică intenționat; NU se redefinesc pe light).
+- **Mișcare:** `--dur-fast/base/slow/press`, `--ease`, `--ease-spring` (doar revenirea din
+  gest). NU `transition: all` — folosește `--transition-colors` sau `--transition-pressable`.
+  Doar `transform`/`opacity` pe animații; ieșirea/intrarea rândurilor: `plecare`/`sosire`
+  din `lib/motion.svelte.js` (`sosire` cu `|local`). Reduced-motion e global.
+- **Apăsare:** pe pointer grosier există podeaua globală de `:active` din `global.css`
+  (`:where()`, specificitate zero). Control nou = dă-i `:active`. Ținte touch: `--tap-min` 44px.
+- **Componente — folosește librăria `components/ui/`, nu reinventa:** `<Input>`/`<Textarea>`
+  (NU `<input>` brut în formulare), `<Select>` (NU `<select>` nativ), `<DatePicker>`
+  (NU `type="date"`), `<Modal>`/`<ConfirmDialog>`, `<Toast>`, `<EmptyState>`,
+  `<ErrorState>` (cu retry — orice pagină/listă la eșec), `<Skeleton>` (DOAR prima
+  încărcare: gardă `loading && items.length === 0`). Butoanele modalului în
+  `{#snippet footer()}` cu `.modal-actions`.
+- **Iconițe:** `<SolidIcon>` pentru navigație/feature (solid); Lucide outline pentru
+  afordanțe mici (plus, chevron, search, x). Zero emoji în UI.
+- **Tipografie:** Inter (body), Space Grotesk (`--font-heading`, titluri + numerale mari),
+  JetBrains Mono pentru ORICE cifră/cod. Titlurile au podeaua `--lh-tight` din global.css.
+- **Înainte de commit:** `python scripts/audit_design.py` — singurul test care prinde
+  incoerența (build-ul și smoke trec vesel peste o a doua paletă copiată).
 
 ## Known Limitations
 

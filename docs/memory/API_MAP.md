@@ -83,9 +83,9 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 1178 |
 | DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 1242 |
 | GET | `/api/agenda/today` | `get_agenda_today` | 1318 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 1348 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 1397 |
-| GET | `/api/plan` | `get_plan` | 1438 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 1368 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 1417 |
+| GET | `/api/plan` | `get_plan` | 1458 |
 
 ## app.py (16 rute)
 

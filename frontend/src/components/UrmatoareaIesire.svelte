@@ -15,13 +15,21 @@
   import { todayISO, addDays, diffDays, shortDate } from '../lib/calendarDates.js'
 
   let data = $state(null)
+  // EROAREA NU E ACELASI LUCRU CU „NIMIC PLANIFICAT". Inainte, orice esec de
+  // retea lasa `data = null` si componenta disparea FARA NICIUN SEMN — adica
+  // exact lectia scrisa la v29 in CLAUDE.md: o absenta tacuta te invata sa nu
+  // te bazezi pe restul. Linia ramane pe ecran si spune ca nu stie, cu drum
+  // de reincercare.
+  let eroare = $state(false)
   const azi = todayISO()
 
-  onMount(async () => {
+  async function incarca() {
+    eroare = false
     try {
       data = await apiJson(`/api/calendar?start=${azi}&zile=120`)
-    } catch (_) { data = null }
-  })
+    } catch (_) { data = null; eroare = true }
+  }
+  onMount(incarca)
 
   function scurt(client) {
     const c = (client || '').trim()
@@ -120,6 +128,13 @@
       </button>
     {/if}
   </div>
+{:else if eroare}
+  <div class="ctx">
+    <span class="gol eroare">
+      <AlertTriangle size={14} /> Ieșirile nu s-au putut încărca
+    </span>
+    <button class="reinc" onclick={incarca}>Reîncearcă</button>
+  </div>
 {/if}
 
 <style>
@@ -145,12 +160,15 @@
   .sep { color: var(--text-faint); }
   .ce { font-size: var(--font-tiny); color: var(--text-dim); min-width: 0;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 34ch; }
-  .zile { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint);
+  /* dim, nu faint: intervalul e raspunsul la „cand pleci" — informatie, nu
+     eticheta; masurat 3.18:1 la 10.4px, sub AA. */
+  .zile { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
           white-space: nowrap; }
 
   /* Următoarele două — text simplu, fără cadru: context, nu obiect. */
   .apoi { font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; }
-  .ap { font-family: var(--font-mono); }
+  /* Intervalul e informatie (dim); cuvantul de legatura „apoi" ramane faint. */
+  .ap { font-family: var(--font-mono); color: var(--text-dim); }
   /* Spatiul dintre interval si loc vine din CSS, nu dintr-un caracter scris in
      markup: acolo era `<span class="apc"> {…}</span>`, iar spatiul de dinaintea
      expresiei se pierdea la compilare — pe ecran scria „31 iulsediu". */
@@ -159,6 +177,15 @@
 
   .gol { display: inline-flex; align-items: center; gap: 7px;
          font-size: var(--font-tiny); color: var(--text-dim); }
+  /* Eroarea foloseste limbajul semantic, nu pe cel de „gol": danger pe semn,
+     ca sa nu se citeasca drept o zi libera. */
+  .gol.eroare :global(svg) { color: var(--danger); }
+  .reinc { padding: 3px 12px; border-radius: var(--radius-full);
+    border: 1px solid var(--border); background: var(--bg-surface);
+    color: var(--text-secondary); font-size: var(--font-tiny);
+    font-weight: var(--fw-medium); cursor: pointer;
+    transition: var(--transition-colors); min-height: 26px; }
+  .reinc:hover { border-color: var(--accent); color: var(--accent); }
 
   .dec {
     display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;

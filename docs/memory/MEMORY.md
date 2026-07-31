@@ -6,8 +6,7 @@ Companion files (auto-generated, regenerate with `python scripts/gen_memory.py`)
 - `API_MAP.md` — all Flask routes (method, path, handler, line)
 
 Other authoritative docs (do not duplicate here):
-- `CLAUDE.md` — stack, env vars, deploy, key patterns
-- `HERMES.md` — multi-agent collision rules, shared-file BEGIN/END protocol, design system
+- `CLAUDE.md` — stack, env vars, deploy, key patterns, design system (sectiune proprie)
 - `SCHEMA_REFERENCE.md` — full SQL schema (all 9 tables, columns, FKs, indexes)
 
 ## Database map by domain
@@ -46,7 +45,7 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 - Status values are magic strings (`'in_lucru'`, `'finalizat'`...) — labels centralized in `labels.py` (backend) and `static/core.js` (frontend); keep both in sync.
 - Recurring tasks (zilnic/saptamanal/lunar) auto-spawn the next instance on completion — completion logic must preserve this.
 - Tests: no pytest; run `python scripts/test_suite.py` (plus feature scripts in `scripts/`).
-- Multi-agent: always `git fetch && git pull --rebase` before push; never force-push; respect domain split in `HERMES.md`.
+- Multi-agent: always `git fetch && git pull --rebase` before push; never force-push; respect domain split in `CLAUDE.md` (Multi-Agent Collision Rules).
 
 ## Maintenance protocol (for every AI session)
 
@@ -55,6 +54,123 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 3. Made a non-obvious decision, found a new gotcha, or changed feature status? Append one dated line to **Recent decisions** below (newest first, keep ≤ 30 entries, prune oldest).
 
 ## Recent decisions
+
+- **2026-07-31 (7) — HERMES.md sters (cerinta Ion) + runda de design ca sistem.**
+  HERMES.md era briefingul agentului Hermes; partea despre dashboard (sistemul
+  de design) traieste acum ca sectiune „Design system (frontend)" in CLAUDE.md.
+  Referintele curatate (CLAUDE.md, AGENT_BRIEFING.md, antetul din MEMORY,
+  database.py, TodayBoard); intrarile istorice de mai jos raman cum au fost scrise.
+  Runda de design, pe patru intrebari:
+  **(1) Formularele folosesc libraria** — Categorie era `<input class="mf-input">`
+  in ambele modale din /tasks (a treia reteta de camp, langa .field-input si
+  .dp-trigger), Descrierea din modalul paginii de proiect era `<textarea>` brut,
+  plus un `mf-field` GOL (perechea prioritatii, v34) care impingea Termenul in
+  jumatatea dreapta. Toate -> `<Input>`/`<Textarea>`/`<DatePicker label>`;
+  stilurile mf-* au plecat din ambele pagini.
+  **(2) Acelasi obiect, acelasi desen** — chipul de context (categoria/proiectul)
+  avea radius-full in /tasks si radius-xs pe „Astăzi"; pe telefon /tasks il facea
+  text simplu, boardul il tinea pastila. Boardul preia reteta din /tasks.
+  **(3) Contrastul, masurat automat** (ambele teme, cele 5 pagini): `--text-faint`
+  e documentat „doar etichete/large" (3:1), dar scria INFORMATIE la 10-13px:
+  clientul de pe cardul de proiect, intervalele din „urmatoarea iesire",
+  indicatiile din Planificator, contoarele (tail, ms-c), „Proiect nou". Toate ->
+  `--text-dim`; etichetele uppercase si separatorii raman faint. Re-scanat: zero
+  informatie sub 4.5:1.
+  **(4) Containerele goale** — verificate: sertarul gol din Plan dispare (e
+  unealta, nu informatie — corect), Planificatorul si ziua goala din Calendar au
+  stari explicate. Nimic de reparat.
+  Toate 4 harnessurile verzi.
+
+- **2026-07-31 (6) — Miscarea la standardul gestului: `sosire` + `--ease-spring`.**
+  Inventarul miscarii a aratat ca mult e deja la standard (View Transitions API
+  nativ pe navigare — masurat un singur `.content-width` pe toata durata; toast
+  fly+flip; Select fly; shimmer; apasare <100ms; reduced-motion global). Doua
+  lipsuri, ambele reparate:
+  **(1) Iesirea exista, intrarea nu** — `sosire` in lib/motion.svelte.js
+  (perechea lui `plecare`): opacitate + ridicare 5px, DOAR transform/opacity
+  (vecinii isi fac loc prin `animate:flip`; doua animatii de layout pe acelasi
+  eveniment s-ar calca). Pe toate cele trei liste, cu `|local` — REGULA: prima
+  incarcare a paginii nu se joaca, intrarea e a randului nou (adaugat sau mutat
+  intre grupe), nu a paginii. Masurat: opacitate 1 din primul cadru la load,
+  ~10 cadre de fade la adaugare.
+  **(2) Foaia eliberata se oprea mecanic** — token `--ease-spring` in tokens.css:
+  `linear()` care esantioneaza un spring amortizat (~5% depasire), folosit DOAR
+  pentru revenirea din gest (translate-ul sheet-ului, cu --dur-slow), cu rezerva
+  pe `--ease` pentru browsere fara `linear()` (prima linie de `transition` din
+  aceeasi regula). R4 din audit_design ramane curat fiindca tokenul sta in
+  tokens.css. Masurat pe gest: 72px -> 0 -> −3.6px -> 0.
+  Toate 4 harnessurile verzi dupa.
+
+- **2026-07-31 (5) — Aprofundarea consolidarii: starile, nu doar suprafata.**
+  Metoda noua: am TAIAT serverul (500) sub fiecare pagina si am fotografiat ce
+  ramane; am masurat ritmul intre pagini; am cautat nume care promit altceva
+  decat fac.
+  **(1) Acasa avea singurele stari de eroare mute.** Boardul „Astăzi" arata un
+  paragraf rosu fara drum inainte (regula de design cere `<ErrorState>` cu retry — toate
+  celelalte pagini il aveau); linia „urmatoarea iesire" era mai rea: la esec punea
+  `data = null` si DISPAREA — eroarea arata identic cu „nicio iesire planificata",
+  exact absenta tacuta despre care scrie lectia v29. Acum: ErrorState pe board,
+  iar linia ramane pe ecran cu „Ieșirile nu s-au putut încărca" + Reîncearcă
+  inline. Ambele retry-uri verificate cu rutele taiate si apoi eliberate.
+  **(2) Ritmul mobil din decizia (9) se aplicase doar pe /tasks.** Masurat pe
+  /projects la 390×844: primul card la y=314 — acelasi 37% din ecran pentru care
+  /tasks fusese strans. Aceleasi strangeri: 314 -> 282.
+  **(3) `.form-row-3` cu DOI copii** — coloana prioritatii (plecata in v34) a
+  ramas in grila: o treime din modal, goala, pe ambele formulare de task. Acum
+  `.form-row-2`.
+  **(4) Grila de proiecte se demola la fiecare actiune** — `{#if projects.loading}`
+  fara garda `items.length === 0` (regula scrisa in Tasks/TodayBoard/Plan), desi
+  loadProjects() se cheama la comutare de status, stergere si filtre. Masurat
+  dupa: zero schelete la filtrare.
+  Verificat iar: toate 4 harnessurile verzi.
+
+- **2026-07-31 (4) — Consolidare UI/UX: unde s-a abatut codul de la propriile lui
+  reguli scrise.** Metoda: nu „ce arata prost", ci masurat contra regulilor din
+  tokens.css/CLAUDE.md/comentarii. Sapte abateri gasite si reparate, niciuna cu
+  vreo eroare aruncata:
+  **(1) `.sub-row` declarat de DOUA ori in Tasks.svelte** — a doua declaratie
+  (ramasa de la designul de lista) anula tacut `padding: 4px 8px` al cardului
+  (masurat: `3px 0` desktop, `2px 0` in foaie; card cu rama la 0px de text). Plus
+  o a treia lovitura din blocul mobil. Acum o singura declaratie.
+  **(2) Escape inchidea TOT, nu un strat** — redenumirea/compozitorul de subtask
+  lasau evenimentul sa urce la backdrop; Select folosea doar `preventDefault`
+  (care NU opreste urcarea); DatePicker asculta pe window pe BUBBLING, adica dupa
+  backdrop, deci nu putea opri nimic — mutat pe CAPTURA (`onkeydowncapture`) cu
+  garda `open`. Regula: Escape inchide stratul cel mai de sus, atat.
+  **(3) `.trow:hover` din /tasks aplica `translateX(4px)` dar tranzitia acoperea
+  doar `opacity`** — randul SAREA; pe Acasa si in proiect acelasi rand aluneca.
+  **(4) Redenumirea inline a subtaskului muta textul** — inputul aducea caseta
+  lui (padding+rama = salt de 7px pe x; pe telefon si fontul 14.4→16, fortat de
+  regula globala de zoom Safari). Acum inputul are metricile textului de citire
+  + o linie de accent; pe telefon citire=scriere=1rem (egalat IN SUS — sub 16px
+  nu se poate pe input).
+  **(5) Titlurile mosteneau interlinia de PARAGRAF** — tokens.css scrie
+  `--lh-tight (display/headings)`, dar reset-ul nu da titlurilor line-height,
+  deci h1 avea caseta 43.4px la font 28. Podea in global.css: `h1..h4
+  { line-height: var(--lh-tight) }` (specificitate 0,0,1 — orice clasa o bate).
+  **(6) Doua limbaje de severitate pe acelasi task** — /tasks: bordura stanga
+  (cea documentata in MEMORY (8)); Astăzi + proiect: underline `::after` de 40px,
+  care pe telefon nici nu se vedea (sub `.gl-fata`). Unificat pe bordura. CAPCANA:
+  hover/active cu `border-color` SCURT vopseau toate laturile, adica stergeau
+  exact culoarea rezervata — redeclara `border-left-color`.
+  **(7) `isSoon` local zicea „<= 7 zile", dueColor zice „<= 2"** — termen la 5
+  zile: bordura gri + data amber, pe acelasi rand. Trei copii locale
+  (Tasks/TodayBoard/ProjectDetail) mutate in formatters.js ca
+  `esteDepasit/esteAzi/esteCurand`, LANGA dueColor, pe aceleasi praguri si pe
+  parsarea locala din `zilePanaLa` (nu `new Date(iso)`, care e UTC).
+  **BUG functional gasit pe drum: subtaskurile din pagina de proiect nu se
+  incarcau NICIODATA** — `toggleTaskExpand` chema `loadAtt()`, fosila de la
+  atasamente (v28); ReferenceError in mijlocul functiei async, inghitit de
+  promisiunea neascultata: chip „0/1", lista goala, consola curata. Scos apelul.
+  Tot in proiect: antetul de subtaskuri spunea numarul de doua ori, bifa era
+  patrat amber (cbx = selectie de lista, nu „făcut") si „sterge subtask" era
+  `opacity: 0` pe touch — aliniate la /tasks.
+  **Gasit si NEreparat (scop):** redenumirea inline a subtaskurilor exista doar
+  in /tasks, nu si in pagina de proiect (ar fi interactiune noua, nu consolidare);
+  comentariul din blocul mobil al /tasks promite o „spina" la subtaskuri care nu
+  e implementata (blocul e oricum mort pe telefon — acolo se deschide foaia).
+  Verificat: audit_design curat, smoke_ui 28/28, audit_mobil complet OK,
+  test_suite 11/11 (+warn-ul documentat), capturi inainte/dupa la 390 si 1280.
 
 - **2026-07-31 (3) — Dock-ul pe telefon: tinte de 56px si ascundere la derulare,
   ca bara de adresa.** Ion: „sensul era sa le faci si putin mai mari iconitele din
