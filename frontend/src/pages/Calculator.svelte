@@ -6,7 +6,7 @@
   import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download, FolderPlus, Trash2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG, LIMITS, computeVerdicts, worstVerdict } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG, LIMITS, computeVerdicts, worstVerdict, INTREBARI } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
   import Chart from '../components/ui/Chart.svelte'
@@ -22,6 +22,7 @@
   let activeCat = $state('aplicatii')
   let activeMotorFam = $state('asincron')
   let activeApp = $state('pompe-vent')
+  let intrebareSel = $state(null)
   let query = $state('')
 
   // Valorile de intrare per modul, initializate din default-uri.
@@ -49,6 +50,12 @@
   }
   // Lista din tab-ul curent (cautarea NU mai inlocuieste lista — vezi autocomplete-ul acResults).
   const shown = $derived.by(() => {
+    // Intrarea pe sarcina: lista e cea a intrebarii alese, in ORDINEA din tabel
+    // (ordinea in care deschizi cardurile), nu in ordinea generala a modulelor.
+    if (activeCat === 'intrebari') {
+      const q = INTREBARI.find((x) => x.id === intrebareSel)
+      return q ? q.module.map((id) => MODULES.find((m) => m.id === id)).filter(Boolean) : []
+    }
     if (activeCat === 'aplicatii') return MODULES.filter((m) => APP_OF[m.id] === activeApp).sort((a, b) => ord(a.id) - ord(b.id))
     if (activeCat === 'motoare') return MODULES.filter((m) => catOf(m) === 'motoare' && m.family === activeMotorFam).sort((a, b) => ord(a.id) - ord(b.id))
     return MODULES.filter((m) => catOf(m) === activeCat).sort((a, b) => ord(a.id) - ord(b.id))
@@ -75,7 +82,8 @@
     }
     return parts
   }
-  function selectCat(id) { query = ''; activeCat = id }
+  function selectCat(id) { query = ''; activeCat = id; if (id !== 'intrebari') intrebareSel = null }
+  function alegeIntrebare(id) { intrebareSel = id; openModule(INTREBARI.find((x) => x.id === id)?.module[0]) }
 
   // Extrasele de carti (protected) au drept de autor -> vizibile cand esti logat (dashboard mereu;
   // pe /calc doar dupa verificarea autentificarii). runtime.docsOk e reactiv (vezi runtime.svelte.js).
@@ -757,6 +765,25 @@
         <button class="subfam-tab" class:active={activeApp === a.id} role="tab" aria-selected={activeApp === a.id} onclick={() => (activeApp = a.id)}>{a.label}</button>
       {/each}
     </div>
+  {:else if activeCat === 'intrebari' && intrebareSel}
+    <div class="subfam-tabs">
+      <button class="subfam-tab" onclick={() => (intrebareSel = null)}>← Toate întrebările</button>
+      <span class="intreb-activa">{INTREBARI.find((x) => x.id === intrebareSel)?.q}</span>
+    </div>
+  {/if}
+
+  <!-- Intrarea pe sarcina: intrebarea asa cum o pui, nu categoria in care cade -->
+  {#if activeCat === 'intrebari' && !intrebareSel}
+    <div class="intreb-grid">
+      {#each INTREBARI as q (q.id)}
+        <button class="intreb-card" onclick={() => alegeIntrebare(q.id)}>
+          <span class="intreb-q">{q.q}</span>
+          <span class="intreb-nev">Ai nevoie de: {q.nevoie}</span>
+          <span class="intreb-mod">{q.module.length} carduri</span>
+        </button>
+      {/each}
+      <p class="intreb-foot">Fiecare întrebare deschide cardurile care răspund la ea, în ordinea în care le parcurgi. Datele de echipament completate o dată se aplică peste tot.</p>
+    </div>
   {/if}
 
   {#if favMods.length || recentMods.length}
@@ -1153,6 +1180,30 @@
 
   /* sub-taburi pentru Motoare (pe tip) */
   .subfam-tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin: calc(-1 * var(--space-md)) 0 var(--space-lg); }
+  .intreb-activa { align-self: center; font-size: var(--font-small); color: var(--text-secondary); }
+
+  /* Intrarea pe sarcina */
+  .intreb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+  .intreb-card {
+    display: flex; flex-direction: column; gap: 5px;
+    text-align: left;
+    padding: 12px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-colors);
+  }
+  .intreb-card:hover { border-color: var(--accent); background: var(--accent-subtle); }
+  .intreb-q { font-size: var(--font-small); font-weight: var(--fw-bold); color: var(--text); line-height: 1.35; }
+  .intreb-nev { font-size: var(--font-tiny); color: var(--text-dim); line-height: 1.4; }
+  .intreb-mod { font-size: var(--font-tiny); color: var(--accent); }
+  .intreb-foot { grid-column: 1 / -1; font-size: var(--font-tiny); color: var(--text-dim); line-height: 1.5; padding-top: 4px; }
   .subfam-tab {
     padding: 3px 13px; min-height: 26px; border-radius: var(--radius-full); font-size: var(--font-tiny); font-weight: var(--fw-medium);
     color: var(--text-secondary); border: 1px solid transparent; background: var(--bg-input);

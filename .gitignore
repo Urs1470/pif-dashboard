@@ -53,7 +53,13 @@ scripts/_inspect_all_pdfs.py
 # Audit / scratch markdown
 AUDIT_*.md
 .commit_msg.txt
-.claude/
+
+# .claude/ — versionam DOAR poarta de verificare (hook-uri + config), ca sa fie
+# aceeasi pe ambele PC-uri. Restul (settings.local.json, launch.json, .state/)
+# ramane local.
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
 
 # Secrets
 .secret_key

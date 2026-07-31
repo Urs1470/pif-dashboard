@@ -25,6 +25,9 @@ export const FAMILIES = [
 // --- Structura: categorii de nivel 1 (taburi principale) ---
 // 'aplicatii' si 'motoare' au sub-taburi; restul sunt categorii directe.
 export const CATEGORIES = [
+  // 'intrebari' e intrarea pe sarcina (vezi INTREBARI): nu grupeaza module dupa
+  // domeniu, ci porneste de la ce te-a adus aici. Nu contine module proprii.
+  { id: 'intrebari', label: 'De unde încep' },
   { id: 'aplicatii', label: 'Aplicații' },
   { id: 'motoare', label: 'Mașini electrice' },
   { id: 'vfd', label: 'Convertizor / VFD' },
@@ -3873,6 +3876,95 @@ export function computeModule(mod, rawValues) {
   }
   return r
 }
+
+// ================================================================== INTREBARI
+//
+// Intrarea pe SARCINA, nu pe modul. Ca sa folosesti calculatorul asa cum e
+// organizat (7 categorii, 117 module) trebuie sa stii dinainte ce cauti — ceea
+// ce presupune ca stii deja raspunsul. Pentru cineva care deschide /calc prima
+// oara, asta e un zid.
+//
+// Tabelul de mai jos e scris de mana, nu generat si nu "inteligent": o intrebare
+// asa cum o pune omul -> cardurile care raspund la ea, in ordinea in care le
+// deschizi. Determinist si verificabil; cand se adauga un modul nou, se adauga
+// aici manual daca raspunde la vreuna dintre intrebari.
+//
+// `nevoie` = ce trebuie sa ai la indemana ca sa completezi cardurile. Fara asta,
+// omul deschide cardul si se blocheaza la primul camp.
+export const INTREBARI = [
+  {
+    id: 'ce-drive',
+    q: 'Am un motor — ce convertizor îi trebuie?',
+    nevoie: 'plăcuța motorului (kW, A, V, cos φ)',
+    module: ['putere-curent', 'selectie-drive', 'moduri-control', 'cablu'],
+  },
+  {
+    id: 'cablu-lung',
+    q: 'Cablul până la motor e prea lung?',
+    nevoie: 'lungimea cablului, tensiunea de bus, timpul de creștere al drive-ului',
+    module: ['unda-reflectata', 'cablu', 'filtru-iesire', 'curenti-rulment'],
+  },
+  {
+    id: 'motor-cald',
+    q: 'Motorul se încălzește sau declanșează protecția',
+    nevoie: 'curentul măsurat, curentul de pe plăcuță, tensiunile pe cele trei faze',
+    module: ['incarcare', 'motor-termic', 'dezechilibru', 'protectie-motor', 'derating-vfd-motor'],
+  },
+  {
+    id: 'pornire-grea',
+    q: 'La pornire cade tensiunea sau nu demarează',
+    nevoie: 'curentul de pornire, puterea de scurtcircuit a barei, timpul de demaraj',
+    module: ['pornire', 'dip-pornire', 'run-up', 'transformator'],
+  },
+  {
+    id: 'pompa-zgomot',
+    q: 'Pompa cavitează, vibrează sau merge în gol',
+    nevoie: 'înălțimea de aspirație, pierderile pe aspirație, debitul de lucru și cel de la BEP',
+    module: ['npsh', 'debit-minim', 'turatie-minima', 'lovitura-berbec'],
+  },
+  {
+    id: 'economie-vfd',
+    q: 'Cât economisesc dacă pun convertizor pe pompă sau ventilator?',
+    nevoie: 'puterea instalată, profilul de debit pe zi, prețul energiei',
+    module: ['sarcina-afinitate', 'economie-profil', 'energie-roi', 'lcc'],
+  },
+  {
+    id: 'armonici-retea',
+    q: 'Îmi trebuie reactor sau filtru de armonici?',
+    nevoie: 'curentul de scurtcircuit la punctul de racord și curentul de sarcină',
+    module: ['ieee519', 'armonici', 'comparatie-frontend', 'rezonanta-cond'],
+  },
+  {
+    id: 'franare',
+    q: 'Ce rezistență de frânare aleg?',
+    nevoie: 'inerția sarcinii, turația, timpul de oprire cerut, ciclul de frânări',
+    module: ['dinamica', 'franare-rezistenta', 'macara'],
+  },
+  {
+    id: 'cablu-protectii-q',
+    q: 'Ce secțiune de cablu și ce protecții aleg?',
+    nevoie: 'curentul de sarcină, lungimea, modul de pozare, curentul de scurtcircuit',
+    module: ['cablu', 'cablu-protectii', 'scurtcircuit', 'pe-defect'],
+  },
+  {
+    id: 'vibratii-q',
+    q: 'Motorul vibrează sau se aud rulmenții',
+    nevoie: 'viteza de vibrație măsurată (RMS), înălțimea de ax, turația de lucru',
+    module: ['vibratii', 'curenti-rulment', 'turatie-critica', 'izolatie'],
+  },
+  {
+    id: 'peste-50hz',
+    q: 'Vreau turație peste 50 Hz — se poate?',
+    nevoie: 'turația de bază, turația dorită, factorul de cuplu maxim',
+    module: ['asincron-camp-slabit', 'derating-vfd-motor', 'unda-reflectata', 'turatie-critica'],
+  },
+  {
+    id: 'reglaj-instabil',
+    q: 'Reglajul oscilează sau răspunde prost',
+    nevoie: 'inerția motorului și a sarcinii, raportul de transmisie, banda cerută',
+    module: ['raport-inertie', 'acordare-pi', 'raspuns-ord2', 'notch-rezonanta', 'pid-drive'],
+  },
+]
 
 // ==================================================================== VERDICTE
 //

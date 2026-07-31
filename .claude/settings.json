@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/record_touched.py\" 2>/dev/null || py -3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/record_touched.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/gate.py\" 2>/dev/null || py -3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/gate.py\"",
+            "timeout": 900,
+            "statusMessage": "Poarta de verificare (audit + build + smoke)..."
+          }
+        ]
+      }
+    ]
+  }
+}

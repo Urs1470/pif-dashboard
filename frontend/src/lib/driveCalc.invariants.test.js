@@ -15,7 +15,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   MODULES, MODULE_ORDER, SOURCES, FAMILIES, CATEGORIES, APP_OF, CAT_OF,
-  MOTOR_FAMS, APPLICATIONS, catOf, computeModule, computeCharts, CHART_DESC,
+  MOTOR_FAMS, APPLICATIONS, catOf, computeModule, computeCharts, CHART_DESC, INTREBARI,
 } from './driveCalc.js'
 
 // Carduri pur documentare: nu au intrari si nu calculeaza nimic (tabel/explicatie).
@@ -135,6 +135,32 @@ test('APP_OF si CAT_OF trimit doar la module existente', () => {
   for (const [k, v] of Object.entries(APP_OF)) {
     assert.ok(apps.has(v), `APP_OF["${k}"] = "${v}": sub-tab de aplicatie inexistent`)
   }
+})
+
+// Intrarea pe sarcina e o tabela scrisa de mana: cel mai probabil mod de a o
+// strica e sa redenumesti un modul si sa uiti sa actualizezi tabela. Atunci
+// intrebarea deschide o lista mai scurta, in tacere.
+test('fiecare intrebare trimite la module care exista', () => {
+  const ids = new Set(MODULES.map((m) => m.id))
+  const vazute = new Set()
+  for (const q of INTREBARI) {
+    assert.ok(!vazute.has(q.id), `id de intrebare duplicat: ${q.id}`)
+    vazute.add(q.id)
+    assert.ok(q.q && q.q.trim().length > 10, `${q.id}: intrebarea trebuie scrisa in cuvintele omului`)
+    assert.ok(q.nevoie && q.nevoie.trim(), `${q.id}: fara "ai nevoie de" — omul deschide cardul si se blocheaza la primul camp`)
+    assert.ok(q.module.length >= 2, `${q.id}: o intrebare care trimite la un singur card nu are ce cauta aici`)
+    for (const id of q.module) {
+      assert.ok(ids.has(id), `intrebarea "${q.id}" trimite la modulul inexistent "${id}"`)
+    }
+    assert.equal(new Set(q.module).size, q.module.length, `${q.id}: module repetate`)
+  }
+})
+
+test('categoria "intrebari" nu revendica module', () => {
+  // E o intrare, nu un domeniu: daca vreun modul ar cadea pe ea, ar disparea
+  // din categoria lui reala.
+  assert.deepEqual(MODULES.filter((m) => catOf(m) === 'intrebari').map((m) => m.id), [])
+  assert.ok(CATEGORIES.some((c) => c.id === 'intrebari'), 'categoria trebuie sa existe in navigatie')
 })
 
 test('graficele se construiesc si au descriere pe fiecare', () => {
