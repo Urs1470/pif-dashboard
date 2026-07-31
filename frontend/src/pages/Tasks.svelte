@@ -45,6 +45,7 @@
   let expandedTask = $state(null)
   let subtasksCache = $state({})
   let newSubtaskTitle = $state('')
+  let adaugSubLa = $state('')   // id-ul taskului al carui compozitor de subtask e deschis
   let subtaskLoading = $state(false)
 
   let taskSearch = $state('')
@@ -314,23 +315,14 @@
     } finally { subtaskLoading = false }
   }
 
+  // Foaia e ACUM SI PE DESKTOP (cerinta Ion). Un task arata la fel oriunde il
+  // deschizi, iar extinderea in lista disparea oricum de indata ce continutul
+  // crestea. Pe desktop `Modal` e o caseta centrata, pe telefon un sertar de jos
+  // — acelasi continut, doar asezat unde ajunge mana.
   async function toggleTaskExpand(taskId) {
-    if (ecran.telefon) { await deschideFoaia(taskId); return }
-    if (expandedTask === taskId) {
-      expandedTask = null
-      return
-    }
-    expandedTask = taskId
-    if (!subtasksCache[taskId]) {
-      subtaskLoading = true
-      try {
-        const subs = await loadSubtasks(taskId)
-        subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
-      } catch (_) {
-        subtasksCache = { ...subtasksCache, [taskId]: [] }
-      } finally { subtaskLoading = false }
-    }
+    await deschideFoaia(taskId)
   }
+
 
   async function toggleSubtaskDone(sub) {
     await updateSubtask(sub.id, { done: sub.done ? 0 : 1 })
@@ -342,6 +334,8 @@
 
   async function addSubtask(taskId) {
     if (!newSubtaskTitle.trim()) return
+    // Compozitorul RAMANE deschis, gol si focalizat: subtaskurile se scriu in
+    // rafala, nu unul singur. La fel ca la compozitorul de taskuri din lista.
     await createSubtask(taskId, newSubtaskTitle.trim())
     newSubtaskTitle = ''
     const subs = await loadSubtasks(taskId)
@@ -428,6 +422,9 @@
        rare care au iesit din panoul de glisare (nota si titlul). Asa „atinge
        taskul" inseamna „vezi tot ce e in el", ca in orice aplicatie de to-do,
        in loc sa fie imprastiate pe doua gesturi diferite. -->
+  <!-- CHIPURI DE ACTIUNE, ca randul „Description / Reminders / Labels" din
+       Todoist: lucrurile pe care le faci RAR cu un task stau grupate si mici,
+       ca sa nu concureze cu subtaskurile, care sunt continutul. -->
   <div class="td-actiuni">
     <button class="td-btn" class:areNota={!!t.descriere} onclick={() => openNoteModal(t)}>
       <SolidIcon name="notes" size={13} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
@@ -442,30 +439,29 @@
   {/if}
 
   <div class="sub-section">
-    <!-- Fara antet: extinderea contine DOAR subtaskuri, deci n-are ce sa
-         dezambiguizeze, iar numaratoarea (1/3) sta deja pe rand. Il pusesem la
-         loc cand disparitia lui facea sectiunea sa para stricata — acum, cu
-         taskul ca un singur card, reperul nu mai lipseste. -->
     {#if subtaskLoading && !subtasksCache[t.id]}
       <div class="sub-loading">Se încarcă...</div>
     {:else}
-      {#if subs.length}
-        {@const gata = subs.filter(s => s.done).length}
-        <!-- „1/4" spune cifra, dar nu si CAT de departe esti: doua treimi si o
-             treime arata la fel intr-un chip. Bara o arata dintr-o privire, iar
-             cifra ramane pentru cine vrea exact. -->
-        <div class="sub-progres">
+      <!-- ANTET DE SECTIUNE, ca „Sub-tasks 0/2" la Todoist. In lista nu era nevoie
+           de el (extinderea continea doar subtaskuri); in foaie sunt trei lucruri
+           unul sub altul, deci sectiunea trebuie sa-si spuna numele. Bara de
+           progres sta pe acelasi rand: „1/4" da cifra, bara da distanta. -->
+      <div class="sub-cap">
+        <span class="sub-cap-t">Subtaskuri</span>
+        {#if subs.length}
+          {@const gata = subs.filter(s => s.done).length}
           <div class="sub-bara" role="img"
                aria-label="{gata} din {subs.length} subtaskuri făcute">
             <span style="width: {(gata / subs.length) * 100}%"></span>
           </div>
           <span class="sub-num">{gata}/{subs.length}</span>
-        </div>
-      {/if}
+        {/if}
+      </div>
+
       {#each subs as sub (sub.id)}
         <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
           <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
-            {#if sub.done}<CheckCircle2 size={14} />{:else}<div class="check-empty small"></div>{/if}
+            {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
           </button>
           {#if editSubId === sub.id}
             <input class="sub-edit" bind:value={editSubTitlu} use:focalizeaza
@@ -482,17 +478,30 @@
                   aria-label="Șterge subtaskul"><SolidIcon name="trash" size={13} /></button>
         </div>
       {/each}
-      <div class="sub-add">
-        <input
-          type="text"
-          placeholder="Adaugă subtask..."
-          bind:value={newSubtaskTitle}
-          onkeydown={(e) => { if (e.key === 'Enter') addSubtask(t.id) }}
-        />
-        <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
-          <Plus size={14} />
+
+      {#if !subs.length}
+        <p class="sub-gol">Niciun subtask. Împarte taskul în pași dacă e prea mare.</p>
+      {/if}
+
+      <!-- „+ Adaugă subtask" pe toata latimea, ca la Todoist, nu un camp ingust
+           cu un buton patrat langa. Campul se deschide la atingere: pana atunci
+           randul e o INVITATIE, nu un formular care sta gol pe ecran. -->
+      {#if adaugSubLa === t.id}
+        <div class="sub-add">
+          <input type="text" placeholder="Ce pas urmează?" bind:value={newSubtaskTitle} use:focalizeaza
+                 onkeydown={(e) => {
+                   if (e.key === 'Enter') addSubtask(t.id)
+                   else if (e.key === 'Escape') { adaugSubLa = ''; newSubtaskTitle = '' }
+                 }} />
+          <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
+            <Plus size={16} />
+          </button>
+        </div>
+      {:else}
+        <button class="sub-nou" onclick={() => { adaugSubLa = t.id; newSubtaskTitle = '' }}>
+          <Plus size={15} /> Adaugă subtask
         </button>
-      </div>
+      {/if}
     {/if}
   </div>
 {/snippet}
@@ -676,11 +685,7 @@
             </div>
             </div>
           </div>
-          {#if expandedTask === t.id}
-            <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-              {@render taskDetail(t)}
-            </div>
-          {/if}
+
         </div>
       {/each}
       {/if}
@@ -698,7 +703,11 @@
      `Modal` e deja sertar lipit de marginea de jos pe telefon, deci foaia nu e o
      componenta noua, e acelasi modal cu alt continut. -->
 {#if sheetTask}
-  <Modal bind:open={showSheet} size="md">
+  <!-- Antetul modalului primeste CONTEXTUL taskului (categoria), ca „Inbox" la
+       Todoist. Fara titlu, `Modal` randa oricum bara cu butonul de inchidere, deci
+       ramanea o banda goala de ~60px deasupra taskului — spatiu platit degeaba,
+       exact acolo unde ochiul cade prima data. -->
+  <Modal bind:open={showSheet} size="md" title={sheetTask.categorie || 'Task'}>
     <div class="ts-cap">
       <button class="ts-check" onclick={() => { toggleStatus(sheetTask); showSheet = false }}
               aria-label={sheetTask.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
@@ -948,7 +957,25 @@
   /* Fara rand propriu pentru un singur buton: se aliniaza la stanga, discret. */
 
 
-  /* ===== Foaia taskului (telefon) ===== */
+  /* ===== Foaia taskului ===== */
+  .sub-cap { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 6px; }
+  .sub-cap-t { font-size: var(--font-micro); text-transform: uppercase;
+    letter-spacing: var(--tracking-wide); font-weight: var(--fw-semibold); color: var(--text-faint); flex: none; }
+  .sub-gol { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm) 0; }
+  /* Fiecare subtask e un card, ca la Todoist: pe fundalul foii randurile fara
+     suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate. */
+  .sub-row { background: var(--bg-panel); border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md); padding: 4px 8px; margin-bottom: 5px; }
+  .sub-row.sub-done { background: transparent; border-color: transparent; }
+  .sub-nou { display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; min-height: var(--tap-min); margin-top: 2px;
+    border: 1px dashed var(--border-strong); border-radius: var(--radius-md);
+    background: none; color: var(--accent-on-subtle); font-size: var(--font-small);
+    font-weight: var(--fw-semibold); cursor: pointer; transition: var(--transition-pressable); }
+  .sub-nou:hover { background: var(--accent-subtle); border-color: var(--accent); }
+  .sub-nou:active { transform: scale(0.99); }
+
+  /* ===== Antetul foii ===== */
   .ts-cap { display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-md); }
   .ts-check { flex: none; min-width: var(--tap-min); min-height: var(--tap-min);
     display: flex; align-items: center; justify-content: flex-start; color: var(--success);
