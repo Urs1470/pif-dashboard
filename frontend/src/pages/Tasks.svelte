@@ -991,8 +991,14 @@
     letter-spacing: var(--tracking-wide); font-weight: var(--fw-semibold); color: var(--text-faint); flex: none; }
   .sub-gol { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm) 0; }
   /* Fiecare subtask e un card, ca la Todoist: pe fundalul foii randurile fara
-     suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate. */
-  .sub-row { background: var(--bg-panel); border: 1px solid var(--border-subtle);
+     suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate.
+     O SINGURA declaratie: mai jos exista pana acum o a doua `.sub-row` (ramasa
+     de la designul de lista), care la specificitate egala castiga fiind ultima
+     si rescria TACUT padding-ul cardului la `3px 0` — adica un card desenat cu
+     rama la 0px de text. Masurat inainte: padding calculat `3px 0` pe desktop,
+     `2px 0` in foaie. Exact felul de abatere care nu arunca nicio eroare. */
+  .sub-row { display: flex; align-items: center; gap: 6px;
+    background: var(--bg-panel); border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md); padding: 4px 8px; margin-bottom: 5px; }
   .sub-row.sub-done { background: transparent; border-color: transparent; }
   .sub-nou { display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -1041,7 +1047,6 @@
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .sub-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   /* Titlul e BUTON (atingi = redenumesti), dar trebuie sa arate ca text: fara
      fundal, aliniat la stanga, pe toata latimea ramasa. */
@@ -1221,7 +1226,10 @@
        deci sunt tinte ca oricare altele. Erau 28-39px. */
     .sub-add input, .sub-add-btn { min-height: var(--tap-min); }
     .sub-add-btn { width: var(--tap-min); }
-    .sub-row { padding: 2px 0; }
+    /* Cardul isi pastreaza padding-ul orizontal si pe telefon — `2px 0` de aici
+       anula (a doua oara) rama-la-0px reparata mai sus. Vertical ramane strans:
+       inaltimea o da oricum bifa de 40px. */
+    .sub-row { padding: 2px 8px; }
     /* ACEEASI SOCOTEALA CA LA RANDUL PARINTE, care a coborat de la 96px la 66px
        pana la prima litera. Masurat pe 390px, un subtask incepea la x=111: 28%
        din latimea ecranului consumata inainte de primul cuvant, pe fiecare rand.
