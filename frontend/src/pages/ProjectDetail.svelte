@@ -298,7 +298,12 @@
       return
     }
     expandedTask = taskId
-    loadAtt(taskId)
+    // Aici statea `loadAtt(taskId)` — fosila de la atasamente (sterse in v28).
+    // Functia NU mai exista, deci apelul arunca ReferenceError in mijlocul
+    // functiei async: extinderea se vedea (era setata mai sus), dar incarcarea
+    // subtaskurilor de sub apel NU se mai executa niciodata. Chipul spunea
+    // „0/1", lista era mereu goala, si nicio eroare nu ajungea in consola —
+    // respingerea promisiunii ramanea neascultata.
     if (!subtasksCache[taskId]) {
       subtaskLoading = true
       try {
@@ -637,30 +642,34 @@
                     </div>
 
                     <div class="sub-section">
+                      <!-- ACELASI ANTET CA IN /tasks: titlu + bara + „1/4" pe un
+                           singur rand. Inainte numarul aparea de DOUA ori (o data
+                           in cap, o data langa bara de pe randul urmator) — aceeasi
+                           informatie, spusa de doua ori la 20px distanta. -->
                       <div class="sub-head">
                         <span class="sub-cap">Subtaskuri</span>
-                        {#if subs.length}<span class="sub-prog">{doneCount}/{subs.length}</span>{/if}
+                        {#if subs.length}
+                          <div class="sub-bara" role="img"
+                               aria-label="{doneCount} din {subs.length} subtaskuri făcute">
+                            <span style="width: {(doneCount / subs.length) * 100}%"></span>
+                          </div>
+                          <span class="sub-num">{doneCount}/{subs.length}</span>
+                        {/if}
                       </div>
                       {#if subtaskLoading && !subtasksCache[t.id]}
                         <div class="sub-loading">Se încarcă...</div>
                       {:else}
-                        {#if subs.length}
-                          {@const gataSub = subs.filter(s => s.done).length}
-                          <!-- Aceeasi bara ca in /tasks: „1/4" spune cifra, nu si
-                               cat de departe esti. -->
-                          <div class="sub-progres">
-                            <div class="sub-bara" role="img"
-                                 aria-label="{gataSub} din {subs.length} subtaskuri făcute">
-                              <span style="width: {(gataSub / subs.length) * 100}%"></span>
-                            </div>
-                            <span class="sub-num">{gataSub}/{subs.length}</span>
-                          </div>
-                        {/if}
                         {#each subs as sub (sub.id)}
                           <div class="sub-row" class:sub-done={sub.done}>
-                            <input type="checkbox" class="cbx" checked={!!sub.done} onchange={() => toggleSubtaskDone(sub)} />
+                            <!-- Bifa ROTUNDA, ca subtaskurile din /tasks si din
+                                 foaie: acelasi obiect, acelasi semn peste tot.
+                                 Patratul amber (cbx) e al selectiilor de lista
+                                 (batch pe /projects), nu al lui „făcut". -->
+                            <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
+                              {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
+                            </button>
                             <span class="sub-title">{sub.titlu}</span>
-                            <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)}><SolidIcon name="trash" size={12} /></button>
+                            <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)} aria-label="Șterge subtaskul"><SolidIcon name="trash" size={12} /></button>
                           </div>
                         {/each}
                         <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
@@ -1033,10 +1042,12 @@
   .note-edit-btn { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 3px 8px; font-size: var(--font-tiny); color: var(--text-faint); cursor: pointer; border-radius: var(--radius-xs); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .note-edit-btn:hover { color: var(--accent); background: var(--accent-subtle); }
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
-  .sub-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-  .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); }
-  .sub-prog { font-size: var(--font-tiny); color: var(--text-dim); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  /* Antetul sectiunii de subtaskuri — aceeasi reteta ca in /tasks (titlu + bara
+     + numar pe un rand); .sub-bara/.sub-num vin din global.css. */
+  .sub-head { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 4px; }
+  .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); flex: none; }
   .sub-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+  .check-empty.small { width: 14px; height: 14px; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0; overflow-wrap: anywhere; }
   .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
@@ -1127,7 +1138,11 @@
     .check { position: relative; min-width: 30px; width: 30px; min-height: var(--tap-min);
       align-items: center; justify-content: center; padding: 0; }
     .check::after { content: ''; position: absolute; inset: -7px; }
+    /* Pe touch nu exista hover, deci un buton `opacity: 0` pana la hover nu
+       apare NICIODATA — „sterge subtask" era de neatins pe telefon. /tasks are
+       deja regula asta; aici ramasese varianta veche. */
     .sub-del, .sub-add-btn { min-width: var(--tap-min); min-height: var(--tap-min); }
+    .sub-del { opacity: 1; background: none; }
     .sub-add input { min-height: var(--tap-min); }
     /* Filtrele de fisier din tabul Wiki — 29px. */
     .wiki-chip { min-height: var(--tap-min); padding: 4px 14px; }
