@@ -379,7 +379,7 @@ def backup_database():
     backup = {}
 
     tables = ['proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
-                  'implementari', 'global_tasks', 'clienti', 'app_settings']
+                  'implementari', 'calcule', 'global_tasks', 'clienti', 'app_settings']
     # sarim tabelele absente
     # ca sa nu pice backup-ul cu 500.
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -411,7 +411,7 @@ def restore_database():
         conn.execute('BEGIN TRANSACTION')
         # Clear existing data (skip tables absent on this deploy)
         tables = ['proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
-                  'implementari', 'global_tasks', 'clienti', 'app_settings']
+                  'implementari', 'calcule', 'global_tasks', 'clienti', 'app_settings']
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         existing = {row[0] for row in cursor.fetchall()}
         for table in tables:
@@ -498,6 +498,17 @@ def restore_database():
                   im.get('data_sfarsit'), im.get('locatie') or 'site',
                   im.get('faza') or 'implementare',
                   im.get('eticheta'), im.get('ordine', 0), im.get('created_at')))
+
+        # Calcule atasate proiectelor (v37). Campurile JSON se scriu ca text, asa
+        # cum stau in tabela — restore-ul nu le interpreteaza.
+        for c in data.get('calcule', []):
+            cursor.execute('''
+                INSERT INTO calcule (id, proiect_id, titlu, modul_id, modul_titlu,
+                    intrari, rezultate, verdicte, stare, nota, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (c.get('id'), c.get('proiect_id'), c.get('titlu'), c.get('modul_id'),
+                  c.get('modul_titlu'), c.get('intrari'), c.get('rezultate'),
+                  c.get('verdicte'), c.get('stare'), c.get('nota'), c.get('created_at')))
 
         # Restore task_dependencies (dupa tasks — FK pe ambele capete)
         for dep in data.get('task_dependencies', []):

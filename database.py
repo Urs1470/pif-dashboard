@@ -87,7 +87,12 @@ def close_db(exc=None):
 # v36: scoase `pm` (4/18, folosit ca notita), `nr_contract` (1/18) si
 #      `data_incepere` (5/18, dubla prima perioada). Inceputul proiectului se
 #      calculeaza din perioade.
-SCHEMA_VERSION = 36
+# v37: `calcule` — calculele din Calculator atasate unui proiect. Pana acum
+#      calculul era efemer: il faceai pe teren, apoi il retastai in debrief si
+#      in PV. Intrarile, rezultatele si verdictele se salveaza INGHETATE (JSON),
+#      nu recalculate la citire: e consemnarea a ce s-a decis in ziua aia, si nu
+#      are voie sa se schimbe daca formula sau pragul se modifica ulterior.
+SCHEMA_VERSION = 37
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1267,6 +1272,44 @@ def migrate_v35_to_v36():
     logger.info('Migration v35->v36 completed')
 
 
+def migrate_v36_to_v37():
+    """v36 -> v37: tabela `calcule` — calcule din Calculator atasate proiectului.
+
+    Pana acum calculul era efemer: il faceai pe teren, il citeai de pe ecran,
+    apoi il retastai in debrief si in PV. Nimic nu ramanea legat de proiect.
+
+    De ce se salveaza JSON inghetat si nu doar intrarile (ca sa recalculam la
+    citire): un calcul atasat unui proiect e CONSEMNAREA a ce s-a decis in ziua
+    aia. Daca maine se schimba o formula sau se muta un prag, inregistrarea
+    veche trebuie sa arate ce a vazut omul atunci, nu ce ar iesi azi. Din acelasi
+    motiv se pastreaza si titlul modulului, nu doar id-ul lui.
+
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS calcule (
+            id TEXT PRIMARY KEY,
+            proiect_id TEXT NOT NULL,
+            titlu TEXT,
+            modul_id TEXT,
+            modul_titlu TEXT,
+            intrari TEXT,
+            rezultate TEXT,
+            verdicte TEXT,
+            stare TEXT,
+            nota TEXT,
+            created_at TEXT,
+            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
+        )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_calcule_proiect ON calcule(proiect_id)')
+    conn.commit()
+    conn.close()
+    logger.info('Migration v36->v37 completed (calcule)')
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1446,6 +1489,11 @@ def run_migrations():
         set_schema_version(36)
         current_version = 36
 
+    if current_version < 37:
+        migrate_v36_to_v37()
+        set_schema_version(37)
+        current_version = 37
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1490,6 +1538,9 @@ def run_migrations():
     if 'implementari' not in existing_tables:
         logger.warning("Self-heal: re-running v25->v26 (implementari table missing)")
         migrate_v25_to_v26()
+    if 'calcule' not in existing_tables:
+        logger.warning("Self-heal: re-running v36->v37 (calcule table missing)")
+        migrate_v36_to_v37()
     cursor2 = get_db().cursor()
     cursor2.execute("PRAGMA table_info(proiecte)")
     proiecte_cols = {row[1] for row in cursor2.fetchall()}

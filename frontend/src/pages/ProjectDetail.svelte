@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, CalendarDays, ListChecks, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, CalendarPlus, ArrowRight, Check } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, CalendarDays, ListChecks, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, CalendarPlus, ArrowRight, Check, Calculator, Trash2 } from '@lucide/svelte'
   import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
   import ImplPeriods from '../components/projects/ImplPeriods.svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
@@ -95,8 +95,45 @@
   const tabs = [
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
     { key: 'gantt', label: 'Gantt', icon: CalendarRange },
+    { key: 'calcule', label: 'Calcule', icon: Calculator },
     { key: 'wiki', label: 'Wiki', icon: BookOpen },
   ]
+
+  // Calcule atasate din Calculator (v37). Inregistrari inghetate: se afiseaza ce
+  // s-a salvat atunci, nu se recalculeaza nimic la citire.
+  let calcule = $state([])
+  let calculeLoading = $state(false)
+  let calculeErr = $state('')
+  let calcDeschis = $state(new Set())
+
+  async function loadCalcule() {
+    calculeLoading = true
+    calculeErr = ''
+    try {
+      calcule = await apiJson(`/api/proiecte/${params.id}/calcule`)
+    } catch (e) {
+      calculeErr = e.message
+    } finally { calculeLoading = false }
+  }
+
+  async function stergeCalcul(c) {
+    if (!confirm(`Ștergi calculul „${c.titlu}”?`)) return
+    try {
+      await apiJson(`/api/calcule/${c.id}`, { method: 'DELETE' })
+      calcule = calcule.filter((x) => x.id !== c.id)
+    } catch (e) {
+      calculeErr = e.message
+    }
+  }
+
+  function toggleCalc(id) {
+    const s = new Set(calcDeschis)
+    if (s.has(id)) s.delete(id); else s.add(id)
+    calcDeschis = s
+  }
+
+  const CALC_STARE_TXT = { ok: 'În limite', atentie: 'De verificat', critic: 'În afara limitelor' }
+  const fmtVal = (x) => (x == null || x === '' ? '—' : (typeof x === 'number' ? (Math.abs(x) >= 100 ? x.toFixed(1) : x.toFixed(2)).replace(/\.?0+$/, '') : x))
 
   // Wiki tab — notele proiectului din vault-ul Obsidian (read-only, lazy load)
   let wikiInfo = $state(null)
@@ -161,6 +198,7 @@
 
   $effect(() => {
     if (activeTab === 'wiki' && !wikiInfo && !wikiListLoading) loadWiki()
+    if (activeTab === 'calcule' && !calcule.length && !calculeLoading && !calculeErr) loadCalcule()
   })
 
   async function load() {
@@ -716,6 +754,64 @@
              lui in timp. -->
         <div style="margin-top: var(--space-md)"><ImplPeriods projectId={params.id} /></div>
 
+      {:else if activeTab === 'calcule'}
+        {#if calculeLoading}
+          <Skeleton height="120px" />
+        {:else if calculeErr}
+          <div class="wiki-empty"><AlertCircle size={20} /><p>{calculeErr}</p></div>
+        {:else if !calcule.length}
+          <div class="wiki-empty">
+            <Calculator size={20} />
+            <p>Niciun calcul salvat la acest proiect.</p>
+            <p class="wiki-hint">În Calculator, pe cardul dorit: butonul <b>Proiect</b> salvează intrările, rezultatele și verdictele aici.</p>
+          </div>
+        {:else}
+          <div class="tab-header"><span class="tab-sub">{calcule.length} {calcule.length === 1 ? 'calcul salvat' : 'calcule salvate'}</span></div>
+          <div class="calc-list">
+            {#each calcule as c (c.id)}
+              {@const deschis = calcDeschis.has(c.id)}
+              <div class="calc-item" class:open={deschis}>
+                <div class="calc-head" role="button" tabindex="0"
+                  onclick={() => toggleCalc(c.id)}
+                  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCalc(c.id) } }}>
+                  <span class="calc-chev" class:open={deschis}><ChevronRight size={15} /></span>
+                  {#if c.stare}<span class="calc-dot {c.stare}" title={CALC_STARE_TXT[c.stare]}></span>{/if}
+                  <span class="calc-titlu">{c.titlu}</span>
+                  <span class="calc-modul">{c.modul_titlu}</span>
+                  <span class="calc-data">{(c.created_at || '').slice(0, 10)}</span>
+                  <button class="calc-del" title="Șterge calculul" aria-label="Șterge"
+                    onclick={(e) => { e.stopPropagation(); stergeCalcul(c) }}><Trash2 size={13} /></button>
+                </div>
+                {#if deschis}
+                  <div class="calc-body" transition:slide={{ duration: motionDuration(DUR_FAST) }}>
+                    {#if c.nota}<p class="calc-nota">{c.nota}</p>{/if}
+                    <div class="calc-cols">
+                      <div class="calc-col">
+                        <h4>Intrări</h4>
+                        {#each Object.entries(c.intrari || {}) as [k, f]}
+                          <div class="calc-row"><span>{f.eticheta || k}</span><b>{fmtVal(f.valoare)} {f.um || ''}</b></div>
+                        {/each}
+                      </div>
+                      <div class="calc-col">
+                        <h4>Rezultate</h4>
+                        {#each Object.entries(c.rezultate || {}) as [k, f]}
+                          <div class="calc-row">
+                            <span>{f.eticheta || k}</span>
+                            <b>{fmtVal(f.valoare)} {f.um || ''}</b>
+                          </div>
+                          {#if c.verdicte?.[k] && c.verdicte[k].st !== 'ok'}
+                            <p class="calc-vd {c.verdicte[k].st}">{c.verdicte[k].de}{#if c.verdicte[k].src}<span class="calc-vd-src">{c.verdicte[k].src}</span>{/if}</p>
+                          {/if}
+                        {/each}
+                      </div>
+                    </div>
+                  </div>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {/if}
+
       {:else if activeTab === 'wiki'}
         {#if wikiListLoading}
           <Skeleton height="120px" />
@@ -935,6 +1031,37 @@
   .wiki-empty p { margin: 0; }
   .wiki-hint { font-size: var(--font-small, 0.82rem); color: var(--text-dim); }
   .wiki-empty code { font-family: var(--font-mono); font-size: 0.85em; background: var(--bg-elevated); padding: 1px 5px; border-radius: var(--radius-sm); }
+
+  /* ---- Calcule atasate ---- */
+  .calc-list { display: flex; flex-direction: column; gap: 6px; }
+  .calc-item { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-surface); }
+  .calc-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; cursor: pointer;
+  }
+  .calc-head:hover { background: var(--bg-hover); }
+  .calc-chev { display: inline-flex; color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); }
+  .calc-chev.open { transform: rotate(90deg); }
+  .calc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .calc-dot.ok { background: var(--success); }
+  .calc-dot.atentie { background: var(--warning); }
+  .calc-dot.critic { background: var(--danger); }
+  .calc-titlu { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-bold); }
+  .calc-modul { font-size: var(--font-tiny); color: var(--text-dim); }
+  .calc-data { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .calc-del { color: var(--text-dim); padding: 3px; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; }
+  .calc-del:hover { color: var(--danger); background: var(--danger-subtle); }
+  .calc-body { padding: 4px 12px 12px 30px; border-top: 1px solid var(--border); }
+  .calc-nota { font-size: var(--font-tiny); color: var(--text-secondary); margin: 8px 0; font-style: italic; }
+  .calc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-top: 8px; }
+  .calc-col h4 { font-size: var(--font-tiny); color: var(--accent); font-weight: var(--fw-bold); margin-bottom: 4px; }
+  .calc-row { display: flex; justify-content: space-between; gap: 10px; font-size: var(--font-tiny); padding: 2px 0; color: var(--text-secondary); }
+  .calc-row b { color: var(--text); font-family: var(--font-mono); white-space: nowrap; }
+  .calc-vd { font-size: var(--font-tiny); line-height: 1.4; padding: 4px 6px; border-radius: var(--radius-sm); margin: 2px 0 5px; }
+  .calc-vd.atentie { color: var(--warning); background: var(--warning-subtle); }
+  .calc-vd.critic { color: var(--danger); background: var(--danger-subtle); }
+  .calc-vd-src { display: block; color: var(--text-dim); opacity: 0.85; margin-top: 2px; }
+  @media (max-width: 640px) { .calc-cols { grid-template-columns: 1fr; } }
   .wiki-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
   .wiki-chip { font-family: var(--font-mono); font-size: 0.78rem; padding: 4px 10px; border-radius: var(--radius-full); border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
   .wiki-chip:hover { background: var(--bg-hover); color: var(--text); }

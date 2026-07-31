@@ -2,6 +2,7 @@
 # Provides all project-related CRUD routes extracted from app.py
 
 import os
+import json
 import shutil
 import logging
 from datetime import datetime
@@ -495,6 +496,14 @@ def get_project_snapshot(project_id):
         t['subtasks'] = [row_to_dict(s) for s in cursor.fetchall()]
         tasks.append(t)
 
+    # Calcule atasate (v37). Intra in snapshot pentru ca de aici le ia debrief-ul
+    # ca sa nu le mai retastezi in PV.
+    try:
+        cursor.execute('SELECT * FROM calcule WHERE proiect_id = ? ORDER BY created_at', (project_id,))
+        calcule = [_calc_row(r) for r in cursor.fetchall()]
+    except Exception:
+        calcule = []   # deploy vechi, fara tabela
+
     conn.close()
 
     snapshot = {
@@ -530,6 +539,16 @@ def get_project_snapshot(project_id):
             'data_scadenta': t.get('data_scadenta', ''),
             'subtasks': [{'titlu': s.get('titlu', ''), 'done': bool(s.get('done'))} for s in t.get('subtasks', [])],
         } for t in tasks],
+        'calcule': [{
+            'titlu': c.get('titlu', ''),
+            'modul': c.get('modul_titlu', ''),
+            'intrari': c.get('intrari', {}),
+            'rezultate': c.get('rezultate', {}),
+            'verdicte': c.get('verdicte', {}),
+            'stare': c.get('stare'),
+            'nota': c.get('nota', ''),
+            'data': c.get('created_at', ''),
+        } for c in calcule],
     }
 
     return jsonify(snapshot)
@@ -1144,4 +1163,85 @@ def delete_implementare(impl_id):
     conn.close()
     if deleted == 0:
         return jsonify({'error': 'Perioada inexistenta'}), 404
+    return jsonify({'message': 'ok'})
+
+
+# ============ CALCULE (Calculator -> proiect) ============
+# Un calcul atasat unui proiect e o consemnare, nu o formula vie: intrarile,
+# rezultatele si verdictele se salveaza inghetate (vezi migratia v37). De aia
+# ruta nu recalculeaza nimic — primeste ce s-a vazut pe ecran si asta pastreaza.
+
+_CALC_STARI = {'ok', 'atentie', 'critic'}
+
+
+def _calc_row(row):
+    """Randul din DB -> JSON, cu campurile JSON desfacute inapoi in obiecte."""
+    d = row_to_dict(row)
+    for k in ('intrari', 'rezultate', 'verdicte'):
+        raw = d.get(k)
+        if not raw:
+            d[k] = {}
+            continue
+        try:
+            d[k] = json.loads(raw)
+        except (ValueError, TypeError):
+            # Nu aruncam: un rand cu JSON stricat nu trebuie sa rupa toata lista.
+            d[k] = {}
+    return d
+
+
+@projects_bp.route('/api/proiecte/<project_id>/calcule', methods=['GET'])
+@login_required
+def get_calcule(project_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM calcule WHERE proiect_id = ? ORDER BY created_at DESC', (project_id,))
+    rows = [_calc_row(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
+@projects_bp.route('/api/proiecte/<project_id>/calcule', methods=['POST'])
+@login_required
+def create_calcul(project_id):
+    data = get_json_or_400()
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM proiecte WHERE id = ?', (project_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'error': 'Proiect inexistent'}), 404
+
+    stare = (data.get('stare') or '').strip().lower()
+    if stare not in _CALC_STARI:
+        stare = None   # modulele fara praguri n-au stare — vezi LIMITS din driveCalc
+
+    calc_id = data.get('id') or generate_uuid()
+    cursor.execute('''INSERT INTO calcule (id, proiect_id, titlu, modul_id, modul_titlu,
+                          intrari, rezultate, verdicte, stare, nota, created_at)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                   (calc_id, project_id,
+                    (data.get('titlu') or '').strip() or (data.get('modul_titlu') or 'Calcul'),
+                    data.get('modul_id'), data.get('modul_titlu'),
+                    json.dumps(data.get('intrari') or {}, ensure_ascii=False),
+                    json.dumps(data.get('rezultate') or {}, ensure_ascii=False),
+                    json.dumps(data.get('verdicte') or {}, ensure_ascii=False),
+                    stare, (data.get('nota') or '').strip(),
+                    datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    return jsonify({'id': calc_id}), 201
+
+
+@projects_bp.route('/api/calcule/<calc_id>', methods=['DELETE'])
+@login_required
+def delete_calcul(calc_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM calcule WHERE id = ?', (calc_id,))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if deleted == 0:
+        return jsonify({'error': 'Calcul inexistent'}), 404
     return jsonify({'message': 'ok'})
