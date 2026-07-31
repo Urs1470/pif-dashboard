@@ -442,6 +442,91 @@ BIFEAZA = """(marca) => {
 }"""
 
 
+def dockul_pe_telefon(ctx, baza):
+    """Dock-ul pe telefon: cinci tinte, mai mari, si ascundere la derulare.
+
+    De ce e verificat. Ascunderea la derulare s-a rupt O DATA fara nicio eroare:
+    efectul care readuce dock-ul la schimbarea rutei chema o functie care CITEA
+    starea de ascundere, deci efectul devenea dependent de ea si o stingea imediat
+    ce se aprindea. Build verde, zero exceptii, dock care pur si simplu nu se
+    ascundea. Asta se prinde doar deruland si masurand.
+
+    Si numarul de tinte conteaza: daca cineva readauga rute in `PE_TELEFON` fara sa
+    scada marimea, dock-ul iese din ecran — la 56px de tinta incap cinci, nu opt."""
+    out('--- dock pe telefon ---')
+    probleme = 0
+    page = ctx.new_page()
+    page.set_viewport_size({'width': 390, 'height': 844})
+
+    def zi(cond, mesaj, detaliu=''):
+        nonlocal probleme
+        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
+        if not cond:
+            probleme += 1
+
+    STARE = """() => {
+      const d = document.querySelector('.dock');
+      if (!d) return null;
+      const r = d.getBoundingClientRect();
+      const it = [...d.querySelectorAll('.dock-item')];
+      const lat = it.map(e => { const b = e.getBoundingClientRect(); return Math.min(b.width, b.height) });
+      return { n: it.length, tinta: Math.round(Math.min(...lat)),
+               ascuns: d.classList.contains('hidden'),
+               subEcran: Math.round(r.top) >= window.innerHeight,
+               depaseste: r.right > window.innerWidth + 0.5 || r.left < -0.5,
+               y: Math.round(window.scrollY) }; }"""
+
+    # Calculatorul e o pagina sigur mai inalta decat ecranul; lista de taskuri a
+    # bazei de test poate incapea intr-un ecran, si atunci nu exista derulare de
+    # masurat (prima varianta a testului „a trecut" exact asa, degeaba).
+    page.goto(baza + '/#/calculator', wait_until='load')
+    page.wait_for_selector('.dock', timeout=15000)
+    page.wait_for_timeout(1500)
+
+    s0 = page.evaluate(STARE)
+    if not s0:
+        zi(False, 'dock-ul exista pe telefon')
+        page.close()
+        return probleme
+
+    zi(s0['n'] == 5, 'cinci tinte pe telefon', 'sunt %d' % s0['n'])
+    zi(s0['tinta'] >= 52, 'tintele folosesc spatiul castigat (>=52px)', '%dpx' % s0['tinta'])
+    zi(not s0['depaseste'], 'dock-ul nu iese din ecran')
+
+    inaltime = page.evaluate('document.documentElement.scrollHeight')
+    if inaltime <= 844 + 40:
+        zi(False, 'pagina de test poate fi derulata', 'scrollHeight=%d' % inaltime)
+        page.close()
+        return probleme
+
+    def deruleaza(pana, pas=60):
+        cur = page.evaluate('window.scrollY')
+        d = 1 if pana > cur else -1
+        while (d > 0 and cur < pana) or (d < 0 and cur > pana):
+            cur = min(pana, cur + pas) if d > 0 else max(pana, cur - pas)
+            page.evaluate('window.scrollTo(0, %d)' % cur)
+            page.wait_for_timeout(55)
+        page.wait_for_timeout(420)
+
+    deruleaza(500)
+    jos = page.evaluate(STARE)
+    zi(jos['ascuns'], 'coborand prin pagina, dock-ul pleaca')
+    # Nu e de ajuns sa primeasca clasa: pe telefon manerul e ascuns, deci daca
+    # deplasarea e cea de desktop ramane o dunga de dock peste continut.
+    zi(jos['subEcran'], 'plecat inseamna COMPLET sub ecran, nu o dunga')
+
+    deruleaza(340)
+    sus = page.evaluate(STARE)
+    zi(not sus['ascuns'], 'urcand, revine imediat')
+
+    deruleaza(0)
+    varf = page.evaluate(STARE)
+    zi(not varf['ascuns'], 'in varful paginii sta afara')
+
+    page.close()
+    return probleme
+
+
 def iesirea_randului(ctx, baza):
     """Randul bifat trebuie sa PLECE — vizibil si imediat.
     Doua lucruri se pot strica separat, si amandoua in tacere:
@@ -595,6 +680,7 @@ def main():
                 probleme += lista_de_facut(ctx, baza)
                 probleme += azi_peste_tot(ctx, baza)
                 probleme += iesirea_randului(ctx, baza)
+                probleme += dockul_pe_telefon(ctx, baza)
             browser.close()
     finally:
         proc.terminate()
