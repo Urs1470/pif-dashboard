@@ -160,12 +160,15 @@
   .sep { color: var(--text-faint); }
   .ce { font-size: var(--font-tiny); color: var(--text-dim); min-width: 0;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 34ch; }
-  .zile { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint);
+  /* dim, nu faint: intervalul e raspunsul la „cand pleci" — informatie, nu
+     eticheta; masurat 3.18:1 la 10.4px, sub AA. */
+  .zile { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
           white-space: nowrap; }
 
   /* Următoarele două — text simplu, fără cadru: context, nu obiect. */
   .apoi { font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; }
-  .ap { font-family: var(--font-mono); }
+  /* Intervalul e informatie (dim); cuvantul de legatura „apoi" ramane faint. */
+  .ap { font-family: var(--font-mono); color: var(--text-dim); }
   /* Spatiul dintre interval si loc vine din CSS, nu dintr-un caracter scris in
      markup: acolo era `<span class="apc"> {…}</span>`, iar spatiul de dinaintea
      expresiei se pierdea la compilare — pe ecran scria „31 iulsediu". */

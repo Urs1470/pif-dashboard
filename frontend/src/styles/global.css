@@ -755,6 +755,9 @@ input[type="checkbox"].cbx:focus {
   letter-spacing: 0.02em;
   font-weight: var(--fw-medium);
   font-size: var(--font-tiny);
+  /* Contorul e DATA, nu eticheta: mostenea faint-ul etichetei (3.18:1 la
+     11.2px, sub AA pentru text mic). Eticheta uppercase ramane faint. */
+  color: var(--text-dim);
 }
 .ico-amber { background: var(--accent-subtle); color: var(--accent); }
 .ico-green { background: var(--success-subtle); color: var(--success); }

@@ -385,7 +385,10 @@
   .pcard:active { border-color: var(--border-strong); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .pcard.batch-selected { background: var(--accent-subtle); border-color: var(--accent); }
-  .pcard.new-card { border-style: dashed; align-items: center; justify-content: center; gap: 6px; color: var(--text-faint); background: transparent; }
+  /* dim, nu faint: „Proiect nou" e o actiune de citit, nu o eticheta —
+     masurat 3.18:1 la 12.8px, sub AA. Cardul ramane discret prin rama
+     punctata si fundalul gol, nu prin text ilizibil. */
+  .pcard.new-card { border-style: dashed; align-items: center; justify-content: center; gap: 6px; color: var(--text-dim); background: transparent; }
   .pcard.new-card:hover { color: var(--accent); border-color: var(--accent); box-shadow: none; }
   .new-plus { font-size: 1.5rem; line-height: 1; }
   .new-label { font-size: var(--font-small); font-weight: var(--fw-semibold); }
@@ -394,7 +397,10 @@
   .card-top .status-pill { margin-left: auto; }
   .card-check { width: auto; height: auto; }
   .card-name { font-family: var(--font-heading); font-size: 1.05rem; font-weight: var(--fw-bold); letter-spacing: -0.02em; color: var(--text); line-height: 1.25; overflow-wrap: anywhere; }
-  .card-client { font-size: var(--font-tiny); color: var(--text-faint); margin-top: 2px; }
+  /* --text-dim, nu faint: numele clientului e INFORMATIE, nu eticheta —
+     iar faint e documentat „doar etichete/large" (3:1). Masurat: 3.18:1 la
+     11.2px, sub pragul AA de 4.5 pentru text mic. */
+  .card-client { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; }
   .card-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
   .deadline.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
   .skeleton-card { gap: 8px; cursor: default; }
