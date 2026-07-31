@@ -308,18 +308,22 @@
   .a-error { color: var(--danger); font-size: var(--font-small); padding: var(--space-sm); }
 
   .a-list { display: flex; flex-direction: column; }
-  /* Insula (V3+V2): fara bara pe stanga — underline scurt de severitate jos
-     + index mono ghost; delimitare prin spatiu, nu linii. */
-  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  .arow::after { content: ''; position: absolute; left: 12px; bottom: 0; height: 2px; width: 40px; border-radius: 2px 2px 0 0; background: var(--sev, var(--border-strong)); box-shadow: 0 0 8px color-mix(in srgb, var(--sev, transparent) 45%, transparent); }
+  /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia
+     (CLAUDE.md/MEMORY: „severitatea se citeste din bordura din stanga, dupa
+     termen"). Aici supravietuia varianta veche — un underline scurt jos
+     (`::after`) — deci ACELASI task avea doua limbaje de severitate pe doua
+     ecrane. Un task trebuie sa arate la fel oriunde apare. */
+  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px var(--space-sm) 10px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong)); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch :hover se aplica la atingere si RAMANE
      aplicat pana atingi altceva — randul bifat ar rămâne impins 4px la dreapta,
      ceea ce se citeste ca „s-a stricat", nu ca „am atins". */
+  /* `border-left-color` redeclarat: `border-color` scurt vopseste TOATE laturile,
+     deci hover-ul ar sterge tocmai bordura de severitate — culoarea rezervata. */
   @media (hover: hover) {
-    .arow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+    .arow:hover { transform: translateX(4px); border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
   }
   /* Raspunsul la atingere e apasarea, nu deplasarea. */
-  .arow:active { border-color: var(--border-strong); }
+  .arow:active { border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
   /* ===== O SINGURA AXA DE CULOARE PE RAND =====
      Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
      stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele

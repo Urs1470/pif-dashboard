@@ -924,8 +924,9 @@
     border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong));
     border-radius: var(--radius-md); margin-bottom: 6px; overflow: hidden;
     transition: border-color var(--dur-fast) var(--ease); }
-  .trow-wrap:hover { border-color: var(--border-strong); }
-  /* Insula (V3+V2): fara bara pe stanga — underline de severitate jos + index mono ghost */
+  /* `border-left-color` redeclarat: `border-color` scurt vopseste TOATE laturile,
+     deci hover-ul stergea tocmai bordura de severitate — culoarea rezervata. */
+  .trow-wrap:hover { border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
   /* UN SINGUR obiect: rama, fundalul si colturile stau pe WRAPPER. Randul si
      extinderea sunt continutul lui, fara rame proprii — altfel se citeau ca doua
      cutii lipite („de parca sunt rupte in doua"). */
@@ -1233,7 +1234,7 @@
        taierea e corecta, fiindca acolo chiar e o descriere, nu un titlu. */
     .ttitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2;
       line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-      text-overflow: initial; line-height: 1.32; }
+      text-overflow: initial; line-height: var(--lh-snug); }
 
     /* Agenda „7 zile" e acum o a doua copie a aceleiasi liste: gruparea de
        deasupra spune deja azi/mâine/zilele astea, cu actiuni cu tot. Pe desktop

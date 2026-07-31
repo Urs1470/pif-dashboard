@@ -71,6 +71,21 @@ body {
     radial-gradient(900px 420px at -10% 110%, rgba(29, 127, 77, 0.04), transparent 55%);
 }
 
+/* TITLURILE NU MOSTENESC INTERLINIA DE PARAGRAF.
+   Scala scrisa in tokens.css spune: `--lh-tight 1.15 (display/headings)`,
+   `--lh-normal 1.55 (body)`. Dar reset-ul nu da titlurilor nicio interlinie,
+   deci mosteneau 1.55 de pe body — masurat: h1-ul paginii avea o caseta de
+   43.4px pentru 28px de text, iar titlul modalului 28.5px pentru 18.4. Cateva
+   titluri o declarau local (--lh-snug pe foaia taskului, --lh-tight pe cifrele
+   KPI), celelalte din ACEEASI ierarhie o mosteneau pe cea de paragraf — exact
+   felul de abatere care se vede doar cand pui doua ecrane alaturi.
+   Selector de element = specificitate 0,0,1: orice clasa scoped o bate, deci
+   titlurile care isi aleg alta treapta (ex. `.ts-titlu` cu --lh-snug) raman
+   cum sunt. */
+h1, h2, h3, h4 {
+  line-height: var(--lh-tight);
+}
+
 ::selection {
   background: var(--accent);
   color: var(--accent-text);
