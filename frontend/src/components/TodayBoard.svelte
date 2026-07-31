@@ -16,6 +16,7 @@
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import TaskPickerModal from './TaskPickerModal.svelte'
   import EmptyState from './ui/EmptyState.svelte'
+  import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
   import { motionDuration, DUR_BASE, plecare } from '../lib/motion.svelte.js'
@@ -178,7 +179,11 @@
   {#if agenda.loading && agenda.items.length === 0}
     <div class="a-skel">{#each Array(3) as _}<Skeleton height="40px" />{/each}</div>
   {:else if agenda.error}
-    <p class="a-error">Eroare: {agenda.error}</p>
+    <!-- ErrorState cu retry, ca in restul aplicatiei (HERMES §5: „erori:
+         <ErrorState> (cu retry)"). Aici era un paragraf rosu fara niciun drum
+         inainte — singura lista din aplicatie care la esec te lasa sa dai
+         refresh din browser. -->
+    <ErrorState message={agenda.error} onretry={() => loadAgendaToday()} />
   {:else if agenda.items.length === 0}
     <EmptyState icon={CalendarCheck} title="Nimic planificat azi" description="Adaugă un task rapid sau alege din taskurile existente." />
   {:else}
@@ -303,7 +308,6 @@
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .a-skel { display: flex; flex-direction: column; gap: var(--space-xs); }
-  .a-error { color: var(--danger); font-size: var(--font-small); padding: var(--space-sm); }
 
   .a-list { display: flex; flex-direction: column; }
   /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia
