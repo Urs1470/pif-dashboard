@@ -6,7 +6,7 @@
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
-  import { dueColor, formatDate } from '../lib/formatters.js'
+  import { dueColor, formatDate, esteDepasit as isOverdue, esteCurand as isSoon } from '../lib/formatters.js'
   import { etichetaTermen } from '../lib/grupare.js'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { reordonare } from '../lib/reordonare.js'
@@ -37,10 +37,8 @@
 
   const restanteCount = $derived(agenda.items.filter(i => i.is_restant).length)
 
-  function dateOnly(d) { return new Date(new Date(d).toDateString()) }
-  function isOverdue(d) { if (!d) return false; return dateOnly(d) < new Date(new Date().toDateString()) }
-  function isToday(d) { if (!d) return false; return new Date(d).toDateString() === new Date().toDateString() }
-  function isSoon(d) { if (!d) return false; const diff = (dateOnly(d) - new Date(new Date().toDateString())) / 86400000; return diff > 0 && diff <= 7 }
+  // isOverdue/isSoon vin din formatters.js — aceeasi axa si aceleasi praguri ca
+  // dueColor(), o singura definitie pentru toate listele.
 
   async function doQuickAdd() {
     const t = quickTitle.trim()

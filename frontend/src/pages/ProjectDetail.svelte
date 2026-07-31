@@ -11,7 +11,7 @@
   } from '../stores/projects.svelte.js'
   import { apiJson } from '../lib/api.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
+  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
   import { etichetaTermen } from '../lib/grupare.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { exportMarkdown } from '../lib/exportMd.js'
@@ -375,19 +375,8 @@
     }
   }
 
-  function isOverdue(d) {
-    if (!d) return false
-    return new Date(d) < new Date(new Date().toDateString())
-  }
-  function isToday(d) {
-    if (!d) return false
-    return new Date(d).toDateString() === new Date().toDateString()
-  }
-  function isSoon(d) {
-    if (!d) return false
-    const diff = (new Date(d) - new Date(new Date().toDateString())) / 86400000
-    return diff > 0 && diff <= 7
-  }
+  // isOverdue/isToday/isSoon vin din formatters.js — aceeasi axa si aceleasi
+  // praguri ca dueColor(), o singura definitie pentru toate listele.
 
   function openFieldEdit(field, label) {
     editField = field

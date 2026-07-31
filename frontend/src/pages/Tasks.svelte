@@ -7,7 +7,7 @@
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { formatDate, dueColor, isFutureRecurrence } from '../lib/formatters.js'
+  import { formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
   import { grupeazaDupaTermen, etichetaTermen, ORDINE_GRUPE } from '../lib/grupare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { router } from '../lib/router.svelte.js'
@@ -405,19 +405,8 @@
 
 
 
-  function isOverdue(d) {
-    if (!d) return false
-    return new Date(d) < new Date(new Date().toDateString())
-  }
-  function isToday(d) {
-    if (!d) return false
-    return new Date(d).toDateString() === new Date().toDateString()
-  }
-  function isSoon(d) {
-    if (!d) return false
-    const diff = (new Date(d) - new Date(new Date().toDateString())) / 86400000
-    return diff > 0 && diff <= 7
-  }
+  // isOverdue/isToday/isSoon vin din formatters.js (esteDepasit/esteAzi/esteCurand):
+  // aceeasi axa si aceleasi praguri ca dueColor(), o singura definitie.
 
   // Banda de carduri urgente a plecat (Ion, 2026-07-27: „cardurile astea ce apar
   // nu am nevoie de ele"): repeta primele randuri din lista de imediat dedesubt,
@@ -1158,8 +1147,8 @@
       align-items: center; justify-content: center; padding: 0; }
     .check::after { content: ''; position: absolute; inset: -7px; }
     .tix { display: none; }
-    .tmain { min-height: 0; }
-    .ttitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* (`.tmain`/`.ttitle` se declara o singura data, mai jos in acelasi bloc —
+       aici statusera doua declaratii moarte pe care ultima le anula.) */
     .tinfo { flex-wrap: nowrap; overflow: hidden; }
     .tinfo > * { flex-shrink: 0; }
 
