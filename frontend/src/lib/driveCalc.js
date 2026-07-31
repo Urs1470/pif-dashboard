@@ -4222,6 +4222,85 @@ export function worstVerdict(verdicts) {
   return worst
 }
 
+// ======================================================================= GHID
+//
+// Ghidul scurt al calculatorului, cerut de Ion sa stea langa „Surse & standarde".
+// Conditia lui: „acesta trebuie actualizat odata cu actualizarile din aplicatie".
+//
+// Un ghid scris de mana se desincronizeaza in trei saptamani si nimeni nu observa,
+// pentru ca nimic nu-l contrazice. De aia:
+//   1. E o FUNCTIE, nu un text: toate cifrele (cate module, cate praguri, cate
+//      intrebari, ce categorii) se citesc din structurile de mai sus la fiecare
+//      deschidere. Adaugi un modul cu praguri -> ghidul o spune singur.
+//   2. Sta in driveCalc.js, adica exact in fisierul care se modifica atunci cand
+//      se schimba ce descrie. Un ghid tinut in alt fisier se uita.
+// Ce ramane de intretinut manual: propozitiile despre functii NOI (ce face un
+// buton care inca nu exista). Regula, scrisa aici ca sa fie gasita: functie noua
+// in calculator = un rand in GHID, in aceeasi sesiune.
+export function ghidCalculator() {
+  const cuRezultate = MODULES.filter((m) => m.results.length)
+  const cuPraguri = Object.keys(LIMITS).length
+  const cuGrafice = MODULES.filter((m) => m.charts?.length).length
+  const categorii = CATEGORIES.filter((c) => c.id !== 'intrebari').map((c) => c.label).join(' · ')
+  return [
+    {
+      h: 'Ce este',
+      p: [
+        `${cuRezultate.length} module de calcul pentru acționări electrice — motor, convertizor, pompă, cablu, armonici, termic. Fiecare card arată formula, ${cuGrafice} dintre ele și graficul, iar toate își citează sursa (standard IEC/EN, carte sau ghid de producător).`,
+        'Valorile sunt orientative pentru dimensionare și diagnoză. Ce ajunge în ofertă sau în PV se verifică în catalogul sau manualul echipamentului.',
+      ],
+    },
+    {
+      h: 'De unde începi',
+      p: [
+        `Dacă știi ce cauți: caută în bara de sus (merge și fără diacritice) sau intră direct pe categorie — ${categorii}.`,
+        `Dacă nu: tabul <b>De unde încep</b> pornește de la întrebarea pe care o ai (${INTREBARI.length} întrebări) și deschide cardurile care răspund, în ordine.`,
+        'Steaua ține un card la îndemână; modulele deschise recent apar singure sub taburi.',
+      ],
+    },
+    {
+      h: 'Datele echipamentului — se completează o dată',
+      p: [
+        'Panoul <b>Date echipament</b> ține plăcuța motorului și datele rețelei. Câmpurile cu același înțeles se completează singure în toate cardurile — schimbi puterea o dată, se schimbă peste tot.',
+        'Iconița de lanț de lângă un câmp îl desprinde, dacă vrei acolo o valoare locală.',
+        'Butonul <b>Încarcă backup</b> citește plăcuța direct din backup-ul drive-ului: ABB (.dcparamsbak), Siemens STARTER (.zip), Danfoss. Merge și fără cont.',
+        'Poți salva mai multe echipamente și comuta între ele — util când ai mai multe motoare pe același utilaj.',
+      ],
+    },
+    {
+      h: 'Verdictele — bulinele colorate',
+      p: [
+        'Verde = în limite. Galben = merge, dar fără rezervă, verifică. Roșu = în afara limitelor, cu propoziția care spune ce faci și standardul din care vine pragul.',
+        `Bulina din lista de module îți arată unde e problema fără să deschizi cardurile. Starea unui card = cel mai grav verdict al lui.`,
+        `<b>Un card fără bulină nu înseamnă „e bine"</b> — înseamnă că pragul lui încă nu e scris. Momentan ${cuPraguri} module din ${cuRezultate.length} au praguri.`,
+      ],
+    },
+    {
+      h: 'Salvarea la proiect',
+      p: [
+        'Butonul <b>Proiect</b> de pe card (vizibil doar când ești autentificat) salvează calculul la un proiect: intrări, rezultate, verdicte, plus titlul și nota ta.',
+        'Se salvează așa cum arată acum și <b>nu se recalculează niciodată</b> — e consemnarea zilei, nu o formulă vie. Dacă mâine se corectează o formulă sau se mută un prag, înregistrarea veche rămâne ce ai văzut atunci.',
+        'Apar în pagina proiectului, tabul <b>Calcule</b>, și intră în exportul pentru debrief și PV.',
+        'Butonul <b>Export</b> de sus copiază în clipboard cardurile deschise, cu verdicte cu tot — pentru când vrei doar text.',
+      ],
+    },
+    {
+      h: 'Pe teren, fără semnal',
+      p: [
+        'Adresa publică <b>/calc</b> se poate da colegilor: doar calculatorul, fără cont și fără datele proiectelor.',
+        'Deschis o dată cu semnal, rămâne instalat pe telefon și pornește offline. În hală calculează la fel; se pierd doar lucrurile care cer serverul (salvarea la proiect și extrasele de documente).',
+      ],
+    },
+    {
+      h: 'Sursele',
+      p: [
+        'Fiecare card scrie de unde vine formula. Butonul <b>Surse & standarde</b> le adună pe toate, grupate pe tip.',
+        'Standardele IEC/EN și cărțile au extrase locale — doar paginile citate — care se deschid la pagina și termenul respectiv.',
+      ],
+    },
+  ]
+}
+
 // Descriere scurta per grafic (ce demonstreaza + la ce sa fii atent). Array per modul, in ordinea graficelor.
 export const CHART_DESC = {
   'cuplu': [{ ce: 'Caracteristica cuplu-turație a motorului asincron (pornire Mₚ, maxim Mₘₐₓ, zero la sincronism) peste cuplul rezistent al sarcinii (pompa ~n²).', atentie: 'Motorul accelereaza doar daca M motor > M sarcină pe tot parcursul; punctul de funcționare e la intersectie. Atentie la cuplul minim de demaraj la sarcini grele.' }],

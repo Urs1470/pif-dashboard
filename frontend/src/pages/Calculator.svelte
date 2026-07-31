@@ -6,7 +6,7 @@
   import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download, FolderPlus, Trash2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG, LIMITS, computeVerdicts, worstVerdict, INTREBARI } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG, LIMITS, computeVerdicts, worstVerdict, INTREBARI, ghidCalculator } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
   import Chart from '../components/ui/Chart.svelte'
@@ -183,6 +183,11 @@
   }
   // ---- Surse & standarde (modal in-app) ----
   let surseOpen = $state(false)
+  // Ghidul e o FUNCTIE, nu un text fix: cifrele din el (cate module, cate praguri,
+  // cate intrebari) se citesc din driveCalc la fiecare deschidere, ca sa nu ramana
+  // in urma aplicatiei. Vezi ghidCalculator() pentru regula de intretinere.
+  let ghidOpen = $state(false)
+  const ghid = $derived(ghidCalculator())
   const SURSE = [
     { h: 'Standarde europene — IEC / EN / ISO (primare)', items: [
       'IEC/EN 60034-1 — masini rotative: regimuri S, derating, demaraj, dezechilibru',
@@ -663,6 +668,7 @@
     <div class="head-row">
       <SolidIcon name="calculator" size={26} />
       <h1>Calculator acționări electrice</h1>
+      <button class="surse-btn" onclick={() => (ghidOpen = true)}><Info size={15} /> Ghid</button>
       <button class="surse-btn" onclick={() => (surseOpen = true)}><BookOpen size={15} /> Surse &amp; standarde</button>
     </div>
     <p class="sub">Mărimi inginerești pentru motoare și convertizoare — valori orientative, verifică întotdeauna catalogul/manualul.</p>
@@ -990,6 +996,18 @@
     {/if}
   </Modal>
 
+  <Modal bind:open={ghidOpen} title="Ghidul calculatorului" size="lg">
+    <div class="surse">
+      <p class="surse-intro">Cifrele de mai jos se citesc din calculator la deschiderea ghidului, nu sunt scrise de mână — dacă apare un modul sau un prag nou, ghidul îl numără singur.</p>
+      {#each ghid as sec}
+        <div class="surse-sec ghid-sec">
+          <h3>{sec.h}</h3>
+          {#each sec.p as par}<p class="ghid-p">{@html par}</p>{/each}
+        </div>
+      {/each}
+    </div>
+  </Modal>
+
   <Modal bind:open={surseOpen} title="Surse & standarde" size="lg">
     <div class="surse">
       <p class="surse-intro">Notație & standarde primare = <b>europene (IEC / EN / ISO)</b>; cele americane (IEEE / NEMA) doar ca echivalent. Fiecare card își afișează sursa proprie. Standardele sunt documente cu plată — citate ca text, nu găzduite. Cărțile au extrase (doar paginile citate) la <b>/docs</b> cu login.</p>
@@ -1086,6 +1104,9 @@
   .surse-sec ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
   .surse-sec li { font-size: var(--font-tiny); color: var(--text-secondary); line-height: 1.45; padding-left: 12px; position: relative; }
   .surse-sec li::before { content: '·'; position: absolute; left: 2px; color: var(--text-dim); }
+  .ghid-sec { display: flex; flex-direction: column; gap: 5px; }
+  .ghid-p { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.55; }
+  .ghid-p :global(b) { color: var(--text); font-weight: var(--fw-bold); }
 
   /* === Date echipament partajate === */
   .equip-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-surface); margin-bottom: var(--space-md); padding: 10px 12px; }
@@ -1667,5 +1688,12 @@
     .inp-field, .search-inp { min-height: var(--tap-min); }
     /* Scurtaturile catre modulele folosite des („Legile afinității" etc.) — 25px. */
     .chip { min-height: var(--tap-min); }
+    /* „Proiect" si „Reset" stau in acelasi rand, deasupra campurilor. Masurate pe
+       telefon: 25px inaltime. Umflate la 44 ar impinge randul in jos degeaba —
+       primesc aceeasi solutie ca steaua: raman de 25px la vedere, 45 la atingere. */
+    .attach-btn, .reset-btn { position: relative; }
+    .attach-btn::after, .reset-btn::after { content: ''; position: absolute; inset: -10px; }
+    /* Intrarea pe sarcina: o intrebare pe rand, nu doua pe jumatate de latime. */
+    .intreb-grid { grid-template-columns: 1fr; }
   }
 </style>

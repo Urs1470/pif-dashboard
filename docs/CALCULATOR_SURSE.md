@@ -1,7 +1,13 @@
 # Surse — Calculator acționări electrice
 
-Lista consolidată a tuturor surselor folosite în calculator (95 module). Fiecare card
-afișează sursa proprie; aici sunt grupate pe tip. **Notație și standarde primare = europene
+Lista consolidată a tuturor surselor folosite în calculator. Fiecare card
+afișează sursa proprie; aici sunt grupate pe tip.
+
+> **Numărul de module nu se scrie aici.** A stat „95" cât timp erau deja 117 — un
+> număr scris de mână într-un document se desincronizează și nimic nu-l contrazice.
+> Cifrele vii (module, module cu praguri, întrebări) se citesc din aplicație:
+> butonul **Ghid** de pe pagina calculatorului le calculează la fiecare deschidere
+> din `ghidCalculator()`. **Notație și standarde primare = europene
 (IEC / EN / ISO)**; standardele americane (IEEE / NEMA / CEMA / HI) sunt citate doar ca
 **echivalent US**, în paranteză.
 
@@ -111,3 +117,17 @@ EN 805) și cele americane (IEEE/NEMA) rămân ca citări text. Extrasele de sta
 ---
 
 *Generat din `SOURCES` în `frontend/src/lib/driveCalc.js`. La adăugarea de module noi, completează și sursa pe card.*
+
+## Ce se actualizează odată cu calculatorul
+
+Trei structuri din `frontend/src/lib/driveCalc.js` descriu aplicația și trebuie
+ținute în pas cu ea. Testele din `driveCalc.*.test.js` prind ce se poate prinde
+mașinal (referințe la module inexistente, verdicte fără sursă, grafice fără
+descriere); restul e disciplină:
+
+| Structură | Când o atingi |
+|---|---|
+| `SOURCES` | modul nou → sursa lui, obligatoriu |
+| `LIMITS` | când pragul unui rezultat e cunoscut dintr-un standard sau din nota cardului |
+| `INTREBARI` | modul nou care răspunde la o întrebare existentă → adaugă-l în listă |
+| `ghidCalculator()` | **funcție nouă în calculator → un rând în ghid, în aceeași sesiune.** Cifrele se calculează singure; doar propozițiile despre funcții noi se scriu de mână |
