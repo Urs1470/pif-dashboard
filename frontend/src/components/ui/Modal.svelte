@@ -63,6 +63,56 @@
     return scale(node, { start: 0.96, duration })
   }
 
+  // ===== TRAGEREA SHEET-ULUI (telefon) =====
+  // Ion: „nu poate fi tras pe tot ecranul, nu poti sa-l tragi inapoi, doar prin x".
+  // Manerul era pana acum DECOR: un dreptunghi care arata a maner si nu facea
+  // nimic. Pe telefon asta e mai rau decat sa nu-l ai — promite un gest care nu
+  // exista, deci incerci, nu se intampla nimic, si cauti `X`-ul.
+  //
+  // Deplasarea merge pe proprietatea `translate`, NU pe `transform`: tranzitiile
+  // Svelte de intrare/iesire scriu `transform` inline pe acelasi nod, iar doua
+  // surse pe aceeasi proprietate s-ar suprascrie. `translate` e o proprietate
+  // separata, deci cele doua se compun in loc sa se bata.
+  let trasY = $state(0)
+  let trage = $state(false)
+  let intins = $state(false)   // tras in sus pana la ecran plin
+  let sheetEl = $state(null)
+  let y0 = 0
+  let idPointer = null
+
+  const PRAG_INCHIDE = 110   // px in jos de la care ridicarea degetului inchide
+  const PRAG_INTINDE = 40    // px in sus de la care sheet-ul se face ecran plin
+
+  function trageJos(e) {
+    if (!sheet || e.pointerType === 'mouse') return
+    idPointer = e.pointerId
+    y0 = e.clientY
+    trasY = 0
+    trage = true
+    try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch (_) {}
+  }
+
+  function trageMisca(e) {
+    if (!trage || e.pointerId !== idPointer) return
+    const dy = e.clientY - y0
+    // In jos e liber (te duci spre inchidere). In sus se opreste scurt daca e deja
+    // intins — altfel sheet-ul ar putea fi tras dincolo de marginea de sus.
+    trasY = intins ? Math.max(0, dy) : (dy < 0 ? Math.max(dy, -90) : dy)
+  }
+
+  function trageSus(e) {
+    if (!trage || e.pointerId !== idPointer) return
+    trage = false
+    idPointer = null
+    if (trasY > PRAG_INCHIDE) { trasY = 0; open = false; return }
+    if (trasY < -PRAG_INTINDE) intins = true
+    trasY = 0
+  }
+
+  // La fiecare deschidere pornim din starea normala, nu din cea intinsa a
+  // taskului dinainte.
+  $effect(() => { if (open) intins = false })
+
   function onBackdrop(e) {
     if (e.target === e.currentTarget) open = false
   }
@@ -96,8 +146,17 @@
 
 {#if open}
   <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
-    <div class="modal modal-{size}" class:sheet transition:intra>
-      {#if sheet}<span class="sheet-grip" aria-hidden="true"></span>{/if}
+    <div class="modal modal-{size}" class:sheet class:intins class:trage
+         bind:this={sheetEl} style:--trasY="{trasY}px" transition:intra>
+      {#if sheet}
+        <!-- Zona de apucat, nu doar linia: 36px de bara intr-o banda de 28px
+             inaltime, ca degetul sa nu trebuiasca sa nimereasca 4 pixeli. -->
+        <div class="sheet-apuca" onpointerdown={trageJos} onpointermove={trageMisca}
+             onpointerup={trageSus} onpointercancel={trageSus}
+             role="button" tabindex="-1" aria-label="Trage ca să închizi sau să mărești">
+          <span class="sheet-grip" aria-hidden="true"></span>
+        </div>
+      {/if}
       <div class="modal-header">
         <h2 class="modal-title">{title}</h2>
         <button class="modal-close" onclick={() => open = false} aria-label="Închide"><X size={18} /></button>
@@ -230,13 +289,39 @@
     }
     .modal-sm, .modal-md, .modal-lg, .modal-xl, .modal-wide, .modal-zoom { max-width: 100%; }
 
-    .sheet-grip {
+    /* Banda de apucat: bara are 4px, dar degetul are nevoie de o zona. */
+    .sheet-apuca {
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 28px;
+      cursor: grab;
+      touch-action: none;   /* gestul e al nostru, nu al derularii paginii */
+    }
+    .sheet-apuca:active { cursor: grabbing; }
+    .sheet-grip {
       width: 36px;
       height: 4px;
-      margin: 8px auto 0;
       border-radius: var(--radius-full);
       background: var(--border-strong);
+      transition: background var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
+    }
+    .modal.trage .sheet-grip { background: var(--accent); width: 48px; }
+
+    /* Deplasarea din deget. Cat timp tragi NU e tranzitie — altfel sheet-ul ar
+       ramane in urma degetului; la ridicare revine animat spre 0. */
+    .modal.sheet {
+      translate: 0 var(--trasY, 0px);
+      transition: translate var(--dur-base) var(--ease), max-height var(--dur-base) var(--ease);
+    }
+    .modal.sheet.trage { transition: max-height var(--dur-base) var(--ease); }
+
+    /* Tras in sus = ecran plin. Ramane sub notch. */
+    .modal.sheet.intins {
+      max-height: calc(100dvh - var(--safe-top));
+      height: calc(100dvh - var(--safe-top));
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     }
     .modal.sheet .modal-header { padding-top: var(--space-12); }
     /* 32px e o tinta de cursor. Degetul are nevoie de 44, iar `X`-ul e singura

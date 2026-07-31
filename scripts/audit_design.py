@@ -31,9 +31,10 @@ INDEPENDENTE_DE_TEMA = {'--loc-site', '--loc-sediu', '--on-color'}
 # Proprietati scrise la RULARE din JS (`element.style.setProperty`), nu declarate
 # in tokens.css. Nu sunt tokenuri de design, sunt stare de gest transmisa catre CSS
 # — de aceea se folosesc mereu cu valoare de rezerva, `var(--gl-p, 0)`.
-#   --gl-p : cat din drumul pana la pragul de bifare a facut degetul (0..1),
-#            pus de lib/glisare.js ca sa creasca pista de bifare odata cu gestul.
-DIN_JS = {'--gl-p'}
+#   --gl-p  : cat din drumul pana la pragul de bifare a facut degetul (0..1),
+#             pus de lib/glisare.js ca sa creasca pista de bifare odata cu gestul.
+#   --trasY : cat a coborat sheet-ul sub deget, in px, pus de Modal.svelte.
+DIN_JS = {'--gl-p', '--trasY'}
 
 # Fisiere in care valorile brute sunt legitime, cu motiv.
 SCUTITE_HEX = {
