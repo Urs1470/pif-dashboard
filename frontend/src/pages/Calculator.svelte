@@ -5,7 +5,7 @@
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
-  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG } from '../lib/driveCalc.js'
+  import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG, LIMITS, computeVerdicts, worstVerdict } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
   import Chart from '../components/ui/Chart.svelte'
@@ -376,6 +376,28 @@
   function delEquip(e) { equipments = equipments.filter((x) => x.name !== e.name) }
   function resetShared() { equip = freshEquip(); overrides = new Set() }
 
+  // ---- Verdicte (vezi LIMITS din driveCalc.js) ----
+  // Starea unui card = cel mai grav verdict al rezultatelor lui. Se calculeaza
+  // doar pentru modulele care AU praguri definite; restul raman fara bulina —
+  // "fara verdict" inseamna "pragul inca nu e scris", nu "totul e in regula",
+  // si de aia nu punem verde pe ele.
+  function verdictsFor(m) {
+    if (!LIMITS[m.id]) return {}
+    const ev = effVals(m)
+    return computeVerdicts(m, ev, computeModule(m, ev))
+  }
+  // Starea per modul din lista curenta, recalculata cand se schimba valorile.
+  const stariModule = $derived.by(() => {
+    const out = new Map()
+    for (const m of shown) {
+      if (!LIMITS[m.id]) continue
+      const st = worstVerdict(verdictsFor(m))
+      if (st) out.set(m.id, st)
+    }
+    return out
+  })
+  const VERDICT_TITLU = { ok: 'În limite', atentie: 'De verificat', critic: 'În afara limitelor' }
+
   // export rezultate (cardurile deschise) pentru raportul PIF
   function exportResults() {
     const work = shown.filter((m) => expanded.has(m.id))
@@ -386,11 +408,19 @@
       for (const c of EQUIP_GROUPS[g]) L.push(`- ${c.label}: ${equip[g][c.key]}${c.unit ? ' ' + c.unit : ''}`)
     }
     L.push('')
+    const SEMN = { ok: 'OK', atentie: 'ATENTIE', critic: 'IN AFARA LIMITELOR' }
     for (const m of list) {
       const ev = effVals(m), r = computeModule(m, ev)
+      const vd = LIMITS[m.id] ? computeVerdicts(m, ev, r) : {}
       L.push('## ' + m.title)
       for (const f of m.fields) L.push(`  ${descLabel(f.label, f.key)}: ${ev[f.key]}${f.unit ? ' ' + f.unit : ''}`)
-      for (const res of m.results) L.push(`- ${res.label} = ${fmtNum(r[res.key], res.dec)}${res.unit ? ' ' + res.unit : ''}`)
+      for (const res of m.results) {
+        L.push(`- ${res.label} = ${fmtNum(r[res.key], res.dec)}${res.unit ? ' ' + res.unit : ''}`)
+        // Verdictul intra in raport langa valoare: PV-ul are nevoie de concluzie,
+        // nu doar de cifra.
+        const v = vd[res.key]
+        if (v) L.push(`  [${SEMN[v.st]}] ${v.de}${v.src ? ` (${v.src})` : ''}`)
+      }
       L.push('')
     }
     const text = L.join('\n')
@@ -679,10 +709,15 @@
     </div>
   {/if}
 
+  {#snippet verdictDot(st, extra = '')}
+    <span class="vd-dot {st} {extra}" title={VERDICT_TITLU[st]} aria-label={VERDICT_TITLU[st]}></span>
+  {/snippet}
+
   {#snippet modBody(m)}
     {@const ev = effVals(m)}
     {@const r = computeModule(m, ev)}
     {@const charts = computeCharts(m, ev)}
+    {@const vd = LIMITS[m.id] ? computeVerdicts(m, ev, r) : {}}
     <div class="acc-body-head">
       <span class="cat-badge">{catLabel(catOf(m))}</span>
       <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
@@ -709,14 +744,21 @@
     {#if m.results.length}
     <div class="results">
       {#each m.results as res (res.key)}
-        <div class="res-row">
+        <div class="res-row" class:has-vd={vd[res.key] && vd[res.key].st !== 'ok'}>
           <div class="res-head">
             <button type="button" class="res-label" title="Definiție / cum se calculează" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
             <span class="res-right">
+              {#if vd[res.key]}{@render verdictDot(vd[res.key].st)}{/if}
               <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
               {#if res.unit}<span class="res-unit">{res.unit}</span>{/if}
             </span>
           </div>
+          {#if vd[res.key] && vd[res.key].st !== 'ok'}
+            <p class="vd-text {vd[res.key].st}">
+              {vd[res.key].de}
+              {#if vd[res.key].src}<span class="vd-src">{vd[res.key].src}</span>{/if}
+            </p>
+          {/if}
           <Formula tex={res.tex} />
         </div>
       {/each}
@@ -765,7 +807,9 @@
             <div class="nav-sec">{row.label}</div>
           {:else}
             <div class="nav-item" class:on={activeMod?.id === row.m.id} id={'nav-' + row.m.id}>
-              <button class="nav-item-btn" onclick={() => openModule(row.m.id)}>{row.m.title}</button>
+              <button class="nav-item-btn" onclick={() => openModule(row.m.id)}>
+                {#if stariModule.has(row.m.id)}{@render verdictDot(stariModule.get(row.m.id), 'nav-dot')}{/if}{row.m.title}
+              </button>
               <button class="star-btn nav-star" class:on={isFav(row.m.id)} title="Adauga la favorite" aria-label="Favorit"
                 onclick={() => toggleFav(row.m.id)}>{#if isFav(row.m.id)}<SolidIcon name="star" size={13} />{:else}<Star size={13} />{/if}</button>
             </div>
@@ -777,7 +821,7 @@
       {#if activeMod}
         <section class="mod-cell cell-in" id={'acc-' + activeMod.id}>
           <div class="mod-cell-head">
-            <span class="acc-title">{activeMod.title}{#if activeMod.subtitle}<span class="acc-sub"><MathText text={activeMod.subtitle} /></span>{/if}</span>
+            <span class="acc-title">{#if stariModule.has(activeMod.id)}{@render verdictDot(stariModule.get(activeMod.id))}{/if}{activeMod.title}{#if activeMod.subtitle}<span class="acc-sub"><MathText text={activeMod.subtitle} /></span>{/if}</span>
             <button class="star-btn" class:on={isFav(activeMod.id)} title="Adauga la favorite" aria-label="Favorit"
               onclick={() => toggleFav(activeMod.id)}>{#if isFav(activeMod.id)}<SolidIcon name="star" size={15} />{:else}<Star size={15} />{/if}</button>
           </div>
@@ -801,7 +845,7 @@
             onclick={() => toggle(m.id)}
             onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(m.id) } }}>
             <span class="acc-chev" class:open><ChevronRight size={16} /></span>
-            <span class="acc-title">{m.title}{#if m.subtitle}<span class="acc-sub"><MathText text={m.subtitle} /></span>{/if}</span>
+            <span class="acc-title">{#if stariModule.has(m.id)}{@render verdictDot(stariModule.get(m.id))}{/if}{m.title}{#if m.subtitle}<span class="acc-sub"><MathText text={m.subtitle} /></span>{/if}</span>
             <button class="star-btn" class:on={isFav(m.id)} title="Adauga la favorite" aria-label="Favorit"
               onclick={(e) => { e.stopPropagation(); toggleFav(m.id) }}>{#if isFav(m.id)}<SolidIcon name="star" size={15} />{:else}<Star size={15} />{/if}</button>
           </div>
@@ -1253,6 +1297,45 @@
     font-feature-settings: "tnum";
   }
   .res-unit { font-size: var(--font-small); color: var(--text-secondary); }
+
+  /* ---- Verdicte ----
+     Bulina e semnalul care se citeste de la distanta (in lista de module);
+     propozitia apare doar cand NU e in regula, ca sa nu umple cardul cu
+     confirmari inutile. Culoarea nu e singurul canal: fiecare bulina are
+     title/aria-label, iar textul spune de ce. */
+  .vd-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+    align-self: center;
+  }
+  .vd-dot.ok { background: var(--success); }
+  .vd-dot.atentie { background: var(--warning); }
+  .vd-dot.critic { background: var(--danger); }
+  .vd-dot.nav-dot { margin-right: 6px; vertical-align: middle; }
+  .acc-title .vd-dot { margin-right: 7px; vertical-align: middle; }
+
+  .res-row.has-vd { border-left: 2px solid transparent; padding-left: 8px; margin-left: -10px; }
+  .res-row.has-vd:has(.vd-text.atentie) { border-left-color: var(--warning); }
+  .res-row.has-vd:has(.vd-text.critic) { border-left-color: var(--danger); }
+
+  .vd-text {
+    font-size: var(--font-tiny);
+    line-height: 1.45;
+    padding: 5px 7px;
+    border-radius: var(--radius-sm);
+    margin: 1px 0 2px;
+  }
+  .vd-text.atentie { color: var(--warning); background: var(--warning-subtle); }
+  .vd-text.critic { color: var(--danger); background: var(--danger-subtle); }
+  .vd-src {
+    display: block;
+    margin-top: 2px;
+    color: var(--text-dim);
+    font-size: var(--font-tiny);
+    opacity: 0.85;
+  }
 
   .mod-note {
     display: flex;

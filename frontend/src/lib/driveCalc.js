@@ -3874,6 +3874,262 @@ export function computeModule(mod, rawValues) {
   return r
 }
 
+// ==================================================================== VERDICTE
+//
+// Un numar nu spune daca e bine. Cardurile calculau corect, dar interpretarea
+// ramanea integral la om — bun pentru inginerul care stie pragul pe de rost,
+// inutil pentru colegul de la ofertare care vede 5.5 % si nu are cu ce compara.
+//
+// LIMITS pune pragul langa rezultat: stare + motiv + standardul din care vine
+// pragul. Structura urmeaza tiparul deja folosit in fisier (CHART_DESC /
+// CHART_ZONE / SOURCES): harta pe id de modul, tinuta separat de definitia
+// modulului, ca pragurile sa se poata citi si revizui toate odata.
+//
+// REGULI:
+//   1. Pragul vine din standardul citat pe card sau din nota cardului. Daca e
+//      regula de dimensionare / practica de atelier, o spui in text ("practica",
+//      "regula de dimensionare") — nu o imbraci in standard.
+//   2. `src` = de unde vine pragul, nu de unde vine formula (aia e in SOURCES).
+//   3. Verdictul explica CE FACI cu numarul, nu il repeta.
+
+const _vd = (st) => (de, src) => ({ st, de, src })
+const ok = _vd('ok')            // in regula
+const atn = _vd('atentie')      // se poate, dar verifica / marja mica
+const crt = _vd('critic')       // nu merge asa
+
+// Ordinea de gravitate — folosita pentru starea agregata a cardului.
+export const VERDICT_RANK = { ok: 0, atentie: 1, critic: 2 }
+
+const _n = (x, d = 1) => (Number.isFinite(x) ? x.toFixed(d).replace(/\.0+$/, '') : '—')
+
+// Pragurile, pe modul si pe cheia rezultatului de care se agata verdictul.
+export const LIMITS = {
+  // ---- Convertizor / instalatie ----
+  'unda-reflectata': {
+    Lcrit: (v, r) =>
+      v.L > r.Lcrit
+        ? crt(`Cablul de ${_n(v.L)} m trece de lungimea critică (${_n(r.Lcrit)} m): la borne apar vârfuri până la 2·U_dc. Cere filtru du/dt sau motor inverter-duty.`, 'IEC 60034-25 / 60034-18-41')
+        : v.L > r.Lsafe
+        ? atn(`Peste zona sigură (${_n(r.Lsafe)} m) — supratensiunea crește cu lungimea. Verifică anvelopa de izolație a motorului.`, 'IEC 60034-18-41')
+        : ok('Sub lungimea critică — reflexia nu apucă să se formeze.'),
+  },
+  'cablu': {
+    dUproc: (v, r) =>
+      r.dUproc > 5
+        ? crt(`${_n(r.dUproc, 2)} % depășește limita de 5 % pentru circuite de forță — mărește secțiunea sau scurtează traseul.`, 'IEC 60364-5-52, Anexa G')
+        : r.dUproc > 3
+        ? atn(`${_n(r.dUproc, 2)} % trece de pragul uzual de proiectare (3 %). Acceptabil, dar fără rezervă la lungimi mai mari.`, 'IEC 60364-5-52, Anexa G')
+        : ok('Cădere de tensiune în limite.'),
+  },
+  'cablu-protectii': {
+    rezerva: (v, r) =>
+      r.rezerva < 0
+        ? crt(`Curentul admisibil corectat (${_n(r.Iz)} A) e sub sarcina de ${_n(v.IB)} A — cablul se supraîncălzește. Mărește secțiunea sau îmbunătățește pozarea.`, 'IEC 60364-5-52')
+        : r.rezerva < 0.1 * v.IB
+        ? atn(`Rezervă de doar ${_n(r.rezerva)} A peste sarcină — orice grupare sau temperatură în plus o consumă.`, 'IEC 60364-5-52')
+        : ok('Curentul admisibil acoperă sarcina cu rezervă.'),
+  },
+  'dip-pornire': {
+    dU: (v, r) =>
+      r.dU > 15
+        ? crt(`Cădere de ${_n(r.dU, 1)} % la pornire — peste limita uzuală de 15 %. Trece pe softstarter, stea-triunghi sau VFD.`, 'IEEE 141 (Red Book)')
+        : r.dU > 10
+        ? atn(`${_n(r.dU, 1)} % — în banda de atenție 10–15 %. Verifică ce alte consumatoare stau pe aceeași bară.`, 'IEEE 141 / EN 50160')
+        : ok('Dip-ul la pornire e în limite.'),
+  },
+  'pe-defect': {
+    margin: (v, r) =>
+      r.margin < 1
+        ? crt(`Impedanța buclei (${_n(v.Zs, 2)} Ω) nu asigură deconectarea automată: cere ≤ ${_n(r.Zsmax, 2)} Ω. Mărește secțiunea PE sau alege o protecție cu prag mai mic.`, 'IEC 60364-4-41')
+        : r.margin < 1.2
+        ? atn(`Marjă de doar ${_n((r.margin - 1) * 100)} % peste condiția de deconectare — fără rezervă pentru îmbătrânirea legăturilor.`, 'IEC 60364-4-41')
+        : ok('Condiția de deconectare automată e îndeplinită.'),
+  },
+  'protectie-motor': {
+    rezerva: (v, r) =>
+      r.rezerva < 1
+        ? crt(`Releul declanșează în timpul pornirii (${_n(r.ttrip_start)} s vs ${_n(v.tstart)} s de demaraj). Alege clasă superioară sau verifică reglajul Ie.`, 'IEC 60947-4-1')
+        : r.rezerva < 1.5
+        ? atn(`Rezervă mică la pornire (×${_n(r.rezerva, 2)}) — o pornire cu sarcină grea sau tensiune scăzută poate declanșa.`, 'IEC 60947-4-1')
+        : ok('Protecția lasă motorul să pornească.'),
+  },
+  'curenti-rulment': {
+    Uax: (v, r) =>
+      r.Uax > 15
+        ? crt(`${_n(r.Uax, 1)} V pe ax — descărcări EDM aproape sigure. Cere rulment izolat, inel de masă și cablu simetric.`, 'IEC 60034-25')
+        : r.Uax > 5
+        ? atn(`${_n(r.Uax, 1)} V pe ax — zona în care apar descărcări. Măsuri de atenuare recomandate la funcționare continuă.`, 'IEC 60034-25')
+        : ok('Tensiune pe ax sub pragul de descărcare.'),
+  },
+  'filtru-iesire': {
+    rapfsw: (v, r) =>
+      r.rapfsw < 3
+        ? crt(`f_c e prea aproape de frecvența de comutație (raport ${_n(r.rapfsw, 1)}×) — filtrul nu atenuează PWM-ul. Ținta: f_sw/3…f_sw/5.`, 'practică de dimensionare LC (nu standard)')
+        : ok('Frecvența de tăiere e sub comutație, cu marjă.'),
+    rapfout: (v, r) =>
+      r.rapfout < 5
+        ? crt(`f_c e prea aproape de frecvența de ieșire (raport ${_n(r.rapfout, 1)}×) — filtrul taie din fundamentală.`, 'practică de dimensionare LC (nu standard)')
+        : r.rapfout < 10
+        ? atn(`Doar ${_n(r.rapfout, 1)}× peste frecvența de ieșire — verifică defazajul introdus la turație maximă.`, 'practică de dimensionare LC (nu standard)')
+        : ok('Fundamentala trece nealterată.'),
+  },
+
+  // ---- Armonici & calitate energie ----
+  'ieee519': {
+    depasire: (v, r) =>
+      r.depasire > 0
+        ? crt(`THD-ul estimat depășește limita cu ${_n(r.depasire, 1)} puncte (TDD admis ${_n(r.TDD, 1)} %). Cere reactor, filtru sau front-end activ.`, 'IEEE 519 / IEC 61000-3-12')
+        : r.depasire > -3
+        ? atn(`Sub limită, dar la ${_n(-r.depasire, 1)} puncte de ea — orice sarcină neliniară în plus o depășește.`, 'IEEE 519 / IEC 61000-3-12')
+        : ok('Sub limita de la punctul comun de racord.'),
+  },
+  'comparatie-frontend': {
+    m6: (v, r) => (r.m6 > 0 ? crt(`Puntea de 6 pulsuri depășește limita cu ${_n(r.m6, 1)} puncte.`, 'IEEE 519 / IEC 61000-3-12') : ok('6 pulsuri se încadrează.')),
+    m12: (v, r) => (r.m12 > 0 ? atn(`12 pulsuri depășește limita cu ${_n(r.m12, 1)} puncte.`, 'IEEE 519 / IEC 61000-3-12') : ok('12 pulsuri se încadrează.')),
+    mafe: (v, r) => (r.mafe > 0 ? atn(`Nici AFE nu se încadrează (${_n(r.mafe, 1)} puncte peste) — problema e la rețea, nu la convertizor.`, 'IEEE 519 / IEC 61000-3-12') : ok('AFE se încadrează cu marjă.')),
+  },
+  'rezonanta-cond': {
+    hrez: (v, r) => {
+      const d5 = Math.abs(r.hrez - 5), d7 = Math.abs(r.hrez - 7)
+      return Math.min(d5, d7) < 0.5
+        ? crt(`Rezonanța cade pe armonica ${d5 < d7 ? '5' : '7'} (h = ${_n(r.hrez, 2)}) — risc de ardere a condensatoarelor. Cere reactor de detunare (p = 7 %).`, 'Schneider Electrical Installation Guide')
+        : Math.min(d5, d7) < 1
+        ? atn(`h = ${_n(r.hrez, 2)}, aproape de armonica ${d5 < d7 ? '5' : '7'} — verifică spectrul real înainte de a monta bateria.`, 'Schneider Electrical Installation Guide')
+        : ok('Rezonanța nu cade peste armonicile caracteristice.')
+    },
+  },
+  'incarcare-trafo': {
+    thh: (v, r) =>
+      r.thh > 140
+        ? crt(`Hot-spot ${_n(r.thh)} °C — peste limita de avarie (140 °C). Îmbătrânire ×${_n(r.V, 1)} față de normal.`, 'IEC 60076-7')
+        : r.thh > 120
+        ? crt(`Hot-spot ${_n(r.thh)} °C — peste limita pentru sarcină ciclică (120 °C).`, 'IEC 60076-7')
+        : r.thh > 98
+        ? atn(`Hot-spot ${_n(r.thh)} °C, peste referința de 98 °C: izolația îmbătrânește de ${_n(r.V, 1)} ori mai repede.`, 'IEC 60076-7')
+        : ok('Hot-spot sub referința de îmbătrânire normală.'),
+  },
+
+  // ---- Motor: termic, mecanic, regimuri ----
+  'motor-termic': {
+    thetaf: (v, r) =>
+      r.thetaf > 1
+        ? crt(`Regimul duce la ${_n(r.thetaf * 100)} % din încălzirea nominală — motorul nu suportă continuu. Limita se atinge în ${_n(r.tlim)} s.`, 'IEC 60034-1')
+        : r.thetaf > 0.9
+        ? atn(`${_n(r.thetaf * 100)} % din încălzirea nominală — fără rezervă pentru ambianță caldă sau ventilație redusă.`, 'IEC 60034-1')
+        : ok('Regim termic în limite.'),
+  },
+  'regimuri-s': {
+    marja: (v, r) =>
+      r.marja < 1
+        ? crt(`Ciclul cere mai mult decât poate motorul (rezervă ×${_n(r.marja, 2)}): echivalentul termic ${_n(r.Pech, 1)} kW peste ${_n(v.Ps1, 1)} kW nominal.`, 'IEC 60034-1 §4.2')
+        : r.marja < 1.1
+        ? atn(`Rezervă termică de doar ${_n((r.marja - 1) * 100)} % pe ciclu.`, 'IEC 60034-1 §4.2')
+        : ok('Ciclul încape în capacitatea termică.'),
+  },
+  'dezechilibru': {
+    UV: (v, r) =>
+      r.UV > 5
+        ? crt(`Dezechilibru ${_n(r.UV, 2)} % — peste 5 % nu porni motorul. Curentul se dezechilibrează cu ${_n(r.Iunb)} %.`, 'IEC 60034-1 / NEMA MG-1 §14.35')
+        : r.UV > 2
+        ? atn(`${_n(r.UV, 2)} % dezechilibru — deratare la ${_n(r.df * 100)} % și +${_n(r.dT, 1)} % încălzire.`, 'NEMA MG-1 §14.35')
+        : ok('Dezechilibru neglijabil.'),
+  },
+  'incarcare': {
+    incP: (v, r) =>
+      r.incP > 100
+        ? crt(`Motor încărcat la ${_n(r.incP)} % din nominal — peste plăcuță, în regim continuu duce la declanșare termică.`, 'IEC 60034-1')
+        : r.incP > 95
+        ? atn(`${_n(r.incP)} % din nominal — la limită, fără rezervă pentru variații de proces.`, 'IEC 60034-1')
+        : r.incP < 50
+        ? atn(`Doar ${_n(r.incP)} % din nominal — motor supradimensionat: randament și factor de putere slabe la sarcină mică (regulă de dimensionare, nu standard).`)
+        : ok('Încărcare în zona bună de randament.'),
+  },
+  'raport-inertie': {
+    RJ: (v, r) =>
+      r.RJ > 10
+        ? crt(`Raport de inerție ${_n(r.RJ, 1)}:1 — reglaj instabil chiar și la uz general. Cere reductor cu alt raport sau motor mai mare.`, 'practică servo (Technosoft / Oriental Motor)')
+        : r.RJ > 5
+        ? atn(`${_n(r.RJ, 1)}:1 — acceptabil la uz general, prea mare pentru servo cu răspuns rapid (țintă < 5).`, 'practică servo')
+        : ok('Raport de inerție bun pentru reglaj.'),
+  },
+  'asincron-camp-slabit': {
+    ncp: (v, r) =>
+      v.nmax > r.ncp
+        ? crt(`Turația cerută (${_n(v.nmax)} rpm) trece de sfârșitul zonei de putere constantă (${_n(r.ncp)} rpm): cuplul de răsturnare scade sub cel cerut și motorul se răstoarnă.`, 'Leonhard, Control of Electrical Drives')
+        : v.nmax > 0.9 * r.ncp
+        ? atn(`La ${_n(v.nmax)} rpm ești aproape de limita zonei de putere constantă (${_n(r.ncp)} rpm) — cuplu disponibil doar ${_n(r.Mdisp)} Nm.`, 'Leonhard')
+        : ok('Turația maximă rămâne în zona de putere constantă.'),
+  },
+  'cc-comutatie': {
+    vperif: (v, r) =>
+      r.vperif > 40
+        ? crt(`${_n(r.vperif, 1)} m/s la colector — peste 40 m/s apar scântei, uzură și flashover. Reduce n_max sau diametrul (max ${_n(r.Dmax)} mm).`, 'practică colectoare c.c.')
+        : r.vperif > 30
+        ? atn(`${_n(r.vperif, 1)} m/s — peste 30 m/s periile cer supraveghere și întreținere mai deasă.`, 'practică colectoare c.c.')
+        : ok('Viteză periferică în limite.'),
+  },
+  'suprasarcina-servo': {
+    x: (v, r) =>
+      r.x > 3
+        ? atn(`Vârf de ${_n(r.x, 2)}× cuplul continuu — peste suprasarcina uzuală de 3× a servo-drive-ului. Verifică fereastra din catalog (admisibil ${_n(r.tOL, 2)} s).`, 'practică servo (verifică datasheet-ul)')
+        : ok(`Vârful încape în fereastra termică (${_n(r.tOL, 2)} s admisibil).`),
+  },
+  'vibratii': {
+    marjaA: (v, r) =>
+      r.marjaA < 0
+        ? crt(`${_n(v.vmas, 2)} mm/s depășește limita grad A (${_n(r.limA, 2)} mm/s) pentru înălțimea de ax ${_n(v.H, 0)} mm.`, 'IEC 60034-14 / ISO 10816')
+        : r.marjaA < 0.2
+        ? atn(`Marjă de doar ${_n(r.marjaA, 2)} mm/s sub limita grad A — urmărește trendul, nu valoarea izolată.`, 'IEC 60034-14')
+        : ok('Vibrații sub limita grad A.'),
+  },
+
+  // ---- Pompe ----
+  'npsh': {
+    marja: (v, r) =>
+      r.marja < 0.5
+        ? crt(`Marjă NPSH de ${_n(r.marja, 2)} m — sub 0,5 m pompa cavitează. Coboară pompa, mărește conducta de aspirație sau redu turația.`, 'EN ISO 9906 / nota cardului')
+        : r.marja < 1
+        ? atn(`Marjă ${_n(r.marja, 2)} m — sub recomandarea de 1 m. Verifică la temperatura maximă a lichidului (p_vapori crește).`, 'EN ISO 9906')
+        : ok('Marjă NPSH suficientă.'),
+  },
+  'debit-minim': {
+    marja: (v, r) =>
+      r.marja < 0
+        ? crt(`Debitul de lucru (${_n(v.Qop)} m³/h) e sub minimul recomandat — recirculare, încălzire și vibrații. Cere by-pass sau pompă mai mică.`, 'Hydraulic Institute / EN ISO 9906')
+        : v.Qop < r.Qmin25
+        ? atn(`${_n(v.Qop)} m³/h e sub 25 % din BEP — randament slab și uzură accelerată la funcționare prelungită.`, 'Hydraulic Institute')
+        : ok('Debitul de lucru e peste minimul recomandat.'),
+  },
+}
+
+// Verdictele unui modul: { cheieRezultat: {st, de, src} }. Gol daca modulul
+// n-are praguri definite — un card fara verdict NU e un card fara probleme,
+// e un card la care pragul inca n-a fost scris. Diferenta se vede in UI.
+export function computeVerdicts(mod, v, r) {
+  const reguli = LIMITS[mod?.id]
+  if (!reguli) return {}
+  const out = {}
+  for (const [key, fn] of Object.entries(reguli)) {
+    let vd = null
+    try {
+      vd = fn(v, r)
+    } catch (_) {
+      vd = null
+    }
+    if (vd && VERDICT_RANK[vd.st] != null) out[key] = vd
+  }
+  return out
+}
+
+// Starea agregata a cardului = cea mai grava dintre verdictele lui.
+export function worstVerdict(verdicts) {
+  let worst = null
+  for (const vd of Object.values(verdicts || {})) {
+    if (worst == null || VERDICT_RANK[vd.st] > VERDICT_RANK[worst]) worst = vd.st
+  }
+  return worst
+}
+
 // Descriere scurta per grafic (ce demonstreaza + la ce sa fii atent). Array per modul, in ordinea graficelor.
 export const CHART_DESC = {
   'cuplu': [{ ce: 'Caracteristica cuplu-turație a motorului asincron (pornire Mₚ, maxim Mₘₐₓ, zero la sincronism) peste cuplul rezistent al sarcinii (pompa ~n²).', atentie: 'Motorul accelereaza doar daca M motor > M sarcină pe tot parcursul; punctul de funcționare e la intersectie. Atentie la cuplul minim de demaraj la sarcini grele.' }],
