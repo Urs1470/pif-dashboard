@@ -19,7 +19,7 @@
   import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
-  import { motionDuration, DUR_BASE, plecare } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire } from '../lib/motion.svelte.js'
 
   // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
   // "deadline-uri" dupa ce bifez / mut / scot un task (altfel ramaneau stale
@@ -200,6 +200,7 @@
           ondragover={(e) => onDragOver(e, i)}
           ondrop={(e) => onDrop(e, i)}
           animate:flip={{ duration: flipDur }}
+          in:sosire|local
           out:plecare
           use:glisare={{ latime: peTelefon ? 176 : 0, activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it) }}
         >

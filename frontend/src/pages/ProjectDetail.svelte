@@ -17,7 +17,7 @@
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate, router } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, plecare } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
@@ -562,7 +562,7 @@
         {:else}
           <div class="task-list">
             {#each activeTasks as t, i (t.id)}
-              <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }} out:plecare>
+              <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }} in:sosire|local out:plecare>
                 <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {dueColor(t.data_scadenta)}"
                      use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: () => toggleTaskStatus(t) }}>
                   <!-- Editarea si stergerea stau in panoul de sub rand (glisare

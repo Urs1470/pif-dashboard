@@ -3,7 +3,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare, DUR_FAST } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire, DUR_FAST } from '../lib/motion.svelte.js'
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
@@ -610,7 +610,7 @@
                     <div class="trow-wrap" class:deschis={expandedTask === t.id}
              style="--sev: {dueColor(t.data_scadenta)}"
              animate:flip={{ duration: motionDuration(DUR_BASE) }}
-             out:plecare>
+             in:sosire|local out:plecare>
           <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}
                use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t) }}>
             <!-- Actiunile de intretinere (notita / editare / stergere) stau in
