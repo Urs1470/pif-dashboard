@@ -260,7 +260,12 @@
     {/if}
   </div>
 
-  {#if projects.loading}
+  <!-- SCHELETELE SUNT PENTRU PRIMA INCARCARE, NU PENTRU FIECARE ACTIUNE —
+       aceeasi regula pe care o au deja Taskuri, boardul „Astăzi" si
+       Planificatorul. `loadProjects()` se cheama dupa comutarea statusului de pe
+       card, dupa stergere si la fiecare filtru, iar fara garda toata grila era
+       inlocuita cu sase schelete si reconstruita la fiecare atingere. -->
+  {#if projects.loading && projects.items.length === 0}
     <div class="cards-grid">
       {#each Array(6) as _}
         <div class="pcard skeleton-card"><Skeleton width="40%" height="14px" /><Skeleton width="70%" height="18px" /><Skeleton width="50%" height="12px" /></div>
