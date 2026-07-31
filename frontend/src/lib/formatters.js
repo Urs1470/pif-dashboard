@@ -34,7 +34,6 @@ export const STATUS_COLORS = {
 // task se citeste acum din TERMEN — singurul lucru care chiar variaza.
 
 export function statusLabel(status) {
-  AlertCircle()
   return TASK_STATUS_LABELS[status] || PROJECT_STATUS_LABELS[status] || status || '—'
 }
 
