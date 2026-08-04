@@ -29,11 +29,13 @@ from blueprints.projects import projects_bp
 from blueprints.tasks import tasks_bp
 from blueprints.obsidian import obsidian_bp
 from blueprints.admin import admin_bp
+from blueprints.google_calendar import google_bp
 
 app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)
 app.register_blueprint(obsidian_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(google_bp)
 
 init_csrf(app)
 

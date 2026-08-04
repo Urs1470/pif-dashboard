@@ -1180,6 +1180,13 @@ def create_global_task():
     conn.commit()
     conn.close()
 
+    # Push in Google Calendar (doar personale, in fundal, best-effort — vezi
+    # blueprints/google_calendar.py). Import tarziu, ca la sync_project_frontmatter.
+    if sfera == 'personal':
+        from blueprints.google_calendar import sync_enabled, spawn_sync
+        if sync_enabled():
+            spawn_sync(task_id)
+
     return jsonify({'id': task_id}), 201
 
 
@@ -1261,6 +1268,14 @@ def update_global_task(task_id):
     conn.commit()
     conn.close()
 
+    # Push in Google Calendar. FARA pre-filtru pe sfera: sfera poate flipa prin
+    # COALESCE, iar vechiul „personal" trebuie sters din calendar — reconcilierea
+    # decide din randul recitit. Ocurenta recurenta spawn-uita in aceeasi
+    # tranzactie isi primeste si ea evenimentul.
+    from blueprints.google_calendar import sync_enabled, spawn_sync
+    if sync_enabled():
+        spawn_sync(*([task_id, spawned_id] if spawned_id else [task_id]))
+
     resp = {'message': 'Task updated'}
     if spawned_id:
         resp['recurring_spawned'] = spawned_id
@@ -1274,6 +1289,11 @@ def delete_global_task(task_id):
     conn = get_db()
     try:
         cursor = conn.cursor()
+        # Sfera se citeste INAINTE de stergere: dupa, randul nu mai exista si
+        # n-am sti daca avea un eveniment in Google de curatat.
+        cursor.execute('SELECT sfera FROM global_tasks WHERE id = ?', (task_id,))
+        r = cursor.fetchone()
+        era_personal = bool(r) and (r['sfera'] or 'munca') == 'personal'
         # Clean up orphan subtasks: task_subtasks has no FK so DELETE on global_tasks
         # doesn't cascade. Sessions cascade via FK ON DELETE CASCADE (v11).
         cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
@@ -1282,6 +1302,11 @@ def delete_global_task(task_id):
         conn.commit()
         if deleted == 0:
             return jsonify({'error': 'Task not found'}), 404
+        if era_personal:
+            # Randul nu mai exista -> reconcilierea sterge evenimentul (404 ok).
+            from blueprints.google_calendar import sync_enabled, spawn_sync
+            if sync_enabled():
+                spawn_sync(task_id)
         return jsonify({'message': 'Task deleted'})
     finally:
         conn.close()

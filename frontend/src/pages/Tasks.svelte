@@ -428,6 +428,8 @@
   // Abonarea in Google Calendar: feed-ul .ics personal se serveste cu o cheie
   // secreta in URL (Google il descarca de pe serverele lui, fara sesiune).
   // Butonul copiaza linkul gata format — in Google Calendar: „Adaugă din URL".
+  // Din varianta cu API, asta e FALLBACK-ul din modalul Google (sincronizare
+  // automata dar lenta — Google reciteste feedul la cateva ore).
   async function copiazaLinkIcs() {
     try {
       const { key } = await apiJson('/api/export/ics-key')
@@ -438,6 +440,50 @@
       toast(`Eroare: ${e.message}`, 'error')
     }
   }
+
+  // Sincronizarea directa prin Google Calendar API (push instant, doar
+  // personale). Chip-ul deschide un modal de stare; conectarea e o navigare
+  // full-page catre fluxul OAuth de pe server — client id-ul nu traieste in
+  // bundle, iar CSP ramane neatins.
+  let showGoogleModal = $state(false)
+  let googleStatus = $state(null)     // null = se incarca
+  let googleBusy = $state(false)
+  let showGoogleDisconnect = $state(false)
+
+  async function deschideGoogle() {
+    showGoogleModal = true
+    googleStatus = null
+    try { googleStatus = await apiJson('/api/google/status') }
+    catch (e) { showGoogleModal = false; toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  async function resyncGoogle() {
+    if (googleBusy) return
+    googleBusy = true
+    try {
+      await apiJson('/api/google/resync', { method: 'POST', body: {} })
+      toast('Resincronizare pornită.', 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    finally { googleBusy = false }
+  }
+
+  async function disconnectGoogle() {
+    try {
+      await apiJson('/api/google/disconnect', { method: 'POST', body: {} })
+      toast('Deconectat de la Google Calendar.', 'success')
+      googleStatus = await apiJson('/api/google/status')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  // Aterizarea din fluxul OAuth: serverul redirectioneaza cu ?google=conectat|
+  // eroare. Toast + consumarea parametrului, ca un refresh sa nu re-toasteze.
+  $effect(() => {
+    const g = router.query.google
+    if (!g) return
+    if (g === 'conectat') toast('Google Calendar conectat — sincronizarea a pornit.', 'success')
+    else toast('Conectarea la Google a eșuat. Verifică logurile serverului.', 'error')
+    navigate('/tasks?sfera=personal')
+  })
 
   // Un singur $effect in loc de onMount + load-uri explicite pe chip-uri: ruleaza
   // la montare SI ori de cate ori se schimba sfera (din URL) sau arhiva — trei
@@ -574,8 +620,7 @@
       <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false }}>Active</button>
       <button class="chip" class:active={showArchive} onclick={() => { showArchive = true }}>Arhivă</button>
       {#if sferaActiva === 'personal'}
-        <button class="chip chip-ics" onclick={copiazaLinkIcs}
-                title="Copiază linkul de abonare — în Google Calendar: „Alte calendare” → „Din URL”">
+        <button class="chip chip-ics" onclick={deschideGoogle} title="Sincronizare cu Google Calendar">
           <CalendarPlus size={13} /> Google Calendar
         </button>
       {/if}
@@ -862,6 +907,46 @@
   {/snippet}
 </Modal>
 
+<!-- Sincronizarea cu Google Calendar (doar sfera personala). Trei stari:
+     neconfigurat (doar fallback .ics), configurat-neconectat (buton OAuth),
+     conectat (stare + resincronizare/deconectare). -->
+<Modal bind:open={showGoogleModal} title="Google Calendar" size="sm">
+  {#if googleStatus === null}
+    <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
+  {:else if !googleStatus.configurat}
+    <p class="g-text">Sincronizarea directă nu e configurată pe server
+      (lipsesc <span class="g-mono">GOOGLE_CLIENT_ID</span> / <span class="g-mono">GOOGLE_CLIENT_SECRET</span>).
+      Rămâne abonarea prin fișier .ics — automată, dar reîmprospătată de Google la câteva ore.</p>
+    <div class="g-actiuni"><Button variant="secondary" onclick={copiazaLinkIcs}>Copiază link .ics</Button></div>
+  {:else if !googleStatus.conectat}
+    <p class="g-text">Conectează-ți contul Google: taskurile personale cu termen apar în
+      calendarul „PIF Personal” în momentul în care le setezi.</p>
+    {#if googleStatus.last_error}<p class="g-eroare">{googleStatus.last_error}</p>{/if}
+    <div class="g-actiuni">
+      <Button onclick={() => { window.location.href = '/oauth/google/start' }}>Conectează cu Google</Button>
+      <Button variant="secondary" onclick={copiazaLinkIcs}>Copiază link .ics</Button>
+    </div>
+  {:else}
+    <div class="g-stare">
+      <div class="g-rand"><span class="g-et">Calendar</span><span class="g-val">{googleStatus.calendar || 'PIF Personal'}</span></div>
+      <div class="g-rand"><span class="g-et">Ultima sincronizare</span><span class="g-val">{googleStatus.last_sync ? formatDate(googleStatus.last_sync) : '—'}</span></div>
+      {#if googleStatus.last_error}<p class="g-eroare">{googleStatus.last_error}</p>{/if}
+    </div>
+  {/if}
+  {#snippet footer()}
+    {#if googleStatus?.configurat && googleStatus?.conectat}
+      <div class="modal-actions">
+        <Button variant="secondary" disabled={googleBusy} onclick={resyncGoogle}>Resincronizează</Button>
+        <Button variant="danger" onclick={() => showGoogleDisconnect = true}>Deconectează</Button>
+      </div>
+    {/if}
+  {/snippet}
+</Modal>
+
+<ConfirmDialog bind:open={showGoogleDisconnect} title="Deconectează Google Calendar"
+               message="Se deconectează de la Google. Evenimentele deja create rămân în calendar."
+               confirmLabel="Deconectează" onconfirm={disconnectGoogle} />
+
 <style>
   .page { padding: var(--space-lg); }
   /* Vezi Projects.svelte: fara `flex-wrap`/`gap` antetul nu se poate rupe si
@@ -898,6 +983,17 @@
      Randurile raman identice — severitatea e singura culoare pe rand. */
   .chip-personal::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple); margin-right: 6px; vertical-align: 1px; }
   .chip-ics { display: inline-flex; align-items: center; gap: 5px; }
+
+  /* Modalul Google Calendar — text de stare, nu formular. */
+  .g-skel { display: flex; flex-direction: column; gap: var(--space-sm); }
+  .g-text { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.5; }
+  .g-mono { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text); }
+  .g-actiuni { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-md); }
+  .g-stare { display: flex; flex-direction: column; gap: var(--space-xs); }
+  .g-rand { display: flex; justify-content: space-between; gap: var(--space-md); font-size: var(--font-small); }
+  .g-et { color: var(--text-dim); }
+  .g-val { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text); }
+  .g-eroare { font-size: var(--font-small); color: var(--danger); margin-top: var(--space-sm); }
   /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
      iar severitatea se citeste din bordura din stanga, dupa termen. */
 

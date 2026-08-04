@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Comprehensive test suite for pif-dashboard - static analysis + API smoke tests."""
 
-import os, re, sqlite3, sys, requests
+import json, os, re, sqlite3, sys, requests
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -321,6 +321,76 @@ def sfera_leak_test():
             try: s.delete(f"{BASE_URL}/api/global-tasks/{tid}", headers=hdr(), timeout=5)
             except Exception: pass
 
+def google_sync_test():
+    """Integrarea Google Calendar, FARA cont Google: starea neconfigurata e
+    curata, fluxul OAuth respinge ce trebuie, iar backup-ul nu scurge chei
+    `google_*` (refresh token-ul da acces la calendarul lui Ion)."""
+    print("\n=== GOOGLE CALENDAR (neconfigurat) ===\n")
+    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
+    if not pin:
+        log("fail", "PIF_DASHBOARD_PIN required for google test"); return
+    if os.environ.get('GOOGLE_CLIENT_ID'):
+        log("warn", "GOOGLE_CLIENT_ID set in test env — skipping unconfigured-state checks"); return
+    s = requests.Session()
+    r = s.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
+    if r.status_code != 200:
+        log("fail", f"google: login -> {r.status_code}"); return
+
+    def hdr():
+        return {"X-CSRF-Token": s.cookies.get('csrf_token', '')}
+
+    # 1) Status: neconfigurat, fara tokens in raspuns
+    st = s.get(f"{BASE_URL}/api/google/status", timeout=5)
+    if st.status_code != 200:
+        log("fail", f"google: status -> {st.status_code}")
+    else:
+        j = st.json()
+        log("pass" if j.get('configurat') is False and j.get('conectat') is False else "fail",
+            f"status: configurat={j.get('configurat')}, conectat={j.get('conectat')}")
+        if any('token' in k for k in j):
+            log("fail", "google: status expune campuri de token")
+
+    # 2) /oauth/google/start fara sesiune -> redirect la /login
+    anon = requests.get(f"{BASE_URL}/oauth/google/start", allow_redirects=False, timeout=5)
+    log("pass" if anon.status_code in (301, 302) and '/login' in anon.headers.get('Location', '')
+        else "fail", f"oauth/start fara sesiune -> {anon.status_code} {anon.headers.get('Location', '')}")
+
+    # 3) Cu sesiune dar neconfigurat -> inapoi in SPA cu google=eroare
+    r = s.get(f"{BASE_URL}/oauth/google/start", allow_redirects=False, timeout=5)
+    log("pass" if r.status_code in (301, 302) and 'google=eroare' in r.headers.get('Location', '')
+        else "fail", f"oauth/start neconfigurat -> {r.headers.get('Location', '')}")
+
+    # 4) Callback cu state fals -> eroare (nu atinge schimbul de token)
+    r = s.get(f"{BASE_URL}/oauth/google/callback?state=fals&code=x", allow_redirects=False, timeout=5)
+    log("pass" if r.status_code in (301, 302) and 'google=eroare' in r.headers.get('Location', '')
+        else "fail", f"oauth/callback state fals -> {r.headers.get('Location', '')}")
+
+    # 5) Resync neconectat -> 400
+    r = s.post(f"{BASE_URL}/api/google/resync", headers=hdr(), json={}, timeout=5)
+    log("pass" if r.status_code == 400 else "fail", f"resync neconectat -> {r.status_code} (expected 400)")
+
+    # 6) Backup-ul nu contine chei google_* (pinneaza filtrul anti-scurgere)
+    import sqlite3 as _sq
+    db = os.environ.get('PIF_DB_PATH') or str(DB_PATH)
+    try:
+        c = _sq.connect(db)
+        c.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('google_refresh_token', 'FALS-PENTRU-TEST', '')")
+        c.commit()
+        bk = s.get(f"{BASE_URL}/api/backup", timeout=15).json()
+        chei = {r0.get('key') for r0 in bk.get('app_settings', [])}
+        scurse = {k for k in chei if str(k).startswith('google_')}
+        log("pass" if not scurse else "fail",
+            "backup exclude cheile google_*" if not scurse else f"backup SCURGE {scurse}")
+        if 'FALS-PENTRU-TEST' in json.dumps(bk):
+            log("fail", "backup contine valoarea refresh token-ului")
+    finally:
+        try:
+            c.execute("DELETE FROM app_settings WHERE key = 'google_refresh_token'")
+            c.commit(); c.close()
+        except Exception:
+            pass
+
+
 def data_integrity():
     print("\n=== DATA INTEGRITY ===\n")
     if not DB_PATH.exists():
@@ -372,6 +442,7 @@ if __name__ == "__main__":
     if '--static' not in sys.argv:
         api_smoke_test()
         sfera_leak_test()
+        google_sync_test()
     data_integrity()
     
     print("\n" + "=" * 50)

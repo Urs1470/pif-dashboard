@@ -406,6 +406,8 @@ sa ramana sincronizate: `utils.PLAN_DEPT_HOST` (validare pe server) si `frame-sr
 | `PIF_API_TOKEN` | No | none | Bearer token for machine-to-machine API access (Cowork). CSRF-exempt. |
 | `PIF_DB_PATH` | No | `pif_dashboard.db` next to the code | Alternate DB file. Used by `scripts/smoke_ui.py` to run on a throwaway copy. |
 | `PIF_RATE_LIMIT` | No | `60` | Requests/min per IP on `/api/*`. Raised only by the smoke test; keep 60 in prod. |
+| `GOOGLE_CLIENT_ID` | No | none | OAuth client pentru sincronizarea directă Google Calendar (taskuri personale). Fără el, modalul din /tasks arată doar fallback-ul .ics. |
+| `GOOGLE_CLIENT_SECRET` | No | none | Perechea lui `GOOGLE_CLIENT_ID`. Ambele doar în env pe server, niciodată în git. |
 
 ## Cowork Integration
 
