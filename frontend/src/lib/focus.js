@@ -19,7 +19,10 @@ export function focusKey(kind, id) {
 }
 
 export function focusHref(path, kind, id) {
-  return `${path}?focus=${encodeURIComponent(focusKey(kind, id))}`
+  // Calea poate avea deja un query (#/tasks?sfera=personal) — un al doilea `?`
+  // ar face getQuery sa citeasca `sfera = 'personal?focus=...'`.
+  const sep = path.includes('?') ? '&' : '?'
+  return `${path}${sep}focus=${encodeURIComponent(focusKey(kind, id))}`
 }
 
 // Navigate to a task and morph the clicked element into the destination row.
@@ -60,7 +63,15 @@ export function focusOnLand(node, key) {
   function maybe() {
     if (!key || router.query.focus !== key) return
     // Consume: drop ?focus from the URL (no navigation) so re-renders don't re-fire.
-    try { history.replaceState(null, '', '#' + router.path) } catch (_) {}
+    // DOAR focus — restul query-ului (ex. sfera=personal) ramane in URL, altfel
+    // un refresh dupa aterizare ar schimba vederea.
+    try {
+      const rest = Object.entries(router.query)
+        .filter(([k, v]) => k !== 'focus' && v != null && v !== '')
+        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+        .join('&')
+      history.replaceState(null, '', '#' + router.path + (rest ? '?' + rest : ''))
+    } catch (_) {}
     router.query = { ...router.query, focus: undefined }
 
     const morphing = !!(morphPending && morphPending.key === key)

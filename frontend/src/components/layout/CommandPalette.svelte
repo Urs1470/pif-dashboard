@@ -3,6 +3,7 @@
   import { fade, scale } from 'svelte/transition'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { navigate, router } from '../../lib/router.svelte.js'
+  import { focusHref } from '../../lib/focus.js'
   import { apiJson } from '../../lib/api.js'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
@@ -17,7 +18,10 @@
   const commands = [
     { label: 'Acasă', path: '/', solid: 'home', keywords: 'home dashboard acasa' },
     { label: 'Proiecte', path: '/projects', solid: 'projects', keywords: 'projects lista' },
-    { label: 'Taskuri', path: '/tasks', solid: 'tasks', keywords: 'tasks todo' },
+    { label: 'Taskuri', path: '/tasks', solid: 'tasks', keywords: 'tasks todo munca' },
+    // Vederea personala nu are loc in Dock (plin la cinci pe telefon) — paleta
+    // e drumul ei de rezerva, pe langa comutatorul de pe /tasks.
+    { label: 'Taskuri personale', path: '/tasks?sfera=personal', solid: 'tasks', keywords: 'personal acasa cumparaturi in afara jobului' },
     { label: 'Planificator', path: '/plan', solid: 'plan', keywords: 'plan gantt planificator perioade' },
     { label: 'Calendar', path: '/calendar', solid: 'calendar', keywords: 'calendar unde sunt deplasare perioade zile teren replanifica' },
     // Departament lipsea de aici. Pe desktop nu se vedea, fiindca era in Dock;
@@ -141,9 +145,15 @@
       case 'proiect':
       case 'task':
       case 'observatie':
-      case 'global_task':
         navigate(`/tasks${r.id ? `?focus=global:${r.id}` : ''}`)
         break
+      case 'global_task': {
+        // Un task personal aterizeaza in VEDEREA lui de pe /tasks; focusHref
+        // stie sa lipeasca `focus` cu `&` cand calea are deja query.
+        const base = r.sfera === 'personal' ? '/tasks?sfera=personal' : '/tasks'
+        navigate(r.id ? focusHref(base, 'global', r.id) : base)
+        break
+      }
       case 'client':
         navigate('/projects')
         break

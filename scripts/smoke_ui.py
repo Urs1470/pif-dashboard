@@ -56,6 +56,9 @@ RUTE = [
     ('/', 'Acasa'),
     ('/projects', 'Proiecte'),
     ('/tasks', 'Taskuri'),
+    # Vederea personala e un query pe aceeasi ruta — fara intrarea explicita,
+    # smoke-ul n-ar vizita-o niciodata.
+    ('/tasks?sfera=personal', 'Taskuri personale'),
     ('/plan', 'Planificator'),
     ('/calendar', 'Calendar'),
     ('/departament', 'Departament'),

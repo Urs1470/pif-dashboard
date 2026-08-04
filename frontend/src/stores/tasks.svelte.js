@@ -21,6 +21,7 @@ export async function loadGlobalTasks(opts = {}) {
     if (opts.status) params.set('status', opts.status)
     if (opts.categorie) params.set('categorie', opts.categorie)
     if (opts.arhiva) params.set('arhiva', 'true')
+    if (opts.sfera) params.set('sfera', opts.sfera)
     const qs = params.toString()
     const data = await apiJson(`/api/global-tasks${qs ? '?' + qs : ''}`)
     globalTasks.items = Array.isArray(data) ? data : data.tasks || []
@@ -53,13 +54,15 @@ export async function deleteTask(taskId) {
   await apiJson(`/api/tasks/${taskId}`, { method: 'DELETE' })
 }
 
-export async function createGlobalTask(data) {
+export async function createGlobalTask(data, reloadOpts = {}) {
   const result = await apiJson('/api/global-tasks', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  await loadGlobalTasks()
+  // Reload-ul pastreaza vederea apelantului (sfera/arhiva) — altfel un task
+  // adaugat din vederea Personal ar repicta lista cu cea de munca.
+  await loadGlobalTasks(reloadOpts)
   return result
 }
 

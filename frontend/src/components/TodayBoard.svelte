@@ -64,7 +64,10 @@
       // deci oricum pleaca — dar altfel ar pleca dupa ~200ms, cand nu mai e clar
       // ca a plecat fiindca l-ai atins tu. `toggleDone` reincarca agenda la
       // final, deci adevarul se aseaza singur (si la eroare, tot el).
-      if (!eraFacut) agenda.items = agenda.items.filter(x => !(x.tip === it.tip && x.id === it.id))
+      if (!eraFacut) {
+        if (it.sfera === 'personal') agenda.personale = agenda.personale.filter(x => x.id !== it.id)
+        else agenda.items = agenda.items.filter(x => !(x.tip === it.tip && x.id === it.id))
+      }
       const res = await toggleDone(it.tip, it.id, it.status)
       if (res?.recurring_spawned) {
         toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
@@ -108,7 +111,8 @@
   function openItem(e, it) {
     const src = e?.currentTarget?.closest?.('.arow') || e?.currentTarget
     if (it.tip === 'proiect' && it.proiect_id) morphNavigate(src, `/projects/${it.proiect_id}`, 'task', it.id)
-    else morphNavigate(src, '/tasks', 'global', it.id)
+    // Un task personal aterizeaza in VEDEREA lui de pe /tasks, nu in cea de munca.
+    else morphNavigate(src, it.sfera === 'personal' ? '/tasks?sfera=personal' : '/tasks', 'global', it.id)
   }
 
   // --- Reordering (HTML5 drag on desktop, arrow buttons on mobile) ---
@@ -285,6 +289,74 @@
     </div>
   {/if}
 
+  <!-- SECTIUNEA PERSONALA — o anexa tacuta, nu un al doilea board.
+       Apare DOAR cand exista taskuri personale scadente azi/restante (cerinta
+       Ion: taskurile personale nu se amesteca cu munca, dar un termen personal
+       pe azi nu are voie sa fie invizibil). Antetul e micro/mono cu un punct
+       violet — acelasi punct de pe chip-ul „Personal" din /tasks, ca cele doua
+       suprafete sa se refere una la alta. NU foloseste .grup-cap/.grup-t (clase
+       citite de audit_mobil pe /tasks) si nici <h2> pereche cu „Astăzi".
+       Randurile sunt ACELEASI .arow (severitatea = singura culoare), fara insa
+       index, grip si reordonare: lista e scurta, ordinea o da serverul
+       (restante-first, apoi alfabetic). -->
+  {#if agenda.personale.length}
+    <div class="pers-cap"><span class="pers-dot" aria-hidden="true"></span>Personal<span class="pers-n">{agenda.personale.length}</span></div>
+    <div class="a-list" role="list">
+      {#each agenda.personale as it (it.id)}
+        <div
+          class="arow"
+          class:done={it.status === 'done'}
+          style="--sev: {dueColor(it.data_scadenta)}"
+          role="listitem"
+          in:sosire|local
+          out:plecare
+          use:glisare={{ latime: peTelefon ? 176 : 0, activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it) }}
+        >
+          <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
+          <div class="gl-actiuni" aria-hidden={!peTelefon}>
+            <button class="glb" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={17} /><span>Mâine</span></button>
+            <span class="glb datewrap" title="Planifică pe altă zi">
+              <DatePicker value={it.data_scadenta} placeholder="Dată" onchange={(v) => onMoveDate(it, v)} />
+              <span>Dată</span>
+            </span>
+            <button class="glb danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={17} /><span>Scoate</span></button>
+          </div>
+
+          <div class="gl-fata">
+          <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">
+            {#if it.status === 'done'}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
+          </button>
+
+          <button class="amain" onclick={(e) => openItem(e, it)}>
+            <span class="atitle">{it.titlu}</span>
+            <span class="ainfo">
+              {#if it.data_scadenta}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}><CalendarDays size={11} />{etichetaTermen(it.data_scadenta)}</span>{/if}
+              {#if it.subtask_total}
+                <span class="tsub-chip" class:gata={it.subtask_done === it.subtask_total}
+                      title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">
+                  <ListChecks size={11} />{it.subtask_done || 0}/{it.subtask_total}
+                </span>
+              {/if}
+              {#if it.recurenta}<span class="recur" title="Recurent: {it.recurenta}"><Repeat size={10} /> {it.recurenta}</span>{/if}
+            </span>
+          </button>
+
+          <div class="arow-tools">
+          <div class="arow-actions">
+            <button class="abtn" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={15} /></button>
+            <span class="row-date" title="Planifică pe altă zi">
+              <DatePicker value={it.data_scadenta} placeholder="Planifică" onchange={(v) => onMoveDate(it, v)} />
+            </span>
+            <button class="abtn danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={15} /></button>
+            <button class="abtn deschide" onclick={(e) => openItem(e, it)} title="Deschide"><ChevronRight size={15} /></button>
+          </div>
+          </div>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
+
 </section>
 
 <TaskPickerModal bind:open={showPicker} />
@@ -309,6 +381,13 @@
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .a-skel { display: flex; flex-direction: column; gap: var(--space-xs); }
+
+  /* Antetul sectiunii personale: micro/mono/uppercase ca .cell-label, cu punctul
+     violet (--purple — huea „libera"; amber e severitate/identitate). Bordura de
+     sus il desparte de board fara sa-l ridice la rang de al doilea board. */
+  .pers-cap { display: flex; align-items: center; gap: 6px; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-top: var(--space-md); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
+  .pers-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); flex-shrink: 0; }
+  .pers-n { color: var(--text-dim); font-variant-numeric: tabular-nums; }
 
   .a-list { display: flex; flex-direction: column; }
   /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia

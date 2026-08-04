@@ -85,13 +85,16 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
     new_id = generate_uuid()
     now = datetime.now().isoformat()
     next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
-    # ordine_agenda deliberat necopiat (vezi _spawn_recurring_task).
+    # ordine_agenda deliberat necopiat (vezi _spawn_recurring_task). `sfera` se
+    # copiaza OBLIGATORIU: altfel un task personal recurent ar migra in lista
+    # de munca la prima bifare (INSERT-ul ar cadea pe default-ul 'munca').
     cursor.execute('''
-        INSERT INTO global_tasks (id, titlu, descriere, status, categorie,
+        INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,
                                   data_scadenta, data_finalizare, created_at, updated_at, recurenta)
-        VALUES (?, ?, ?, 'to_do', ?, ?, '', ?, ?, ?)
+        VALUES (?, ?, ?, 'to_do', ?, ?, ?, '', ?, ?, ?)
     ''', (new_id, existing['titlu'], existing['descriere'] or '',
-          existing['categorie'], next_scad, now, now, recurenta))
+          existing['categorie'], existing['sfera'] or 'munca',
+          next_scad, now, now, recurenta))
     cursor.execute('SELECT titlu, ordine FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (existing['id'],))
     for srow in cursor.fetchall():
         cursor.execute(
@@ -1058,9 +1061,25 @@ def delete_subtask(subtask_id):
 # Global tasks CRUD
 # ---------------------------------------------------------------------------
 
+# Sferele taskurilor globale. Lipsa parametrului = 'munca' (fail-closed: un
+# consumator neactualizat — Cowork, un client vechi — vede exact ce vedea inainte
+# de v38; personalul e opt-in explicit). Valoare necunoscuta = 400, nu coercitie:
+# aceeasi filosofie ca norm_date — nu accepta tacut ce nu poti citi.
+SFERE = ('munca', 'personal')
+
+
+def _sfera_or_none(value):
+    """Valideaza o sfera primita din request. Intoarce sfera sau None daca e invalida."""
+    return value if value in SFERE else None
+
+
 @tasks_bp.route('/api/global-tasks', methods=['GET'])
 @login_required
 def get_global_tasks():
+    sfera = request.args.get('sfera') or 'munca'
+    if _sfera_or_none(sfera) is None:
+        return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
+
     conn = get_db()
     cursor = conn.cursor()
 
@@ -1070,8 +1089,8 @@ def get_global_tasks():
     arhiva = request.args.get('arhiva')
 
     # 1) Fetch the global tasks (single query, no correlated subqueries).
-    query = 'SELECT g.* FROM global_tasks g WHERE 1=1'
-    params = []
+    query = 'SELECT g.* FROM global_tasks g WHERE g.sfera = ?'
+    params = [sfera]
 
     if arhiva == 'true':
         query += " AND status = 'done'"
@@ -1129,6 +1148,9 @@ def get_global_tasks():
 @login_required
 def create_global_task():
     data = get_json_or_400()
+    sfera = data.get('sfera') or 'munca'
+    if _sfera_or_none(sfera) is None:
+        return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
     conn = get_db()
     cursor = conn.cursor()
 
@@ -1136,16 +1158,17 @@ def create_global_task():
     task_id = data.get('id') or generate_uuid()
 
     cursor.execute('''
-        INSERT INTO global_tasks (id, titlu, descriere, status, categorie,
+        INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,
                                   data_scadenta, data_finalizare, created_at, updated_at, recurenta,
                                   ordine_agenda)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         data.get('titlu', ''),
         data.get('descriere', ''),
         data.get('status', 'to_do'),
         data.get('categorie', 'General'),
+        sfera,
         data.get('data_scadenta', ''),
         data.get('data_finalizare', ''),
         now,
@@ -1179,6 +1202,10 @@ def get_global_task(task_id):
 @login_required
 def update_global_task(task_id):
     data = get_json_or_400()
+    # Patch de sfera permis (portita API pentru un task creat in sfera gresita);
+    # fara UI de mutare deocamdata. None = neatins (COALESCE).
+    if data.get('sfera') is not None and _sfera_or_none(data.get('sfera')) is None:
+        return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
     conn = get_db()
     cursor = conn.cursor()
 
@@ -1206,6 +1233,7 @@ def update_global_task(task_id):
             data_finalizare = COALESCE(?, data_finalizare),
             recurenta = COALESCE(?, recurenta),
             ordine_agenda = COALESCE(?, ordine_agenda),
+            sfera = COALESCE(?, sfera),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -1217,6 +1245,7 @@ def update_global_task(task_id):
         data.get('data_finalizare'),
         data.get('recurenta'),
         data.get('ordine_agenda'),
+        data.get('sfera'),
         now,
         task_id
     ))
@@ -1293,6 +1322,7 @@ def _agenda_item(d, tip, today):
         'ordine_agenda': d.get('ordine_agenda') or 0,
         'recurenta': d.get('recurenta') or '',
         'categorie': (d.get('categorie') or '') if tip == 'global' else '',
+        'sfera': (d.get('sfera') or 'munca') if tip == 'global' else 'munca',
         'proiect_id': d.get('proiect_id') if tip == 'proiect' else None,
         'proiect_nume': d.get('proiect_nume') if tip == 'proiect' else None,
         'is_scadent_azi': bool(scad) and scad == today,
@@ -1322,8 +1352,10 @@ def get_agenda_today():
     conn = get_db()
     cursor = conn.cursor()
 
+    # Sfera sta LITERAL la fiecare call-site, nu in _AGENDA_WHERE: un grep pe
+    # "FROM global_tasks" trebuie sa arate decizia de sfera pe acelasi ecran.
     cursor.execute(
-        'SELECT g.* FROM global_tasks g WHERE ' + _AGENDA_WHERE.format(alias='g'),
+        "SELECT g.* FROM global_tasks g WHERE g.sfera = 'munca' AND " + _AGENDA_WHERE.format(alias='g'),
         {'today': today})
     items = [_agenda_item(row_to_dict(r), 'global', today) for r in cursor.fetchall()]
 
@@ -1334,10 +1366,17 @@ def get_agenda_today():
         {'today': today})
     items += [_agenda_item(row_to_dict(r), 'proiect', today) for r in cursor.fetchall()]
 
+    # Taskurile personale scadente azi/restante — cheie SEPARATA in raspuns, ca
+    # boardul sa le randeze in sectiunea lor; randurile nu se amesteca niciodata.
+    cursor.execute(
+        "SELECT g.* FROM global_tasks g WHERE g.sfera = 'personal' AND " + _AGENDA_WHERE.format(alias='g'),
+        {'today': today})
+    personale = [_agenda_item(row_to_dict(r), 'global', today) for r in cursor.fetchall()]
+
     # Subtask counts, one query for every item on the board (same batch pattern as
     # /api/global-tasks). Without them the board could not show the "1/4" chip that
     # the task lists show, so the same task looked different depending on the page.
-    ids = [d['id'] for d in items if d.get('id')]
+    ids = [d['id'] for d in items + personale if d.get('id')]
     if ids:
         placeholders = ','.join('?' * len(ids))
         cursor.execute(f'''
@@ -1349,7 +1388,7 @@ def get_agenda_today():
             GROUP BY task_id
         ''', ids)
         counts = {r['task_id']: (r['subtask_total'], r['subtask_done']) for r in cursor.fetchall()}
-        for d in items:
+        for d in items + personale:
             total, done = counts.get(d['id'], (0, 0))
             d['subtask_total'] = total
             d['subtask_done'] = done or 0
@@ -1362,7 +1401,9 @@ def get_agenda_today():
         d['ordine_agenda'] if d['ordine_agenda'] else 1_000_000,
         (d['titlu'] or '').lower(),
     ))
-    return jsonify({'today': today, 'items': items})
+    # Sectiunea personala nu are reordonare — restante primele, apoi alfabetic.
+    personale.sort(key=lambda d: (0 if d['is_restant'] else 1, (d['titlu'] or '').lower()))
+    return jsonify({'today': today, 'items': items, 'personale': personale})
 
 
 @tasks_bp.route('/api/agenda/candidates', methods=['GET'])
@@ -1377,8 +1418,9 @@ def get_agenda_candidates():
 
     # Candidatii = ce NU e deja pe board. Cu o singura data asta inseamna: fara
     # termen, sau cu termen in viitor. Restantele sunt deja pe board.
+    # Doar munca: pickerul alimenteaza boardul de MUNCA de pe Acasa.
     gq = '''SELECT g.* FROM global_tasks g
-            WHERE g.status != 'done'
+            WHERE g.sfera = 'munca' AND g.status != 'done'
               AND (g.data_scadenta IS NULL OR TRIM(g.data_scadenta) = ''
                    OR date(g.data_scadenta) > date(:today))
               AND NOT (
@@ -1565,10 +1607,11 @@ def get_plan():
             'implementari': pimpl,
         })
 
-    # Global tasks lane.
+    # Global tasks lane. Doar munca: Planificatorul e suprafata de planificare
+    # a MUNCII; personalul cu termen traieste pe Acasa si in vederea lui de pe /tasks.
     cursor.execute(
         '''SELECT g.* FROM global_tasks g
-           WHERE ''' + status_clause.format(alias='g') + '''NOT (
+           WHERE g.sfera = 'munca' AND ''' + status_clause.format(alias='g') + '''NOT (
                g.recurenta IS NOT NULL AND TRIM(g.recurenta) <> ''
                AND g.data_scadenta IS NOT NULL AND date(g.data_scadenta) > date(:today)
              )''',
@@ -1603,7 +1646,7 @@ def get_plan():
            ORDER BY t.titlu COLLATE NOCASE LIMIT 300''')
     backlog = [_backlog_item(row_to_dict(r), 'proiect') for r in cursor.fetchall()]
     cursor.execute(
-        '''SELECT g.* FROM global_tasks g WHERE g.status != 'done'
+        '''SELECT g.* FROM global_tasks g WHERE g.sfera = 'munca' AND g.status != 'done'
              AND ''' + undated.format(a='g') + '''
            ORDER BY g.titlu COLLATE NOCASE LIMIT 300''')
     backlog += [_backlog_item(row_to_dict(r), 'global') for r in cursor.fetchall()]

@@ -96,28 +96,25 @@ CREATE TABLE IF NOT EXISTS task_subtasks (
 
 ### GLOBAL TASKS (independente de proiecte)
 ```sql
+-- Setul efectiv de coloane (CREATE TABLE-ul din init_db e incomplet:
+-- `recurenta`, `ordine_agenda` si `sfera` vin din migrari — v9, v21, v38).
 CREATE TABLE IF NOT EXISTS global_tasks (
     id TEXT PRIMARY KEY,                        -- UUID v4
     titlu TEXT NOT NULL,
     descriere TEXT,
-    prioritate TEXT DEFAULT 'Normal',           -- 'Urgent' | 'Normal' | 'Minor'
-    status TEXT DEFAULT 'to_do',                -- 'to_do' | 'in_progress' | 'done'
+    status TEXT DEFAULT 'to_do',                -- 'to_do' | 'done' (v34)
     categorie TEXT DEFAULT 'General',           -- text liber
+    sfera TEXT DEFAULT 'munca',                 -- 'munca' | 'personal' (v38)
     data_scadenta TEXT,
     data_finalizare TEXT,
     recurenta TEXT,                              -- 'zilnic' | 'saptamanal' | 'lunar' | null
+    ordine_agenda INTEGER DEFAULT 0,             -- ordinea pe boardul „Astăzi"
     created_at TEXT,
     updated_at TEXT
 );
-
-CREATE TABLE IF NOT EXISTS global_task_sessions (
-    id TEXT PRIMARY KEY,
-    global_task_id TEXT NOT NULL,
-    start_time TEXT NOT NULL,
-    stop_time TEXT,
-    durata_secunde INTEGER,
-    FOREIGN KEY (global_task_id) REFERENCES global_tasks(id) ON DELETE CASCADE
-);
+-- `prioritate` a plecat in v34, `data_planificata` in v33.
+-- `sfera` separa taskurile personale de cele de munca; TOATE interogarile pe
+-- global_tasks filtreaza explicit (lipsa parametrului = 'munca', fail-closed).
 ```
 
 ---

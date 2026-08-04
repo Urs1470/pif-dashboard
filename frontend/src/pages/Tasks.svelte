@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from 'svelte'
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
@@ -10,7 +9,7 @@
   import { formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
   import { grupeazaDupaTermen, etichetaTermen, ORDINE_GRUPE } from '../lib/grupare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
-  import { router } from '../lib/router.svelte.js'
+  import { router, navigate } from '../lib/router.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -27,6 +26,13 @@
   import RichText from '../components/ui/RichText.svelte'
   import AgendaColumn from '../components/tasks/AgendaColumn.svelte'
   import { todayISO, addDays } from '../lib/calendarDates.js'
+  import { apiJson } from '../lib/api.js'
+
+  // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
+  // adresabila — un link din paleta, din cautare sau de pe Acasa aterizeaza
+  // direct in ea. Orice altceva decat 'personal' inseamna munca (fail-closed,
+  // ca pe server).
+  const sferaActiva = $derived(router.query.sfera === 'personal' ? 'personal' : 'munca')
 
   let showArchive = $state(false)
   let taskDeleteId = $state(null)
@@ -57,6 +63,11 @@
   let noteSaving = $state(false)
 
 
+
+  /** Reincarcarea listei, mereu cu AMBELE filtre ale vederii curente. Un singur
+   *  drum: fara el, un call-site uitat cu `loadGlobalTasks()` gol ar repicta
+   *  vederea Personal cu lista de munca. */
+  const reload = () => loadGlobalTasks({ arhiva: showArchive, sfera: sferaActiva })
 
   function matchesSearch(t) {
     if (!taskSearch) return true
@@ -108,11 +119,11 @@
     try {
       res = await updateGlobalTask(task.id, { status: next })
     } catch (e) {
-      await loadGlobalTasks({ arhiva: showArchive })
+      await reload()
       toast(`Eroare: ${e.message}`, 'error')
       return
     }
-    await loadGlobalTasks({ arhiva: showArchive })
+    await reload()
     if (res?.recurring_spawned) {
       toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
       return
@@ -126,7 +137,7 @@
       toastUndo(`Făcut: ${task.titlu.slice(0, 34)}${task.titlu.length > 34 ? '…' : ''}`, {
         onUndo: async () => {
           await updateGlobalTask(task.id, { status: 'to_do' })
-          await loadGlobalTasks({ arhiva: showArchive })
+          await reload()
         },
       })
     }
@@ -144,11 +155,11 @@
     const vechi = t.data_scadenta || ''
     try {
       await updateGlobalTask(t.id, { data_scadenta: v })
-      await loadGlobalTasks({ arhiva: showArchive })
+      await reload()
       toastUndo(v ? `Mutat pe ${etichetaTermen(v)}` : 'Termen scos', {
         onUndo: async () => {
           await updateGlobalTask(t.id, { data_scadenta: vechi })
-          await loadGlobalTasks({ arhiva: showArchive })
+          await reload()
         },
       })
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
@@ -158,11 +169,11 @@
     const vechi = t.data_scadenta || ''
     try {
       await updateGlobalTask(t.id, { data_scadenta: v || '' })
-      await loadGlobalTasks({ arhiva: showArchive })
+      await reload()
       toastUndo(v ? `Mutat pe ${etichetaTermen(v)}` : 'Termen scos', {
         onUndo: async () => {
           await updateGlobalTask(t.id, { data_scadenta: vechi })
-          await loadGlobalTasks({ arhiva: showArchive })
+          await reload()
         },
       })
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
@@ -196,10 +207,11 @@
         titlu: formTitle.trim(),
         descriere: formDesc.trim() || undefined,
         categorie: formCategory,
+        sfera: sferaActiva,
         data_scadenta: formDeadline || undefined,
         recurenta: formRecurenta || undefined,
         status: 'to_do',
-      })
+      }, { arhiva: showArchive, sfera: sferaActiva })
       resetForm()
       showNewModal = false
     } finally { creating = false }
@@ -231,9 +243,9 @@
     }
     try {
       await createGlobalTask({
-        titlu: quickTitle.trim(), status: 'to_do',
+        titlu: quickTitle.trim(), status: 'to_do', sfera: sferaActiva,
         data_scadenta: termen || undefined,
-      })
+      }, { arhiva: showArchive, sfera: sferaActiva })
       quickTitle = ''
       quickData = ''
       // Focusul RAMANE in camp: intr-o lista de facut adaugi trei lucruri la rand,
@@ -254,7 +266,7 @@
     try {
       await updateGlobalTask(noteTask.id, { descriere: noteDraft })
       showNoteModal = false
-      await loadGlobalTasks({ arhiva: showArchive })
+      await reload()
       toast('Salvat', 'success')
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')
@@ -274,7 +286,7 @@
       })
       showEditModal = false
       editingTask = null
-      await loadGlobalTasks({ arhiva: showArchive })
+      await reload()
     } finally { creating = false }
   }
 
@@ -354,7 +366,7 @@
     newSubtaskTitle = ''
     const subs = await loadSubtasks(taskId)
     subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
-    await loadGlobalTasks({ arhiva: showArchive })
+    await reload()
   }
 
   // REDENUMIREA UNUI SUBTASK.
@@ -392,14 +404,14 @@
       ...subtasksCache,
       [sub.task_id]: (subtasksCache[sub.task_id] || []).filter(s => s.id !== sub.id)
     }
-    await loadGlobalTasks({ arhiva: showArchive })
+    await reload()
   }
 
   async function doDeleteTask() {
     if (!taskDeleteId) return
     await deleteGlobalTask(taskDeleteId)
     taskDeleteId = null
-    await loadGlobalTasks({ arhiva: showArchive })
+    await reload()
     toast('Task șters', 'success')
   }
 
@@ -413,7 +425,24 @@
   // care oricum e sortata cu urgentele sus si are aceleasi actiuni.
 
 
-  onMount(() => { loadGlobalTasks() })
+  // Abonarea in Google Calendar: feed-ul .ics personal se serveste cu o cheie
+  // secreta in URL (Google il descarca de pe serverele lui, fara sesiune).
+  // Butonul copiaza linkul gata format — in Google Calendar: „Adaugă din URL".
+  async function copiazaLinkIcs() {
+    try {
+      const { key } = await apiJson('/api/export/ics-key')
+      const url = `${location.origin}/api/export/ics?sfera=personal&key=${key}`
+      await navigator.clipboard.writeText(url)
+      toast('Link copiat — în Google Calendar: „Alte calendare” → „Din URL”.', 'success')
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    }
+  }
+
+  // Un singur $effect in loc de onMount + load-uri explicite pe chip-uri: ruleaza
+  // la montare SI ori de cate ori se schimba sfera (din URL) sau arhiva — trei
+  // declansatoare, un singur drum, fara dublu-load.
+  $effect(() => { loadGlobalTasks({ arhiva: showArchive, sfera: sferaActiva }) })
 </script>
 
 {#snippet taskDetail(t)}
@@ -538,15 +567,25 @@
       {/if}
     </div>
     <div class="filters">
-      <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false; loadGlobalTasks() }}>Active</button>
-      <button class="chip" class:active={showArchive} onclick={() => { showArchive = true; loadGlobalTasks({ arhiva: true }) }}>Arhivă</button>
+      <button class="chip" class:active={sferaActiva === 'munca'} onclick={() => navigate('/tasks')}>Muncă</button>
+      <button class="chip chip-personal" class:active={sferaActiva === 'personal'} onclick={() => navigate('/tasks?sfera=personal')}>Personal</button>
+      <span class="filters-sep" aria-hidden="true"></span>
+      <!-- Chip-urile doar schimba starea; $effect-ul reincarca — un singur drum de load. -->
+      <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false }}>Active</button>
+      <button class="chip" class:active={showArchive} onclick={() => { showArchive = true }}>Arhivă</button>
+      {#if sferaActiva === 'personal'}
+        <button class="chip chip-ics" onclick={copiazaLinkIcs}
+                title="Copiază linkul de abonare — în Google Calendar: „Alte calendare” → „Din URL”">
+          <CalendarPlus size={13} /> Google Calendar
+        </button>
+      {/if}
     </div>
   </div>
 
 
   <div class="v3grid">
   <div class="list-cell cell-in">
-  <div class="cell-label list-label"><span class="ico ico-amber"><ListTodo size={13} /></span>{showArchive ? 'Taskuri arhivate' : 'Lista taskuri'}<span class="tail">{showArchive ? globalTasks.items.length : activeTasks.length}</span></div>
+  <div class="cell-label list-label"><span class="ico ico-amber"><ListTodo size={13} /></span>{showArchive ? 'Taskuri arhivate' : (sferaActiva === 'personal' ? 'Taskuri personale' : 'Lista taskuri')}<span class="tail">{showArchive ? globalTasks.items.length : activeTasks.length}</span></div>
   {#if !showArchive}
     <form class="quick-add" onsubmit={(e) => { e.preventDefault(); quickAdd() }}>
       <div class="qa-rand">
@@ -581,13 +620,13 @@
   {#if globalTasks.loading && globalTasks.items.length === 0}
     <div class="list">{#each Array(5) as _}<div class="task-skeleton"><Skeleton width="70%" height="16px" /></div>{/each}</div>
   {:else if globalTasks.error}
-    <ErrorState message={globalTasks.error} onretry={() => loadGlobalTasks({ arhiva: showArchive })} />
+    <ErrorState message={globalTasks.error} onretry={() => reload()} />
   {:else if globalTasks.items.length === 0}
     <!-- Aceeasi stare acopera „n-ai avut niciodata taskuri" si „tocmai le-ai
          terminat pe toate" — pagina nu le poate deosebi, fiindca API-ul nu-i da
          cele bifate. Deci textul trebuie sa fie adevarat in amandoua si sa spuna
          unde au plecat cele facute, altfel „Niciun task" se citeste ca o pierdere. -->
-    <EmptyState icon={ListTodo} title={showArchive ? 'Arhiva e goală' : 'Nimic de făcut'} description={showArchive ? 'Aici ajung taskurile bifate.' : 'Scrie un task în câmpul de sus. Ce ai terminat e în „Arhivă".'} />
+    <EmptyState icon={ListTodo} title={showArchive ? 'Arhiva e goală' : (sferaActiva === 'personal' ? 'Niciun task personal' : 'Nimic de făcut')} description={showArchive ? 'Aici ajung taskurile bifate.' : 'Scrie un task în câmpul de sus. Ce ai terminat e în „Arhivă".'} />
   {:else}
     <div class="task-list">
       <!-- Se itereaza ORDINEA — siruri constante — nu lista de grupe.
@@ -852,6 +891,13 @@
   .chip:hover { background: var(--bg-hover); color: var(--text); }
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .chip:active { transform: scale(0.97); }
+  .filters-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+  /* Singurul semn al sferei personale: un punct violet (--purple, huea „libera" —
+     amber e severitate/identitate). Acelasi punct il poarta antetul sectiunii
+     „Personal" de pe Acasa, ca cele doua suprafete sa se refere una la alta.
+     Randurile raman identice — severitatea e singura culoare pe rand. */
+  .chip-personal::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple); margin-right: 6px; vertical-align: 1px; }
+  .chip-ics { display: inline-flex; align-items: center; gap: 5px; }
   /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
      iar severitatea se citeste din bordura din stanga, dupa termen. */
 

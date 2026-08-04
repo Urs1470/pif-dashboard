@@ -92,7 +92,12 @@ def close_db(exc=None):
 #      in PV. Intrarile, rezultatele si verdictele se salveaza INGHETATE (JSON),
 #      nu recalculate la citire: e consemnarea a ce s-a decis in ziua aia, si nu
 #      are voie sa se schimbe daca formula sau pragul se modifica ulterior.
-SCHEMA_VERSION = 37
+# v38: `global_tasks.sfera` ('munca'|'personal') — taskurile personale stau in
+#      ACEEASI tabela, separate printr-un discriminator, nu intr-o tabela noua
+#      (ar fi dublat recurenta, subtaskurile si CRUD-ul). Orice interogare pe
+#      global_tasks isi declara sfera explicit; lipsa parametrului = 'munca'
+#      (fail-closed: personalul nu se poate scurge in suprafetele de munca).
+SCHEMA_VERSION = 38
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1310,6 +1315,33 @@ def migrate_v36_to_v37():
     logger.info('Migration v36->v37 completed (calcule)')
 
 
+def migrate_v37_to_v38():
+    """v37 -> v38: `global_tasks.sfera` ('munca'|'personal').
+
+    Taskurile personale (in afara jobului) traiesc in aceeasi tabela ca cele de
+    munca — o tabela separata ar fi dublat recurenta, subtaskurile (piggy-backed
+    pe task_subtasks, fara FK) si cele cinci endpointuri CRUD. Separarea e un
+    discriminator, iar REGULA e la citire: fiecare interogare pe global_tasks
+    isi declara sfera explicit, si lipsa parametrului inseamna 'munca' —
+    personalul e opt-in, nu se poate scurge din omisiune.
+
+    UPDATE-ul de dupa ADD COLUMN e centura de siguranta pentru restaurari care
+    au inserat NULL/'' pe o coloana pe care backupul vechi n-o avea.
+
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(global_tasks)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if 'sfera' not in cols:
+        cursor.execute("ALTER TABLE global_tasks ADD COLUMN sfera TEXT DEFAULT 'munca'")
+    cursor.execute("UPDATE global_tasks SET sfera = 'munca' WHERE sfera IS NULL OR TRIM(sfera) = ''")
+    conn.commit()
+    conn.close()
+    logger.info("Migration v37->v38 completed (global_tasks.sfera, default 'munca')")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1494,6 +1526,11 @@ def run_migrations():
         set_schema_version(37)
         current_version = 37
 
+    if current_version < 38:
+        migrate_v37_to_v38()
+        set_schema_version(38)
+        current_version = 38
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1528,6 +1565,11 @@ def run_migrations():
     if not has_task_ordine or not has_gt_ordine:
         logger.warning("Self-heal: re-running v20->v21 (ordine_agenda missing)")
         migrate_v20_to_v21()
+    # Aditiv-only: cheia e DOAR pe lipsa coloanei, niciodata pe versiune — nu
+    # exista nicio migrare viitoare pe care s-o poata anula (capcanele v32/v33/v36).
+    if 'sfera' not in gt_cols:
+        logger.warning("Self-heal: re-running v37->v38 (global_tasks.sfera missing)")
+        migrate_v37_to_v38()
     has_gantt_cols = {'data_start', 'progres', 'is_milestone'}.issubset(tasks_cols)
     has_deps_table = 'task_dependencies' in existing_tables
     if not has_gantt_cols or not has_deps_table:

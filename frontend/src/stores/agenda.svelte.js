@@ -5,6 +5,9 @@ import { createGlobalTask, updateGlobalTask, updateTask } from './tasks.svelte.j
 // project tasks (each carries a `tip` discriminator) planned for / due today.
 export const agenda = $state({
   items: [],
+  // Taskurile PERSONALE scadente azi/restante — lista separata, randata in
+  // sectiunea ei de pe board; nu se amesteca niciodata cu `items` (munca).
+  personale: [],
   today: '',
   loading: false,
   error: null,
@@ -29,6 +32,7 @@ export async function loadAgendaToday() {
   try {
     const data = await apiJson(`/api/agenda/today?today=${localToday()}`)
     agenda.items = Array.isArray(data.items) ? data.items : []
+    agenda.personale = Array.isArray(data.personale) ? data.personale : []
     agenda.today = data.today || localToday()
   } catch (e) {
     agenda.error = e.message

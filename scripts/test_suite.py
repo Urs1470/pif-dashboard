@@ -207,6 +207,120 @@ def api_smoke_test():
         except Exception as e:
             log("fail", f"GET {ep} -> ERROR: {e}")
 
+def sfera_leak_test():
+    """Sferele (munca/personal, v38) — modul de esec e SCURGEREA: o interogare
+    pe global_tasks fara filtru varsa personalul intr-o suprafata de munca.
+    Fiecare asertie de aici corespunde unei suprafete."""
+    print("\n=== SFERA (munca/personal) ===\n")
+    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
+    if not pin:
+        log("fail", "PIF_DASHBOARD_PIN required for sfera test"); return
+    s = requests.Session()
+    try:
+        r = s.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
+        if r.status_code != 200:
+            log("fail", f"sfera: login -> {r.status_code}"); return
+    except Exception as e:
+        log("fail", f"sfera: login failed: {e}"); return
+
+    def hdr():
+        # Double-submit CSRF: cookie-ul se citeste si se intoarce in header.
+        return {"X-CSRF-Token": s.cookies.get('csrf_token', '')}
+
+    from datetime import date
+    today = date.today().isoformat()
+    created = []
+    try:
+        # 1) Creare personal + vizibilitate pe lista
+        r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
+                   json={"titlu": "__proba_sfera_azi__", "sfera": "personal",
+                         "status": "to_do", "data_scadenta": today})
+        if r.status_code != 201:
+            log("fail", f"sfera: POST personal -> {r.status_code}"); return
+        pid = r.json()['id']; created.append(pid)
+
+        r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
+                   json={"titlu": "__proba_sfera_fara_termen__", "sfera": "personal",
+                         "status": "to_do"})
+        pid2 = r.json()['id']; created.append(pid2)
+
+        ids_default = {t['id'] for t in s.get(f"{BASE_URL}/api/global-tasks", timeout=5).json()}
+        ids_pers = {t['id'] for t in s.get(f"{BASE_URL}/api/global-tasks?sfera=personal", timeout=5).json()}
+        if pid in ids_default or pid2 in ids_default:
+            log("fail", "sfera: personal LEAKS into default /api/global-tasks")
+        else:
+            log("pass", "GET /api/global-tasks (default) excludes personal")
+        if pid in ids_pers and pid2 in ids_pers:
+            log("pass", "GET /api/global-tasks?sfera=personal returns personal")
+        else:
+            log("fail", "sfera: personal tasks missing from ?sfera=personal")
+
+        # 2) Valoare necunoscuta -> 400 (fail-closed, nu coercitie)
+        r = s.get(f"{BASE_URL}/api/global-tasks?sfera=xyz", timeout=5)
+        log("pass" if r.status_code == 400 else "fail", f"GET ?sfera=xyz -> {r.status_code} (expected 400)")
+
+        # 3) Boardul Astazi: personal in `personale`, nu in `items`
+        ag = s.get(f"{BASE_URL}/api/agenda/today?today={today}", timeout=5).json()
+        in_items = any(x['id'] == pid for x in ag.get('items', []))
+        in_pers = any(x['id'] == pid for x in ag.get('personale', []))
+        if in_items:
+            log("fail", "sfera: personal LEAKS into agenda items (work board)")
+        elif in_pers:
+            log("pass", "agenda/today: personal in `personale`, not in `items`")
+        else:
+            log("fail", "sfera: personal task due today missing from `personale`")
+
+        # 4) Pickerul boardului de munca nu ofera taskuri personale
+        cand = s.get(f"{BASE_URL}/api/agenda/candidates?today={today}", timeout=5).json()
+        if any(x['id'] == pid2 for x in cand.get('items', [])):
+            log("fail", "sfera: personal LEAKS into agenda candidates")
+        else:
+            log("pass", "agenda/candidates excludes personal")
+
+        # 5) Planificatorul (banda Globale + backlog) e doar munca
+        plan = s.get(f"{BASE_URL}/api/plan", timeout=5).json()
+        plan_ids = {t['id'] for lane in plan.get('lanes', []) for t in lane.get('tasks', [])}
+        plan_ids |= {t['id'] for t in plan.get('backlog', [])}
+        if pid in plan_ids or pid2 in plan_ids:
+            log("fail", "sfera: personal LEAKS into /api/plan")
+        else:
+            log("pass", "/api/plan excludes personal")
+
+        # 6) Recurenta pastreaza sfera (altfel taskul migreaza la munca la bifare)
+        r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
+                   json={"titlu": "__proba_sfera_recurenta__", "sfera": "personal",
+                         "status": "to_do", "data_scadenta": today, "recurenta": "zilnic"})
+        rid = r.json()['id']; created.append(rid)
+        r = s.put(f"{BASE_URL}/api/global-tasks/{rid}", headers=hdr(), timeout=5,
+                  json={"status": "done"})
+        spawned = r.json().get('recurring_spawned')
+        if not spawned:
+            log("fail", "sfera: recurring personal task did not spawn")
+        else:
+            created.append(spawned)
+            sp = s.get(f"{BASE_URL}/api/global-tasks/{spawned}", timeout=5).json()
+            log("pass" if sp.get('sfera') == 'personal' else "fail",
+                f"recurring spawn keeps sfera ({sp.get('sfera')})")
+
+        # 7) ICS: feedul implicit fara personal; feedul personal doar cu el;
+        #    fara sesiune si fara cheie -> 401
+        ics = s.get(f"{BASE_URL}/api/export/ics", timeout=5).text
+        if '__proba_sfera_azi__' in ics:
+            log("fail", "sfera: personal LEAKS into work ICS feed")
+        else:
+            log("pass", "ICS default (munca) excludes personal")
+        ics_p = s.get(f"{BASE_URL}/api/export/ics?sfera=personal", timeout=5).text
+        log("pass" if '__proba_sfera_azi__' in ics_p else "fail", "ICS ?sfera=personal contains personal")
+        anon = requests.get(f"{BASE_URL}/api/export/ics?key=gresit", timeout=5)
+        log("pass" if anon.status_code == 401 else "fail", f"ICS wrong key -> {anon.status_code} (expected 401)")
+        key = s.get(f"{BASE_URL}/api/export/ics-key", timeout=5).json().get('key', '')
+        anon2 = requests.get(f"{BASE_URL}/api/export/ics?sfera=personal&key={key}", timeout=5)
+        log("pass" if anon2.status_code == 200 else "fail", f"ICS with feed key -> {anon2.status_code} (expected 200)")
+    finally:
+        for tid in created:
+            try: s.delete(f"{BASE_URL}/api/global-tasks/{tid}", headers=hdr(), timeout=5)
+            except Exception: pass
+
 def data_integrity():
     print("\n=== DATA INTEGRITY ===\n")
     if not DB_PATH.exists():
@@ -257,6 +371,7 @@ if __name__ == "__main__":
     static_analysis()
     if '--static' not in sys.argv:
         api_smoke_test()
+        sfera_leak_test()
     data_integrity()
     
     print("\n" + "=" * 50)
