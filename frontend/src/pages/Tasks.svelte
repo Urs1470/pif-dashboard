@@ -451,11 +451,21 @@
   let showGoogleDisconnect = $state(false)
 
   async function deschideGoogle() {
+    // Nu golim starea deja incarcata: modalul se deschide pe ce stim si se
+    // improspateaza; scheletul apare doar la prima incarcare.
     showGoogleModal = true
-    googleStatus = null
     try { googleStatus = await apiJson('/api/google/status') }
     catch (e) { showGoogleModal = false; toast(`Eroare: ${e.message}`, 'error') }
   }
+
+  // Starea se ia o data la intrarea in vederea Personal, ca punctul rosu de pe
+  // iconita sa poata semnala o sincronizare stricata FARA sa deschizi modalul —
+  // o stare care decide ce vezi in calendar nu are voie sa fie invizibila.
+  $effect(() => {
+    if (sferaActiva === 'personal' && googleStatus === null) {
+      apiJson('/api/google/status').then(s => { googleStatus = s }).catch(() => {})
+    }
+  })
 
   async function resyncGoogle() {
     if (googleBusy) return
@@ -638,8 +648,15 @@
       <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false }}>Active</button>
       <button class="chip" class:active={showArchive} onclick={() => { showArchive = true }}>Arhivă</button>
       {#if sferaActiva === 'personal'}
-        <button class="chip chip-ics" onclick={deschideGoogle} title="Sincronizare cu Google Calendar">
-          <CalendarPlus size={13} /> Google Calendar
+        <!-- NU chip: chip-urile din randul asta sunt FILTRE (Munca/Personal,
+             Active/Arhiva), iar asta e o actiune de setari — aceeasi haina
+             pentru lucruri diferite ar minti (observatia lui Ion). Sincronizarea
+             merge singura; iconita exista ca stare stricata sa aiba unde sa se
+             arate (punctul rosu) si ca Resincronizeaza/Deconecteaza sa ramana
+             accesibile. -->
+        <button class="g-ico" onclick={deschideGoogle} title="Google Calendar — stare sincronizare" aria-label="Google Calendar">
+          <CalendarPlus size={15} />
+          {#if googleStatus?.last_error}<span class="g-punct" aria-hidden="true"></span>{/if}
         </button>
       {/if}
     </div>
@@ -1012,7 +1029,16 @@
      „Personal" de pe Acasa, ca cele doua suprafete sa se refere una la alta.
      Randurile raman identice — severitatea e singura culoare pe rand. */
   .chip-personal::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple); margin-right: 6px; vertical-align: 1px; }
-  .chip-ics { display: inline-flex; align-items: center; gap: 5px; }
+  /* Iconita Google — fantoma, nu chip: chip-urile din toolbar sunt filtre, iar
+     asta e o intrare de setari. Punctul rosu apare doar cand sync-ul are o
+     problema — singurul moment in care merita atentie. */
+  .g-ico { position: relative; display: flex; align-items: center; justify-content: center;
+           width: 30px; min-height: 30px; background: none; border: none; cursor: pointer;
+           color: var(--text-faint); border-radius: var(--radius-sm);
+           transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
+  .g-ico:hover { color: var(--text); background: var(--bg-hover); }
+  .g-punct { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px;
+             border-radius: 50%; background: var(--danger); }
 
   /* Modalul Google Calendar — text de stare, nu formular. */
   .g-skel { display: flex; flex-direction: column; gap: var(--space-sm); }
@@ -1342,6 +1368,7 @@
     .search-box :global(svg) { align-self: center; }
     .chip { min-height: var(--tap-min); padding: 4px 16px; font-size: var(--font-small); }
     .filters { gap: var(--space-xs); }
+    .g-ico { width: var(--tap-min); min-height: var(--tap-min); }
     .tmain { min-height: var(--tap-min); }
     .page-header :global(.btn) { min-height: var(--tap-min); }
 
