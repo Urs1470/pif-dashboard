@@ -1,7 +1,13 @@
 # Audit Parametri — Rezultate complete
+
+> **ISTORIC — nereproductibil.** Migrarea v28 a sters `parametri_master` si
+> `fault_codes`; `scripts/audit_pdf.py` si `scripts/audit_reports/*.json` au fost
+> sterse odata cu ele (2026-08-04). Documentul ramane doar ca marturie a starii
+> catalogului de parametri la 18 mai 2026.
+
 **Data:** 18 mai 2026
-**Sursă:** scripts/audit_reports/*.json (rulare ~00:30-00:58)
-**Script:** audit_pdf.py --all (NU s-a putut rula pe laptop — s-a blocat)
+**Sursă:** scripts/audit_reports/*.json (sterse in 2026-08-04)
+**Script:** audit_pdf.py --all (sters in 2026-08-04; NU s-a putut rula pe laptop — s-a blocat)
 
 ---
 

@@ -27,8 +27,8 @@ Schema XML parameters.dcparams:
     </ParameterList>
   </ParameterFileContent>
 
-Format DB ABB (validat in scripts/audit_pdf.py parse_abb): "Group.Index" cu Index
-zero-padded la 2 cifre (ex: "1.01", "30.11", "99.04").
+Format cod ABB: "Group.Index" cu Index zero-padded la 2 cifre
+(ex: "1.01", "30.11", "99.04").
 
 Filtre implicite:
 - Skip IsSignal=true (read-only signals, nu config)

@@ -559,7 +559,7 @@ def get_project_snapshot(project_id):
 def _familie_from_echipament(producator: str, model: str) -> str:
     """Mapeaza producator+model la familia de drive (eticheta din preview).
 
-    Numele familiilor in DB (validat cu scripts/audit_pdf.py FAMILIES):
+    Numele familiilor de drive (set fix, eticheta afisata in preview):
         ACS580, ACS880, Danfoss_VLT_FC302, Lenze_i550, Lenze_i950,
         SINAMICS_G120, SINAMICS_G130_G150, SINAMICS_S120_S150
     """
