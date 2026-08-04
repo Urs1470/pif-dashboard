@@ -641,9 +641,15 @@
       {/if}
     </div>
     <div class="filters">
-      <button class="chip" class:active={sferaActiva === 'munca'} onclick={() => navigate('/tasks')}>Muncă</button>
-      <button class="chip chip-personal" class:active={sferaActiva === 'personal'} onclick={() => navigate('/tasks?sfera=personal')}>Personal</button>
-      <span class="filters-sep" aria-hidden="true"></span>
+      <!-- SFERA NU E FILTRU (observatia lui Ion, a doua): Munca/Personal schimba
+           IN CE LUME esti, Active/Arhiva alege ce subset vezi din ea. Doua naturi
+           diferite, doua haine: sfera e un comutator segmentat (capsula unita,
+           segment activ ridicat pe suprafata neutra), filtrele raman chip-uri
+           separate cu amber la activ. -->
+      <div class="sfere" role="tablist" aria-label="Sfera taskurilor">
+        <button class="seg" role="tab" aria-selected={sferaActiva === 'munca'} class:on={sferaActiva === 'munca'} onclick={() => navigate('/tasks')}>Muncă</button>
+        <button class="seg seg-personal" role="tab" aria-selected={sferaActiva === 'personal'} class:on={sferaActiva === 'personal'} onclick={() => navigate('/tasks?sfera=personal')}>Personal</button>
+      </div>
       <!-- Chip-urile doar schimba starea; $effect-ul reincarca — un singur drum de load. -->
       <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false }}>Active</button>
       <button class="chip" class:active={showArchive} onclick={() => { showArchive = true }}>Arhivă</button>
@@ -1023,12 +1029,19 @@
   .chip:hover { background: var(--bg-hover); color: var(--text); }
   .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .chip:active { transform: scale(0.97); }
-  .filters-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
-  /* Singurul semn al sferei personale: un punct violet (--purple, huea „libera" —
-     amber e severitate/identitate). Acelasi punct il poarta antetul sectiunii
-     „Personal" de pe Acasa, ca cele doua suprafete sa se refere una la alta.
+  /* Comutatorul de sfera — capsula unita cu segment activ RIDICAT pe suprafata
+     neutra (nu amber: amber la activ e limbajul FILTRELOR de langa el). Punctul
+     violet de pe Personal (--purple, huea „libera") e acelasi cu cel din antetul
+     sectiunii „Personal" de pe Acasa — cele doua suprafete se refera una la alta.
      Randurile raman identice — severitatea e singura culoare pe rand. */
-  .chip-personal::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple); margin-right: 6px; vertical-align: 1px; }
+  .sfere { display: flex; background: var(--bg-input); border: 1px solid var(--border);
+           border-radius: var(--radius-full); padding: 2px; flex-shrink: 0; margin-right: 4px; }
+  .seg { padding: 2px 12px; min-height: 24px; border: none; background: none; cursor: pointer;
+         border-radius: var(--radius-full); font-size: var(--font-tiny); font-weight: var(--fw-medium);
+         color: var(--text-dim); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
+  .seg:hover { color: var(--text); }
+  .seg.on { background: var(--bg-elevated); color: var(--text); box-shadow: var(--shadow-sm); }
+  .seg-personal::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple); margin-right: 6px; vertical-align: 1px; }
   /* Iconita Google — fantoma, nu chip: chip-urile din toolbar sunt filtre, iar
      asta e o intrare de setari. Punctul rosu apare doar cand sync-ul are o
      problema — singurul moment in care merita atentie. */
@@ -1369,6 +1382,9 @@
     .chip { min-height: var(--tap-min); padding: 4px 16px; font-size: var(--font-small); }
     .filters { gap: var(--space-xs); }
     .g-ico { width: var(--tap-min); min-height: var(--tap-min); }
+    /* Capsula creste ODATA cu segmentele: tinta de 44 vine din segment, nu din
+       padding-ul capsulei, altfel jumatate din capsula n-ar face nimic la atins. */
+    .seg { min-height: calc(var(--tap-min) - 4px); padding: 2px 14px; font-size: var(--font-small); }
     .tmain { min-height: var(--tap-min); }
     .page-header :global(.btn) { min-height: var(--tap-min); }
 
