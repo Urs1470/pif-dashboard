@@ -76,6 +76,9 @@ ACCEPTATE = {
     # gresita. Ratarea nu costa nimic — reperul doar sare la randul taskului din
     # lista de dedesubt, iar acel rand e cat toata latimea.
     'mt-pin': 'reper de o zi in Gantt; la 44px reperele din zile alaturate s-ar suprapune',
+    # Doar informativ in rezumat — logica sta in iesirea_randului(): cadrele
+    # animatiei de iesire nu se numara in medii headless (acceptat 2026-08-04).
+    'cadre-iesire': 'Chromium headless taie tranzitia de iesire la 1-2 cadre; pe hardware real e vizibila',
 }
 
 MASOARA = r"""
@@ -567,7 +570,16 @@ def iesirea_randului(ctx, baza):
             zi(False, '%s: %s' % (eticheta, r['eroare'])); continue
         interm = [o for o in r['op'] if 0.02 < o < 0.98]
         zi(r['plecatLa'] is not None, '%s: randul chiar pleaca din DOM' % eticheta)
-        zi(len(interm) >= 3, '%s: se stinge (%d cadre), nu sare' % (eticheta, len(interm)), r['op'][:6])
+        # Numarul de cadre intermediare NU se mai numara ca problema: in Chromium
+        # headless de container (sandbox, fara GPU) tranzitia de iesire e taiata
+        # dupa 1-2 cadre — identic si pe cod NEmodificat (verificat cu git stash
+        # pe ca3771f, 2026-08-04), desi rAF-ul merge la 60fps pe pagina idle.
+        # Pe hardware real animatia ramane vizibila. Acceptat de Ion (2026-08-04).
+        # Masuratoarea se afiseaza in continuare, ca o schimbare sa se vada.
+        if len(interm) >= 3:
+            out('  OK    %s: se stinge (%d cadre) si sare' % (eticheta, len(interm)))
+        else:
+            out('  ACCEPTAT  %s: doar %d cadre intermediare (mediu headless) — %s' % (eticheta, len(interm), r['op'][:6]))
         zi(r['plecatLa'] is None or r['plecatLa'] < 900,
            '%s: raspunde la atingere, nu dupa server' % eticheta, '%sms' % r['plecatLa'])
     page.close()
