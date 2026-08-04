@@ -475,6 +475,24 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
+  // Configurare fara SSH: JSON-ul OAuth descarcat din consola se lipeste aici
+  // si intra in app_settings pe server (validat acolo; exclus din backup).
+  let credText = $state('')
+  let credSaving = $state(false)
+  let schimbCred = $state(false)   // redeschide campul cand esti deja configurat
+
+  async function salveazaCred() {
+    if (credSaving || !credText.trim()) return
+    credSaving = true
+    try {
+      googleStatus = await apiJson('/api/google/credentials', { method: 'PUT', body: { json: credText.trim() } })
+      credText = ''
+      schimbCred = false
+      toast('Credențiale salvate — acum conectează contul.', 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    finally { credSaving = false }
+  }
+
   // Aterizarea din fluxul OAuth: serverul redirectioneaza cu ?google=conectat|
   // eroare. Toast + consumarea parametrului, ca un refresh sa nu re-toasteze.
   $effect(() => {
@@ -913,11 +931,20 @@
 <Modal bind:open={showGoogleModal} title="Google Calendar" size="sm">
   {#if googleStatus === null}
     <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
-  {:else if !googleStatus.configurat}
-    <p class="g-text">Sincronizarea directă nu e configurată pe server
-      (lipsesc <span class="g-mono">GOOGLE_CLIENT_ID</span> / <span class="g-mono">GOOGLE_CLIENT_SECRET</span>).
-      Rămâne abonarea prin fișier .ics — automată, dar reîmprospătată de Google la câteva ore.</p>
-    <div class="g-actiuni"><Button variant="secondary" onclick={copiazaLinkIcs}>Copiază link .ics</Button></div>
+  {:else if !googleStatus.configurat || schimbCred}
+    <p class="g-text">Lipește mai jos conținutul fișierului JSON descărcat din Google Cloud
+      Console (clientul OAuth de tip „Web application”). Se salvează pe server și nu intră
+      în backup-uri.</p>
+    <Textarea label="JSON-ul descărcat de la Google" bind:value={credText} rows={4}
+              placeholder={'{"web": {"client_id": "...", "client_secret": "..."}}'} />
+    <div class="g-actiuni">
+      <Button loading={credSaving} disabled={!credText.trim()} onclick={salveazaCred}>Salvează</Button>
+      {#if schimbCred}
+        <Button variant="secondary" onclick={() => { schimbCred = false; credText = '' }}>Anulează</Button>
+      {:else}
+        <Button variant="secondary" onclick={copiazaLinkIcs}>Copiază link .ics</Button>
+      {/if}
+    </div>
   {:else if !googleStatus.conectat}
     <p class="g-text">Conectează-ți contul Google: taskurile personale cu termen apar în
       calendarul „PIF Personal” în momentul în care le setezi.</p>
@@ -925,6 +952,9 @@
     <div class="g-actiuni">
       <Button onclick={() => { window.location.href = '/oauth/google/start' }}>Conectează cu Google</Button>
       <Button variant="secondary" onclick={copiazaLinkIcs}>Copiază link .ics</Button>
+      {#if googleStatus.sursa === 'setari'}
+        <button class="g-link" onclick={() => { schimbCred = true }}>Schimbă credențialele</button>
+      {/if}
     </div>
   {:else}
     <div class="g-stare">
@@ -994,6 +1024,9 @@
   .g-et { color: var(--text-dim); }
   .g-val { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text); }
   .g-eroare { font-size: var(--font-small); color: var(--danger); margin-top: var(--space-sm); }
+  .g-link { font-size: var(--font-tiny); color: var(--text-dim); background: none; border: none;
+            cursor: pointer; text-decoration: underline; padding: 0; align-self: center; }
+  .g-link:hover { color: var(--text); }
   /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
      iar severitatea se citeste din bordura din stanga, dupa termen. */
 

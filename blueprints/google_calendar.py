@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, redirect, request, session, url_for
 
-from utils import login_required, get_app_setting, set_app_setting
+from utils import login_required, get_app_setting, set_app_setting, get_json_or_400
 from database import get_db, row_to_dict
 
 logger = logging.getLogger(__name__)
@@ -59,16 +59,36 @@ K_TOKEN = 'google_access_token'      # JSON: {"access_token": ..., "expires_at":
 K_CALENDAR = 'google_calendar_id'
 K_LAST_SYNC = 'google_last_sync'
 K_LAST_ERROR = 'google_last_error'
+# Credentialele OAuth pot veni si din UI (JSON-ul descarcat din consola,
+# lipit in modal) — stau tot sub prefixul `google_`, deci excluse din backup
+# si pastrate la restore. Env are PRIORITATE cand exista ambele surse.
+K_CLIENT_ID = 'google_client_id'
+K_CLIENT_SECRET = 'google_client_secret'
+# GOOGLE_KEYS = ce sterge DISCONNECT. Credentialele NU sunt aici: deconectarea
+# rupe legatura cu contul, nu deconfigureaza aplicatia — reconectarea ramane
+# un singur click.
 GOOGLE_KEYS = (K_REFRESH, K_TOKEN, K_CALENDAR, K_LAST_SYNC, K_LAST_ERROR)
 
 DATA_RE = re.compile(r'^(\d{4})-(\d{2})-(\d{2})')
 
 
-def _creds():
-    """(client_id, client_secret) din env, sau None daca lipseste vreunul."""
+def _creds_sursa():
+    """((client_id, client_secret), sursa) — env intai, apoi app_settings.
+    (None, '') daca nu e configurat nicaieri."""
     cid = os.environ.get('GOOGLE_CLIENT_ID', '').strip()
     sec = os.environ.get('GOOGLE_CLIENT_SECRET', '').strip()
-    return (cid, sec) if cid and sec else None
+    if cid and sec:
+        return (cid, sec), 'env'
+    cid = (get_app_setting(K_CLIENT_ID) or '').strip()
+    sec = (get_app_setting(K_CLIENT_SECRET) or '').strip()
+    if cid and sec:
+        return (cid, sec), 'setari'
+    return None, ''
+
+
+def _creds():
+    """(client_id, client_secret), sau None daca lipseste configurarea."""
+    return _creds_sursa()[0]
 
 
 def _redirect_uri():
@@ -435,17 +455,62 @@ def oauth_callback():
         return _spa('eroare')
 
 
-@google_bp.route('/api/google/status', methods=['GET'])
-@login_required
-def google_status():
-    """Starea conexiunii — NICIODATA tokenurile."""
-    return jsonify({
-        'configurat': bool(_creds()),
+def _status_body():
+    creds, sursa = _creds_sursa()
+    return {
+        'configurat': bool(creds),
+        'sursa': sursa,
         'conectat': bool(get_app_setting(K_REFRESH)),
         'calendar': CALENDAR_NAME if get_app_setting(K_CALENDAR) else '',
         'last_sync': get_app_setting(K_LAST_SYNC, '') or '',
         'last_error': get_app_setting(K_LAST_ERROR, '') or '',
-    })
+    }
+
+
+@google_bp.route('/api/google/status', methods=['GET'])
+@login_required
+def google_status():
+    """Starea conexiunii — NICIODATA tokenurile sau secretul de client."""
+    return jsonify(_status_body())
+
+
+@google_bp.route('/api/google/credentials', methods=['PUT'])
+@login_required
+def google_credentials():
+    """Configurare fara SSH: Ion lipeste in modal JSON-ul OAuth descarcat din
+    Google Cloud Console; credentialele se valideaza si intra in app_settings
+    (prefixul `google_` le tine afara din backup). Env are prioritate — cand
+    sursa e env, endpointul refuza, ca sa nu para ca a schimbat ceva ce nu
+    poate schimba."""
+    if _creds_sursa()[1] == 'env':
+        return jsonify({'error': 'Credențialele vin din variabilele de mediu ale serverului — se schimbă acolo.'}), 400
+    data = get_json_or_400()
+    cid = (data.get('client_id') or '').strip()
+    sec = (data.get('client_secret') or '').strip()
+    raw = (data.get('json') or '').strip()
+    if raw and not (cid and sec):
+        try:
+            parsed = json.loads(raw)
+        except ValueError:
+            return jsonify({'error': 'Fișierul lipit nu e JSON valid.'}), 400
+        if 'installed' in parsed:
+            return jsonify({'error': 'Ai creat un client de tip Desktop — creează unul de tip „Web application”.'}), 400
+        web = parsed.get('web') if isinstance(parsed, dict) else None
+        if not isinstance(web, dict):
+            return jsonify({'error': 'JSON-ul nu are cheia „web” — descarcă fișierul clientului OAuth de tip Web application.'}), 400
+        cid = (web.get('client_id') or '').strip()
+        sec = (web.get('client_secret') or '').strip()
+        # Fail-early: daca redirect_uris exista si nu contine callback-ul
+        # nostru, OAuth ar pica abia la Google, cu un ecran criptic.
+        uris = web.get('redirect_uris')
+        if isinstance(uris, list) and uris and _redirect_uri() not in uris:
+            return jsonify({'error': f'Adaugă în consola Google, la „Authorized redirect URIs”, exact: {_redirect_uri()}'}), 400
+    if not cid or not sec:
+        return jsonify({'error': 'Lipsesc client_id sau client_secret.'}), 400
+    set_app_setting(K_CLIENT_ID, cid)
+    set_app_setting(K_CLIENT_SECRET, sec)
+    # Raspunsul are forma statusului, ca clientul sa o asigneze direct.
+    return jsonify(_status_body())
 
 
 @google_bp.route('/api/google/resync', methods=['POST'])

@@ -406,8 +406,8 @@ sa ramana sincronizate: `utils.PLAN_DEPT_HOST` (validare pe server) si `frame-sr
 | `PIF_API_TOKEN` | No | none | Bearer token for machine-to-machine API access (Cowork). CSRF-exempt. |
 | `PIF_DB_PATH` | No | `pif_dashboard.db` next to the code | Alternate DB file. Used by `scripts/smoke_ui.py` to run on a throwaway copy. |
 | `PIF_RATE_LIMIT` | No | `60` | Requests/min per IP on `/api/*`. Raised only by the smoke test; keep 60 in prod. |
-| `GOOGLE_CLIENT_ID` | No | none | OAuth client pentru sincronizarea directă Google Calendar (taskuri personale). Fără el, modalul din /tasks arată doar fallback-ul .ics. |
-| `GOOGLE_CLIENT_SECRET` | No | none | Perechea lui `GOOGLE_CLIENT_ID`. Ambele doar în env pe server, niciodată în git. |
+| `GOOGLE_CLIENT_ID` | No | none | OAuth client pentru sincronizarea directă Google Calendar (taskuri personale). Opțional: JSON-ul descărcat din consolă se poate lipi direct în modalul Google din /tasks (intră în `app_settings` sub `google_*`); env are PRIORITATE când există. |
+| `GOOGLE_CLIENT_SECRET` | No | none | Perechea lui `GOOGLE_CLIENT_ID`. Niciodată în git; în DB e protejat de filtrele `google_*` (exclus din backup). |
 
 ## Cowork Integration
 

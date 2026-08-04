@@ -369,7 +369,30 @@ def google_sync_test():
     r = s.post(f"{BASE_URL}/api/google/resync", headers=hdr(), json={}, timeout=5)
     log("pass" if r.status_code == 400 else "fail", f"resync neconectat -> {r.status_code} (expected 400)")
 
-    # 6) Backup-ul nu contine chei google_* (pinneaza filtrul anti-scurgere)
+    # 6) Configurare din UI: PUT /api/google/credentials
+    r = s.put(f"{BASE_URL}/api/google/credentials", headers=hdr(), json={"json": "nu-e-json"}, timeout=5)
+    log("pass" if r.status_code == 400 else "fail", f"credentials JSON invalid -> {r.status_code} (expected 400)")
+    r = s.put(f"{BASE_URL}/api/google/credentials", headers=hdr(),
+              json={"json": json.dumps({"installed": {"client_id": "x", "client_secret": "y"}})}, timeout=5)
+    log("pass" if r.status_code == 400 else "fail", f"credentials tip Desktop -> {r.status_code} (expected 400)")
+    r = s.put(f"{BASE_URL}/api/google/credentials", headers=hdr(),
+              json={"json": json.dumps({"web": {"client_id": "fals.apps.test", "client_secret": "SECRET-FALS"}})}, timeout=5)
+    if r.status_code != 200:
+        log("fail", f"credentials valide -> {r.status_code} (expected 200)")
+    else:
+        j = r.json()
+        log("pass" if j.get('configurat') is True and j.get('sursa') == 'setari' else "fail",
+            f"credentials salvate: configurat={j.get('configurat')}, sursa={j.get('sursa')}")
+        if 'SECRET-FALS' in r.text:
+            log("fail", "credentials: raspunsul ecoua secretul")
+        # oauth/start e acum configurat -> 302 catre Google, nu google=eroare
+        r2 = s.get(f"{BASE_URL}/oauth/google/start", allow_redirects=False, timeout=5)
+        log("pass" if r2.status_code in (301, 302) and 'accounts.google.com' in r2.headers.get('Location', '')
+            else "fail", f"oauth/start configurat -> {r2.headers.get('Location', '')[:60]}")
+
+    # 7) Backup-ul nu contine chei google_* (pinneaza filtrul anti-scurgere);
+    #    credentialele false de la pasul 6 sunt inca in app_settings — perfect
+    #    ca proba, se curata la final.
     import sqlite3 as _sq
     db = os.environ.get('PIF_DB_PATH') or str(DB_PATH)
     try:
@@ -381,11 +404,12 @@ def google_sync_test():
         scurse = {k for k in chei if str(k).startswith('google_')}
         log("pass" if not scurse else "fail",
             "backup exclude cheile google_*" if not scurse else f"backup SCURGE {scurse}")
-        if 'FALS-PENTRU-TEST' in json.dumps(bk):
-            log("fail", "backup contine valoarea refresh token-ului")
+        dump = json.dumps(bk)
+        if 'FALS-PENTRU-TEST' in dump or 'SECRET-FALS' in dump:
+            log("fail", "backup contine valori de secrete google")
     finally:
         try:
-            c.execute("DELETE FROM app_settings WHERE key = 'google_refresh_token'")
+            c.execute("DELETE FROM app_settings WHERE key LIKE 'google!_%' ESCAPE '!'")
             c.commit(); c.close()
         except Exception:
             pass
