@@ -21,7 +21,8 @@
 
   // variant: 'box' = caseta clasica cu chenar; 'doc' = pagina de document
   // (folosit in modalul fullscreen de observatii/notite — toolbar pill plutitor,
-  // coloana de text centrata pe latime de citit, scroll pe toata pagina).
+  // coloana de text ALINIATA LA STANGA, plafonata la latime de citit, scroll pe
+  // toata pagina).
   // `tools`: 'complet' (document — observatii de proiect, wiki) sau 'nota'.
   // Acelasi editor servea DOUA suprafete cu aceeasi bara de treisprezece butoane.
   // Intr-o observatie tehnica de proiect au toate sens; intr-o notita de task nu:
