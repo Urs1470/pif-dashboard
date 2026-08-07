@@ -54,13 +54,15 @@ blueprints/
   tasks.py                # /api/proiecte/<id>/tasks/* — CRUD, subtasks, recurring
   obsidian.py             # /api/obsidian/* — read-only vault integration
   admin.py                # /api/stats/*, /api/export/*, /api/search/* — analytics, backup
+  google_calendar.py      # /oauth/google/*, /api/google/* — push instant al taskurilor personale in Google Calendar
+  push.py                 # /api/push/* — Web Push: o notificare pe zi PER task personal fara termen (>2 zile), cu actiuni „Facut"/„Azi"
 
 templates/
   login.html              # PIN login (only remaining server-rendered template)
 
 static/
   dist/                   # Svelte SPA build (Vite) — the app, served at /
-  service-worker.js       # PWA cache strategy (STATIC_CACHE + API_CACHE); registered by the SPA
+  service-worker.js       # PWA cache + Web Push (push/notificationclick); bump VERSION la orice modificare
   login.css               # login page styling
 ```
 

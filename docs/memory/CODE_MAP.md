@@ -4,9 +4,9 @@
 
 Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
-## app.py (636 linii)
+## app.py (655 linii)
 
-`45:_client_ip`, `55:get_or_create_secret_key`, `76:file_hash`, `94:_asset_path`, `109:inject_version`, `127:make_session_permanent`, `137:setup_logging`, `169:check_rate_limit`, `208:check_login_rate_limit`, `230:before_request_func`, `263:after_request_func`, `307:get_hashed_pin`, `316:_git_commit`, `330:healthz`, `336:health_redirect`, `341:whoami`, `348:login_page`, `355:login`, `367:logout`, `373:login_hash`, `393:_serve_frontend`, `401:index`, `406:dist_assets`, `412:favicon`, `417:manifest`, `422:calc_public`, `432:protected_docs`, `444:service_worker`, `449:add_sw_header`, `470:get_deploy_secret`, `478:webhook_deploy`, `563:api_deploy`, `619:page_not_found`, `626:internal_error`
+`47:_client_ip`, `57:get_or_create_secret_key`, `78:file_hash`, `96:_asset_path`, `111:inject_version`, `129:make_session_permanent`, `139:setup_logging`, `171:check_rate_limit`, `210:check_login_rate_limit`, `232:before_request_func`, `273:after_request_func`, `317:get_hashed_pin`, `326:_git_commit`, `340:healthz`, `346:health_redirect`, `351:whoami`, `358:login_page`, `365:login`, `377:logout`, `383:login_hash`, `403:_serve_frontend`, `411:index`, `416:dist_assets`, `422:favicon`, `427:manifest`, `432:app_icon`, `441:calc_public`, `451:protected_docs`, `463:service_worker`, `468:add_sw_header`, `489:get_deploy_secret`, `497:webhook_deploy`, `582:api_deploy`, `638:page_not_found`, `645:internal_error`
 
 ## database.py (1814 linii)
 
@@ -16,9 +16,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `112:safe_table`, `118:generate_uuid`, `122:_check_api_token`, `140:login_required`, `154:get_app_setting`, `163:set_app_setting`
 
-## csrf.py (78 linii)
+## csrf.py (82 linii)
 
-`22:_generate_token`, `31:_get_or_refresh_token`, `39:init_csrf`
+`26:_generate_token`, `35:_get_or_refresh_token`, `43:init_csrf`
 
 ## labels.py (38 linii)
 

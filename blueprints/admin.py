@@ -38,6 +38,15 @@ logger = logging.getLogger(__name__)
 
 admin_bp = Blueprint('admin', __name__)
 
+# Chei `app_settings` care NU parasesc masina si NU se sterg la restore:
+#   google_* — tokenurile OAuth (acces la calendarul lui Ion)
+#   push_*   — cheia VAPID privata + abonamentele telefoanelor
+# Backup-ul se descarca in browser si se plimba pe discuri; astea sunt stare
+# per-masina, nu date de proiect. (db-dump ramane baza bruta — asumat.)
+CHEI_PROTEJATE = ('google_', 'push_')
+CHEI_PROTEJATE_SQL = ("key LIKE 'google!_%' ESCAPE '!' "
+                      "OR key LIKE 'push!_%' ESCAPE '!'")
+
 # ---------------------------------------------------------------------------
 # Stats
 # ---------------------------------------------------------------------------
@@ -446,11 +455,8 @@ def backup_database():
         cursor.execute(f'SELECT * FROM {safe_table(table)}')
         rows = [row_to_dict(row) for row in cursor.fetchall()]
         if table == 'app_settings':
-            # Secretele Google NU intra in fisierul de backup: JSON-ul se
-            # descarca in browser si se plimba pe discuri, iar refresh token-ul
-            # da acces la calendarul lui Ion. (db-dump ramane baza bruta —
-            # inevitabil si asumat.)
-            rows = [r for r in rows if not str(r.get('key', '')).startswith('google_')]
+            # Vezi CHEI_PROTEJATE: secretele nu intra in fisierul de backup.
+            rows = [r for r in rows if not str(r.get('key', '')).startswith(CHEI_PROTEJATE)]
         backup[table] = rows
 
     conn.close()
@@ -470,13 +476,13 @@ def restore_database():
         # Run the whole clear + restore inside ONE transaction, so a bad payload
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
-        # Conexiunea Google traieste DOAR pe masina asta (tokens `google_*` in
-        # app_settings, excluse din backup). Le citim inainte de stergere si le
-        # reinseram la final — altfel orice restore ar rupe in tacere
-        # sincronizarea cu Google Calendar.
+        # Conexiunea Google si abonamentele push traiesc DOAR pe masina asta
+        # (chei `google_*`/`push_*`, excluse din backup). Le citim inainte de
+        # stergere si le reinseram la final — altfel orice restore ar rupe in
+        # tacere sincronizarea cu Google Calendar si notificarile de pe telefon.
         cursor.execute("SELECT key, value, updated_at FROM app_settings "
-                       "WHERE key LIKE 'google!_%' ESCAPE '!'")
-        google_pastrate = [tuple(r) for r in cursor.fetchall()]
+                       "WHERE " + CHEI_PROTEJATE_SQL)
+        protejate_pastrate = [tuple(r) for r in cursor.fetchall()]
         # Clear existing data (skip tables absent on this deploy)
         tables = ['proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
                   'implementari', 'calcule', 'global_tasks', 'clienti', 'app_settings']
@@ -592,18 +598,18 @@ def restore_database():
 
         # Restore app_settings (vault Obsidian, cheile de idempotenta debrief).
         # assistant_memory din backup-uri vechi se ignora (v23 a sters Hermes).
-        # Cheile `google_*` din FISIER se ignora si ele: backup-ul nu le
-        # contine niciodata (filtrate la export), deci un rand `google_*` intr-un
-        # fisier de restore e editat de mana — nu acceptam un token injectat.
+        # Cheile protejate din FISIER se ignora si ele: backup-ul nu le contine
+        # niciodata (filtrate la export), deci un rand `google_*`/`push_*` intr-un
+        # fisier de restore e editat de mana — nu acceptam un secret injectat.
         for s in data.get('app_settings', []):
-            if str(s.get('key', '')).startswith('google_'):
+            if str(s.get('key', '')).startswith(CHEI_PROTEJATE):
                 continue
             cursor.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)',
                            (s.get('key'), s.get('value'), s.get('updated_at')))
 
-        # Conexiunea Google a masinii se pastreaza peste restore (vezi citirea
-        # de dinainte de DELETE).
-        for key, value, updated_at in google_pastrate:
+        # Starea per-masina (Google + push) se pastreaza peste restore (vezi
+        # citirea de dinainte de DELETE).
+        for key, value, updated_at in protejate_pastrate:
             cursor.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)',
                            (key, value, updated_at))
 

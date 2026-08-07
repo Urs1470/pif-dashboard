@@ -11,3 +11,10 @@ pdfplumber==0.11.9
 pymupdf==1.27.2.3
 openpyxl==3.1.5
 reportlab==4.5.1
+
+# Web Push — notificarea zilnica pentru taskurile personale fara termen.
+# `cryptography` venea deja tranzitiv (pdfplumber -> pdfminer.six), dar push-ul
+# depinde DIRECT de el (cheia VAPID) — pinat explicit, ca sa nu dispara in
+# tacere daca pdfplumber pleaca vreodata.
+pywebpush==2.4.0
+cryptography==50.0.0

@@ -3,7 +3,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, DUR_FAST } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, X, Check, Archive, Briefcase, User, Text } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
@@ -26,6 +26,7 @@
   import RichText from '../components/ui/RichText.svelte'
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
+  import { suportaPush, esteIosNeinstalat, stareAbonament, aboneaza, dezaboneaza } from '../lib/push.js'
 
   // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
   // adresabila — un link din paleta, din cautare sau de pe Acasa aterizeaza
@@ -586,6 +587,14 @@
     }
   })
 
+  // Acelasi motiv ca la Google: punctul rosu de pe clopotel trebuie sa poata
+  // semnala o trimitere esuata FARA sa deschizi modalul.
+  $effect(() => {
+    if (sferaActiva === 'personal' && pushStatus === null) {
+      apiJson('/api/push/status').then(s => { pushStatus = s }).catch(() => {})
+    }
+  })
+
   async function resyncGoogle() {
     if (googleBusy) return
     googleBusy = true
@@ -620,6 +629,60 @@
       toast('Credențiale salvate — acum conectează contul.', 'success')
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
     finally { credSaving = false }
+  }
+
+  // Notificarile zilnice: o notificare PER task personal care sta fara termen
+  // de peste doua zile, cu „Facut"/„Azi" direct pe notificare.
+  let showPushModal = $state(false)
+  let pushStatus = $state(null)     // starea de pe server
+  let pushLocal = $state(null)      // permisiunea + abonamentul acestui browser
+  let pushBusy = $state(false)
+
+  async function reincarcaPush() {
+    const [server, local] = await Promise.all([
+      apiJson('/api/push/status'),
+      suportaPush() ? stareAbonament() : Promise.resolve({ permisiune: 'unsupported', abonat: false }),
+    ])
+    pushStatus = server
+    pushLocal = local
+  }
+
+  async function deschidePush() {
+    showPushModal = true
+    try { await reincarcaPush() }
+    catch (e) { showPushModal = false; toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  async function activeazaPush() {
+    if (pushBusy) return
+    pushBusy = true
+    try {
+      await aboneaza()
+      await reincarcaPush()
+      toast('Notificări activate pe dispozitivul ăsta.', 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    finally { pushBusy = false }
+  }
+
+  async function dezactiveazaPush() {
+    if (pushBusy) return
+    pushBusy = true
+    try {
+      await dezaboneaza()
+      await reincarcaPush()
+      toast('Notificări dezactivate pe dispozitivul ăsta.', 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    finally { pushBusy = false }
+  }
+
+  async function testPush() {
+    if (pushBusy) return
+    pushBusy = true
+    try {
+      const r = await apiJson('/api/push/test', { method: 'POST', body: {} })
+      toast(r.esuate ? `Trimise: ${r.trimise}, eșuate: ${r.esuate}` : 'Notificare de test trimisă.', r.esuate ? 'error' : 'success')
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    finally { pushBusy = false }
   }
 
   // Aterizarea din fluxul OAuth: serverul redirectioneaza cu ?google=conectat|
@@ -817,6 +880,10 @@
         <button class="g-ico" onclick={deschideGoogle} title="Google Calendar — stare sincronizare" aria-label="Google Calendar">
           <CalendarPlus size={15} />
           {#if googleStatus?.last_error}<span class="g-punct" aria-hidden="true"></span>{/if}
+        </button>
+        <button class="g-ico" onclick={deschidePush} title="Notificări zilnice" aria-label="Notificări">
+          <Bell size={15} />
+          {#if pushStatus?.last_error}<span class="g-punct" aria-hidden="true"></span>{/if}
         </button>
       {/if}
     </div>
@@ -1165,6 +1232,53 @@
 <ConfirmDialog bind:open={showGoogleDisconnect} title="Deconectează Google Calendar"
                message="Se deconectează de la Google. Evenimentele deja create rămân în calendar."
                confirmLabel="Deconectează" onconfirm={disconnectGoogle} />
+
+<!-- Notificările zilnice. Aceeași scară în trepte ca modalul Google:
+     indisponibil pe server → browser nesuportat → permisiune refuzată →
+     neabonat → abonat. -->
+<Modal bind:open={showPushModal} title="Notificări" size="sm">
+  {#if pushStatus === null}
+    <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
+  {:else if !pushStatus.disponibil}
+    <p class="g-text">Notificările nu sunt disponibile pe server (lipsește pachetul
+      <span class="g-mono">pywebpush</span>). Verifică logurile de deploy.</p>
+  {:else if !suportaPush()}
+    <p class="g-text">
+      {#if esteIosNeinstalat()}
+        Pe iPhone notificările merg doar din aplicația instalată: Distribuie →
+        „Adaugă la ecranul principal”, deschide-o de acolo și revino aici.
+      {:else}
+        Browserul ăsta nu suportă notificări push.
+      {/if}
+    </p>
+  {:else if pushLocal?.permisiune === 'denied'}
+    <p class="g-text">Notificările sunt blocate pentru site. Deblochează-le din setările
+      browserului (lacătul din bara de adresă → Notificări) și revino aici.</p>
+  {:else if !pushLocal?.abonat}
+    <p class="g-text">Un task personal care stă fără termen mai mult de {'2'} zile îți trimite
+      dimineața, la {pushStatus.ora}, o notificare proprie — cu titlul lui și cu butoanele
+      „Făcut” și „Azi” direct pe notificare (pe Android; pe iPhone atingerea deschide taskul).</p>
+    {#if pushStatus.last_error}<p class="g-eroare">{pushStatus.last_error}</p>{/if}
+    <div class="g-actiuni">
+      <Button loading={pushBusy} onclick={activeazaPush}>Activează pe telefonul ăsta</Button>
+    </div>
+  {:else}
+    <div class="g-stare">
+      <div class="g-rand"><span class="g-et">Dispozitive abonate</span><span class="g-val">{pushStatus.abonamente}</span></div>
+      <div class="g-rand"><span class="g-et">Ora</span><span class="g-val">{pushStatus.ora}</span></div>
+      <div class="g-rand"><span class="g-et">Regula</span><span class="g-val">{pushStatus.regula}</span></div>
+      {#if pushStatus.last_error}<p class="g-eroare">{pushStatus.last_error}</p>{/if}
+    </div>
+  {/if}
+  {#snippet footer()}
+    {#if pushStatus?.disponibil && pushLocal?.abonat}
+      <div class="modal-actions">
+        <Button variant="secondary" disabled={pushBusy} onclick={testPush}>Trimite test</Button>
+        <Button variant="danger" disabled={pushBusy} onclick={dezactiveazaPush}>Dezactivează aici</Button>
+      </div>
+    {/if}
+  {/snippet}
+</Modal>
 
 <style>
   .page { padding: var(--space-lg); }

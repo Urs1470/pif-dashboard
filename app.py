@@ -30,12 +30,14 @@ from blueprints.tasks import tasks_bp
 from blueprints.obsidian import obsidian_bp
 from blueprints.admin import admin_bp
 from blueprints.google_calendar import google_bp
+from blueprints.push import push_bp
 
 app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)
 app.register_blueprint(obsidian_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(google_bp)
+app.register_blueprint(push_bp)
 
 init_csrf(app)
 
@@ -240,6 +242,14 @@ def before_request_func():
                         logger.warning("PIF_DASHBOARD_PIN nu este setat — mod DEBUG, se foloseste fallback.")
                     else:
                         logger.critical("PIF_DASHBOARD_PIN nu este setat! Loginul va esua. Seteaza Environment=PIF_DASHBOARD_PIN=... in systemd.")
+                # Planificatorul notificarilor zilnice. Pornit per worker —
+                # dedup-ul e in baza (claim pe ziua curenta), nu aici. Secretul
+                # ajunge acum, fiindca threadul nu are app context.
+                try:
+                    from blueprints.push import porneste_planificator
+                    porneste_planificator(secret=app.secret_key)
+                except Exception:
+                    logger.exception("Planificatorul de notificari nu a pornit")
                 _startup_initialized = True
                 logger.info("PIF Dashboard initialized")
 
@@ -416,6 +426,15 @@ def favicon():
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory(_DIST_DIR, 'manifest.json')
+
+
+@app.route('/icon-<int:size>.png')
+def app_icon(size):
+    """Iconite raster pentru notificari (showNotification nu randeaza sigur un
+    SVG sau un data: URI pe Android)."""
+    if size not in (192, 512):
+        return '', 404
+    return send_from_directory(_DIST_DIR, f'icon-{size}.png')
 
 
 @app.route('/calc')

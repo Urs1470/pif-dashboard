@@ -45,6 +45,13 @@ if ('serviceWorker' in navigator && !import.meta.env.DEV) {
     if (event.data?.type === 'SW_UPDATED' && import.meta.env.DEV) {
       console.log('[SW] Updated to', event.data.version)
     }
+    // Atingerea unei notificari, cu aplicatia deja deschisa: schimbam DOAR
+    // hash-ul, pe care ruterul il asculta oricum. O navigare adevarata ar
+    // reincarca aplicatia si ar pierde starea.
+    if (event.data?.type === 'NAVIGHEAZA' && event.data.url) {
+      const h = String(event.data.url).split('#')[1]
+      if (h) window.location.hash = '#' + h
+    }
   })
 }
 

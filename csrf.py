@@ -14,7 +14,11 @@ import hashlib
 
 from flask import request, session, abort, g
 
-_EXEMPT_ENDPOINTS = frozenset()
+# Actiunile din notificarea push („Facut" / „Azi") sunt trimise de SERVICE
+# WORKER, care nu poate citi cookie-uri — deci nu are cum sa trimita tokenul
+# CSRF, desi cererea lui poarta cookie-ul de sesiune. Ruta se apara singura cu
+# un token HMAC legat de UN task, valabil 48h (vezi blueprints/push.py).
+_EXEMPT_ENDPOINTS = frozenset({'push.push_action'})
 _EXEMPT_PREFIXES = ('/webhook/',)
 _SAFE_METHODS = frozenset(('GET', 'HEAD', 'OPTIONS'))
 

@@ -401,18 +401,157 @@ def google_sync_test():
     try:
         c = _sq.connect(db)
         c.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('google_refresh_token', 'FALS-PENTRU-TEST', '')")
+        c.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('push_vapid_private', 'FALS-PUSH-TEST', '')")
         c.commit()
         bk = s.get(f"{BASE_URL}/api/backup", timeout=15).json()
         chei = {r0.get('key') for r0 in bk.get('app_settings', [])}
-        scurse = {k for k in chei if str(k).startswith('google_')}
+        scurse = {k for k in chei if str(k).startswith(('google_', 'push_'))}
         log("pass" if not scurse else "fail",
-            "backup exclude cheile google_*" if not scurse else f"backup SCURGE {scurse}")
+            "backup exclude cheile google_* si push_*" if not scurse else f"backup SCURGE {scurse}")
         dump = json.dumps(bk)
-        if 'FALS-PENTRU-TEST' in dump or 'SECRET-FALS' in dump:
-            log("fail", "backup contine valori de secrete google")
+        if 'FALS-PENTRU-TEST' in dump or 'SECRET-FALS' in dump or 'FALS-PUSH-TEST' in dump:
+            log("fail", "backup contine valori de secrete")
     finally:
         try:
             c.execute("DELETE FROM app_settings WHERE key LIKE 'google!_%' ESCAPE '!'")
+            c.execute("DELETE FROM app_settings WHERE key LIKE 'push!_%' ESCAPE '!'")
+            c.commit(); c.close()
+        except Exception:
+            pass
+
+
+def push_notifications_test():
+    """Notificarile zilnice — fara serviciu push real: expeditorul se injecteaza,
+    iar tokenul si ruta de actiune se verifica direct."""
+    print("\n=== NOTIFICARI PUSH ===\n")
+    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
+    if not pin:
+        log("fail", "PIF_DASHBOARD_PIN required for push test"); return
+    s = requests.Session()
+    r = s.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
+    if r.status_code != 200:
+        log("fail", f"push: login -> {r.status_code}"); return
+
+    def hdr():
+        return {"X-CSRF-Token": s.cookies.get('csrf_token', '')}
+
+    # 1) Status
+    st = s.get(f"{BASE_URL}/api/push/status", timeout=5)
+    if st.status_code != 200:
+        log("fail", f"push: status -> {st.status_code}")
+    else:
+        j = st.json()
+        ok = j.get('ora') == '08:00' and 'abonamente' in j and 'disponibil' in j
+        log("pass" if ok else "fail", f"status: ora={j.get('ora')}, disponibil={j.get('disponibil')}")
+
+    # 2) Cheia VAPID e STABILA (regenerarea ar invalida abonamentele in tacere)
+    k1 = s.get(f"{BASE_URL}/api/push/vapid-public", timeout=5)
+    if k1.status_code == 503:
+        log("warn", "pywebpush lipseste in mediul de test — sar peste probele HTTP de push")
+    elif k1.status_code != 200:
+        log("fail", f"vapid-public -> {k1.status_code}")
+    else:
+        k2 = s.get(f"{BASE_URL}/api/push/vapid-public", timeout=5)
+        cheie = k1.json().get('cheie', '')
+        log("pass" if cheie and cheie == k2.json().get('cheie') else "fail",
+            "cheia VAPID e stabila intre apeluri")
+
+        # 3) Abonare / dezabonare
+        sub = {"endpoint": "https://fcm.googleapis.com/fake/T1",
+               "keys": {"p256dh": "cheie-falsa", "auth": "auth-fals"}}
+        n0 = s.get(f"{BASE_URL}/api/push/status", timeout=5).json()['abonamente']
+        s.post(f"{BASE_URL}/api/push/subscribe", headers=hdr(), json=sub, timeout=5)
+        n1 = s.get(f"{BASE_URL}/api/push/status", timeout=5).json()['abonamente']
+        s.post(f"{BASE_URL}/api/push/subscribe", headers=hdr(), json=sub, timeout=5)
+        n2 = s.get(f"{BASE_URL}/api/push/status", timeout=5).json()['abonamente']
+        log("pass" if n1 == n0 + 1 and n2 == n1 else "fail",
+            f"subscribe: {n0} -> {n1} -> {n2} (al doilea e upsert, nu duplicat)")
+        bad = s.post(f"{BASE_URL}/api/push/subscribe", headers=hdr(), json={"endpoint": "nu-e-https"}, timeout=5)
+        log("pass" if bad.status_code == 400 else "fail", f"subscribe invalid -> {bad.status_code} (expected 400)")
+        s.post(f"{BASE_URL}/api/push/unsubscribe", headers=hdr(), json={"endpoint": sub['endpoint']}, timeout=5)
+        n3 = s.get(f"{BASE_URL}/api/push/status", timeout=5).json()['abonamente']
+        log("pass" if n3 == n0 else "fail", f"unsubscribe -> {n3} (inapoi la {n0})")
+        # test fara abonamente -> 400 (un test „reusit" catre nimeni e o minciuna)
+        if n3 == 0:
+            t = s.post(f"{BASE_URL}/api/push/test", headers=hdr(), json={}, timeout=5)
+            log("pass" if t.status_code == 400 else "fail", f"test fara abonamente -> {t.status_code} (expected 400)")
+
+    # 4) Logica zilnica + tokenul, prin import direct (fara HTTP, fara push real)
+    sys.path.insert(0, str(PROJECT_ROOT))
+    import sqlite3 as _sq
+    from datetime import datetime as _dt, timedelta as _td
+    db = os.environ.get('PIF_DB_PATH') or str(DB_PATH)
+    os.environ.setdefault('PIF_DB_PATH', db)
+    try:
+        from blueprints import push as pushmod
+    except Exception as e:
+        log("fail", f"push: import blueprints.push a esuat: {e}"); return
+
+    pushmod._secret = b'secret-de-test'
+    c = _sq.connect(db)
+    tid = 'proba-push-0001'
+    vechi = (_dt.now() - _td(days=3)).isoformat()
+    proaspat = (_dt.now() - _td(days=1)).isoformat()
+    try:
+        c.execute("DELETE FROM app_settings WHERE key = 'push_daily_last'")
+        c.execute("INSERT OR REPLACE INTO global_tasks (id, titlu, status, sfera, data_scadenta, created_at, updated_at) "
+                  "VALUES (?, ?, 'to_do', 'personal', '', ?, ?)", (tid, '__proba_push__', vechi, vechi))
+        c.commit()
+
+        capturate = []
+        azi8 = _dt.now().replace(hour=8, minute=5, second=0, microsecond=0)
+        azi7 = azi8.replace(hour=7)
+
+        r1 = pushmod.check_and_send_daily(now=azi7, trimite=capturate.append)
+        log("pass" if r1 == 'devreme' and not capturate else "fail", f"inainte de ora 8 -> {r1}, {len(capturate)} trimise")
+
+        r2 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
+        unul = [p for p in capturate if p.get('title') == '__proba_push__']
+        ok_forma = bool(unul) and unul[0]['tag'] == f'pif-task-{tid}' \
+            and f'focus=global:{tid}' in unul[0]['url'] and unul[0].get('actions') is True
+        log("pass" if r2 == 'trimis' and ok_forma else "fail",
+            f"la ora 8 -> {r2}; notificare PER task cu tag/url/actiuni corecte: {ok_forma}")
+
+        r3 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
+        log("pass" if r3 == 'claimed-gata' else "fail", f"a doua rulare in aceeasi zi -> {r3} (fara dublura)")
+
+        # Zi fara taskuri: claim consumat, zero notificari
+        c.execute("DELETE FROM app_settings WHERE key = 'push_daily_last'")
+        c.execute("UPDATE global_tasks SET status = 'done' WHERE id = ?", (tid,))
+        c.commit()
+        n_inainte = len(capturate)
+        r4 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
+        log("pass" if r4 == 'nimic' and len(capturate) == n_inainte else "fail", f"zi fara taskuri -> {r4}")
+
+        # Marginea de varsta: 1 zi = prea proaspat
+        c.execute("DELETE FROM app_settings WHERE key = 'push_daily_last'")
+        c.execute("UPDATE global_tasks SET status = 'to_do', created_at = ? WHERE id = ?", (proaspat, tid))
+        c.commit()
+        r5 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
+        log("pass" if r5 == 'nimic' else "fail", f"task de 1 zi -> {r5} (nu se notifica)")
+
+        # 5) Tokenul
+        tok = pushmod.mint_token(tid)
+        log("pass" if pushmod.verifica_token(tok) == tid else "fail", "token: mint -> verifica")
+        log("pass" if pushmod.verifica_token(tok[:-2] + 'xx') is None else "fail", "token alterat -> respins")
+        expirat = pushmod.mint_token(tid, acum=_dt.now() - _td(hours=pushmod.TOKEN_VALABIL_ORE + 1))
+        log("pass" if pushmod.verifica_token(expirat) is None else "fail", "token expirat -> respins")
+
+        # 6) Ruta de actiune: FARA header CSRF (SW-ul nu poate citi cookie-ul),
+        #    dar CU cookie de sesiune — pinneaza exceptia din csrf.py.
+        c.execute("UPDATE global_tasks SET status='to_do', data_scadenta='' WHERE id = ?", (tid,))
+        c.commit()
+        # tokenul serverului foloseste SECRET_KEY-ul lui, nu pe al nostru; il
+        # luam prin ruta, deci semnam cu secretul procesului server: aici
+        # verificam doar respingerea, plus forma raspunsului.
+        rej = s.post(f"{BASE_URL}/api/push/action", json={"token": "gunoi", "action": "done"}, timeout=5)
+        log("pass" if rej.status_code == 403 else "fail", f"action cu token invalid -> {rej.status_code} (expected 403)")
+        log("pass" if rej.status_code != 403 or 'CSRF' not in rej.text else "fail",
+            "action e scutita de CSRF (a ajuns la validarea tokenului)")
+    finally:
+        try:
+            c.execute("DELETE FROM global_tasks WHERE id = ?", (tid,))
+            c.execute("DELETE FROM app_settings WHERE key LIKE 'push!_%' ESCAPE '!'")
             c.commit(); c.close()
         except Exception:
             pass
@@ -470,6 +609,7 @@ if __name__ == "__main__":
         api_smoke_test()
         sfera_leak_test()
         google_sync_test()
+        push_notifications_test()
     data_integrity()
     
     print("\n" + "=" * 50)

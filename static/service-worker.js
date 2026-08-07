@@ -9,7 +9,7 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v98';
+const VERSION = 'v99';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
@@ -30,7 +30,11 @@ const APP_SHELL = [
 // /static/ (those are discovered by parsing the HTML — see precacheShell).
 const EXTRA_SHELL = [
   '/favicon.svg',
-  '/manifest.json'
+  '/manifest.json',
+  // Iconitele notificarilor: sunt cerute cand vine push-ul, adica exact cand
+  // aplicatia NU e deschisa si reteaua poate lipsi.
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 // Cross-origin CDN hosts whose assets we cache-first at runtime. Fonts are now
@@ -308,4 +312,80 @@ self.addEventListener('message', (event) => {
       console.log('[SW] API cache cleared');
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// Notificari push (blueprints/push.py)
+//
+// O notificare PER TASK, nu un rezumat (cerinta Ion): notificarea poarta
+// titlul taskului si doua actiuni — „Facut" si „Azi" — adica exact cele doua
+// iesiri din situatia care a generat-o. Actiunile se executa DIN notificare,
+// cu tokenul semnat din payload: service worker-ul nu poate citi cookie-uri,
+// deci n-are token CSRF si nu se poate baza pe sesiune.
+// Pe iOS nu exista butoane de actiune — acolo ramane atingerea, care deschide
+// taskul in aplicatie.
+// ---------------------------------------------------------------------------
+
+self.addEventListener('push', (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (_) {}
+  const actiuni = data.actions
+    ? [{ action: 'done', title: 'Făcut' }, { action: 'azi', title: 'Azi' }]
+    : [];
+  event.waitUntil(self.registration.showNotification(data.title || 'PIF Dashboard', {
+    body: data.body || '',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    // Aceeasi eticheta per task: notificarea de maine o INLOCUIESTE pe cea
+    // necitita de azi, in loc sa se stivuiasca sapte copii ale aceluiasi task.
+    tag: data.tag || 'pif-daily',
+    renotify: false,
+    data: { url: data.url || '/', token: data.token || '' },
+    actions: actiuni,
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  const info = event.notification.data || {};
+  const url = info.url || '/';
+
+  if (event.action === 'done' || event.action === 'azi') {
+    event.notification.close();
+    event.waitUntil(
+      fetch('/api/push/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: info.token, action: event.action }),
+      }).then((r) => {
+        // 404 = taskul a fost sters intre timp; nimic de reparat, notificarea
+        // a plecat deja. Doar un esec REAL merita sa se intoarca pe ecran.
+        if (r.ok || r.status === 404) return;
+        return self.registration.showNotification('Nu s-a putut', {
+          body: 'Deschide aplicația ca să termini acțiunea.',
+          icon: '/icon-192.png', badge: '/icon-192.png',
+          tag: event.notification.tag, data: { url },
+        });
+      }).catch(() => self.registration.showNotification('Nu s-a putut', {
+        body: 'Fără conexiune — deschide aplicația mai târziu.',
+        icon: '/icon-192.png', badge: '/icon-192.png',
+        tag: event.notification.tag, data: { url },
+      }))
+    );
+    return;
+  }
+
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+      for (const w of wins) {
+        if (new URL(w.url).origin === self.location.origin && 'focus' in w) {
+          // Ruterul e pe hash: postMessage, NU client.navigate — a doua ar
+          // reincarca aplicatia si ar pierde starea.
+          w.postMessage({ type: 'NAVIGHEAZA', url });
+          return w.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
 });
