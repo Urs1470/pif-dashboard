@@ -27,6 +27,7 @@
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
   import { suportaPush, esteIosNeinstalat, stareAbonament, aboneaza, dezaboneaza } from '../lib/push.js'
+  import { esteNativ, probeaza } from '../lib/notificari.js'
 
   // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
   // adresabila — un link din paleta, din cautare sau de pe Acasa aterizeaza
@@ -687,6 +688,19 @@
     finally { pushBusy = false }
   }
 
+  // In aplicatia de pe telefon, proba nu trece prin server deloc: pune o alarma
+  // locala peste ~40s, pe acelasi canal si cu aceleasi butoane ca cele de la 8
+  // dimineata. Daca lantul e rupt undeva (permisiune, canal, alarma exacta),
+  // afli ACUM si afli unde — nu maine dimineata, din tacere.
+  async function probaLocala() {
+    if (pushBusy) return
+    pushBusy = true
+    try {
+      toast(await probeaza(), 'success')
+    } catch (e) { toast(e.message, 'error') }
+    finally { pushBusy = false }
+  }
+
   // Aterizarea din fluxul OAuth: serverul redirectioneaza cu ?google=conectat|
   // eroare. Toast + consumarea parametrului, ca un refresh sa nu re-toasteze.
   $effect(() => {
@@ -1241,7 +1255,18 @@
      indisponibil pe server → browser nesuportat → permisiune refuzată →
      neabonat → abonat. -->
 <Modal bind:open={showPushModal} title="Notificări" size="sm">
-  {#if pushStatus === null}
+  <!-- IN APLICATIA DE PE TELEFON, NIMIC DIN ASTA NU MAI TRECE PRIN SERVER.
+       Alarma o pune Android, din timp, deci starea de abonament push de mai jos
+       n-are niciun inteles aici — ar arata o masinarie care nu mai e folosita. -->
+  {#if esteNativ()}
+    <p class="g-text">Aici alarma o pune telefonul, din timp — nu vine de pe server, deci nu
+      depinde nici de rețea, nici de starea aplicației în momentul în care sună.</p>
+    <div class="g-stare">
+      <div class="g-rand"><span class="g-et">Ora</span><span class="g-val">08:00</span></div>
+      <div class="g-rand"><span class="g-et">Scadente</span><span class="g-val">în dimineața zilei</span></div>
+      <div class="g-rand"><span class="g-et">Fără termen</span><span class="g-val">zilnic, după 2 zile</span></div>
+    </div>
+  {:else if pushStatus === null}
     <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
   {:else if !pushStatus.disponibil}
     <p class="g-text">Notificările nu sunt disponibile pe server (lipsește pachetul
@@ -1275,7 +1300,11 @@
     </div>
   {/if}
   {#snippet footer()}
-    {#if pushStatus?.disponibil && pushLocal?.abonat}
+    {#if esteNativ()}
+      <div class="modal-actions">
+        <Button variant="secondary" disabled={pushBusy} onclick={probaLocala}>Notificare de probă</Button>
+      </div>
+    {:else if pushStatus?.disponibil && pushLocal?.abonat}
       <div class="modal-actions">
         <Button variant="secondary" disabled={pushBusy} onclick={testPush}>Trimite test</Button>
         <Button variant="danger" disabled={pushBusy} onclick={dezactiveazaPush}>Dezactivează aici</Button>

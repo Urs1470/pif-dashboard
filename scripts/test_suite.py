@@ -21,6 +21,40 @@ def static_analysis():
     api_route_check()
     db_table_check()
     undefined_names_check()
+    gcal_reminders_check()
+
+
+def gcal_reminders_check():
+    """Calendarul TACE, si o spune explicit.
+
+    DE CE EXISTA. Notificarile au un singur proprietar — aplicatia de pe telefon,
+    care pune alarma local. Daca ar suna si Google Calendar, acelasi task ar bate
+    de doua ori; `blueprints/push.py` scrie de ce e asta cel mai scump mod de a
+    pierde un canal („erodeaza increderea definitiv").
+
+    Proba pazeste tacerea DELIBERATA, nu absenta campului: fara `reminders`,
+    `useDefault` e implicit adevarat, iar implicitele calendarului le poate
+    schimba oricine din aplicatia Google, fara sa treaca prin codul asta — si
+    dublura ar aparea intr-o dimineata, fara ca nimic sa se fi schimbat aici.
+    """
+    print("--- Google Calendar: oglinda, nu clopot ---")
+    sys.path.insert(0, str(PROJECT_ROOT))
+    try:
+        from blueprints.google_calendar import _event_body
+    except Exception as e:
+        log("fail", f"gcal: import _event_body a esuat: {e}"); return
+    body = _event_body({'titlu': 'proba', 'data_scadenta': '2026-08-08', 'status': 'to_do'})
+    if not body:
+        log("fail", "gcal: _event_body n-a produs nimic pentru un task cu data"); return
+    rem = body.get('reminders')
+    if not isinstance(rem, dict):
+        log("fail", "gcal: `reminders` LIPSESTE — evenimentul ar mosteni implicitele "
+                    "calendarului, iar acelea se pot schimba din afara codului"); return
+    ovr = rem.get('overrides')
+    log("pass" if rem.get('useDefault') is False else "fail",
+        f"gcal: nu se bazeaza pe implicitele calendarului (useDefault={rem.get('useDefault')})")
+    log("pass" if ovr == [] else "fail",
+        f"gcal: niciun memento propriu — notificarile sunt ale aplicatiei (overrides={ovr})")
 
 
 def undefined_names_check():

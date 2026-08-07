@@ -221,6 +221,22 @@ def _event_body(row):
         # Mereu 'confirmed': patch-ul cu status confirmed REINVIE un eveniment
         # anulat — vezi comentariul despre 409 din _upsert_event.
         'status': 'confirmed',
+        # CALENDARUL E OGLINDA, NU CLOPOT — si o spune EXPLICIT.
+        #
+        # Notificarile au un singur proprietar: aplicatia de pe telefon, care
+        # pune alarma local (frontend/src/lib/notificari.js). Daca ar suna si
+        # calendarul, acelasi task ar bate de doua ori — exact felul de dublura
+        # despre care `blueprints/push.py` scrie ca „erodeaza increderea
+        # definitiv", si care te invata sa ignori ambele canale.
+        #
+        # De ce `useDefault: False` cu lista GOALA, si nu campul lasat deoparte:
+        # fara `reminders`, `useDefault` e implicit adevarat, deci evenimentul ia
+        # mementourile implicite ale calendarului — pe care le poate schimba
+        # oricine, oricand, din aplicatia Google Calendar, fara sa treaca pe
+        # aici. Tacerea trebuie sa fie o decizie scrisa, nu o coincidenta.
+        # (Pe 2026-08-07 implicitele erau goale, si tocmai de-aia doua taskuri
+        # scadente a doua zi n-au anuntat nimic: se baza pe ele fara sa stie.)
+        'reminders': {'useDefault': False, 'overrides': []},
     }
 
 

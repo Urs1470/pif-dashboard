@@ -55,16 +55,36 @@ function zileDeCand(createdAt, acum) {
   return Math.max(0, Math.round((zi - d) / 86400000))
 }
 
-/** Taskurile care se califica LA O ANUMITA ZI. Vechimea se calculeaza fata de
- *  ziua notificarii, nu fata de azi: un task de o zi nu se califica azi, dar se
- *  califica poimaine — si tocmai de-asta programam in avans. */
+function ziISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/** Taskurile care se califica LA O ANUMITA ZI, si DE CE — motivul da textul.
+ *
+ *  Doua feluri, care nu se suprapun niciodata (unul cere data, celalalt cere
+ *  lipsa ei):
+ *    'scadent' — are termen exact in ziua aia. Notificarea vine dimineata, cand
+ *                mai poti face ceva; Google Calendar NU poate acoperi cazul asta
+ *                (mementoul unui eveniment all-day se numara inainte de miezul
+ *                noptii, deci cel mai tarziu suna seara dinainte).
+ *    'fara-termen' — sta nebifat si fara data de peste ZILE_VECHIME zile.
+ *                Aceeasi regula ca `taskuri_de_notificat` de pe server.
+ *
+ *  Vechimea se masoara fata de ziua NOTIFICARII, nu fata de azi: un task de o zi
+ *  nu se califica azi, dar se califica poimaine — de-asta programam in avans. */
 export function taskuriDeNotificat(items, zi) {
-  return (items || []).filter((t) => {
-    if (t.sfera !== 'personal') return false
-    if (t.status === 'done') return false
-    if ((t.data_scadenta || '').trim()) return false
-    return zileDeCand(t.created_at, zi) >= ZILE_VECHIME
-  })
+  const azi = ziISO(zi)
+  const out = []
+  for (const t of items || []) {
+    if (t.sfera !== 'personal' || t.status === 'done') continue
+    const scad = (t.data_scadenta || '').trim().slice(0, 10)
+    if (scad) {
+      if (scad === azi) out.push({ t, motiv: 'scadent' })
+    } else if (zileDeCand(t.created_at, zi) >= ZILE_VECHIME) {
+      out.push({ t, motiv: 'fara-termen', zile: zileDeCand(t.created_at, zi) })
+    }
+  }
+  return out
 }
 
 async function pregatesteCanalul() {
@@ -145,12 +165,13 @@ export async function reprogrameaza(items) {
   for (let d = 0; d < ZILE_INAINTE; d++) {
     const zi = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + d, ORA_TRIMITERE, 0, 0, 0)
     if (zi <= acum) continue                       // dimineata de azi a trecut deja
-    for (const t of taskuriDeNotificat(items, zi)) {
-      const zile = zileDeCand(t.created_at, zi)
+    for (const { t, motiv, zile } of taskuriDeNotificat(items, zi)) {
       deProgramat.push({
-        id: idNotificare(t.id, zi.toISOString().slice(0, 10)),
+        id: idNotificare(t.id, ziISO(zi)),
         title: t.titlu || 'Task personal',
-        body: `Fără termen de ${zile} zile — bifează sau pune-i o zi.`,
+        body: motiv === 'scadent'
+          ? 'Scadent azi.'
+          : `Fără termen de ${zile} zile — bifează sau pune-i o zi.`,
         schedule: { at: zi, allowWhileIdle: true },
         channelId: CANAL,
         actionTypeId: 'task-personal',
@@ -162,6 +183,42 @@ export async function reprogrameaza(items) {
     await LocalNotifications.schedule({ notifications: deProgramat })
   }
   return deProgramat.length
+}
+
+/** PROBA. Programeaza o notificare peste ~40 de secunde, pe acelasi canal si cu
+ *  aceleasi doua actiuni ca cele adevarate.
+ *
+ *  De ce nu e de prisos: singurul moment in care lantul se vede lucrand e la 08:00,
+ *  iar daca ceva din el e rupt — permisiunea refuzata, alarma exacta oprita din
+ *  setari, canalul tacut — afli abia a doua zi dimineata, si nu afli CE anume.
+ *  Proba trece exact prin acelasi drum: permisiuni, canal, alarma, butoane.
+ *
+ *  Nu e „instant": o notificare pusa pe loc n-ar demonstra ca ALARMA merge, doar
+ *  ca API-ul raspunde. Intarzierea e mica, dar reala — inchide aplicatia dupa ce
+ *  o pornesti, ca s-o vezi cum o vezi dimineata.
+ *
+ *  Intoarce mesajul de aratat, sau arunca cu un motiv citibil. */
+export async function probeaza() {
+  if (!esteNativ()) throw new Error('Proba merge doar în aplicația de pe telefon.')
+  const perm = await cerePermisiuni()
+  if (!perm.notificari) throw new Error('Permisiunea pentru notificări e refuzată — dă-o din setările aplicației.')
+  await pregatesteCanalul()
+  await pregatesteActiunile()
+  const cand = new Date(Date.now() + 40000)
+  await LocalNotifications.schedule({
+    notifications: [{
+      id: 424242,
+      title: 'Probă PIF',
+      body: 'Dacă vezi asta, lanțul merge: permisiune, canal, alarmă.',
+      schedule: { at: cand, allowWhileIdle: true },
+      channelId: CANAL,
+      extra: {},
+    }],
+  })
+  return perm.exacte
+    ? 'Programată peste 40 de secunde, cu alarmă exactă. Închide aplicația.'
+    : 'Programată peste ~40 de secunde, dar alarma EXACTĂ e oprită — poate întârzia. '
+      + 'Setări → Aplicații → PIF Dashboard → Alarme și mementouri.'
 }
 
 /** Leaga atingerea notificarii si cele doua actiuni de API. Se cheama O DATA,
