@@ -1,3 +1,5 @@
+import { cubicOut } from 'svelte/easing'
+
 // Shared motion tokens (mirrors tokens.css --dur-fast/base/slow, duplicated here since
 // CSS custom properties can't be read as numbers into svelte/transition params) and a
 // single reactive prefers-reduced-motion source, so every component gets a live update
@@ -56,6 +58,50 @@ export function sosire(node, { duration = 190 } = {}) {
   return {
     duration: d,
     css: (t) => `opacity: ${t}; transform: translateY(${(1 - t) * 5}px);`,
+  }
+}
+
+// DESFACEREA UNUI PANOU (taskul deschis in lista).
+//
+// `slide` din Svelte masoara inaltimea O SINGURA DATA, la primul cadru, si
+// animeaza spre ea cu `overflow: hidden`. Daca panoul se randeaza INAINTE ca
+// datele sa fie acolo, tinta e inaltimea starii de asteptare: continutul care
+// soseste dupa aceea nu incape si se vede TAIAT pana cand tranzitia se termina
+// si inaltimea sare la loc. De aceea panoul se deschide numai cu datele in
+// mana (vezi `toggleTaskExpand`) — iar aici masuram ansamblul final.
+//
+// Fata de `slide`: opacitatea urca pe prima jumatate a miscarii, nu in primele
+// 5% ca la Svelte. Inaltimea singura se citeste ca o stergere de sus in jos;
+// cu stingerea peste ea, panoul APARE, nu e descoperit.
+export function desfacere(node, { duration = DUR_BASE } = {}) {
+  const d = motionDuration(duration)
+  const s = getComputedStyle(node)
+  const nr = (v) => parseFloat(v) || 0
+  // TOT ce ocupa spatiu pe verticala, nu doar inaltimea: panoul din pagina de
+  // proiect are rama pe patru laturi si margine jos, iar cel din /tasks doar
+  // linie sus. Daca marginea si ramele nu se strang odata cu inaltimea, raman
+  // ~13px care apar dintr-un cadru — adica exact saritura pe care o repara asta.
+  const h = nr(s.height)
+  const pt = nr(s.paddingTop)
+  const pb = nr(s.paddingBottom)
+  const mt = nr(s.marginTop)
+  const mb = nr(s.marginBottom)
+  const bt = nr(s.borderTopWidth)
+  const bb = nr(s.borderBottomWidth)
+  return {
+    duration: d,
+    easing: cubicOut,
+    css: (t) => `
+      overflow: hidden;
+      height: ${t * h}px;
+      padding-top: ${t * pt}px;
+      padding-bottom: ${t * pb}px;
+      margin-top: ${t * mt}px;
+      margin-bottom: ${t * mb}px;
+      border-top-width: ${t * bt}px;
+      border-bottom-width: ${t * bb}px;
+      opacity: ${Math.min(1, t * 2)};
+    `,
   }
 }
 

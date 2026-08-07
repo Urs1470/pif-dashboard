@@ -2,7 +2,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare, sosire, DUR_FAST } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire, desfacere, DUR_FAST } from '../lib/motion.svelte.js'
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
@@ -52,7 +52,6 @@
   let subtasksCache = $state({})
   let newSubtaskTitle = $state('')
   let adaugSubLa = $state('')   // id-ul taskului al carui compozitor de subtask e deschis
-  let subtaskLoading = $state(false)
 
   let taskSearch = $state('')
   let quickTitle = $state('')
@@ -314,19 +313,37 @@
   async function deschideFoaia(taskId) {
     sheetTaskId = taskId
     termenDeschis = false
-    showSheet = true
+    // Subtaskurile INAINTE de foaie, acelasi motiv ca la extinderea din lista:
+    // o foaie care se ridica pe jumatate goala si apoi creste sub degetul tau
+    // arata ca doua evenimente pentru un singur gest.
     await incarcaSubtaskuri(taskId)
+    showSheet = true
   }
 
-  async function incarcaSubtaskuri(taskId) {
-    if (subtasksCache[taskId]) return
-    subtaskLoading = true
-    try {
-      const subs = await loadSubtasks(taskId)
-      subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
-    } catch (_) {
-      subtasksCache = { ...subtasksCache, [taskId]: [] }
-    } finally { subtaskLoading = false }
+  // Cererile in zbor, ca sa nu plece doua pentru acelasi task: cu preincarcarea
+  // pe hover, trecerea cu mouse-ul peste o lista de 15 randuri ar putea trimite
+  // 15 cereri, iar in productie limita e 60 pe minut per IP (vezi app.py).
+  // Cu harta asta, un task cere O SINGURA data pe sesiune.
+  const inZbor = new Map()
+
+  function incarcaSubtaskuri(taskId) {
+    if (subtasksCache[taskId]) return Promise.resolve()
+    if (inZbor.has(taskId)) return inZbor.get(taskId)
+    const p = (async () => {
+      try {
+        const subs = await loadSubtasks(taskId)
+        subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+      } catch (_) {
+        // Si pe eroare cheia se scrie: panoul se deschide gol, cu invitatia de
+        // adaugare. Fara ea, `toggleTaskExpand` n-ar avea ce arata si atingerea
+        // randului ar ramane fara raspuns.
+        subtasksCache = { ...subtasksCache, [taskId]: [] }
+      } finally {
+        inZbor.delete(taskId)
+      }
+    })()
+    inZbor.set(taskId, p)
+    return p
   }
 
   // FOAIA DOAR PE TELEFON; pe desktop taskul se desface in lista (cerinta Ion).
@@ -339,14 +356,29 @@
   // randat ori in foaie, ori in rand. Cardurile de subtask, antetul de sectiune,
   // bara de progres si butonul de adaugare arata identic — se schimba doar unde
   // sunt asezate.
+  //
+  // ORDINEA CONTEAZA: intai datele, apoi deschiderea. Invers (cum era), panoul
+  // se randa cu „Se încarcă…", `slide` masura ACEA inaltime si animeaza spre
+  // ea — iar sectiunea de subtaskuri, sosita dupa aceea, aparea taiata peste
+  // panoul deja terminat de animat. Un gest, doua evenimente vizuale.
+  // Acum se deschide o singura data, cu ansamblul intreg si inaltimea finala.
   async function toggleTaskExpand(taskId) {
     if (ecran.telefon) { await deschideFoaia(taskId); return }
     if (expandedTask === taskId) {
       expandedTask = null
       return
     }
-    expandedTask = taskId
     await incarcaSubtaskuri(taskId)
+    expandedTask = taskId
+  }
+
+  // Asteptarea de mai sus se plateste O DATA per task si, pe desktop, de obicei
+  // deloc: mouse-ul trece pe rand inainte sa apese, deci subtaskurile sunt deja
+  // in `subtasksCache` cand vine clicul. `incarcaSubtaskuri` iese imediat daca
+  // exista cheia, deci trecerea peste zece randuri nu inseamna zece cereri de
+  // fiecare data.
+  function preincarca(taskId) {
+    if (!ecran.telefon) incarcaSubtaskuri(taskId)
   }
 
 
@@ -544,74 +576,74 @@
     <div class="td-nota"><RichText value={t.descriere} collapsible maxHeight={140} noToggle /></div>
   {/if}
 
+  <!-- Fara stare de asteptare aici: `taskDetail` se randeaza DOAR cu
+       subtaskurile deja in `subtasksCache` (vezi `toggleTaskExpand` si
+       `deschideFoaia`). Un „Se încarcă…" care se schimba intr-o sectiune mai
+       inalta era exact ruptura pe care o repara ordinea de acolo. -->
   <div class="sub-section">
-    {#if subtaskLoading && !subtasksCache[t.id]}
-      <div class="sub-loading">Se încarcă...</div>
-    {:else}
-      <!-- ANTET DE SECTIUNE, ca „Sub-tasks 0/2" la Todoist. In lista nu era nevoie
-           de el (extinderea continea doar subtaskuri); in foaie sunt trei lucruri
-           unul sub altul, deci sectiunea trebuie sa-si spuna numele. Bara de
-           progres sta pe acelasi rand: „1/4" da cifra, bara da distanta. -->
-      <div class="sub-cap">
-        <span class="sub-cap-t">Subtaskuri</span>
-        {#if subs.length}
-          {@const gata = subs.filter(s => s.done).length}
-          <div class="sub-bara" role="img"
-               aria-label="{gata} din {subs.length} subtaskuri făcute">
-            <span style="width: {(gata / subs.length) * 100}%"></span>
-          </div>
-          <span class="sub-num">{gata}/{subs.length}</span>
-        {/if}
-      </div>
-
-      {#each subs as sub (sub.id)}
-        <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
-          <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
-            {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
-          </button>
-          {#if editSubId === sub.id}
-            <input class="sub-edit" bind:value={editSubTitlu} use:focalizeaza
-                   onblur={() => salveazaRedenumirea(sub)}
-                   onkeydown={(e) => {
-                     if (e.key === 'Enter') e.currentTarget.blur()
-                     // `stopPropagation`: altfel Escape urca la backdrop si
-                     // inchidea TOATA foaia, nu doar redenumirea. Un strat.
-                     else if (e.key === 'Escape') { e.stopPropagation(); editSubId = '' }
-                   }} />
-          {:else}
-            <button class="sub-title" onclick={() => incepeRedenumirea(sub)}
-                    title="Atinge ca să redenumești">{sub.titlu}</button>
-          {/if}
-          <button class="sub-del" onclick={() => removeSubtask(sub)}
-                  aria-label="Șterge subtaskul"><SolidIcon name="trash" size={13} /></button>
+    <!-- ANTET DE SECTIUNE, ca „Sub-tasks 0/2" la Todoist. In lista nu era nevoie
+         de el (extinderea continea doar subtaskuri); in foaie sunt trei lucruri
+         unul sub altul, deci sectiunea trebuie sa-si spuna numele. Bara de
+         progres sta pe acelasi rand: „1/4" da cifra, bara da distanta. -->
+    <div class="sub-cap">
+      <span class="sub-cap-t">Subtaskuri</span>
+      {#if subs.length}
+        {@const gata = subs.filter(s => s.done).length}
+        <div class="sub-bara" role="img"
+             aria-label="{gata} din {subs.length} subtaskuri făcute">
+          <span style="width: {(gata / subs.length) * 100}%"></span>
         </div>
-      {/each}
-
-      {#if !subs.length}
-        <p class="sub-gol">Niciun subtask. Împarte taskul în pași dacă e prea mare.</p>
+        <span class="sub-num">{gata}/{subs.length}</span>
       {/if}
+    </div>
 
-      <!-- „+ Adaugă subtask" pe toata latimea, ca la Todoist, nu un camp ingust
-           cu un buton patrat langa. Campul se deschide la atingere: pana atunci
-           randul e o INVITATIE, nu un formular care sta gol pe ecran. -->
-      {#if adaugSubLa === t.id}
-        <div class="sub-add">
-          <input type="text" placeholder="Ce pas urmează?" bind:value={newSubtaskTitle} use:focalizeaza
-                 onkeydown={(e) => {
-                   if (e.key === 'Enter') addSubtask(t.id)
-                   // Acelasi motiv ca la redenumire: Escape inchide compozitorul,
-                   // nu foaia din jurul lui.
-                   else if (e.key === 'Escape') { e.stopPropagation(); adaugSubLa = ''; newSubtaskTitle = '' }
-                 }} />
-          <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
-            <Plus size={16} />
-          </button>
-        </div>
-      {:else}
-        <button class="sub-nou" onclick={() => { adaugSubLa = t.id; newSubtaskTitle = '' }}>
-          <Plus size={15} /> Adaugă subtask
+    {#each subs as sub (sub.id)}
+      <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
+        <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
+          {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
         </button>
-      {/if}
+        {#if editSubId === sub.id}
+          <input class="sub-edit" bind:value={editSubTitlu} use:focalizeaza
+                 onblur={() => salveazaRedenumirea(sub)}
+                 onkeydown={(e) => {
+                   if (e.key === 'Enter') e.currentTarget.blur()
+                   // `stopPropagation`: altfel Escape urca la backdrop si
+                   // inchidea TOATA foaia, nu doar redenumirea. Un strat.
+                   else if (e.key === 'Escape') { e.stopPropagation(); editSubId = '' }
+                 }} />
+        {:else}
+          <button class="sub-title" onclick={() => incepeRedenumirea(sub)}
+                  title="Atinge ca să redenumești">{sub.titlu}</button>
+        {/if}
+        <button class="sub-del" onclick={() => removeSubtask(sub)}
+                aria-label="Șterge subtaskul"><SolidIcon name="trash" size={13} /></button>
+      </div>
+    {/each}
+
+    {#if !subs.length}
+      <p class="sub-gol">Niciun subtask. Împarte taskul în pași dacă e prea mare.</p>
+    {/if}
+
+    <!-- „+ Adaugă subtask" pe toata latimea, ca la Todoist, nu un camp ingust
+         cu un buton patrat langa. Campul se deschide la atingere: pana atunci
+         randul e o INVITATIE, nu un formular care sta gol pe ecran. -->
+    {#if adaugSubLa === t.id}
+      <div class="sub-add">
+        <input type="text" placeholder="Ce pas urmează?" bind:value={newSubtaskTitle} use:focalizeaza
+               onkeydown={(e) => {
+                 if (e.key === 'Enter') addSubtask(t.id)
+                 // Acelasi motiv ca la redenumire: Escape inchide compozitorul,
+                 // nu foaia din jurul lui.
+                 else if (e.key === 'Escape') { e.stopPropagation(); adaugSubLa = ''; newSubtaskTitle = '' }
+               }} />
+        <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}>
+          <Plus size={16} />
+        </button>
+      </div>
+    {:else}
+      <button class="sub-nou" onclick={() => { adaugSubLa = t.id; newSubtaskTitle = '' }}>
+        <Plus size={15} /> Adaugă subtask
+      </button>
     {/if}
   </div>
 {/snippet}
@@ -735,6 +767,7 @@
                     <div class="trow-wrap" class:deschis={expandedTask === t.id}
              style="--sev: {dueColor(t.data_scadenta)}"
              animate:flip={{ duration: motionDuration(DUR_BASE) }}
+             onpointerenter={() => preincarca(t.id)}
              in:sosire|local out:plecare>
           <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}
                use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t) }}>
@@ -821,7 +854,7 @@
                in foaia de pe telefon, deci designul e identic — se schimba doar
                unde e asezat. -->
           {#if expandedTask === t.id}
-            <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+            <div class="subtask-body" transition:desfacere={{ duration: motionDuration(DUR_BASE) }}>
               {@render taskDetail(t)}
             </div>
           {/if}
@@ -1289,7 +1322,6 @@
   .sub-add-btn { width: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
   .sub-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
   .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .sub-loading { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-xs) 0; }
 
 
   .task-edit.areNota { color: var(--accent-on-subtle); }

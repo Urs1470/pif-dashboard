@@ -17,7 +17,7 @@
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate, router } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, desfacere } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
@@ -73,7 +73,6 @@
   let expandedTask = $state(null)
   let subtasksCache = $state({})
   let newSubtaskTitle = $state('')
-  let subtaskLoading = $state(false)
 
   // Done tasks collapse
   let showDoneTasks = $state(false)
@@ -331,27 +330,55 @@
 
 
   // Subtask functions
+  //
+  // INTAI DATELE, APOI DESCHIDEREA — la fel ca in /tasks. Invers, panoul se
+  // randa cu „Se încarcă…", `slide` masura acea inaltime scurta si animeaza
+  // spre ea, iar sectiunea de subtaskuri sosita dupa aceea aparea taiata peste
+  // un panou deja terminat de animat.
   async function toggleTaskExpand(taskId) {
     if (expandedTask === taskId) {
       expandedTask = null
       return
     }
-    expandedTask = taskId
     // Aici statea `loadAtt(taskId)` — fosila de la atasamente (sterse in v28).
     // Functia NU mai exista, deci apelul arunca ReferenceError in mijlocul
     // functiei async: extinderea se vedea (era setata mai sus), dar incarcarea
     // subtaskurilor de sub apel NU se mai executa niciodata. Chipul spunea
     // „0/1", lista era mereu goala, si nicio eroare nu ajungea in consola —
     // respingerea promisiunii ramanea neascultata.
-    if (!subtasksCache[taskId]) {
-      subtaskLoading = true
+    await incarcaSubtaskuri(taskId)
+    expandedTask = taskId
+  }
+
+  // Cererile in zbor: cu preincarcarea pe hover, plimbatul mouse-ului peste
+  // lista ar trimite cate o cerere de fiecare data cand intri pe acelasi rand,
+  // iar in productie limita e 60 pe minut per IP (vezi app.py). Asa, un task
+  // cere O SINGURA data.
+  const inZbor = new Map()
+
+  function incarcaSubtaskuri(taskId) {
+    if (subtasksCache[taskId]) return Promise.resolve()
+    if (inZbor.has(taskId)) return inZbor.get(taskId)
+    const p = (async () => {
       try {
         const subs = await loadSubtasks(taskId)
         subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
       } catch (_) {
+        // Cheia se scrie si pe eroare: altfel panoul n-ar avea ce arata si
+        // atingerea randului ar ramane fara raspuns.
         subtasksCache = { ...subtasksCache, [taskId]: [] }
-      } finally { subtaskLoading = false }
-    }
+      } finally {
+        inZbor.delete(taskId)
+      }
+    })()
+    inZbor.set(taskId, p)
+    return p
+  }
+
+  // Pe desktop mouse-ul trece pe rand inainte sa apese, deci asteptarea de mai
+  // sus se plateste de obicei deloc: la clic subtaskurile sunt deja in cache.
+  function preincarca(taskId) {
+    if (!ecran.telefon) incarcaSubtaskuri(taskId)
   }
 
   async function toggleSubtaskDone(sub) {
@@ -601,7 +628,9 @@
         {:else}
           <div class="task-list">
             {#each activeTasks as t, i (t.id)}
-              <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }} in:sosire|local out:plecare>
+              <div class="trow-wrap" animate:flip={{ duration: motionDuration(DUR_BASE) }}
+                   onpointerenter={() => preincarca(t.id)}
+                   in:sosire|local out:plecare>
                 <div class="trow" use:focusOnLand={focusKey('task', t.id)} style="--sev: {dueColor(t.data_scadenta)}"
                      use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: () => toggleTaskStatus(t) }}>
                   <!-- Editarea si stergerea stau in panoul de sub rand (glisare
@@ -666,7 +695,7 @@
                 {#if expandedTask === t.id}
                   {@const subs = subtasksCache[t.id] || []}
                   {@const doneCount = subs.filter(s => s.done).length}
-                  <div class="subtask-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+                  <div class="subtask-body" transition:desfacere={{ duration: motionDuration(DUR_BASE) }}>
                     {#if t.descriere}
                       <div class="note-block">
                         <RichText value={t.descriere} class="note-content" collapsible maxHeight={200} />
@@ -695,27 +724,25 @@
                           <span class="sub-num">{doneCount}/{subs.length}</span>
                         {/if}
                       </div>
-                      {#if subtaskLoading && !subtasksCache[t.id]}
-                        <div class="sub-loading">Se încarcă...</div>
-                      {:else}
-                        {#each subs as sub (sub.id)}
-                          <div class="sub-row" class:sub-done={sub.done}>
-                            <!-- Bifa ROTUNDA, ca subtaskurile din /tasks si din
-                                 foaie: acelasi obiect, acelasi semn peste tot.
-                                 Patratul amber (cbx) e al selectiilor de lista
-                                 (batch pe /projects), nu al lui „făcut". -->
-                            <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
-                              {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
-                            </button>
-                            <span class="sub-title">{sub.titlu}</span>
-                            <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)} aria-label="Șterge subtaskul"><SolidIcon name="trash" size={12} /></button>
-                          </div>
-                        {/each}
-                        <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
-                          <input type="text" placeholder="Adaugă subtask..." bind:value={newSubtaskTitle} />
-                          <button type="submit" class="sub-add-btn" disabled={!newSubtaskTitle.trim()}><Plus size={14} /></button>
-                        </form>
-                      {/if}
+                      <!-- Fara stare de asteptare: panoul se randeaza DOAR cu
+                           subtaskurile deja in cache (vezi `toggleTaskExpand`). -->
+                      {#each subs as sub (sub.id)}
+                        <div class="sub-row" class:sub-done={sub.done}>
+                          <!-- Bifa ROTUNDA, ca subtaskurile din /tasks si din
+                               foaie: acelasi obiect, acelasi semn peste tot.
+                               Patratul amber (cbx) e al selectiilor de lista
+                               (batch pe /projects), nu al lui „făcut". -->
+                          <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
+                            {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
+                          </button>
+                          <span class="sub-title">{sub.titlu}</span>
+                          <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)} aria-label="Șterge subtaskul"><SolidIcon name="trash" size={12} /></button>
+                        </div>
+                      {/each}
+                      <form class="sub-add" onsubmit={(e) => { e.preventDefault(); addSubtask(t.id) }}>
+                        <input type="text" placeholder="Adaugă subtask..." bind:value={newSubtaskTitle} />
+                        <button type="submit" class="sub-add-btn" disabled={!newSubtaskTitle.trim()}><Plus size={14} /></button>
+                      </form>
                     </div>
                   </div>
                 {/if}
@@ -1184,7 +1211,6 @@
   .sub-add-btn { width: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
   .sub-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
   .sub-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .sub-loading { font-size: var(--font-tiny); color: var(--text-dim); padding: var(--space-xs) 0; }
 
   /* Detalii proiect (bara laterala) */
   /* Detalii in bara laterala (fostul tab Info) — grila de doua coloane, fara
