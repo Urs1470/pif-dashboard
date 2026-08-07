@@ -52,6 +52,13 @@ PUSH_SUB = 'mailto:ursuion1470@gmail.com'
 ORA_TRIMITERE = 8           # ora locala a serverului
 ZILE_VECHIME = 2            # „sta fara termen de mai mult de N zile"
 TOKEN_VALABIL_ORE = 48      # pana cand vine notificarea de maine
+# Cat asteptam serviciul push (FCM/APNs) per dispozitiv. Aceeasi valoare ca in
+# google_calendar.py, dar constanta traieste AICI: `send_to_all` o folosea fara
+# s-o defineasca in modul, iar `timeout=` se evalueaza inainte de apel — deci
+# fiecare trimitere murea cu NameError, era prinsa de `except Exception` de mai
+# jos si numarata ca esec. Zero notificari plecate, si la „Trimite test", si
+# dimineata, cu un mesaj de eroare care nu arata spre cauza.
+HTTP_TIMEOUT = 15
 
 K_VAPID_PRIV = 'push_vapid_private'
 K_VAPID_PUB = 'push_vapid_public'

@@ -20,6 +20,67 @@ def static_analysis():
     js_function_check()
     api_route_check()
     db_table_check()
+    undefined_names_check()
+
+
+def undefined_names_check():
+    """Nume folosite dar nedefinite in codul de server.
+
+    DE CE EXISTA. Pe 2026-08-07 `send_to_all` chema `webpush(..., timeout=HTTP_TIMEOUT)`
+    cu constanta definita doar in `google_calendar.py`. Argumentul se evalueaza
+    inaintea apelului, deci FIECARE dispozitiv pica cu NameError; eroarea era
+    prinsa de `except Exception` si raportata ca „trimitere esuata". Notificarile
+    n-au plecat deloc — nici cele de dimineata, nici „Trimite test" — iar suita
+    ramanea verde, pentru ca proba de trimitere apeleaza `webpush` direct si
+    ocoleste tocmai functia rupta. Un import lipsa pe ramura de eroare a unei
+    rute are exact aceeasi forma: nevizitat de teste, fatal cand se ajunge acolo.
+    Verificarea e statica, deci nu depinde de trecerea prin ramura.
+
+    pyflakes e unealta de dezvoltare (ca playwright pentru smoke_ui) si NU intra
+    in requirements.txt: daca lipseste, spunem si mergem mai departe.
+    """
+    print("--- Undefined Names (server) ---")
+    try:
+        import io as _io
+        from pyflakes import api as pfapi
+        from pyflakes import messages as pfmsg
+        from pyflakes.reporter import Reporter
+    except ImportError:
+        log("warn", "pyflakes lipseste — verificarea numelor nedefinite a fost sarita "
+                    "(pip install pyflakes)")
+        return
+
+    gasite = []
+
+    class _Colector(Reporter):
+        def __init__(self):
+            super().__init__(_io.StringIO(), _io.StringIO())
+
+        def flake(self, m):
+            if isinstance(m, pfmsg.UndefinedName):
+                gasite.append(f"{m.filename}:{m.lineno}: {m.message % m.message_args}")
+
+        def syntaxError(self, filename, msg, lineno, offset, text):
+            gasite.append(f"{filename}:{lineno}: eroare de sintaxa: {msg}")
+
+        def unexpectedError(self, filename, msg):
+            gasite.append(f"{filename}: {msg}")
+
+    tinte = sorted((PROJECT_ROOT / 'blueprints').glob('*.py'))
+    tinte += [PROJECT_ROOT / n for n in
+              ('app.py', 'database.py', 'utils.py', 'csrf.py', 'labels.py', 'backup_db.py')]
+    rep = _Colector()
+    for t in tinte:
+        if t.exists():
+            pfapi.checkPath(str(t), rep)
+
+    if gasite:
+        for g in gasite[:10]:
+            log("fail", f"nume nedefinit: {g}")
+        if len(gasite) > 10:
+            log("fail", f"... si inca {len(gasite) - 10}")
+    else:
+        log("pass", f"niciun nume nedefinit in {len(tinte)} fisiere de server")
 
 def js_function_check():
     print("--- JS Function Check ---")
@@ -572,6 +633,43 @@ def push_notifications_test():
                 log("pass" if retea else "fail",
                     "criptare+semnare VAPID merg (a picat doar reteaua)" if retea
                     else f"trimiterea crapa INAINTE de retea: {_t}: {_m[:90]}")
+
+            # 4c) `send_to_all` — FUNCTIA REALA prin care pleaca orice notificare.
+            # Proba de mai sus apeleaza `webpush` DIRECT, deci ocoleste tocmai
+            # functia asta; acolo statea al doilea bug, ramas dupa fixul cheii
+            # VAPID: `timeout=HTTP_TIMEOUT`, cu constanta nedefinita in modul
+            # (exista doar in google_calendar.py). Argumentul se evalueaza inainte
+            # de apel, deci fiecare dispozitiv pica cu NameError, prins de
+            # `except Exception` si numarat ca esec — zero notificari trimise, si
+            # la „Trimite test", si dimineata. Aici `webpush` e un dublu, deci
+            # proba nu atinge reteaua si nu depinde de niciun serviciu extern.
+            subs_salvate = pushmod._abonamente()
+            eroare_salvata = pushmod.get_app_setting(pushmod.K_LAST_ERROR, '') or ''
+            apeluri = []
+            _wp_original = pushmod.webpush
+            pushmod.webpush = lambda **kw: apeluri.append(kw)
+            try:
+                pushmod._salveaza_abonamente({'proba': {
+                    'endpoint': 'https://fcm.googleapis.invalid/proba',
+                    'keys': {'p256dh': _p256dh, 'auth': _auth},
+                }})
+                trimise, esuate = pushmod.send_to_all({'title': 'proba', 'body': 'x'})
+            except Exception as _e:
+                trimise, esuate = -1, -1
+                log("fail", f"send_to_all a aruncat: {type(_e).__name__}: {str(_e)[:90]}")
+            finally:
+                pushmod.webpush = _wp_original
+                pushmod._salveaza_abonamente(subs_salvate)
+                pushmod.set_app_setting(pushmod.K_LAST_ERROR, eroare_salvata)
+            motiv_ramas = pushmod.get_app_setting(pushmod.K_LAST_ERROR, '') or ''
+            ok_send = (trimise, esuate) == (1, 0) and len(apeluri) == 1
+            log("pass" if ok_send else "fail",
+                f"send_to_all: {trimise} trimise / {esuate} esuate"
+                + ("" if ok_send else f" — {motiv_ramas[:90]}"))
+            are_timeout = bool(apeluri) and isinstance(apeluri[0].get('timeout'), (int, float)) \
+                and apeluri[0]['timeout'] > 0
+            log("pass" if are_timeout else "fail",
+                "send_to_all trimite un timeout numeric spre webpush")
 
         # 5) Tokenul
         tok = pushmod.mint_token(tid)
