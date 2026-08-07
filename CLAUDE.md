@@ -289,10 +289,27 @@ variabilă `--gl-s` (oglinda lui `--gl-p`), același prag de 42%.
 
 | suprafață | stânga | de ce |
 |---|---|---|
-| „Astăzi" | execută **„Mâine"** | tot ce vezi e scadent azi, deci mâine e chiar verbul |
+| „Astăzi" | deschide **calendarul** (`.dp-gest`) | vezi mai jos |
 | `/tasks` | deschide foaia cu **panoul de termen desfăcut** | termenele sunt împrăștiate pe săptămâni; „mâine" ar fi o zi aleasă de aplicație |
 | pagina de proiect | deschide **modalul de editare** (are câmpul Termen) | acolo nu există foaie |
 | rândul de **subtask** | execută **„Șterge"**, pistă `--danger` (`.gl-sub`) | pubela permanentă de 44px a plecat de pe rând |
+
+Pe „Astăzi" gestul a executat o vreme **„Mâine"** — părea verbul potrivit, fiindcă
+tot ce vezi acolo e scadent azi. Ion: *„trebuie data picker"*. Amânarea nu e „încă
+o zi": muți un task când știi CÂND îl faci, iar ziua aia e rareori mâine. Deci
+toate cele trei liste duc acum la aceeași întrebare — **ce zi?**
+
+Calendarul de pe „Astăzi" e **unul pe board**, nu unul pe rând: pe telefon
+`.arow-actions` nu se randează, deci nu există declanșator de apăsat. Instanța stă
+într-un înveliș de 0×0 (`.dp-gest`), iar sheet-ul ei se mută oricum în `body`
+(`use:portal`), deci învelișul strâns nu-l taie. `DatePicker` a primit
+`export function deschideCalendarul()` — aceeași funcție ca la clic, ca luna
+afișată să fie așezată la fel.
+
+**Calendarul se deschide pe luna TERMENULUI**, nu pe luna curentă. Pe board
+taskurile sunt scadente azi sau restante, deci grila e adesea o lună **trecută** —
+iar o zi din trecut lasă taskul pe board, ca restant. E corect; contează doar când
+scrii un test (vezi `audit_mobil`, care avansează până strict după luna curentă).
 
 Pe subtask ștergerea din gest e acceptabilă **doar** fiindcă are `toastUndo` cu
 commit întârziat — vezi paritatea reparată în `Tasks.svelte`.

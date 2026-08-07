@@ -37,10 +37,16 @@ bazei. Iese cu 0 daca nu a gasit nimic.
 """
 
 import argparse
+import datetime
 import os
 import shutil
 import sys
 import tempfile
+
+# Numele lunilor din `DatePicker.svelte` — folosite ca sa stiu pe ce luna s-a
+# deschis calendarul si cate apasari pe „luna urmatoare" mai trebuie.
+LUNI_DP = ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
+           'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie']
 
 RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RADACINA, 'scripts'))
@@ -280,17 +286,18 @@ def gesturi(ctx, baza):
         else:
             out('  OK    reordonarea s-a salvat pe server')
 
-    # 2. glisare spre stanga -> EXECUTA un verb (nu mai descopera un panou)
+    # 2. glisare spre stanga -> DESCHIDE ALEGEREA ZILEI
     #
-    # Contractul s-a schimbat: panoul de patru actiuni × 58px lua 176px din 390,
-    # deci taskul pe care actionai disparea de sub deget, iar „Șterge" cadea exact
-    # unde ajunge o glisare rapida. Acum stanga e simetrica cu dreapta — un gest,
-    # un verb — si pe boardul „Astăzi" verbul e „Mâine" (aici tot ce vezi e scadent
-    # azi, deci mâine e chiar cuvantul potrivit).
+    # Doua schimbari de contract, una peste alta. Intai panoul de trei-patru
+    # actiuni × 58px a plecat (176px din 390 acopereau taskul pe care actionai),
+    # inlocuit de un verb executat, ca la bifare. Apoi verbul „Mâine" a plecat si
+    # el: amanarea nu e „inca o zi", muti un task cand stii CAND il faci, iar ziua
+    # aia e rareori mâine. Acum gestul deschide acelasi calendar ca butonul
+    # „Planifică" de pe desktop si ca foaia din /tasks.
     #
-    # De aceea NU se mai verifica un transform ramas dupa ridicare: randul se
-    # intoarce la zero, ca la bifare. Se verifica pista si pragul PE PARCURS —
-    # altfel gestul ar trece si daca n-ai vedea nimic cat timp tragi.
+    # De aceea NU se verifica un transform ramas dupa ridicare: randul se intoarce
+    # la zero. Se verifica pista si pragul PE PARCURS — altfel gestul ar trece si
+    # daca n-ai vedea nimic cat timp tragi — apoi ca alegerea chiar s-a deschis.
     titlu_inainte = titluri()[0] if titluri() else None
     r = page.eval_on_selector('.arow', 'e => { const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height] }')
     cx, cy = r[0] + r[2] * 0.6, r[1] + r[3] / 2
@@ -323,19 +330,47 @@ def gesturi(ctx, baza):
     final = masuri_s[-1] if masuri_s else {}
     partial = [m for m in masuri_s if 0.05 < m.get('s', 0) < 0.95]
     if not final.get('pista'):
-        out('  PICA  glisare stanga: pista „Mâine" lipseste din rand'); probleme += 1
+        out('  PICA  glisare stanga: pista „Planifică" lipseste din rand'); probleme += 1
     elif not partial:
         out('  PICA  glisare stanga: pista nu creste pe parcurs (%s)' % [m.get('s') for m in masuri_s]); probleme += 1
     elif not final.get('amana'):
         out('  PICA  glisare stanga: pragul nu s-a atins (--gl-s=%s)' % final.get('s')); probleme += 1
     else:
         out('  OK    glisare stanga: pista creste pe parcurs, apoi pragul')
-    # Verbul chiar s-a executat: taskul mutat pe mâine pleaca de pe boardul de azi.
-    page.wait_for_timeout(1400)
-    if titlu_inainte and titlu_inainte in (titluri() or []):
-        out('  PICA  glisare stanga: taskul n-a plecat de pe board (%r)' % titlu_inainte); probleme += 1
+
+    # Calendarul chiar s-a deschis — si ca SHEET, nu ca popup agatat de un
+    # declansator care pe telefon nici nu e randat.
+    page.wait_for_timeout(900)
+    if page.locator('.dp-pop.sheet').count() == 0:
+        out('  PICA  glisare stanga: calendarul nu s-a deschis'); probleme += 1
     else:
-        out('  OK    glisare stanga executa „Mâine"')
+        out('  OK    glisare stanga deschide alegerea zilei')
+        # Si ziua aleasa chiar muta taskul: pica de pe boardul de azi.
+        #
+        # Ziua trebuie sa fie in VIITOR, si de aceea nu se ia „ultima din grila":
+        # calendarul se deschide pe luna TERMENULUI, iar pe board taskurile sunt
+        # scadente azi sau restante — deci grila e adesea o luna trecuta, si o zi
+        # din trecut lasa taskul pe board ca restant. Corect, dar nu ce masuram.
+        # Se avanseaza pana strict dupa luna curenta, apoi se ia ziua 15.
+        azi = datetime.date.today()
+        for _ in range(6):
+            titlu_luna = page.locator('.dp-pop .dp-title').inner_text().split()
+            if len(titlu_luna) != 2:
+                break
+            an = int(titlu_luna[1])
+            luna = LUNI_DP.index(titlu_luna[0]) + 1 if titlu_luna[0] in LUNI_DP else azi.month
+            if (an, luna) > (azi.year, azi.month):
+                break
+            page.locator('.dp-pop .dp-nav').nth(1).click()
+            page.wait_for_timeout(280)
+        z = page.locator('.dp-pop.sheet .dp-day', has_text='15').first
+        if z.count():
+            z.click()
+            page.wait_for_timeout(1800)
+            if titlu_inainte and titlu_inainte in (titluri() or []):
+                out('  PICA  ziua aleasa n-a mutat taskul (%r)' % titlu_inainte); probleme += 1
+            else:
+                out('  OK    ziua aleasa muta taskul de pe board')
 
     # 3. glisare spre dreapta -> bifeaza, cu verdele de prag INAINTE de ridicare
     page.reload(wait_until='load')

@@ -55,6 +55,26 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-07 (7) — Gestul duce la ALEGEREA zilei, pe toate suprafetele; agenda de 7 zile a plecat.**
+  Ion, la cele doua intrebari ramase deschise: „1. trebuie data picker  2. rezolv".
+  Pe „Astăzi" glisarea spre stanga executa „Mâine" — parea verbul potrivit, fiindca
+  tot ce vezi acolo e scadent azi. Dar amanarea nu e „inca o zi": muti un task cand
+  stii CAND il faci. Acum deschide acelasi calendar ca butonul „Planifică" de pe
+  desktop si ca foaia din /tasks. Calendarul e UNUL pe board, intr-un invelis de
+  0×0 (`.dp-gest`): pe telefon `.arow-actions` nu se randeaza, deci nu exista
+  declansator de apasat, iar sheet-ul iese oricum in `body` prin `use:portal`.
+  `DatePicker` a primit `export function deschideCalendarul()` — deschidere din
+  afara cu aceeasi asezare a lunii ca la clic.
+  **Agenda de 7 zile** (`components/tasks/AgendaColumn.svelte`) a fost STEARSA: o a
+  doua coloana de 300px care asezea aceleasi taskuri dupa aceeasi cheie — termenul
+  — langa lista tocmai grupata dupa termen. Era deja `display: none` pe telefon; o
+  coloana care nu-si plateste locul pe 390px nu si-l plateste nici pe 1440.
+  **Capcana la verificare:** calendarul se deschide pe luna TERMENULUI, iar pe board
+  taskurile sunt scadente azi sau restante — deci grila e adesea o luna TRECUTA, si
+  o zi din trecut lasa taskul pe board ca restant. Corect, dar `audit_mobil` alegea
+  „ultima zi din grila" si pica pe asta; acum avanseaza pana strict dupa luna
+  curenta.
+
 - **2026-08-07 (6) — Subtaskul: atingerea bifeaza, glisarea sterge, undo peste tot.**
   Cea mai mare tinta facea lucrul cel mai rar: titlul pornea REDENUMIREA, bifarea
   statea intr-un cerc de 26px. Acum atingi randul -> se bifeaza; redenumirea pe

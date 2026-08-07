@@ -24,7 +24,6 @@
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import RichTextEditor from '../components/ui/RichTextEditor.svelte'
   import RichText from '../components/ui/RichText.svelte'
-  import AgendaColumn from '../components/tasks/AgendaColumn.svelte'
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
 
@@ -996,8 +995,6 @@
     </div>
   {/if}
   </div>
-
-  <AgendaColumn tasks={showArchive ? globalTasks.items : activeTasks} onopen={(t) => toggleTaskExpand(t.id)} />
   </div>
 </div>
 
@@ -1534,14 +1531,15 @@
 
 
   /* ===== V3: grid lista + agenda 7 zile ===== */
-  .v3grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
+  /* AGENDA DE 7 ZILE A PLECAT (2026-08-07). Era o a doua coloana de 300px care
+     asezea ACELEASI taskuri dupa aceeasi cheie — termenul — langa lista care
+     tocmai fusese grupata dupa termen. Sub 15 taskuri repeta pur si simplu ce
+     scria alaturi, si tocmai de aceea era deja `display: none` pe telefon: o
+     coloana care nu-si plateste locul pe 390px nu si-l plateste nici pe 1440,
+     doar ca acolo e loc sa nu se observe. Lista ia toata latimea. */
+  .v3grid { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
   .list-cell { min-width: 0; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); }
   .list-label { margin-bottom: var(--space-12); }
-
-  @media (max-width: 940px) {
-    /* Agenda coboara sub lista (o singura coloana) */
-    .v3grid { grid-template-columns: 1fr; }
-  }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
@@ -1655,7 +1653,6 @@
     /* Agenda „7 zile" e acum o a doua copie a aceleiasi liste: gruparea de
        deasupra spune deja azi/mâine/zilele astea, cu actiuni cu tot. Pe desktop
        ramane — acolo sta pe coloana din dreapta si nu ia nimic de la lista. */
-    .v3grid :global(.agenda) { display: none; }
 
     /* Interiorul taskului deschis: aici se bifeaza subtaskuri si se scrie unul nou,
        deci sunt tinte ca oricare altele. Erau 28-39px. */

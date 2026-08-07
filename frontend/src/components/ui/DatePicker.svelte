@@ -95,6 +95,13 @@
     open = true
   }
 
+  // DESCHIDEREA DIN AFARA. Pe boardul „Astăzi" glisarea spre stanga duce direct la
+  // alegerea zilei, iar acolo declansatorul nu e pe ecran (`.arow-actions` lipseste
+  // pe telefon). Aceeasi functie ca la clic — altfel calendarul s-ar deschide pe
+  // luna la care ramasese, nu pe cea a taskului. Numele e lung ca sa nu se
+  // ciocneasca de tranzitia `deschide` de mai jos.
+  export function deschideCalendarul() { openCal() }
+
   // Position once Svelte has rendered the popup and bound popupEl.
   $effect(() => {
     if (open && popupEl) positionPopup()

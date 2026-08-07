@@ -98,6 +98,24 @@
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
+  // GESTUL DUCE LA ALEGEREA ZILEI, NU LA O ZI ALEASA DE APLICATIE.
+  // Stanga executa „Mâine" — pe boardul de azi mâine parea verbul potrivit,
+  // fiindca tot ce vezi e scadent azi. Dar amanarea nu e „inca o zi": muti un
+  // task cand stii CAND il faci, iar ziua aia e rareori mâine. Acum gestul
+  // deschide acelasi calendar ca butonul „Planifică" de pe desktop si ca foaia
+  // din /tasks — un singur raspuns la aceeasi intrebare, pe toate suprafetele.
+  //
+  // Calendarul e UNUL PE BOARD, nu unul pe rand: pe telefon `.arow-actions` nu se
+  // randeaza, deci nu exista declansator de apasat. Instanta traieste intr-un
+  // invelis de 0×0 (`.dp-gest`), iar sheet-ul ei se muta oricum in `body`
+  // (`use:portal`), deci nu are ce sa taie invelisul.
+  let dpGest = $state(null)
+  let tintaGest = $state(null)
+  function planificaDinGest(it) {
+    tintaGest = it
+    dpGest?.deschideCalendarul()
+  }
+
   // Reschedule via the shared DatePicker (inline, same calendar as global/project
   // tasks). Picking a day moves the task; clearing ("Sterge") removes it from today.
   async function onMoveDate(it, v) {
@@ -206,7 +224,7 @@
           animate:flip={{ duration: flipDur }}
           in:sosire|local
           out:plecare
-          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it), onAmana: () => onTomorrow(it) }}
+          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it), onAmana: () => planificaDinGest(it) }}
         >
           <!-- UN GEST = UN VERB, IN AMBELE SENSURI (vezi lib/glisare.js).
                Dreapta = „Făcut", stanga = „Mâine", amandoua cu pista care se
@@ -218,7 +236,7 @@
                taskul in lista lui. Pe desktop, unde nu se gliseaza, ambele piste
                ramanind ascunse nu costa nimic. -->
           <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
-          <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Mâine</span><span class="gl-ico-s"><ArrowRight size={17} strokeWidth={3} /></span></div>
+          <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>
 
           <div class="gl-fata">
           <span class="grip" role="button" tabindex="-1" aria-label="Trage pentru a reordona" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
@@ -308,10 +326,10 @@
           role="listitem"
           in:sosire|local
           out:plecare
-          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it), onAmana: () => onTomorrow(it) }}
+          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it), onAmana: () => planificaDinGest(it) }}
         >
           <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
-          <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Mâine</span><span class="gl-ico-s"><ArrowRight size={17} strokeWidth={3} /></span></div>
+          <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>
 
           <div class="gl-fata">
           <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">
@@ -351,6 +369,17 @@
 </section>
 
 <TaskPickerModal bind:open={showPicker} />
+
+<!-- Calendarul pe care il deschide glisarea spre stanga. Nu se vede niciodata ca
+     declansator (invelis de 0×0): pe telefon randul nu are `.arow-actions`, deci
+     n-are unde sta un buton. Sheet-ul lui iese in `body` prin `use:portal`, asa
+     ca invelisul strans nu-l taie. -->
+{#if peTelefon}
+  <span class="dp-gest" aria-hidden="true">
+    <DatePicker bind:this={dpGest} value={tintaGest?.data_scadenta || ''}
+                onchange={(v) => { if (tintaGest) onMoveDate(tintaGest, v) }} />
+  </span>
+{/if}
 
 <style>
   .board { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); margin-bottom: var(--space-lg); }
@@ -476,6 +505,12 @@
   /* Inline reschedule = a calendar ICON button (the date is implicit on the
      "today" board), styled like the other row actions; opens the shared DatePicker.
      The date text is hidden so rows stay compact. */
+  /* Calendarul deschis din gest: prezent in DOM, invizibil ca declansator.
+     `overflow: hidden` strange butonul, dar NU taie sheet-ul — acela e mutat in
+     `body` cu `use:portal`, deci nu mai are invelisul asta ca stramos. */
+  .dp-gest { position: fixed; top: 0; left: 0; width: 0; height: 0;
+    overflow: hidden; pointer-events: none; }
+
   .row-date { width: 30px; flex-shrink: 0; }
   .row-date :global(.dp-trigger) {
     width: 30px; min-height: 30px; padding: 0;
