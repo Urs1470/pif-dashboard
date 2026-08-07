@@ -20,6 +20,27 @@
             </intent-filter>
         </activity>
 
+        <!-- NOTIFICARILE NOASTRE. Trei receivere, fiecare cu un motiv:
+             ALARMA   — a sunat ora: construieste si afiseaza notificarea.
+             ACTIUNE  — „Facut"/„Azi" apasate PE notificare. Aici e tot rostul
+                        codului nativ: un receiver lucreaza fara WebView, deci
+                        taskul se bifeaza si notificarea dispare FARA sa se
+                        deschida aplicatia. Plugin-ul de Capacitor nu poate:
+                        butoanele lui sunt `PendingIntent.getActivity`.
+             REPORNIRE — Android sterge alarmele la oprirea telefonului; fara
+                        asta, prima repornire ar taia notificarile in tacere.
+             Toate `exported="false"`: nimic din afara aplicatiei n-are ce cauta
+             in ele, iar tokenul de actiune calatoreste prin extras. -->
+        <receiver android:name=".AlarmaReceiver" android:exported="false" />
+        <receiver android:name=".ActiuneReceiver" android:exported="false" />
+        <receiver android:name=".RepornireReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

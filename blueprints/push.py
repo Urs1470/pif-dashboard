@@ -137,9 +137,26 @@ def _unb64(txt):
 # Token de actiune (capabilitate pe UN task)
 # ---------------------------------------------------------------------------
 
+def _secret_curent():
+    """Secretul de semnare. `porneste_planificator` il pune la prima cerere, dar
+    ruta de tokenuri poate fi atinsa inainte — iar un token semnat cu `b''` ar fi
+    acceptat de un server care si-a pierdut secretul intre timp. Cadem pe cheia
+    aplicatiei, care e aceeasi si e persistata pe disc."""
+    global _secret
+    if not _secret:
+        try:
+            from flask import current_app
+            k = current_app.secret_key
+            _secret = k if isinstance(k, bytes) else str(k).encode('utf-8')
+        except Exception:
+            pass
+    return _secret
+
+
 def mint_token(task_id, acum=None):
     """Token semnat pentru un singur task, valabil TOKEN_VALABIL_ORE."""
     acum = acum or datetime.now()
+    _secret_curent()
     exp = int((acum + timedelta(hours=TOKEN_VALABIL_ORE)).timestamp())
     corp = _b64(json.dumps({'tid': task_id, 'exp': exp}).encode('utf-8'))
     sig = _b64(hmac.new(_secret, f'{task_id}:{exp}'.encode('utf-8'), hashlib.sha256).digest())
@@ -149,6 +166,7 @@ def mint_token(task_id, acum=None):
 def verifica_token(token, acum=None):
     """Intoarce task_id daca semnatura si expirarea sunt bune, altfel None."""
     acum = acum or datetime.now()
+    _secret_curent()
     try:
         corp, sig = (token or '').split('.', 1)
         date_ = json.loads(_unb64(corp))
@@ -408,6 +426,41 @@ def push_unsubscribe():
     subs.pop(_hash_endpoint(endpoint), None)
     _salveaza_abonamente(subs)
     return jsonify({'ok': True, 'abonamente': len(subs)})
+
+
+@push_bp.route('/api/push/tokens', methods=['POST'])
+@login_required
+def push_tokens():
+    """Tokenuri de actiune pentru taskurile pe care aplicatia le programeaza.
+
+    DE CE. Butoanele „Facut"/„Azi" de pe notificare sunt tratate de un
+    BroadcastReceiver nativ, ca sa nu se deschida aplicatia. Un receiver nu are
+    WebView, deci nu are cookie de sesiune si nici token CSRF — exact situatia
+    service worker-ului, pentru care `/api/push/action` a fost deja construita:
+    token semnat HMAC, UN task, doua actiuni, 48 de ore.
+
+    Deci telefonul cere de aici cate un token pentru fiecare task pe care il
+    pune in fereastra de notificari, si il pune in alarma. Tokenul moare odata cu
+    notificarea. Ruta cere SESIUNE — se cheama din aplicatie, cand e deschisa.
+    """
+    date = get_json_or_400()
+    ids = date.get('ids')
+    if not isinstance(ids, list) or len(ids) > 200:
+        return jsonify({'error': 'Trimite `ids`, o listă de cel mult 200.'}), 400
+    # Se semneaza DOAR taskuri care exista si sunt personale: altfel ruta ar
+    # deveni o masina de tokenuri pentru orice id ghicit.
+    conn = get_db()
+    cursor = conn.cursor()
+    curate = [str(i) for i in ids if isinstance(i, str) and i]
+    if not curate:
+        conn.close()
+        return jsonify({})
+    semne = ','.join('?' * len(curate))
+    cursor.execute(f"SELECT id FROM global_tasks WHERE sfera = 'personal' AND id IN ({semne})",
+                   curate)
+    gasite = [r['id'] for r in cursor.fetchall()]
+    conn.close()
+    return jsonify({tid: mint_token(tid) for tid in gasite})
 
 
 @push_bp.route('/api/push/setari', methods=['GET'])

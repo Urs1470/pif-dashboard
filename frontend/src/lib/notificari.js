@@ -24,8 +24,17 @@
 // PE WEB NU FACE NIMIC. Acelasi bundle ruleaza si in browserul de pe PC, unde
 // `isNativePlatform()` e fals si totul se opreste la prima linie.
 
-import { Capacitor } from '@capacitor/core'
+import { Capacitor, registerPlugin } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
+
+// PROGRAMAREA E NATIVA, NU A PLUGIN-ULUI.
+// `@capacitor/local-notifications` ramane pentru ce face bine — permisiuni si
+// comutatorul de alarma exacta — dar butoanele lui sunt construite ca
+// `PendingIntent.getActivity` (LocalNotificationManager.java:264), deci ORICE
+// apasare deschide aplicatia. Ion a cerut contrariul: „Facut" sa bifeze si sa
+// inchida notificarea, atat. Un BroadcastReceiver poate; o activitate nu.
+// Partea nativa: `android/app/src/main/java/org/iupif/pif/`.
+const NotificariPif = registerPlugin('NotificariPif')
 
 // SETARILE VIN DE PE SERVER, nu din constante.
 // Erau scrise si aici, si in `blueprints/push.py`, cu un comentariu care cerea
@@ -93,37 +102,9 @@ export function taskuriDeNotificat(items, zi, setari = IMPLICITE) {
   return out
 }
 
-async function pregatesteCanalul() {
-  // Canal propriu: asa poti regla importanta si sunetul DOAR pentru astea, din
-  // setarile Android, fara sa taci toata aplicatia.
-  try {
-    await LocalNotifications.createChannel({
-      id: CANAL,
-      name: 'Taskuri personale',
-      description: 'Dimineata, taskurile personale ramase fara termen',
-      importance: 4,               // HIGH — apare pe ecran, nu doar in sertar
-      visibility: 1,
-      lightColor: '#ffb454',
-    })
-  } catch (e) { /* canalele exista doar pe Android; pe rest, ignora */ }
-}
-
-async function pregatesteActiunile() {
-  // Aceleasi doua iesiri ca in notificarea de push: „nu l-am facut" SAU „nu
-  // i-am pus termen". Spre deosebire de service worker, aici handlerul ruleaza
-  // in aplicatie, cu sesiunea ei — deci NU mai e nevoie de tokenul semnat.
-  try {
-    await LocalNotifications.registerActionTypes({
-      types: [{
-        id: 'task-personal',
-        actions: [
-          { id: 'done', title: 'Făcut' },
-          { id: 'azi', title: 'Azi' },
-        ],
-      }],
-    })
-  } catch (e) { /* pe web nu exista tipuri de actiuni */ }
-}
+// Canalul il creeaza partea NATIVA (`AlarmaReceiver.creeazaCanalul`), acolo unde
+// se si afiseaza notificarile — un canal creat din doua locuri ar diverge tacut
+// la prima schimbare de importanta.
 
 /** Permisiunea de notificari (Android 13+ o cere explicit) + alarme exacte.
  *  Intoarce ce s-a obtinut, ca apelantul sa poata spune ce s-a pierdut. */
@@ -154,19 +135,6 @@ export async function reprogrameaza(items, setari = IMPLICITE) {
   const perm = await cerePermisiuni()
   if (!perm.notificari) return 0
 
-  await pregatesteCanalul()
-  await pregatesteActiunile()
-
-  // Stergem DOAR ce am pus noi si mai e in viitor. `getPending` intoarce tot ce
-  // e programat; fara curatare, un task bifat ar continua sa sune din alarma
-  // veche, pentru ca reprogramarea nu suprascrie decat aceleasi id-uri.
-  try {
-    const { notifications } = await LocalNotifications.getPending()
-    if (notifications?.length) {
-      await LocalNotifications.cancel({ notifications: notifications.map((n) => ({ id: n.id })) })
-    }
-  } catch (_) { /* nimic de anulat */ }
-
   const acum = new Date()
   const deProgramat = []
   for (let d = 0; d < ZILE_INAINTE; d++) {
@@ -175,21 +143,56 @@ export async function reprogrameaza(items, setari = IMPLICITE) {
     for (const { t, motiv, zile } of taskuriDeNotificat(items, zi, s)) {
       deProgramat.push({
         id: idNotificare(t.id, ziISO(zi)),
-        title: t.titlu || 'Task personal',
-        body: motiv === 'scadent'
+        taskId: t.id,
+        at: zi.getTime(),
+        titlu: t.titlu || 'Task personal',
+        corp: motiv === 'scadent'
           ? 'Scadent azi.'
           : `Fără termen de ${zile} zile — bifează sau pune-i o zi.`,
-        schedule: { at: zi, allowWhileIdle: true },
-        channelId: CANAL,
-        actionTypeId: 'task-personal',
-        extra: { taskId: t.id },
+        url: `/#/tasks?sfera=personal&focus=global:${t.id}`,
+        server: window.location.origin,
+        actiuni: true,
       })
     }
   }
-  if (deProgramat.length) {
-    await LocalNotifications.schedule({ notifications: deProgramat })
+
+  // TOKENURILE DE ACTIUNE. Receiverul nativ care trateaza „Facut"/„Azi" nu are
+  // WebView, deci nici cookie de sesiune, nici token CSRF — la fel ca service
+  // worker-ul, pentru care `/api/push/action` a fost deja construita. Cerem de
+  // aici cate un token semnat per task si il punem in alarma; moare cu ea.
+  const idsUnice = [...new Set(deProgramat.map((n) => n.taskId))]
+  if (idsUnice.length) {
+    try {
+      const tokenuri = await apiJsonIntern('/api/push/tokens', { ids: idsUnice })
+      for (const n of deProgramat) n.token = tokenuri[n.taskId] || ''
+    } catch (e) {
+      // Fara tokenuri programam oricum, dar FARA butoane: o notificare care
+      // arata „Facut" si nu face nimic e mai rea decat una fara buton.
+      for (const n of deProgramat) { n.token = ''; n.actiuni = false }
+    }
   }
-  return deProgramat.length
+
+  // `programeaza` INLOCUIESTE tot ce era pus. Nu adaugam: un task bifat intre
+  // timp trebuie sa dispara, iar alarma lui veche ar suna mai departe.
+  const { programate } = await NotificariPif.programeaza({ notificari: deProgramat })
+  return programate ?? deProgramat.length
+}
+
+/** POST minimal, ca modulul sa nu depinda de `lib/api.js` (care aduce toast-uri
+ *  si stare de UI intr-un fisier care trebuie sa ramana pur). */
+async function apiJsonIntern(cale, corp) {
+  const csrf = document.cookie.match(/csrf_token=([^;]+)/)
+  const r = await fetch(cale, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrf ? { 'X-CSRF-Token': csrf[1] } : {}),
+    },
+    body: JSON.stringify(corp),
+  })
+  if (!r.ok) throw new Error(`HTTP ${r.status}`)
+  return r.json()
 }
 
 /** PROBA. Programeaza o notificare peste ~40 de secunde, pe acelasi canal si cu
@@ -209,23 +212,19 @@ export async function probeaza() {
   if (!esteNativ()) throw new Error('Proba merge doar în aplicația de pe telefon.')
   const perm = await cerePermisiuni()
   if (!perm.notificari) throw new Error('Permisiunea pentru notificări e refuzată — dă-o din setările aplicației.')
-  await pregatesteCanalul()
-  await pregatesteActiunile()
-  const cand = new Date(Date.now() + 40000)
-  await LocalNotifications.schedule({
-    notifications: [{
-      id: 424242,
-      title: 'Probă PIF',
-      body: 'Dacă vezi asta, lanțul merge: permisiune, canal, alarmă, butoane.',
-      schedule: { at: cand, allowWhileIdle: true },
-      channelId: CANAL,
-      // CU butoane, ca proba sa arate exact ce vezi dimineata. Nu poarta niciun
-      // `taskId`, deci apasarea lor nu face nimic — ascultatorul iese din prima
-      // linie. Asta e intentia: proba dovedeste ca butoanele APAR si ca sistemul
-      // le accepta, nu inventeaza un task pe care sa-l bifeze.
-      actionTypeId: 'task-personal',
-      extra: {},
-    }],
+  // `proba`, nu `programeaza`: a doua INLOCUIESTE fereastra programata, deci o
+  // apasare pe butonul de probă ar fi șters în tăcere diminețile deja puse.
+  await NotificariPif.proba({
+    id: 424242,
+    at: Date.now() + 40000,
+    titlu: 'Probă PIF',
+    corp: 'Dacă vezi asta, lanțul merge: permisiune, canal, alarmă, butoane.',
+    server: window.location.origin,
+    // FARA token: butoanele APAR (asta se probează — că sistemul le acceptă pe
+    // canalul nostru), dar n-au ce bifa, iar receiverul doar închide notificarea.
+    // Un token fals ar fi mai rău: ar părea că merge și ar eșua tăcut pe server.
+    token: '',
+    actiuni: true,
   })
   if (perm.exacte) {
     return 'Programată peste 40 de secunde, cu alarmă exactă. Închide aplicația.'
@@ -245,36 +244,13 @@ export async function probeaza() {
   }
 }
 
-/** Leaga atingerea notificarii si cele doua actiuni de API. Se cheama O DATA,
- *  la pornirea aplicatiei. `peSchimbare` reincarca lista in aplicatie. */
-export async function legaActiunile({ apiJson, navigate, peSchimbare }) {
-  if (!esteNativ()) return
-  await LocalNotifications.addListener('localNotificationActionPerformed', async (ev) => {
-    const taskId = ev.notification?.extra?.taskId
-    if (!taskId) return
-    const azi = new Date()
-    const zi = `${azi.getFullYear()}-${String(azi.getMonth() + 1).padStart(2, '0')}-${String(azi.getDate()).padStart(2, '0')}`
-    try {
-      if (ev.actionId === 'done') {
-        await apiJson(`/api/global-tasks/${taskId}`, {
-          method: 'PUT', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'done' }),
-        })
-      } else if (ev.actionId === 'azi') {
-        await apiJson(`/api/global-tasks/${taskId}`, {
-          method: 'PUT', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data_scadenta: zi }),
-        })
-      } else {
-        // Atingerea corpului notificarii: doar deschide taskul.
-        navigate?.(`/tasks?sfera=personal&focus=global:${taskId}`)
-        return
-      }
-      await peSchimbare?.()
-    } catch (e) {
-      // Esecul nu are unde sa se vada (aplicatia poate fi in fundal), deci
-      // ducem utilizatorul la task ca sa termine manual.
-      navigate?.(`/tasks?sfera=personal&focus=global:${taskId}`)
-    }
-  })
-}
+// ASCULTATORUL DE ACTIUNI A DISPARUT, si asta e tot rostul turei.
+//
+// Butoanele „Facut"/„Azi" sunt tratate acum NATIV, de `ActiuneReceiver`, care
+// ruleaza fara WebView: apesi, taskul se bifeaza pe server, notificarea dispare
+// si aplicatia nu se deschide. Cat timp trecea prin JS, orice apasare TREBUIA sa
+// porneasca aplicatia — ascultatorul n-avea unde sa ruleze altfel.
+//
+// Atingerea CORPULUI notificarii deschide in continuare aplicatia. Acolo chiar
+// vrei sa vezi taskul, iar aterizarea implicita pe telefon e oricum
+// Taskuri/Personal (vezi `lib/router.svelte.js`), deci ajungi unde trebuie.

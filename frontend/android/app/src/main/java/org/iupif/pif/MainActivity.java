@@ -13,6 +13,7 @@ public class MainActivity extends BridgeActivity {
         // construieste puntea, iar un plugin inregistrat dupa nu mai e vazut de
         // JS si apelul cade cu „plugin not implemented".
         registerPlugin(InstalarePlugin.class);
+        registerPlugin(NotificariPlugin.class);
         super.onCreate(savedInstanceState);
     }
 

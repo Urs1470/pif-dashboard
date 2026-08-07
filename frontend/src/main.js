@@ -3,7 +3,7 @@ import './styles/global.css'
 import App from './App.svelte'
 import { apiJson } from './lib/api.js'
 import { navigate } from './lib/router.svelte.js'
-import { esteNativ, reprogrameaza, legaActiunile } from './lib/notificari.js'
+import { esteNativ, reprogrameaza } from './lib/notificari.js'
 import { verifica as verificaActualizarea, descarcaSiInstaleaza } from './lib/actualizare.js'
 // Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
 // deci extrasele de carti se vad. Pe /calc public, calc-main.js le gateaza dupa autentificare.
@@ -35,7 +35,8 @@ if (esteNativ()) {
       // exact motivul pentru care fereastra e de mai multe zile.
     }
   }
-  legaActiunile({ apiJson, navigate, peSchimbare: reprogrameazaDinServer })
+  // Nu se mai leaga niciun ascultator de actiuni: butoanele sunt tratate nativ,
+  // fara sa deschida aplicatia (vezi comentariul de la finalul `notificari.js`).
   reprogrameazaDinServer()
   // La fiecare revenire in aplicatie: taskuri bifate de pe PC ies din programare.
   document.addEventListener('visibilitychange', () => {
