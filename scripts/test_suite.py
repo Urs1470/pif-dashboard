@@ -530,6 +530,49 @@ def push_notifications_test():
         r5 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
         log("pass" if r5 == 'nimic' else "fail", f"task de 1 zi -> {r5} (nu se notifica)")
 
+        # 4b) LANTUL REAL DE TRIMITERE: cheia VAPID -> criptare -> semnare.
+        # Verificarile de mai sus injecteaza un expeditor fals, deci NU ating
+        # niciodata `webpush`. Exact acolo statea bugul: cheia era salvata ca
+        # PKCS8 PEM, iar `py_vapid.from_string` cere scalarul brut (32 octeti
+        # base64url) — semnarea crapa inainte de orice apel spre Google, si
+        # „Trimite test" pica fara sa spuna de ce. Proba: un abonament fals dar
+        # VALID criptografic, cu endpointul spre un host mort; daca ajungem la
+        # retea, criptarea si semnarea au mers.
+        if pushmod._PUSH_OK:
+            import base64 as _b64m
+            from cryptography.hazmat.primitives import serialization as _ser
+            from cryptography.hazmat.primitives.asymmetric import ec as _ec
+            priv, pub = pushmod._chei_vapid()
+            brut_ok = '-----BEGIN' not in priv
+            try:
+                brut_ok = brut_ok and len(_b64m.urlsafe_b64decode(priv + '=' * (-len(priv) % 4))) == 32
+            except Exception:
+                brut_ok = False
+            log("pass" if brut_ok else "fail",
+                "cheia VAPID privata e in formatul citit de py_vapid (raw 32B)")
+
+            _k = _ec.generate_private_key(_ec.SECP256R1())
+            _p256dh = _b64m.urlsafe_b64encode(_k.public_key().public_bytes(
+                encoding=_ser.Encoding.X962,
+                format=_ser.PublicFormat.UncompressedPoint)).decode().rstrip('=')
+            _auth = _b64m.urlsafe_b64encode(os.urandom(16)).decode().rstrip('=')
+            from pywebpush import webpush as _wp
+            try:
+                _wp(subscription_info={'endpoint': 'https://fcm.googleapis.invalid:9/x',
+                                       'keys': {'p256dh': _p256dh, 'auth': _auth}},
+                    data=json.dumps({'title': 'proba'}),
+                    vapid_private_key=priv,
+                    vapid_claims={'sub': pushmod.PUSH_SUB},
+                    timeout=3)
+                log("warn", "proba de trimitere a reusit catre un host mort (neasteptat)")
+            except Exception as _e:
+                _t, _m = type(_e).__name__, str(_e)
+                retea = ('Connection' in _t or 'Connection' in _m or 'Max retries' in _m
+                         or 'resolve' in _m.lower() or 'timed out' in _m.lower())
+                log("pass" if retea else "fail",
+                    "criptare+semnare VAPID merg (a picat doar reteaua)" if retea
+                    else f"trimiterea crapa INAINTE de retea: {_t}: {_m[:90]}")
+
         # 5) Tokenul
         tok = pushmod.mint_token(tid)
         log("pass" if pushmod.verifica_token(tok) == tid else "fail", "token: mint -> verifica")

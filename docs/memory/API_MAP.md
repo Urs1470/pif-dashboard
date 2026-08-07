@@ -78,12 +78,12 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/push/vapid-public` | `push_vapid_public` | 292 |
-| POST | `/api/push/subscribe` | `push_subscribe` | 300 |
-| POST | `/api/push/unsubscribe` | `push_unsubscribe` | 319 |
-| GET | `/api/push/status` | `push_status` | 330 |
-| POST | `/api/push/test` | `push_test` | 343 |
-| POST | `/api/push/action` | `push_action` | 360 |
+| GET | `/api/push/vapid-public` | `push_vapid_public` | 313 |
+| POST | `/api/push/subscribe` | `push_subscribe` | 321 |
+| POST | `/api/push/unsubscribe` | `push_unsubscribe` | 340 |
+| GET | `/api/push/status` | `push_status` | 351 |
+| POST | `/api/push/test` | `push_test` | 364 |
+| POST | `/api/push/action` | `push_action` | 382 |
 
 ## blueprints/tasks.py (23 rute)
 

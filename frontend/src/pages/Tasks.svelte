@@ -680,7 +680,9 @@
     pushBusy = true
     try {
       const r = await apiJson('/api/push/test', { method: 'POST', body: {} })
-      toast(r.esuate ? `Trimise: ${r.trimise}, eșuate: ${r.esuate}` : 'Notificare de test trimisă.', r.esuate ? 'error' : 'success')
+      await reincarcaPush()
+      toast(r.esuate ? (r.motiv || `Eșuate: ${r.esuate}`) : 'Notificare de test trimisă.',
+            r.esuate ? 'error' : 'success')
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
     finally { pushBusy = false }
   }

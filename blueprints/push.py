@@ -107,21 +107,36 @@ def verifica_token(token, acum=None):
 # Chei VAPID + abonamente
 # ---------------------------------------------------------------------------
 
+def _priv_raw(key):
+    """Cheia privata in FORMATUL PE CARE IL CITESTE py_vapid: scalarul de 32 de
+    octeti, base64url. `Vapid.from_string` face `b64urldecode` pe tot sirul si
+    cere fix 32 de octeti — deci ORICE PEM (si PKCS8, si SEC1) esueaza acolo.
+    Prima versiune stoca PKCS8 PEM: semnarea crapa inainte sa atinga reteaua,
+    iar „Trimite test" pica fara sa spuna de ce."""
+    return _b64(key.private_numbers().private_value.to_bytes(32, 'big'))
+
+
 def _chei_vapid():
-    """(PEM privat, cheie publica base64url). Se genereaza o SINGURA data:
-    regenerarea ar invalida in tacere toate abonamentele existente."""
+    """(cheie privata base64url, cheie publica base64url). Se genereaza o
+    SINGURA data: regenerarea ar invalida in tacere toate abonamentele."""
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import ec
+
     priv = get_app_setting(K_VAPID_PRIV)
     pub = get_app_setting(K_VAPID_PUB)
     if priv and pub:
+        if '-----BEGIN' in priv:
+            # Cheie salvata de versiunea veche (PKCS8 PEM). O CONVERTIM, nu o
+            # regeneram: perechea ramane aceeasi, deci abonamentele deja facute
+            # pe telefon continua sa mearga.
+            key = serialization.load_pem_private_key(priv.encode('ascii'), password=None)
+            priv = _priv_raw(key)
+            set_app_setting(K_VAPID_PRIV, priv)
+            logger.info('Push: cheia VAPID convertita din PEM in format raw')
         return priv, pub
-    from cryptography.hazmat.primitives import serialization
-    from cryptography.hazmat.primitives.asymmetric import ec
+
     key = ec.generate_private_key(ec.SECP256R1())
-    priv = key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption(),
-    ).decode('ascii')
+    priv = _priv_raw(key)
     pub = _b64(key.public_key().public_bytes(
         encoding=serialization.Encoding.X962,
         format=serialization.PublicFormat.UncompressedPoint,
@@ -160,13 +175,14 @@ def send_to_all(payload):
     if not subs:
         return 0, 0
     priv, _ = _chei_vapid()
-    trimise, esuate, moarte = 0, 0, []
+    trimise, esuate, moarte, motiv = 0, 0, [], ''
     for h, sub in list(subs.items()):
         try:
             webpush(subscription_info={'endpoint': sub['endpoint'], 'keys': sub['keys']},
                     data=json.dumps(payload),
                     vapid_private_key=priv,
-                    vapid_claims={'sub': PUSH_SUB})
+                    vapid_claims={'sub': PUSH_SUB},
+                    timeout=HTTP_TIMEOUT)
             trimise += 1
         except WebPushException as e:
             cod = getattr(getattr(e, 'response', None), 'status_code', 0)
@@ -174,15 +190,20 @@ def send_to_all(payload):
                 moarte.append(h)
             else:
                 esuate += 1
+                motiv = motiv or f'Serviciul push a răspuns {cod or "eroare"}.'
                 logger.error('Push: trimitere esuata (status %s)', cod)
-        except Exception:
+        except Exception as e:
             esuate += 1
+            # MOTIVUL, nu doar numarul. Prima versiune scria „N notificari nu au
+            # putut fi trimise", ceea ce nu spune daca e cheia, reteaua sau
+            # abonamentul — iar fara SSH nu ai de unde afla.
+            motiv = motiv or f'{type(e).__name__}: {str(e)[:120]}'
             logger.exception('Push: trimitere esuata')
     if moarte:
         for h in moarte:
             subs.pop(h, None)
         _salveaza_abonamente(subs)
-    set_app_setting(K_LAST_ERROR, '' if not esuate else f'{esuate} notificări nu au putut fi trimise.')
+    set_app_setting(K_LAST_ERROR, '' if not esuate else motiv)
     return trimise, esuate
 
 
@@ -354,7 +375,8 @@ def push_test():
         'tag': 'pif-test',
         'url': '/#/tasks?sfera=personal',
     })
-    return jsonify({'trimise': trimise, 'esuate': esuate})
+    return jsonify({'trimise': trimise, 'esuate': esuate,
+                    'motiv': get_app_setting(K_LAST_ERROR, '') or ''})
 
 
 @push_bp.route('/api/push/action', methods=['POST'])
