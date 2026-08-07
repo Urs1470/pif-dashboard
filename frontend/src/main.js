@@ -4,6 +4,7 @@ import App from './App.svelte'
 import { apiJson } from './lib/api.js'
 import { navigate } from './lib/router.svelte.js'
 import { esteNativ, reprogrameaza, legaActiunile } from './lib/notificari.js'
+import { verifica as verificaActualizarea, descarcaSiInstaleaza } from './lib/actualizare.js'
 // Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
 // deci extrasele de carti se vad. Pe /calc public, calc-main.js le gateaza dupa autentificare.
 
@@ -98,6 +99,38 @@ function showUpdateBanner(reg) {
     setTimeout(() => window.location.reload(), 2500)
   }
   document.body.appendChild(bar)
+}
+
+// ACTUALIZAREA CARCASEI NATIVE — acelasi banner ca cel al service worker-ului,
+// pentru ca inseamna acelasi lucru pentru tine: „ce rulezi e vechi, apasa aici".
+// Diferenta e sub capota (un APK, nu un bundle) si nu are de ce sa se vada.
+// Verificam o SINGURA data, la pornire: carcasa se schimba de cateva ori pe an,
+// iar o verificare la fiecare revenire in aplicatie ar fi trafic pentru nimic.
+if (esteNativ()) {
+  ;(async () => {
+    const stare = await verificaActualizarea(apiJson)
+    if (!stare?.nou) return
+    const bar = document.createElement('div')
+    bar.className = 'sw-update-bar'
+    const mb = stare.size ? ` · ${(stare.size / 1048576).toFixed(1)} MB` : ''
+    bar.innerHTML = `<span>Aplicație nouă: ${stare.nume}${mb}</span><button>Actualizează</button>`
+    const buton = bar.querySelector('button')
+    buton.onclick = async () => {
+      buton.disabled = true
+      buton.textContent = 'Descarc…'
+      try {
+        await descarcaSiInstaleaza((p) => { buton.textContent = `${p}%` })
+        buton.textContent = 'Instalează…'   // dialogul de sistem preia de aici
+      } catch (e) {
+        // Mesajul ramane PE BANNER, nu intr-un toast care pleaca: daca a picat
+        // permisiunea de instalare, trebuie sa poti citi ce ai de facut.
+        bar.querySelector('span').textContent = e.message
+        buton.disabled = false
+        buton.textContent = 'Încearcă din nou'
+      }
+    }
+    document.body.appendChild(bar)
+  })()
 }
 
 let deferredInstallPrompt = null

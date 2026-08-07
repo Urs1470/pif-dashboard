@@ -18,7 +18,7 @@
 # 3. Cache-urile Gradle/Android stau tot in `Tools\caches\`, ca sa nu creasca
 #    `~\.gradle` si `~\.android` in folderul de user.
 
-param([switch]$Release)
+param([switch]$Release, [switch]$Upload, [string]$Server = 'https://pif.iupif.org')
 
 $ErrorActionPreference = 'Stop'
 $rad = Split-Path -Parent $PSScriptRoot
@@ -45,8 +45,46 @@ try {
 
 $apk = Get-ChildItem "$rad\frontend\android\app\build\outputs\apk" -Recurse -Filter *.apk -ErrorAction SilentlyContinue |
        Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if ($apk) {
-    "APK: {0} ({1:N1} MB, {2})" -f $apk.FullName, ($apk.Length / 1MB), $apk.LastWriteTime
-} else {
+if (-not $apk) {
     "Build terminat, dar nu am gasit niciun .apk in app\build\outputs\apk"
+    exit 0
 }
+"APK: {0} ({1:N1} MB, {2})" -f $apk.FullName, ($apk.Length / 1MB), $apk.LastWriteTime
+
+if (-not $Upload) { exit 0 }
+
+# ---------------------------------------------------------------- publicare
+# Doar RELEASE se urca. Un APK de debug e semnat cu cheia masinii; daca ar
+# ajunge pe server, telefonul l-ar refuza la actualizare (alta semnatura) sau,
+# mai rau, l-ar accepta si ar rupe lantul pentru toate versiunile de dupa.
+if (-not $Release) { throw "Se urca doar build-uri de release: adauga -Release." }
+
+$token = $env:PIF_API_TOKEN
+if (-not $token) { throw "PIF_API_TOKEN nu e setat in mediu — fara el nu pot urca pe server." }
+
+# Versiunea o citim din APK-ul CONSTRUIT, nu din build.gradle: acolo e calculata
+# la rulare din data curenta, deci fisierul e singura sursa care stie sigur ce
+# s-a produs.
+$bt = (Get-ChildItem "$T\android-sdk\build-tools" -Directory | Sort-Object Name -Descending | Select-Object -First 1).FullName
+$badging = & "$bt\aapt2.exe" dump badging $apk.FullName 2>$null | Select-String -Pattern "^package:" | Select-Object -First 1
+if ($badging -match "versionCode='(\d+)'" ) { $cod = $Matches[1] } else { throw "Nu pot citi versionCode din APK." }
+if ($badging -match "versionName='([^']+)'") { $nume = $Matches[1] } else { throw "Nu pot citi versionName din APK." }
+
+Add-Type -AssemblyName System.Net.Http
+$client = New-Object System.Net.Http.HttpClient
+$client.Timeout = [TimeSpan]::FromMinutes(10)
+$client.DefaultRequestHeaders.Add('User-Agent', 'Cowork-PIF/1.0')
+$client.DefaultRequestHeaders.Add('Authorization', "Bearer $token")
+$continut = New-Object System.Net.Http.MultipartFormDataContent
+$fs = [System.IO.File]::OpenRead($apk.FullName)
+try {
+    $parte = New-Object System.Net.Http.StreamContent($fs)
+    $parte.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse('application/vnd.android.package-archive')
+    $continut.Add($parte, 'apk', 'pif.apk')
+    $continut.Add((New-Object System.Net.Http.StringContent($cod)), 'versionCode')
+    $continut.Add((New-Object System.Net.Http.StringContent($nume)), 'versionName')
+    $r = $client.PostAsync("$Server/api/app/upload", $continut).Result
+    $corp = $r.Content.ReadAsStringAsync().Result
+    if (-not $r.IsSuccessStatusCode) { throw "Urcarea a esuat ($($r.StatusCode)): $corp" }
+    "Urcat pe $Server — versiunea $nume ($cod)"
+} finally { $fs.Dispose(); $client.Dispose() }

@@ -1,14 +1,57 @@
 apply plugin: 'com.android.application'
 
+// CHEIA DE SEMNARE STA IN AFARA REPOULUI.
+//
+// `Repos\Tools\keys\keystore.properties` (langa .jks). Doua motive:
+//   1. un secret nu intra in git, nici in repo privat;
+//   2. actualizarea automata depinde de CONTINUITATEA semnaturii — Android
+//      refuza un APK semnat cu alta cheie si cere dezinstalare. Deci cheia
+//      trebuie sa supravietuiasca reinstalarilor de Windows si schimbarilor de
+//      masina, adica sa nu fie legata de niciun checkout.
+// Fara fisier, buildul de release cade CU MESAJ, in loc sa produca tacut un APK
+// semnat cu cheia de debug — care s-ar instala azi si ar rupe lantul maine.
+def keystorePropsFile = file("${System.properties['user.home']}/Repos/Tools/keys/keystore.properties")
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
 android {
     namespace = "org.iupif.pif"
     compileSdk = rootProject.ext.compileSdkVersion
+
+    signingConfigs {
+        release {
+            if (keystoreProps['storeFile']) {
+                storeFile file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
     defaultConfig {
         applicationId "org.iupif.pif"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // VERSIUNEA VINE DIN CEAS, NU DIN MANA.
+        // `versionCode` trebuie sa CREASCA la fiecare release, altfel Android
+        // refuza actualizarea; un numar incrementat manual se uita exact cand ai
+        // mai multe build-uri intr-o zi.
+        //
+        // Minute scurse de la 2024-01-01, nu `yyMMddHH`: prima varianta dadea
+        // ACELASI numar pentru doua build-uri din aceeasi ora — adica fix cazul
+        // in care esti cand lucrezi la carcasa si construiesti de trei ori pana
+        // iese. Minutele cresc mereu, si 2^31 de minute inseamna vreo 4000 de
+        // ani, deci nu ne intalnim cu plafonul.
+        // `-PversionCode=` il fixeaza, pentru un build reproductibil.
+        versionCode project.hasProperty('versionCode')
+                ? project.property('versionCode').toInteger()
+                : ((new Date().getTime() - 1704067200000L).intdiv(60000L)).intValue()
+        versionName project.hasProperty('versionName')
+                ? project.property('versionName')
+                : new Date().format('yyyy.MM.dd.HHmm')
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -20,6 +63,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (keystoreProps['storeFile']) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

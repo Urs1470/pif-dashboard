@@ -31,6 +31,7 @@ from blueprints.obsidian import obsidian_bp
 from blueprints.admin import admin_bp
 from blueprints.google_calendar import google_bp
 from blueprints.push import push_bp
+from blueprints.app_update import app_update_bp
 
 app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)
@@ -38,6 +39,7 @@ app.register_blueprint(obsidian_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(google_bp)
 app.register_blueprint(push_bp)
+app.register_blueprint(app_update_bp)
 
 init_csrf(app)
 

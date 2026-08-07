@@ -1,10 +1,20 @@
 package org.iupif.pif;
 
+import android.os.Bundle;
 import android.webkit.CookieManager;
 
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        // Inregistrarea trebuie sa fie INAINTE de `super.onCreate`: acolo se
+        // construieste puntea, iar un plugin inregistrat dupa nu mai e vazut de
+        // JS si apelul cade cu „plugin not implemented".
+        registerPlugin(InstalarePlugin.class);
+        super.onCreate(savedInstanceState);
+    }
 
     /**
      * SESIUNEA TREBUIE SA SUPRAVIETUIASCA INCHIDERII APLICATIEI.

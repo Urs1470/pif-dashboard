@@ -52,4 +52,14 @@
     <!-- Plugin-ul de notificari o declara oricum prin fuziunea de manifeste;
          scrisa si aici ca sa fie vizibila cand cauti ce cere aplicatia. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- ACTUALIZAREA DIN APLICATIE. Aplicatia nu vine dintr-un magazin, deci
+         nimeni nu o actualizeaza in locul ei: isi ia singura APK-ul de pe
+         serverul propriu si il preda instalatorului de sistem.
+         Din Android 8 permisiunea asta e SI un comutator per aplicatie, pe care
+         il dai separat din Setari; `InstalarePlugin.poateInstala()` il verifica
+         inainte, ca sa nu deschidem un instalator care refuza fara sa spuna
+         de ce. Instalarea propriu-zisa o confirmi tot tu — nimic nu se
+         instaleaza in tacere, si asta e o granita, nu o lipsa. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 </manifest>
