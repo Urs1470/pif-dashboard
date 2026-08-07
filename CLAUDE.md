@@ -273,6 +273,55 @@ se poate confunda cu „Scoate", care scoate perioada din calendar.
 Mutarea unei perioade **nu** reseteaza bifa: „am fost pe 5, nu pe 4" e o corectare de
 consemnare, nu o replanificare.
 
+### Perioadele se trag cu mâna (2026-08-07)
+
+Ion: *„in calendar vreau sa iau perioadele si sa le pot muta cu drag drop, acuma scrie
+trage ca sa muti dar nu functioneaza. Trebuie sa pot si schimba si perioada cu tragere."*
+
+Gestul era pe **HTML5 drag-and-drop**, si era rupt tacut. Trei motive pentru care a
+plecat, nu doua:
+
+1. **Pe touch nu se declanseaza NICIODATA `dragstart`.** Pe telefon perioadele nu se
+   puteau muta deloc — iar sub 620px benzile erau in plus `pointer-events: none`, deci
+   nici nu existau ca obiect.
+2. **Nu poate exprima „trage capatul ca sa lungesti".** API-ul are un singur inteles:
+   ridici un obiect intreg si il lasi in alta parte.
+3. **Benzile stau PESTE celule**, deci trebuia jonglat cu `pointer-events` ca dropul sa
+   stie pe ce zi a cazut.
+
+Acum totul trece prin `lib/tragere.js` (pointer events): **mouse** — gestul incepe dupa
+4px de miscare, ca un click sa ramana click; **deget** — dupa 300ms de apasare fara
+miscare, ca o atingere scurta sa ramana atingere. Derularea se blocheaza DOAR dupa ce
+gestul a inceput, printr-un `touchmove` non-passive — de aceea NU punem `touch-action:
+none` pe banda si o glisare pornita din greseala pe ea deruleaza pagina normal.
+
+Trei manere, trei intelesuri: **mijlocul** mută lucrarea, **capetele** îi schimbă
+perioada, **captura zilei** mută toată deplasarea.
+
+Patru lucruri care nu sunt evidente:
+
+- **Ziua APUCATA e cea care ajunge sub cursor**, nu inceputul lucrarii. Prinzi o perioada
+  de patru zile de a treia zi, o lasi pe joi: a treia zi cade pe joi. Varianta veche
+  punea inceputul pe ziua de drop, deci o ajustare de o zi arunca lucrarea cu trei.
+- **Fantoma e un al doilea set de benzi**, nu o mutare a celor reale. Motivul e mecanic:
+  banda apucata e chiar elementul care primeste evenimentele. Re-randata la fiecare pixel
+  (cheia ei contine ziua de inceput), Svelte i-ar distruge nodul, iar pe touch captura
+  implicita a pointerului moare odata cu el — gestul s-ar rupe fix cand incepe.
+- **`benzi` si `peZi` raman pe datele SALVATE** cat timp tragi. Daca s-ar recalcula, bara
+  ar sari de pe un rand pe altul sub deget.
+- **Pe telefon banda a ramas „decor peste celula"** — dar prin COMPORTAMENT, nu prin
+  `pointer-events: none`: o atingere scurta pe banda cheama `atingeZi` cu ziua de sub
+  deget, adica exact ce ar fi facut celula. De aceea e in `ACCEPTATE` din `audit_mobil`:
+  regula de 44px exista ca sa nu obtii ALTCEVA cand ratezi, iar aici nu poti obtine
+  altceva. Manerele de capat se ascund pe benzile de o zi (`.banda:not(.lat)`): doua
+  manere de 9px intr-o celula de 44px n-ar mai lasa de unde s-o apuci.
+
+Regresia e prinsa de `audit_mobil.py`, sectiunea **„perioadele se trag"** — cu intrare
+adevarata, nu evenimente fabricate: `page.mouse` pentru mouse si
+`Input.dispatchTouchEvent` prin CDP pentru deget. **`page.mouse` produce `pointerType:
+'mouse'` chiar si intr-un context `has_touch`** (verificat), deci ar fi ocolit exact
+ramura de apasare lunga.
+
 ### Trei campuri scoase din formularul de proiect (v36, 2026-07-30)
 
 Ion, intrebat ce se poate sterge din modalul de editare: *„sterge cele 3 puncte."*

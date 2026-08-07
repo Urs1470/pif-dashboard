@@ -20,6 +20,7 @@
   import { motion, motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { culoareProiect } from '../lib/culori.js'
+  import { incepeTragere } from '../lib/tragere.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
@@ -35,8 +36,16 @@
   let anchor = $state(monthStart(todayISO()))
   let selectata = $state(todayISO())
   let busy = $state('')
-  let dragged = $state(null)          // { tip: 'perioada'|'proiect', ... }
+  // Gestul in curs: { tip: 'lucrare'|'capat'|'deplasare'|'proiect', ... }.
+  let trag = $state(null)
   let dropZi = $state('')
+  // Ce s-ar intampla daca ai lasa acum: Map(id perioada -> {data_start, data_sfarsit}).
+  // Se aplica DOAR benzilor desenate, nu si datelor din care se calculeaza randul
+  // benzii sau continutul zilei — altfel toata grila s-ar reaseza sub deget.
+  let previz = $state(null)
+  // Un `click` vine si dupa o tragere reusita. Fara steag, mutarea unei benzi
+  // ar schimba pe urma si ziua selectata, adica panoul ar sari in alta parte.
+  let tocmaiTras = false
   let mutaId = $state('')      // perioada pentru care e deschis selectorul de data
   let mutaVal = $state('')
 
@@ -234,45 +243,80 @@
    *  capatul rămâne drept si eticheta primeste „…", ca sa se vada ca vine de mai
    *  sus.
    */
-  const bare = $derived.by(() => {
+  const indexZile = $derived(new Map(grila.map((g, i) => [g.iso, i])))
+
+  /** Taie intervalul [a, b] in felii de saptamana, gata de asezat in grila. */
+  function feliaza(a, b, banda, p) {
     const out = []
-    if (!grila.length) return out
+    if (!grila.length || !a) return out
     const prima = grila[0].iso
     const ultimaZi = grila[grila.length - 1].iso
-    const idx = new Map(grila.map((g, i) => [g.iso, i]))
+    if (b < prima || a > ultimaZi) return out
+    let i = indexZile.get(a < prima ? prima : a)
+    const fin = indexZile.get(b > ultimaZi ? ultimaZi : b)
+    if (i === undefined || fin === undefined) return out
+    while (i <= fin) {
+      const capat = Math.min(fin, Math.floor(i / 7) * 7 + 6)
+      out.push({
+        p, banda,
+        rand: Math.floor(i / 7) + 1,
+        col: (i % 7) + 1,
+        span: capat - i + 1,
+        zile: grila.slice(i, capat + 1).map(g => g.iso),
+        inceput: grila[i].iso === a,        // capatul ADEVARAT, nu al feliei
+        sfarsit: grila[capat].iso === b,
+        cheie: `${p.id}|${grila[i].iso}`,
+      })
+      i = capat + 1
+    }
+    return out
+  }
+
+  const bare = $derived.by(() => {
+    const out = []
     for (const p of (data?.perioade || [])) {
       const banda = benzi.get(p.id) ?? 0
       if (banda >= nrBenzi) continue          // peste plafon: se numara in „+N"
-      const a = p.data_start
-      const b = p.data_sfarsit || p.data_start
-      if (!a || b < prima || a > ultimaZi) continue
-      let i = idx.get(a < prima ? prima : a)
-      const fin = idx.get(b > ultimaZi ? ultimaZi : b)
-      if (i === undefined || fin === undefined) continue
-      while (i <= fin) {
-        const capat = Math.min(fin, Math.floor(i / 7) * 7 + 6)
-        out.push({
-          p, banda,
-          rand: Math.floor(i / 7) + 1,
-          col: (i % 7) + 1,
-          span: capat - i + 1,
-          zile: grila.slice(i, capat + 1).map(g => g.iso),
-          inceput: grila[i].iso === a,        // capatul ADEVARAT, nu al feliei
-          sfarsit: grila[capat].iso === b,
-          cheie: `${p.id}|${grila[i].iso}`,
-        })
-        i = capat + 1
-      }
+      out.push(...feliaza(p.data_start, p.data_sfarsit || p.data_start, banda, p))
     }
     return out
   })
 
-  /** Click pe banda selecteaza ziua de sub cursor, nu inceputul lucrarii: pe o
-   *  banda de patru zile, un click pe joi trebuie sa deschida joi. */
+  /** UNDE AR AJUNGE, cat timp tii apasat.
+   *
+   *  E un al doilea set de benzi, desenat peste cele reale — nu o mutare a celor
+   *  reale. Motivul e mecanic, nu estetic: banda apucata e chiar elementul care
+   *  primeste evenimentele gestului. Daca ar fi re-randata la fiecare pixel
+   *  (cheia ei contine ziua de inceput), Svelte ar distruge nodul, iar pe touch
+   *  captura implicita a pointerului moare odata cu el — tragerea s-ar rupe
+   *  exact in momentul in care incepe sa functioneze. */
+  const fantome = $derived.by(() => {
+    if (!previz) return []
+    const out = []
+    for (const p of (data?.perioade || [])) {
+      const v = previz.get(p.id)
+      if (!v) continue
+      const banda = benzi.get(p.id) ?? 0
+      if (banda >= nrBenzi) continue
+      out.push(...feliaza(v.data_start, v.data_sfarsit || v.data_start, banda, p))
+    }
+    return out
+  })
+
+  /** Ziua de sub cursor INTR-O banda: pe o felie de patru zile, punctul apasat
+   *  pe joi inseamna joi, nu inceputul lucrarii. */
+  function ziDinBanda(x, el, b) {
+    const r = el.getBoundingClientRect()
+    const k = Math.floor(((x - r.left) / r.width) * b.span)
+    return b.zile[Math.min(b.span - 1, Math.max(0, k))]
+  }
+
+  /** Atingerea unei benzi face exact ce face ziua de sub ea. Asa banda ramane
+   *  „decor peste celula" (decizia luata pentru telefon) desi acum e apucabila:
+   *  o atingere scurta nu poate ajunge altundeva decat ar fi ajuns fara ea. */
   function clickBanda(e, b) {
-    const r = e.currentTarget.getBoundingClientRect()
-    const k = Math.floor(((e.clientX - r.left) / r.width) * b.span)
-    selectata = b.zile[Math.min(b.span - 1, Math.max(0, k))]
+    if (tocmaiTras) return
+    atingeZi(ziDinBanda(e.clientX, e.currentTarget, b))
   }
 
   /** Numele lucrarii, nu al clientului: „Montaj", nu „Continental". */
@@ -300,7 +344,7 @@
       `${shortDate(p.data_start)}${sfarsit}`
         + `${p.locatie === 'sediu' ? ' · la sediu' : ' · pe teren'}`
         + ` · ${p.faza === 'pregatire' ? 'pregătire' : 'implementare'}`,
-      'Trage ca să muți lucrarea',
+      'Trage de mijloc ca să muți · de capete ca să schimbi perioada',
     ].filter(Boolean).join('\n')
   }
 
@@ -396,6 +440,23 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
 
+  /** Schimba capetele perioadei, fara sa o mute. Perechea lui `muta`: acolo
+   *  durata e fixa si se schimba ziua, aici ziua de sprijin e fixa si se schimba
+   *  durata. */
+  async function redimensioneaza(p, start, sfarsit) {
+    busy = p.id
+    try {
+      await apiJson(`/api/implementari/${p.id}`, {
+        method: 'PUT',
+        body: { data_start: start, data_sfarsit: sfarsit },
+      })
+      const zile = Math.max(0, diffDays(start, sfarsit)) + 1
+      toast(`${shortDate(start)}–${shortDate(sfarsit)} · ${zile} ${zile === 1 ? 'zi' : 'zile'}`, 'success')
+      selectata = start
+      await load(true)
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
+  }
+
   /** Scoate perioada din calendar. Daca era ultima, proiectul reapare in
    *  „Fara data" — asta e calea de intoarcere pentru o planificare gresita. */
   async function scoate(p) {
@@ -445,42 +506,133 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
 
-  // ===== drag & drop =====
-  // Doua manere, doua intelesuri, ca sa nu trebuiasca sa alegi dintr-un meniu:
-  //   bara      -> muti LUCRAREA aia
-  //   captura   -> muti toata DEPLASAREA, pastrandu-i forma
-  function dragLucrare(e, p) {
-    dragged = { tip: 'lucrare', p }
-    e.dataTransfer.effectAllowed = 'move'
-    try { e.dataTransfer.setData('text/plain', String(p.id)) } catch (_) {}
+  // ===== tragere directa =====
+  // Trei manere, trei intelesuri, ca sa nu trebuiasca sa alegi dintr-un meniu:
+  //   mijlocul barei -> muti LUCRAREA
+  //   capetele barei -> ii schimbi PERIOADA (o lungesti sau o scurtezi)
+  //   captura zilei  -> muti toata DEPLASAREA, pastrandu-i forma
+  //
+  // Mecanica gestului (mouse vs deget, praguri, blocarea derularii) sta in
+  // `lib/tragere.js`; aici raman doar intelesurile.
+
+  /** Ziua de sub un punct de pe ecran. Cat timp se trage, benzile si capturile
+   *  sunt scoase din calea cursorului (`.grid.trag`), deci aici ajunge celula. */
+  function ziDinPunct(x, y) {
+    const el = document.elementFromPoint(x, y)
+    return el?.closest?.('.zi')?.dataset?.zi || ''
   }
-  function dragDeplasare(e, d) {
-    dragged = { tip: 'deplasare', d }
-    e.dataTransfer.effectAllowed = 'move'
-    try { e.dataTransfer.setData('text/plain', d.cheie) } catch (_) {}
-  }
-  function dragProiect(e, proj) {
-    dragged = { tip: 'proiect', proj }
-    e.dataTransfer.effectAllowed = 'copy'
-    try { e.dataTransfer.setData('text/plain', proj.proiect_id) } catch (_) {}
-  }
-  function overZi(e, iso) {
-    if (!dragged) return
-    e.preventDefault()
-    e.dataTransfer.dropEffect = dragged.tip === 'proiect' ? 'copy' : 'move'
-    dropZi = iso
-  }
-  function dropPeZi(e, iso) {
-    if (!dragged) return
-    e.preventDefault()
-    const d = dragged
-    dragged = null
+
+  function curataTragere() {
+    trag = null
+    previz = null
     dropZi = ''
-    if (d.tip === 'lucrare') { if (d.p.data_start !== iso) muta(d.p, iso) }
-    else if (d.tip === 'deplasare') { if (d.d.start !== iso) mutaGrup([...d.d.items.values()], d.d.start, iso) }
-    else planifica(d.proj, iso)
+    tocmaiTras = true
+    // Click-ul vine dupa pointerup, in acelasi tick de evenimente.
+    setTimeout(() => { tocmaiTras = false }, 0)
   }
-  function endDrag() { dragged = null; dropZi = '' }
+
+  /** Mutarea unei lucrari. Ziua APUCATA e cea care ajunge sub cursor, nu
+   *  inceputul lucrarii: daca prinzi o perioada de patru zile de a treia zi si o
+   *  lasi pe joi, a treia zi cade pe joi. Altfel o simpla ajustare de o zi ar
+   *  arunca inceputul cu trei zile inainte. */
+  function apucaLucrare(e, b) {
+    const p = b.p
+    const apucata = ziDinBanda(e.clientX, e.currentTarget, b)
+    const decalaj = diffDays(p.data_start, apucata)
+    const durata = Math.max(0, diffDays(p.data_start, p.data_sfarsit || p.data_start))
+    incepeTragere(e, {
+      laInceput: () => { trag = { tip: 'lucrare', id: p.id } },
+      laMiscare: (x, y) => {
+        const zi = ziDinPunct(x, y)
+        if (!zi) return
+        dropZi = zi
+        const start = addDays(zi, -decalaj)
+        previz = new Map([[p.id, { data_start: start, data_sfarsit: addDays(start, durata) }]])
+      },
+      laFinal: () => {
+        const v = previz?.get(p.id)
+        curataTragere()
+        if (v && v.data_start !== p.data_start) muta(p, v.data_start)
+      },
+      laAnulare: curataTragere,
+    })
+  }
+
+  /** Redimensionarea: capatul apucat urmareste ziua de sub cursor, celalalt sta.
+   *  Capetele nu se pot incaleca — perioada se opreste la o zi, nu se intoarce
+   *  pe dos. */
+  function apucaCapat(e, b, capat) {
+    e.stopPropagation()               // altfel ar porni si mutarea
+    const p = b.p
+    incepeTragere(e, {
+      laInceput: () => { trag = { tip: 'capat', id: p.id, capat } },
+      laMiscare: (x, y) => {
+        const zi = ziDinPunct(x, y)
+        if (!zi) return
+        dropZi = zi
+        const s0 = p.data_start
+        const f0 = p.data_sfarsit || p.data_start
+        const s = capat === 'start' ? (zi > f0 ? f0 : zi) : s0
+        const f = capat === 'start' ? f0 : (zi < s0 ? s0 : zi)
+        previz = new Map([[p.id, { data_start: s, data_sfarsit: f }]])
+      },
+      laFinal: () => {
+        const v = previz?.get(p.id)
+        curataTragere()
+        if (v && (v.data_start !== p.data_start || v.data_sfarsit !== (p.data_sfarsit || p.data_start))) {
+          redimensioneaza(p, v.data_start, v.data_sfarsit)
+        }
+      },
+      laAnulare: curataTragere,
+    })
+  }
+
+  /** Deplasarea intreaga: toate lucrarile ei se decaleaza cu acelasi numar de
+   *  zile, deci forma iesirii se pastreaza. */
+  function apucaDeplasare(e, d) {
+    e.stopPropagation()
+    const lucrari = [...d.items.values()]
+    let delta = 0
+    incepeTragere(e, {
+      laInceput: () => { trag = { tip: 'deplasare', cheie: d.cheie } },
+      laMiscare: (x, y) => {
+        const zi = ziDinPunct(x, y)
+        if (!zi) return
+        dropZi = zi
+        delta = diffDays(d.start, zi)
+        const m = new Map()
+        for (const p of lucrari) {
+          m.set(p.id, {
+            data_start: addDays(p.data_start, delta),
+            data_sfarsit: addDays(p.data_sfarsit || p.data_start, delta),
+          })
+        }
+        previz = m
+      },
+      laFinal: () => {
+        const n = delta
+        curataTragere()
+        if (n) mutaGrup(lucrari, d.start, addDays(d.start, n))
+      },
+      laAnulare: curataTragere,
+    })
+  }
+
+  /** Un proiect fara perioada, tras pe o zi. Ramane si asezarea prin atingere
+   *  (alegi proiectul, apoi ziua): tragerea e pentru mouse, atingerea e pentru
+   *  cine prefera doua apasari sigure in locul unui gest lung pe telefon. */
+  function apucaProiect(e, proj) {
+    incepeTragere(e, {
+      laInceput: () => { trag = { tip: 'proiect', id: proj.proiect_id }; asezare = null },
+      laMiscare: (x, y) => { dropZi = ziDinPunct(x, y) },
+      laFinal: () => {
+        const zi = dropZi
+        curataTragere()
+        if (zi) planifica(proj, zi)
+      },
+      laAnulare: curataTragere,
+    })
+  }
 
   // ===== asezare prin atingere =====
   // Drag-and-drop-ul HTML5 nu exista pe touch: nu se declanseaza niciun
@@ -598,9 +750,8 @@
              cu o singura lucrare pe zi nu mai are jumatate de celula goala, iar
              una densa ca augustul incape fara sa strivim barele. -->
         <!-- `trag` scoate benzile din calea cursorului cat timp tragi: ele stau
-             PESTE celule, deci altfel un drop peste o banda de patru zile n-ar
-             sti pe care zi a cazut. -->
-        <div class="grid" class:sapt={mod === 'saptamani'} class:trag={!!dragged}
+             PESTE celule, deci altfel `ziDinPunct` ar nimeri banda, nu ziua. -->
+        <div class="grid" class:sapt={mod === 'saptamani'} class:trag={!!trag}
              style="--benzi: {Math.max(1, nrBenzi)}">
           {#each grila as g, i (g.iso)}
             {@const items = aleZilei(g.iso)}
@@ -611,6 +762,7 @@
                  poziție explicită) ar impinge celulele auto-plasate din loc. -->
             <button
               class="zi"
+              data-zi={g.iso}
               style="grid-row: {Math.floor(i / 7) + 1}; grid-column: {i % 7 + 1}"
               class:alta={g.alta}
               class:we={isWeekend(g.iso)}
@@ -621,8 +773,6 @@
               class:split={impartita(g.iso)}
               class:tinta={!!asezare}
               onclick={() => atingeZi(g.iso)}
-              ondragover={(e) => overZi(e, g.iso)}
-              ondrop={(e) => dropPeZi(e, g.iso)}
             >
               <!-- Antetul zilei e o linie de inaltime FIXA: numarul + captura
                    deplasarii. Captura a stat initial pe rand propriu si impingea
@@ -634,9 +784,8 @@
                 <span class="n">{parseISO(g.iso).getDate()}</span>
                 {#each capturi as d (d.cheie)}
                   <span class="cap" class:sediu={d.sediu}
-                        draggable="true"
-                        ondragstart={(e) => { e.stopPropagation(); dragDeplasare(e, d) }}
-                        ondragend={endDrag}
+                        class:se-trage={trag?.tip === 'deplasare' && trag.cheie === d.cheie}
+                        onpointerdown={(e) => apucaDeplasare(e, d)}
                         title={etichetaDeplasare(d)}>
                     {#if d.sediu}<Building2 size={9} />{:else}<MapPin size={9} />{/if}{d.sediu && d.client ? `Sediu · ${scurt(d.client)}` : d.sediu ? 'Sediu' : scurt(d.client)}
                   </span>
@@ -662,23 +811,49 @@
           {#each bare as b (b.cheie)}
             <button
               class="banda"
+              data-perioada={b.p.id}
               class:inceput={b.inceput}
               class:sfarsit={b.sfarsit}
+              class:lat={b.span > 1}
               class:sediu={b.p.locatie === 'sediu'}
               class:pregatire={b.p.faza === 'pregatire'}
+              class:se-trage={trag?.id === b.p.id}
               style="grid-row: {b.rand}; grid-column: {b.col} / span {b.span}; --c: {culoareLucrare(b.p)}; --i: {b.banda}"
-              draggable="true"
+              onpointerdown={(e) => apucaLucrare(e, b)}
               onclick={(e) => clickBanda(e, b)}
-              ondragstart={(e) => { e.stopPropagation(); dragLucrare(e, b.p) }}
-              ondragend={endDrag}
               title={etichetaLucrareLunga(b.p)}
             >
+              <!-- Manerele stau pe capetele ADEVARATE, nu pe taietura de
+                   saptamana: „…" inseamna „continua", deci acolo n-ai ce trage.
+                   Zona de prindere e mai inalta decat banda (`::before`), ca sa
+                   fie prinsa si cu degetul pe o banda de 12px. -->
+              {#if b.inceput}
+                <span class="maner st" onpointerdown={(e) => apucaCapat(e, b, 'start')}
+                      title="Trage ca să schimbi începutul"></span>
+              {/if}
               <!-- Pe o banda de mai multe zile incape si detaliul din paranteze —
                    `etichetaBara` il taia doar pentru ca inainte fiecare bara avea
                    latimea unei singure celule. Acum se taie doar cand chiar nu
                    incape. -->
               <span class="banda-t">{b.inceput ? '' : '… '}{b.span > 1 ? etichetaLucrare(b.p) : etichetaBara(b.p)}</span>
+              {#if b.sfarsit}
+                <span class="maner dr" onpointerdown={(e) => apucaCapat(e, b, 'sfarsit')}
+                      title="Trage ca să schimbi sfârșitul"></span>
+              {/if}
             </button>
+          {/each}
+
+          <!-- Unde ar ajunge. Nu primeste evenimente si nu inlocuieste banda
+               reala — vezi `fantome` pentru de ce cele doua nu pot fi acelasi
+               element. -->
+          {#each fantome as f (f.cheie)}
+            <div class="banda fantoma"
+                 class:inceput={f.inceput}
+                 class:sfarsit={f.sfarsit}
+                 style="grid-row: {f.rand}; grid-column: {f.col} / span {f.span}; --c: {culoareLucrare(f.p)}; --i: {f.banda}"
+                 aria-hidden="true">
+              <span class="banda-t">{f.inceput ? '' : '… '}{etichetaBara(f.p)}</span>
+            </div>
           {/each}
         </div>
 
@@ -823,11 +998,12 @@
             <div class="rail">
               {#each data.neplanificate as pr (pr.proiect_id)}
                 <button class="np" class:ales={asezare?.proiect_id === pr.proiect_id}
-                     style="--c: {culoareProiect(pr.proiect_id)}" draggable="true"
-                     onclick={() => comutaAsezare(pr)}
+                     class:se-trage={trag?.id === pr.proiect_id}
+                     style="--c: {culoareProiect(pr.proiect_id)}"
+                     onpointerdown={(e) => apucaProiect(e, pr)}
+                     onclick={() => { if (!tocmaiTras) comutaAsezare(pr) }}
                      aria-pressed={asezare?.proiect_id === pr.proiect_id}
-                     title={asezare?.proiect_id === pr.proiect_id ? 'Atinge o zi din calendar — sau atinge din nou ca să renunți' : 'Alege-l, apoi atinge ziua de început'}
-                     ondragstart={(e) => dragProiect(e, pr)} ondragend={endDrag}>
+                     title={asezare?.proiect_id === pr.proiect_id ? 'Atinge o zi din calendar — sau atinge din nou ca să renunți' : 'Alege-l, apoi atinge ziua de început (sau trage-l direct pe o zi)'}>
                   <GripVertical size={12} />
                   <span class="np-t">{pr.nume}</span>
                   <span class="np-s" class:lucru={pr.status === 'pregatire'}>{PROJECT_STATUS_LABELS[pr.status] || pr.status}</span>
@@ -933,7 +1109,38 @@
                    border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
   .banda:not(.inceput) { margin-left: -3px; }
   .banda:not(.sfarsit) { margin-right: -3px; }
-  .grid.trag .banda { pointer-events: none; }
+  /* Cat timp se trage, nimic din ce pluteste peste celule nu mai raspunde la
+     pointer: `ziDinPunct` foloseste `elementFromPoint`, deci ar nimeri banda in
+     locul zilei. Fantoma e oricum inertă, dar o trecem si pe ea prin regula ca
+     sa nu depinda de ordinea in care sunt scrise selectoarele. */
+  .grid.trag .banda, .grid.trag .cap { pointer-events: none; }
+
+  /* Ce apuci ramane pe loc si se stinge; ce se misca e fantoma. Doua obiecte, ca
+     sa se vada si de UNDE, si PANA UNDE — o singura bara care sare ar sterge
+     prima jumatate a informatiei. */
+  .banda.se-trage { opacity: 0.32; }
+  .fantoma { pointer-events: none; z-index: 2; outline: 1px solid var(--accent);
+             outline-offset: -1px; background: color-mix(in srgb, var(--c) 40%, transparent); }
+
+  /* MANERELE DE PERIOADA.
+     Late de 9px, dar zona de prindere se intinde peste toata inaltimea benzii si
+     inca 5px sus/jos (`::before`) — banda are 17px pe desktop si 12px pe telefon,
+     adica sub orice tinta rezonabila daca ne-am opri la conturul ei. */
+  .maner { position: absolute; top: 0; bottom: 0; width: 9px; cursor: ew-resize;
+           opacity: 0; transition: opacity var(--dur-fast) var(--ease); }
+  .maner.st { left: 0; }
+  .maner.dr { right: 0; }
+  .maner::before { content: ''; position: absolute; inset: -5px -2px; }
+  .maner::after { content: ''; position: absolute; top: 50%; left: 50%; width: 2px; height: 9px;
+                  transform: translate(-50%, -50%); border-radius: 1px; background: var(--on-color); }
+  .banda:hover .maner, .banda.se-trage .maner { opacity: 0.75; }
+  .maner:hover { opacity: 1; }
+  /* Fara hover nu exista „apropii cursorul si apare manerul". Pe deget ele
+     trebuie sa se vada de la inceput, altfel nimic nu spune ca perioada se poate
+     lungi tragand de capat. */
+  @media (hover: none) {
+    .maner { opacity: 0.6; }
+  }
   /* Zi la sediu = hasurat, zi pe teren = plin. Diferenta conteaza: una e zi de
      drum, cealalta nu. Aceeasi culoare de client, alta textura. */
   .banda.sediu { background: repeating-linear-gradient(135deg,
@@ -947,6 +1154,10 @@
       color-mix(in srgb, var(--c) 16%, transparent) 0 4px, transparent 4px 8px); }
   .banda.pregatire .banda-t { color: var(--text-secondary); }
   .banda-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Numele nu intra sub maner: linia lui de prindere ar cadea peste prima si
+     ultima litera, si n-ai sti daca textul e taiat sau desenat gresit. */
+  .banda.inceput .banda-t { padding-left: 6px; }
+  .banda.sfarsit .banda-t { padding-right: 6px; }
 
   /* Antet de inaltime fixa — vezi comentariul din template: orice variatie aici
      desincronizeaza benzile pe orizontala. nowrap + overflow hidden garanteaza
@@ -959,6 +1170,7 @@
          background: var(--bg-hover); border: 1px solid var(--border); cursor: grab;
          overflow: hidden; text-overflow: ellipsis; }
   .cap:active { cursor: grabbing; }
+  .cap.se-trage { opacity: 0.32; }
   .cap.sediu { color: var(--text-dim); }
 
   /* Jos, nu sus: barele nu mai stau in celula, deci „+N" ar ajunge chiar sub
@@ -1077,14 +1289,18 @@
        inclusiv cele care nu au incaput in benzi. */
     .plus { display: none; }
 
-    /* BENZILE DEVIN DECOR, CELULA DEVINE TINTA.
-       Pe telefon banda are 12px inaltime si nici text — deci nu e un obiect pe
-       care sa-l atingi, e o dunga de culoare care spune „aici e ceva". Dar sta
-       PESTE celula si ii fura atingerile: nimereai o dunga de 12px in loc de o
-       zi de ~50×60. Scoasa din calea degetului, toata celula raspunde, iar
-       lucrarile cu numele lor intreg si cu actiuni sunt in panoul de deasupra —
-       exact unde le trimite si numarul din coltul zilei. */
-    .banda { pointer-events: none; }
+    /* BANDA E TOT DECOR LA ATINGERE, DAR SE POATE APUCA.
+       Pana la 2026-08-07 banda era `pointer-events: none` pe telefon, ca o dunga
+       de 12px sa nu fure atingerile destinate zilei de ~50×60. Intentia aia
+       ramane — dar acum e obtinuta din COMPORTAMENT, nu din a face banda
+       inexistenta: o atingere scurta pe banda cheama exact `atingeZi` cu ziua de
+       sub deget, adica fix ce ar fi facut celula. Ce se castiga: apasarea lunga
+       apuca lucrarea si o poti muta, ceea ce inainte nu se putea deloc de pe
+       telefon (`dragstart` nu exista la deget).
+       Manerele de capat raman doar pe benzile de mai multe zile: pe una de o
+       singura zi, doua manere de 9px ar manca o celula de 44px si n-ai mai avea
+       de unde s-o apuci ca s-o muti. */
+    .banda:not(.lat) .maner { display: none; }
 
     /* Navigarea si comutatoarele de mod: erau de 28px inaltime. */
     .ico { width: var(--tap-min); height: var(--tap-min); }

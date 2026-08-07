@@ -55,6 +55,38 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-07 (3) — Perioadele din Calendar se trag pe pointer events, nu HTML5 DnD.**
+  Ion: „scrie trage ca sa muti dar nu functioneaza". HTML5 drag-and-drop nu
+  declanseaza `dragstart` la deget (deci pe telefon era imposibil), nu poate
+  exprima redimensionarea, si cerea jonglat cu `pointer-events` fiindca benzile
+  stau peste celule. `lib/tragere.js`: mouse dupa 4px de miscare, deget dupa
+  300ms de apasare; derularea se blocheaza cu `touchmove` non-passive DOAR dupa
+  ce gestul a inceput, ca sa nu punem `touch-action: none` pe banda.
+  Trei capcane: (1) fantoma trebuie sa fie un AL DOILEA element — re-randarea
+  benzii apucate ii distruge nodul si omoara captura implicita a pointerului pe
+  touch; (2) `benzi`/`peZi` raman pe datele salvate cat timp tragi, altfel bara
+  sare de pe un rand pe altul sub deget; (3) **`page.mouse` din Playwright
+  produce `pointerType: 'mouse'` chiar si intr-un context `has_touch`** — testul
+  de deget trebuie sa foloseasca `Input.dispatchTouchEvent` prin CDP, altfel
+  ocoleste exact ramura pe care crede ca o verifica.
+  Regresia e prinsa de `audit_mobil.py` -> „perioadele se trag" (verificat ca
+  pica pe gestul rupt, pe ambele intrari).
+- **2026-08-07 — Panoul taskului se deschide cu datele in mana, nu inainte.**
+  Ion: „partea din al doilea screenshot apare mai tarziu taiat". Cauza: `expandedTask`
+  se seta INAINTE de `await loadSubtasks`, deci `slide` masura inaltimea starii
+  „Se încarcă…" — iar `slide` masoara O SINGURA DATA, la primul cadru. Sectiunea de
+  subtaskuri, sosita dupa aceea, nu incapea in tinta si se vedea taiata pana cand
+  tranzitia se termina si inaltimea sarea la loc. Un gest, doua evenimente vizuale.
+  Fix: intai `await incarcaSubtaskuri`, apoi `expandedTask = id` (idem `deschideFoaia`
+  pe telefon), plus preincarcare pe `pointerenter` (desktop) cu harta `inZbor` — fara
+  ea, plimbatul mouse-ului peste lista ar putea manca limita de 60 cereri/minut.
+  Ramura „Se încarcă…" a fost SCOASA din ambele pagini: nu se mai poate randa.
+  Tranzitia noua `desfacere` (lib/motion.svelte.js) strange TOT ce ocupa spatiu
+  vertical — inaltime, padding, margini SI ambele rame — fiindca panoul din
+  ProjectDetail are rama pe patru laturi si `margin-bottom`; `slide` pe inaltime
+  singura lasa ~13px care apar dintr-un cadru. Masurat dupa: o singura inserare in
+  DOM, `scrollHeight` constant tot timpul animatiei, 0 → 283px in ~240ms.
+
 - **2026-08-07 — „S-a facut" e despre PERIOADA, nu despre proiect (v39).**
   Butonul „Da" din panoul zilei chema `PUT /api/proiecte {status:'finalizat'}`:
   intrebarea era despre perioada, raspunsul inchidea proiectul. Ion: dupa

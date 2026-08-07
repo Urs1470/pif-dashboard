@@ -13,13 +13,15 @@ CE MASOARA, pe trei latimi de telefon si pe toate rutele:
   - tinte mici   control sub 40px care nu are nici strat invizibil in jur
   - fonturi      camp sub 16px (Safari face zoom la focus si pagina sare)
   - gesturi      reordonarea prin maner si cele doua glisari, cu deget adevarat
+  - perioade     benzile din Calendar se muta si se redimensioneaza, cu mouse SI cu deget
   - de facut     gruparea pe termen, adaugarea cu zi, mutarea din gest, „Anulează"
   - „azi"        boardul de pe Acasa si grupa „Azi" din /tasks sunt aceeasi multime
   - iesire       randul bifat se stinge si pleaca imediat, nu dupa server
 
 TREI CAPCANE DE MASURARE, toate tratate aici — fara ele raportul minte:
-  1. `pointer-events: none` inseamna ca elementul NU e o tinta (benzile din
-     Calendar sunt decor; celula e tinta). Altfel ar aparea zeci de false alarme.
+  1. `pointer-events: none` inseamna ca elementul NU e o tinta. Altfel ar aparea
+     zeci de false alarme. (Benzile din Calendar NU mai intra aici de la
+     2026-08-07: sunt apucabile, deci masurabile — vezi ACCEPTATE.)
   2. Un strat invizibil in jur (`::after` cu inset negativ) mareste suprafata
      reala fara sa umfle eticheta. Se masoara intreband ce raspunde la 21px de
      centru, nu citind `getBoundingClientRect`.
@@ -79,6 +81,16 @@ ACCEPTATE = {
     # Doar informativ in rezumat — logica sta in iesirea_randului(): cadrele
     # animatiei de iesire nu se numara in medii headless (acceptat 2026-08-04).
     'cadre-iesire': 'Chromium headless taie tranzitia de iesire la 1-2 cadre; pe hardware real e vizibila',
+    # Banda de perioada din Calendar: 12px inaltime pe telefon (2026-08-07).
+    # Regula de 44px exista ca sa nu ratezi tinta si sa obtii ALTCEVA. Aici o
+    # ratare nu produce nimic diferit: o atingere pe banda cheama exact
+    # `atingeZi` cu ziua de sub deget, adica fix ce ar fi facut celula de
+    # dedesubt. Banda e tinta distincta doar pentru APASAREA LUNGA, care apuca
+    # lucrarea — un gest cu zabovire, cu confirmare vizuala (banda se stinge,
+    # apare fantoma) si reversibil pana la ridicarea degetului.
+    # Nu poate fi facuta de 44px: inaltimea benzii E pasul grilei de benzi
+    # (`--h-banda`), deci trei lucrari intr-o zi ar cere o celula de 132px.
+    'button.banda': 'banda de perioada, 12px pe telefon; atingerea face acelasi lucru ca ziua de sub ea, iar apucarea e apasare lunga',
 }
 
 MASOARA = r"""
@@ -539,6 +551,193 @@ def dockul_pe_telefon(ctx, baza):
     return probleme
 
 
+def perioadele_se_trag(browser, baza):
+    """Perioadele din Calendar se MUTA si se REDIMENSIONEAZA — cu mouse si cu deget.
+
+    DE CE EXISTA
+    Pana la 2026-08-07 tragerea era pe HTML5 drag-and-drop. Nu functiona — pe
+    deget nici nu putea, fiindca `dragstart` nu exista la atingere — si nimic
+    nu se plangea: zero exceptii, zero erori de consola, build verde, `smoke_ui`
+    verde, `audit_mobil` verde. Bara isi purta linistita tooltipul „Trage ca sa
+    muti lucrarea" deasupra unui calendar care nu muta nimic, si asa a stat pana
+    a incercat Ion.
+
+    Un gest care nu se declanseaza e ARATA IDENTIC cu unul care se declanseaza si
+    nu are ce face. Singurul mod de a face diferenta e sa tragi si sa te uiti pe
+    server daca s-a schimbat ceva — exact ce face functia asta.
+
+    Doua contexte, nu unul: cu `has_touch` Chromium transforma intrarile de mouse
+    in atingeri, deci un singur context ar testa o singura poarta din doua.
+    """
+    out('--- perioadele se trag (Calendar) ---')
+    probleme = 0
+
+    def stare(page, pid):
+        return page.evaluate(
+            """async (id) => {
+                 const prima = document.querySelector('.zi').dataset.zi;
+                 const d = await fetch('/api/calendar?start=' + prima + '&zile=49').then(r => r.json());
+                 const p = d.perioade.find(x => String(x.id) === String(id));
+                 return p ? [p.data_start, p.data_sfarsit || p.data_start] : null;
+               }""", pid)
+
+    def trage_mouse(page, _cdp, x0, y0, x1, y1, pauza):
+        page.mouse.move(x0, y0)
+        page.mouse.down()
+        page.wait_for_timeout(pauza)
+        page.mouse.move(x0 + 14, y0 + 3, steps=3)
+        page.mouse.move(x1, y1, steps=10)
+        page.wait_for_timeout(120)
+        page.mouse.up()
+        page.wait_for_timeout(900)
+
+    def trage_deget(page, cdp, x0, y0, x1, y1, pauza):
+        """Atingere ADEVARATA, prin `Input.dispatchTouchEvent`.
+
+        NU `page.mouse`: intr-un context cu `has_touch` el tot `pointerType:
+        'mouse'` produce (verificat), deci ar trece pe langa exact ramura care
+        conteaza — apasarea lunga. O verificare care ocoleste ce vrea sa
+        verifice e mai rea decat lipsa ei.
+        """
+        pct = lambda x, y: {'touchPoints': [{'x': x, 'y': y, 'id': 1}]}
+        cdp.send('Input.dispatchTouchEvent', dict(type='touchStart', **pct(x0, y0)))
+        page.wait_for_timeout(pauza)          # zabovirea: asta apuca lucrarea
+        for k in (1, 2, 3):
+            cdp.send('Input.dispatchTouchEvent',
+                     dict(type='touchMove', **pct(x0 + 5 * k, y0 + k)))
+        for k in range(1, 9):
+            cdp.send('Input.dispatchTouchEvent', dict(
+                type='touchMove',
+                **pct(x0 + (x1 - x0) * k / 8, y0 + (y1 - y0) * k / 8)))
+        page.wait_for_timeout(120)
+        cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
+        page.wait_for_timeout(900)
+
+    for eticheta, tactil, latime, inalt, pauza in (
+            ('mouse', False, 1280, 800, 0),
+            ('deget', True, 390, 844, 420)):
+        ctx = browser.new_context(
+            viewport={'width': latime, 'height': inalt},
+            is_mobile=tactil, has_touch=tactil, service_workers='block',
+            timezone_id=FUS_TEST)
+        page = ctx.new_page()
+        cdp = ctx.new_cdp_session(page) if tactil else None
+        trage = trage_deget if tactil else trage_mouse
+        erori = []
+        page.on('pageerror', lambda e: erori.append(str(e).split('\n')[0]))
+        try:
+            page.goto(baza + '/login', wait_until='load')
+            page.fill('#pin', S.PIN_TEST)
+            page.click('button[type="submit"]')
+            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
+            page.goto(baza + '/#/calendar', wait_until='load')
+            page.wait_for_selector('.banda[data-perioada]', timeout=15000)
+            page.wait_for_timeout(700)
+
+            zile = page.eval_on_selector_all(
+                '.zi[data-zi]',
+                'e => e.map(z => { const r = z.getBoundingClientRect();'
+                ' return [z.dataset.zi, r.left + r.width / 2, r.top + r.height / 2] })')
+            harta = {z[0]: (z[1], z[2]) for z in zile}
+
+            # --- 1. mutarea ---
+            b = page.eval_on_selector(
+                '.banda[data-perioada]',
+                'e => { const r = e.getBoundingClientRect();'
+                ' return [e.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2] }')
+            pid, bx, by = b[0], b[1], b[2]
+            inainte = stare(page, pid)
+            # O zi din aceeasi fereastra, indeajuns de departe cat sa nu fie ea
+            # insasi; +9 sare peste o saptamana, deci si peste alt rand din grila.
+            ordonate = [z[0] for z in zile]
+            i = ordonate.index(inainte[0]) if inainte[0] in ordonate else 0
+            tinta = ordonate[min(i + 9, len(ordonate) - 1)]
+            trage(page, cdp, bx, by, harta[tinta][0], harta[tinta][1], pauza)
+            dupa = stare(page, pid)
+            if dupa and dupa[0] != inainte[0]:
+                out('  OK    %s: perioada s-a mutat (%s -> %s)' % (eticheta, inainte[0], dupa[0]))
+            else:
+                out('  PICA  %s: perioada NU s-a mutat (a ramas %s)' % (eticheta, inainte)); probleme += 1
+
+            # Durata se pastreaza la mutare — altfel „mutarea" ar fi o taiere.
+            if dupa and (nr_zile(dupa) != nr_zile(inainte)):
+                out('  PICA  %s: mutarea a schimbat durata (%s -> %s)' % (eticheta, inainte, dupa)); probleme += 1
+            else:
+                out('  OK    %s: durata s-a pastrat la mutare' % eticheta)
+
+            # --- 2. redimensionarea ---
+            page.reload(wait_until='load')
+            page.wait_for_selector('.banda[data-perioada]', timeout=15000)
+            page.wait_for_timeout(700)
+            man = page.eval_on_selector_all(
+                '.banda.lat[data-perioada] .maner.dr',
+                'e => e.slice(0,1).map(m => { const r = m.getBoundingClientRect(); const b = m.closest(".banda");'
+                ' return [b.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2] })')
+            if not man:
+                out('  SARI  %s: nicio perioada de mai multe zile in fereastra' % eticheta)
+            else:
+                pid2, mx, my = man[0]
+                inainte2 = stare(page, pid2)
+                zile2 = page.eval_on_selector_all(
+                    '.zi[data-zi]',
+                    'e => e.map(z => { const r = z.getBoundingClientRect();'
+                    ' return [z.dataset.zi, r.left + r.width / 2, r.top + r.height / 2] })')
+                h2 = {z[0]: (z[1], z[2]) for z in zile2}
+                ord2 = [z[0] for z in zile2]
+                j = ord2.index(inainte2[1]) if inainte2[1] in ord2 else 0
+                capat = ord2[min(j + 2, len(ord2) - 1)]
+                trage(page, cdp, mx, my, h2[capat][0], h2[capat][1], pauza)
+                dupa2 = stare(page, pid2)
+                if dupa2 and dupa2[0] == inainte2[0] and dupa2[1] != inainte2[1]:
+                    out('  OK    %s: capatul s-a mutat, inceputul a stat (%s -> %s)'
+                        % (eticheta, inainte2[1], dupa2[1]))
+                else:
+                    out('  PICA  %s: redimensionare: %s -> %s' % (eticheta, inainte2, dupa2)); probleme += 1
+
+            # --- 3. doar la deget: fara apasare lunga NU se muta nimic ---
+            # Altfel orice derulare a paginii pornita de pe o banda ar tari
+            # lucrarea dupa deget.
+            if tactil:
+                page.reload(wait_until='load')
+                page.wait_for_selector('.banda[data-perioada]', timeout=15000)
+                page.wait_for_timeout(700)
+                b = page.eval_on_selector(
+                    '.banda[data-perioada]',
+                    'e => { const r = e.getBoundingClientRect();'
+                    ' return [e.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2] }')
+                zile3 = page.eval_on_selector_all(
+                    '.zi[data-zi]',
+                    'e => e.map(z => { const r = z.getBoundingClientRect();'
+                    ' return [z.dataset.zi, r.left + r.width / 2, r.top + r.height / 2] })')
+                h3 = {z[0]: (z[1], z[2]) for z in zile3}
+                ord3 = [z[0] for z in zile3]
+                inainte3 = stare(page, b[0])
+                k = ord3.index(inainte3[0]) if inainte3[0] in ord3 else 0
+                t3 = ord3[min(k + 9, len(ord3) - 1)]
+                trage(page, cdp, b[1], b[2], h3[t3][0], h3[t3][1], 0)   # fara apasare
+                dupa3 = stare(page, b[0])
+                if dupa3 == inainte3:
+                    out('  OK    deget: glisarea scurta deruleaza, nu muta')
+                else:
+                    out('  PICA  deget: s-a muta fara apasare lunga (%s -> %s)' % (inainte3, dupa3))
+                    probleme += 1
+
+            if erori:
+                out('  PICA  %s: exceptii in pagina: %s' % (eticheta, erori[:2])); probleme += 1
+        finally:
+            page.close()
+            ctx.close()
+    return probleme
+
+
+def nr_zile(pereche):
+    """Numarul de zile dintr-un [start, sfarsit] ISO."""
+    from datetime import date
+    a = date.fromisoformat(pereche[0])
+    b = date.fromisoformat(pereche[1])
+    return (b - a).days + 1
+
+
 def iesirea_randului(ctx, baza):
     """Randul bifat trebuie sa PLECE — vizibil si imediat.
     Doua lucruri se pot strica separat, si amandoua in tacere:
@@ -698,6 +897,7 @@ def main():
 
             probleme += geometrie(ctx, baza)
             if not arg.fara_gesturi:
+                probleme += perioadele_se_trag(browser, baza)
                 probleme += gesturi(ctx, baza)
                 probleme += lista_de_facut(ctx, baza)
                 probleme += azi_peste_tot(ctx, baza)
