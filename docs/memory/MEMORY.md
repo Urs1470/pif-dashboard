@@ -64,11 +64,16 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
   raspuns la fiecare rulare nu spune nimic — si tocmai asta a ascuns constatarea.
   Reparat: cheia e `div.banda`, iar geometria asteapta `networkidle` inainte de
   masura (nu inca un `sleep` ghicit).
-  **Ce a ramas descoperit, si NU e de acoperit cu o exceptie:** `button.maner.st`
-  / `.dr` (redimensionarea perioadei) au 9×12 pe telefon, pe benzile de mai multe
-  zile. Regula de 44px exista ca sa nu obtii ALTCEVA cand ratezi — iar aici ratarea
-  cade pe banda, deci apasarea lunga muta toata lucrarea in loc s-o redimensioneze.
-  Alt obiect, alta scriere in baza. Ramane raportat, nu exceptat.
+  **Ce a scos la iveala:** `button.maner.st` / `.dr` (redimensionarea perioadei) au
+  9×12 pe telefon, pe benzile de mai multe zile. Am crezut intai ca nu se califica
+  pentru exceptie — regula de 44px exista ca sa nu obtii ALTCEVA cand ratezi, iar
+  aici ratarea cade pe banda, deci MUTI in loc sa redimensionezi. Argumentul care
+  raspunde (scris in `ACCEPTATE`): manerele erau `<span>`-uri cu `onpointerdown`,
+  deci masura de 9×12 nu s-a inrautatit, doar a devenit VIZIBILA cand au ajuns
+  butoane reale; nu pot fi de 44px fiindca pasul grilei de benzi e 15px, deci ar
+  acoperi trei randuri si ar fura atingeri de la alte lucrari; iar „altceva"-ul pe
+  care il obtii cand ratezi e REVERSIBIL — mutarea se vede cat tii degetul si se
+  anuleaza ridicandu-l inainte de drop. Exceptata pe motivul asta.
 
 - **2026-08-07 (7) — Gestul duce la ALEGEREA zilei, pe toate suprafetele; agenda de 7 zile a plecat.**
   Ion, la cele doua intrebari ramase deschise: „1. trebuie data picker  2. rezolv".
