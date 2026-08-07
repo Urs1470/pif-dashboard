@@ -661,11 +661,24 @@
      Bara are ~40px si e `sticky top: 10px`, iar coloana de text avea 22px de
      padding sus: primul rand al notitei intra pe sub bara si se citea doar dupa ce
      derulai. Padding-ul de sus rezerva exact inaltimea barei. */
+  /* COLOANA DE SCRIS INCEPE DIN STANGA, SI ARE LATIME PROPRIE.
+     Ion: „editarea imi incepe la mijlocul modalului, vreau sa inceapa maxim din
+     stanga."
+     Erau doua lucruri, nu unul. `margin: 0 auto` centra coloana — dar `.rte.doc`
+     e un container flex pe COLOANA, iar o margine `auto` pe axa transversala
+     ANULEAZA intinderea (`align-items: stretch`). Deci editorul nu era o coloana
+     de 82ch centrata: se stransese pe latimea CONTINUTULUI. Masurat pe o notita
+     goala, intr-un modal de 1018px: 408px de editor si 316px de margine moarta de
+     fiecare parte. Textul incepea la jumatate, iar dreapta modalului nici macar nu
+     era zona editabila — dadeai click acolo si nu se intampla nimic.
+     `width: 100%` reda intinderea (auto-marginile nu mai exista ca s-o anuleze),
+     `max-width` pastreaza masura de citit, iar fara `margin` coloana se aseaza la
+     inceputul randului. */
   .rte.doc .rte-editor {
     max-height: none;
     min-height: calc(100% - 62px);
+    width: 100%;
     max-width: 82ch;
-    margin: 0 auto;
     padding: 64px 32px 90px;
     font-size: var(--font-body);
     line-height: var(--lh-relaxed);
