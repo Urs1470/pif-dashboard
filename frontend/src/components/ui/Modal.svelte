@@ -8,7 +8,6 @@
   import { tick } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { cubicOut } from 'svelte/easing'
   import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
 
@@ -73,10 +72,20 @@
   // avea nevoie de o distanta in px, iar aceeasi distanta arata „sarit de jos" pe
   // un sheet scund si „abia miscat" pe unul inalt. Procentul e din propria inaltime,
   // deci pornirea e mereu exact sub margine.
+  // O CASETA SI VOALUL EI NU POT AVEA DOUA CEASURI.
+  //
+  // Voalul foloseste `EASE` (vezi `transition:fade` din markup), caseta ramasese
+  // pe implicitul lui `scale` — `cubicOut`. Sunt curbe diferite, deci in prima
+  // treime voalul se intuneca vizibil inaintea casetei pe care o tine, si
+  // amandoua se opresc in acelasi moment: obiectul pare ca vine DUPA umbra lui.
+  // E aceeasi scapare pe care tura 8 a reparat-o la `fade`/`sosire`/`plecare`
+  // (`--ease` era respectata peste tot in CSS si de nicio tranzitie Svelte);
+  // `scale` n-a fost pe lista atunci fiindca `fly` si `slide` — verificate —
+  // aveau deja `cubicOut`, si a fost pus in aceeasi galeata fara sa fie deschis.
   function intra(node) {
     const duration = motionDuration(DUR_BASE)
-    if (sheet) return { duration, easing: cubicOut, css: (t, u) => `transform: translateY(${u * 100}%)` }
-    return scale(node, { start: 0.96, duration })
+    if (sheet) return { duration, easing: EASE, css: (t, u) => `transform: translateY(${u * 100}%)` }
+    return scale(node, { start: 0.96, duration, easing: EASE })
   }
 
   // ===== TRAGEREA SHEET-ULUI (telefon) =====

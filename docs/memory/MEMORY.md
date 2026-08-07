@@ -82,6 +82,23 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
   curat, `test_suite` 53/53, plus o proba de rulare pe baza insamantata (17/17)
   care confirma in stilul CALCULAT ca Svelte a scopat corect numele de keyframe.
 
+- **2026-08-07 (4) — Modalul se deschide cu datele in mana.**
+  Selectorul de taskuri (Acasa -> „Adaugă task existent") se deschidea la 228px si
+  SAREA la 374 dupa 16ms, cat era inca la opacitate 0,19 — masurat cadru cu cadru.
+  Scalarea de intrare misca 15px; saltul era de zece ori mai mare. `open` randa
+  imediat, cu `items` gol. Acum `deschis` (ce vede `<Modal>`) se aprinde dupa
+  prima cautare, cu plafon de 250ms + schelet pe ramura lenta; `onclose` intoarce
+  inchiderea catre parinte. Aceeasi regula ca la `desfacere`.
+  **A doua scapare in acelasi loc:** caseta pe `cubicOut` (implicitul lui `scale`),
+  voalul pe `EASE` — obiectul parea ca vine dupa umbra lui. `scale` scapase de
+  tura 8 fiindca `fly`/`slide` aveau deja `cubicOut` si a fost pus in aceeasi
+  galeata. Ambele ramuri din `intra()` folosesc acum `EASE`.
+  **Cum s-a gasit:** o sonda `requestAnimationFrame` care esantioneaza
+  `offsetHeight` + `opacity` + `transform` pe fiecare cadru. NU
+  `getBoundingClientRect`: include scalarea, deci raporteaza chiar animatia ca
+  „salt de inaltime". Si sonda nu poate intoarce o promisiune care traieste peste
+  un click — Playwright o vede colectata; scrie in `window.__probe`, se citeste dupa.
+
 - **2026-08-07 — Poarta de verificare dadea un verdict FALS pe masina asta.**
   `.claude/hooks/gate.py` pica pe „build" cu „npm nu exista in PATH", desi
   `npm run build` merge. TREI cauze in lant, fiecare descoperita dupa ce era

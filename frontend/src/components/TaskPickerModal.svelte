@@ -1,6 +1,7 @@
 <script>
   import { Search, Plus, FolderKanban, ListTodo } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
+  import Skeleton from './ui/Skeleton.svelte'
   import { loadCandidates, scheduleForToday } from '../stores/agenda.svelte.js'
   import { dueRing, formatDate } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -13,6 +14,31 @@
   let addingKey = $state(null)
   let searchTimer = null
 
+  // CASETA SE DESCHIDE CU DATELE IN MANA.
+  //
+  // Masurat: se deschidea la 228px si SAREA la 374 dupa 16ms, cat era inca la
+  // opacitate 0,19. Cauza: `open` randa imediat, cu `items` gol, deci caseta se
+  // dimensiona dupa o singura linie de text („Niciun task disponibil"), iar lista
+  // venea dupa. Scalarea de intrare (0,96 -> 1) misca vreo 15px; saltul era de
+  // zece ori mai mare si se juca peste ea. Ce vedeai nu era un modal care
+  // soseste, era unul care se corecteaza — si sarea si pe verticala, fiindca e
+  // centrat (top 361 -> 288).
+  //
+  // Aceeasi regula ca la `desfacere` din motion.svelte.js, unde e scrisa deja:
+  // un panou se deschide numai cu continutul masurabil, altfel tranzitia
+  // animeaza spre o tinta care se schimba sub ea.
+  //
+  // `deschis` e ce vede <Modal>; `open` ramane intentia parintelui. Inchiderea
+  // pornita de utilizator se intoarce prin `onclose`, singurul drum pe care
+  // Modal il semnaleaza in afara.
+  let deschis = $state(false)
+
+  // Plafon, ca butonul sa nu para stricat daca API-ul intarzie: peste atat
+  // deschidem oricum, cu schelet in loc de lista. Scheletul tine locul listei,
+  // deci umplerea de dupa e o inlocuire, nu un salt. Sub plafon (cazul normal)
+  // nu se vede niciodata.
+  const PLAFON_DESCHIDERE = 250
+
   async function runSearch() {
     loading = true
     try {
@@ -22,6 +48,7 @@
       toast(`Eroare: ${e.message}`, 'error')
     } finally {
       loading = false
+      deschis = true
     }
   }
 
@@ -33,6 +60,13 @@
     clearTimeout(searchTimer)
     searchTimer = setTimeout(runSearch, query ? 200 : 0)
     return () => clearTimeout(searchTimer)
+  })
+
+  // Citeste DOAR `open`, ca sa nu se rearmeze la fiecare tasta.
+  $effect(() => {
+    if (!open) { deschis = false; return }
+    const ceas = setTimeout(() => { deschis = true }, PLAFON_DESCHIDERE)
+    return () => clearTimeout(ceas)
   })
 
   const groups = $derived.by(() => {
@@ -65,15 +99,21 @@
   }
 </script>
 
-<Modal bind:open title="Adaugă task în Astăzi" size="md">
+<Modal bind:open={deschis} onclose={() => open = false} title="Adaugă task în Astăzi" size="md">
   <div class="picker">
     <div class="search-box">
       <Search size={15} />
       <input type="text" placeholder="Caută în taskuri..." bind:value={q} />
     </div>
 
-    {#if loading}
-      <div class="pk-hint">Se caută...</div>
+    <!-- Schelet DOAR la prima incarcare (`items` inca gol) — regula din sistemul
+         de design. Cand tastezi o cautare peste o lista deja adusa, randurile
+         vechi RAMAN pe ecran cat vin cele noi: altfel caseta s-ar strange la
+         inaltimea scheletului si s-ar umfla inapoi la fiecare tasta. -->
+    {#if loading && items.length === 0}
+      <div class="pk-schelet" aria-hidden="true">
+        {#each Array(5) as _}<Skeleton height="36px" />{/each}
+      </div>
     {:else if items.length === 0}
       <div class="pk-hint">{q ? 'Niciun task găsit.' : 'Niciun task disponibil de adăugat.'}</div>
     {:else}
@@ -113,6 +153,9 @@
   .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
 
   .pk-hint { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-lg); text-align: center; }
+  /* Aceeasi geometrie ca `.pk-list` (cinci randuri de 36px + acelasi gap): cand
+     lista chiar vine, ea INLOCUIESTE scheletul in loc sa impinga caseta. */
+  .pk-schelet { display: flex; flex-direction: column; gap: 4px; }
   .pk-list { display: flex; flex-direction: column; gap: var(--space-md); max-height: 52dvh; overflow-y: auto; scrollbar-width: thin; }
   .pk-group { display: flex; flex-direction: column; }
   .pk-group-head { display: flex; align-items: center; gap: 6px; font-size: var(--font-small); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); padding: 4px 2px; }
