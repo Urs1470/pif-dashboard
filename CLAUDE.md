@@ -214,9 +214,10 @@ nimic. (Aparea si `Normal` cu majuscula langa `normal`, semn ca era bifata mecan
 aceea a plecat, desi — spre deosebire de celelalte curatenii — chiar era folosita.
 Arhiva: `raw/pif-dashboard/2026-07-27-inainte-de-v34/`.
 
-Severitatea unui task se citeste acum din **termen**, nu din prioritate: `dueColor()` in
-`formatters.js` da rosu pentru depasit, amber pentru azi, warning pentru urmatoarele doua
-zile. Bordura din stanga randului o foloseste. Sortarea din exportul .md merge tot pe termen.
+Severitatea unui task se citeste acum din **termen**, nu din prioritate: `dueRing()` in
+`formatters.js` da rosu pentru depasit si amber pentru azi. Se vede pe **inelul bifei** si
+pe **textul termenului** — nu pe bordura randului (vezi tura 9 mai jos). Sortarea din
+exportul .md merge tot pe termen.
 
 ### Un proiect inchis se opreste in ziua inchiderii (v35, 2026-07-30)
 
@@ -274,6 +275,89 @@ se poate confunda cu „Scoate", care scoate perioada din calendar.
 
 Mutarea unei perioade **nu** reseteaza bifa: „am fost pe 5, nu pe 4" e o corectare de
 consemnare, nu o replanificare.
+
+### Severitatea pleacă de pe muchie (tura 9, 2026-08-07)
+
+Fiecare rând de task purta o dungă colorată de 3px pe muchia din stânga. Nu spunea
+cât de urgent e: `dueColor()` ramifica în cinci, dar **`--accent` și `--warning` sunt
+exact același hex** (`#ffb454`), iar ultimele două ramuri cădeau pe `--border-strong`
+— culoarea bordurii pe care rândul o are oricum. Cinci ramuri, **două** lucruri
+deosebibile: „azi" și „în două zile" erau literalmente același pixel.
+
+Mai grav: aceeași muchie de 3px purta **cinci înțelesuri** în aplicație — severitatea
+unui task, identitatea proiectului, locația, tipul unui toast, un citat. În pagina de
+proiect un rând de task și unul de implementare stăteau unul sub altul cu aceeași
+dungă: una spunea „urgent", cealaltă „proiectul X".
+
+**Muchia colorată de 3px nu mai există nicăieri.** Nu s-a rezervat niciunui rol.
+Verificat loc cu loc, în șase din șapte întrebuințări era a doua codificare a unui
+lucru **deja spus** — de o iconiță colorată, de un fundal tentat, sau de banda plină
+pe care o repeta în aceeași culoare. Ștergerea n-a scos informație, a scos duplicat.
+
+- **Severitatea** = `dueRing()` (trei trepte) pe **inelul bifei** + pe **textul
+  termenului**. Cercul e deja la marginea din stânga, deja rotund, și e chiar ținta
+  pe care o apeși — culoarea devine invitație, nu etichetă. Ambele canale citesc
+  **același `--ring`**, deci nu se pot desincroniza.
+- **Neutrul e `--border`, NU `--border-strong`:** inelul în repaus trebuie să rămână
+  exact bifa de dinainte, altfel fiecare rând neurgent s-ar schimba la vedere.
+- **Hoverul ADAUGĂ un halou**, nu rescrie inelul — exact greșeala de la muchie, unde
+  `:hover` ștergea `--sev` și trebuia reafirmat de mână în trei locuri.
+- **Bifa era definită de cinci ori** (18/16/14/22px în trei fișiere, plus
+  `.mcheck-gol` în Planificator). Acum o singură `.check-empty` în `global.css` —
+  neschopat, fiindcă acolo trăiesc regulile puse din markup.
+- **Identitatea** trece pe ce avea deja rândul: fill, iconiță, sau — în liste mixte —
+  un punct de 6px. `.banda.inceput` din Calendar marchează începutul prin **rază**,
+  nu prin culoare: banda e deja plină cu `var(--c)`.
+- **Toastul e singurul care primea informație din dungă** (n-are nici iconiță, nici
+  fill): o ia o iconiță Lucide în capul rândului.
+
+**Geometrie:** bordura scade de la 3px la 1px, deci fiecare selector atins primește
+înapoi în `padding` exact câți pixeli a pierdut. Fără asta, fiecare listă se
+decalează față de antetul ei.
+
+Textul suportă **o treaptă în plus** față de inel („mâine" rămâne scris, în gri):
+un cuvânt poate ce un cerc de 2px nu poate.
+
+`border-left: 3px` supraviețuiește **doar pe citate și callout-uri** în conținut de
+notiță (`MarkdownView`, `RichTextEditor`, `.atentie` din Departament) — convenție
+tipografică, nu cod de culoare.
+
+### Mișcarea: o curbă, un ceas, o adâncime (tura 8, 2026-08-07)
+
+Stratul de mișcare era deja construit. Problema era că fiecare bucată fusese reglată
+singură — aplicația se mișca bine în bucăți și prost între ele.
+
+- **Curba.** `--ease` era respectată peste tot în CSS, dar **nicio** tranziție Svelte
+  n-o folosea — nu dintr-o decizie, ci fiindcă `motion.svelte.js` exporta doar
+  duratele. `fade`, `sosire` și `plecare` rămâneau pe implicitul Svelte, care e
+  **liniar**. (`fly` și `slide` au deja `cubicOut` — verificat, nu se ating.)
+  **`svelte/easing` NU exportă un `cubicBezier` generic**, deci curba se rezolvă
+  local (Newton-Raphson + înjumătățire), verificată față de o eșantionare
+  parametrică independentă.
+- **Bifarea.** Zborul dura 240ms, comiterea venea pe `setTimeout(160)`: rândul era
+  **teleportat înapoi în ecran** la opacitate 1, ca apoi `plecare` să-l împingă din
+  nou afară. Ultimul lucru pe care îl vedeai nu era plecarea, era revenirea. Acum
+  comiterea așteaptă `transitionend`, cu cronometru de rezervă — sub
+  `reduced-motion` durata e 0, iar o tranziție de durată zero nu emite eveniment.
+- **Foaia.** `trasY = 0` la ridicarea degetului punea revenirea **cu arc** (care are
+  voie să depășească) peste ieșirea care cobora foaia: prima jumătate a ieșirii se
+  anula singură și se citea ca lag de atingere. Voalul se stingea în 120ms, când
+  foaia mai avea ~170px de coborât. **Voalul ține obiectul, deci pleacă odată cu el
+  sau după el — niciodată înainte.** Deblocarea derulării așteaptă acum sfârșitul
+  ieșirii; altfel `window.scrollTo` mișca pagina din spate sub o foaie încă vizibilă.
+- **Tabul.** `startViewTransition` pornea `import()` fără să-l aștepte, deci
+  tranziția se termina pe schelet — iar scheletul are aceeași formă pentru Calendar,
+  Planificator și Calculator. Routerul nu știe să încarce module (`lazyCache` e în
+  App), deci App își **înregistrează** încărcătorul prin `setPreincarcaRuta`, iar
+  `navigate` îl așteaptă cu o cursă de 180ms.
+- **Staggerul.** Scara `nth-child` se oprea la 8: cardurile 9–12 aveau întârziere 0
+  și **soseau primele** — ordinea văzută era inversul ordinii din listă. Indexul vine
+  acum de la element. **Variabila se numește `--celula`, nu `--i`:** `--i` înseamnă
+  deja „rândul benzii" în Calendar, iar proprietățile custom se moștenesc.
+- **Apăsarea.** Durata era tokenizată, adâncimea nu — patru valori scrise de mână.
+  `.ts-rand` se strângea cu 0,5% (sub pragul vizibil), `.status-pill` cu 8%. Acum
+  `--press-scale` .97 și `--press-scale-sm` .93; nimic nu-și mai alege singur
+  adâncimea.
 
 ### Un gest = un verb, în ambele sensuri (2026-08-07)
 
@@ -430,7 +514,8 @@ Gruparea NU se aplica taskurilor de proiect: acolo randurile sunt o secventa de
 lucru cu `ordine`, iar o regrupare dupa zi ar rupe tocmai ce le tine impreuna.
 
 **Culoarea e rezervata severitatii.** Randul avea trei sisteme de culoare care se
-bateau — severitatea (bordura + termenul), mov (categoria), amber (subtaskuri,
+bateau — severitatea (pe atunci bordura + termenul; azi inelul bifei + termenul,
+vezi tura 9), mov (categoria), amber (subtaskuri,
 recurenta, numele proiectului) — iar ierarhia iesea pe dos: indexul decorativ „01"
 era 16px/700 colorat, deasupra titlului de 12.8px. Acum titlul e `--font-body`,
 indexul e o fantoma, si singurul lucru colorat pe rand e TERMENUL. Pe boardul
@@ -669,7 +754,9 @@ Shared working tree → shared git index, so coordinate before staging/committin
   (faint DOAR etichete/large — e 3:1). Cerneala pe fill saturat: `--on-color`.
 - **Culoarea e semantică, nu decor:** amber = accent/warning (identitate), `--danger`,
   `--success`, `--info` (violet). Pe rândurile de task **culoarea e rezervată severității**
-  (bordura din stânga + termenul, prin `dueColor()`); restul metadatelor sunt gri.
+  (**inelul bifei + textul termenului**, amândouă din `--ring`, pus cu `dueRing()`);
+  restul metadatelor sunt gri. **Muchia colorată de 3px nu mai există nicăieri** —
+  nici pentru severitate, nici pentru identitate (vezi tura 9).
 - **Identitatea proiectului:** `lib/culori.js` — `culoareProiect(id)`, SINGURA sursă (paleta
   e rezolvată numeric de `scripts/solve_paleta.py`, nu aleasă din ochi; NU o copia în pagini).
   Locația: `--loc-site/--loc-sediu` (chroma mică intenționat; NU se redefinesc pe light).
