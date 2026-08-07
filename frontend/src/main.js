@@ -23,8 +23,13 @@ const app = mount(App, {
 if (esteNativ()) {
   const reprogrameazaDinServer = async () => {
     try {
-      const d = await apiJson('/api/global-tasks?sfera=personal')
-      await reprogrameaza(Array.isArray(d) ? d : d.tasks || [])
+      // Setarile SI lista, in paralel: sunt doua cereri independente, iar
+      // programarea are nevoie de amandoua ca sa fie corecta.
+      const [d, setari] = await Promise.all([
+        apiJson('/api/global-tasks?sfera=personal'),
+        apiJson('/api/push/setari').catch(() => null),
+      ])
+      await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], setari)
     } catch (e) {
       // Fara retea nu putem reprograma, dar alarmele deja puse raman valabile —
       // exact motivul pentru care fereastra e de mai multe zile.

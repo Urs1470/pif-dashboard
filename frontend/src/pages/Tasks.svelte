@@ -27,7 +27,7 @@
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
   import { suportaPush, esteIosNeinstalat, stareAbonament, aboneaza, dezaboneaza } from '../lib/push.js'
-  import { esteNativ, probeaza } from '../lib/notificari.js'
+  import { esteNativ, probeaza, reprogrameaza } from '../lib/notificari.js'
 
   // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
   // adresabila — un link din paleta, din cautare sau de pe Acasa aterizeaza
@@ -649,6 +649,12 @@
   }
 
   async function deschidePush() {
+    // Setarile se cer la DESCHIDEREA ferestrei, nu la incarcarea paginii: sunt
+    // folosite doar aici, si o cerere in plus la fiecare intrare pe Taskuri ar
+    // fi trafic pentru un ecran pe care il deschizi de doua ori pe an.
+    if (esteNativ() && !setari) {
+      apiJson('/api/push/setari').then((s) => { setari = s }).catch(() => {})
+    }
     showPushModal = true
     try { await reincarcaPush() }
     catch (e) { showPushModal = false; toast(`Eroare: ${e.message}`, 'error') }
@@ -699,6 +705,42 @@
       toast(await probeaza(), 'success')
     } catch (e) { toast(e.message, 'error') }
     finally { pushBusy = false }
+  }
+
+  // SETARILE DE NOTIFICARI (doar in aplicatia nativa — pe web nu exista canalul
+  // local pe care sa-l regleze). Stau pe server, deci sunt aceleasi de pe orice
+  // dispozitiv si supravietuiesc unei reinstalari.
+  let setari = $state(null)
+  let setariEroare = $state('')
+  const oreDisponibile = Array.from({ length: 24 }, (_, h) => ({
+    value: h, label: `${String(h).padStart(2, '0')}:00`,
+  }))
+
+  async function salveazaSetari() {
+    if (pushBusy || !setari) return
+    pushBusy = true
+    setariEroare = ''
+    try {
+      // Serverul valideaza si INTOARCE forma normalizata — o folosim pe aia, nu
+      // pe cea din formular: altfel un camp corectat de server (numar venit ca
+      // text din <input type=number>) ar ramane afisat gresit.
+      const salvate = await apiJson('/api/push/setari', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ora: Number(setari.ora), zileVechime: Number(setari.zileVechime),
+          scadente: !!setari.scadente, faraTermen: !!setari.faraTermen,
+        }),
+      })
+      setari = salvate
+      // Reprogramarea IMEDIAT dupa salvare: altfel alarmele deja puse ar suna la
+      // ora veche pana la urmatoarea deschidere a aplicatiei, iar tu ai crede ca
+      // setarea n-a prins.
+      const d = await apiJson('/api/global-tasks?sfera=personal')
+      const cate = await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], salvate)
+      toast(`Salvat — ${cate} notificări programate.`, 'success')
+    } catch (e) {
+      setariEroare = e.message
+    } finally { pushBusy = false }
   }
 
   // Aterizarea din fluxul OAuth: serverul redirectioneaza cu ?google=conectat|
@@ -1261,11 +1303,26 @@
   {#if esteNativ()}
     <p class="g-text">Aici alarma o pune telefonul, din timp — nu vine de pe server, deci nu
       depinde nici de rețea, nici de starea aplicației în momentul în care sună.</p>
-    <div class="g-stare">
-      <div class="g-rand"><span class="g-et">Ora</span><span class="g-val">08:00</span></div>
-      <div class="g-rand"><span class="g-et">Scadente</span><span class="g-val">în dimineața zilei</span></div>
-      <div class="g-rand"><span class="g-et">Fără termen</span><span class="g-val">zilnic, după 2 zile</span></div>
-    </div>
+    {#if setari}
+      <!-- Setarile stau pe SERVER, nu pe telefon: le vezi si le schimbi si din
+           browser, si supravietuiesc unei reinstalari a aplicatiei. -->
+      <div class="n-setari">
+        <Select label="Ora" bind:value={setari.ora} options={oreDisponibile} size="sm" />
+        <Input label="Fără termen, după (zile)" type="number" min="0" max="60"
+               bind:value={setari.zileVechime} />
+        <label class="n-comutator">
+          <input type="checkbox" bind:checked={setari.scadente} />
+          <span>Taskurile scadente, în dimineața zilei</span>
+        </label>
+        <label class="n-comutator">
+          <input type="checkbox" bind:checked={setari.faraTermen} />
+          <span>Taskurile fără termen, în fiecare dimineață</span>
+        </label>
+        {#if setariEroare}<p class="g-eroare">{setariEroare}</p>{/if}
+      </div>
+    {:else}
+      <div class="g-skel"><Skeleton width="70%" height="14px" /><Skeleton width="50%" height="14px" /></div>
+    {/if}
   {:else if pushStatus === null}
     <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
   {:else if !pushStatus.disponibil}
@@ -1303,6 +1360,7 @@
     {#if esteNativ()}
       <div class="modal-actions">
         <Button variant="secondary" disabled={pushBusy} onclick={probaLocala}>Notificare de probă</Button>
+        <Button disabled={pushBusy || !setari} onclick={salveazaSetari}>Salvează</Button>
       </div>
     {:else if pushStatus?.disponibil && pushLocal?.abonat}
       <div class="modal-actions">
@@ -1394,6 +1452,24 @@
   .g-link { font-size: var(--font-small); color: var(--text-dim); background: none; border: none;
             cursor: pointer; text-decoration: underline; padding: 0; align-self: center; }
   .g-link:hover { color: var(--text); }
+
+  /* SETARILE DE NOTIFICARI. Fara haina proprie: campurile sunt `Input`/`Select`
+     din aceeasi trusa ca peste tot, iar aici raman doar asezarea si comutatoarele.
+     Doua coloane pe latime, o coloana pe telefon — ora si pragul sunt scurte si
+     ar arata pierdute pe un rand intreg. */
+  .n-setari { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: var(--space-sm) var(--space-md); margin-top: var(--space-sm); }
+  /* Comutatoarele sunt propozitii, nu campuri: tin toata latimea si se citesc
+     ca o fraza, ca sa se vada CE se opreste, nu doar ca exista un buton. */
+  .n-comutator { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-sm);
+                 font-size: var(--font-small); color: var(--text-secondary);
+                 min-height: var(--tap-min); cursor: pointer; }
+  .n-comutator input { width: 18px; height: 18px; flex: none; accent-color: var(--accent);
+                       cursor: pointer; }
+  .n-setari :global(.g-eroare) { grid-column: 1 / -1; }
+  @media (max-width: 620px) {
+    .n-setari { grid-template-columns: 1fr; }
+  }
   /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
      iar severitatea se citeste din bordura din stanga, dupa termen. */
 

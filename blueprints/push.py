@@ -60,6 +60,7 @@ TOKEN_VALABIL_ORE = 48      # pana cand vine notificarea de maine
 # dimineata, cu un mesaj de eroare care nu arata spre cauza.
 HTTP_TIMEOUT = 15
 
+K_SETARI = 'push_setari'
 K_VAPID_PRIV = 'push_vapid_private'
 K_VAPID_PUB = 'push_vapid_public'
 K_SUBS = 'push_subscriptions'
@@ -69,6 +70,58 @@ K_LAST_ERROR = 'push_last_error'
 _secret = b''               # setat de porneste_planificator (threadul n-are app context)
 _planificator_pornit = False
 _lock = threading.Lock()
+
+
+# ---------------------------------------------------------------------------
+# Setarile — O SINGURA SURSA pentru ambele canale
+# ---------------------------------------------------------------------------
+# `ORA_TRIMITERE` si `ZILE_VECHIME` erau constante scrise si aici, si in
+# `frontend/src/lib/notificari.js`, cu un comentariu care cerea sa fie schimbate
+# impreuna. O obligatie tinuta de disciplina se rupe tacut: una se schimba, alta
+# nu, iar telefonul si serverul incep sa creada lucruri diferite despre aceeasi
+# regula. Acum valorile stau in `app_settings`, iar constantele de mai sus sunt
+# doar ce se foloseste cand nu s-a ales nimic.
+
+SETARI_IMPLICITE = {
+    'ora': ORA_TRIMITERE,
+    'zileVechime': ZILE_VECHIME,
+    'scadente': True,        # notifica in dimineata zilei de scadenta
+    'faraTermen': True,      # notifica zilnic taskurile fara termen
+}
+
+
+def _setari():
+    """Setarile curente, completate cu implicitele. Nu arunca niciodata: o
+    valoare stricata in baza nu are voie sa opreasca notificarile cu totul."""
+    val = get_app_setting(K_SETARI)
+    s = dict(SETARI_IMPLICITE)
+    if val:
+        try:
+            s.update({k: v for k, v in json.loads(val).items() if k in SETARI_IMPLICITE})
+        except ValueError:
+            logger.warning('Push: setari invalide in baza, folosesc implicitele')
+    return s
+
+
+def _valideaza_setari(d):
+    """(setari, eroare). Validarea e AICI, nu in interfata: telefonul si browserul
+    trimit amandoua spre ruta asta, iar o regula scrisa in doua locuri diverge."""
+    out = dict(SETARI_IMPLICITE)
+    try:
+        ora = int(d.get('ora', out['ora']))
+        zile = int(d.get('zileVechime', out['zileVechime']))
+    except (TypeError, ValueError):
+        return None, 'Ora și pragul trebuie să fie numere.'
+    if not 0 <= ora <= 23:
+        return None, 'Ora trebuie să fie între 0 și 23.'
+    if not 0 <= zile <= 60:
+        return None, 'Pragul trebuie să fie între 0 și 60 de zile.'
+    out['ora'], out['zileVechime'] = ora, zile
+    out['scadente'] = bool(d.get('scadente', out['scadente']))
+    out['faraTermen'] = bool(d.get('faraTermen', out['faraTermen']))
+    if not out['scadente'] and not out['faraTermen']:
+        return None, 'Cel puțin un fel de notificare trebuie să rămână pornit.'
+    return out, None
 
 
 def _b64(raw):
@@ -214,7 +267,7 @@ def send_to_all(payload):
     return trimise, esuate
 
 
-def taskuri_de_notificat(cursor):
+def taskuri_de_notificat(cursor, zile_vechime=None):
     """Taskurile personale care stau fara termen de peste doua zile.
 
     `date('now','localtime',...)`: `created_at` e ISO LOCAL naiv, iar `'now'`
@@ -222,11 +275,12 @@ def taskuri_de_notificat(cursor):
     o zi si ar fi notificat prea devreme. Sfera se scrie LITERAL aici (regula
     casei: un grep pe `FROM global_tasks` trebuie sa arate decizia de sfera).
     """
+    zile = int(ZILE_VECHIME if zile_vechime is None else zile_vechime)
     cursor.execute(f'''
         SELECT g.* FROM global_tasks g
         WHERE g.sfera = 'personal' AND g.status != 'done'
           AND (g.data_scadenta IS NULL OR TRIM(g.data_scadenta) = '')
-          AND date(g.created_at) <= date('now', 'localtime', '-{ZILE_VECHIME} days')
+          AND date(g.created_at) <= date('now', 'localtime', '-{zile} days')
         ORDER BY g.created_at ASC
     ''')
     return [row_to_dict(r) for r in cursor.fetchall()]
@@ -246,7 +300,8 @@ def check_and_send_daily(now=None, trimite=None):
     Intoarce: 'devreme' | 'claimed-gata' | 'trimis' | 'nimic'.
     """
     now = now or datetime.now()
-    if now.hour < ORA_TRIMITERE:
+    setari = _setari()
+    if now.hour < setari['ora']:
         return 'devreme'
 
     conn = get_db()
@@ -266,7 +321,7 @@ def check_and_send_daily(now=None, trimite=None):
         conn.close()
         return 'claimed-gata'
 
-    randuri = taskuri_de_notificat(cursor)
+    randuri = taskuri_de_notificat(cursor, setari['zileVechime']) if setari['faraTermen'] else []
     conn.close()
     if not randuri:
         return 'nimic'      # claim consumat: ziua e gata, fara notificare
@@ -355,14 +410,31 @@ def push_unsubscribe():
     return jsonify({'ok': True, 'abonamente': len(subs)})
 
 
+@push_bp.route('/api/push/setari', methods=['GET'])
+@login_required
+def push_setari_get():
+    return jsonify(_setari())
+
+
+@push_bp.route('/api/push/setari', methods=['PUT'])
+@login_required
+def push_setari_put():
+    setari, eroare = _valideaza_setari(get_json_or_400())
+    if eroare:
+        return jsonify({'error': eroare}), 400
+    set_app_setting(K_SETARI, json.dumps(setari))
+    return jsonify(setari)
+
+
 @push_bp.route('/api/push/status', methods=['GET'])
 @login_required
 def push_status():
+    s = _setari()
     return jsonify({
         'disponibil': _PUSH_OK,
         'abonamente': len(_abonamente()),
-        'ora': f'{ORA_TRIMITERE:02d}:00',
-        'regula': f'personale · fără termen · mai vechi de {ZILE_VECHIME} zile',
+        'ora': f"{s['ora']:02d}:00",
+        'regula': f"personale · fără termen · mai vechi de {s['zileVechime']} zile",
         'last_error': get_app_setting(K_LAST_ERROR, '') or '',
         'azi_trimis': (get_app_setting(K_DAILY, '') or '') == datetime.now().strftime('%Y-%m-%d'),
     })

@@ -27,8 +27,13 @@
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 
-const ORA_TRIMITERE = 8      // ora locala, ca pe server
-const ZILE_VECHIME = 2       // „sta fara termen de mai mult de N zile"
+// SETARILE VIN DE PE SERVER, nu din constante.
+// Erau scrise si aici, si in `blueprints/push.py`, cu un comentariu care cerea
+// sa fie schimbate impreuna — o obligatie tinuta de disciplina, adica una care
+// se rupe tacut: una se schimba, alta nu, si telefonul incepe sa creada altceva
+// decat serverul despre aceeasi regula. Astea de mai jos sunt doar plasa de
+// siguranta pentru cazul in care cererea de setari cade.
+const IMPLICITE = { ora: 8, zileVechime: 2, scadente: true, faraTermen: true }
 const ZILE_INAINTE = 7       // cate dimineti programam in avans
 const CANAL = 'taskuri-personale'
 
@@ -72,15 +77,16 @@ function ziISO(d) {
  *
  *  Vechimea se masoara fata de ziua NOTIFICARII, nu fata de azi: un task de o zi
  *  nu se califica azi, dar se califica poimaine — de-asta programam in avans. */
-export function taskuriDeNotificat(items, zi) {
+export function taskuriDeNotificat(items, zi, setari = IMPLICITE) {
+  const s = { ...IMPLICITE, ...(setari || {}) }
   const azi = ziISO(zi)
   const out = []
   for (const t of items || []) {
     if (t.sfera !== 'personal' || t.status === 'done') continue
     const scad = (t.data_scadenta || '').trim().slice(0, 10)
     if (scad) {
-      if (scad === azi) out.push({ t, motiv: 'scadent' })
-    } else if (zileDeCand(t.created_at, zi) >= ZILE_VECHIME) {
+      if (s.scadente && scad === azi) out.push({ t, motiv: 'scadent' })
+    } else if (s.faraTermen && zileDeCand(t.created_at, zi) >= s.zileVechime) {
       out.push({ t, motiv: 'fara-termen', zile: zileDeCand(t.created_at, zi) })
     }
   }
@@ -142,8 +148,9 @@ export async function cerePermisiuni() {
 
 /** Rescrie fereastra de notificari din lista de taskuri primita.
  *  Intoarce cate alarme au ramas programate. */
-export async function reprogrameaza(items) {
+export async function reprogrameaza(items, setari = IMPLICITE) {
   if (!esteNativ()) return 0
+  const s = { ...IMPLICITE, ...(setari || {}) }
   const perm = await cerePermisiuni()
   if (!perm.notificari) return 0
 
@@ -163,9 +170,9 @@ export async function reprogrameaza(items) {
   const acum = new Date()
   const deProgramat = []
   for (let d = 0; d < ZILE_INAINTE; d++) {
-    const zi = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + d, ORA_TRIMITERE, 0, 0, 0)
-    if (zi <= acum) continue                       // dimineata de azi a trecut deja
-    for (const { t, motiv, zile } of taskuriDeNotificat(items, zi)) {
+    const zi = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + d, s.ora, 0, 0, 0)
+    if (zi <= acum) continue                       // ora de azi a trecut deja
+    for (const { t, motiv, zile } of taskuriDeNotificat(items, zi, s)) {
       deProgramat.push({
         id: idNotificare(t.id, ziISO(zi)),
         title: t.titlu || 'Task personal',
