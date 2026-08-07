@@ -74,8 +74,11 @@ public class AlarmaReceiver extends BroadcastReceiver {
         // token, ca sa se vada ca sistemul le accepta pe canalul nostru, iar
         // `ActiuneReceiver` stie sa doar inchida notificarea cand n-are ce bifa.
         if (actiuni) {
+            String a2id = intent.getStringExtra("a2id");
+            String a2text = intent.getStringExtra("a2text");
+            if (a2id == null || a2id.isEmpty()) { a2id = "azi"; a2text = "Azi"; }
             b.addAction(0, "Făcut", actiune(ctx, id, "done", token, server));
-            b.addAction(0, "Azi", actiune(ctx, id, "azi", token, server));
+            b.addAction(0, a2text, actiune(ctx, id, a2id, token, server));
         }
 
         try {

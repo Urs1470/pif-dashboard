@@ -152,6 +152,13 @@ export async function reprogrameaza(items, setari = IMPLICITE) {
         url: `/#/tasks?sfera=personal&focus=global:${t.id}`,
         server: window.location.origin,
         actiuni: true,
+        // AL DOILEA BUTON DEPINDE DE MOTIV.
+        // Pe „fara termen", iesirea e sa-i dai o zi: „Azi".
+        // Pe „scadent azi", „Azi" ar scrie data pe care taskul o are DEJA — un
+        // buton care pare ca amana si nu face nimic e mai rau decat niciunul.
+        // Acolo singura amanare cu inteles e „Maine".
+        a2id: motiv === 'scadent' ? 'maine' : 'azi',
+        a2text: motiv === 'scadent' ? 'Mâine' : 'Azi',
       })
     }
   }

@@ -525,7 +525,7 @@ def push_action():
     if not task_id:
         return jsonify({'error': 'Token invalid sau expirat.'}), 403
     actiune = data.get('action')
-    if actiune not in ('done', 'azi'):
+    if actiune not in ('done', 'azi', 'maine'):
         return jsonify({'error': 'Acțiune necunoscută.'}), 400
 
     now = datetime.now()
@@ -552,8 +552,18 @@ def push_action():
             from blueprints.tasks import _spawn_recurring_global_task
             spawned_id = _spawn_recurring_global_task(cursor, r, recurenta)
     else:
+        # `azi` si `maine` sunt aceeasi operatie cu alt numar de zile, dar vin din
+        # notificari diferite si inseamna lucruri diferite:
+        #   azi   — taskul STA FARA TERMEN de zile intregi: „il fac azi", adica
+        #           iesirea din categoria fara termen.
+        #   maine — taskul e deja scadent AZI: singura amanare care are inteles.
+        # Pe o notificare de scadenta, „Azi" ar scrie data pe care taskul o are
+        # deja — un buton care pare ca amana si nu face nimic e mai rau decat
+        # niciun buton.
+        zile = 1 if actiune == 'maine' else 0
         cursor.execute('UPDATE global_tasks SET data_scadenta = ?, updated_at = ? WHERE id = ?',
-                       (now.strftime('%Y-%m-%d'), now.isoformat(), task_id))
+                       ((now + timedelta(days=zile)).strftime('%Y-%m-%d'),
+                        now.isoformat(), task_id))
     conn.commit()
     conn.close()
 

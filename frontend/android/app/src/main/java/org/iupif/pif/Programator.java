@@ -121,6 +121,10 @@ public class Programator {
         i.putExtra("url", n.optString("url"));
         i.putExtra("server", n.optString("server"));
         i.putExtra("actiuni", n.optBoolean("actiuni", true));
+        // Al doilea buton difera dupa motivul notificarii (vezi `notificari.js`):
+        // „Azi" pe un task fara termen, „Maine" pe unul deja scadent azi.
+        i.putExtra("a2id", n.optString("a2id", "azi"));
+        i.putExtra("a2text", n.optString("a2text", "Azi"));
         return i;
     }
 }
