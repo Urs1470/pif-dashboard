@@ -5,7 +5,7 @@
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { router, link } from '../../lib/router.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
 
   let { deschideCautarea = () => {} } = $props()
 
@@ -276,7 +276,7 @@
 
 {#if foaieDeschisa && ecran.telefon}
   <div class="mm-fundal" onclick={() => (foaieDeschisa = false)}
-       transition:fade={{ duration: motionDuration(DUR_FAST) }}
+       transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}
        role="presentation"></div>
 {/if}
 

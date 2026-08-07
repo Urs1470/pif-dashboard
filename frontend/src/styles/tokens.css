@@ -177,6 +177,14 @@
   /* Apasarea se intoarce mai repede decat orice altceva: sub ~100ms legatura
      cauza-efect se citeste ca instantanee, iar peste ea butonul pare moale. */
   --dur-press: 0.05s;
+  /* ADANCIMEA APASARII, TOKENIZATA CA SI DURATA. Era scrisa de mana in patru
+     fisiere, cu patru valori: `.ts-rand` se stangea cu 0,5% — sub pragul la care
+     ochiul vede ceva, deci singurul obiect apasabil din aplicatie care nu
+     raspundea la apasare — iar `.status-pill` cu 8%, adica de saisprezece ori
+     mai mult. Doua valori, atat: suprafete mari (card, rand, tab) si tinte mici,
+     unde acelasi procent nu s-ar vedea. Nimic nu-si mai alege singur adancimea. */
+  --press-scale: 0.97;
+  --press-scale-sm: 0.93;
 
   /* Revenirea dintr-un GEST (foaia trasa si eliberata) se aseaza cu un arc mic:
      `linear()` esantioneaza un spring usor amortizat — depaseste tinta cu ~5%

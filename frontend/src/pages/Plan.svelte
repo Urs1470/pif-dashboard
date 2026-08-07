@@ -1033,7 +1033,7 @@
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 22%, transparent);
     cursor: pointer; transition: transform var(--dur-fast) var(--ease); }
   .rest-pin:hover { transform: rotate(45deg) scale(1.18); }
-  .rest-pin:active { transform: rotate(45deg) scale(0.9); }
+  .rest-pin:active { transform: rotate(45deg) scale(var(--press-scale-sm)); }
   .rest-gol { font-size: var(--font-small); color: var(--text-faint); }
 
   .lane-track { flex: 1; position: relative; min-width: 0; padding: 7px 0; }

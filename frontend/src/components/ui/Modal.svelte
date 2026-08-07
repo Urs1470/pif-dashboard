@@ -9,7 +9,7 @@
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
-  import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
@@ -53,10 +53,19 @@
     return () => {
       blocari--
       if (blocari > 0) return
-      b.style.position = ''
-      b.style.top = ''
-      b.style.width = ''
-      window.scrollTo(0, yBlocat)
+      // DEBLOCAREA ASTEAPTA SFARSITUL IESIRII. Se elibera in acelasi tact cu
+      // `open = false`, deci `window.scrollTo(0, yBlocat)` repozitiona pagina din
+      // spate CAT TIMP foaia era inca pe ecran: fundalul sarea sub o foaie care
+      // tocmai cobora. Nu se vede in demonstratie, dar pe telefon e primul lucru
+      // pe care il observi. Se recontroleaza `blocari` la capat: intre timp poate
+      // fi deschisa alta foaie, si atunci pagina trebuie sa ramana blocata.
+      setTimeout(() => {
+        if (blocari > 0) return
+        b.style.position = ''
+        b.style.top = ''
+        b.style.width = ''
+        window.scrollTo(0, yBlocat)
+      }, motionDuration(DUR_BASE))
     }
   })
 
@@ -111,14 +120,25 @@
     if (!trage || e.pointerId !== idPointer) return
     trage = false
     idPointer = null
-    if (trasY > PRAG_INCHIDE) { trasY = 0; inchide(); return }
+    // `trasY` RAMANE unde l-ai lasat. Punandu-l pe 0 aici, doua miscari se
+    // compuneau pe acelasi obiect, pe proprietati diferite si in sensuri opuse:
+    // `translate` revenea de la 118px la 0 in --dur-slow CU ARC, in timp ce
+    // tranzitia de iesire cobora foaia cu toata inaltimea ei. Prima jumatate a
+    // iesirii se anula singura — foaia se misca in jos incet, apoi brusc, ceea ce
+    // se citeste exact ca lag de atingere. Iar arcul, care are voie sa depaseasca
+    // tinta, tragea IN SUS fix in intervalul in care obiectul trebuia sa
+    // accelereze in jos. Acum gestul si iesirea merg in acelasi sens.
+    if (trasY > PRAG_INCHIDE) { inchide(); return }
     if (trasY < -PRAG_INTINDE) intins = true
     trasY = 0
   }
 
   // La fiecare deschidere pornim din starea normala, nu din cea intinsa a
   // taskului dinainte.
-  $effect(() => { if (open) intins = false })
+  // `trasY` nu se mai zeroeaza la ridicarea degetului (vezi `trageSus`), deci se
+  // zeroeaza aici: foaia urmatoare porneste din pozitia ei, nu din cea in care ai
+  // lasat-o pe cea dinainte.
+  $effect(() => { if (open) { intins = false; trasY = 0 } })
 
   /** Singurul drum de inchidere pornit de utilizator. */
   function inchide() {
@@ -158,7 +178,12 @@
 </script>
 
 {#if open}
-  <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
+  <!-- VOALUL PLEACA ODATA CU FOAIA, NU INAINTEA EI. Era stins in --dur-fast
+       (120ms), cand foaia mai avea inca ~170px de coborat: ultimele doua treimi
+       ale inchiderii se jucau peste o pagina deja limpede si nedimuita, ca si cum
+       foaia nu mai apartinea nimanui. Voalul TINE obiectul, deci pleaca odata cu
+       el sau dupa el — niciodata inainte. Acelasi ceas: --dur-base. -->
+  <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1" transition:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:trage
          bind:this={sheetEl} style:--trasY="{trasY}px" transition:intra>
       {#if sheet}

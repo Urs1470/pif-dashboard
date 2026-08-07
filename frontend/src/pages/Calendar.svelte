@@ -17,7 +17,7 @@
   import { navigate, router } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
   import { ui } from '../stores/ui.svelte.js'
-  import { motion, motionDuration, DUR_BASE } from '../lib/motion.svelte.js'
+  import { motion, motionDuration, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { culoareProiect } from '../lib/culori.js'
   import { incepeTragere } from '../lib/tragere.js'
@@ -1138,7 +1138,7 @@
               {/if}
             </div>
             {#each selectate as p (p.id)}
-              <div class="it" style="--c: {culoareLucrare(p)}" in:fade={{ duration: motionDuration(DUR_BASE) }}>
+              <div class="it" style="--c: {culoareLucrare(p)}" in:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
                 <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
                   <span class="it-punct" aria-hidden="true"></span>{p.nume}<ExternalLink size={12} />
                 </button>
@@ -1189,7 +1189,7 @@
                     <Undo2 size={12} /> Scoate
                   </button>
                   {#if mutaId === p.id}
-                    <div class="mut" in:fade={{ duration: motionDuration(DUR_BASE) }}>
+                    <div class="mut" in:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
                       <DatePicker bind:value={mutaVal} />
                       <button class="b ok" disabled={!mutaVal || busy === p.id}
                               onclick={() => { muta(p, mutaVal); mutaId = ''; mutaVal = '' }}>Mută</button>

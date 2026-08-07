@@ -5,7 +5,7 @@
   import { navigate, router } from '../../lib/router.svelte.js'
   import { focusHref } from '../../lib/focus.js'
   import { apiJson } from '../../lib/api.js'
-  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, EASE } from '../../lib/motion.svelte.js'
 
   let open = $state(false)
   let query = $state('')
@@ -220,7 +220,7 @@
 </script>
 
 {#if open}
-  <div class="palette-backdrop" onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
+  <div class="palette-backdrop" onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
     <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1" transition:scale={{ start: 0.96, duration: motionDuration(DUR_FAST) }}>
       <div class="palette-search">
         <Search size={16} />

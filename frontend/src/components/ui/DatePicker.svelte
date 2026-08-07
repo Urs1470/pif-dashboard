@@ -3,7 +3,7 @@
   import { ecran } from '../../lib/ecran.svelte.js'
   import { scale, fly, fade } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
-  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, EASE } from '../../lib/motion.svelte.js'
 
   let {
     value = $bindable(''),
@@ -182,7 +182,7 @@
     <!-- Voalul e al sheet-ului, nu al paginii: pe telefon calendarul acopera
          continutul, deci trebuie sa se vada ca restul e inactiv, iar atingerea
          alaturi trebuie sa inchida. -->
-    <div class="dp-voal" use:portal onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST) }}></div>
+    <div class="dp-voal" use:portal onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}></div>
   {/if}
 
   {#if open}

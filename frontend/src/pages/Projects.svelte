@@ -302,9 +302,9 @@
     <EmptyState icon={FolderKanban} title="Niciun proiect" description="Nu există proiecte cu filtrele selectate." />
   {:else}
     <div class="cards-grid">
-      {#each activeItems as p (p.id)}
+      {#each activeItems as p, i (p.id)}
         {@const urm = urmatoarea(p)}
-        <div class="pcard cell-in" class:batch-selected={batchMode && selected.has(p.id)} role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }} onkeydown={(e) => cardKeydown(e, p)}>
+        <div class="pcard cell-in" style="--celula: {i}" class:batch-selected={batchMode && selected.has(p.id)} role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }} onkeydown={(e) => cardKeydown(e, p)}>
           <div class="card-top">
             {#if batchMode}
               <button class="batch-check card-check" onclick={(e) => { e.stopPropagation(); toggleSelect(p.id) }}>
@@ -345,7 +345,7 @@
         </div>
       {/each}
       {#if !batchMode}
-        <button class="pcard new-card cell-in" onclick={() => showNewModal = true}>
+        <button class="pcard new-card cell-in" style="--celula: {activeItems.length}" onclick={() => showNewModal = true}>
           <span class="new-plus">+</span>
           <span class="new-label">Proiect nou</span>
         </button>
@@ -429,7 +429,13 @@
   .select-all:hover { color: var(--text); border-color: var(--border-strong); }
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
-  .pcard { position: relative; display: flex; flex-direction: column; min-height: 132px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; text-align: left; transition: transform var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease); }
+  /* HOVERUL RASPUNDE IN `--dur-fast`, CA RESTUL APLICATIEI. Cardul urca 4px pe
+     `--dur-base` (240ms), in timp ce orice alta suprafata raspunde la cursor in
+     120ms: la 240ms cursorul apucase deja sa plece de pe card inainte ca el sa fi
+     terminat de urcat. Hoverul e raspunsul la o intentie care inca se formeaza —
+     trebuie sa ajunga inaintea deciziei, nu dupa. Ridicarea ramane 4px; doar
+     viteza se aliniaza. */
+  .pcard { position: relative; display: flex; flex-direction: column; min-height: 132px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; text-align: left; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch, cardul atins ramanea ridicat cu 4px si cu
      umbra pana atingeai altceva — parea selectat, desi nu era. */
   @media (hover: hover) {
@@ -513,7 +519,7 @@
   @media (hover: hover) {
     .status-pill.act:hover { border-color: var(--st); }
   }
-  .status-pill.act:active { transform: scale(0.92); }
+  .status-pill.act:active { transform: scale(var(--press-scale-sm)); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }

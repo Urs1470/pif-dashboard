@@ -17,7 +17,7 @@
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate, router } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, desfacere } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, desfacere, EASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
@@ -666,7 +666,7 @@
 
     <div class="tab-content">
       {#key activeTab}
-      <div class="tab-pane" in:fade={{ duration: motionDuration(DUR_FAST) }}>
+      <div class="tab-pane" in:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
       {#if activeTab === 'tasks'}
         <!-- „N/M finalizate" a plecat: railul din dreapta arata bara de progres SI
              cifra mare, in acelasi ecran, la 300px distanta. Aceeasi informatie,
@@ -1002,7 +1002,7 @@
     </div>
 
     <aside class="rail">
-      <section class="rcell cell-in">
+      <section class="rcell cell-in" style="--celula: 0">
         <div class="cell-label"><span class="ico ico-amber"><ListTodo size={12} /></span>Progres taskuri</div>
         <div class="rprog">
           <span class="rprog-num">{tasksDone}/{tasks.length}</span>
@@ -1015,7 +1015,7 @@
            „Neplanificat". În locul ei arătăm ziua închiderii, care e reperul la
            care Calendarul îi taie perioadele (v35): dacă e greșită, se vede aici
            și se corectează din Edit. -->
-      <section class="rcell cell-in">
+      <section class="rcell cell-in" style="--celula: 1">
         {#if project.status === 'finalizat'}
           <div class="cell-label"><span class="ico ico-green"><SolidIcon name="check" size={12} /></span>Finalizat</div>
           {#if project.data_finalizare}
@@ -1041,7 +1041,7 @@
            Randurile goale nu se mai deseneaza, deci celula ramane mica atunci
            cand proiectul are putine date completate. -->
       {#if detalii.length}
-        <section class="rcell cell-in">
+        <section class="rcell cell-in" style="--celula: 2">
           <div class="cell-label"><span class="ico"><Settings2 size={12} /></span>Detalii</div>
           <dl class="rdet">
             {#each detalii as [eticheta, valoare]}

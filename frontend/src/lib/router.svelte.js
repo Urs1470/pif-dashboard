@@ -63,10 +63,37 @@ export function applyPath(path) {
 // VT-aware navigation: cross-fades the whole view on every route change where the
 // browser supports the View Transitions API (progressive enhancement). Falls back
 // to an instant apply otherwise / under reduced-motion.
+// TRANZITIA SE TERMINA PE PAGINA, NU PE SCHELET.
+//
+// `startViewTransition` ingheata pagina veche, iar callbackul pornea `import()`
+// FARA sa-l astepte: la prima vizita pe o ruta, tranzitia se incheia pe schelet,
+// iar pagina adevarata aparea dupa ea, printr-o taietura. Si scheletul e acelasi
+// pentru Calendar, Planificator si Calculator — o forma pe care n-o are nicio
+// pagina. A doua oara, cu modulul in cache, aceeasi apasare era curata: acelasi
+// gest, doua raspunsuri diferite.
+//
+// App-ul e cel care stie sa incarce ruta (el tine `lazyCache`), deci si-o
+// inregistreaza aici. Cursa de 180ms e plafonul: sub el (aproape intotdeauna —
+// chunkul e local) tranzitia se termina pe pagina adevarata; peste el ramane
+// scheletul, dar tranzitia nu se blocheaza pe o retea moarta.
+let preincarcaRuta = null
+export function setPreincarcaRuta(fn) { preincarcaRuta = fn }
+
+const pauza = (ms) => new Promise((r) => setTimeout(r, ms))
+const PLAFON_INCARCARE = 180
+
 export function navigate(path) {
   if (!viewTransitionsOn()) { applyPath(path); return }
   try {
-    document.startViewTransition(async () => { applyPath(path); await tick() })
+    document.startViewTransition(async () => {
+      // Inainte de `applyPath`: asa cache-ul e deja cald cand efectul din App
+      // citeste noua ruta, deci `LoadedComponent` nu mai trece prin `null`.
+      if (preincarcaRuta) {
+        try { await Promise.race([preincarcaRuta(path), pauza(PLAFON_INCARCARE)]) } catch (_) {}
+      }
+      applyPath(path)
+      await tick()
+    })
   } catch (_) {
     applyPath(path)
   }
@@ -83,8 +110,8 @@ export function link(node) {
   return { destroy() { node.removeEventListener('click', handleClick) } }
 }
 
-export function resolveRoute(routes) {
-  const path = router.path
+export function resolveRoute(routes, caleAnume = null) {
+  const path = caleAnume ?? router.path
   for (const [pattern, component] of Object.entries(routes)) {
     const params = matchRoute(pattern, path)
     if (params !== null) return { component, params, pattern }

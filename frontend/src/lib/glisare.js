@@ -104,6 +104,41 @@ export function glisare(node, opt = {}) {
     }
   }
 
+  // COMITEREA SE LEAGA DE ANIMATIE, NU DE UN CRONOMETRU PARALEL.
+  //
+  // Randul zbura afara pe `--dur-base` (240ms), dar comiterea venea pe un
+  // `setTimeout(…, 160)`. La 160ms randul era TELEPORTAT inapoi in ecran, la
+  // opacitate 1, ca apoi `plecare` sa-l impinga din nou afara. Ultimul lucru pe
+  // care il vedeai din task nu era plecarea lui, era revenirea — doua miscari
+  // care se contraziceau pe aceeasi axa.
+  //
+  // Acum zborul are o durata proprie si scurta (130ms), iar comiterea asteapta
+  // `transitionend`-ul lui: la momentul in care lista incepe sa inchida golul,
+  // randul chiar a iesit. `pune(0, false)` ramane, dar se intampla cand randul e
+  // deja scos din lista de catre parinte, deci nu mai e nimic de vazut.
+  //
+  // Cronometrul de rezerva nu e paza contra intarzierii, ci contra lui
+  // `transitionend` care NU vine deloc: cu `prefers-reduced-motion` durata cade
+  // la 0, iar o tranzitie de durata zero nu emite eveniment in toate browserele.
+  const DUR_ZBOR = 130
+  function zboaraApoi(pana, cb) {
+    let gata = false
+    const comite = () => {
+      if (gata) return
+      gata = true
+      fata.removeEventListener('transitionend', laCapat)
+      cb()
+      pune(0, false)
+    }
+    const laCapat = (e) => { if (e.propertyName === 'transform') comite() }
+    fata.addEventListener('transitionend', laCapat)
+    fata.style.transition = `transform ${DUR_ZBOR}ms var(--ease)`
+    fata.style.transform = `translateX(${pana}px)`
+    node.classList.toggle('gl-dreapta', pana > 0)
+    node.classList.toggle('gl-stanga', pana < 0)
+    setTimeout(comite, DUR_ZBOR + 60)
+  }
+
   function inchide(animat = true) {
     deschis = false
     pune(0, animat)
@@ -191,16 +226,14 @@ export function glisare(node, opt = {}) {
       // pista trebuie sa ramana plina si bifata cat timp randul iese de sub ea,
       // altfel ultimul lucru pe care il vezi e cum se stinge confirmarea.
       node.style.setProperty('--gl-p', '1')
-      pune(latimeRand, true)
-      setTimeout(() => { onBifa(); pune(0, false) }, 160)
+      zboaraApoi(latimeRand, onBifa)
       return
     }
     if (amanaLibera() && -dx > pragBifa()) {
       // Simetric cu bifarea: randul pleaca spre stanga si abia apoi se muta
       // termenul — miscarea E confirmarea.
       node.style.setProperty('--gl-s', '1')
-      pune(-latimeRand, true)
-      setTimeout(() => { onAmana(); pune(0, false) }, 160)
+      zboaraApoi(-latimeRand, onAmana)
       return
     }
     node.classList.remove('gl-bifa')

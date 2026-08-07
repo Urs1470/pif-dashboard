@@ -5,8 +5,8 @@
   import Toast from './components/ui/Toast.svelte'
   import Tooltip from './components/ui/Tooltip.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
-  import { router, resolveRoute, viewTransitionsOn } from './lib/router.svelte.js'
-  import { motionDuration, DUR_FAST } from './lib/motion.svelte.js'
+  import { router, resolveRoute, viewTransitionsOn, setPreincarcaRuta } from './lib/router.svelte.js'
+  import { motionDuration, DUR_FAST, EASE } from './lib/motion.svelte.js'
 
   import Home from './pages/Home.svelte'
   import Skeleton from './components/ui/Skeleton.svelte'
@@ -28,6 +28,17 @@
     '/departament': lazy(() => import('./pages/Departament.svelte')),
     '/calculator': lazy(() => import('./pages/Calculator.svelte')),
   }
+
+  // Routerul nu stie sa incarce module — `lazyCache` e aici. Deci ii dam functia
+  // pe care s-o astepte inainte sa schimbe ruta, ca tranzitia sa se termine pe
+  // pagina adevarata si nu pe schelet (vezi `navigate`). Cand ruta e deja in
+  // cache, promisiunea e deja rezolvata si nu costa nimic.
+  setPreincarcaRuta(async (cale) => {
+    const m = resolveRoute(routes, (cale || '/').split('?')[0] || '/')
+    if (!m || !m.component._lazy || lazyCache[m.pattern]) return
+    const mod = await m.component.loader()
+    lazyCache[m.pattern] = mod.default
+  })
 
   const rawMatch = $derived(resolveRoute(routes))
   const routeKey = $derived(router.path)
@@ -74,7 +85,7 @@
     <Header />
     <main class="app-content" id="main-content">
       {#key routeKey}
-        <div class="content-width" in:fade={{ duration: fadeDur }} out:fade={{ duration: fadeDur }}>
+        <div class="content-width" in:fade={{ duration: fadeDur, easing: EASE }} out:fade={{ duration: fadeDur, easing: EASE }}>
           {#if loadError}
             <div class="not-found"><p>Eroare: {loadError}</p></div>
           {:else if LoadedComponent}

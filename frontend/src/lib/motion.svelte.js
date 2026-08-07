@@ -8,6 +8,69 @@ export const DUR_FAST = 120
 export const DUR_BASE = 240
 export const DUR_SLOW = 320
 
+// CURBA — A PATRA LIMBA VORBITA IN ACELASI ECRAN.
+//
+// `--ease` era tokenizata si respectata peste tot in CSS, dar NICIO tranzitie
+// Svelte n-o folosea. Motivul nu era o decizie, era o linie lipsa: fisierul asta
+// exporta duratele si atat, deci `fade`, `sosire` si `plecare` ramaneau pe
+// implicitul Svelte — care e LINIAR. Aceeasi distanta, aceeasi durata (240ms),
+// sosiri diferite: randul de task iesea din lista in linie dreapta, langa un
+// panou care se deschidea pe curba. Linia dreapta se citeste ca mecanica.
+//
+// `svelte/easing` NU exporta un `cubicBezier` generic (are doar familiile fixe:
+// cubicOut, quintOut…), deci curba se rezolva aici. Newton-Raphson pe x, cu
+// cadere pe injumatatire cand derivata e prea mica ca sa fie de incredere —
+// aceeasi metoda pe care o folosesc browserele pentru `cubic-bezier()`.
+function bezier(x1, y1, x2, y2) {
+  const A = (a, b) => 1 - 3 * b + 3 * a
+  const B = (a, b) => 3 * b - 6 * a
+  const C = (a) => 3 * a
+  const calc = (t, a, b) => ((A(a, b) * t + B(a, b)) * t + C(a)) * t
+  const panta = (t, a, b) => 3 * A(a, b) * t * t + 2 * B(a, b) * t + C(a)
+  return (x) => {
+    if (x <= 0) return 0
+    if (x >= 1) return 1
+    let t = x
+    for (let i = 0; i < 8; i++) {
+      const p = panta(t, x1, x2)
+      if (p === 0) break
+      const e = calc(t, x1, x2) - x
+      if (Math.abs(e) < 1e-6) return calc(t, y1, y2)
+      t -= e / p
+    }
+    let lo = 0, hi = 1
+    t = x
+    while (lo < hi) {
+      const e = calc(t, x1, x2)
+      if (Math.abs(e - x) < 1e-6) break
+      if (x > e) lo = t; else hi = t
+      t = (hi - lo) / 2 + lo
+    }
+    return calc(t, y1, y2)
+  }
+}
+
+// Perechea exacta a lui `--ease` din tokens.css. O schimbi acolo, o schimbi aici.
+export const EASE = bezier(0.32, 0.72, 0.28, 1)
+
+// Perechea lui `--ease-spring`, esantionata din aceleasi opriri `linear()`.
+// Arcul DEPASESTE tinta (1.05 la 52%) si revine — corect pentru un obiect
+// eliberat din mana, gresit pentru orice altceva. De aceea nu e implicitul.
+const OPRIRI = [[0, 0], [0.12, 0.32], [0.24, 0.72], [0.36, 0.95],
+                [0.52, 1.05], [0.68, 1.02], [0.84, 0.99], [1, 1]]
+export function SPRING(x) {
+  if (x <= 0) return 0
+  if (x >= 1) return 1
+  for (let i = 1; i < OPRIRI.length; i++) {
+    const [x2, y2] = OPRIRI[i]
+    if (x <= x2) {
+      const [x1, y1] = OPRIRI[i - 1]
+      return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
+    }
+  }
+  return 1
+}
+
 function readReducedMotion() {
   return typeof window !== 'undefined'
     && (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false)
@@ -57,6 +120,7 @@ export function sosire(node, { duration = 190 } = {}) {
   const d = motionDuration(duration)
   return {
     duration: d,
+    easing: EASE,
     css: (t) => `opacity: ${t}; transform: translateY(${(1 - t) * 5}px);`,
   }
 }
@@ -115,8 +179,13 @@ export function plecare(node, { duration = 190 } = {}) {
   const bb = nr(s.borderBottomWidth)
   return {
     duration: d,
-    // fara `easing` importat: `t` linear pe opacitate arata bine, iar inaltimea
-    // se strange cu patratul lui, deci pleaca repede si se aseaza lin.
+    easing: EASE,
+    // `translateX` a plecat. Pe telefon bifezi GLISAND spre dreapta, deci gestul
+    // a dat deja directia, iar impingerea de 10px se adauga peste ea ca o a doua
+    // miscare pe aceeasi axa. Pe desktop, unde bifezi din click, randul se stinge
+    // si se strange — atat; directia n-o mai imprumuta de la un gest care n-a
+    // avut loc. Inaltimea se strange in continuare cu patratul lui `t`: pleaca
+    // repede si se aseaza lin.
     css: (t) => `
       overflow: hidden;
       opacity: ${t};
@@ -124,7 +193,6 @@ export function plecare(node, { duration = 190 } = {}) {
       margin-bottom: ${t * t * mb}px;
       border-top-width: ${t * bt}px;
       border-bottom-width: ${t * bb}px;
-      transform: translateX(${(1 - t) * 10}px);
     `,
   }
 }

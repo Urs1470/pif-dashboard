@@ -2,7 +2,7 @@
   import { tick } from 'svelte'
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide, fade } from 'svelte/transition'
-  import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download, FolderPlus, Trash2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
@@ -730,7 +730,7 @@
           {/each}
         </div>
       {/if}
-      {#if exportMsg}<p class="equip-msg" transition:fade|local={{ duration: motionDuration(DUR_FAST) }}>{exportMsg}</p>{/if}
+      {#if exportMsg}<p class="equip-msg" transition:fade|local={{ duration: motionDuration(DUR_FAST), easing: EASE }}>{exportMsg}</p>{/if}
       </div>
     {/if}
   </div>
@@ -745,7 +745,7 @@
       {#if query}<button class="search-clear" title="Sterge cautarea" onclick={() => { query = ''; acIndex = -1 }}><X size={15} /></button>{/if}
     </div>
     {#if acResults.length}
-      <ul class="ac-list" role="listbox" transition:fade={{ duration: motionDuration(DUR_FAST) }}>
+      <ul class="ac-list" role="listbox" transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
         {#each acResults as m, i (m.id)}
           <li>
             <button class="ac-item" class:active={i === acIndex} role="option" aria-selected={i === acIndex}
@@ -927,7 +927,7 @@
       </aside>
 
       {#if activeMod}
-        <section class="mod-cell cell-in" id={'acc-' + activeMod.id}>
+        <section class="mod-cell cell-in" style="--celula: 1" id={'acc-' + activeMod.id}>
           <div class="mod-cell-head">
             <span class="acc-title">{#if stariModule.has(activeMod.id)}{@render verdictDot(stariModule.get(activeMod.id))}{/if}{activeMod.title}{#if activeMod.subtitle}<span class="acc-sub"><MathText text={activeMod.subtitle} /></span>{/if}</span>
             <button class="star-btn" class:on={isFav(activeMod.id)} title="Adauga la favorite" aria-label="Favorit"
@@ -1067,7 +1067,7 @@
         </div>
         </div>
       {/if}
-      {#if importMsg}<p class="imp-msg" transition:fade={{ duration: motionDuration(DUR_FAST) }}>{importMsg}</p>{/if}
+      {#if importMsg}<p class="imp-msg" transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}>{importMsg}</p>{/if}
       <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Rețea</b>: plăcuța (P/U/I/n/cosφ/η/poli) + date drive când există (turație max, rampă decelerare, frecvență comutație, R stator, inerție). Coduri: ABB grup 99/30/23, Siemens p03xx/p11xx/p18xx, Danfoss 1-xx. Un backup de alt tip (c.c./servo) nu se importă pe tabul asincron.</p>
     </div>
   </Modal>
@@ -1202,7 +1202,7 @@
   }
   .fam-tab:hover { background: var(--bg-hover); color: var(--text); }
   .fam-tab.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
-  .fam-tab:active { transform: scale(0.97); }
+  .fam-tab:active { transform: scale(var(--press-scale)); }
 
   /* sub-taburi pentru Motoare (pe tip) */
   .subfam-tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin: calc(-1 * var(--space-md)) 0 var(--space-lg); }
@@ -1237,7 +1237,7 @@
   }
   .subfam-tab:hover { background: var(--bg-hover); color: var(--text); }
   .subfam-tab.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
-  .subfam-tab:active { transform: scale(0.97); }
+  .subfam-tab:active { transform: scale(var(--press-scale)); }
 
   /* caseta de cautare */
   .search-row { position: relative; display: flex; align-items: center; margin-bottom: var(--space-md); }

@@ -1321,7 +1321,7 @@
     cursor: pointer; transition: var(--transition-colors); }
   .a-ico:hover { color: var(--text); background: var(--bg-hover); }
   .a-ico.on { color: var(--accent-on-subtle); background: var(--accent-subtle); }
-  .a-ico:active { transform: scale(0.97); }
+  .a-ico:active { transform: scale(var(--press-scale)); }
   /* Comutatorul de sfera — capsula unita cu segment activ RIDICAT pe suprafata
      neutra (nu amber: amber la activ e limbajul FILTRELOR de langa el). Punctul
      violet de pe Personal (--purple, huea „libera") e acelasi cu cel din antetul
@@ -1581,7 +1581,7 @@
     color: var(--text-dim); font-size: var(--font-small); text-align: left; cursor: pointer;
     transition: var(--transition-pressable); }
   .ts-rand:hover { border-color: var(--border-strong); }
-  .ts-rand:active { transform: scale(0.995); }
+  .ts-rand:active { transform: scale(var(--press-scale)); }
   .ts-rand.activ { border-color: var(--accent); }
   .ts-val { flex: 1; color: var(--text); font-weight: var(--fw-medium); }
   /* Acelasi `--ring` ca inelul bifei din capul foii — un singur izvor de culoare. */
@@ -1599,7 +1599,7 @@
     font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer;
     transition: var(--transition-pressable); }
   .ts-zi:hover { border-color: var(--accent); color: var(--text); }
-  .ts-zi:active { transform: scale(0.97); }
+  .ts-zi:active { transform: scale(var(--press-scale)); }
   .ts-scoate { color: var(--danger); }
 
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
