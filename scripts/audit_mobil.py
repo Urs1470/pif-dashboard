@@ -96,7 +96,13 @@ ACCEPTATE = {
     # apare fantoma) si reversibil pana la ridicarea degetului.
     # Nu poate fi facuta de 44px: inaltimea benzii E pasul grilei de benzi
     # (`--h-banda`), deci trei lucrari intr-o zi ar cere o celula de 132px.
-    'button.banda': 'banda de perioada, 12px pe telefon; atingerea face acelasi lucru ca ziua de sub ea, iar apucarea e apasare lunga',
+    # CHEIA SE POTRIVESTE PE SUBSIR CU SELECTORUL RAPORTAT (`acceptat`), deci
+    # trebuie sa fie numele elementului care EXISTA. A fost scrisa `button.banda`
+    # in aceeasi tura care a mutat banda de pe `<button>` pe `<div>` cu pointer
+    # events — deci exceptia n-a prins niciodata, iar pagina trecea doar cand
+    # masuratoarea apuca sa se faca inainte ca benzile sa se randeze. O exceptie
+    # care nu se potriveste e mai rea decat una lipsa: pare acoperita si nu e.
+    'div.banda': 'banda de perioada, 12px pe telefon; atingerea face acelasi lucru ca ziua de sub ea, iar apucarea e apasare lunga',
 }
 
 MASOARA = r"""
@@ -222,6 +228,17 @@ def geometrie(ctx, baza):
         for ruta, eticheta in RUTE:
             page, _col, _blocata = S.deschide(ctx, baza + '/#' + ruta, w, h)
             page.wait_for_timeout(600)
+            # CONTINUTUL VENIT DIN RETEA TREBUIE SA FIE PE ECRAN INAINTE DE MASURA.
+            # 600ms erau uneori de ajuns si uneori nu: benzile din Calendar vin din
+            # `/api/calendar`, iar cand nu apucau sa se randeze pagina se masura
+            # GOALA si trecea. Un audit care da alt raspuns la fiecare rulare nu
+            # spune nimic — si tocmai asta a ascuns benzile luni de zile.
+            # `networkidle` in loc de inca un `sleep` fix: asteapta exact cat e
+            # nevoie, nu o valoare ghicita.
+            try:
+                page.wait_for_load_state('networkidle', timeout=8000)
+            except Exception:
+                pass
             r = page.evaluate(MASOARA)
             page.close()
             mici = [m for m in r['mici'] if not acceptat(m['sel'])]
