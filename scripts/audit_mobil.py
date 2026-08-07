@@ -103,6 +103,22 @@ ACCEPTATE = {
     # masuratoarea apuca sa se faca inainte ca benzile sa se randeze. O exceptie
     # care nu se potriveste e mai rea decat una lipsa: pare acoperita si nu e.
     'div.banda': 'banda de perioada, 12px pe telefon; atingerea face acelasi lucru ca ziua de sub ea, iar apucarea e apasare lunga',
+    # Manerele de capat ale unei benzi (2026-08-07). Erau `<span>`-uri cu
+    # `onpointerdown`, deci auditul nu le vedea deloc — `controale` masoara
+    # `button, [role=button], [tabindex]`. Au devenit butoane reale ca sa aiba
+    # echivalent la tastatura si ca sa nu mai fie buton-in-buton; masura de 9x12
+    # nu s-a schimbat, doar a devenit VIZIBILA.
+    # Nu pot fi de 44px, si nu din lene: pe telefon banda are 12px si pasul grilei
+    # de benzi e 15px (`--h-banda`), deci un maner de 44px inaltime ar acoperi trei
+    # randuri de benzi — ar fura atingeri de la alte doua lucrari. Pe latime, doua
+    # manere de 44px pe o banda de doua zile (~100px la 390px) n-ar mai lasa de
+    # unde s-o apuci ca s-o muti — acelasi motiv pentru care pe benzile de o zi
+    # manerele sunt deja ascunse (`.banda:not(.lat)`).
+    # O ratare nu e tacuta: prinzi banda in loc de capat, deci MUTI in loc sa
+    # redimensionezi — iar mutarea se vede cat tii degetul (banda se stinge, apare
+    # fantoma) si se anuleaza ridicand degetul inainte de drop. Gestul chiar merge
+    # cu deget adevarat: vezi „deget: capatul s-a mutat, inceputul a stat".
+    'button.maner': 'maner de capat, 9x12 pe telefon; la 44px ar acoperi trei randuri de benzi si ar manca banda de doua zile',
 }
 
 MASOARA = r"""
