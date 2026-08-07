@@ -761,7 +761,16 @@ def perioadele_se_trag(browser, baza):
             page.click('button[type="submit"]')
             page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
             page.goto(baza + '/#/calendar', wait_until='load')
-            page.wait_for_selector('.banda[data-perioada]', timeout=15000)
+            # Pe o baza fara perioade (clona proaspata, container de CI) nu e
+            # nimic de tras. Se SARE, ca peste tot in fisierul asta — o proba
+            # fara date nu e o picare, iar un traceback de Playwright in locul
+            # unei linii „SARI" ascunde ce chiar merita reparat.
+            try:
+                page.wait_for_selector('.banda[data-perioada]', timeout=15000)
+            except Exception:
+                out('  SARI  %s: nicio perioada in calendar' % eticheta)
+                ctx.close()
+                continue
             page.wait_for_timeout(700)
 
             zile = page.eval_on_selector_all(
