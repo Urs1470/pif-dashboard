@@ -154,19 +154,21 @@
   }
   .pr:hover { border-color: var(--c); }
   .ico { color: var(--c); align-self: center; display: inline-flex; }
-  .cand { font-family: var(--font-heading); font-weight: var(--fw-semibold);
+  /* Fara Space Grotesk: „În 3 zile" e o propozitie scurta, nu numele unui lucru,
+     iar fontul de titlu nu coboara sub 17px — aici e la 13. */
+  .cand { font-weight: var(--fw-semibold);
           font-size: var(--font-small); color: var(--c); white-space: nowrap; }
   .unde { font-size: var(--font-small); color: var(--text); white-space: nowrap; }
   .sep { color: var(--text-faint); }
-  .ce { font-size: var(--font-tiny); color: var(--text-dim); min-width: 0;
+  .ce { font-size: var(--font-small); color: var(--text-dim); min-width: 0;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 34ch; }
   /* dim, nu faint: intervalul e raspunsul la „cand pleci" — informatie, nu
      eticheta; masurat 3.18:1 la 10.4px, sub AA. */
-  .zile { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
+  .zile { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim);
           white-space: nowrap; }
 
   /* Următoarele două — text simplu, fără cadru: context, nu obiect. */
-  .apoi { font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; }
+  .apoi { font-size: var(--font-small); color: var(--text-faint); white-space: nowrap; }
   /* Intervalul e informatie (dim); cuvantul de legatura „apoi" ramane faint. */
   .ap { font-family: var(--font-mono); color: var(--text-dim); }
   /* Spatiul dintre interval si loc vine din CSS, nu dintr-un caracter scris in
@@ -176,20 +178,20 @@
   .pt { margin: 0 5px; }
 
   .gol { display: inline-flex; align-items: center; gap: 7px;
-         font-size: var(--font-tiny); color: var(--text-dim); }
+         font-size: var(--font-small); color: var(--text-dim); }
   /* Eroarea foloseste limbajul semantic, nu pe cel de „gol": danger pe semn,
      ca sa nu se citeasca drept o zi libera. */
   .gol.eroare :global(svg) { color: var(--danger); }
   .reinc { padding: 3px 12px; border-radius: var(--radius-full);
     border: 1px solid var(--border); background: var(--bg-surface);
-    color: var(--text-secondary); font-size: var(--font-tiny);
+    color: var(--text-secondary); font-size: var(--font-small);
     font-weight: var(--fw-medium); cursor: pointer;
     transition: var(--transition-colors); min-height: 26px; }
   .reinc:hover { border-color: var(--accent); color: var(--accent); }
 
   .dec {
     display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
-    font-size: var(--font-micro); padding: 4px 8px 4px 10px; border-radius: var(--radius-full);
+    font-size: var(--font-small); padding: 4px 8px 4px 10px; border-radius: var(--radius-full);
     border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
     background: var(--danger-subtle); color: var(--danger); cursor: pointer;
   }
@@ -229,7 +231,7 @@
       display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
     }
 
-    .dec { min-height: var(--tap-min); padding: 4px 12px; font-size: var(--font-tiny); }
+    .dec { min-height: var(--tap-min); padding: 4px 12px; font-size: var(--font-small); }
     .gol { min-height: var(--tap-min); }
   }
 </style>

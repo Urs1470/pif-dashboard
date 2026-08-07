@@ -418,7 +418,7 @@
   }
   .tbtn:hover { background: var(--bg-hover); color: var(--text); }
   .tbtn.on { background: var(--accent-subtle); color: var(--accent-on-subtle); }
-  .tbtn.tmath { font-weight: var(--fw-bold); }
+  .tbtn.tmath { font-weight: var(--fw-semibold); }
 
   .tsep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
 
@@ -429,7 +429,7 @@
     gap: 5px;
     height: 30px;
     padding: 0 10px;
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     font-weight: var(--fw-semibold);
     background: var(--bg-input);
     border: 1px solid var(--border);
@@ -469,8 +469,11 @@
   .topt:hover { background: var(--bg-hover); color: var(--text); }
   .topt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .topt-label { font-size: var(--font-small); }
-  .topt-label.t-h1 { font-family: var(--font-heading); font-weight: var(--fw-bold); font-size: 1.05rem; }
-  .topt-label.t-h2 { font-weight: var(--fw-bold); color: var(--accent); }
+  /* Fara `--font-heading`: e eticheta unei optiuni de meniu, nu titlul unui
+     lucru. Space Grotesk aici anunta ce PRODUCE optiunea, dar rândul insusi se
+     citeste ca orice alta comanda din lista. */
+  .topt-label.t-h1 { font-weight: var(--fw-semibold); font-size: var(--font-body); }
+  .topt-label.t-h2 { font-weight: var(--fw-semibold); color: var(--accent); }
   .topt-label.t-h3 { font-weight: var(--fw-semibold); }
   .topt-label.t-blockquote { font-style: italic; }
 
@@ -502,7 +505,7 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     color: var(--text-secondary);
     cursor: pointer;
     white-space: nowrap;
@@ -514,7 +517,7 @@
     gap: 4px;
     min-height: 30px;
     padding: 0 12px;
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     font-weight: var(--fw-semibold);
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
@@ -543,7 +546,7 @@
     padding: var(--space-md);
     font-size: var(--font-body);
     color: var(--text);
-    line-height: 1.6;
+    line-height: var(--lh-relaxed);
     outline: none;
     cursor: text;
   }
@@ -555,9 +558,9 @@
     pointer-events: none;
   }
 
-  .rte-editor :global(h1) { color: var(--text); font-family: var(--font-heading); font-size: 1.45rem; margin: 16px 0 8px; font-weight: var(--fw-bold); letter-spacing: -0.02em; }
-  .rte-editor :global(h2) { color: var(--accent); font-size: 1.25rem; margin: 14px 0 8px; font-weight: var(--fw-bold); }
-  .rte-editor :global(h3) { color: var(--text); font-size: 1.05rem; margin: 12px 0 6px; font-weight: var(--fw-semibold); }
+  .rte-editor :global(h1) { color: var(--text); font-family: var(--font-heading); font-size: var(--font-h2); margin: 16px 0 8px; font-weight: var(--fw-semibold); letter-spacing: var(--tracking-tight); }
+  .rte-editor :global(h2) { color: var(--accent); font-size: var(--font-h3); margin: 14px 0 8px; font-weight: var(--fw-semibold); }
+  .rte-editor :global(h3) { color: var(--text); font-size: var(--font-h3); margin: 12px 0 6px; font-weight: var(--fw-semibold); }
   .rte-editor :global(p) { margin: 6px 0; }
   .rte-editor :global(ul), .rte-editor :global(ol) { padding-left: 26px; margin: 6px 0; }
   .rte-editor :global(li) { margin: 3px 0; }
@@ -593,7 +596,7 @@
     border-top: 1px solid var(--border);
     background: var(--bg-surface);
   }
-  .rte-counter, .rte-hint { font-size: var(--font-tiny); color: var(--text-dim); }
+  .rte-counter, .rte-hint { font-size: var(--font-small); color: var(--text-dim); }
   .rte-hint code { font-family: var(--font-mono); background: var(--bg); padding: 1px 5px; border-radius: var(--radius-xs); color: var(--text-secondary); }
 
   @media (max-width: 768px) {
@@ -663,8 +666,8 @@
     max-width: 82ch;
     margin: 0 auto;
     padding: 64px 32px 90px;
-    font-size: 0.98rem;
-    line-height: 1.65;
+    font-size: var(--font-body);
+    line-height: var(--lh-relaxed);
   }
   .rte.doc .rte-editor:focus { box-shadow: none; }
 

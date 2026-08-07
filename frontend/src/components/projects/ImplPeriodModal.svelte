@@ -86,14 +86,14 @@
 <style>
   .ip { display: flex; flex-direction: column; gap: 14px; }
   .ip-grup { display: flex; flex-direction: column; gap: 6px; }
-  .ip-h { font-size: var(--font-micro); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); font-family: var(--font-mono); }
+  .ip-h { font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); font-family: var(--font-mono); }
   .ip-loc { display: flex; gap: 8px; }
   .loc-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: var(--font-small); }
   .loc-btn:hover { border-color: var(--border-strong); color: var(--text); }
   .loc-btn.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: var(--accent-subtle); }
   .ip-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .ip-field { display: flex; flex-direction: column; gap: 5px; }
-  .ip-field span { font-size: var(--font-micro); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); font-family: var(--font-mono); }
+  .ip-field span { font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); font-family: var(--font-mono); }
   .ip-actions { display: flex; align-items: center; gap: var(--space-sm); width: 100%; }
   .ip-actions .sp { flex: 1; }
   .btn-del { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border-radius: var(--radius-md); background: none; border: 1px solid var(--border); color: var(--danger); cursor: pointer; font-size: var(--font-small); }

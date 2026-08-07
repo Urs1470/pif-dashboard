@@ -107,11 +107,11 @@
     min-width: 0;
   }
   .field-label {
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     font-weight: var(--fw-medium);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
+    letter-spacing: var(--tracking-label);
   }
   .field-select {
     display: flex;

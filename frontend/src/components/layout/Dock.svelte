@@ -219,7 +219,7 @@
     display: flex;
     gap: 4px;
     padding: 12px 8px 8px;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
     z-index: var(--z-sticky);
     background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
     border: 1px solid var(--border-strong);

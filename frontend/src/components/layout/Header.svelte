@@ -67,9 +67,9 @@
     align-items: center;
     gap: 10px;
     font-family: var(--font-heading);
-    font-weight: var(--fw-bold);
-    font-size: 1.02rem;
-    letter-spacing: -0.02em;
+    font-weight: var(--fw-semibold);
+    font-size: var(--font-h3);
+    letter-spacing: var(--tracking-tight);
     color: var(--text);
     white-space: nowrap;
   }
@@ -99,8 +99,8 @@
   .hc-title {
     font-family: var(--font-heading);
     font-weight: var(--fw-semibold);
-    font-size: 1rem;
-    letter-spacing: -0.02em;
+    font-size: var(--font-h3);
+    letter-spacing: var(--tracking-tight);
     color: var(--text);
     overflow: hidden;
     text-overflow: ellipsis;

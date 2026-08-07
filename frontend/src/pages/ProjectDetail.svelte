@@ -659,7 +659,7 @@
         <button class="tab" class:active={activeTab === tab.key} onclick={() => activeTab = tab.key}>
           <tab.icon size={14} />
           {tab.label}
-          {#if tab.key === 'tasks'}<span class="tab-count">{tasks.length}</span>{/if}
+          {#if tab.key === 'tasks'}<span class="count accent">{tasks.length}</span>{/if}
         </button>
       {/each}
     </div>
@@ -1120,9 +1120,9 @@
   .project-header { margin-bottom: var(--space-lg); }
   .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-md); }
   .title-area { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
-  .title-area h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); color: var(--text); }
+  .title-area h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); color: var(--text); }
   .header-actions { display: flex; gap: var(--space-xs); flex-wrap: wrap; flex-shrink: 0; }
-  .tip { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
+  .tip { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
   .tip.pif { background: var(--accent-subtle); color: var(--accent); }
   .tip.service { background: var(--service-subtle); color: var(--service-accent); }
   /* `flex-wrap` + `min-width: 0`: fara ele cele trei fapte (client, echipament, cod)
@@ -1138,12 +1138,12 @@
   .rail { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-height) + 16px); }
   .rcell { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
   .rprog { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; }
-  .rprog-num { font-family: var(--font-mono); font-size: 1.4rem; font-weight: var(--fw-bold); color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rprog-num { font-family: var(--font-mono); font-size: var(--font-title); font-weight: var(--fw-semibold); color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
   .rbar { flex: 1; height: 6px; border-radius: var(--radius-full); background: var(--bg-panel); overflow: hidden; }
   .rbar i { display: block; height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width var(--dur-base) var(--ease); }
-  .rdate { font-family: var(--font-mono); font-size: 1.15rem; font-weight: var(--fw-bold); color: var(--text); margin-top: 10px; font-variant-numeric: tabular-nums; }
+  .rdate { font-family: var(--font-mono); font-size: var(--font-h3); font-weight: var(--fw-semibold); color: var(--text); margin-top: 10px; font-variant-numeric: tabular-nums; }
   .rdate.urgent { color: var(--danger); }
-  .rsub { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 6px; }
+  .rsub { font-size: var(--font-small); color: var(--text-dim); margin-top: 6px; }
   .rsub-empty { font-style: italic; margin-top: 10px; }
 
   /* Field sections in coloana stanga (observatii, service) */
@@ -1155,14 +1155,14 @@
   .f-ico { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .f-ico.f-red { background: var(--danger-subtle); color: var(--danger); }
   .f-ico.f-green { background: var(--success-subtle); color: var(--success); }
-  .f-meta { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; flex-shrink: 0; }
-  .field-label { flex: 1; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
-  .field-body { font-size: var(--font-small); color: var(--text); line-height: 1.65; padding: var(--space-sm) var(--space-lg) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
+  .f-meta { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-faint); white-space: nowrap; flex-shrink: 0; }
+  .field-label { flex: 1; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .field-body { font-size: var(--font-small); color: var(--text); line-height: var(--lh-relaxed); padding: var(--space-sm) var(--space-lg) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
   .field-empty { padding: var(--space-sm) var(--space-lg) var(--space-md); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
   .field-empty:hover { color: var(--accent); }
   .field-edit-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
 
-  .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 17px; height: 17px; padding: 0 4px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
+  /* `.tab-count` a plecat — e `.count accent` din global.css. */
 
   .tab-content { min-height: 200px; }
 
@@ -1186,32 +1186,34 @@
   .calc-dot.ok { background: var(--success); }
   .calc-dot.atentie { background: var(--warning); }
   .calc-dot.critic { background: var(--danger); }
-  .calc-titlu { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-bold); }
-  .calc-modul { font-size: var(--font-tiny); color: var(--text-dim); }
-  .calc-data { margin-left: auto; font-size: var(--font-tiny); color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .calc-titlu { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-semibold); }
+  .calc-modul { font-size: var(--font-small); color: var(--text-dim); }
+  .calc-data { margin-left: auto; font-size: var(--font-small); color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .calc-del { color: var(--text-dim); padding: 3px; border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; }
   .calc-del:hover { color: var(--danger); background: var(--danger-subtle); }
   .calc-body { padding: 4px 12px 12px 30px; border-top: 1px solid var(--border); }
-  .calc-nota { font-size: var(--font-tiny); color: var(--text-secondary); margin: 8px 0; font-style: italic; }
+  .calc-nota { font-size: var(--font-small); color: var(--text-secondary); margin: 8px 0; font-style: italic; }
   .calc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-top: 8px; }
-  .calc-col h4 { font-size: var(--font-tiny); color: var(--accent); font-weight: var(--fw-bold); margin-bottom: 4px; }
-  .calc-row { display: flex; justify-content: space-between; gap: 10px; font-size: var(--font-tiny); padding: 2px 0; color: var(--text-secondary); }
+  .calc-col h4 { font-size: var(--font-small); color: var(--accent); font-weight: var(--fw-semibold); margin-bottom: 4px; }
+  .calc-row { display: flex; justify-content: space-between; gap: 10px; font-size: var(--font-small); padding: 2px 0; color: var(--text-secondary); }
   .calc-row b { color: var(--text); font-family: var(--font-mono); white-space: nowrap; }
-  .calc-vd { font-size: var(--font-tiny); line-height: 1.4; padding: 4px 6px; border-radius: var(--radius-sm); margin: 2px 0 5px; }
+  .calc-vd { font-size: var(--font-small); line-height: var(--lh-snug); padding: 4px 6px; border-radius: var(--radius-sm); margin: 2px 0 5px; }
   .calc-vd.atentie { color: var(--warning); background: var(--warning-subtle); }
   .calc-vd.critic { color: var(--danger); background: var(--danger-subtle); }
   .calc-vd-src { display: block; color: var(--text-dim); opacity: 0.85; margin-top: 2px; }
   @media (max-width: 640px) { .calc-cols { grid-template-columns: 1fr; } }
   .wiki-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-  .wiki-chip { font-family: var(--font-mono); font-size: 0.78rem; padding: 4px 10px; border-radius: var(--radius-full); border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
+  /* Fara mono: chipul poarta NUMELE unei sectiuni de wiki — un cuvant care se
+     citeste, nu o cifra care se compara pe verticala. */
+  .wiki-chip { font-size: var(--font-small); padding: 4px 10px; border-radius: var(--radius-full); border: 1px solid var(--border); background: transparent; color: var(--text-secondary); cursor: pointer; }
   .wiki-chip:hover { background: var(--bg-hover); color: var(--text); }
   .wiki-chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent-ring); }
   .wiki-body { padding: 4px 2px; }
-  .wiki-editor { width: 100%; min-height: 360px; resize: vertical; font-family: var(--font-mono); font-size: 0.83rem; line-height: 1.5; color: var(--text); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
+  .wiki-editor { width: 100%; min-height: 360px; resize: vertical; font-family: var(--font-mono); font-size: var(--font-small); line-height: var(--lh-normal); color: var(--text); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px; }
   .wiki-editor:focus { outline: none; border-color: var(--accent-ring); }
   .wiki-edit-actions { display: flex; gap: 8px; margin-top: 10px; }
   .tab-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
-  .tab-sub { font-size: var(--font-tiny); color: var(--text-dim); }
+  .tab-sub { font-size: var(--font-small); color: var(--text-dim); }
   .quick-add { display: flex; flex-direction: column; margin-bottom: var(--space-md); }
   .qa-rand { display: flex; gap: var(--space-sm); }
   /* Chipurile de zi, identice cu cele din /tasks: adaugarea si planificarea sunt
@@ -1219,13 +1221,13 @@
   .qa-cand { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 2px 0; }
   .qa-chip { padding: 5px 14px; border-radius: var(--radius-full);
     background: var(--bg-elevated); border: 1px solid var(--border);
-    color: var(--text-secondary); font-size: var(--font-tiny);
+    color: var(--text-secondary); font-size: var(--font-small);
     font-weight: var(--fw-medium); cursor: pointer;
     transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .qa-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
   .qa-dp :global(.dp-trigger) { min-height: 30px; padding: 4px 12px;
-    border-radius: var(--radius-full); font-size: var(--font-tiny); }
-  .qa-hint { font-size: var(--font-micro); color: var(--text-faint); margin-left: auto; }
+    border-radius: var(--radius-full); font-size: var(--font-small); }
+  .qa-hint { font-size: var(--font-small); color: var(--text-faint); margin-left: auto; }
 
   .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
@@ -1244,14 +1246,14 @@
      peste ea. */
   .grup-cap { display: flex; align-items: center; gap: var(--space-xs);
     padding: 10px 2px 5px; margin-top: var(--space-xs);
-    font-family: var(--font-mono); font-size: var(--font-micro);
+    font-family: var(--font-mono); font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-wide); color: var(--text-faint); }
+    letter-spacing: var(--tracking-label); color: var(--text-faint); }
   .grup-cap:first-child { margin-top: 0; }
   .grup-n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
     background: var(--bg-elevated); color: var(--text-dim);
-    font-family: var(--font-mono); font-size: var(--font-micro);
+    font-family: var(--font-mono); font-size: var(--font-small);
     line-height: 1; font-variant-numeric: tabular-nums; }
   .grup-cap.ton-danger { color: var(--danger); }
   .grup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger); }
@@ -1336,8 +1338,8 @@
   .ttitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
-  .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
-  .tdeadline { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-tiny); }
+  .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; align-items: center; }
+  .tdeadline { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-small); }
   .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .tdeadline.today { color: var(--accent); font-weight: var(--fw-semibold); }
   .tdeadline.soon { color: var(--warning); }
@@ -1345,7 +1347,7 @@
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
   /* Done separator */
-  .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+  .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: var(--tracking-label); }
   .done-sep:hover { color: var(--text-secondary); }
   /* Contorul in capul sectiunii, ca la grupe — nu in paranteza in text. */
   .done-sep .grup-n { background: var(--success-subtle); color: var(--success); }
@@ -1357,25 +1359,25 @@
   .subtask-body { margin: 0; padding: 6px var(--space-12) var(--space-12) 34px;
     border-top: 1px solid var(--border-subtle);
     display: flex; flex-direction: column; gap: 4px; }
-  .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); }
+  .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
   .td-jos { display: flex; align-items: center; gap: var(--space-md);
     margin-top: var(--space-sm); padding-top: var(--space-sm);
     border-top: 1px dashed var(--border-subtle); }
   .td-link { display: inline-flex; align-items: center; gap: 6px; padding: 0;
     background: none; border: none; color: var(--text-faint);
-    font-size: var(--font-tiny); cursor: pointer; transition: var(--transition-colors); }
+    font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }
   .td-link:hover { color: var(--accent); }
   .td-link.areNota { color: var(--text-dim); }
   .td-dp :global(.dp) { width: auto; }
   .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: 6px;
     background: none; border: none; box-shadow: none; border-radius: 0;
-    color: var(--text-faint); font-size: var(--font-tiny); }
+    color: var(--text-faint); font-size: var(--font-small); }
   .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   /* Antetul sectiunii de subtaskuri — aceeasi reteta ca in /tasks (titlu + bara
      + numar pe un rand); .sub-bara/.sub-num vin din global.css. */
   .sub-head { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 4px; }
-  .sub-cap { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-faint); flex: none; }
+  .sub-cap { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); flex: none; }
   .sub-row { display: flex; align-items: center; gap: 9px; min-height: 32px;
     padding: 0 6px; border-radius: var(--radius-xs); }
   .sub-row:hover { background: var(--bg-hover); }
@@ -1409,8 +1411,8 @@
   /* Detalii in bara laterala (fostul tab Info) — grila de doua coloane, fara
      randuri goale: campurile necompletate nici nu ajung in lista. */
   .rdet { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; margin: 6px 0 0; }
-  .rdet dt { font-size: var(--font-micro); color: var(--text-faint); white-space: nowrap; }
-  .rdet dd { margin: 0; font-size: var(--font-tiny); color: var(--text-secondary); overflow-wrap: anywhere; }
+  .rdet dt { font-size: var(--font-small); color: var(--text-faint); white-space: nowrap; }
+  .rdet dd { margin: 0; font-size: var(--font-small); color: var(--text-secondary); overflow-wrap: anywhere; }
 
 
   /* Equipment import/copy */
@@ -1425,14 +1427,14 @@
 
     .rail-mini { display: flex; align-items: center; gap: var(--space-sm);
       margin-bottom: var(--space-sm); padding: 0 2px; }
-    .rm-pct { font-family: var(--font-mono); font-size: var(--font-tiny);
+    .rm-pct { font-family: var(--font-mono); font-size: var(--font-small);
       font-weight: var(--fw-semibold); color: var(--text-secondary);
       font-variant-numeric: tabular-nums; }
     .rm-bar { flex: 1; max-width: 90px; height: 3px; border-radius: var(--radius-full);
       background: var(--bg-input); overflow: hidden; }
     .rm-bar i { display: block; height: 100%; background: var(--accent); }
     .rm-cand { margin-left: auto; font-family: var(--font-mono);
-      font-size: var(--font-tiny); color: var(--text-dim);
+      font-size: var(--font-small); color: var(--text-dim);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rm-cand.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
     .rm-cand.rm-gol { color: var(--text-faint); }

@@ -182,8 +182,8 @@
     <div class="bh-left">
       <CalendarCheck size={17} />
       <h2>Astăzi</h2>
-      <span class="bh-count">{agenda.items.length}</span>
-      {#if restanteCount > 0}<span class="bh-restante">{restanteCount} restante</span>{/if}
+      <span class="count" title="{agenda.items.length} pe azi">{agenda.items.length}</span>
+      {#if restanteCount > 0}<span class="count danger" title="{restanteCount} restante">{restanteCount}</span>{/if}
     </div>
     <button class="bh-add" onclick={() => showPicker = true}>
       <ListPlus size={14} /> <span class="bh-add-txt">Adaugă task existent</span>
@@ -386,9 +386,9 @@
 
   .board-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); }
   .bh-left { display: flex; align-items: center; gap: var(--space-xs); color: var(--text); min-width: 0; }
-  .bh-left h2 { font-family: var(--font-heading); letter-spacing: -0.02em; font-size: var(--font-h3); font-weight: var(--fw-bold); }
-  .bh-count { font-size: var(--font-tiny); padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); }
-  .bh-restante { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 1px 8px; border-radius: var(--radius-full); background: var(--danger-subtle); color: var(--danger); }
+  .bh-left h2 { font-family: var(--font-heading); letter-spacing: var(--tracking-tight); font-size: var(--font-h3); font-weight: var(--fw-semibold); }
+  /* `.bh-count` / `.bh-restante` au plecat: sunt `.count` si `.count danger` din
+     global.css — aceeasi pastila ca peste tot (vezi comentariul de acolo). */
   .bh-add { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); flex-shrink: 0; }
   .bh-add:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
 
@@ -405,7 +405,7 @@
   /* Antetul sectiunii personale: micro/mono/uppercase ca .cell-label, cu punctul
      violet (--purple — huea „libera"; amber e severitate/identitate). Bordura de
      sus il desparte de board fara sa-l ridice la rang de al doilea board. */
-  .pers-cap { display: flex; align-items: center; gap: 6px; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-top: var(--space-md); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
+  .pers-cap { display: flex; align-items: center; gap: 6px; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-top: var(--space-md); border-top: 1px solid var(--border); font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
   /* Semn, nu bulina — acelasi desen ca pe comutatorul de sfera din /tasks, ca cele
      doua suprafete sa se refere in continuare una la alta fara sa aduca o a treia
      culoare pe ecran. */
@@ -478,7 +478,7 @@
   .amain { flex: 1; min-width: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px; }
   .atitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .arow.done .atitle { text-decoration: line-through; color: var(--text-dim); }
-  .ainfo { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; font-size: var(--font-tiny); color: var(--text-dim); }
+  .ainfo { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; font-size: var(--font-small); color: var(--text-dim); }
   /* Ca in /tasks: eticheta de context pleaca la capatul din dreapta. */
   .ainfo .tag { margin-left: auto; flex: none; }
   .deadline { display: inline-flex; align-items: center; gap: 3px; }
@@ -488,7 +488,7 @@
   .tag { padding: 1px 8px; background: var(--bg-elevated); border-radius: var(--radius-full); font-weight: var(--fw-medium); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
   .tag.proj { color: var(--text-dim); background: var(--bg-elevated); }
   .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
-  .deadline { font-size: var(--font-tiny); color: var(--text-dim); }
+  .deadline { font-size: var(--font-small); color: var(--text-dim); }
   .deadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .deadline.soon { color: var(--warning); }
 

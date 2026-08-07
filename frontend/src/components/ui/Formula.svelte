@@ -23,7 +23,7 @@
     max-width: 100%;
     color: var(--text-secondary);
     font-size: 0.85em;
-    line-height: 1.35;
+    line-height: var(--lh-snug);
   }
   .formula.block {
     display: block;

@@ -55,7 +55,7 @@
   // „pregătire · 12.08.2026 — 5 zile" — adica faza, data plina si o socoteala
   // relativa, toate la cea mai mica treapta din scara; iar la ≤2 zile se inrosea
   // TOT sirul, inclusiv faza, care nu e urgenta. Acum: faza e eticheta micro,
-  // socoteala urca la --font-tiny si poarta SINGURA culoarea, data plina trece
+  // socoteala urca la --font-small si poarta SINGURA culoarea, data plina trece
   // in `title` — o verifici cand o cauti.
   const FAZA_SCURT = { pregatire: 'Pregătire', implementare: 'Implementare' }
   function urmatoarea(p) {
@@ -392,8 +392,8 @@
   .page-title-row { min-width: 0; }
   .page-title-row h1 { overflow-wrap: anywhere; }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
-  .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
-  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
+  .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); }
+  /* `.count` a plecat in global.css — vezi nota din Tasks.svelte. */
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
   .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 320px; }
@@ -407,7 +407,7 @@
   .a-ico, .b-select { display: inline-flex; align-items: center; gap: 6px;
     min-height: 30px; padding: 0 10px; border-radius: var(--radius-sm);
     background: transparent; border: 1px solid transparent;
-    font-size: var(--font-tiny); font-weight: var(--fw-medium);
+    font-size: var(--font-small); font-weight: var(--fw-medium);
     color: var(--text-faint); cursor: pointer; transition: var(--transition-colors); }
   .a-ico:hover, .b-select:hover { color: var(--text); background: var(--bg-hover); }
   .a-ico.on, .b-select.on { background: var(--accent-subtle); color: var(--accent-on-subtle); }
@@ -417,15 +417,15 @@
   /* Sortare — control ghost discret + meniu custom; click pe optiunea
      activa inverseaza directia (sageata arata directia curenta). */
   .sort-box { position: relative; }
-  .sort-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-dim); background: transparent; border: 1px solid transparent; border-radius: var(--radius-full); cursor: pointer; transition: var(--transition-colors); }
+  .sort-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim); background: transparent; border: 1px solid transparent; border-radius: var(--radius-full); cursor: pointer; transition: var(--transition-colors); }
   .sort-trigger:hover { color: var(--text); background: var(--bg-hover); }
   .sort-trigger.on { color: var(--accent-on-subtle); background: var(--accent-subtle); border-color: var(--accent); }
-  .sort-dir-ind { font-family: var(--font-mono); font-size: var(--font-tiny); opacity: .8; }
+  .sort-dir-ind { font-size: var(--font-small); opacity: .8; }
   .sort-menu { position: absolute; top: calc(100% + 5px); right: 0; z-index: var(--z-dropdown, 50); min-width: 150px; background: var(--bg-overlay); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 4px; }
   .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
   .sort-opt:hover { background: var(--bg-hover); color: var(--text); }
   .sort-opt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
-  .select-all { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border); }
+  .select-all { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border); }
   .select-all:hover { color: var(--text); border-color: var(--border-strong); }
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
@@ -443,42 +443,45 @@
      punctata si fundalul gol, nu prin text ilizibil. */
   .pcard.new-card { border-style: dashed; align-items: center; justify-content: center; gap: 6px; color: var(--text-dim); background: transparent; }
   .pcard.new-card:hover { color: var(--accent); border-color: var(--accent); box-shadow: none; }
-  .new-plus { font-size: 1.5rem; line-height: 1; }
+  .new-plus { font-size: var(--font-h2); line-height: 1; }
   .new-label { font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .card-top { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 10px; }
   .card-top { display: flex; align-items: center; }
   .card-top .status-pill { margin-left: auto; }
   .card-check { width: auto; height: auto; }
-  .card-name { font-family: var(--font-heading); font-size: 1.05rem; font-weight: var(--fw-bold); letter-spacing: -0.02em; color: var(--text); line-height: 1.25; overflow-wrap: anywhere; }
+  /* Numele proiectului urca pe `--font-h2`: e numele unui lucru, deci poarta
+     fontul de titlu la o treapta care EXISTA. Era la 1.05rem — o marime pe care
+     n-o numea niciun token, intre h3 si body, aleasa o data si ramasa acolo. */
+  .card-name { font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-tight); color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; }
   /* --text-dim, nu faint: numele clientului e INFORMATIE, nu eticheta —
      iar faint e documentat „doar etichete/large" (3:1). Masurat: 3.18:1 la
      11.2px, sub pragul AA de 4.5 pentru text mic. */
-  .card-client { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; }
+  .card-client { font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; }
   /* Doua trepte, nu una: faza e ETICHETA (micro, uppercase, faint), socoteala e
      INFORMATIE (tiny, mono) si poarta singura culoarea. Data plina sta in
      `title` — nu ocupa un rand pentru ceva ce verifici cand cauti. */
   .card-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: baseline; gap: 7px; }
-  .foot-faza { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); }
-  .foot-cand { font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); }
+  .foot-faza { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .foot-cand { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); }
   .foot-cand.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
   .skeleton-card { gap: 8px; cursor: default; }
 
   .dim { color: var(--text-secondary); }
   /* Tipul e o LINIE, nu un fill: aceeasi definitie pe card si in arhiva. */
   .tip-ico { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
-  .ptip { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); }
-  .tip-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); margin-left: 7px; }
+  .ptip { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .tip-label { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); margin-left: 7px; }
 
   .archive { margin-top: var(--space-lg); }
   .arch-cap { display: flex; align-items: center; gap: var(--space-xs);
     padding: 0 2px var(--space-sm); color: var(--text-faint);
-    font-family: var(--font-mono); font-size: var(--font-micro);
+    font-family: var(--font-mono); font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-wide); }
+    letter-spacing: var(--tracking-label); }
   .grup-n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
     background: var(--success-subtle); color: var(--success);
-    font-family: var(--font-mono); font-size: var(--font-micro);
+    font-family: var(--font-mono); font-size: var(--font-small);
     line-height: 1; font-variant-numeric: tabular-nums; }
   .archived { opacity: 0.7; }
   .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
@@ -486,9 +489,9 @@
   .arch-row:last-child { border-bottom: none; }
   .arch-row:hover { background: var(--bg-hover); opacity: 1; }
   .arch-name { font-weight: var(--fw-medium); }
-  .arch-client { font-size: var(--font-tiny); }
+  .arch-client { font-size: var(--font-small); }
   .arch-tail { margin-left: auto; display: inline-flex; align-items: center; gap: var(--space-sm); }
-  .arch-deadline { font-size: var(--font-tiny); font-family: var(--font-mono); }
+  .arch-deadline { font-size: var(--font-small); font-family: var(--font-mono); }
 
   .header-btns { display: flex; gap: var(--space-xs); }
   .batch-bar { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); margin-bottom: var(--space-md); flex-wrap: wrap; }
@@ -500,7 +503,7 @@
      `--st` (STATUS_COLORS), deci fondul se deduce din ea — o singura regula
      pentru amandoua statusurile, nu doua tokenuri scrise de mana. */
   .status-pill { display: inline-flex; align-items: center; gap: 4px;
-    margin-left: auto; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
+    margin-left: auto; font-size: var(--font-small); font-weight: var(--fw-semibold);
     padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full);
     color: var(--st); background: color-mix(in oklab, var(--st) 13%, transparent);
     border: 1px solid transparent; white-space: nowrap; }
@@ -530,7 +533,7 @@
        primeste focus (caseta e un <div>, nu un <label>), deci tinta reala era de
        25px. `align-self: stretch` il face sa umple caseta. */
     .search-box { max-width: none; align-items: stretch; padding: 0 14px; }
-    .search-box input { align-self: stretch; min-height: var(--tap-min); font-size: 1rem; }
+    .search-box input { align-self: stretch; min-height: var(--tap-min); font-size: var(--font-input-mobile); }
     .search-box :global(svg) { align-self: center; }
     .batch-bar { flex-direction: column; align-items: stretch; }
 

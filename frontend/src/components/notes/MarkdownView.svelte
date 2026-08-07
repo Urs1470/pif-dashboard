@@ -29,14 +29,14 @@
 
 <style>
   /* Masura de citire ~72ch ca randurile sa nu ajunga la 140 caractere pe desktop */
-  .md-rendered { font-size: 0.92rem; line-height: var(--lh-normal); color: var(--text); max-width: 72ch; }
+  .md-rendered { font-size: var(--font-body); line-height: var(--lh-normal); color: var(--text); max-width: 72ch; }
   .md-rendered :global(.katex-display) { text-align: left; overflow-x: auto; overflow-y: hidden; }
   .md-rendered :global(h1), .md-rendered :global(h2), .md-rendered :global(h3) {
-    margin: 1em 0 0.4em; font-weight: var(--fw-bold); color: var(--text); letter-spacing: -0.015em;
+    margin: 1em 0 0.4em; font-weight: var(--fw-semibold); color: var(--text); letter-spacing: var(--tracking-tight);
   }
-  .md-rendered :global(h1) { font-size: 1.3rem; }
-  .md-rendered :global(h2) { font-size: 1.12rem; }
-  .md-rendered :global(h3) { font-size: 1rem; color: var(--text-secondary); }
+  .md-rendered :global(h1) { font-size: var(--font-h2); }
+  .md-rendered :global(h2) { font-size: var(--font-h3); }
+  .md-rendered :global(h3) { font-size: var(--font-h3); color: var(--text-secondary); }
   .md-rendered :global(p) { margin: 0.55em 0; }
   .md-rendered :global(ul), .md-rendered :global(ol) { margin: 0.5em 0; padding-left: 1.5em; }
   .md-rendered :global(li) { margin: 0.2em 0; }
@@ -58,7 +58,7 @@
   .md-rendered :global(hr) { border: none; border-top: 1px solid var(--border-subtle); margin: 1.2em 0; }
   .md-rendered :global(table) { border-collapse: collapse; margin: 0.7em 0; width: 100%; }
   .md-rendered :global(th), .md-rendered :global(td) {
-    border: 1px solid var(--border); padding: 6px 10px; font-size: 0.85rem; text-align: left;
+    border: 1px solid var(--border); padding: 6px 10px; font-size: var(--font-small); text-align: left;
   }
   .md-rendered :global(th) { background: var(--bg-elevated); font-weight: var(--fw-semibold); }
   .md-rendered :global(img) { max-width: 100%; border-radius: var(--radius-xs); }
@@ -79,7 +79,7 @@
     border-left: 3px solid var(--accent); background: var(--accent-subtle);
     border-radius: var(--radius-xs); padding: 10px 14px; margin: 0.7em 0;
   }
-  .md-rendered :global(.md-callout-title) { font-weight: var(--fw-bold); font-size: 0.9rem; color: var(--accent); }
+  .md-rendered :global(.md-callout-title) { font-weight: var(--fw-semibold); font-size: var(--font-body); color: var(--accent); }
   .md-rendered :global(.md-callout-body) { margin-top: 4px; }
   .md-rendered :global(.md-callout-body > *:first-child) { margin-top: 0; }
   .md-rendered :global(.md-callout-body > *:last-child) { margin-bottom: 0; }

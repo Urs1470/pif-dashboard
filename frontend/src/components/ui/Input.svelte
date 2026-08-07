@@ -27,11 +27,11 @@
     gap: 4px;
   }
   .field-label {
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     font-weight: var(--fw-medium);
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
+    letter-spacing: var(--tracking-label);
   }
   .field-input {
     padding: 10px 12px;
@@ -65,7 +65,7 @@
     box-shadow: 0 0 0 3px var(--danger-subtle);
   }
   .field-error {
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     color: var(--danger);
   }
 </style>

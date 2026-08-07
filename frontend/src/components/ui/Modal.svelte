@@ -204,7 +204,7 @@
   .modal {
     background: var(--bg-overlay);
     border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
     width: 100%;
     max-height: 85dvh;
     display: flex;
@@ -232,9 +232,9 @@
   .modal-doc .modal-header { border-bottom: none; padding-bottom: var(--space-sm); }
   .modal-doc .modal-title {
     font-family: var(--font-sans);
-    font-size: var(--font-micro);
+    font-size: var(--font-label);
     text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
+    letter-spacing: var(--tracking-label);
     font-weight: var(--fw-semibold);
     color: var(--text-faint);
     white-space: nowrap;
@@ -254,9 +254,9 @@
   }
   .modal-title {
     font-family: var(--font-heading);
-    letter-spacing: -0.02em;
+    letter-spacing: var(--tracking-tight);
     font-size: var(--font-h3);
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-semibold);
     color: var(--text);
   }
   .modal-close {
@@ -267,7 +267,8 @@
     justify-content: center;
     border-radius: var(--radius-sm);
     color: var(--text-dim);
-    font-size: 20px;
+    /* Fara `font-size`: butonul poarta un `<X>` Lucide (SVG dimensionat prin
+       `size`), deci treapta de font nu masura niciodata nimic aici. */
     transition: var(--transition-colors);
   }
   .modal-close:hover {
@@ -316,7 +317,7 @@
       /* dvh urmareste bara de adresa; sheet-ul nu trebuie sa depaseasca ecranul
          nici cat timp bara se retrage. */
       max-height: min(92dvh, 100dvh - var(--safe-top) - 24px);
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       border-bottom: none;
       /* Umbra urca, nu coboara: sheet-ul se ridica peste pagina. */
       box-shadow: 0 -14px 40px -12px rgba(0, 0, 0, 0.6);
@@ -373,9 +374,9 @@
       min-height: 0;
     }
     .modal.sheet .modal-title {
-      font-size: var(--font-micro);
+      font-size: var(--font-label);
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
+      letter-spacing: var(--tracking-label);
       font-weight: var(--fw-semibold);
       color: var(--text-faint);
     }

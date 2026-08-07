@@ -95,45 +95,66 @@
   --card-pad: 16px;
   --card-pad-compact: 12px;
 
-  /* Radius — scala legacy */
+  /* Radius */
   --radius-xs: 6px;
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 22px;
-  --radius-xl: 24px;
   --radius-full: 9999px;
-  --radius-chip: 7px;   /* chips patrate mici (.ico, tip-chip) — consolideaza 7/8px ad-hoc */
+  /* Erau SASE. Doua perechi nu se deosebeau: `xl` (24) statea la 2px de `lg`
+     (22), iar `chip` (7) la 1px de `xs` (6) — o diferenta pe care n-o vede
+     nimeni nu e o treapta, e o a doua parere, si se alegea din instinct exact ca
+     treptele de font de mai jos. `xl` si `chip` au plecat. */
 
-  /* Typography — scala legacy */
+  /* TIPOGRAFIA — scara.
+     Erau OPT trepte, patru greutati si nicio regula scrisa care sa spuna care
+     unde: titlul lui /planificator era Space Grotesk si titlul lui /taskuri
+     Inter, la aceeasi marime si in acelasi colt de ecran. Sub corp incapeau
+     TREI trepte in patru pixeli (14,4 / 12,8 / 11,2 / 10,4), cu pasi de 0,8px —
+     sub pragul la care ochiul separa doua randuri de text, deci aceeasi
+     metadata era `tiny` pe randul de task si `micro` pe cardul de proiect si
+     niciuna nu era gresita, pentru ca scara nu spunea nimic.
+     Acum: sase trepte, niciun salt sub 2px, valori intregi, si sub corp raman
+     DOUA — 13 pentru tot ce citesti, 11 doar pentru etichete majuscule. */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'Fira Code', monospace;
   --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-  --font-display: 1.875rem;  /* cifre KPI/stat (30px) */
-  --font-h1: 1.75rem;
-  --font-h2: 1.35rem;
-  --font-h3: 1.15rem;
-  --font-body: 0.9rem;
-  --font-small: 0.8rem;
-  --font-tiny: 0.7rem;
-  --font-micro: 0.65rem;     /* podeaua etichetelor uppercase (badge/th/kpi-label) */
+  --font-title: 1.625rem;   /* 26 — titlul paginii */
+  --font-h2: 1.25rem;       /* 20 — titlu de sectiune, nume de proiect */
+  --font-h3: 1.0625rem;     /* 17 — titlu de lista, titlul taskului deschis */
+  --font-body: 0.9375rem;   /* 15 — tot ce citesti */
+  --font-small: 0.8125rem;  /* 13 — metadate, chipuri, ajutoare */
+  --font-label: 0.6875rem;  /* 11 — DOAR etichete majuscule */
 
-  /* Font-weight (Inter/Space Grotesk/JetBrains Mono sunt variabile) */
+  /* Safari mareste pagina cand fontul campului focalizat e sub 16px. Erau trei
+     locuri care scriau `1rem` sau `16px !important` de mana ca sa compenseze —
+     adica o a noua marime, ascunsa intr-un media query. Acum e un token. */
+  --font-input-mobile: 16px;
+
+  /* Font-weight — TREI, nu patru. `--fw-bold` (700) a plecat: la Space Grotesk
+     condensat, 700 la 26px e greu, nu emfatic. Unde chiar purta informatie — pe
+     cifre (`.k-n`, `.ch-main`, `.rprog-num`) — a trecut la semibold, nu la medium. */
   --fw-normal: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
-  --fw-bold: 700;
 
-  /* Line-height */
-  --lh-tight: 1.15;   /* display/headings */
-  --lh-snug: 1.3;
-  --lh-normal: 1.55;  /* body/rich-content */
-  --lh-relaxed: 1.7;
+  /* Line-height. In ecrane erau scrise direct 1.25, 1.45, 1.5, 1.6 si 1.65, in
+     douazeci de locuri, niciuna mai buna decat treapta cea mai apropiata. Doua
+     paragrafe alaturate, unul la 1.6 si altul la 1.55, nu arata ca doua decizii:
+     arata ca o eroare de aliniere. `--lh-snug` urca de la 1.3 la 1.35 ca sa
+     acopere 1.25. */
+  --lh-tight: 1.15;   /* titluri */
+  --lh-snug: 1.35;    /* titluri de lista, texte taiate la doua randuri */
+  --lh-normal: 1.55;  /* corp */
+  --lh-relaxed: 1.7;  /* notite lungi, continut bogat */
 
-  /* Letter-spacing (tracking) */
-  --tracking-tight: -0.01em;
+  /* Tracking — trei valori, toate tokenuri. `--tracking-tight` era -0.01em si
+     nu-l folosea nimeni, in timp ce -0.02em era scris de mana in opt locuri din
+     sapte fisiere; tokenul ia acum valoarea pe care o folosea deja toata lumea.
+     `--tracking-label` inlocuieste 0.14em / 0.1em / 0.03em / wide / wider. */
+  --tracking-tight: -0.02em;
   --tracking-normal: 0;
-  --tracking-wide: 0.04em;    /* default pentru uppercase labels */
-  --tracking-wider: 0.08em;   /* doar table th foarte mici */
+  --tracking-label: 0.08em;
 
   /* Focus ring (reutilizat de inputuri + regula globala focus-visible) */
   --focus-ring: 0 0 0 3px var(--accent-subtle);
@@ -198,25 +219,24 @@
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
-/* TITLURILE SE MICSOREAZA PE TELEFON.
-   Scala de mai sus e desenata pentru un ecran de 1280px, unde un titlu de 28px
-   ocupa un rand si atat. Pe 375px acelasi 28px inseamna ~18 caractere pe rand:
+/* TITLUL PAGINII SE MICSOREAZA PE TELEFON — si doar el.
+   Scara de mai sus e desenata pentru un ecran de 1280px, unde un titlu de 26px
+   ocupa un rand si atat. Pe 375px acelasi 26px inseamna ~19 caractere pe rand:
    „Punere in functiune linie extrudare cauciuc — motoare principale si
    periferice" cadea pe PATRU randuri, adica ~150px de titlu inainte sa vezi
-   ceva din proiect, si asta la fiecare deschidere. La fel „Calculator actionari
-   electrice", pe trei.
+   ceva din proiect, si asta la fiecare deschidere.
    Efectul al doilea, mai putin evident: titlul si butoanele impart acelasi rand
    in antetul paginii, iar cand titlul e nemicsorabil butoanele ies din ecran —
    pe /projects „Proiect Nou" era taiat de marginea din dreapta.
-   Se schimba TOKENUL, nu fiecare pagina: `--font-h1` e folosit de sapte pagini,
-   iar o exceptie per pagina ar fi insemnat sapte locuri care se pot desincroniza.
-   Cifrele KPI scad mai putin (sunt scurte si sunt continut, nu eticheta). */
+   Se schimba TOKENUL, nu fiecare pagina.
+
+   Ce NU mai scade: corpul si treptele de sub el. Blocul asta micsora `h2`, `h3`
+   si corpul odata cu titlul — deci exact treptele inghesuite ramaneau inghesuite
+   pe ecranul cu cea mai mica distanta de citire si cea mai proasta lumina, in
+   hala. Corpul ramane 15px pe toate ecranele. */
 @media (max-width: 768px) {
   :root {
-    --font-display: 1.5rem;   /* 30 -> 24 */
-    --font-h1: 1.3rem;        /* 28 -> 21 */
-    --font-h2: 1.15rem;       /* 22 -> 18 */
-    --font-h3: 1.05rem;       /* 18 -> 17 */
+    --font-title: 1.375rem;   /* 26 -> 22 */
   }
 }
 

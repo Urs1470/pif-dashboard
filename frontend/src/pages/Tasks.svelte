@@ -1172,8 +1172,10 @@
      butonul iese din ecran, unde `overflow-x: clip` il taie fara sa spuna nimic. */
   .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md); }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); min-width: 0; }
-  .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); }
-  .count { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); line-height: 1; font-variant-numeric: tabular-nums; border-radius: var(--radius-full); background: var(--accent-subtle); color: var(--accent-on-subtle); border: 1px solid var(--accent-ring); }
+  .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); }
+  /* `.count` a plecat in global.css. E NEUTRA acum, nu amber: numarul de langa
+     titlul paginii spune cate SUNT, iar accentul e rezervat pentru „cate sunt de
+     facut aici" (backlog, tabul de taskuri al proiectului). */
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
   .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 280px; }
@@ -1197,7 +1199,7 @@
      ca sa se vada din bara in ce lista te uiti. */
   .a-ico { display: inline-flex; align-items: center; gap: 6px; min-height: 30px;
     padding: 0 10px; border: none; background: none; border-radius: var(--radius-sm);
-    color: var(--text-faint); font-size: var(--font-tiny); font-weight: var(--fw-medium);
+    color: var(--text-faint); font-size: var(--font-small); font-weight: var(--fw-medium);
     cursor: pointer; transition: var(--transition-colors); }
   .a-ico:hover { color: var(--text); background: var(--bg-hover); }
   .a-ico.on { color: var(--accent-on-subtle); background: var(--accent-subtle); }
@@ -1210,7 +1212,7 @@
   .sfere { display: flex; background: var(--bg-input); border: 1px solid var(--border);
            border-radius: var(--radius-full); padding: 2px; flex-shrink: 0; margin-right: 4px; }
   .seg { display: inline-flex; align-items: center; gap: 6px; padding: 2px 12px; min-height: 24px; border: none; background: none; cursor: pointer;
-         border-radius: var(--radius-full); font-size: var(--font-tiny); font-weight: var(--fw-medium);
+         border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-medium);
          color: var(--text-dim); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .seg:hover { color: var(--text); }
   .seg.on { background: var(--bg-elevated); color: var(--text); box-shadow: var(--shadow-sm); }
@@ -1234,15 +1236,15 @@
 
   /* Modalul Google Calendar — text de stare, nu formular. */
   .g-skel { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .g-text { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.5; }
-  .g-mono { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text); }
+  .g-text { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); }
+  .g-mono { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text); }
   .g-actiuni { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-md); }
   .g-stare { display: flex; flex-direction: column; gap: var(--space-xs); }
   .g-rand { display: flex; justify-content: space-between; gap: var(--space-md); font-size: var(--font-small); }
   .g-et { color: var(--text-dim); }
-  .g-val { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text); }
+  .g-val { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text); }
   .g-eroare { font-size: var(--font-small); color: var(--danger); margin-top: var(--space-sm); }
-  .g-link { font-size: var(--font-tiny); color: var(--text-dim); background: none; border: none;
+  .g-link { font-size: var(--font-small); color: var(--text-dim); background: none; border: none;
             cursor: pointer; text-decoration: underline; padding: 0; align-self: center; }
   .g-link:hover { color: var(--text); }
   /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
@@ -1257,14 +1259,14 @@
     display: flex; align-items: center; gap: var(--space-xs);
     padding: 10px 2px 5px; margin-top: var(--space-xs);
     background: linear-gradient(var(--bg-surface) 72%, transparent);
-    font-family: var(--font-mono); font-size: var(--font-micro);
+    font-family: var(--font-mono); font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-wide); color: var(--text-faint); }
+    letter-spacing: var(--tracking-label); color: var(--text-faint); }
   .grup-cap:first-child { margin-top: 0; }
   .grup-n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
     background: var(--bg-elevated); color: var(--text-dim);
-    font-size: var(--font-micro); line-height: 1; font-variant-numeric: tabular-nums; }
+    font-size: var(--font-small); line-height: 1; font-variant-numeric: tabular-nums; }
   /* Tonul repeta EXACT limbajul de culoare al bordurii din stanga randului
      (`dueColor`), ca sa nu inveti doua coduri pentru acelasi lucru. */
   .grup-cap.ton-danger { color: var(--danger); }
@@ -1278,13 +1280,13 @@
   .qa-cand { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 2px 0; }
   .qa-chip { padding: 5px 14px; border-radius: var(--radius-full);
     background: var(--bg-elevated); border: 1px solid var(--border);
-    color: var(--text-secondary); font-size: var(--font-tiny);
+    color: var(--text-secondary); font-size: var(--font-small);
     font-weight: var(--fw-medium); cursor: pointer;
     transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .qa-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
   .qa-dp :global(.dp-trigger) { min-height: 30px; padding: 4px 12px;
-    border-radius: var(--radius-full); font-size: var(--font-tiny); }
-  .qa-hint { font-size: var(--font-micro); color: var(--text-faint); margin-left: auto; }
+    border-radius: var(--radius-full); font-size: var(--font-small); }
+  .qa-hint { font-size: var(--font-small); color: var(--text-faint); margin-left: auto; }
 
   /* ===== randul desfasurat ===== */
   /* Cele doua actiuni rare, SUB continut si la 11px: chipurile de dinainte stateau
@@ -1295,7 +1297,7 @@
     border-top: 1px dashed var(--border-subtle); }
   .td-link { display: inline-flex; align-items: center; gap: 6px; padding: 0;
     background: none; border: none; color: var(--text-faint);
-    font-size: var(--font-tiny); cursor: pointer; transition: var(--transition-colors); }
+    font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }
   .td-link:hover { color: var(--accent); }
   .td-link.areNota { color: var(--text-dim); }
   /* DatePicker-ul isi aduce caseta de camp; aici trebuie sa arate ca vecinul lui —
@@ -1303,9 +1305,9 @@
   .td-dp :global(.dp) { width: auto; }
   .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: 6px;
     background: none; border: none; box-shadow: none; border-radius: 0;
-    color: var(--text-faint); font-size: var(--font-tiny); }
+    color: var(--text-faint); font-size: var(--font-small); }
   .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
-  .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); }
+  .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
 
   .task-list { display: flex; flex-direction: column; }
   .trow-wrap { display: flex; flex-direction: column; background: var(--bg-panel);
@@ -1366,7 +1368,7 @@
   .ttitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
-  .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
+  .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; align-items: center; }
   /* Categoria pleaca la capatul din dreapta (ca „Inbox" la Todoist): e ultima ca
      importanta, deci nu are voie sa stea intre ochi si termen. */
   /* ACEEASI HAINA PE AMBELE ECRANE. Pe telefon categoria era deja text simplu,
@@ -1418,8 +1420,8 @@
 
   /* ===== Foaia taskului ===== */
   .sub-cap { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 6px; }
-  .sub-cap-t { font-size: var(--font-micro); text-transform: uppercase;
-    letter-spacing: var(--tracking-wide); font-weight: var(--fw-semibold); color: var(--text-faint); flex: none; }
+  .sub-cap-t { font-size: var(--font-label); text-transform: uppercase;
+    letter-spacing: var(--tracking-label); font-weight: var(--fw-semibold); color: var(--text-faint); flex: none; }
   .sub-gol { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm) 0; }
   /* Fiecare subtask e un card, ca la Todoist: pe fundalul foii randurile fara
      suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate.
@@ -1516,7 +1518,7 @@
   .task-edit { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
-  .tdeadline { font-size: var(--font-tiny); }
+  .tdeadline { font-size: var(--font-small); }
   .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
   .tdeadline.today { color: var(--accent); font-weight: var(--fw-semibold); }
   .tdeadline.soon { color: var(--warning); }
@@ -1697,7 +1699,7 @@
        oricum orice input la 16px pe telefon (zoom-ul Safari la focus), deci cu
        titlul la `--font-body` (14.4px) textul crestea cu 1.6px fix cand incepeai
        sa-l editezi. Egalarea se face in sus, nu in jos — sub 16 nu se poate. */
-    .sub-title, .sub-edit { font-size: 1rem; }
+    .sub-title, .sub-edit { font-size: var(--font-input-mobile); }
     .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); padding: 0 16px;
       font-size: var(--font-small); }
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */

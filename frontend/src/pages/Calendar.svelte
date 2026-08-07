@@ -1264,7 +1264,7 @@
   .ico, .b-azi, .mods button { border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-secondary);
     border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   .ico { width: 28px; height: 28px; }
-  .b-azi, .mods button { height: 28px; padding: 0 10px; font-size: var(--font-tiny); }
+  .b-azi, .mods button { height: 28px; padding: 0 10px; font-size: var(--font-small); }
   .ico:hover, .b-azi:hover, .mods button:hover { border-color: var(--accent); color: var(--accent); }
   .mods { display: flex; gap: 4px; }
   .mods button.on { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent-ring); }
@@ -1273,16 +1273,16 @@
   .kpis { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
   .kpi { display: flex; align-items: baseline; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); }
   .kpi.warn { background: color-mix(in srgb, var(--danger) 14%, transparent); border-color: var(--danger); cursor: pointer; }
-  .k-n { font-family: var(--font-mono); font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text); font-variant-numeric: tabular-nums; }
+  .k-n { font-family: var(--font-mono); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); font-variant-numeric: tabular-nums; }
   .kpi.warn .k-n { color: var(--danger); }
-  .k-l { font-size: var(--font-tiny); color: var(--text-dim); }
+  .k-l { font-size: var(--font-small); color: var(--text-dim); }
   .kpi.warn .k-l { color: var(--danger); }
 
   .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--space-md); align-items: start; }
 
   .cal { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-sm); }
   .wd { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-bottom: 4px; }
-  .wd span { font-size: var(--font-micro); color: var(--text-faint); text-align: center; text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+  .wd span { font-size: var(--font-label); color: var(--text-faint); text-align: center; text-transform: uppercase; letter-spacing: var(--tracking-label); }
   /* `minmax(0, 1fr)`, nu `1fr`: `1fr` inseamna `minmax(auto, 1fr)`, deci o banda
      care se intinde peste coloane si are `nowrap` isi impune latimea minima si
      largeste coloanele pe care le acopera. Zilele nu mai erau egale si nu se mai
@@ -1323,10 +1323,10 @@
 
   .n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 15px; height: 15px; padding: 0 3px; border-radius: var(--radius-full);
-    font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-dim);
+    font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim);
     font-variant-numeric: tabular-nums; }
   /* Pastila plina: se vede de la distanta si nu se bate cu niciun chenar. */
-  .zi.azi .n { background: var(--accent); color: var(--on-color); font-weight: var(--fw-bold); }
+  .zi.azi .n { background: var(--accent); color: var(--on-color); font-weight: var(--fw-semibold); }
   .flag { position: absolute; top: 4px; right: 4px; color: var(--danger); display: inline-flex; }
 
   /* O LUCRARE = O BANDA, oricat de multe zile ar tine. Se intinde peste coloane,
@@ -1396,7 +1396,7 @@
   .banda.pregatire.sediu { background: repeating-linear-gradient(135deg,
       color-mix(in srgb, var(--c) 16%, transparent) 0 4px, transparent 4px 8px); }
   .banda.pregatire .banda-t { color: var(--text-secondary); }
-  .banda-t { display: block; font-size: var(--font-micro); line-height: 1.35; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .banda-t { display: block; font-size: var(--font-small); line-height: var(--lh-snug); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Numele nu intra sub maner: linia lui de prindere ar cadea peste prima si
      ultima litera, si n-ai sti daca textul e taiat sau desenat gresit. */
   .banda.inceput .banda-t { padding-left: 6px; }
@@ -1409,7 +1409,7 @@
           white-space: nowrap; overflow: hidden; padding-right: 14px; }
   .cap { display: inline-flex; align-items: center; gap: 3px; min-width: 0;
          padding: 0 5px 0 3px; border-radius: var(--radius-full);
-         font-size: var(--font-micro); line-height: 1.45; color: var(--text-secondary);
+         font-size: var(--font-small); line-height: var(--lh-normal); color: var(--text-secondary);
          background: var(--bg-hover); border: 1px solid var(--border); cursor: grab;
          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cap:active { cursor: grabbing; }
@@ -1418,7 +1418,7 @@
   .cap.sediu { color: var(--text-dim); }
 
   /* Cate lucrari are ziua — acelasi inteles pe ambele ecrane (vezi markup). */
-  .nr-lucrari { margin-left: auto; font-family: var(--font-mono); font-size: var(--font-micro);
+  .nr-lucrari { margin-left: auto; font-family: var(--font-mono); font-size: var(--font-small);
     color: var(--text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .nr-lucrari.ascunse { color: var(--text-dim); font-weight: var(--fw-semibold); }
 
@@ -1431,9 +1431,9 @@
   .leg { display: grid; grid-template-columns: auto 76px 76px; gap: 7px 14px;
     justify-content: start; align-items: center;
     padding: 10px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }
-  .leg-ax { font-size: var(--font-micro); font-family: var(--font-mono); text-transform: uppercase;
-    letter-spacing: var(--tracking-wide); color: var(--text-faint); }
-  .leg-r { font-size: var(--font-micro); color: var(--text-secondary); }
+  .leg-ax { font-size: var(--font-label); text-transform: uppercase;
+    letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .leg-r { font-size: var(--font-small); color: var(--text-secondary); }
   /* Mostrele au forma benzilor (dreptunghi lat, nu patrat de 10px): la 10×10 o
      hasura de 4px arata ca doua dungi, nu ca o textura. */
   .sw { display: block; width: 66px; height: 13px; border-radius: 3px; flex-shrink: 0; --c: var(--text); }
@@ -1451,8 +1451,8 @@
   .agenda { display: none; flex-direction: column; gap: 6px; margin-top: 6px; }
   .ag-cap { display: flex; align-items: center; gap: var(--space-sm);
     padding: 12px 2px 6px; border-top: 1px solid var(--border);
-    font-family: var(--font-mono); font-size: var(--font-micro);
-    letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-faint); }
+    font-family: var(--font-mono); font-size: var(--font-label);
+    letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-faint); }
   .ag-linie { flex: 1; height: 1px; background: var(--border-subtle); }
   .ag-n { font-variant-numeric: tabular-nums; }
   .ag-rand { display: flex; flex-direction: column; gap: 4px; width: 100%;
@@ -1464,34 +1464,34 @@
   .ag-rand.aprins { background: var(--accent-subtle); border-color: var(--accent-ring); }
   .ag-sus { display: flex; align-items: center; gap: 6px; min-height: 20px; }
   .ag-ico { display: inline-flex; color: var(--text-dim); flex: none; }
-  .ag-titlu { flex: 1; min-width: 0; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
+  .ag-titlu { flex: 1; min-width: 0; font-size: var(--font-small); font-weight: var(--fw-semibold);
     color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ag-cand { flex: none; font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
+  .ag-cand { flex: none; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
   .ag-lucrari { display: flex; flex-wrap: wrap; gap: 4px 8px; }
-  .ag-l { font-size: var(--font-micro); color: var(--text-secondary); }
+  .ag-l { font-size: var(--font-small); color: var(--text-secondary); }
   .ag-l.pregatire { color: var(--text-faint); }
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
   .pan { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); }
   .pan-zi { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
-  .pan-sub { display: flex; align-items: center; gap: 5px; font-size: var(--font-tiny); color: var(--text-dim); margin: 3px 0 10px; }
-  .pan-h { display: flex; align-items: center; gap: 8px; font-size: var(--font-micro); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
+  .pan-sub { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-dim); margin: 3px 0 10px; }
+  .pan-h { display: flex; align-items: center; gap: 8px; font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
   .cnt { padding: 0 7px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); letter-spacing: 0; }
-  .pan-hint { font-size: var(--font-micro); color: var(--text-faint); margin: 4px 0 8px; }
-  .gol { font-size: var(--font-tiny); color: var(--text-dim); }
+  .pan-hint { font-size: var(--font-small); color: var(--text-faint); margin: 4px 0 8px; }
+  .gol { font-size: var(--font-small); color: var(--text-dim); }
 
   .urm { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; margin-top: 10px;
          padding: 9px 11px; border-radius: var(--radius-md); border: 1px solid var(--border);
          background: var(--bg-elevated); cursor: pointer; }
   .urm:hover { border-color: var(--accent); }
-  .urm-h { font-size: var(--font-micro); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
+  .urm-h { font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
   .urm-d { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); }
-  .urm-l { font-size: var(--font-micro); color: var(--text-dim); line-height: 1.45; }
+  .urm-l { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); }
 
   .it { border-left: 3px solid var(--c); padding: 2px 0 2px 9px; margin-bottom: 12px; }
   .it-t { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; }
   .it-t:hover { color: var(--accent); }
-  .it-m { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; font-size: var(--font-micro); color: var(--text-dim); }
+  .it-m { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; font-size: var(--font-small); color: var(--text-dim); }
   .it-m .loc { padding: 0 6px; border-radius: var(--radius-full); background: var(--bg-hover); }
   /* Faza preia limbajul barelor: palid = pregatire, plin = implementare. */
   .it-m .faza { background: color-mix(in srgb, var(--c) 26%, transparent); color: var(--text); }
@@ -1503,9 +1503,9 @@
   .it-m .tk.warn { color: var(--warning); }
 
   .dec { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }
-  .dec-q { font-size: var(--font-micro); color: var(--danger); width: 100%; }
+  .dec-q { font-size: var(--font-small); color: var(--danger); width: 100%; }
   .mut { display: flex; align-items: flex-end; gap: 6px; width: 100%; margin-top: 4px; }
-  .b { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-micro); padding: 3px 8px; border-radius: var(--radius-sm);
+  .b { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); padding: 3px 8px; border-radius: var(--radius-sm);
        border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; }
   .b:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
   .b:disabled { opacity: 0.5; cursor: default; }
@@ -1523,8 +1523,8 @@
      n-ai sti ca urmatoarea atingere pe o zi INSEAMNA ceva. */
   .np.ales { background: var(--accent-subtle); box-shadow: inset 0 0 0 1px var(--accent); }
   .np.ales .np-t { color: var(--text); font-weight: var(--fw-semibold); }
-  .np-t { flex: 1; font-size: var(--font-micro); color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .np-s { font-size: var(--font-micro); color: var(--text-faint); }
+  .np-t { flex: 1; font-size: var(--font-small); color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .np-s { font-size: var(--font-small); color: var(--text-faint); }
   .np-s.lucru { color: var(--accent); }
 
   /* ===== O SINGURA COLOANA: ORDINEA SE SCHIMBA =====
@@ -1587,7 +1587,7 @@
     /* Actiunile din panoul zilei — „Da", „Mută pe azi", „Mută", „Scoate". Erau
        pastile de 22px, adica exact tipul de buton pe care il ratezi si apesi
        „Scoate" in loc de „Mută". */
-    .b { min-height: var(--tap-min); padding: 0 12px; font-size: var(--font-tiny); }
+    .b { min-height: var(--tap-min); padding: 0 12px; font-size: var(--font-small); }
     .dec { gap: var(--space-xs); }
     .mut { flex-wrap: wrap; }
     .mut :global(.dp) { flex: 1 1 160px; }
@@ -1595,7 +1595,7 @@
     /* Randurile din „Proiecte fără perioadă" sunt acum butoane (alegi, apoi
        atingi ziua), deci trebuie sa aiba caseta unui buton. */
     .np { min-height: var(--tap-min); padding: 6px 8px; }
-    .np-t { font-size: var(--font-tiny); }
+    .np-t { font-size: var(--font-small); }
     .rail { max-height: none; gap: 6px; }
 
     .kpi { min-height: var(--tap-min); }

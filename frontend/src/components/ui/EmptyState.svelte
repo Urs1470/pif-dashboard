@@ -26,10 +26,11 @@
     color: var(--text-faint);
     text-align: center;
   }
+  /* Inter, nu Space Grotesk: titlul unei stari goale e o PROPOZITIE („Niciun
+     task fara termen"), nu numele unui lucru. Fontul de titlu spune „asta se
+     numeste asa"; aici nu se numeste nimic, doar se constata. */
   h3 {
-    font-family: var(--font-heading);
-    letter-spacing: -0.02em;
-    font-size: var(--font-h3);
+    font-size: var(--font-body);
     font-weight: var(--fw-semibold);
     color: var(--text-secondary);
   }

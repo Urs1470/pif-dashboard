@@ -31,10 +31,10 @@
     text-align: center;
   }
   .err :global(svg) { color: var(--danger); }
+  /* Inter, ca la EmptyState: „Ieșirile nu s-au putut încărca" e o propozitie,
+     nu numele unui lucru. */
   h3 {
-    font-family: var(--font-heading);
-    letter-spacing: -0.02em;
-    font-size: var(--font-h3);
+    font-size: var(--font-body);
     font-weight: var(--fw-semibold);
     color: var(--text-secondary);
   }

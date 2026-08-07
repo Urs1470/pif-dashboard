@@ -163,7 +163,7 @@
 
 <style>
   .chart { margin-top: var(--space-sm); border-top: 1px solid var(--border); padding-top: var(--space-sm); }
-  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: var(--font-tiny); color: var(--text-secondary); margin-bottom: 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: var(--font-small); color: var(--text-secondary); margin-bottom: 4px; }
   .lg { display: flex; align-items: center; gap: 5px; }
   .sw { width: 14px; height: 3px; border-radius: 2px; background: var(--c); }
   .sw.dash { background: repeating-linear-gradient(90deg, var(--c) 0 5px, transparent 5px 9px); }
@@ -172,19 +172,19 @@
   .grid-minor { stroke: var(--border); stroke-width: 0.5; opacity: 0.2; }
   .grid-major { stroke: var(--border); stroke-width: 1; opacity: 0.5; }
   .axis { stroke: var(--border); stroke-width: 1.2; }
-  .tick { fill: var(--text-dim); font-size: var(--font-micro); font-family: var(--font-mono); }
-  .axlbl { fill: var(--text-secondary); font-size: var(--font-tiny); }
+  .tick { fill: var(--text-dim); font-size: var(--font-small); font-family: var(--font-mono); }
+  .axlbl { fill: var(--text-secondary); font-size: var(--font-small); }
   .ss { font-size: 0.72em; }
   /* Banda de zona: opacitate teme-constienta (default = dark = 0.10; light are nevoie de mai mult). */
   .zone-band { opacity: 0.10; }
   :global([data-theme='light']) .zone-band { opacity: 0.15; }
   /* Eticheta cu halou (paint-order:stroke in culoarea fundalului) ca sa ramana lizibila peste curbe/grila. */
-  .zone-lbl { font-size: var(--font-micro); font-weight: var(--fw-bold); paint-order: stroke; stroke: var(--bg-surface); stroke-width: 2.4px; stroke-linejoin: round; }
+  .zone-lbl { font-size: var(--font-small); font-weight: var(--fw-semibold); paint-order: stroke; stroke: var(--bg-surface); stroke-width: 2.4px; stroke-linejoin: round; }
   .cross { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
   .tip-bg { fill: var(--bg-overlay); stroke: var(--border); stroke-width: 1; opacity: 0.96; }
-  .tip-x { fill: var(--text); font-size: var(--font-micro); font-weight: var(--fw-semibold); font-family: var(--font-mono); }
-  .tip-v { fill: var(--text-secondary); font-size: var(--font-micro); font-family: var(--font-mono); }
-  .chart-desc { font-size: var(--font-tiny); color: var(--text-secondary); line-height: 1.45; margin-top: 6px; }
-  .cd-l { font-weight: var(--fw-bold); color: var(--text); }
+  .tip-x { fill: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); font-family: var(--font-mono); }
+  .tip-v { fill: var(--text-secondary); font-size: var(--font-small); font-family: var(--font-mono); }
+  .chart-desc { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); margin-top: 6px; }
+  .cd-l { font-weight: var(--fw-semibold); color: var(--text); }
   .cd-w { color: var(--service-accent); margin-left: 2px; }
 </style>

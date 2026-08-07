@@ -1,0 +1,1 @@
+import{O as e,b as t,k as n}from"./Modal-B8fD5J17.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=e(a,r),s=[[`path`,{d:`M12 15V3`}],[`path`,{d:`M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4`}],[`path`,{d:`m7 10 5 5 5-5`}]];t(i,n({name:`download`},()=>o,{get iconNode(){return s}}))}export{i as t};

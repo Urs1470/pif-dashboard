@@ -70,7 +70,7 @@
   // altul — impachetarea reusea, ecranul nu. Acum se masoara romb + eticheta.
   const PIN_PX = 18            // romb 12 + gap 6
   const ETICHETA_MAX = 220     // `.bar.single .bar-txt` max-width
-  // Latimea unui titlu, aproximata: Inter semibold la --font-tiny (11.2px) are
+  // Latimea unui titlu, aproximata: Inter semibold la --font-small (13px) are
   // ~0.52em pe caracter. Nu masuram in DOM — ar insemna un layout pass per task
   // la fiecare re-randare, iar o eroare de cateva procente doar imparte doua
   // etichete pe randuri diferite, ceea ce oricum voiai.
@@ -684,7 +684,7 @@
         <button class="bl-head" onclick={() => backlogOpen = !backlogOpen} aria-expanded={backlogOpen}>
           <Inbox size={16} />
           <h2>Taskuri fără termen</h2>
-          <span class="bl-count">{plan.backlog.length}</span>
+          <span class="count accent" title="{plan.backlog.length} în backlog">{plan.backlog.length}</span>
           <span class="bl-hint">trage pe o zi ca să planifici</span>
           <ChevronRight size={16} class="bl-chev" />
         </button>
@@ -740,7 +740,9 @@
             <span class="lane-dot"></span>
             <h2>{lane.nume}</h2>
             {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
-            <span class="mg-count">{lane.tasks.length}{#if lane.restante.length}{' · '}<span class="lc-rest">{lane.restante.length}</span>{/if}</span>
+            <!-- Doua pastile, nu un sir „5 · 2": tonul spune care e care, ca peste tot. -->
+            <span class="count" title="{lane.tasks.length} taskuri">{lane.tasks.length}</span>
+            {#if lane.restante.length}<span class="count danger" title="{lane.restante.length} restante">{lane.restante.length}</span>{/if}
           </header>
 
           <!-- BANDA = LANE-UL DE PE DESKTOP, INTORS LA LATIME PLINA.
@@ -934,10 +936,10 @@
   .page { padding-bottom: 96px; }
   .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
-  .page-title-row h1 { font-size: var(--font-h1); font-weight: var(--fw-bold); font-family: var(--font-heading); letter-spacing: -0.02em; }
+  .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); font-family: var(--font-heading); letter-spacing: var(--tracking-tight); }
   .controls { display: flex; align-items: center; gap: var(--space-sm); }
   .seg { display: inline-flex; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 2px; }
-  .seg-btn { padding: 5px 11px; border-radius: var(--radius-sm); font-size: var(--font-small); font-family: var(--font-mono); font-weight: var(--fw-medium); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
+  .seg-btn { padding: 5px 11px; border-radius: var(--radius-sm); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
   .seg-btn:hover { color: var(--text); }
   .seg-btn.active { background: var(--accent); color: var(--accent-text); }
   .toggle { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
@@ -956,27 +958,27 @@
 
   .p-head { display: flex; border-bottom: 1px solid var(--border-strong); background: var(--bg-overlay); position: sticky; top: 0; z-index: 3; }
   .lane-label { width: var(--lane-w); flex-shrink: 0; box-sizing: border-box; }
-  .lane-label.head { padding: 8px 12px; font-family: var(--font-mono); font-size: var(--font-micro); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; }
+  .lane-label.head { padding: 8px 12px; font-size: var(--font-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; }
   /* Coloana restantelor: lipita la stanga pistei, latime fixa, nu costa zile.
      Antetul ei e singurul loc din grafic unde a mai ramas rosu. */
   .rest-head { width: var(--rest-w); flex: none; box-sizing: border-box;
     display: flex; align-items: center; justify-content: center;
     padding: 8px 6px; border-left: 1px solid var(--border);
     background: var(--danger-subtle); color: var(--danger);
-    font-family: var(--font-mono); font-size: var(--font-micro);
-    letter-spacing: var(--tracking-wide); text-transform: uppercase; }
+    font-family: var(--font-mono); font-size: var(--font-label);
+    letter-spacing: var(--tracking-label); text-transform: uppercase; }
   .days { flex: 1; position: relative; min-width: 0; height: 42px; }
   .azi-et { position: absolute; top: 2px; margin-left: 3px; font-family: var(--font-mono);
-    font-size: var(--font-micro); letter-spacing: var(--tracking-wide);
+    font-size: var(--font-label); letter-spacing: var(--tracking-label);
     text-transform: uppercase; color: var(--accent); pointer-events: none; }
   .col-head { position: absolute; top: 0; bottom: 0; padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
   .col-head.compact { padding: 5px 1px; }
   .col-head.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
   .col-head.today { background: var(--accent-subtle); }
-  .ch-sub { font-size: var(--font-micro); color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+  .ch-sub { font-size: var(--font-label); color: var(--text-faint); text-transform: uppercase; letter-spacing: var(--tracking-label); white-space: nowrap; }
   .col-head.today .ch-sub { color: var(--accent); }
   .ch-main { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .col-head.compact .ch-main { font-size: var(--font-tiny); }
+  .col-head.compact .ch-main { font-size: var(--font-small); }
   .col-head.today .ch-main { color: var(--accent); }
 
   .p-body { position: relative; }
@@ -998,14 +1000,14 @@
   .lane-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
   /* Cate taskuri are banda in fereastra si cate au scapat inaintea ei. Numarul de
      restante e singurul lucru colorat: e cel care cere ceva. */
-  .lane-contor { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .lane-contor { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-faint); font-variant-numeric: tabular-nums; }
   .lc-rest { color: var(--danger); }
   .lane-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex-shrink: 0; margin-top: 4px; box-shadow: 0 0 6px color-mix(in srgb, var(--lane) 55%, transparent); }
   /* Numele de proiect sunt lungi si se termina des cu acelasi client
      („… — Continental"), deci trunchierea pe un rand le facea identice: toate
      9 erau taiate. Doua randuri arata partea care le distinge. */
-  .lane-txt { min-width: 0; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
-  .tip-chip { font-size: var(--font-micro); font-family: var(--font-mono); padding: 1px 6px; border-radius: var(--radius-chip); background: var(--accent-subtle); color: var(--accent); flex-shrink: 0; }
+  .lane-txt { min-width: 0; line-height: var(--lh-snug); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .tip-chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--accent-subtle); color: var(--accent); flex-shrink: 0; }
   .tip-chip.svc { background: color-mix(in srgb, var(--purple) 18%, transparent); color: var(--purple); }
 
   /* Jgheabul restantelor. Reperele stau centrate si se inghesuie cand sunt multe:
@@ -1022,7 +1024,7 @@
     cursor: pointer; transition: transform var(--dur-fast) var(--ease); }
   .rest-pin:hover { transform: rotate(45deg) scale(1.18); }
   .rest-pin:active { transform: rotate(45deg) scale(0.9); }
-  .rest-gol { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-faint); }
+  .rest-gol { font-size: var(--font-small); color: var(--text-faint); }
 
   .lane-track { flex: 1; position: relative; min-width: 0; padding: 7px 0; }
   .band { position: absolute; top: 5px; bottom: 5px; border-radius: 8px;
@@ -1085,17 +1087,17 @@
   /* O zi, la 30 de zile fereastra, are 38px: nu incape nici „Si…". Ramane icoana,
      centrata, si tot tooltipul. */
   .impl-band.doar-ico { padding: 0 2px; justify-content: center; }
-  .ib-txt { font-size: var(--font-tiny); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ib-txt { font-size: var(--font-small); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Durata umple capatul liber al blocurilor late si spune cat stai acolo — pe
      benzile inguste n-ar incapea, deci nici nu se randeaza (vezi `rect.width`). */
   .ib-zile { flex: none; margin-left: auto; padding-left: 8px; font-family: var(--font-mono);
-    font-size: var(--font-micro); font-variant-numeric: tabular-nums; opacity: 0.62; white-space: nowrap; }
+    font-size: var(--font-small); font-variant-numeric: tabular-nums; opacity: 0.62; white-space: nowrap; }
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
   .mimpl.loc-site { --mil: var(--loc-site); } .mimpl.loc-sediu { --mil: var(--loc-sediu); }
   /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
   .mimpl.pregatire { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mil) 32%, transparent); border-left-style: dashed; }
   .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: color-mix(in oklab, var(--mil) 55%, var(--text)); }
-  .mimpl-range { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
+  .mimpl-range { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
   /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
      44px fiecare, inaintea primului task. Duc toate in acelasi loc — Calendar. */
   .mimpl-plus { padding: 0 5px; border-radius: var(--radius-full);
@@ -1105,13 +1107,13 @@
   /* Capetele de grup din lista mobila. Aceeasi haina si acelasi limbaj de culoare
      ca `.grup-cap` din /tasks — o singura gramatica pentru „ce urmeaza". */
   .mgrup-cap { display: flex; align-items: center; gap: var(--space-xs);
-    padding: 10px 4px 5px; font-family: var(--font-mono); font-size: var(--font-micro);
+    padding: 10px 4px 5px; font-family: var(--font-mono); font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-wide); color: var(--text-faint); }
+    letter-spacing: var(--tracking-label); color: var(--text-faint); }
   .grup-n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
     background: var(--bg-elevated); color: var(--text-dim);
-    font-size: var(--font-micro); line-height: 1; font-variant-numeric: tabular-nums; }
+    font-size: var(--font-small); line-height: 1; font-variant-numeric: tabular-nums; }
   .mgrup-cap.ton-danger { color: var(--danger); }
   .mgrup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger); }
   .mgrup-cap.ton-accent { color: var(--accent); }
@@ -1123,7 +1125,7 @@
      romb + eticheta lui, amandoua in aceeasi tinta. */
   .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 6px;
     overflow: visible; background: none; border: none; box-shadow: none; padding: 0;
-    justify-content: flex-start; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
+    justify-content: flex-start; font-size: var(--font-small); font-weight: var(--fw-semibold);
     white-space: nowrap; cursor: pointer; text-align: left; touch-action: none;
     pointer-events: auto; }
   .bar.draggable { cursor: grab; }
@@ -1163,11 +1165,11 @@
 
   /* dim, nu faint: indicatiile de gest sunt text de citit (masurat 3.18:1 la
      10.4px, sub AA) — faint e doar pentru etichete/large. */
-  .hint { text-align: center; font-size: var(--font-micro); color: var(--text-dim); padding: 8px; border-top: 1px solid var(--border-subtle); }
+  .hint { text-align: center; font-size: var(--font-small); color: var(--text-dim); padding: 8px; border-top: 1px solid var(--border-subtle); }
 
   .drag-label { position: fixed; z-index: var(--z-tooltip); pointer-events: none; background: var(--bg-overlay);
     border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 3px 8px;
-    font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text); box-shadow: var(--shadow-md); white-space: nowrap; }
+    font-family: var(--font-mono); font-size: var(--font-small); color: var(--text); box-shadow: var(--shadow-md); white-space: nowrap; }
 
   /* ===== mobile grouped list ===== */
   .mlist { display: none; flex-direction: column; gap: var(--space-md); }
@@ -1190,13 +1192,13 @@
   .m-scale.cu-wd .ms-cols { height: 26px; }
   .ms-c { position: absolute; top: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 0;
-    height: 100%; font-family: var(--font-mono); font-size: var(--font-micro);
+    height: 100%; font-family: var(--font-mono); font-size: var(--font-small);
     color: var(--text-dim); font-variant-numeric: tabular-nums;
     overflow: hidden; white-space: nowrap; border-left: 1px solid var(--border-subtle); }
-  .ms-wd { font-size: 0.58rem; line-height: 1.1; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.02em; }
+  .ms-wd { font-size: var(--font-label); line-height: var(--lh-tight); color: var(--text-faint); text-transform: uppercase; letter-spacing: var(--tracking-label); }
   .ms-c.we { color: var(--purple); }
   .ms-c.we .ms-wd { color: var(--purple); }
-  .ms-c.today { color: var(--accent); font-weight: var(--fw-bold); }
+  .ms-c.today { color: var(--accent); font-weight: var(--fw-semibold); }
   .ms-c.today .ms-wd { color: var(--accent); }
 
   /* BANDA PROIECTULUI — acelasi continut ca lane-ul de pe desktop.
@@ -1236,7 +1238,7 @@
   .m-track .impl-band { top: 3px; bottom: 3px; gap: 4px; padding: 0 6px; border-radius: 6px;
     border-left-width: 2px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 18%, transparent); }
   .m-track .impl-band.pregatire { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent); }
-  .m-track .ib-txt { font-size: var(--font-micro); }
+  .m-track .ib-txt { font-size: var(--font-small); }
   /* In banda, perioada e DESEN, nu buton: un bloc de doua zile are ~23×20px.
      Cine vrea s-o deschida o atinge pe randul ei, de sub banda (`.mimpl`), unde
      are latimea intreaga. */
@@ -1245,7 +1247,9 @@
   .mgroup { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
   .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
   .mg-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mg-count { margin-left: auto; font-size: var(--font-tiny); font-family: var(--font-mono); color: var(--text-dim); background: var(--bg-elevated); padding: 1px 8px; border-radius: var(--radius-full); }
+  /* `.mg-count` a plecat — sunt doua `.count` din global.css (vezi markup).
+     Prima impinge perechea in capatul din dreapta al antetului. */
+  .mg-head :global(.count:first-of-type) { margin-left: auto; }
   .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--lane); border-radius: var(--radius-md); margin-bottom: 6px; }
   .mrow.urgent { border-left-color: var(--danger); }
   .mrow.done { opacity: 0.6; }
@@ -1253,7 +1257,7 @@
   .mrow-main { flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
   .mrow-title { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
-  .chip { font-size: var(--font-micro); font-family: var(--font-mono); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); display: inline-flex; align-items: center; gap: 3px; }
+  .chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); display: inline-flex; align-items: center; gap: 3px; }
   .chip.due { color: var(--text-dim); background: var(--bg-elevated); }
   .chip.due.azi { color: var(--accent); background: var(--accent-subtle); }
   .chip.due.restant { color: var(--danger); background: var(--danger-subtle); }
@@ -1276,7 +1280,7 @@
     border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
     padding: 10px; display: flex; flex-direction: column; gap: 3px; }
   .pop-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); padding: 2px 4px 0; padding-right: 22px; }
-  .pop-meta { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 4px 6px; font-size: var(--font-micro); color: var(--text-dim); border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+  .pop-meta { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 4px 6px; font-size: var(--font-small); color: var(--text-dim); border-bottom: 1px solid var(--border); margin-bottom: 4px; }
   .pop-meta .pm-due { color: var(--accent); }
   .pop-act { display: flex; align-items: center; gap: 8px; padding: 8px 8px; border-radius: var(--radius-sm); background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: var(--font-small); text-align: left; }
   .pop-act:hover { background: var(--bg-hover); color: var(--text); }
@@ -1301,14 +1305,14 @@
   /* ===== drop indicator (backlog -> timeline) ===== */
   .p-body.drop-active { outline: 2px dashed color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: -2px; border-radius: var(--radius-sm); }
   .drop-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); z-index: 6; }
-  .drop-tag { position: absolute; top: 2px; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); font-family: var(--font-mono); font-size: var(--font-micro); padding: 1px 6px; border-radius: var(--radius-xs); z-index: 7; white-space: nowrap; }
+  .drop-tag { position: absolute; top: 2px; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); z-index: 7; white-space: nowrap; }
 
   /* ===== backlog rail ===== */
   .backlog { margin-top: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
   .bl-head { width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 12px 16px; background: none; border: none; cursor: pointer; color: var(--text); }
   .bl-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); }
-  .bl-count { font-size: var(--font-tiny); font-family: var(--font-mono); background: var(--accent-subtle); color: var(--accent); padding: 1px 8px; border-radius: var(--radius-full); }
-  .bl-hint { font-size: var(--font-micro); color: var(--text-dim); margin-left: 4px; }
+  /* `.bl-count` a plecat — e `.count accent` din global.css. */
+  .bl-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: 4px; }
   .bl-head :global(.bl-chev) { margin-left: auto; color: var(--text-faint); transition: transform var(--dur-fast) var(--ease); }
   .backlog.open .bl-head :global(.bl-chev) { transform: rotate(90deg); }
   .bl-items { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 16px; }
@@ -1318,7 +1322,7 @@
   .bl-chip.urgent { border-left-color: var(--danger); }
   .bl-chip :global(.bl-grip) { color: var(--text-faint); flex-shrink: 0; }
   .bl-txt { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-  .bl-proj { font-size: var(--font-micro); font-family: var(--font-mono); color: var(--accent); background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  .bl-proj { font-size: var(--font-small); color: var(--accent); background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
   .bl-proj.glob { color: var(--text-dim); background: var(--bg-elevated); }
   .bl-date { width: 30px; flex-shrink: 0; }
   .bl-date :global(.dp-trigger) { width: 30px; min-height: 30px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-faint); }
@@ -1329,8 +1333,8 @@
   .exp { display: flex; flex-direction: column; gap: 14px; }
   .exp-note { font-size: var(--font-small); color: var(--text-secondary); margin: 0; }
   .exp-note b { color: var(--text); }
-  .exp-scope-head { display: flex; align-items: center; justify-content: space-between; font-size: var(--font-micro); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); font-family: var(--font-mono); margin-bottom: 6px; }
-  .exp-all { background: none; border: none; color: var(--accent); font-size: var(--font-tiny); cursor: pointer; font-family: var(--font-mono); }
+  .exp-scope-head { display: flex; align-items: center; justify-content: space-between; font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); font-family: var(--font-mono); margin-bottom: 6px; }
+  .exp-all { background: none; border: none; color: var(--accent); font-size: var(--font-small); cursor: pointer; }
   .exp-list { display: flex; flex-direction: column; gap: 2px; max-height: 240px; overflow-y: auto; }
   .exp-row { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--radius-sm); cursor: pointer; }
   .exp-row:hover { background: var(--bg-hover); }
@@ -1410,7 +1414,7 @@
     .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0; align-items: stretch; }
     .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
            gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
-           font-size: var(--font-micro); cursor: pointer; }
+           font-size: var(--font-small); cursor: pointer; }
     .glb span { line-height: 1; }
     .glb.datewrap { position: relative; }
     .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
@@ -1445,7 +1449,7 @@
   @media print {
     .page { padding: 0 !important; }
     .page-header, .controls, .hint, .mlist, .backlog, .drag-label, .pop, .pop-backdrop { display: none !important; }
-    .print-title { display: block; font-family: var(--font-heading); font-size: 1.1rem; font-weight: var(--fw-bold); color: #1a1206; margin-bottom: 8px; }
+    .print-title { display: block; font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); color: #1a1206; margin-bottom: 8px; }
     /* Force the swimlane on: A4 portrait (~794px) is under the 820px mobile
        breakpoint, which would otherwise hide .chart and blank the page. */
     .chart { display: block !important; overflow: visible !important; border: none !important; box-shadow: none !important; background: #fff !important; }

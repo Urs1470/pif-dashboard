@@ -137,10 +137,10 @@
 
   .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: 28px; }
   .spatiu { flex: 1; }
-  .sursa { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint); }
+  .sursa { font-size: var(--font-small); color: var(--text-faint); }
 
   .b { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px;
-       font-size: var(--font-tiny); border: 1px solid var(--border); background: var(--bg-surface);
+       font-size: var(--font-small); border: 1px solid var(--border); background: var(--bg-surface);
        color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer; }
   .b:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
   .b:disabled { opacity: 0.5; cursor: default; }
@@ -153,14 +153,14 @@
 
   .config { max-width: 640px; background: var(--bg-surface); border: 1px solid var(--border);
             border-radius: var(--radius-lg); padding: var(--space-lg); }
-  .config h2 { font-family: var(--font-heading); font-size: 1.05rem; margin-bottom: var(--space-sm); }
-  .config p { font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-sm); line-height: 1.5; }
-  .config code { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-secondary); }
+  .config h2 { font-family: var(--font-heading); font-size: var(--font-h3); margin-bottom: var(--space-sm); }
+  .config p { font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-sm); line-height: var(--lh-normal); }
+  .config code { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); }
   .atentie { border-left: 3px solid var(--danger); padding-left: 10px; }
 
   .rand { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-md); }
   .rand input { flex: 1; min-width: 260px; height: 32px; padding: 0 10px; font-family: var(--font-mono);
-                font-size: var(--font-micro); color: var(--text); background: var(--bg-elevated);
+                font-size: var(--font-small); color: var(--text); background: var(--bg-elevated);
                 border: 1px solid var(--border); border-radius: var(--radius-sm); }
   .rand input:focus { outline: none; border-color: var(--accent); }
 

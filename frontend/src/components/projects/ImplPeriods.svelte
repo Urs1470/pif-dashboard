@@ -75,10 +75,10 @@
   .loc-site { --il: var(--loc-site); } .loc-sediu { --il: var(--loc-sediu); }
   .ip-loc { display: inline-flex; align-items: center; gap: 6px; font-weight: var(--fw-medium); font-size: var(--font-small); color: color-mix(in oklab, var(--il) 55%, var(--text)); min-width: 130px; }
   .ip-range { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); display: inline-flex; align-items: center; gap: 8px; }
-  .ip-days { font-size: var(--font-micro); color: var(--text-dim); }
-  .ip-tag { font-size: var(--font-micro); background: var(--bg-elevated); color: var(--text-dim); padding: 1px 7px; border-radius: var(--radius-xs); }
+  .ip-days { font-size: var(--font-small); color: var(--text-dim); }
+  .ip-tag { font-size: var(--font-small); background: var(--bg-elevated); color: var(--text-dim); padding: 1px 7px; border-radius: var(--radius-xs); }
   /* Acelasi semn ca in panoul zilei din Calendar: verde conturat, nu plin. */
-  .ip-fac { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-micro); color: var(--success);
+  .ip-fac { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-small); color: var(--success);
             padding: 1px 7px; border-radius: var(--radius-full); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
   .ip-item :global(.ip-edit) { margin-left: auto; color: var(--text-faint); flex-shrink: 0; }
   .ip-item:hover :global(.ip-edit) { color: var(--accent); }

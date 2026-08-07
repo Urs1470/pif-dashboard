@@ -127,12 +127,13 @@
   const nrFinalizate = $derived(data.tasks.filter(isDone).length)
 
   const displayRows = $derived.by(() => {
-    const rows = []; let n = 0
+    const rows = []
     for (const im of (data.implementari || [])) rows.push({ kind: 'impl', im })
     const vizibile = (araFinalizate ? data.tasks : data.tasks.filter(t => !isDone(t)))
       .slice()
       .sort((a, b) => ziTask(a).localeCompare(ziTask(b)))
-    for (const t of vizibile) rows.push({ kind: 'task', t, no: ++n })
+    // Fara numar de rand: singurul lui consumator era indexul din `.tix`, scos mai jos.
+    for (const t of vizibile) rows.push({ kind: 'task', t })
     return rows
   })
 
@@ -222,8 +223,13 @@
           {@const t = row.t}
           {@const due = dueInfo(t)}
           <button class="tk-row" class:done={isDone(t)} style="--sev:{sevColor(t)}" onclick={() => openTask(t)} title="Deschide în tabul Taskuri">
-            <span class="tix">
-              {#if isDone(t)}<CheckCircle2 size={15} />{:else}{String(row.no).padStart(2, '0')}{/if}
+            <!-- Doar semnul de bifat. Numarul „01 / 02 / 03" a plecat din toate
+                 listele in tura 1 (sub 15 taskuri nu spui „fa taskul 07", si era
+                 a doua codificare a severitatii pe care o da deja bordura din
+                 stanga); Ganttul era ultimul loc unde ramasese. Casuta ramane
+                 latita, ca titlurile sa se alinieze intre randuri bifate si nu. -->
+            <span class="tk-stare">
+              {#if isDone(t)}<CheckCircle2 size={15} />{/if}
             </span>
             <span class="row-content">
               <span class="row-title">{#if t.is_milestone}<Diamond size={11} class="mini-ms" />{/if}{t.titlu}</span>
@@ -308,10 +314,10 @@
   .exp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer; text-decoration: none; }
   .exp-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
   .g-legend { flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
-  .lg-btn { font-size: var(--font-micro); padding: 2px 9px; border-radius: var(--radius-full);
+  .lg-btn { font-size: var(--font-small); padding: 2px 9px; border-radius: var(--radius-full);
     border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; }
   .lg-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .lg { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-micro); color: var(--text-dim); font-family: var(--font-mono); }
+  .lg { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-dim); font-family: var(--font-mono); }
   .sw { width: 18px; height: 10px; border-radius: 3px; }
   .sw.done { background: var(--success); } .sw.prog { background: var(--accent); }
   .sw.todo { background: var(--bg-elevated); border: 1px solid var(--border-strong); }
@@ -321,7 +327,7 @@
   .gantt2 { --row-h: 46px; --head-h: 38px; display: flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-panel); }
 
   .g-table { flex: none; width: 340px; border-right: 2px solid var(--border-strong); background: var(--bg-surface); }
-  .gh-row { height: var(--head-h); display: flex; align-items: center; background: var(--bg-overlay); border-bottom: 1px solid var(--border-strong); font-family: var(--font-mono); font-size: var(--font-micro); text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--text-dim); }
+  .gh-row { height: var(--head-h); display: flex; align-items: center; background: var(--bg-overlay); border-bottom: 1px solid var(--border-strong); font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
   .lhead { padding: 0 14px; }
 
   /* read-only task rows (island look, aligned to timeline) */
@@ -329,14 +335,14 @@
   .tk-row::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 2px 2px 0; background: var(--sev, transparent); opacity: 0.7; }
   .tk-row:hover { background: var(--bg-hover); }
   .tk-row:last-child { border-bottom: 0; }
-  .tk-row .tix { font-family: var(--font-mono); font-size: 0.95rem; font-weight: var(--fw-bold); letter-spacing: -0.04em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 80%, transparent); min-width: 24px; flex-shrink: 0; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; }
+  .tk-row .tk-stare { min-width: 24px; flex-shrink: 0; display: inline-flex; align-items: center; }
   .row-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
   .row-title { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-flex; align-items: center; gap: 5px; }
   .row-title :global(.mini-ms) { color: var(--accent); flex: none; }
-  .row-meta { font-size: var(--font-tiny); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row-meta { font-size: var(--font-small); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tk-row.done .row-title { color: var(--text-dim); text-decoration: line-through; text-decoration-color: var(--text-faint); }
-  .tk-row.done .tix { color: var(--success); }
-  .due-chip { font-family: var(--font-mono); font-size: var(--font-micro); padding: 3px 9px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
+  .tk-row.done .tk-stare { color: var(--success); }
+  .due-chip { font-family: var(--font-mono); font-size: var(--font-small); padding: 3px 9px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
   .due-chip.hot { background: var(--danger-subtle); color: var(--danger); }
   .due-chip.warm { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .tk-row :global(.tk-chev) { color: var(--text-faint); flex: none; }
@@ -363,7 +369,7 @@
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent);
     color: color-mix(in oklab, var(--il) 55%, var(--text)); }
   .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; }
-  .ib-txt { font-size: var(--font-micro); font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ib-txt { font-size: var(--font-small); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ===== timeline ===== */
   .g-time { flex: 1; overflow-x: auto; min-width: 0; }
@@ -372,8 +378,8 @@
   .col-h { position: absolute; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
   .col-h.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
   .col-h.today { background: var(--accent-subtle); }
-  .ch-sub { font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase; white-space: nowrap; }
-  .ch-main { font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-semibold); color: var(--text-secondary); white-space: nowrap; }
+  .ch-sub { font-size: var(--font-label); color: var(--text-faint); text-transform: uppercase; white-space: nowrap; }
+  .ch-main { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); white-space: nowrap; }
   .col-h.today .ch-main, .col-h.today .ch-sub { color: var(--accent); }
 
   .g-body { position: relative; }

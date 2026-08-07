@@ -143,8 +143,8 @@
     color: var(--text-dim);
   }
   .not-found h2 {
-    font-size: 3rem;
-    font-weight: var(--fw-bold);
+    font-size: var(--font-title);
+    font-weight: var(--fw-semibold);
     color: var(--text-secondary);
   }
 

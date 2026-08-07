@@ -346,7 +346,7 @@
   .palette-search input::placeholder { color: var(--text-dim); }
   .palette-search kbd {
     font-family: var(--font-mono);
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     padding: 2px 6px;
     background: var(--bg-input);
     border: 1px solid var(--border);
@@ -380,7 +380,7 @@
   }
   .current {
     margin-left: auto;
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     color: var(--accent);
     opacity: 0.7;
   }
@@ -389,11 +389,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     font-weight: var(--fw-semibold);
     color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
+    letter-spacing: var(--tracking-label);
     padding: var(--space-sm) var(--space-md) 2px;
     margin-top: var(--space-xs);
   }
@@ -420,11 +420,11 @@
     text-overflow: ellipsis;
   }
   .result-sub {
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     color: var(--text-dim);
   }
   .result-snippet {
-    font-size: var(--font-tiny);
+    font-size: var(--font-small);
     color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;

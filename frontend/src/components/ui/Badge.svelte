@@ -14,18 +14,19 @@
     gap: 5px;
     padding: 2px 9px;
     border-radius: var(--radius-full);
-    font-size: var(--font-micro);
+    font-size: var(--font-label);
     font-weight: var(--fw-semibold);
     text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
+    letter-spacing: var(--tracking-label);
     color: var(--badge-color);
     background: color-mix(in srgb, var(--badge-color) 12%, transparent);
     white-space: nowrap;
     transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
   }
+  /* Fara `font-size`: scria exact aceeasi treapta ca `.badge`, deci nu micsora
+     niciodata nimic — „small" inseamna doar mai stramt (padding si gap). */
   .badge.small {
     padding: 2px 8px;
-    font-size: var(--font-micro);
     gap: 4px;
   }
   .dot {

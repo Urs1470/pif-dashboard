@@ -171,8 +171,8 @@
     border: 1px solid var(--border-strong);
     box-shadow: var(--shadow-lg);
     color: var(--text-secondary);
-    font-size: var(--font-micro);
-    line-height: 1.45;
+    font-size: var(--font-small);
+    line-height: var(--lh-normal);
     pointer-events: none;
     opacity: 0;
     transform: translateY(3px);

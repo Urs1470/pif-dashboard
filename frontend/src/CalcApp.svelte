@@ -33,5 +33,5 @@
   }
   .sa-theme:hover { border-color: var(--accent); color: var(--accent); }
   .sa-main { max-width: 1400px; margin: 0 auto; }
-  .sa-foot { text-align: center; padding: 18px; font-size: var(--font-tiny); color: var(--text-dim); border-top: 1px solid var(--border); }
+  .sa-foot { text-align: center; padding: 18px; font-size: var(--font-small); color: var(--text-dim); border-top: 1px solid var(--border); }
 </style>

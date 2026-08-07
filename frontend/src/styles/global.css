@@ -163,7 +163,7 @@ code, pre {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
   select,
   textarea {
-    font-size: 16px !important;
+    font-size: var(--font-input-mobile) !important;
   }
 }
 
@@ -413,7 +413,7 @@ input:focus, select:focus, textarea:focus {
   background: var(--bg-input);
   color: var(--text-dim);
   font-weight: var(--fw-medium);
-  font-size: var(--font-micro);
+  font-size: var(--font-small);
   font-variant-numeric: tabular-nums;
   flex: none;
 }
@@ -427,7 +427,7 @@ input:focus, select:focus, textarea:focus {
 .sub-bara { flex: 1; height: 4px; border-radius: var(--radius-full); background: var(--bg-input); overflow: hidden; }
 .sub-bara span { display: block; height: 100%; border-radius: var(--radius-full);
   background: var(--success); transition: width var(--dur-base) var(--ease); }
-.sub-num { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim);
+.sub-num { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim);
   font-variant-numeric: tabular-nums; flex: none; }
 
 /* ===== Focus-flash: highlight tranzitoriu cand "aterizezi" pe un item (deep-link) =====
@@ -513,8 +513,8 @@ input[type="checkbox"].cbx:checked::after {
   left: 50%;
   transform: translate(-50%, -50%);
   color: var(--accent-text);
-  font-size: 12px;
-  font-weight: var(--fw-bold);
+  font-size: var(--font-small);
+  font-weight: var(--fw-semibold);
   line-height: 1;
 }
 input[type="checkbox"].cbx:focus {
@@ -540,9 +540,9 @@ input[type="checkbox"].cbx:focus {
   background: var(--bg-elevated);
   color: var(--text-secondary);
   font-weight: var(--fw-semibold);
-  font-size: var(--font-micro);
+  font-size: var(--font-label);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-wider);
+  letter-spacing: var(--tracking-label);
   padding: 9px 12px;
   border-bottom: 1px solid var(--border);
   text-align: left;
@@ -551,7 +551,7 @@ input[type="checkbox"].cbx:focus {
 .data-table td {
   padding: 8px 12px;
   border-bottom: 1px dashed var(--border);
-  font-size: 13px;
+  font-size: var(--font-small);
   color: var(--text);
   max-width: 280px;
   overflow: hidden;
@@ -608,10 +608,10 @@ input[type="checkbox"].cbx:focus {
   .data-table.reflow td::before {
     content: attr(data-label);
     color: var(--text-dim);
-    font-size: var(--font-micro);
+    font-size: var(--font-label);
     font-weight: var(--fw-semibold);
     text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
+    letter-spacing: var(--tracking-label);
     text-align: left;
     flex-shrink: 0;
   }
@@ -639,12 +639,12 @@ input[type="checkbox"].cbx:focus {
 .rich-content > :last-child { margin-bottom: 0; }
 .rich-content p { margin: 6px 0; }
 /* Heading-urile in --text (nu accent) ca sa nu se citeasca drept linkuri in note lungi */
-.rich-content h1, .rich-content h2 { color: var(--text); font-size: var(--font-h3); font-weight: var(--fw-bold); margin: 12px 0 6px; }
-.rich-content h3, .rich-content h4 { color: var(--text-secondary); font-size: 1rem; font-weight: var(--fw-semibold); margin: 10px 0 5px; }
+.rich-content h1, .rich-content h2 { color: var(--text); font-size: var(--font-h3); font-weight: var(--fw-semibold); margin: 12px 0 6px; }
+.rich-content h3, .rich-content h4 { color: var(--text-secondary); font-size: var(--font-h3); font-weight: var(--fw-semibold); margin: 10px 0 5px; }
 .rich-content ul, .rich-content ol { padding-left: 22px; margin: 6px 0; }
 .rich-content li { margin: 3px 0; }
 .rich-content a { color: var(--accent); text-decoration: underline; }
-.rich-content strong, .rich-content b { font-weight: var(--fw-bold); }
+.rich-content strong, .rich-content b { font-weight: var(--fw-semibold); }
 /* Cod inline + blocuri (lipseau — apareau nestilizate in notele de task) */
 .rich-content code { background: var(--bg-input); padding: 1px 6px; border-radius: var(--radius-xs); font-size: 0.85em; font-family: var(--font-mono); color: var(--accent-on-subtle); }
 .rich-content pre { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--space-md); overflow-x: auto; margin: 8px 0; }
@@ -661,30 +661,67 @@ input[type="checkbox"].cbx:focus {
 .rich-content th, .rich-content td { border: 1px solid var(--border); padding: 6px 11px; text-align: left; vertical-align: top; }
 .rich-content th { background: var(--bg-elevated); color: var(--text-secondary); font-weight: var(--fw-semibold); }
 .rich-content tbody tr:hover td { background: var(--bg-elevated); }
-.rich-content caption { caption-side: top; text-align: left; font-size: var(--font-tiny); color: var(--text-dim); margin-bottom: 4px; }
+.rich-content caption { caption-side: top; text-align: left; font-size: var(--font-small); color: var(--text-dim); margin-bottom: 4px; }
 /* Ecuatii pe bloc — aliniate la stanga (coerent cu textul/tabelele), scroll orizontal in loc de taiere */
 .rich-content .katex-display { margin: 10px 0; text-align: left; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
 .rich-content .katex-display > .katex { text-align: left; }
 
 /* Notite task (continut rich, randat de RichText intr-un sub-component) */
-.note-content { font-size: var(--font-small); color: var(--text-secondary); line-height: 1.6; overflow-x: auto; }
+.note-content { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-relaxed); overflow-x: auto; }
 
 /* ===== Stat cards (stil legacy) ===== */
 .stat-value {
-  font-size: var(--font-display);
-  font-weight: var(--fw-bold);
+  font-size: var(--font-title);
+  font-weight: var(--fw-semibold);
   color: var(--text);
   font-family: var(--font-heading);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--tracking-tight);
   font-variant-numeric: tabular-nums;
   line-height: var(--lh-tight);
 }
 .stat-label {
-  font-size: var(--font-micro);
+  font-size: var(--font-label);
   font-weight: var(--fw-semibold);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-wider);
+  letter-spacing: var(--tracking-label);
   color: var(--text-secondary);
+}
+
+/* ===== O pastila de numaratoare, nu sase =====
+   Erau `.count` (Tasks), `.count` (Projects), `.bh-count`, `.bh-restante`,
+   `.mg-count`, `.bl-count` si `.tab-count` — la 17/19px inaltime, mono si Inter,
+   400 si 600, cu rama sau fara — pentru exact acelasi fapt: CATE. Deosebiri pe
+   care nu le-a decis nimeni; s-au acumulat pentru ca fiecare pagina si-a scris-o
+   pe a ei.
+   Forma nu mai codifica nimic. Culoarea ramane singurul lucru care se schimba,
+   cu aceleasi trei intelesuri ca peste tot in aplicatie:
+     neutru = cate sunt · accent = cate sunt de facut aici · danger = cate sunt restante
+   Pastila poarta un NUMAR, nu un text: cine are nevoie de cuvant il pune in
+   `title` (vezi `.bh-restante` din TodayBoard). */
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  font-family: var(--font-mono);
+  font-size: var(--font-label);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  border-radius: var(--radius-full);
+  background: var(--bg-overlay);
+  color: var(--text-dim);
+}
+.count.accent {
+  background: var(--accent-subtle);
+  color: var(--accent-on-subtle);
+  border: 1px solid var(--accent-ring);
+}
+.count.danger {
+  background: var(--danger-subtle);
+  color: var(--danger);
 }
 
 /* ===== Tab-uri underline partajate (ProjectDetail, Params) ===== */
@@ -720,7 +757,7 @@ input[type="checkbox"].cbx:focus {
   font-size: var(--font-small);
   font-weight: var(--fw-semibold);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: var(--tracking-label);
   color: var(--text-secondary);
 }
 
@@ -761,7 +798,7 @@ input[type="checkbox"].cbx:focus {
   background: var(--accent);
   color: var(--accent-text);
   border-radius: var(--radius-sm);
-  font-size: var(--font-tiny);
+  font-size: var(--font-small);
   font-weight: var(--fw-semibold);
   cursor: pointer;
   white-space: nowrap;
@@ -809,9 +846,9 @@ input[type="checkbox"].cbx:focus {
 
 /* Eticheta de celula: icon patrat colorat + text uppercase mic */
 .cell-label {
-  font-size: var(--font-micro);
+  font-size: var(--font-label);
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-label);
   color: var(--text-faint);
   font-weight: var(--fw-semibold);
   display: flex;
@@ -821,18 +858,18 @@ input[type="checkbox"].cbx:focus {
 .cell-label .ico {
   width: 22px;
   height: 22px;
-  border-radius: var(--radius-chip);
+  border-radius: var(--radius-xs);
   display: grid;
   place-items: center;
-  font-size: 0.72rem;
+  font-size: var(--font-small);
   flex-shrink: 0;
 }
 .cell-label .tail {
   margin-left: auto;
   text-transform: none;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--tracking-normal);
   font-weight: var(--fw-medium);
-  font-size: var(--font-tiny);
+  font-size: var(--font-small);
   /* Contorul e DATA, nu eticheta: mostenea faint-ul etichetei (3.18:1 la
      11.2px, sub AA pentru text mic). Eticheta uppercase ramane faint. */
   color: var(--text-dim);
@@ -842,11 +879,14 @@ input[type="checkbox"].cbx:focus {
 .ico-red   { background: var(--danger-subtle); color: var(--danger); }
 .ico-vio   { background: var(--purple-subtle); color: var(--purple); }
 
-/* Numerale mari de afisaj */
+/* Numerale mari de afisaj. Ramane Space Grotesk, desi regula spune „cifrele
+   sunt mono": mono e pentru cifre care se COMPARA pe verticala, intr-o coloana.
+   Asta e o cifra singura, la rang de titlu — exact cazul pentru care sistemul
+   pastreaza Space Grotesk la titluri si numerale mari. */
 .big-num {
   font-family: var(--font-heading);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.04em;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-tight);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
