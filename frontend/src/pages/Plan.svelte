@@ -494,7 +494,12 @@
   })
 </script>
 
-<div class="page">
+<!-- Ca in Calendar: invelisul urca, apoi celulele. Antetul paginii nu e celula,
+     e cadrul — urca odata cu invelisul. `.chart` si `.mlist` nu se vad niciodata
+     impreuna (820px le comuta), dar indicii merg mai departe prin `.backlog`, ca
+     pe telefon — unde sertarul sta DEASUPRA listei — capul sa nu soseasca dupa
+     coada. -->
+<div class="page ruta-in">
   <div class="page-header">
     <div class="page-title-row">
       <CalendarRange size={22} />
@@ -527,7 +532,7 @@
   {:else}
     <!-- ===== Desktop swimlane ===== -->
     <div class="print-title">Planificator · {exportRange}</div>
-    <div class="chart">
+    <div class="chart cell-in" style="--celula: 0">
       <div class="chart-scroll">
         <div class="inner" style="min-width: {contentMin}px; --rest-w: {areRestante ? 78 : 0}px">
           <div class="p-head">
@@ -569,8 +574,13 @@
               {/if}
             </div>
 
-            {#each views as lane (lane.tip + ':' + lane.id)}
-              <div class="lane" style="--lane:{lane.color}" class:print-hide={exportSel.size > 0 && !exportSel.has(lane.id)}>
+            <!-- `--rand` e indicele randului, si se mosteneste in tot lane-ul:
+                 benzile si reperele din el isi iau de aici decalajul de 40ms.
+                 NU se numeste `--celula` (acela e pasul de 32ms al celulelor de
+                 pagina, si s-ar mosteni peste orice `.cell-in` de dedesubt) si
+                 nici `--i` (acela inseamna deja „randul benzii" in Calendar). -->
+            {#each views as lane, li (lane.tip + ':' + lane.id)}
+              <div class="lane" style="--lane:{lane.color}; --rand:{li}" class:print-hide={exportSel.size > 0 && !exportSel.has(lane.id)}>
                 <div class="lane-label">
                   {#if lane.tip === 'proiect'}
                     <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={lane.nume}>
@@ -680,7 +690,7 @@
 
     <!-- ===== Backlog (taskuri fără termen) ===== -->
     {#if plan.backlog.length > 0}
-      <section class="backlog" class:open={backlogOpen}>
+      <section class="backlog cell-in" style="--celula: 1" class:open={backlogOpen}>
         <button class="bl-head" onclick={() => backlogOpen = !backlogOpen} aria-expanded={backlogOpen}>
           <Inbox size={16} />
           <h2>Taskuri fără termen</h2>
@@ -713,7 +723,7 @@
     {/if}
 
     <!-- ===== Mobile grouped list ===== -->
-    <div class="mlist">
+    <div class="mlist cell-in" style="--celula: 2">
       <!-- ANTETUL DE ZILE, COMUN SI LIPICIOS.
            Fara el, benzile de mai jos ar fi N grafice fara legatura: fiecare
            frumoasa in sine, niciuna comparabila cu vecina. Fiind acelasi interval
@@ -740,9 +750,12 @@
         </div>
       </div>
 
-      {#each views as lane (lane.tip + ':' + lane.id)}
+      <!-- `.band` si `.impl-band` sunt aceleasi clase ca pe desktop, deci pista
+           mobila mosteneste sosirea din 13e fara nicio regula in plus — ii trebuie
+           doar indicele randului, ca decalajul sa urmeze grupurile. -->
+      {#each views as lane, li (lane.tip + ':' + lane.id)}
         {@const per = perioadaDeAratat(lane)}
-        <section class="mgroup" style="--lane:{lane.color}">
+        <section class="mgroup" style="--lane:{lane.color}; --rand:{li}">
           <header class="mg-head">
             <span class="lane-dot"></span>
             <h2>{lane.nume}</h2>
@@ -1037,9 +1050,50 @@
   .rest-gol { font-size: var(--font-small); color: var(--text-faint); }
 
   .lane-track { flex: 1; position: relative; min-width: 0; padding: 7px 0; }
+
+  /* ===== SOSIREA PISTEI (tura 13e) =====
+     CE ARE INCEPUT, CRESTE DIN EL. CE DOAR ACOPERA UN INTERVAL, APARE.
+     Pe un rand stau trei lucruri, si pana acum toate trei apareau intre doua
+     cadre. Dar nu sunt de acelasi fel, deci nu pot sosi la fel:
+       · `.impl-band` — o perioada cu o zi de start REALA. Se descopera de la
+         stanga la dreapta, adica dinspre ziua in care incepe: miscarea spune
+         chiar lucrul pe care banda il codifica prin pozitie.
+       · `.band` (pregatirea) — NU are inceput. `segmentePregatire` porneste de
+         la marginea ferestrei fiindca „de cand se pregateste" nu se sti, si
+         capatul stang e estompat tocmai ca sa spuna asta. Daca ar creste din
+         stanga, miscarea ar afirma o zi de start pe care desenul o neaga la un
+         centimetru mai jos. Deci doar se stinge in ecran — e fundal.
+       · `.bar` — un reper de o zi (v33). N-are latime de intins, deci creste
+         PE LOC, din punctul lui: `transform-origin: left` e chiar ziua lui.
+
+     `backwards`, nu `forwards`: `clip-path` se intoarce la `none` cand animatia
+     se termina. Cu `forwards` ar ramane inghetat pe `inset(0 0 0 0)`, care taie
+     la border-box — adica ar sterge definitiv umbra exterioara a blocului.
+     `backwards` tine doar cadrul de start pe durata intarzierii, ca banda sa nu
+     clipeasca la latime plina inainte sa-i vina randul.
+
+     Decalajul e pe RAND, nu pe banda: doua perioade ale aceluiasi proiect sunt
+     acelasi lucru vazut de doua ori pe axa timpului, nu doua sosiri. */
+  @keyframes benziIn {
+    from { opacity: 0; clip-path: inset(0 100% 0 0); }
+    to { opacity: 1; clip-path: inset(0 0 0 0); }
+  }
+  @keyframes pregatireIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes reperIn {
+    from { opacity: 0; transform: scale(0.62); }
+    to { opacity: 1; transform: none; }
+  }
+  /* Anularea la reduced-motion sta LA SFARSITUL foii, dupa `.bar` — media query-ul
+     nu adauga specificitate, deci ar fi pierdut aici in fata regulii de mai jos. */
+
   .band { position: absolute; top: 5px; bottom: 5px; border-radius: 8px;
     background: color-mix(in oklab, var(--lane) 13%, transparent);
-    border: 1px solid color-mix(in oklab, var(--lane) 28%, transparent); z-index: 0; }
+    border: 1px solid color-mix(in oklab, var(--lane) 28%, transparent); z-index: 0;
+    animation: pregatireIn var(--dur-base) var(--ease) backwards;
+    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
   .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; }
   .band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
   /* CAPATUL NESIGUR SE STINGE, CEL SIGUR RAMANE NET.
@@ -1079,7 +1133,12 @@
       color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
       color-mix(in oklab, var(--il) 90%, #000) 100%);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent), 0 1px 3px rgba(0,0,0,0.28);
-    cursor: pointer; pointer-events: auto; transition: filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+    cursor: pointer; pointer-events: auto; transition: filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    /* Se descopera, nu se intinde: `scaleX` ar turti textul dinauntru la jumatate
+       de latime pe la mijlocul miscarii, iar o eticheta care se lateste inapoi la
+       normal se citeste ca elastic, nu ca o perioada care incepe. */
+    animation: benziIn var(--dur-base) var(--ease) backwards;
+    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
   .impl-band.loc-site { --il: var(--loc-site); } .impl-band.loc-sediu { --il: var(--loc-sediu); }
   /* Faza e a doua axa, ca in Calendar: palid = pregatire, plin = implementare.
      O zi de pregatire blocata explicit (parametrizare in atelier) e tot pregatire,
@@ -1089,8 +1148,11 @@
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent);
     color: color-mix(in oklab, var(--il) 55%, var(--text)); }
   /* Taiata de fereastra: muchie dreapta, fara bara de intrare — ziua de start nu e
-     acolo, e mai devreme. */
-  .impl-band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-width: 0; }
+     acolo, e mai devreme. Deci nici sosirea nu poate porni de acolo: descoperirea
+     din stanga ar arata un inceput fix in locul in care muchia dreapta spune
+     „continua din afara ecranului". Ramane stingerea, ca la pregatire. */
+  .impl-band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-width: 0;
+    animation-name: pregatireIn; }
   .impl-band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
   .impl-band:hover { filter: brightness(1.08);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent),
@@ -1137,13 +1199,28 @@
      `.bar.active` cu fundal si rama, animatia `barIn` care scala o latime) erau
      scrise pentru ceva ce nu se mai randeaza. Au plecat. Ce ramane e reperul:
      romb + eticheta lui, amandoua in aceeasi tinta. */
+  /* SOSIREA REPERULUI — vezi blocul de la `.lane-track`.
+     13e pornea de la premisa ca reperul creste deja din ziua lui si cerea doar
+     ca benzile sa i se potriveasca. Nu mai crestea: `barIn` scala o LATIME, si a
+     plecat odata cu cutia, in aceeasi tura in care taskul a devenit un punct.
+     Daca lasam doar benzile sa se miste, inconsecventa din 13e nu disparea, se
+     intorcea pe dos — un rand plin de miscare cu reperele inghetate deasupra.
+     Un punct nu are latime de intins, deci creste PE LOC. `transform-origin:
+     left` = ziua lui: eticheta se desface spre dreapta, de la reper incolo,
+     adica in aceeasi directie ca banda de sub ea. Scalare uniforma, nu pe X:
+     `scaleX` ar turti si rombul, si scrisul. */
   .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 6px;
     overflow: visible; background: none; border: none; box-shadow: none; padding: 0;
     justify-content: flex-start; font-size: var(--font-small); font-weight: var(--fw-semibold);
     white-space: nowrap; cursor: pointer; text-align: left; touch-action: none;
-    pointer-events: auto; }
+    pointer-events: auto; transform-origin: left center;
+    animation: reperIn var(--dur-base) var(--ease) backwards;
+    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
+  /* Reperul de la marginea din dreapta isi scrie eticheta spre STANGA
+     (`row-reverse`), deci si desfacerea trebuie sa mearga intr-acolo — altfel
+     jumatate din randuri cresc dinspre punct, iar cealalta jumatate spre el. */
+  .bar.flip { flex-direction: row-reverse; transform-origin: right center; }
   .bar.draggable { cursor: grab; }
-  .bar.flip { flex-direction: row-reverse; }
   .bar.done { cursor: default; }
 
   /* FORMA POARTA STAREA — vezi comentariul din markup.
@@ -1231,10 +1308,19 @@
      altul — ai schimba o tinta mica pe una GRESITA, care deschide alt task. Iar
      pretul unei ratari e zero: reperul nu face decat sa te duca la randul
      taskului din lista de dedesubt, iar acel rand e cat toata latimea. */
+  /* Acelasi `reperIn` ca `.bar` de pe desktop — pista mobila foloseste aceleasi
+     benzi, deci trebuie sa aiba si aceleasi repere deasupra lor, altfel 13e ar fi
+     rezolvat pe un ecran si rupt pe celalalt.
+     Animatia sta pe BUTON, nu pe `::before`: rombul isi tine forma dintr-un
+     `rotate(45deg)`, iar `to { transform: none }` i-ar sterge rotatia si l-ar lasa
+     patrat. Butonul n-are transform propriu, deci nu are ce sa piarda. Creste din
+     centru fiindca punctul E centrul lui (`margin-left: -13px` peste 26px). */
   .mt-pin { position: absolute; top: 0; bottom: 0; width: 26px; margin-left: -13px;
     display: flex; align-items: center; justify-content: center;
     background: none; border: none; padding: 0; cursor: pointer; z-index: 2;
-    color: color-mix(in oklab, var(--lane) 45%, var(--text-dim)); }
+    color: color-mix(in oklab, var(--lane) 45%, var(--text-dim));
+    animation: reperIn var(--dur-base) var(--ease) backwards;
+    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
   /* Aceeasi forma ca pe desktop: contur = de facut, plin = in lucru, bifa = facut.
      `done` era VERDE aici si o nuanta palida a culorii de proiect dincolo — acelasi
      task, doua limbaje, in functie de latimea ecranului. */
@@ -1468,6 +1554,16 @@
     .bl-date :global(.dp-trigger) { width: var(--tap-min); min-height: var(--tap-min); }
   }
 
+  /* Plasa globala din global.css scurteaza DURATA la ~0, dar nu atinge
+     `animation-delay` — iar cu `backwards` intarzierea tine cadrul de start, adica
+     `opacity: 0`. Randul sase ar sta 240ms invizibil si pe urma ar pocni pe ecran:
+     acelasi stagger, doar fara partea care il facea lizibil. Se scot de tot.
+     Aici, la sfarsit: media query-ul nu adauga specificitate, deci scris mai sus
+     ar fi fost anulat de `.band` / `.impl-band` / `.bar`. */
+  @media (prefers-reduced-motion: reduce) {
+    .band, .impl-band, .bar, .mt-pin { animation: none; }
+  }
+
   /* ===== print (browser print-to-PDF) ===== */
   .print-title { display: none; }
   @media print {
@@ -1480,7 +1576,11 @@
     .chart-scroll { overflow: visible !important; }
     .inner { min-width: 0 !important; width: 100% !important; }
     .lane.print-hide { display: none !important; }
-    .bar { animation: none !important; box-shadow: none !important; }
+    /* Aceeasi grija ca la `.cell-in` in global.css: sosirile astea pornesc de la
+       `opacity: 0`, iar la print animatia nu se joaca — fara `none` explicit,
+       benzile ar lipsi din PDF si ar ramane un grafic cu randuri goale. */
+    .bar, .band, .impl-band { animation: none !important; opacity: 1 !important; }
+    .bar { box-shadow: none !important; }
   }
   :global(body.plan-pagebreak) .lane { break-after: page; }
   :global(body.plan-pagebreak) .lane:last-of-type { break-after: auto; }

@@ -17,7 +17,7 @@
   import { navigate, router } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
   import { ui } from '../stores/ui.svelte.js'
-  import { motion, motionDuration, DUR_BASE, EASE } from '../lib/motion.svelte.js'
+  import { motion, motionDuration, alunecare, sosire, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { culoareProiect } from '../lib/culori.js'
   import { incepeTragere } from '../lib/tragere.js'
@@ -48,6 +48,10 @@
   let tocmaiTras = false
   let mutaId = $state('')      // perioada pentru care e deschis selectorul de data
   let mutaVal = $state('')
+  // Incotro ai mers ultima data: -1 inapoi, +1 inainte, 0 „n-a fost o navigare"
+  // (prima randare, sau comutarea luna/2 saptamani, care nu are sens pe axa
+  // timpului — ramai unde te uitai, doar cadrul se schimba).
+  let sensLuna = $state(0)
 
   const azi = todayISO()
 
@@ -59,7 +63,17 @@
   }
 
   async function load(silent = false) {
-    if (!silent) { loading = true; error = null }
+    // SCHELETUL DOAR LA PRIMA INCARCARE, NU LA FIECARE LUNA.
+    //
+    // `loading = true` la orice navigare stingea grila si punea in locul ei o
+    // forma care nu seamana cu niciun calendar — desi `grila` se recalculeaza
+    // SINCRON din `anchor`, deci zilele lunii noi erau deja gata de desenat si
+    // doar benzile intarziau cat tine cererea. Plateai un ecran gol pentru
+    // altceva decat ce asteptai. Si taia din start alunecarea din 13c: elementul
+    // pe care ea o joaca era distrus si refacut inainte s-o apuce cineva sa vada.
+    //
+    // Erorile raman raportate — `error` se pune in `catch` la fel ca inainte.
+    if (!silent) { loading = data === null; error = null }
     try {
       const start = mod === 'luna' ? weekStart(monthStart(anchor)) : weekStart(anchor)
       const zile = mod === 'luna' ? 49 : 28
@@ -444,7 +458,7 @@
     if (!deDecis.length) return
     const d = deDecis[decisCurent]
     selectata = d.data_sfarsit || d.data_start
-    anchor = mod === 'luna' ? monthStart(selectata) : weekStart(selectata)
+    ancoreazaPe(selectata)
     idxDecis = (decisCurent + 1) % deDecis.length
     load()
     aratPanoul()
@@ -498,16 +512,28 @@
   }
 
   // ===== navigatie =====
+  // Orice salt la o zi anume („de clarificat", „Urmează") e tot o navigare in
+  // timp — doar ca lungimea pasului o da destinatia, nu butonul. Se calculeaza
+  // INAINTE de a rescrie `anchor`, altfel s-ar compara cu el insusi.
+  function ancoreazaPe(iso) {
+    const tinta = mod === 'luna' ? monthStart(iso) : weekStart(iso)
+    sensLuna = tinta === anchor ? 0 : (tinta < anchor ? -1 : 1)
+    anchor = tinta
+  }
+
   function pas(n) {
+    sensLuna = n < 0 ? -1 : 1
     anchor = mod === 'luna' ? addMonths(anchor, n) : addDays(anchor, n * 14)
     load()
   }
   function laAzi() {
-    anchor = mod === 'luna' ? monthLuna(azi) : weekStart(azi)
+    // „Azi" e tot un salt la o zi anume, doar ca poate fi de un an: acelasi
+    // calcul de sens ca la „de clarificat" sau „Urmează". Daca esti deja acolo,
+    // n-ai mers nicaieri si grila nu se misca.
+    ancoreazaPe(azi)
     selectata = azi
     load()
   }
-  function monthLuna(iso) { return monthStart(iso) }
   // La schimbarea modului ramai unde te uitai. Ancorarea pe ziua selectata sare
   // inapoi daca selectia era dintr-o luna pe care ai parasit-o intre timp, deci
   // o folosim doar cand e chiar in fereastra vizibila.
@@ -521,6 +547,9 @@
     const inVizor = vizibile.includes(selectata)
     const baza = inVizor ? selectata : (vizibile[Math.floor(vizibile.length / 2)] || azi)
     mod = m
+    // Comutarea nu e o deplasare in timp: te uiti la aceleasi zile, prin alt
+    // cadru. O alunecare laterala ar minti despre asta.
+    sensLuna = 0
     anchor = m === 'luna' ? monthStart(baza) : weekStart(baza)
     load()
   }
@@ -854,7 +883,10 @@
   tastaPerioada(e)
 }} />
 
-<div class="page">
+<!-- `.ruta-in` sta pe INVELIS, deci se joaca odata la intrarea pe ruta — inclusiv
+     peste schelet. Bara de sus nu primeste `.cell-in`: ea e cadrul, si urca odata
+     cu el. Celulele sunt cele trei lucruri care se schimba (KPI, grila, panoul). -->
+<div class="page ruta-in">
   {#if loading}
     <Skeleton height="360px" />
   {:else if error}
@@ -880,7 +912,7 @@
       </div>
     </div>
 
-    <div class="kpis">
+    <div class="kpis cell-in" style="--celula: 0">
       <div class="kpi"><span class="k-n">{rezumat.zile}</span><span class="k-l">zile pe teren</span></div>
       <div class="kpi"><span class="k-n">{rezumat.deplasari}</span><span class="k-l">{rezumat.deplasari === 1 ? 'deplasare' : 'deplasări'}</span></div>
       {#if rezumat.zileSediu}
@@ -910,7 +942,7 @@
     </div>
 
     <div class="wrap">
-      <div class="cal">
+      <div class="cal cell-in" style="--celula: 1">
         <div class="wd">
           {#each WEEKDAYS as w}<span>{w}</span>{/each}
         </div>
@@ -921,7 +953,16 @@
              PESTE celule, deci altfel `ziDinPunct` ar nimeri banda, nu ziua. -->
         <!-- `--benzi` sta acum pe CELULA, nu pe grila: fiecare saptamana se
              dimensioneaza dupa cea mai plina zi a ei (vezi `benziPeRand`). -->
-        <div class="grid" class:sapt={mod === 'saptamani'} class:trag={!!trag} role="grid" aria-label="Calendar">
+        <!-- `{#key anchor}` REFACE grila la fiecare navigare, si tocmai de-asta e
+             aici: o clasa comutata nu re-porneste o animatie CSS cand ramane
+             aceeasi (doua apasari „inainte" la rand = o singura alunecare, adica
+             fix cazul pe care 13c il rezolva). Un bloc nou inseamna o tranzitie
+             noua, de fiecare data. Cheia e `anchor`, nu `mod`: fereastra e ce se
+             schimba, iar `setMod` o schimba si el — dar cu sens 0, deci trece
+             fara alunecare. -->
+        {#key anchor}
+        <div class="grid" class:sapt={mod === 'saptamani'} class:trag={!!trag} role="grid" aria-label="Calendar"
+             in:alunecare={{ sens: sensLuna }}>
           {#each grila as g, i (g.iso)}
             {@const items = aleZilei(g.iso)}
             {@const decizie = items.some(p => p.necesita_decizie)}
@@ -1059,6 +1100,7 @@
             </div>
           {/each}
         </div>
+        {/key}
 
         <!-- Legenda de culori a plecat: culoarea urmareste proiectul, iar numele
              lucrarii scrie chiar in bara, deci o legenda ar repeta ce se vede.
@@ -1122,8 +1164,21 @@
         {/if}
       </div>
 
-      <aside class="side">
-        <div class="pan">
+      <aside class="side cell-in" style="--celula: 2">
+        <!-- PANOUL E UN OBIECT CARE SE SCHIMBA, NU O LISTA CARE CLIPESTE SUB UN
+             TITLU FIX.
+             Lucrarile se estompau una cate una, dar `.pan-zi` — data zilei, adica
+             exact partea care se schimba cel mai vizibil cand alegi alta zi —
+             sarea. Ochiul urmarea ce se misca, deci se uita la lista, si citea
+             titlul cu o intarziere; iar cand ziua noua avea tot doua lucrari,
+             singurul semn ca s-a schimbat ceva era o stingere pe randuri care
+             arata la fel.
+             `|local`: la prima incarcare panoul soseste odata cu `.side` prin
+             `.cell-in`. Fara `local`, cele doua ar juca peste aceiasi pixeli.
+             `{#key}` pe ziua selectata — nu pe continut: doua zile pot avea
+             aceleasi lucrari, si tot trebuie sa se vada ca ai schimbat ziua. -->
+        {#key selectata}
+        <div class="pan" in:sosire|local>
           <div class="pan-zi">{dayLabel(selectata)}</div>
           {#if selectate.length}
             <div class="pan-sub">
@@ -1138,7 +1193,9 @@
               {/if}
             </div>
             {#each selectate as p (p.id)}
-              <div class="it" style="--c: {culoareLucrare(p)}" in:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
+              <!-- Fara stingere pe rand: panoul intreg a sosit deja, o data.
+                   Doua sosiri peste aceiasi pixeli nu se aduna, se incurca. -->
+              <div class="it" style="--c: {culoareLucrare(p)}">
                 <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
                   <span class="it-punct" aria-hidden="true"></span>{p.nume}<ExternalLink size={12} />
                 </button>
@@ -1204,7 +1261,7 @@
                  intregi sunt libere si altfel ai naviga in gol ca s-o afli. -->
             <div class="gol">Liber.</div>
             {#if ceUrmeaza}
-              <button class="urm" onclick={() => { selectata = ceUrmeaza.start; anchor = monthStart(ceUrmeaza.start) }}>
+              <button class="urm" onclick={() => { selectata = ceUrmeaza.start; ancoreazaPe(ceUrmeaza.start) }}>
                 <span class="urm-h">Urmează</span>
                 <span class="urm-d">
                   {#if ceUrmeaza.sediu}<Building2 size={12} />{:else}<MapPin size={12} />{/if}
@@ -1218,6 +1275,7 @@
             {/if}
           {/if}
         </div>
+        {/key}
 
         {#if data.neplanificate?.length}
           <div class="pan">

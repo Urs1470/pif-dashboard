@@ -125,6 +125,33 @@ export function sosire(node, { duration = 190 } = {}) {
   }
 }
 
+// NAVIGAREA CU DIRECTIE (tura 13).
+//
+// Schimbarea lunii era singura navigare din aplicatie fara sens: apasai
+// „inainte" si grila se INLOCUIA, atat. Toate celelalte spun incotro ai mers —
+// ruta face cross-fade, foaia urca, panoul se desface. Aici, dupa doua apasari
+// rapide, nu mai stiai daca ai mers doua luni inainte sau una inainte si una
+// inapoi: ecranul arata identic in ambele cazuri, iar antetul e singurul care
+// te-ar putea lamuri — daca te uiti la el, si tocmai ai fost la grila.
+//
+// E singura miscare din tura care ADAUGA informatie, nu doar politete: continutul
+// vine din partea in care ai apasat, iar mintea citeste „a venit de acolo".
+// `--dur-fast`, nu `--dur-base`: nu e o sosire, e consecinta imediata a apasarii.
+// Cu cat sta mai putin intre deget si rezultat, cu atat e mai clar ca TU ai
+// facut-o — la 240ms deja incepe sa para ca s-a intamplat singura.
+export function alunecare(node, { sens = 0, duration = DUR_FAST } = {}) {
+  // Prima randare nu e o navigare: nu vii de nicaieri. Fara asta, distanta ar fi
+  // 0 dar stingerea ar ramane — o a doua sosire peste `.cell-in` care ruleaza
+  // deja pe celula de deasupra, adica exact suprapunerea pe care o evitam.
+  if (!sens) return { duration: 0 }
+  const d = motionDuration(duration)
+  return {
+    duration: d,
+    easing: EASE,
+    css: (t) => `opacity: ${t}; transform: translateX(${(1 - t) * sens * 10}px);`,
+  }
+}
+
 // DESFACEREA UNUI PANOU (taskul deschis in lista).
 //
 // `slide` din Svelte masoara inaltimea O SINGURA DATA, la primul cadru, si

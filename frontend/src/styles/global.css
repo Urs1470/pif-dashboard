@@ -871,6 +871,36 @@ input[type="checkbox"].cbx:focus {
   .cell-in { opacity: 1; animation: none; }
 }
 
+/* DESCHIDEREA UNEI RUTE (tura 13).
+   Calendarul si Planificatorul erau singurele doua ecrane care apareau intre
+   doua cadre: `.cell-in` traia deja pe celelalte trei, aici nu fusese pus. Sunt
+   si singurele doua pe care ajungi din Doc de mai multe ori pe zi, deci taietura
+   se vede cel mai des exact unde lipsea miscarea.
+   Doua miscari, in ordinea in care se citeste pagina: intai INVELISUL (cadrul
+   rutei urca 10px), pe urma CELULELE din el, cu acelasi pas de 32ms de peste tot.
+   10px, nu 22 ca la celule: invelisul e cat tot ecranul, iar aceeasi distanta pe
+   un obiect de zece ori mai mare nu se citeste ca o sosire, ci ca o zguduire.
+   `forwards` inchide pe `transform: none` — nu `translateY(0)`. Un transform
+   ramas, chiar si identitatea, face din invelis blocul de referinta al oricarui
+   `position: fixed` dinauntru (popoverul si eticheta de tragere din Planificator
+   sunt fixed) si le-ar muta pe toate cu cat e derulata pagina. */
+@keyframes rutaIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.ruta-in { opacity: 0; animation: rutaIn var(--dur-base) var(--ease) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .ruta-in { opacity: 1; animation: none; }
+}
+/* HARTIA NU ASTEAPTA O ANIMATIE.
+   Amandoua pornesc de la `opacity: 0` si se ridica prin animatie — iar la print
+   animatiile nu se joaca, deci regula de baza ar ramane ultimul cuvant si foaia
+   ar iesi ALBA. Nu e ipotetic: exportul PDF al Planificatorului tipareste exact
+   `.page` (`.ruta-in`) cu `.chart` (`.cell-in`) inauntru. */
+@media print {
+  .cell-in, .ruta-in { opacity: 1 !important; animation: none !important; }
+}
+
 /* Eticheta de celula: icon patrat colorat + text uppercase mic */
 .cell-label {
   font-size: var(--font-label);
