@@ -8,9 +8,17 @@
 // gest — glisezi randul si apar.
 //
 // Doua directii, doua intelesuri:
-//   spre STANGA  -> descopera panoul de actiuni (ramane deschis pana il inchizi)
 //   spre DREAPTA -> bifeaza, cu o cursa lunga si prag mare, ca sa nu se intample
 //                   din greseala cand derulezi lista cu degetul mare
+//   spre STANGA  -> fie descopera un panou de actiuni (`latime`), fie — daca
+//                   primeste `onAmana` si NICIO latime — executa un singur verb,
+//                   simetric cu bifarea.
+//
+// DE CE EXISTA `onAmana`: panoul de patru actiuni ocupa 232px din 390, deci taskul
+// pe care actionai disparea aproape complet de sub deget si nu mai stiai pe ce
+// apesi; iar „Șterge", ultimul din panou, cadea exact unde ajunge o glisare rapida.
+// Doua direcii cu doua modele diferite („deschide un meniu" vs „executa") se invata
+// separat. Un gest = un verb, in ambele sensuri.
 //
 // Trei lucruri pe care le greseste orice implementare naiva si care sunt tratate
 // aici explicit:
@@ -42,7 +50,7 @@ export function inchideGlisarea() {
  * @param {{ latime?: number, onBifa?: () => void, activ?: boolean }} opt
  */
 export function glisare(node, opt = {}) {
-  let { latime = 0, onBifa = null, activ = true } = opt
+  let { latime = 0, onBifa = null, onAmana = null, activ = true } = opt
   const fata = node.querySelector('.gl-fata')
   if (!fata) return {}
 
@@ -57,6 +65,7 @@ export function glisare(node, opt = {}) {
   // unde nu vrei sa ceri browserului sa recalculeze.
   let latimeRand = 0
   let trecutDePrag = false
+  let trecutDePragS = false
 
   const pragBifa = () => latimeRand * PRAG_BIFA
 
@@ -67,7 +76,13 @@ export function glisare(node, opt = {}) {
     const prag = pragBifa()
     const p = onBifa && prag > 0 ? Math.min(1, Math.max(0, v / prag)) : 0
     node.style.setProperty('--gl-p', p.toFixed(3))
+    // Acelasi mecanism, oglindit: `--gl-s` creste cat timp tragi spre stanga.
+    const s = amanaLibera() && prag > 0 ? Math.min(1, Math.max(0, -v / prag)) : 0
+    node.style.setProperty('--gl-s', s.toFixed(3))
   }
+
+  /** Stanga executa (nu descopera) doar cand nu exista panou de descoperit. */
+  const amanaLibera = () => !!onAmana && !latime
 
   const pune = (v, animat) => {
     fata.style.transition = animat ? 'transform var(--dur-base) var(--ease)' : 'none'
@@ -78,10 +93,14 @@ export function glisare(node, opt = {}) {
     // „Azi" aparea in mijlocul confirmarii verzi. Doua panouri deodata inseamna
     // doua raspunsuri la intrebarea „ce se intampla daca dau drumul".
     node.classList.toggle('gl-dreapta', v > 0)
+    node.classList.toggle('gl-stanga', v < 0)
     if (v === 0) {
       node.style.setProperty('--gl-p', '0')
+      node.style.setProperty('--gl-s', '0')
       node.classList.remove('gl-bifa')
+      node.classList.remove('gl-amana')
       trecutDePrag = false
+      trecutDePragS = false
     }
   }
 
@@ -134,11 +153,19 @@ export function glisare(node, opt = {}) {
     let v = baza + ax
     // Spre stanga se opreste la panou; spre dreapta merge liber (cursa de bifare),
     // dar numai daca exista ce bifa.
-    if (v < -latime) v = -latime - (Math.abs(v + latime) * 0.25)
+    // Cand stanga e un verb (fara panou), cursa e libera in ambele sensuri.
+    if (v < -latime && !amanaLibera()) v = -latime - (Math.abs(v + latime) * 0.25)
+    if (v < 0 && !latime && !onAmana) v = v * 0.18
     if (v > 0 && !onBifa) v = v * 0.18
     dx = v
     pune(v, false)
     puneProgres(v)
+    const trecutS = amanaLibera() && -v > pragBifa()
+    if (trecutS !== trecutDePragS) {
+      trecutDePragS = trecutS
+      node.classList.toggle('gl-amana', trecutS)
+      if (trecutS) { try { navigator.vibrate?.(12) } catch (_) {} }
+    }
     const trecut = !!onBifa && v > pragBifa()
     if (trecut !== trecutDePrag) {
       trecutDePrag = trecut
@@ -168,8 +195,18 @@ export function glisare(node, opt = {}) {
       setTimeout(() => { onBifa(); pune(0, false) }, 160)
       return
     }
+    if (amanaLibera() && -dx > pragBifa()) {
+      // Simetric cu bifarea: randul pleaca spre stanga si abia apoi se muta
+      // termenul — miscarea E confirmarea.
+      node.style.setProperty('--gl-s', '1')
+      pune(-latimeRand, true)
+      setTimeout(() => { onAmana(); pune(0, false) }, 160)
+      return
+    }
     node.classList.remove('gl-bifa')
+    node.classList.remove('gl-amana')
     trecutDePrag = false
+    trecutDePragS = false
     if (latime && dx < -latime * PRAG_DESCHIDE) deschide()
     else inchide()
   }
@@ -192,6 +229,7 @@ export function glisare(node, opt = {}) {
     update(nou = {}) {
       latime = nou.latime ?? latime
       onBifa = nou.onBifa ?? onBifa
+      onAmana = nou.onAmana ?? onAmana
       if (nou.activ !== undefined && nou.activ !== activ) {
         activ = nou.activ
         if (!activ) inchide(false)

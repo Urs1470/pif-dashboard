@@ -55,6 +55,46 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-07 (6) — Subtaskul: atingerea bifeaza, glisarea sterge, undo peste tot.**
+  Cea mai mare tinta facea lucrul cel mai rar: titlul pornea REDENUMIREA, bifarea
+  statea intr-un cerc de 26px. Acum atingi randul -> se bifeaza; redenumirea pe
+  apasare lunga (actiune locala `apasareLunga` in `Tasks.svelte`, 300ms, anulata la
+  8px de miscare). Pubela permanenta de 44px a plecat de pe rand — stergerea vine
+  din glisare spre stanga, cu `.gl-sub` care recoloreaza pista in `--danger`.
+  **Defect de paritate reparat:** `removeSubtask()` din `Tasks.svelte` stergea
+  direct pe server, fara undo, in timp ce aceeasi functie din `ProjectDetail`
+  avea `toastUndo` cu commit intarziat. Cea fara plasa era in lista folosita cel
+  mai des — iar acum stergerea se poate porni si dintr-un gest.
+
+- **2026-08-07 (5) — Grila de proiecte: culoarea ramane doar pe ce variaza.**
+  `.tip-chip.service` citea `--success` (verde), `.ptip.service` citea
+  `--service-accent` (amber) — un fapt, doua culori, in aceeasi pagina. Tipul nu
+  mai are fill deloc: linie subtire `--text-faint` lipita de cuvant, aceeasi
+  definitie pe card si in arhiva. Sus ramane colorat doar STATUSUL, care se
+  schimba. Pastila lui arata acum ca un control (fill discret + chevron) si are
+  `toastUndo` — o atingere gresita trimitea un proiect viu in arhiva pliata, fara
+  drum inapoi. **Pe touch e `<span>`, nu `<button>`:** avea 22px in interiorul
+  zonei de atingere a cardului, deci o atingere deviata ori deschidea proiectul,
+  ori ii schimba statusul, si nu se putea sti dinainte care. Chipurile de filtru
+  au plecat (dublau arhiva, ca „Active" din /tasks); sortarea si arhiva sunt
+  butoane-fantoma. Pe telefon bara intra pe UN rand: primul card urca de la
+  y≈314 la y≈178.
+
+- **2026-08-07 (4) — Taskurile de proiect se grupeaza dupa termen, ca peste tot.**
+  Era singura lista de taskuri din aplicatie care nu grupa: venea
+  `ORDER BY created_at DESC` si ramanea asa, iar in proiect nu exista nici
+  reordonare manuala — deci un restant putea sta al patrulea. `grupeazaDupaTermen`
+  era deja generica. Compozitorul a primit chipurile de zi (Azi / Mâine / Alege
+  data): fara ele un task de proiect se nastea fara termen, adica INVIZIBIL in
+  „Astăzi", in Planificator si in Google Calendar. „Finalizate" foloseste acum
+  ACELASI rand, doar stins si taiat — inainte pierdea termenul si subtaskurile
+  exact cand vrei sa verifici ce ai facut.
+  **Capcana:** `animate:` cere ca elementul sa fie unicul copil al unui `{#each}`
+  cheiat, deci snippetul `randTask` tine doar INTERIORUL randului; invelisul
+  `.trow-wrap` (cu `--sev` si tranzitiile) sta in fiecare lista.
+  **A doua:** `{@const}` trebuie sa fie copil IMEDIAT al blocului, nu ingropat in
+  markup (`Projects.svelte`, `urmatoarea(p)`).
+
 - **2026-08-07 (3) — Perioadele din Calendar se trag pe pointer events, nu HTML5 DnD.**
   Ion: „scrie trage ca sa muti dar nu functioneaza". HTML5 drag-and-drop nu
   declanseaza `dragstart` la deget (deci pe telefon era imposibil), nu poate

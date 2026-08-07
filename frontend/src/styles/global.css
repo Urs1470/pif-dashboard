@@ -313,6 +313,84 @@ input:focus, select:focus, textarea:focus {
    confirmarii de bifare. */
 .gl-dreapta .gl-actiuni { visibility: hidden; }
 
+/* ===== PISTA DE STANGA — „Mâine" =====
+   Oglinda pistei de bifare, in amber: acelasi mecanism (`--gl-s` creste cu degetul,
+   eticheta intra abia la prag), doar ancorata invers. Inlocuieste panoul de patru
+   actiuni de 58px: 232px din 390 insemna ca taskul pe care actionai dispare de sub
+   deget, iar „Șterge" cadea exact unde ajunge o glisare rapida. Data exacta si
+   stergerea au ramas in foaia taskului, la o atingere pe rand. */
+.gl-pista-s {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding-right: 18px;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--accent) calc(var(--gl-s, 0) * 55%), transparent);
+}
+.gl-pista-s .gl-ico-s {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1.5px currentColor;
+  opacity: var(--gl-s, 0);
+  transform: scale(calc(0.55 + var(--gl-s, 0) * 0.45));
+}
+.gl-pista-s .gl-et-s {
+  font-size: var(--font-small);
+  font-weight: var(--fw-semibold);
+  color: var(--accent);
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.gl-amana .gl-pista-s { background: var(--accent); }
+.gl-amana .gl-pista-s .gl-ico-s {
+  color: var(--on-color);
+  background: var(--on-color);
+  box-shadow: none;
+  opacity: 1;
+  animation: glPoc var(--dur-base) var(--ease);
+}
+.gl-amana .gl-pista-s .gl-ico-s svg { color: var(--accent); }
+.gl-amana .gl-pista-s .gl-et-s { color: var(--on-color); opacity: 1; transform: none; }
+/* ===== ACEEASI PISTA PE RANDUL DE SUBTASK, DAR VERBUL E „Șterge" =====
+   Pe telefon pubela statea PERMANENT pe fiecare rand (hover nu exista, deci
+   regula devenise „e mereu acolo"): pe 390px randul avea 70px de mecanica —
+   cerc 26 + pubela 44 — iar singura actiune distructiva din foaie se odihnea
+   exact sub degetul mare. Gestul e acelasi ca la taskul parinte, in acelasi
+   sens; se schimba doar culoarea, fiindca se schimba verbul. Undo-ul din toast
+   e ce face gestul acceptabil pentru o stergere. */
+.gl-sub .gl-pista-s {
+  background: color-mix(in oklab, var(--danger) calc(var(--gl-s, 0) * 55%), transparent);
+  border-radius: var(--radius-xs);
+}
+.gl-sub .gl-pista-s .gl-ico-s,
+.gl-sub .gl-pista-s .gl-et-s { color: var(--danger); }
+.gl-sub.gl-amana .gl-pista-s { background: var(--danger); }
+.gl-sub.gl-amana .gl-pista-s .gl-ico-s { color: var(--on-color); background: var(--on-color); }
+.gl-sub.gl-amana .gl-pista-s .gl-ico-s svg { color: var(--danger); }
+.gl-sub.gl-amana .gl-pista-s .gl-et-s { color: var(--on-color); }
+
+/* Un singur raspuns la „ce se intampla daca dau drumul": cele doua piste nu se
+   vad niciodata deodata. */
+.gl-dreapta .gl-pista-s { visibility: hidden; }
+.gl-stanga .gl-pista { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .gl-pista-s .gl-ico-s { transform: none; }
+  .gl-amana .gl-pista-s .gl-ico-s { animation: none; }
+}
+@media (max-width: 768px) {
+  .gl-pista-s { display: flex; }
+}
+
 /* Doar pe telefon — pe desktop randul are butoanele lui la vedere si `.gl-fata`
    e `display: contents`, deci un copil in plus ar intra in flexul randului. */
 @media (max-width: 768px) {

@@ -273,6 +273,38 @@ se poate confunda cu „Scoate", care scoate perioada din calendar.
 Mutarea unei perioade **nu** reseteaza bifa: „am fost pe 5, nu pe 4" e o corectare de
 consemnare, nu o replanificare.
 
+### Un gest = un verb, în ambele sensuri (2026-08-07)
+
+Glisarea spre stânga **descoperea un panou** de 3–4 acțiuni × 58px: 176px (Astăzi)
+sau 232px (`/tasks`, proiect) din 390, deci taskul pe care acționai dispărea aproape
+complet de sub deget. Iar „Șterge", ultimul din panou, cădea exact unde ajunge o
+glisare rapidă. În plus cele două direcții aveau două modele mentale („deschide un
+meniu" vs „execută"), deci se învățau separat.
+
+`lib/glisare.js` primește `onAmana`: când e dată **și nu există `latime`**, stânga
+execută un verb, simetric cu `onBifa`. Clase la rulare `gl-stanga` / `gl-amana`,
+variabilă `--gl-s` (oglinda lui `--gl-p`), același prag de 42%.
+
+**Verbul diferă după ce e pe ecran, deliberat:**
+
+| suprafață | stânga | de ce |
+|---|---|---|
+| „Astăzi" | execută **„Mâine"** | tot ce vezi e scadent azi, deci mâine e chiar verbul |
+| `/tasks` | deschide foaia cu **panoul de termen desfăcut** | termenele sunt împrăștiate pe săptămâni; „mâine" ar fi o zi aleasă de aplicație |
+| pagina de proiect | deschide **modalul de editare** (are câmpul Termen) | acolo nu există foaie |
+| rândul de **subtask** | execută **„Șterge"**, pistă `--danger` (`.gl-sub`) | pubela permanentă de 44px a plecat de pe rând |
+
+Pe subtask ștergerea din gest e acceptabilă **doar** fiindcă are `toastUndo` cu
+commit întârziat — vezi paritatea reparată în `Tasks.svelte`.
+
+`.gl-pista-s` trăiește în `global.css` (neschopat): `gl-amana` e pusă la rulare din
+JS, iar Svelte **taie** regulile pe care le crede moarte în componente scopate.
+
+Regresia e prinsă de `audit_mobil.py`, secțiunea **„gesturi"** — care a fost
+rescrisă odată cu contractul: nu mai verifică un `transform` rămas după ridicare
+(rândul se întoarce la zero, ca la bifare), ci că pista **crește pe parcurs** și
+atinge pragul, apoi că verbul chiar s-a executat.
+
 ### Perioadele se trag cu mâna (2026-08-07)
 
 Ion: *„in calendar vreau sa iau perioadele si sa le pot muta cu drag drop, acuma scrie

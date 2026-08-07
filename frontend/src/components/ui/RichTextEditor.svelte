@@ -22,7 +22,14 @@
   // variant: 'box' = caseta clasica cu chenar; 'doc' = pagina de document
   // (folosit in modalul fullscreen de observatii/notite — toolbar pill plutitor,
   // coloana de text centrata pe latime de citit, scroll pe toata pagina).
-  let { value = $bindable(''), placeholder = 'Scrie aici...', variant = 'box', onsave = undefined } = $props()
+  // `tools`: 'complet' (document — observatii de proiect, wiki) sau 'nota'.
+  // Acelasi editor servea DOUA suprafete cu aceeasi bara de treisprezece butoane.
+  // Intr-o observatie tehnica de proiect au toate sens; intr-o notita de task nu:
+  // Undo/Redo dubleaza Ctrl+Z, „Titlu 1/2/3" presupune ca notita e un document cu
+  // structura, iar Citat / Linie orizontala / Curata formatarea sunt moscenire de
+  // la Word. Ce chiar folosesti pe teren: accentuare, o lista, si formula.
+  let { value = $bindable(''), placeholder = 'Scrie aici...', variant = 'box', tools = 'complet', onsave = undefined } = $props()
+  const compact = $derived(tools === 'nota')
 
   let editorEl = $state(null)
   let charCount = $state(0)
@@ -277,12 +284,13 @@
 
 <div class="rte" class:doc={variant === 'doc'}>
   <div class="rte-toolbar" role="toolbar" aria-label="Instrumente de formatare">
+    {#if !compact}
     <button type="button" class="tbtn" title="Anulează (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
     <button type="button" class="tbtn" title="Refă (Ctrl+Y)" onmousedown={keepSel} onclick={() => cmd('redo')}><Redo2 size={15} /></button>
 
     <span class="tsep" aria-hidden="true"></span>
 
-    <span class="tstyle-wrap" bind:this={styleEl}>
+    <span class="tstyle-wrap" bind:this={styleEl} onkeydown={(e) => { if (e.key === 'Escape' && styleOpen) { e.stopPropagation(); styleOpen = false } }} role="presentation">
       <button type="button" class="tstyle" class:on={styleOpen} title="Stil paragraf"
         onmousedown={keepSel} onclick={() => (styleOpen = !styleOpen)}>
         {blockLabel} <ChevronDown size={12} />
@@ -301,6 +309,7 @@
     </span>
 
     <span class="tsep" aria-hidden="true"></span>
+    {/if}
 
     <button type="button" class="tbtn" class:on={fmt.bold} title="Bold (Ctrl+B)" onmousedown={keepSel} onclick={() => cmd('bold')}><Bold size={15} /></button>
     <button type="button" class="tbtn" class:on={fmt.italic} title="Italic (Ctrl+I)" onmousedown={keepSel} onclick={() => cmd('italic')}><Italic size={15} /></button>
@@ -311,13 +320,17 @@
 
     <button type="button" class="tbtn" class:on={fmt.ul} title="Listă cu puncte" onmousedown={keepSel} onclick={() => cmd('insertUnorderedList')}><List size={15} /></button>
     <button type="button" class="tbtn" class:on={fmt.ol} title="Listă numerotată" onmousedown={keepSel} onclick={() => cmd('insertOrderedList')}><ListOrdered size={15} /></button>
+    {#if !compact}
     <button type="button" class="tbtn" class:on={fmt.block === 'blockquote'} title="Citat" onmousedown={keepSel} onclick={() => setBlock(fmt.block === 'blockquote' ? 'p' : 'blockquote')}><TextQuote size={15} /></button>
     <button type="button" class="tbtn" title="Linie orizontală" onmousedown={keepSel} onclick={() => cmd('insertHorizontalRule')}><Minus size={15} /></button>
+    {/if}
 
     <span class="tsep" aria-hidden="true"></span>
 
-    <button type="button" class="tbtn tmath" class:on={mathOpen} title="Formulă LaTeX" onmousedown={keepSel} onclick={() => (mathOpen ? closeMathBar() : openMathBar())}><Sigma size={15} /></button>
+    <button type="button" class="tbtn tmath" class:on={mathOpen} title="Formulă LaTeX — sau scrie direct $x$ în text" onmousedown={keepSel} onclick={() => (mathOpen ? closeMathBar() : openMathBar())}><Sigma size={15} /></button>
+    {#if !compact}
     <button type="button" class="tbtn" title="Curăță formatarea" onmousedown={keepSel} onclick={clearFmt}><RemoveFormatting size={15} /></button>
+    {/if}
   </div>
 
   {#if mathOpen}
@@ -640,12 +653,16 @@
     -webkit-backdrop-filter: blur(14px);
     box-shadow: var(--shadow-md);
   }
+  /* PILULA PLUTESTE PESTE TEXT, DECI TEXTUL INCEPE SUB EA.
+     Bara are ~40px si e `sticky top: 10px`, iar coloana de text avea 22px de
+     padding sus: primul rand al notitei intra pe sub bara si se citea doar dupa ce
+     derulai. Padding-ul de sus rezerva exact inaltimea barei. */
   .rte.doc .rte-editor {
     max-height: none;
     min-height: calc(100% - 62px);
-    max-width: 74ch;
+    max-width: 82ch;
     margin: 0 auto;
-    padding: 22px 28px 90px;
+    padding: 64px 32px 90px;
     font-size: 0.98rem;
     line-height: 1.65;
   }
@@ -654,6 +671,6 @@
   @media (max-width: 768px) {
     .rte.doc .rte-toolbar { top: 6px; max-width: calc(100% - 12px); }
     .rte.doc .math-bar { top: 56px; width: calc(100% - 12px); }
-    .rte.doc .rte-editor { padding: 16px 16px 80px; min-height: calc(100% - 58px); }
+    .rte.doc .rte-editor { padding: 62px 16px 80px; min-height: calc(100% - 58px); }
   }
 </style>

@@ -3,7 +3,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, DUR_FAST } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, ArrowRight, X, Check } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, X, Check, Archive, Briefcase, User, Text } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
@@ -59,6 +59,7 @@
   let showNoteModal = $state(false)
   let noteTask = $state(null)
   let noteDraft = $state('')
+  let noteOriginal = ''      // ca sa stim dac-ai schimbat ceva si ce se intoarce la „Anulează"
   let noteSaving = $state(false)
 
 
@@ -256,17 +257,36 @@
   function openNoteModal(t) {
     noteTask = t
     noteDraft = t.descriere || ''
+    noteOriginal = noteDraft
     showNoteModal = true
   }
 
+  /** INCHIDEREA SALVEAZA. NU EXISTA „ANULEAZĂ" CARE SA ARUNCE CE AI SCRIS.
+   *  Inainte: modalul avea „Anulează" si „Salvează", dar un click pe fundal (sau
+   *  Escape, sau X) inchidea pur si simplu — fara sa intrebe, fara sa salveze.
+   *  Adica trei din patru feluri de a inchide o pagina de scriere de 92% din ecran
+   *  aruncau in tacere tot ce tastasei. Iar o notita de PIF se scrie cu casca pe cap,
+   *  in hala, cu o mana.
+   *  Alternativa clasica — un dialog „ai modificari nesalvate" — pune un al doilea
+   *  dialog peste primul si te intreaba ceva ce se poate deduce. Aici inchiderea
+   *  COMITE, iar drumul inapoi e cel pe care aplicatia il foloseste deja peste tot:
+   *  un toast cu „Anulează" (vezi bifarea unui task, mutarea unui termen). */
   async function saveNote() {
     if (noteSaving || !noteTask) return
+    const taskId = noteTask.id
+    const vechi = noteOriginal
+    if (noteDraft === vechi) { showNoteModal = false; return }   // nimic de salvat, niciun zgomot
     noteSaving = true
     try {
-      await updateGlobalTask(noteTask.id, { descriere: noteDraft })
+      await updateGlobalTask(taskId, { descriere: noteDraft })
       showNoteModal = false
       await reload()
-      toast('Salvat', 'success')
+      toastUndo(vechi ? 'Notă actualizată' : 'Notă salvată', {
+        onUndo: async () => {
+          await updateGlobalTask(taskId, { descriere: vechi })
+          await reload()
+        },
+      })
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')
     } finally { noteSaving = false }
@@ -430,13 +450,81 @@
   // rescrii randul, nu adaugi la el.
   function focalizeaza(node) { node.focus(); node.select() }
 
-  async function removeSubtask(sub) {
-    await deleteSubtask(sub.id)
-    subtasksCache = {
-      ...subtasksCache,
-      [sub.task_id]: (subtasksCache[sub.task_id] || []).filter(s => s.id !== sub.id)
+  // APASARE LUNGA, pentru actiunea rara de pe o tinta mare (redenumirea unui
+  // subtask). Aceleasi 300ms ca la `lib/tragere.js`, si aceeasi conditie de
+  // anulare: prima miscare peste 8px o opreste — altfel o glisare pornita din
+  // greseala pe titlu ar declansa si redenumirea, si pista de stergere.
+  // Doar pe pointer nu-mouse: cu mouse, clicul simplu redenumeste deja.
+  const PRAG_LUNG = 300
+  const PRAG_MISCARE = 8
+  function apasareLunga(node, actiune) {
+    let t = null, x0 = 0, y0 = 0, pornit = false
+    const stop = () => { if (t) { clearTimeout(t); t = null } }
+    const jos = (e) => {
+      if (e.pointerType === 'mouse') return
+      x0 = e.clientX; y0 = e.clientY; pornit = false
+      stop()
+      t = setTimeout(() => {
+        t = null
+        pornit = true
+        try { navigator.vibrate?.(12) } catch (_) {}
+        actiune?.()
+      }, PRAG_LUNG)
     }
-    await reload()
+    const misca = (e) => {
+      if (!t) return
+      if (Math.abs(e.clientX - x0) > PRAG_MISCARE || Math.abs(e.clientY - y0) > PRAG_MISCARE) stop()
+    }
+    // Dupa o apasare lunga, clicul care urmeaza ridicarii degetului ar bifa —
+    // deci se inghite, exact ca in `glisare` dupa un gest.
+    const clic = (e) => { if (pornit) { e.preventDefault(); e.stopPropagation(); pornit = false } }
+    node.addEventListener('pointerdown', jos)
+    node.addEventListener('pointermove', misca)
+    node.addEventListener('pointerup', stop)
+    node.addEventListener('pointercancel', stop)
+    node.addEventListener('click', clic, true)
+    return {
+      update: (a) => { actiune = a },
+      destroy: () => {
+        stop()
+        node.removeEventListener('pointerdown', jos)
+        node.removeEventListener('pointermove', misca)
+        node.removeEventListener('pointerup', stop)
+        node.removeEventListener('pointercancel', stop)
+        node.removeEventListener('click', clic, true)
+      },
+    }
+  }
+
+  // ACELASI OBIECT, ACEEASI ATINGERE, ACELASI COMPORTAMENT. Aceeasi functie din
+  // ProjectDetail sterge optimist si ofera `toastUndo` cu commit intarziat; aici
+  // chema direct `deleteSubtask()` pe server, fara drum inapoi — iar cea fara
+  // plasa era tocmai in lista folosita cel mai des. Pe telefon stergerea vine
+  // acum dintr-un GEST, deci se poate porni si din greseala.
+  function removeSubtask(sub) {
+    const taskId = sub.task_id
+    const list = subtasksCache[taskId] || []
+    const idx = list.findIndex(s => s.id === sub.id)
+    if (idx === -1) return
+    const removed = list[idx]
+    subtasksCache = { ...subtasksCache, [taskId]: list.filter(s => s.id !== sub.id) }
+    toastUndo('Subtask șters', {
+      onUndo: () => {
+        const cur = [...(subtasksCache[taskId] || [])]
+        cur.splice(Math.min(idx, cur.length), 0, removed)
+        subtasksCache = { ...subtasksCache, [taskId]: cur }
+      },
+      onCommit: async () => {
+        try {
+          await deleteSubtask(sub.id)
+          await reload()
+        } catch (e) {
+          toast(`Eroare: ${e.message}`, 'error')
+          const subs = await loadSubtasks(taskId)
+          subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+        }
+      },
+    })
   }
 
   async function doDeleteTask() {
@@ -563,15 +651,12 @@
   <!-- CHIPURI DE ACTIUNE, ca randul „Description / Reminders / Labels" din
        Todoist: lucrurile pe care le faci RAR cu un task stau grupate si mici,
        ca sa nu concureze cu subtaskurile, care sunt continutul. -->
-  <div class="td-actiuni">
-    <button class="td-btn" class:areNota={!!t.descriere} onclick={() => openNoteModal(t)}>
-      <SolidIcon name="notes" size={13} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
-    </button>
-    <button class="td-btn" onclick={() => openEditModal(t)}>
-      <SolidIcon name="pencil" size={13} /> Editează
-    </button>
-  </div>
-
+  <!-- CONTINUTUL INAINTEA BUTOANELOR.
+       Aici stateau doua chipuri de actiune DEASUPRA subtaskurilor: deschideai un
+       task si primul lucru pe care il vedeai erau doua butoane despre operatii
+       rare, nu pasii lui. Nota ca CONTINUT ramane sus (e ce ai scris); nota si
+       termenul ca ACTIUNI au coborat sub lista, la 11px. „Editează" a plecat de
+       tot — creionul e pe acelasi rand, la 4cm, iar titlul se editeaza de acolo. -->
   {#if t.descriere}
     <div class="td-nota"><RichText value={t.descriere} collapsible maxHeight={140} noToggle /></div>
   {/if}
@@ -598,7 +683,20 @@
     </div>
 
     {#each subs as sub (sub.id)}
-      <div class="sub-row" class:sub-done={sub.done} animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}>
+      <!-- CEA MAI MARE TINTA FACE LUCRUL CEL MAI DES. Titlul — zona pe care cade
+           degetul — pornea REDENUMIREA, adica lucrul cel mai rar; bifarea statea
+           intr-un cerc de 26px. Pe desktop `cursor: text` sugera macar ceva, pe
+           telefon nu exista hover, deci singurul mod de a afla era sa atingi si
+           sa fii surprins. Randul parinte respecta deja regula corecta.
+           Acum: atingi randul -> se bifeaza; redenumirea pe APASARE LUNGA.
+           Pe desktop nimic nu se schimba — clic pe titlu redenumeste, pubela
+           apare la hover. Gestul e o solutie pentru absenta hover-ului, nu o
+           imbunatatire universala. -->
+      <div class="sub-row" class:sub-done={sub.done} class:gl-sub={ecran.telefon}
+           animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}
+           use:glisare={{ activ: ecran.telefon && editSubId !== sub.id, onAmana: () => removeSubtask(sub) }}>
+        <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Șterge</span><span class="gl-ico-s"><SolidIcon name="trash" size={15} /></span></div>
+        <div class="gl-fata">
         <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
           {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
         </button>
@@ -612,11 +710,13 @@
                    else if (e.key === 'Escape') { e.stopPropagation(); editSubId = '' }
                  }} />
         {:else}
-          <button class="sub-title" onclick={() => incepeRedenumirea(sub)}
-                  title="Atinge ca să redenumești">{sub.titlu}</button>
+          <button class="sub-title" use:apasareLunga={() => incepeRedenumirea(sub)}
+                  onclick={() => { if (ecran.telefon) toggleSubtaskDone(sub); else incepeRedenumirea(sub) }}
+                  title={ecran.telefon ? 'Atinge ca să bifezi · ține apăsat ca să redenumești' : 'Atinge ca să redenumești'}>{sub.titlu}</button>
         {/if}
         <button class="sub-del" onclick={() => removeSubtask(sub)}
                 aria-label="Șterge subtaskul"><SolidIcon name="trash" size={13} /></button>
+        </div>
       </div>
     {/each}
 
@@ -641,10 +741,23 @@
         </button>
       </div>
     {:else}
+      <!-- „+ Adaugă subtask" e ULTIMUL RAND al listei, nu cel mai puternic obiect
+           din panou: `+` aliniat pe coloana bifei, text palid, fara chenar punctat. -->
       <button class="sub-nou" onclick={() => { adaugSubLa = t.id; newSubtaskTitle = '' }}>
-        <Plus size={15} /> Adaugă subtask
+        <span class="sub-nou-p"><Plus size={14} /></span> Adaugă subtask
       </button>
     {/if}
+  </div>
+
+  <!-- Actiunile rare, sub o linie: se gasesc cand le cauti, nu concureaza cu
+       subtaskurile, care sunt continutul. -->
+  <div class="td-jos">
+    <button class="td-link" class:areNota={!!t.descriere} onclick={() => openNoteModal(t)}>
+      <Text size={12} strokeWidth={2} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
+    </button>
+    <span class="td-link td-dp">
+      <DatePicker value={t.data_scadenta} placeholder="Schimbă termenul" onchange={(v) => setTermenData(t, v)} />
+    </span>
   </div>
 {/snippet}
 
@@ -679,12 +792,22 @@
            segment activ ridicat pe suprafata neutra), filtrele raman chip-uri
            separate cu amber la activ. -->
       <div class="sfere" role="tablist" aria-label="Sfera taskurilor">
-        <button class="seg" role="tab" aria-selected={sferaActiva === 'munca'} class:on={sferaActiva === 'munca'} onclick={() => navigate('/tasks')}>Muncă</button>
-        <button class="seg seg-personal" role="tab" aria-selected={sferaActiva === 'personal'} class:on={sferaActiva === 'personal'} onclick={() => navigate('/tasks?sfera=personal')}>Personal</button>
+        <button class="seg" role="tab" aria-selected={sferaActiva === 'munca'} class:on={sferaActiva === 'munca'} onclick={() => navigate('/tasks')}><Briefcase size={13} />Muncă</button>
+        <button class="seg" role="tab" aria-selected={sferaActiva === 'personal'} class:on={sferaActiva === 'personal'} onclick={() => navigate('/tasks?sfera=personal')}><User size={13} />Personal</button>
       </div>
-      <!-- Chip-urile doar schimba starea; $effect-ul reincarca — un singur drum de load. -->
-      <button class="chip" class:active={!showArchive} onclick={() => { showArchive = false }}>Active</button>
-      <button class="chip" class:active={showArchive} onclick={() => { showArchive = true }}>Arhivă</button>
+      <!-- „ACTIVE" A PLECAT, „ARHIVĂ" NU MAI E CHIP.
+           „Active" era un filtru MEREU pornit: un chip amber care nu spunea nimic,
+           dar care lasa nelamurit daca „Arhivă" de langa el ADAUGA sau INLOCUIESTE.
+           Iar doua chipuri lipite de capsula segmentata a sferei citeau ca patru
+           butoane din care doua sunt altfel din motive care traiau doar in cod.
+           Arhiva e o DESTINATIE rara, deci primeste haina de actiune-fantoma —
+           aceeasi cu a iconitei Google de langa, care e si ea o setare, nu un filtru.
+           Butonul doar schimba starea; $effect-ul reincarca (un singur drum de load). -->
+      <button class="a-ico" class:on={showArchive} aria-pressed={showArchive}
+              onclick={() => { showArchive = !showArchive }}
+              title={showArchive ? 'Înapoi la taskurile active' : 'Vezi arhiva'}>
+        <Archive size={15} /><span class="a-et">Arhivă</span>
+      </button>
       {#if sferaActiva === 'personal'}
         <!-- NU chip: chip-urile din randul asta sunt FILTRE (Munca/Personal,
              Active/Arhiva), iar asta e o actiune de setari — aceeasi haina
@@ -761,7 +884,7 @@
              fiecare rand: vezi „Restante 2" si stii ca ai doua de recuperat. -->
         <div class="grup-cap ton-{grupe[gid].ton}"><span class="grup-t">{grupe[gid].titlu}</span><span class="grup-n">{grupe[gid].items.length}</span></div>
       {/if}
-      {#each grupe[gid].items as t, i (t.id)}
+      {#each grupe[gid].items as t (t.id)}
 <!-- Iesirea randului bifat: se stinge si se strange, in loc sa sara.
                Vezi `plecare` in lib/motion.svelte.js. -->
                     <div class="trow-wrap" class:deschis={expandedTask === t.id}
@@ -770,36 +893,26 @@
              onpointerenter={() => preincarca(t.id)}
              in:sosire|local out:plecare>
           <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}
-               use:glisare={{ latime: 232, activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t) }}>
+               use:glisare={{ activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t), onAmana: () => { deschideFoaia(t.id); termenDeschis = true } }}>
             <!-- Actiunile de intretinere (notita / editare / stergere) stau in
                  panoul de sub rand: sunt rare fata de „bifat" si „deschis", si
                  tocmai ele umflau randul cu o linie intreaga. -->
-            <!-- PATRU actiuni, nu sapte. Panoul se deschide PESTE rand: la sapte
-                 butoane de 58px n-ar mai fi ramas nimic din titlu, deci n-ai mai
-                 sti pe ce task actionezi. Aici stau cele care se folosesc des —
-                 planificarea (de zeci de ori pe viata unui task) si stergerea.
-                 Nota si editarea titlului sunt rare si stau in randul desfasurat,
-                 la o atingere pe titlu.
-                 „Scoate termenul" nu are buton propriu: e in calendarul de sub
-                 „Dată", care are deja „Șterge". -->
+            <!-- UN GEST = UN VERB, IN AMBELE SENSURI.
+                 Aici era un panou de patru actiuni × 58px = 232px din 390: taskul pe
+                 care actionai dispare aproape complet de sub deget, deci nu mai stii
+                 pe ce apesi — si „Șterge", ultimul, cadea exact unde ajunge o glisare
+                 rapida. Pe langa asta, cele doua direcii aveau doua modele diferite
+                 (stanga „deschide un meniu", dreapta „executa"), deci se invatau
+                 separat. Acum stanga e „Mâine" — amanarea e a doua actiune ca
+                 frecventa, dupa bifare — cu aceeasi pista progresiva ca „Făcut".
+                 NU muta pe mâine de la sine (observatia lui Ion): pe /tasks termenele
+                 sunt imprastiate pe saptamani, deci un „mâine" implicit ar fi o zi
+                 aleasa de aplicatie. Gestul deschide foaia cu panoul de termen deja
+                 desfacut — Azi / Mâine / Alege ziua / Scoate — adica alegi tu, dar
+                 dintr-un singur gest. Stergerea ramane in foaie. -->
             <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
-            <div class="gl-actiuni">
-              <button class="glb" onclick={() => setTermen(t, 0)} title="Termen azi">
-                <CalendarPlus size={16} /><span>Azi</span>
-              </button>
-              <button class="glb" onclick={() => setTermen(t, 1)} title="Termen mâine">
-                <ArrowRight size={16} /><span>Mâine</span>
-              </button>
-              <span class="glb datewrap" title="Alege ziua">
-                <DatePicker value={t.data_scadenta} placeholder="Dată" onchange={(v) => setTermenData(t, v)} />
-                <span>Dată</span>
-              </span>
-              <button class="glb danger" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task">
-                <SolidIcon name="trash" size={16} /><span>Șterge</span>
-              </button>
-            </div>
+            <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>
             <div class="gl-fata">
-            <span class="tix">{String(grupe[gid].start + i + 1).padStart(2, '0')}</span>
             <button class="check" onclick={() => toggleStatus(t)} title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
               {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<div class="check-empty"></div>{/if}
             </button>
@@ -836,15 +949,32 @@
                     <ListChecks size={11} />{t.subtask_done || 0}/{t.subtask_total}
                   </span>
                 {/if}
-                {#if t.descriere}<span class="note-ind" title="Are notiță"><SolidIcon name="notes" size={10} /></span>{/if}
+                {#if t.descriere}<span class="note-ind" title="Are notiță"><Text size={11} strokeWidth={2.2} /></span>{/if}
                 {#if t.recurenta}<span class="recur-badge" title="Recurent: {t.recurenta}"><Repeat size={10} /> {t.recurenta}</span>{/if}
-                {#if t.categorie}<span class="task-cat">{t.categorie}</span>{/if}
+                <!-- „General" nu se scrie: e valoarea implicita, deci apare pe
+                     jumatate din randuri fara sa deosebeasca nimic de nimic. -->
+                {#if t.categorie && t.categorie !== 'General'}<span class="task-cat">{t.categorie}</span>{/if}
               </div>
             </button>
             <div class="task-actions">
+              <!-- REPLANIFICAREA, DAR NU UN „MÂINE" GHICIT (observatia lui Ion).
+                   Pe desktop nu exista niciun drum scurt pentru a doua actiune ca
+                   frecventa dintr-o lista de facut — deschideai modalul de editare.
+                   Un buton „Mâine" fix ar fi insa raspunsul greset AICI: pe /tasks
+                   termenele sunt imprastiate pe saptamani, deci „mâine" e o zi
+                   aleasa de aplicatie, nu de tine. Pe boardul „Astăzi" e alta
+                   situatie — acolo tot ce vezi e scadent azi si butonul „Mâine"
+                   ramane. Aici calendarul deschide direct alegerea zilei. -->
+              <span class="task-dp" title="Planifică — alege ziua">
+                <DatePicker value={t.data_scadenta} onchange={(v) => setTermenData(t, v)} />
+              </span>
+              <!-- Trei linii de text, nu o pagina plina cu colt indoit: la 12px
+                   pagina solida e o pata, iar aceeasi forma o purta si „fisier".
+                   Liniile spun „aici e text scris" si nu se confunda cu creionul
+                   de langa, care spune „schimba". -->
               <button class="task-edit" onclick={() => openNoteModal(t)}
                       title={t.descriere ? 'Editează descrierea' : 'Adaugă descriere'}
-                      class:areNota={!!t.descriere}><SolidIcon name="notes" size={12} /></button>
+                      class:areNota={!!t.descriere}><Text size={13} strokeWidth={2} /></button>
               <button class="task-edit" onclick={() => openEditModal(t)} title="Editează task"><SolidIcon name="pencil" size={12} /></button>
               <button class="task-del" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }} title="Șterge task"><SolidIcon name="trash" size={13} /></button>
             </div>
@@ -967,16 +1097,22 @@
 
 <ConfirmDialog bind:open={showTaskDelete} title="Șterge task" message="Ștergi acest task? Toate subtaskurile asociate vor fi șterse." confirmLabel="Șterge" onconfirm={doDeleteTask} />
 
-<Modal bind:open={showNoteModal} title={noteTask ? `Notițe — ${noteTask.titlu}` : 'Notițe task'} size="doc">
+<!-- Titlul e TASKUL, nu „Notițe — <task>": ai deschis nota DIN el, deci prefixul
+     spunea ce se vede oricum, si tocmai el facea randul sa se taie. Antetul e o
+     linie de context (vezi `.modal-doc .modal-title` in Modal.svelte).
+     `tools="nota"`: sapte unelte, nu treisprezece — vezi RichTextEditor.
+     `onclose`: X / fundal / Escape salveaza, ca si butonul. -->
+<Modal bind:open={showNoteModal} onclose={saveNote} size="doc"
+       title={noteTask ? noteTask.titlu : 'Notiță'}>
   <div class="note-modal">
     {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} variant="doc" placeholder="Scrie notițe pentru acest task..." onsave={saveNote} />
+      <RichTextEditor bind:value={noteDraft} variant="doc" tools="nota"
+                      placeholder="Scrie notițe pentru acest task…" onsave={saveNote} />
     {/if}
   </div>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showNoteModal = false}>Anulează</Button>
-      <Button loading={noteSaving} onclick={saveNote}>Salvează</Button>
+      <Button loading={noteSaving} onclick={saveNote}>Gata</Button>
     </div>
   {/snippet}
 </Modal>
@@ -1058,10 +1194,17 @@
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .filters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
-  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); min-height: 30px; }
-  .chip:hover { background: var(--bg-hover); color: var(--text); }
-  .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
-  .chip:active { transform: scale(0.97); }
+  /* ARHIVA — ACTIUNE-FANTOMA, NU CHIP. Aici erau doua chipuri („Active"/„Arhivă"),
+     din care unul era mereu pornit. Ramane un singur buton, cu haina iconitei
+     Google de langa el: si aceea e o setare, nu un filtru. Activ = tinta amber,
+     ca sa se vada din bara in ce lista te uiti. */
+  .a-ico { display: inline-flex; align-items: center; gap: 6px; min-height: 30px;
+    padding: 0 10px; border: none; background: none; border-radius: var(--radius-sm);
+    color: var(--text-faint); font-size: var(--font-tiny); font-weight: var(--fw-medium);
+    cursor: pointer; transition: var(--transition-colors); }
+  .a-ico:hover { color: var(--text); background: var(--bg-hover); }
+  .a-ico.on { color: var(--accent-on-subtle); background: var(--accent-subtle); }
+  .a-ico:active { transform: scale(0.97); }
   /* Comutatorul de sfera — capsula unita cu segment activ RIDICAT pe suprafata
      neutra (nu amber: amber la activ e limbajul FILTRELOR de langa el). Punctul
      violet de pe Personal (--purple, huea „libera") e acelasi cu cel din antetul
@@ -1069,12 +1212,18 @@
      Randurile raman identice — severitatea e singura culoare pe rand. */
   .sfere { display: flex; background: var(--bg-input); border: 1px solid var(--border);
            border-radius: var(--radius-full); padding: 2px; flex-shrink: 0; margin-right: 4px; }
-  .seg { padding: 2px 12px; min-height: 24px; border: none; background: none; cursor: pointer;
+  .seg { display: inline-flex; align-items: center; gap: 6px; padding: 2px 12px; min-height: 24px; border: none; background: none; cursor: pointer;
          border-radius: var(--radius-full); font-size: var(--font-tiny); font-weight: var(--fw-medium);
          color: var(--text-dim); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .seg:hover { color: var(--text); }
   .seg.on { background: var(--bg-elevated); color: var(--text); box-shadow: var(--shadow-sm); }
-  .seg-personal::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple); margin-right: 6px; vertical-align: 1px; }
+  /* SFERA SE DEOSEBESTE PRIN SEMN, NU PRIN CULOARE.
+     Aici era un punct violet lipit inaintea lui „Personal": o bulina decorativa
+     care aducea a treia culoare pe o bara unde amberul insemna deja „activ", iar
+     violetul nu insemna nimic in afara acestui punct. Iconita spune acelasi lucru
+     CAT TIMP nu e activ segmentul (bulina se citea greu pe segmentul stins) si e
+     acelasi semn cu cel din antetul „Personal" de pe Acasa — cele doua suprafete
+     se refera in continuare una la alta, doar c-o fac cu un desen, nu cu o culoare. */
   /* Iconita Google — fantoma, nu chip: chip-urile din toolbar sunt filtre, iar
      asta e o intrare de setari. Punctul rosu apare doar cand sync-ul are o
      problema — singurul moment in care merita atentie. */
@@ -1141,14 +1290,24 @@
   .qa-hint { font-size: var(--font-micro); color: var(--text-faint); margin-left: auto; }
 
   /* ===== randul desfasurat ===== */
-  .td-actiuni { display: flex; gap: var(--space-xs); flex-wrap: wrap; margin-bottom: var(--space-xs); }
-  .td-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
-    border-radius: var(--radius-full); background: var(--bg-elevated);
-    border: 1px solid var(--border); color: var(--text-secondary);
-    font-size: var(--font-tiny); cursor: pointer;
-    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .td-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
-  .td-btn.areNota { color: var(--accent); }
+  /* Cele doua actiuni rare, SUB continut si la 11px: chipurile de dinainte stateau
+     deasupra subtaskurilor si erau primul lucru pe care il vedeai la deschiderea
+     unui task. O linie punctata le separa de lista fara sa deseneze o a doua cutie. */
+  .td-jos { display: flex; align-items: center; gap: var(--space-md);
+    margin-top: var(--space-sm); padding-top: var(--space-sm);
+    border-top: 1px dashed var(--border-subtle); }
+  .td-link { display: inline-flex; align-items: center; gap: 6px; padding: 0;
+    background: none; border: none; color: var(--text-faint);
+    font-size: var(--font-tiny); cursor: pointer; transition: var(--transition-colors); }
+  .td-link:hover { color: var(--accent); }
+  .td-link.areNota { color: var(--text-dim); }
+  /* DatePicker-ul isi aduce caseta de camp; aici trebuie sa arate ca vecinul lui —
+     un link, nu un input. */
+  .td-dp :global(.dp) { width: auto; }
+  .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: 6px;
+    background: none; border: none; box-shadow: none; border-radius: 0;
+    color: var(--text-faint); font-size: var(--font-tiny); }
+  .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-tiny); color: var(--text-secondary); }
 
   .task-list { display: flex; flex-direction: column; }
@@ -1191,7 +1350,12 @@
      metadatelor sunt gri — se citesc cand le cauti, nu striga cand nu le cauti.
      Titlul creste la `--font-body`, indexul devine ce spunea documentatia ca e:
      o fantoma. */
-  .tix { font-family: var(--font-mono); font-size: 0.8rem; font-weight: var(--fw-medium); letter-spacing: -0.02em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 38%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  /* INDEXUL MONO A PLECAT. Fusese deja stins la 38% dintr-un motiv bun, dar sub
+     15 taskuri nu spui niciodata „fa taskul 07", nu se sorteaza manual, iar pe
+     telefon era oricum `display: none`. Costa 36px pe fiecare rand exact inaintea
+     titlului si era a doua codificare a aceleiasi severitati pe care o da deja
+     bordura din stanga. Titlul incepe acum la 40px in loc de 76, iar desktopul
+     arata ca telefonul — se folosesc la fel de mult. */
   .trow.done { opacity: 0.5; }
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
   .check:hover { color: var(--accent); }
@@ -1208,12 +1372,36 @@
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; align-items: center; }
   /* Categoria pleaca la capatul din dreapta (ca „Inbox" la Todoist): e ultima ca
      importanta, deci nu are voie sa stea intre ochi si termen. */
-  .task-cat { margin-left: auto; padding: 1px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); flex: none; }
+  /* ACEEASI HAINA PE AMBELE ECRANE. Pe telefon categoria era deja text simplu,
+     tocmai fiindca pastila era cel mai tare lucru de pe rand; pe desktop ramasese
+     pastila — douasprezece capsule gri intr-o coloana, pentru informatia care
+     conteaza cel mai putin din rand. Pastila ramane rezervata pentru CIFRE
+     (chipul de subtaskuri), unde chiar spune ceva. */
+  .task-cat { margin-left: auto; padding: 0; background: none; color: var(--text-faint); font-weight: var(--fw-normal); flex: none; }
   .tdeadline { display: inline-flex; align-items: center; gap: 3px; }
+  /* Trei semne pe fiecare din douasprezece randuri erau al doilea lucru pe care
+     il vedeai, dupa titlu. Se sting cand cursorul nu e pe rand — dar NU dispar
+     (`opacity`, nu `display`), ca sa nu-si mute locul cand apar. */
   .task-actions { display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
+  @media (hover: hover) {
+    .task-actions { opacity: 0.5; transition: opacity var(--dur-fast) var(--ease); }
+    .trow:hover .task-actions,
+    .task-actions:focus-within { opacity: 1; }
+  }
+  /* REPLANIFICAREA PE DESKTOP. Pe telefon amani cu un gest; aici nu exista niciun
+     drum scurt pentru a doua actiune ca frecventa dintr-o lista de facut. Acelasi
+     verb ca gestul de pe telefon. */
+  /* DatePicker-ul isi aduce caseta de camp; in randul de lista trebuie sa arate ca
+     vecinii lui — un buton-iconita de 28px, nu un input. */
+  .task-dp { flex-shrink: 0; }
+  .task-dp :global(.dp) { width: auto; }
+  .task-dp :global(.dp-trigger) { width: 28px; height: 28px; min-height: 0; padding: 0;
+    justify-content: center; background: none; border: none; box-shadow: none;
+    border-radius: var(--radius-sm); color: var(--text-faint); }
+  .task-dp :global(.dp-trigger:hover) { color: var(--accent); background: var(--accent-subtle); }
+  .task-dp :global(.dp-value) { display: none; }
   /* Pe desktop invelisul de glisare nu exista pentru layout. */
   .gl-fata { display: contents; }
-  .gl-actiuni { display: none; }
   .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
@@ -1223,7 +1411,7 @@
      (randul isi pierde colturile de jos si marginea), preia bordura de severitate
      din stanga si sta pe acelasi fundal. Inainte pareau doua obiecte fara legatura. */
   /* Extinderea: continut in acelasi card, separat doar de o linie subtire. */
-  .subtask-body { margin: 0; padding: var(--space-sm) var(--space-sm) var(--space-sm) 40px;
+  .subtask-body { margin: 0; padding: 6px var(--space-12) var(--space-12) 34px;
     border-top: 1px solid var(--border-subtle);
     display: flex; flex-direction: column; gap: 4px; }
 
@@ -1243,17 +1431,20 @@
      si rescria TACUT padding-ul cardului la `3px 0` — adica un card desenat cu
      rama la 0px de text. Masurat inainte: padding calculat `3px 0` pe desktop,
      `2px 0` in foaie. Exact felul de abatere care nu arunca nicio eroare. */
-  .sub-row { display: flex; align-items: center; gap: 6px;
-    background: var(--bg-panel); border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-md); padding: 4px 8px; margin-bottom: 5px; }
-  .sub-row.sub-done { background: transparent; border-color: transparent; }
-  .sub-nou { display: flex; align-items: center; justify-content: center; gap: 6px;
-    width: 100%; min-height: var(--tap-min); margin-top: 2px;
-    border: 1px dashed var(--border-strong); border-radius: var(--radius-md);
-    background: none; color: var(--accent-on-subtle); font-size: var(--font-small);
-    font-weight: var(--fw-semibold); cursor: pointer; transition: var(--transition-pressable); }
-  .sub-nou:hover { background: var(--accent-subtle); border-color: var(--accent); }
-  .sub-nou:active { transform: scale(0.99); }
+  .sub-row { display: flex; align-items: center; gap: 9px; min-height: 32px;
+    padding: 0 6px; border-radius: var(--radius-xs); }
+  .sub-row:hover { background: var(--bg-hover); }
+  /* ULTIMUL RAND AL LISTEI, nu un obiect mai tare decat ea. Dreptunghiul punctat
+     de 44px era cel mai puternic lucru din panou, desi „mai adaug un pas" e ultima
+     intentie cu care deschizi un task. Bifa lipsa e inlocuita de „+", pe aceeasi
+     coloana, ca randul sa se alinieze cu subtaskurile de deasupra. */
+  .sub-nou { display: flex; align-items: center; gap: 9px; width: 100%;
+    min-height: 32px; padding: 0 6px; border: none; border-radius: var(--radius-xs);
+    background: none; color: var(--text-faint); font-size: var(--font-small);
+    cursor: pointer; transition: var(--transition-colors); }
+  .sub-nou:hover { background: var(--accent-subtle); color: var(--accent); }
+  .sub-nou-p { display: flex; align-items: center; justify-content: center;
+    width: 18px; flex: none; }
 
   /* ===== Antetul foii ===== */
   .ts-cap { display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-sm); }
@@ -1391,18 +1582,11 @@
     .check { position: relative; min-width: 30px; width: 30px; min-height: var(--tap-min);
       align-items: center; justify-content: center; padding: 0; }
     .check::after { content: ''; position: absolute; inset: -7px; }
-    .tix { display: none; }
     /* (`.tmain`/`.ttitle` se declara o singura data, mai jos in acelasi bloc —
        aici statusera doua declaratii moarte pe care ultima le anula.) */
     .tinfo { flex-wrap: nowrap; overflow: hidden; }
     .tinfo > * { flex-shrink: 0; }
 
-    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0; align-items: stretch; }
-    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
-           font-size: var(--font-micro); cursor: pointer; }
-    .glb span { line-height: 1; }
-    .glb.danger { background: var(--danger-subtle); color: var(--danger); }
     .trow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     /* Cautarea si filtrele: caseta de cautare avea 25px inaltime utila, iar
        chipurile 30. */
@@ -1411,7 +1595,7 @@
     .search-box { max-width: none; align-items: stretch; padding: 0 14px; }
     .search-box input { align-self: stretch; min-height: var(--tap-min); }
     .search-box :global(svg) { align-self: center; }
-    .chip { min-height: var(--tap-min); padding: 4px 16px; font-size: var(--font-small); }
+    .a-ico { min-height: var(--tap-min); padding: 0 12px; font-size: var(--font-small); }
     .filters { gap: var(--space-xs); }
     .g-ico { width: var(--tap-min); min-height: var(--tap-min); }
     /* Capsula creste ODATA cu segmentele: tinta de 44 vine din segment, nu din
@@ -1457,11 +1641,6 @@
       background: none; border: none; cursor: pointer; }
     .filters { flex: 1; justify-content: flex-end; }
 
-    /* Categoria devine text, nu pastila. Pe un rand ingust pastila mov era cel mai
-       tare lucru de pe ecran — mai tare decat titlul si decat termenul, adica
-       exact invers fata de cat conteaza. */
-    .task-cat { background: none; color: var(--text-faint); padding: 0;
-      font-weight: var(--fw-normal); }
     .tchev { display: none; }
 
     /* TITLUL ARE VOIE SA CADA PE DOUA RANDURI.
@@ -1485,7 +1664,9 @@
     /* Cardul isi pastreaza padding-ul orizontal si pe telefon — `2px 0` de aici
        anula (a doua oara) rama-la-0px reparata mai sus. Vertical ramane strans:
        inaltimea o da oricum bifa de 40px. */
-    .sub-row { padding: 2px 8px; }
+    .sub-row { padding: 0 6px; min-height: var(--tap-min); }
+    .sub-nou { min-height: var(--tap-min); font-size: var(--font-small); }
+    .sub-nou-p { width: 26px; }
     /* ACEEASI SOCOTEALA CA LA RANDUL PARINTE, care a coborat de la 96px la 66px
        pana la prima litera. Masurat pe 390px, un subtask incepea la x=111: 28%
        din latimea ecranului consumata inainte de primul cuvant, pe fiecare rand.
@@ -1500,11 +1681,21 @@
       align-items: center; justify-content: center; padding: 0; }
     /* Pe touch nu exista hover, deci un buton care apare la hover nu apare
        niciodata: „sterge subtask" era invizibil si de neatins pe telefon. */
-    /* Stergerea ramane atingibila (44px), dar nu mai striga: pe telefon `:hover`
-       nu exista, deci era o pubela plina, la fel de tare ca bifa, pe FIECARE
-       rand. Ramane un semn stins intr-o tinta mare. */
-    .sub-del { opacity: 1; width: var(--tap-min); height: var(--tap-min);
-               color: var(--text-faint); background: none; }
+    /* PUBELA PLEACA DE TOT DE PE RAND. Pe telefon `:hover` nu exista, deci regula
+       „apare la hover" devenise „e mereu acolo": pe 390px randul avea 70px de
+       mecanica (cerc 26 + pubela 44) si singura actiune distructiva din foaie
+       statea fix la marginea dreapta, unde se odihneste degetul mare. Stergerea
+       vine acum din glisare spre stanga — acelasi gest si acelasi sens ca la
+       taskul parinte — cu „Anulează" in toast. Titlul castiga 44px pe fiecare rand. */
+    .sub-del { display: none; }
+    /* Randul devine pista: invelisul se translateaza peste fundalul colorat.
+       Aceeasi mecanica exacta ca la `.trow`, doar cu metricile subtaskului. */
+    .sub-row { position: relative; overflow: hidden; touch-action: pan-y; padding: 0; }
+    .sub-row .gl-fata { padding: 0 6px; gap: 9px; min-height: var(--tap-min);
+      background: var(--bg-overlay); border-radius: var(--radius-xs); }
+    .sub-row:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    /* Titlul e tinta cea mai mare si face lucrul cel mai des: bifeaza. */
+    .sub-title { text-align: left; cursor: pointer; }
     /* 1rem = 16px, aceeasi valoare pe CITIRE si pe SCRIERE. Regula globala urca
        oricum orice input la 16px pe telefon (zoom-ul Safari la focus), deci cu
        titlul la `--font-body` (14.4px) textul crestea cu 1.6px fix cand incepeai
@@ -1514,17 +1705,8 @@
       font-size: var(--font-small); }
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */
     .qa-hint { display: none; }
-    .td-btn { min-height: var(--tap-min); padding: 0 16px; font-size: var(--font-small); }
-
-    /* Calendarul din panoul de glisare: DatePicker-ul isi aduce declansatorul de
-       camp, dar aici trebuie sa arate ca vecinii lui — o iconita cu o eticheta. */
-    .glb.datewrap { position: relative; }
-    .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
-    .glb.datewrap :global(.dp-trigger) { width: 100%; height: 100%; min-height: 0;
-      padding: 0 0 14px; justify-content: center; background: none; border: none;
-      box-shadow: none; color: inherit; }
-    .glb.datewrap :global(.dp-value) { display: none; }
-    .glb.datewrap > span { position: absolute; left: 0; right: 0; bottom: 11px;
-      text-align: center; pointer-events: none; }
+    .td-link { min-height: var(--tap-min); font-size: var(--font-small); }
+    .td-dp :global(.dp-trigger) { min-height: var(--tap-min); font-size: var(--font-small); }
+    .td-jos { gap: var(--space-lg); }
   }
 </style>

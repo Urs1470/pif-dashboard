@@ -12,7 +12,14 @@
   import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
 
-  let { open = $bindable(false), title = '', size = 'md', children, footer } = $props()
+  // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
+  // jos) — nu cand parintele pune `open = false` singur. Exista fiindca un modal de
+  // scriere (notita) pierdea tot ce ai tastat la un click pe fundal: `onBackdrop`
+  // stingea `open` si atat, fara sa intrebe si fara sa salveze. Cine deschide un
+  // editor decide ce inseamna „am inchis" (la notite: salveaza, cu „Anulează" in
+  // toast); cine deschide un formular poate sa nu dea nimic si sa se comporte ca
+  // pana acum.
+  let { open = $bindable(false), title = '', size = 'md', children, footer, onclose } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
 
@@ -104,7 +111,7 @@
     if (!trage || e.pointerId !== idPointer) return
     trage = false
     idPointer = null
-    if (trasY > PRAG_INCHIDE) { trasY = 0; open = false; return }
+    if (trasY > PRAG_INCHIDE) { trasY = 0; inchide(); return }
     if (trasY < -PRAG_INTINDE) intins = true
     trasY = 0
   }
@@ -113,12 +120,18 @@
   // taskului dinainte.
   $effect(() => { if (open) intins = false })
 
+  /** Singurul drum de inchidere pornit de utilizator. */
+  function inchide() {
+    open = false
+    onclose?.()
+  }
+
   function onBackdrop(e) {
-    if (e.target === e.currentTarget) open = false
+    if (e.target === e.currentTarget) inchide()
   }
 
   function onKey(e) {
-    if (e.key === 'Escape') { open = false; return }
+    if (e.key === 'Escape') { inchide(); return }
     if (e.key === 'Tab' && backdropEl) {
       const focusable = backdropEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
       if (focusable.length === 0) return
@@ -161,7 +174,7 @@
            onpointerdown={trageJos} onpointermove={trageMisca}
            onpointerup={trageSus} onpointercancel={trageSus}>
         <h2 class="modal-title">{title}</h2>
-        <button class="modal-close" onpointerdown={(e) => e.stopPropagation()} onclick={() => open = false} aria-label="Închide"><X size={18} /></button>
+        <button class="modal-close" onpointerdown={(e) => e.stopPropagation()} onclick={inchide} aria-label="Închide"><X size={18} /></button>
       </div>
       <div class="modal-body">
         {@render children()}
@@ -208,7 +221,26 @@
   /* "doc" — document aproape fullscreen (editor observatii/notite).
      Body-ul nu deruleaza si nu are padding: pagina interioara (RichTextEditor
      variant="doc") isi gestioneaza singura scroll-ul si coloana de text. */
-  .modal-doc { max-width: 900px; height: 92dvh; max-height: 92dvh; }
+  .modal-doc { max-width: 1060px; height: 95dvh; max-height: 95dvh; }
+  /* ANTETUL UNUI DOCUMENT E O LINIE DE CONTEXT, NU UN TITLU DE FEREASTRA.
+     Pe telefon asta se decisese deja (vezi `.modal.sheet .modal-title` mai jos);
+     pe desktop ramasese varianta tare: Space Grotesk bold la 18.4px, care pe
+     „Notițe — Verifică parametrii Danfoss FC302 — stand 4" umple randul si se taie.
+     Titlul repeta oricum taskul din care ai venit — deci e context, nu titlu, si
+     cel mai bun lucru care i se poate intampla e sa nu-ti ia atentia de la pagina
+     goala de dedesubt. */
+  .modal-doc .modal-header { border-bottom: none; padding-bottom: var(--space-sm); }
+  .modal-doc .modal-title {
+    font-family: var(--font-sans);
+    font-size: var(--font-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-weight: var(--fw-semibold);
+    color: var(--text-faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .modal-doc .modal-body { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
   .modal-doc .modal-body > :global(*) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 

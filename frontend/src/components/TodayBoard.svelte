@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, ChevronRight, CheckCircle2, Repeat, ListPlus, Check, CalendarDays, ListChecks } from '@lucide/svelte'
+  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, ChevronRight, CheckCircle2, Repeat, ListPlus, Check, CalendarDays, ListChecks, User } from '@lucide/svelte'
   import {
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
@@ -206,23 +206,21 @@
           animate:flip={{ duration: flipDur }}
           in:sosire|local
           out:plecare
-          use:glisare={{ latime: peTelefon ? 176 : 0, activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it) }}
+          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it), onAmana: () => onTomorrow(it) }}
         >
-          <!-- Panoul de actiuni sta SUB rand si se descopera glisand spre stanga
-               (vezi lib/glisare.js). Pe desktop e ascuns: acolo actiunile stau la
-               vedere in rand, unde le ajunge cursorul. -->
+          <!-- UN GEST = UN VERB, IN AMBELE SENSURI (vezi lib/glisare.js).
+               Dreapta = „Făcut", stanga = „Mâine", amandoua cu pista care se
+               coloreaza progresiv. Aici era un panou de trei actiuni × 58px care se
+               descoperea glisand: 176px din 390 acopereau taskul pe care actionai,
+               iar cele doua direcii aveau doua modele diferite („descopera un meniu"
+               vs „executa"). „Dată" si „Scoate" au ramas pe desktop, in rand
+               (`.arow-actions`), si la o atingere pe titlu — care oricum deschide
+               taskul in lista lui. Pe desktop, unde nu se gliseaza, ambele piste
+               ramanind ascunse nu costa nimic. -->
           <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
-          <div class="gl-actiuni" aria-hidden={!peTelefon}>
-            <button class="glb" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={17} /><span>Mâine</span></button>
-            <span class="glb datewrap" title="Planifică pe altă zi">
-              <DatePicker value={it.data_scadenta} placeholder="Dată" onchange={(v) => onMoveDate(it, v)} />
-              <span>Dată</span>
-            </span>
-            <button class="glb danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={17} /><span>Scoate</span></button>
-          </div>
+          <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Mâine</span><span class="gl-ico-s"><ArrowRight size={17} strokeWidth={3} /></span></div>
 
           <div class="gl-fata">
-          <span class="tix">{String(i + 1).padStart(2, '0')}</span>
           <span class="grip" role="button" tabindex="-1" aria-label="Trage pentru a reordona" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
 
           <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">
@@ -300,7 +298,7 @@
        index, grip si reordonare: lista e scurta, ordinea o da serverul
        (restante-first, apoi alfabetic). -->
   {#if agenda.personale.length}
-    <div class="pers-cap"><span class="pers-dot" aria-hidden="true"></span>Personal<span class="pers-n">{agenda.personale.length}</span></div>
+    <div class="pers-cap"><span class="pers-ico" aria-hidden="true"><User size={12} /></span>Personal<span class="pers-n">{agenda.personale.length}</span></div>
     <div class="a-list" role="list">
       {#each agenda.personale as it (it.id)}
         <div
@@ -310,17 +308,10 @@
           role="listitem"
           in:sosire|local
           out:plecare
-          use:glisare={{ latime: peTelefon ? 176 : 0, activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it) }}
+          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it), onAmana: () => onTomorrow(it) }}
         >
           <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
-          <div class="gl-actiuni" aria-hidden={!peTelefon}>
-            <button class="glb" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={17} /><span>Mâine</span></button>
-            <span class="glb datewrap" title="Planifică pe altă zi">
-              <DatePicker value={it.data_scadenta} placeholder="Dată" onchange={(v) => onMoveDate(it, v)} />
-              <span>Dată</span>
-            </span>
-            <button class="glb danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={17} /><span>Scoate</span></button>
-          </div>
+          <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Mâine</span><span class="gl-ico-s"><ArrowRight size={17} strokeWidth={3} /></span></div>
 
           <div class="gl-fata">
           <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">
@@ -386,7 +377,10 @@
      violet (--purple — huea „libera"; amber e severitate/identitate). Bordura de
      sus il desparte de board fara sa-l ridice la rang de al doilea board. */
   .pers-cap { display: flex; align-items: center; gap: 6px; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-top: var(--space-md); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); }
-  .pers-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); flex-shrink: 0; }
+  /* Semn, nu bulina — acelasi desen ca pe comutatorul de sfera din /tasks, ca cele
+     doua suprafete sa se refere in continuare una la alta fara sa aduca o a treia
+     culoare pe ecran. */
+  .pers-ico { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
   .pers-n { color: var(--text-dim); font-variant-numeric: tabular-nums; }
 
   .a-list { display: flex; flex-direction: column; }
@@ -424,7 +418,6 @@
      metadatelor sunt gri — se citesc cand le cauti, nu striga cand nu le cauti.
      Titlul creste la `--font-body`, indexul devine ce spunea documentatia ca e:
      o fantoma. */
-  .tix { font-family: var(--font-mono); font-size: 0.8rem; font-weight: var(--fw-medium); letter-spacing: -0.02em; color: color-mix(in srgb, var(--sev, var(--border-strong)) 38%, transparent); min-width: 28px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .arow.done { opacity: 0.5; }
   /* Drag & drop — minimal, on-brand: the grabbed row fades; the drop target shows a
      crisp accent insertion line (no heavy fill); rows settle via animate:flip. */
@@ -496,7 +489,6 @@
 
   /* ===== glisare (doar telefon) ===== */
   .gl-fata { display: contents; }
-  .gl-actiuni { display: none; }
 
   @media (max-width: 768px) {
     /* UN RAND = O LINIE, ca in orice aplicatie de to-do de pe telefon.
@@ -525,21 +517,6 @@
        componente. */
     .arow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
 
-    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0;
-                  align-items: stretch; }
-    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
-           font-size: var(--font-micro); cursor: pointer; }
-    .glb span { line-height: 1; }
-    .glb.danger { background: var(--danger-subtle); color: var(--danger); }
-    .glb.datewrap { position: relative; }
-    /* DatePicker-ul aduce cu el un declansator de camp; aici trebuie sa fie doar
-       iconita, ca vecinii lui. */
-    .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
-    .glb.datewrap :global(.dp-trigger) { width: 100%; height: 100%; min-height: 0; padding: 0 0 14px;
-      justify-content: center; background: none; border: none; box-shadow: none; color: inherit; }
-    .glb.datewrap :global(.dp-value) { display: none; }
-    .glb.datewrap > span { position: absolute; left: 0; right: 0; bottom: 11px; text-align: center; pointer-events: none; }
 
     /* Cursa de bifare: cat timp tragi spre dreapta destul, dedesubt se vede verde.
        Fara semnal, gestul e o loterie — nu stii cand ai trecut pragul. */
@@ -555,7 +532,6 @@
 
     /* Indexul pleaca: pe un rand de o linie, doua cifre in fata titlului nu spun
        nimic ce nu spune deja ordinea de sus in jos, si mananca 28px din titlu. */
-    .tix { display: none; }
     .amain { flex: 1 1 0; min-width: 0; padding: 0; gap: 1px; min-height: var(--tap-min); justify-content: center; }
     .atitle { white-space: nowrap; }
     /* Meta pe un singur rand. Taierea seaca lasa jumatate de litera la margine:

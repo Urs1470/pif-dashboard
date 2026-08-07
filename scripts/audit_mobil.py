@@ -280,16 +280,62 @@ def gesturi(ctx, baza):
         else:
             out('  OK    reordonarea s-a salvat pe server')
 
-    # 2. glisare spre stanga -> panoul de actiuni
+    # 2. glisare spre stanga -> EXECUTA un verb (nu mai descopera un panou)
+    #
+    # Contractul s-a schimbat: panoul de patru actiuni × 58px lua 176px din 390,
+    # deci taskul pe care actionai disparea de sub deget, iar „Șterge" cadea exact
+    # unde ajunge o glisare rapida. Acum stanga e simetrica cu dreapta — un gest,
+    # un verb — si pe boardul „Astăzi" verbul e „Mâine" (aici tot ce vezi e scadent
+    # azi, deci mâine e chiar cuvantul potrivit).
+    #
+    # De aceea NU se mai verifica un transform ramas dupa ridicare: randul se
+    # intoarce la zero, ca la bifare. Se verifica pista si pragul PE PARCURS —
+    # altfel gestul ar trece si daca n-ai vedea nimic cat timp tragi.
+    titlu_inainte = titluri()[0] if titluri() else None
     r = page.eval_on_selector('.arow', 'e => { const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height] }')
     cx, cy = r[0] + r[2] * 0.6, r[1] + r[3] / 2
-    page.evaluate(TRAGE, [cx, cy, [[cx - d, cy] for d in (30, 80, 130, 150)], 2])
-    page.wait_for_timeout(600)
-    tx = page.eval_on_selector('.arow .gl-fata', 'e => getComputedStyle(e).transform')
-    if tx == 'none' or '-1' not in tx.replace(' ', ''):
-        out('  PICA  glisare stanga: randul nu s-a deplasat (%s)' % tx); probleme += 1
+    masuri_s = page.evaluate("""([x0, y0, pasi]) => {
+      const el = document.elementFromPoint(x0, y0);
+      const row = el.closest('.arow');
+      const ev = (t, x, y) => el.dispatchEvent(new PointerEvent(t, {
+        pointerId: 2, pointerType: 'touch', isPrimary: true,
+        clientX: x, clientY: y, bubbles: true, cancelable: true }));
+      const cite = () => {
+        const ic = row.querySelector('.gl-ico-s');
+        return { s: parseFloat(row.style.getPropertyValue('--gl-s') || '0'),
+                 amana: row.classList.contains('gl-amana'),
+                 stanga: row.classList.contains('gl-stanga'),
+                 pista: !!row.querySelector('.gl-pista-s'),
+                 icoOp: ic ? parseFloat(getComputedStyle(ic).opacity) : 0 };
+      };
+      ev('pointerdown', x0, y0);
+      const jurnal = [];
+      for (const [x, y] of pasi) { ev('pointermove', x, y); jurnal.push(cite()); }
+      const u = pasi[pasi.length - 1];
+      ev('pointerup', u[0], u[1]);
+      el.dispatchEvent(new MouseEvent('click', { clientX: u[0], clientY: u[1], bubbles: true, cancelable: true }));
+      return jurnal;
+    }""", [cx, cy, [[cx - d, cy] for d in (20, 50, 90, 150, 230)]])
+    # „Creste pe parcurs" = EXISTA un moment in care pista se vede si inca n-a
+    # ajuns la capat. Se cauta printre esantioane, nu la un index fix: pragul e
+    # 42% din latimea randului, deci un pas ales prost ar sari peste zona de mijloc
+    # si testul ar pica pe alegerea pasilor, nu pe comportament.
+    final = masuri_s[-1] if masuri_s else {}
+    partial = [m for m in masuri_s if 0.05 < m.get('s', 0) < 0.95]
+    if not final.get('pista'):
+        out('  PICA  glisare stanga: pista „Mâine" lipseste din rand'); probleme += 1
+    elif not partial:
+        out('  PICA  glisare stanga: pista nu creste pe parcurs (%s)' % [m.get('s') for m in masuri_s]); probleme += 1
+    elif not final.get('amana'):
+        out('  PICA  glisare stanga: pragul nu s-a atins (--gl-s=%s)' % final.get('s')); probleme += 1
     else:
-        out('  OK    glisare stanga deschide panoul')
+        out('  OK    glisare stanga: pista creste pe parcurs, apoi pragul')
+    # Verbul chiar s-a executat: taskul mutat pe mâine pleaca de pe boardul de azi.
+    page.wait_for_timeout(1400)
+    if titlu_inainte and titlu_inainte in (titluri() or []):
+        out('  PICA  glisare stanga: taskul n-a plecat de pe board (%r)' % titlu_inainte); probleme += 1
+    else:
+        out('  OK    glisare stanga executa „Mâine"')
 
     # 3. glisare spre dreapta -> bifeaza, cu verdele de prag INAINTE de ridicare
     page.reload(wait_until='load')
@@ -399,18 +445,23 @@ def lista_de_facut(ctx, baza):
         zi(grup == 'Azi', 'taskul nou aterizeaza direct in ziua aleasa', grup)
         zi(page.input_value('.quick-add input') == '', 'campul ramane gol si focusat pentru urmatorul')
 
-    # mutare din gest
+    # mutare din gest: glisarea spre stanga deschide FOAIA cu panoul de termen
+    # desfacut, si alegi ziua acolo. Pe /tasks termenele sunt imprastiate pe
+    # saptamani, deci un „Mâine" fix ar fi o zi aleasa de aplicatie, nu de tine —
+    # de aceea aici gestul duce la alegere, nu executa (spre deosebire de „Astăzi").
     r = page.evaluate(CAUTA_RAND, MARCA)
     if r:
         cx, cy = r[0] + r[2] * 0.5, r[1] + r[3] / 2
         page.evaluate(TRAGE, [cx, cy, [[cx - d, cy] for d in (30, 100, 180, 240)], 5])
-        page.wait_for_timeout(600)
-        page.evaluate(APASA_IN_RAND, [MARCA, 'Mâine'])
+        page.wait_for_timeout(900)
+        zi(page.locator('.ts-zile .ts-zi').count() > 0,
+           'glisarea deschide foaia cu ziua de ales')
+        page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
         page.wait_for_timeout(1400)
+        page.keyboard.press('Escape')
+        page.wait_for_timeout(700)
         grup = page.evaluate(GRUPUL_LUI, MARCA)
-        zi(grup == 'Mâine', 'glisarea muta taskul in alta zi', grup)
-        zi(page.locator('.toast-action', has_text='Anulează').count() > 0,
-           'mutarea se poate anula')
+        zi(grup == 'Mâine', 'ziua aleasa din foaie muta taskul', grup)
 
     # bifare + anulare
     page.reload(wait_until='load')
@@ -448,12 +499,23 @@ CAUTA_RAND = """(marca) => {
   return [b.left, b.top, b.width, b.height];
 }"""
 
-APASA_IN_RAND = """([marca, eticheta]) => {
-  const row = [...document.querySelectorAll('.trow')].find(x => x.textContent.includes(marca));
-  if (!row) return false;
-  const b = [...row.querySelectorAll('.gl-actiuni .glb')].find(x => x.textContent.includes(eticheta));
+# Ziua se alege ACUM DIN FOAIE, nu dintr-un panou sub rand: glisarea spre stanga
+# deschide foaia taskului cu panoul de termen desfacut (Azi / Mâine / Alege ziua /
+# Scoate). Panoul din rand — patru actiuni × 58px = 232px din 390 — a plecat cu
+# tot cu CSS-ul lui, deci `.gl-actiuni .glb` nu mai exista.
+ALEGE_ZI_IN_FOAIE = """(eticheta) => {
+  const b = [...document.querySelectorAll('.ts-zile .ts-zi')].find(x => x.textContent.includes(eticheta));
   if (!b) return false;
   b.click();
+  return true;
+}"""
+
+# Deschide foaia FARA gest, cand testul vrea doar sa mute ziua (atingerea randului
+# deschide aceeasi foaie; panoul de termen se desface cu un clic pe randul de data).
+DESCHIDE_FOAIA = """(marca) => {
+  const r = [...document.querySelectorAll('.trow')].find(x => x.textContent.includes(marca));
+  if (!r) return false;
+  r.querySelector('.tmain').click();
   return true;
 }"""
 
@@ -844,8 +906,15 @@ def azi_peste_tot(ctx, baza):
     page.goto(baza + '/#/tasks', wait_until='load')
     page.wait_for_selector('.trow', timeout=15000)
     page.wait_for_timeout(1100)
-    page.evaluate(APASA_IN_RAND, [MARCA, 'Mâine'])
+    # Foaia, apoi randul de termen, apoi ziua — acelasi drum ca pe deget, fara gest.
+    page.evaluate(DESCHIDE_FOAIA, MARCA)
+    page.wait_for_timeout(900)
+    page.locator('.ts-rand').first.click()
+    page.wait_for_timeout(500)
+    page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
     page.wait_for_timeout(1500)
+    page.keyboard.press('Escape')
+    page.wait_for_timeout(600)
     page.goto(baza + '/#/', wait_until='load')
     page.wait_for_selector('.arow', timeout=15000)
     page.wait_for_timeout(1400)

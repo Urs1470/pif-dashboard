@@ -33,8 +33,10 @@ INDEPENDENTE_DE_TEMA = {'--loc-site', '--loc-sediu', '--on-color'}
 # — de aceea se folosesc mereu cu valoare de rezerva, `var(--gl-p, 0)`.
 #   --gl-p  : cat din drumul pana la pragul de bifare a facut degetul (0..1),
 #             pus de lib/glisare.js ca sa creasca pista de bifare odata cu gestul.
+#   --gl-s  : oglinda lui --gl-p pentru gestul spre STANGA (verbul de pe pista
+#             de stanga: „Planifică" pe randul de task, „Șterge" pe subtask).
 #   --trasY : cat a coborat sheet-ul sub deget, in px, pus de Modal.svelte.
-DIN_JS = {'--gl-p', '--trasY'}
+DIN_JS = {'--gl-p', '--gl-s', '--trasY'}
 
 # Fisiere in care valorile brute sunt legitime, cu motiv.
 SCUTITE_HEX = {

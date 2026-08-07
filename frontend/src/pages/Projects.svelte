@@ -2,13 +2,14 @@
   import { onMount } from 'svelte'
   import { fly, slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { FolderKanban, Search, Plus, ChevronDown, ChevronUp, Archive, CheckSquare, Square, ArrowUpDown, Zap, Wrench } from '@lucide/svelte'
+  import { FolderKanban, Search, Plus, ChevronDown, Archive, CheckSquare, Square, ArrowUpDown, Zap, Wrench } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { projects, loadProjects, updateProject, deleteProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
-  import { toast } from '../stores/ui.svelte.js'
+  import { ecran } from '../lib/ecran.svelte.js'
+  import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Button from '../components/ui/Button.svelte'
   import Select from '../components/ui/Select.svelte'
@@ -18,11 +19,11 @@
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
 
-  const statusOptions = [
-    { value: '', label: 'Toate' },
-    { value: 'pregatire', label: 'În pregătire' },
-    { value: 'finalizat', label: 'Finalizat' },
-  ]
+  // CHIPURILE DE FILTRU AU PLECAT. Grila separa deja finalizatele in „Arhivă"
+  // pliabila; „Finalizat" ca chip arata exact acel continut, dar in grila, iar
+  // „Toate" le arata pe amandoua. Acelasi continut, trei drumuri, trei asezari —
+  // aceeasi decizie ca la „Active" din /tasks, care era un filtru mereu pornit.
+  // Ce ramane in bara: cautarea, sortarea si arhiva.
 
   const sortOptions = [
     { value: 'nume', label: 'Nume' },
@@ -49,29 +50,48 @@
 
   // Deadline-ul a plecat in v30 (nu se lua nimeni dupa el). Ce conteaza aici e
   // urmatoarea perioada: cand iesi efectiv pe teren sau te pregatesti.
-  const FAZA_SCURT = { pregatire: 'pregătire', implementare: 'implementare' }
-  function urmatoareaText(p) {
+  //
+  // RANDUL DE JOS, DESFACUT IN TREI. Era un singur sir la 10.4px monospace —
+  // „pregătire · 12.08.2026 — 5 zile" — adica faza, data plina si o socoteala
+  // relativa, toate la cea mai mica treapta din scara; iar la ≤2 zile se inrosea
+  // TOT sirul, inclusiv faza, care nu e urgenta. Acum: faza e eticheta micro,
+  // socoteala urca la --font-tiny si poarta SINGURA culoarea, data plina trece
+  // in `title` — o verifici cand o cauti.
+  const FAZA_SCURT = { pregatire: 'Pregătire', implementare: 'Implementare' }
+  function urmatoarea(p) {
     const zi = p.urmatoarea
-    if (!zi) return 'fără perioadă'
+    if (!zi) return { faza: '', cand: 'fără perioadă', data: '', urgent: false }
     const days = daysUntil(zi)
-    const faza = FAZA_SCURT[p.urmatoarea_faza] || ''
     const cand = days === null ? formatDate(zi)
-      : days === 0 ? `${formatDate(zi)} — azi`
-      : days === 1 ? `${formatDate(zi)} — mâine`
-      : `${formatDate(zi)} — ${days} zile`
-    return faza ? `${faza} · ${cand}` : cand
+      : days === 0 ? 'azi'
+      : days === 1 ? 'mâine'
+      : days < 0 ? `acum ${-days} zile`
+      : `peste ${days} zile`
+    return {
+      faza: FAZA_SCURT[p.urmatoarea_faza] || '',
+      cand, data: formatDate(zi),
+      urgent: days !== null && days <= 2,
+    }
   }
 
   // Cu doua statusuri, clickul pe status e un comutator, nu un ciclu.
   const STATUS_CYCLE = ['pregatire', 'finalizat']
 
+  // O atingere gresita marcheaza un proiect viu „Finalizat" — si cardul DISPARE
+  // din grila, in arhiva pliata. Deci schimbarea are plasa, ca la bifat si la
+  // mutat termen: `toastUndo` cu drumul inapoi in mana.
   async function cycleProjectStatus(e, p) {
     e.stopPropagation()
-    const cur = p.status || 'in_lucru'
+    const cur = p.status || 'pregatire'
     const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length]
     try {
       await updateProject(p.id, { status: next })
-      toast(`Status: ${PROJECT_STATUS_LABELS[next] || next}`, 'success')
+      toastUndo(`Status: ${PROJECT_STATUS_LABELS[next] || next}`, {
+        onUndo: async () => {
+          try { await updateProject(p.id, { status: cur }); await loadProjects() }
+          catch (err) { toast(`Eroare: ${err.message}`, 'error') }
+        },
+      })
     } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
   }
 
@@ -141,11 +161,6 @@
     }, 300)
   }
 
-  function setStatus(s) {
-    projects.filters.status = s
-    loadProjects()
-  }
-
   let sortOpen = $state(false)
   let sortEl = $state(null)
   const sortLabel = $derived(sortOptions.find((o) => o.value === sort.key)?.label || 'Nume')
@@ -190,14 +205,8 @@
 
   onMount(() => { loadProjects() })
 
-  const activeItems = $derived(
-    projects.filters.status
-      ? sortItems(projects.items)
-      : sortItems(projects.items.filter(p => p.status !== 'finalizat'))
-  )
-  const archivedItems = $derived(
-    projects.filters.status ? [] : sortItems(projects.items.filter(p => p.status === 'finalizat'))
-  )
+  const activeItems = $derived(sortItems(projects.items.filter(p => p.status !== 'finalizat')))
+  const archivedItems = $derived(sortItems(projects.items.filter(p => p.status === 'finalizat')))
 </script>
 
 <svelte:document onclick={onDocClick} />
@@ -210,36 +219,48 @@
       <span class="count">{projects.items.length}</span>
     </div>
     <div class="header-btns">
-      <Button size="sm" variant={batchMode ? 'secondary' : 'ghost'} onclick={toggleBatch}><CheckSquare size={14} /> Selectează</Button>
-      <Button size="sm" onclick={() => showNewModal = true}><Plus size={14} /> Proiect Nou</Button>
+      <!-- „Selectează" lua jumatate din antet pentru un mod in care intri o data
+           pe luna. Pe telefon ramane doar iconita; „Proiect Nou" devine „Nou". -->
+      <button class="b-select" class:on={batchMode} onclick={toggleBatch}
+              title="Selectează mai multe" aria-pressed={batchMode}>
+        <CheckSquare size={ecran.telefon ? 17 : 14} />
+        {#if !ecran.telefon}<span>Selectează</span>{/if}
+      </button>
+      <Button size="sm" onclick={() => showNewModal = true}><Plus size={14} /> {ecran.telefon ? 'Nou' : 'Proiect Nou'}</Button>
     </div>
   </div>
 
-  {#if batchMode && selected.size > 0}
+  <!-- TOT CE TINE DE SELECTIE INTR-O SINGURA BARA. Era imprastiat in trei locuri:
+       butonul in antet, „Selectează toate" ca al patrulea element in bara de
+       filtre si actiunile intr-o a treia bara care se deschidea dedesubt — trei
+       asezari pentru o singura stare, si niciun „ieși" limpede. Bara apare acum
+       de la INTRAREA in mod, nu abia dupa prima bifa, ca sa aiba unde sta iesirea. -->
+  {#if batchMode}
     <div class="batch-bar" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
       <span class="batch-count">{selected.size} selectate</span>
+      <button class="select-all" onclick={toggleSelectAll}>
+        {#if selected.size === activeItems.length && activeItems.length > 0}<CheckSquare size={14} />{:else}<Square size={14} />{/if}
+        Selectează toate
+      </button>
       <Select size="sm" bind:value={batchStatus} placeholder="Schimbă status..." options={batchStatusOptions} aria-label="Schimbă status" />
-      <Button size="sm" disabled={!batchStatus || batchBusy} onclick={batchUpdateStatus}>Aplică</Button>
-      <Button size="sm" variant="danger" disabled={batchBusy} onclick={() => showBatchDelete = true}><SolidIcon name="trash" size={12} /> Șterge</Button>
-      <Button size="sm" variant="ghost" onclick={() => { selected = new Set() }}>Deselectează</Button>
+      <Button size="sm" disabled={!batchStatus || selected.size === 0 || batchBusy} onclick={batchUpdateStatus}>Aplică</Button>
+      <Button size="sm" variant="danger" disabled={selected.size === 0 || batchBusy} onclick={() => showBatchDelete = true}><SolidIcon name="trash" size={12} /> Șterge</Button>
+      <Button size="sm" variant="ghost" onclick={toggleBatch}>Ieși</Button>
     </div>
   {/if}
 
   <div class="toolbar">
     <div class="search-box">
       <Search size={14} />
-      <input type="text" placeholder="Caută proiecte..." value={searchInput} oninput={onSearch} />
-    </div>
-    <div class="filters">
-      {#each statusOptions as opt}
-        <button class="chip" class:active={projects.filters.status === opt.value} onclick={() => setStatus(opt.value)}>{opt.label}</button>
-      {/each}
+      <input type="text" placeholder={ecran.telefon ? 'Caută…' : 'Caută proiecte...'} value={searchInput} oninput={onSearch} />
     </div>
     <div class="sort-box" bind:this={sortEl}>
-      <button class="sort-trigger" class:on={sortOpen} onclick={() => sortOpen = !sortOpen} title="Sortare" aria-haspopup="listbox" aria-expanded={sortOpen}>
-        <ArrowUpDown size={13} />
-        <span>{sortLabel}</span>
-        <span class="sort-dir-ind">{sort.dir === 1 ? '\u2191' : '\u2193'}</span>
+      <button class="sort-trigger" class:on={sortOpen} onclick={() => sortOpen = !sortOpen} title="Sortare: {sortLabel} {sort.dir === 1 ? '\u2191' : '\u2193'}" aria-haspopup="listbox" aria-expanded={sortOpen}>
+        <ArrowUpDown size={ecran.telefon ? 17 : 13} />
+        {#if !ecran.telefon}
+          <span>{sortLabel}</span>
+          <span class="sort-dir-ind">{sort.dir === 1 ? '\u2191' : '\u2193'}</span>
+        {/if}
       </button>
       {#if sortOpen}
         <div class="sort-menu" role="listbox" transition:fly={{ y: -4, duration: motionDuration(DUR_FAST) }}>
@@ -252,10 +273,14 @@
         </div>
       {/if}
     </div>
-    {#if batchMode}
-      <button class="select-all" onclick={toggleSelectAll}>
-        {#if selected.size === activeItems.length && activeItems.length > 0}<CheckSquare size={14} />{:else}<Square size={14} />{/if}
-        Selectează toate
+    <!-- Arhiva e o DESTINATIE rara, nu un filtru — deci aceeasi haina de
+         actiune-fantoma ca sortarea de langa ea, si ca „Arhivă" din /tasks. -->
+    {#if archivedItems.length > 0}
+      <button class="a-ico" class:on={showArchive} onclick={() => showArchive = !showArchive}
+              title="Arhivă ({archivedItems.length} finalizate)" aria-pressed={showArchive}>
+        <Archive size={ecran.telefon ? 17 : 14} />
+        {#if !ecran.telefon}<span>Arhivă</span>{/if}
+        <span class="a-n">{archivedItems.length}</span>
       </button>
     {/if}
   </div>
@@ -278,6 +303,7 @@
   {:else}
     <div class="cards-grid">
       {#each activeItems as p (p.id)}
+        {@const urm = urmatoarea(p)}
         <div class="pcard cell-in" class:batch-selected={batchMode && selected.has(p.id)} role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }} onkeydown={(e) => cardKeydown(e, p)}>
           <div class="card-top">
             {#if batchMode}
@@ -285,13 +311,36 @@
                 {#if selected.has(p.id)}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
               </button>
             {/if}
-            {#if p.tip}<span class="tip-chip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{#if p.tip === 'PIF'}<Zap size={13} />{:else}<Wrench size={13} />{/if}</span><span class="tip-label">{p.tip}</span>{:else}<span class="tip-label">—</span>{/if}
-            <button class="status-pill" style="color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}; border-color: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Click pentru a schimba statusul">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</button>
+            <!-- TIPUL, SPUS O SINGURA DATA. Era un fulger amber intr-un chip
+                 patrat PLUS cuvantul „PIF" — doua obiecte pentru un fapt care nu
+                 se schimba niciodata, chiar langa pastila de status, care se
+                 schimba. Iconita ramane, fara fill: linie subtire, gri, lipita de
+                 cuvant. Culoarea din coltul de sus ramane DOAR la status.
+                 Asta stinge si defectul „un fapt, doua culori": „Service" era
+                 verde pe card (--success) si amber in arhiva (--service-accent). -->
+            {#if p.tip}
+              <span class="tip-ico">{#if p.tip === 'PIF'}<Zap size={13} strokeWidth={1.7} />{:else}<Wrench size={13} strokeWidth={1.7} />{/if}</span>
+              <span class="tip-label">{p.tip}</span>
+            {:else}<span class="tip-label">—</span>{/if}
+            <!-- PE TOUCH E ETICHETA, NU BUTON. Pastila are 22px si sta in
+                 interiorul zonei de atingere a cardului: o atingere usor deviata
+                 ori deschide proiectul, ori ii schimba statusul, si nu se poate
+                 sti dinainte care. Un card = o tinta; statusul se schimba din
+                 pagina proiectului. Pe desktop ramane control — dar unul care
+                 ARATA ca un control: fill discret + chevron, nu o eticheta. -->
+            {#if ecran.telefon}
+              <span class="status-pill" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</span>
+            {:else}
+              <button class="status-pill act" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Schimbă statusul">
+                {PROJECT_STATUS_LABELS[p.status] || p.status || '—'}<ChevronDown size={11} strokeWidth={2.2} />
+              </button>
+            {/if}
           </div>
           <div class="card-name">{p.nume || '—'}</div>
           <div class="card-client">{p.client || '—'}</div>
-          <div class="card-foot">
-            <span class="deadline" class:urgent={daysUntil(p.urmatoarea) !== null && daysUntil(p.urmatoarea) <= 2}>{urmatoareaText(p)}</span>
+          <div class="card-foot" title={urm.data}>
+            {#if urm.faza}<span class="foot-faza">{urm.faza}</span>{/if}
+            <span class="foot-cand" class:urgent={urm.urgent}>{urm.cand}</span>
           </div>
         </div>
       {/each}
@@ -303,29 +352,27 @@
       {/if}
     </div>
 
-    {#if archivedItems.length > 0}
-      <div class="archive">
-        <button class="archive-toggle" onclick={() => showArchive = !showArchive}>
-          <Archive size={14} />
-          Arhivă (Finalizate)
-          <span class="count">{archivedItems.length}</span>
-          {#if showArchive}<ChevronUp size={14} />{:else}<ChevronDown size={14} />{/if}
-        </button>
-        {#if showArchive}
-          <div class="arch-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-            {#each archivedItems as p (p.id)}
-              <button class="arch-row archived" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)}>
-                <span class="arch-name">{p.nume || '—'}</span>
-                <span class="dim arch-client">{p.client || '—'}</span>
-                {#if p.tip}<span class="ptip" class:pif={p.tip === 'PIF'} class:service={p.tip === 'Service'}>{p.tip}</span>{/if}
-                <span class="arch-tail">
-                  <Badge label="Finalizat" color="var(--success)" small />
-                  <span class="dim arch-deadline">{p.urmatoarea ? formatDate(p.urmatoarea) : '—'}</span>
-                </span>
-              </button>
-            {/each}
-          </div>
-        {/if}
+    <!-- Arhiva se deschide din bara de sus; aici ramane doar continutul, cu un
+         cap de sectiune care spune unde esti. -->
+    {#if archivedItems.length > 0 && showArchive}
+      <div class="archive" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+        <div class="arch-cap"><Archive size={13} /><span>Arhivă · finalizate</span><span class="grup-n">{archivedItems.length}</span></div>
+        <div class="arch-list">
+          {#each archivedItems as p (p.id)}
+            <button class="arch-row archived" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)}>
+              <span class="arch-name">{p.nume || '—'}</span>
+              <span class="dim arch-client">{p.client || '—'}</span>
+              <!-- Acelasi tip, aceeasi haina ca pe card: linie subtire + cuvant.
+                   Aici statea ca pastila colorata — a doua definitie a aceluiasi
+                   fapt, si tocmai cea care nu se potrivea cu prima. -->
+              {#if p.tip}<span class="ptip"><span class="tip-ico">{#if p.tip === 'PIF'}<Zap size={12} strokeWidth={1.7} />{:else}<Wrench size={12} strokeWidth={1.7} />{/if}</span>{p.tip}</span>{/if}
+              <span class="arch-tail">
+                <Badge label="Finalizat" color="var(--success)" small />
+                <span class="dim arch-deadline">{p.urmatoarea ? formatDate(p.urmatoarea) : '—'}</span>
+              </span>
+            </button>
+          {/each}
+        </div>
       </div>
     {/if}
   {/if}
@@ -355,11 +402,17 @@
   .search-box input::placeholder { color: var(--text-dim); }
   .search-box:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
 
-  .filters { display: flex; gap: 4px; flex-wrap: wrap; }
-  .chip { padding: 4px 12px; font-size: var(--font-tiny); font-weight: var(--fw-medium); border-radius: var(--radius-full); background: var(--bg-input); color: var(--text-secondary); border: 1px solid transparent; cursor: pointer; transition: var(--transition-pressable); min-height: 30px; }
-  .chip:hover { background: var(--bg-hover); color: var(--text); }
-  .chip.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
-  .chip:active { transform: scale(0.97); }
+  /* Arhiva si „Selectează": actiuni-fantoma, aceeasi haina cu sortarea de langa
+     ele si cu „Arhivă" din /tasks. Nu sunt filtre, deci nu poarta chip. */
+  .a-ico, .b-select { display: inline-flex; align-items: center; gap: 6px;
+    min-height: 30px; padding: 0 10px; border-radius: var(--radius-sm);
+    background: transparent; border: 1px solid transparent;
+    font-size: var(--font-tiny); font-weight: var(--fw-medium);
+    color: var(--text-faint); cursor: pointer; transition: var(--transition-colors); }
+  .a-ico:hover, .b-select:hover { color: var(--text); background: var(--bg-hover); }
+  .a-ico.on, .b-select.on { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  .a-n { font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .a-ico.on .a-n { color: inherit; }
 
   /* Sortare — control ghost discret + meniu custom; click pe optiunea
      activa inverseaza directia (sageata arata directia curenta). */
@@ -401,22 +454,32 @@
      iar faint e documentat „doar etichete/large" (3:1). Masurat: 3.18:1 la
      11.2px, sub pragul AA de 4.5 pentru text mic. */
   .card-client { font-size: var(--font-tiny); color: var(--text-dim); margin-top: 2px; }
-  .card-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
-  .deadline.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
+  /* Doua trepte, nu una: faza e ETICHETA (micro, uppercase, faint), socoteala e
+     INFORMATIE (tiny, mono) si poarta singura culoarea. Data plina sta in
+     `title` — nu ocupa un rand pentru ceva ce verifici cand cauti. */
+  .card-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: baseline; gap: 7px; }
+  .foot-faza { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); }
+  .foot-cand { font-family: var(--font-mono); font-size: var(--font-tiny); font-weight: var(--fw-medium); color: var(--text-secondary); }
+  .foot-cand.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
   .skeleton-card { gap: 8px; cursor: default; }
 
   .dim { color: var(--text-secondary); }
-  .ptip { display: inline-block; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
-  .ptip.pif { background: var(--accent-subtle); color: var(--accent); }
-  .ptip.service { background: var(--service-subtle); color: var(--service-accent); }
-  .tip-chip { width: 22px; height: 22px; border-radius: var(--radius-chip); display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; background: var(--bg-elevated); color: var(--text-secondary); flex-shrink: 0; }
-  .tip-chip.pif { background: var(--accent-subtle); color: var(--accent); }
-  .tip-chip.service { background: var(--success-subtle); color: var(--success); }
-  .tip-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); margin-left: 8px; }
+  /* Tipul e o LINIE, nu un fill: aceeasi definitie pe card si in arhiva. */
+  .tip-ico { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
+  .ptip { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); }
+  .tip-label { font-size: var(--font-micro); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-faint); margin-left: 7px; }
 
   .archive { margin-top: var(--space-lg); }
-  .archive-toggle { display: flex; align-items: center; gap: var(--space-sm); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; padding: var(--space-sm) 0; margin-bottom: var(--space-sm); min-height: 44px; }
-  .archive-toggle:hover { color: var(--text); }
+  .arch-cap { display: flex; align-items: center; gap: var(--space-xs);
+    padding: 0 2px var(--space-sm); color: var(--text-faint);
+    font-family: var(--font-mono); font-size: var(--font-micro);
+    font-weight: var(--fw-semibold); text-transform: uppercase;
+    letter-spacing: var(--tracking-wide); }
+  .grup-n { display: inline-flex; align-items: center; justify-content: center;
+    min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
+    background: var(--success-subtle); color: var(--success);
+    font-family: var(--font-mono); font-size: var(--font-micro);
+    line-height: 1; font-variant-numeric: tabular-nums; }
   .archived { opacity: 0.7; }
   .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
   .arch-row { display: flex; align-items: center; gap: var(--space-sm); width: 100%; padding: 10px 16px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; background: transparent; border: none; border-bottom: 1px solid var(--border); transition: background var(--dur-fast) var(--ease); }
@@ -432,11 +495,22 @@
   .batch-count { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); }
   .batch-check { display: flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: pointer; background: transparent; border: none; padding: 0; }
   .batch-check:hover { color: var(--accent); }
-  .status-pill { font-size: var(--font-tiny); font-weight: var(--fw-semibold); padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full); background: transparent; border: 1px solid; cursor: pointer; white-space: nowrap; transition: transform var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease); }
+  /* Fill discret in loc de contur gol: o pastila conturata se citeste ca eticheta,
+     iar asta comuta statusul. Chevronul o spune fara `title`. Culoarea vine din
+     `--st` (STATUS_COLORS), deci fondul se deduce din ea — o singura regula
+     pentru amandoua statusurile, nu doua tokenuri scrise de mana. */
+  .status-pill { display: inline-flex; align-items: center; gap: 4px;
+    margin-left: auto; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
+    padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full);
+    color: var(--st); background: color-mix(in oklab, var(--st) 13%, transparent);
+    border: 1px solid transparent; white-space: nowrap; }
+  .status-pill.act { padding-right: 8px; cursor: pointer;
+    transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+  .status-pill.act :global(svg) { opacity: .6; }
   @media (hover: hover) {
-    .status-pill:hover { opacity: .7; transform: scale(1.05); }
+    .status-pill.act:hover { border-color: var(--st); }
   }
-  .status-pill:active { transform: scale(0.92); }
+  .status-pill.act:active { transform: scale(0.92); }
 
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
@@ -446,39 +520,33 @@
        asta ramasese in urma. Nimic nu dispare, doar distantele. */
     .page { padding-top: var(--space-12); }
     .page-header, .toolbar, .batch-bar { margin-bottom: 10px; }
-    .toolbar { flex-direction: column; align-items: stretch; gap: var(--space-sm); }
+    /* UN RAND DE BARA, NU TREI. Reparatia de dinainte a scazut doar marginile de
+       la 16 la 10 — dar cei 37% pana la primul card erau ELEMENTELE, nu
+       distantele: cautare, trei chipuri si sortare, fiecare pe randul lui, ~150px.
+       Cu chipurile scoase si cu sortarea si arhiva ca iconite de 44px, totul intra
+       pe un rand: primul card urca de la y≈314 la y≈224 — un card intreg castigat. */
+    .toolbar { flex-direction: row; align-items: center; gap: var(--space-sm); }
     /* Caseta are 44px, dar inputul dinauntru avea 25 — iar el e singurul care
        primeste focus (caseta e un <div>, nu un <label>), deci tinta reala era de
        25px. `align-self: stretch` il face sa umple caseta. */
     .search-box { max-width: none; align-items: stretch; padding: 0 14px; }
-    .search-box input { align-self: stretch; min-height: var(--tap-min); }
+    .search-box input { align-self: stretch; min-height: var(--tap-min); font-size: 1rem; }
     .search-box :global(svg) { align-self: center; }
-    .sort-box { justify-content: flex-start; }
     .batch-bar { flex-direction: column; align-items: stretch; }
 
-    /* Filtrele si sortarea erau pastile de 30px, iar statusul de pe card 23px —
-       si tocmai pastila de status COMUTA statusul proiectului la atingere. O tinta
-       de 23px pentru o actiune care schimba date e cel mai prost raport din
-       aplicatie. */
-    .chip, .sort-trigger { min-height: var(--tap-min); padding: 4px 16px; font-size: var(--font-small); }
-    .filters { gap: var(--space-xs); }
-    /* Pastila de status ramane MICA la vedere si devine MARE la atingere.
-       E o eticheta in coltul cardului: daca o umflam la 44px arata ca butonul
-       principal al cardului, ceea ce nu e — cardul intreg deschide proiectul.
-       Deci creste doar suprafata sensibila, printr-un strat invizibil in jurul ei.
-       Conteaza fiindca atingerea CHIAR schimba statusul proiectului, iar 23px e
-       exact marimea la care nimeresti cardul in loc de pastila. */
-    .status-pill { position: relative; }
-    .status-pill::after {
-      content: ''; position: absolute; inset: -11px -10px;
-    }
-    /* Colegul ei de rand nu e interactiv, deci stratul nu fura nimic. */
-    .card-top { position: relative; }
-    /* Cardul e tinta principala si e mare; „Selectează"/„Proiect Nou" trec de la
-       38 la 44. */
+    /* Iconite patrate de 44px: eticheta e in `title`, forma o spune. */
+    .sort-trigger, .a-ico, .b-select {
+      width: var(--tap-min); height: var(--tap-min); min-height: var(--tap-min);
+      padding: 0; justify-content: center; flex-shrink: 0;
+      border-radius: var(--radius-md); }
+    /* Contorul arhivei ar dubla latimea iconitei; numarul se citeste oricum din
+       lista cand o deschizi. */
+    .a-n { display: none; }
+    /* PASTILA DE STATUS E ETICHETA PE TOUCH (vezi markup: nici nu mai e <button>),
+       deci stratul invizibil de 44px din jurul ei — care fura atingeri de la card
+       — a plecat cu totul. Un card = o tinta. */
+    /* „Proiect Nou" ramane singurul buton cu text si primeste latimea ramasa. */
     .header-btns :global(.btn) { min-height: var(--tap-min); }
-    .header-btns { flex: 1; }
-    .header-btns :global(.btn) { flex: 1; }
   }
 
   @media (max-width: 560px) {
