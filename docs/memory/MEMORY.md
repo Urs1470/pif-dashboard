@@ -55,6 +55,69 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-07 (3) — Tura 13: miscarea nu se reinventeaza, se pune unde lipsea.**
+  Patru locuri neprinse de gramatica existenta. (1) Calendar si Plan n-aveau
+  deschidere: `.ruta-in` (nou in `global.css`) + `.cell-in` pe celule. (2)
+  Schimbarea lunii n-avea sens — `alunecare()` in `motion.svelte.js`, ±10px pe X
+  in sensul apasarii, prin `{#key anchor}` (o clasa comutata NU re-porneste
+  animatia la a doua apasare in aceeasi directie). (3) Panoul zilei se misca acum
+  intreg (`{#key selectata}` + `sosire|local`), fiindca `.pan-zi` — partea care se
+  schimba cel mai vizibil — era singura care sarea. (4) Benzile din Planificator:
+  `.impl-band` are zi de start reala, deci se DESCOPERA din stanga (`clip-path`,
+  fill `backwards` — `forwards` ar ingheta `inset(0 0 0 0)` si ar taia definitiv
+  umbra); `.band` (pregatirea) doar se stinge, fiindca n-are inceput cunoscut.
+  **Trei capcane de tinut minte:** `.ruta-in` inchide pe `transform: none`, altfel
+  invelisul devine blocul de referinta al oricarui `position: fixed` dinauntru
+  (`.pop` din Plan); la print `.cell-in`/`.ruta-in` trebuie fortate la `opacity: 1`
+  sau exportul PDF iese ALB; anularea la reduced-motion trebuie sa scoata
+  `animation`, nu doar durata (plasa globala nu atinge `animation-delay`, iar cu
+  `backwards` asta inseamna 240ms de invizibil urmate de o pocnitura) — si trebuie
+  scrisa la FINALUL foii, fiindca `@media` nu adauga specificitate.
+  **Premisa 13e era depasita:** documentul presupunea ca taskul creste deja din
+  ziua lui; `barIn` plecase odata cu cutia in v33. Doar benzile ar fi intors
+  inconsecventa pe dos, deci reperul a primit `reperIn` — un punct nu se intinde,
+  creste pe loc. Pe mobil animatia sta pe `.mt-pin`, NU pe `::before`: rombul isi
+  tine forma dintr-un `rotate(45deg)` pe care `transform: none` l-ar sterge.
+  Verificat: build verde, `audit_design` curat, `smoke_ui` 18/18, `audit_mobil`
+  curat, `test_suite` 53/53, plus o proba de rulare pe baza insamantata (17/17)
+  care confirma in stilul CALCULAT ca Svelte a scopat corect numele de keyframe.
+
+- **2026-08-07 — Poarta de verificare dadea un verdict FALS pe masina asta.**
+  `.claude/hooks/gate.py` pica pe „build" cu „npm nu exista in PATH", desi
+  `npm run build` merge. TREI cauze in lant, fiecare descoperita dupa ce era
+  reparata cea dinainte — toate reparate:
+  (1) `npm()` folosea `shutil.which`, care vede doar PATH-ul MOSTENIT de proces —
+  iar Node-ul e portabil si sta doar in PATH-ul persistent din registru, adaugat
+  dupa ce aplicatia pornise. Acum, la esec, se cauta si in PATH-ul din registru
+  (`cai_persistente`, HKCU + HKLM).
+  (2) Verificatoarele porneau cu `sys.executable`, adica Python-ul de sistem —
+  care n-are nici flask, nici playwright. Build-ul era doar PRIMA poarta atinsa;
+  `smoke_ui` si `audit_mobil` ar fi picat imediat dupa, cu ModuleNotFoundError.
+  Acum se prefera `venv/Scripts/python.exe` (`python_probe`), cu cadere pe
+  `sys.executable` daca venv-ul lipseste. Si linia „Reproduci cu:" arata
+  interpretorul chiar folosit, nu `python`.
+  (3) Gasit npm, build-ul tot pica: `'"node"' is not recognized`. `npm.cmd` e un
+  SHIM care cheama `node` din PATH, iar procesul copil mostenea tot PATH-ul vechi.
+  `mediu_probe()` pune acum directorul lui npm in FATA lui PATH pentru copii.
+  **Proba:** `gate.ruleaza()` chemat direct dintr-un shell fara npm mostenit —
+  audit_design, build, smoke_ui si audit_mobil trec toate patru.
+  **De ce conteaza:** o poarta care da rosu fara sa fi rulat nimic te invata s-o
+  ignori — si atunci nu mai prinde nici esecurile adevarate, care sunt tot rostul ei.
+
+- **2026-08-07 — Unde stau Node si Playwright pe masina asta (m-au pacalit o data).**
+  `node` NU e in `Program Files` si nu e in PATH-ul procesului: e portabil, la
+  `C:\Users\Ion Ursu\Tools\node-v24.19.0-win-x64`, inscris doar in PATH-ul de
+  UTILIZATOR din registru — deci un shell pornit mai devreme nu-l vede. Se
+  prefixeaza manual: `$env:PATH = "C:\Users\Ion Ursu\Tools\node-v24.19.0-win-x64;" + $env:PATH`.
+  Playwright NU e in Python-ul de sistem, e in `venv\Scripts\python.exe` din
+  repo, cu Chromium deja descarcat in `%LOCALAPPDATA%\ms-playwright`. Deci
+  `smoke_ui`/`audit_mobil` se ruleaza cu `venv\Scripts\python.exe`, nu cu `python`.
+  **Baza locala `pif_dashboard.db` exista dar e GOALA** (schema, zero randuri):
+  `smoke_ui` raporteaza „0 proiecte de verificat" si trece pe langa orice ramura
+  care are nevoie de date. Pentru benzi/taskuri trebuie insamantata o copie.
+  `test_suite.py` cere separat un server LIVE pe 5000 si `PIF_DASHBOARD_PIN` in
+  mediu — fara ele da 4 esecuri care n-au nicio legatura cu codul.
+
 - **2026-08-07 (2) — Cheia VAPID: RAW, nu PEM. „Trimite test" pica de la asta.**
   Prima versiune salva cheia privata ca PKCS8 PEM. `py_vapid.from_string` face
   `b64urldecode` pe TOT sirul si cere fix 32 de octeti — deci ORICE PEM (si
