@@ -1,0 +1,17 @@
+{
+  "appId": "org.iupif.pif",
+  "appName": "PIF Dashboard",
+  "webDir": "../static/dist",
+  "server": {
+    "url": "https://pif.iupif.org",
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#ffb454"
+    }
+  }
+}

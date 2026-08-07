@@ -1,12 +1,41 @@
 import { mount } from 'svelte'
 import './styles/global.css'
 import App from './App.svelte'
+import { apiJson } from './lib/api.js'
+import { navigate } from './lib/router.svelte.js'
+import { esteNativ, reprogrameaza, legaActiunile } from './lib/notificari.js'
 // Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
 // deci extrasele de carti se vad. Pe /calc public, calc-main.js le gateaza dupa autentificare.
 
 const app = mount(App, {
   target: document.getElementById('app'),
 })
+
+// NOTIFICARILE DE DIMINEATA, cand aplicatia ruleaza in shell-ul Android.
+// In browser `esteNativ()` e fals si nu se intampla nimic — acelasi bundle e
+// servit si pe PC. Detaliile si regula: `lib/notificari.js`.
+//
+// Lista se cere DIRECT, nu prin `loadGlobalTasks`: acela scrie in `globalTasks`,
+// care e si vederea paginii Taskuri. O reprogramare declansata cat esti pe
+// „Muncă" ti-ar repicta lista cu taskurile personale — fix capcana descrisa in
+// `stores/tasks.svelte.js`.
+if (esteNativ()) {
+  const reprogrameazaDinServer = async () => {
+    try {
+      const d = await apiJson('/api/global-tasks?sfera=personal')
+      await reprogrameaza(Array.isArray(d) ? d : d.tasks || [])
+    } catch (e) {
+      // Fara retea nu putem reprograma, dar alarmele deja puse raman valabile —
+      // exact motivul pentru care fereastra e de mai multe zile.
+    }
+  }
+  legaActiunile({ apiJson, navigate, peSchimbare: reprogrameazaDinServer })
+  reprogrameazaDinServer()
+  // La fiecare revenire in aplicatie: taskuri bifate de pe PC ies din programare.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) reprogrameazaDinServer()
+  })
+}
 
 if ('serviceWorker' in navigator && !import.meta.env.DEV) {
   window.addEventListener('load', async () => {

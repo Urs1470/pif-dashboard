@@ -10,11 +10,15 @@
     "test": "node --test \"src/lib/*.test.js\""
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "svelte": "^5.55.5",
     "vite": "^8.0.12"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/local-notifications": "^8.2.1",
     "@lucide/svelte": "^1.17.0",
     "katex": "^0.17.0"
   }
