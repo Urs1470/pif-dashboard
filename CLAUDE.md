@@ -685,8 +685,19 @@ Shared working tree → shared git index, so coordinate before staging/committin
   `{#snippet footer()}` cu `.modal-actions`.
 - **Iconițe:** `<SolidIcon>` pentru navigație/feature (solid); Lucide outline pentru
   afordanțe mici (plus, chevron, search, x). Zero emoji în UI.
-- **Tipografie:** Inter (body), Space Grotesk (`--font-heading`, titluri + numerale mari),
-  JetBrains Mono pentru ORICE cifră/cod. Titlurile au podeaua `--lh-tight` din global.css.
+- **Tipografie — șase trepte, o regulă de familii.** Scara: `--font-title` 26 ·
+  `--font-h2` 20 · `--font-h3` 17 · `--font-body` 15 · `--font-small` 13 ·
+  `--font-label` 11 (DOAR etichete majuscule). Pe telefon scade **doar** `--font-title`
+  (→22); corpul rămâne 15 peste tot, iar câmpurile folosesc `--font-input-mobile`.
+  Familii: **Space Grotesk** = numele unui lucru (titluri, nume de proiect, numerale
+  mari) — niciodată sub 17px; **Inter** = tot ce citești; **JetBrains Mono** = cifre
+  care se compară pe verticală. Regula se verifică singură: *dacă textul se poate
+  traduce, nu e mono*. Tracking: `--tracking-tight/-normal/-label`. Line-height:
+  `--lh-tight/snug/normal/relaxed`. Greutăți: 400/500/600 (`--fw-bold` nu mai există).
+  **Nimic scris de mână** — `font-size` în `rem`/`px`, `letter-spacing` sau
+  `line-height` în afara `tokens.css` sunt abateri, prinse de `audit_design.py`.
+  Numărătorile folosesc `.count` din global.css (+`.accent`/`.danger`), nu o pastilă
+  nouă per pagină. Titlurile au podeaua `--lh-tight` din global.css.
 - **Înainte de commit:** `python scripts/audit_design.py` — singurul test care prinde
   incoerența (build-ul și smoke trec vesel peste o a doua paletă copiată).
 

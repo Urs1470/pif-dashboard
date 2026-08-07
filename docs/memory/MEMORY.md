@@ -55,6 +55,54 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-07 (10) — Tura 7: Acasa isi spune ziua; docul nu mai pierde trei rute.**
+  Salutul statea in `ui.pageHeader` (bara de sus), care e `display: none` sub
+  768px — iar Acasa e SINGURA pagina fara titlu propriu, tocmai ca sa nu existe o
+  banda in plus. Cele doua reguli se anulau: pe telefon nu scria nicaieri ce zi e.
+  Ziua a trecut pe capul boardului („Astăzi · Vineri, 7 august"), unde nu costa
+  niciun rand nou, si se recalculeaza la `visibilitychange` + un tic de un minut
+  (era scrisa o data, in `onMount`: deschis dimineata, scria „Bună dimineața" si
+  seara). **Majuscula se pune in JS pe prima litera**, nu cu `text-transform:
+  capitalize` — acela da „Vineri, 7 August", iar in romana luna e cu litera mica.
+  `UrmatoareaIesire` foloseste acum `--loc-site` / `--loc-sediu` (purta `--accent`
+  si `--purple`: un fapt binar imprumuta cerneala identitatii). „Fara perioada" se
+  arata mereu, nu doar in ramura goala. „De clarificat" duce pe ziua celei mai
+  vechi si scrie `1 / N`. Linia are o casuta care ii tine locul cat se incarca —
+  altfel boardul sarea in jos cu ~46px cand sosea raspunsul.
+  **Docul:** al cincilea slot e „Mai mult", o foaie cu Proiecte / Departament /
+  Calculator la 44px, cu cautarea in cap. Cele cinci tinte raman decizia corecta;
+  gresit era ca singurul drum spre celelalte trei trecea prin paleta de comanda —
+  o unealta de TASTATURA, pe un ecran fara Ctrl. `CommandPalette` exporta
+  `deschide()`; butonul nu mai trimite un `KeyboardEvent` sintetic.
+  **Doua capcane la foaie:** ancorata cu o socoteala hardcodata iesea 2px peste doc
+  (uitasem bordura) — acum e copil al docului cu `bottom: 100%`, deci se lipeste de
+  marginea lui reala; si `fly` scrie `transform` inline, deci SUPRASCRIA
+  `translateX(-50%)`-ul de centrare (invelisul centreaza, `fly` anima copilul).
+  Cat timp foaia e deschisa, dockul nu se mai ascunde la derulare.
+
+- **2026-08-07 (9) — Tipografia: sase trepte si o regula de familii (tura 6).**
+  Erau 8 trepte, 4 greutati, 7 valori de tracking si 9 inaltimi de rand, fara nicio
+  regula scrisa. Acum: **26 / 20 / 17 / 15 / 13 / 11** (`--font-title`, `--font-h2`,
+  `--font-h3`, `--font-body`, `--font-small`, `--font-label`), niciun salt sub 2px.
+  **Corpul a urcat de la 14,4 la 15 si NU mai scade pe telefon** — doar
+  `--font-title` (26 -> 22). Familii: Space Grotesk = numele unui lucru (nimic sub
+  17px), Inter = tot ce citesti, mono = **cifre care se compara**; regula se
+  verifica singura — *daca textul se poate traduce, nu e mono* (14 selectoare au
+  pierdut monospace-ul). Tracking: `--tracking-tight/-normal/-label`. Line-height:
+  1.15 / **1.35** / 1.55 / 1.7. `--fw-bold`, `--font-tiny/micro/h1/display`,
+  `--tracking-wide/wider`, `--radius-xl/chip` **au fost sterse** (zero potriviri in
+  `frontend/src`). O singura pastila `.count` in `global.css` (era in sase locuri):
+  forma nu codifica nimic, culoarea da intelesul — neutru = cate sunt, `accent` =
+  cate sunt de facut aici, `danger` = cate sunt restante; pastila poarta un NUMAR,
+  cuvantul merge in `title`.
+  **Capcana de migrare:** `--font-micro -> --font-label` NU e mecanica — tinta e
+  `--font-label` doar unde selectorul are `text-transform: uppercase`; unde poarta
+  cifre (`.zile`, `.ap`, `.lane-contor`, `.f-meta`, `.ag-cand`, `.nr-lucrari`) e
+  `--font-small`. Scriptul de migrare a decis dupa exact conditia asta.
+  **De verificat cu Ion (nedecis inca):** `.count` e la `--font-label` (11px), cum
+  cere handoff-ul de implementare; prototipul 6c scrie in schimb „mono 13". Singurul
+  loc unde cele doua documente nu spun acelasi lucru.
+
 - **2026-08-07 (8) — O exceptie care nu se potriveste e mai rea decat una lipsa.**
   `ACCEPTATE` din `audit_mobil.py` se potriveste pe SUBSIR cu selectorul raportat
   (`acceptat()`), iar cheia scrisa era `button.banda` — in aceeasi tura in care
