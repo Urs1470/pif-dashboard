@@ -74,8 +74,91 @@ def coada(text):
 
 # ------------------------------------------------------------------- porti
 
+def cai_persistente():
+    """Directoarele din PATH-ul PERSISTENT (registru), pe langa cel mostenit.
+
+    Node-ul de pe masina lui Ion e portabil (`Tools\\node-v24...`) si sta DOAR in
+    PATH-ul de utilizator din registru. Un proces pornit inainte ca intrarea sa
+    fie adaugata nu-l vede — iar hookul mosteneste mediul aplicatiei, care poate
+    fi deschisa de saptamani. Poarta spunea atunci „npm nu exista in PATH" si
+    pica, desi `npm run build` merge perfect intr-un terminal nou.
+
+    O poarta care da un verdict FALS e mai rea decat lipsa portii: te invata s-o
+    ignori, si atunci nu mai prinde nici esecurile adevarate.
+    """
+    if os.name != 'nt':
+        return []
+    try:
+        import winreg
+    except Exception:
+        return []
+    cai = []
+    for radacina, cheie in (
+        (winreg.HKEY_CURRENT_USER, r'Environment'),
+        (winreg.HKEY_LOCAL_MACHINE,
+         r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'),
+    ):
+        try:
+            with winreg.OpenKey(radacina, cheie) as k:
+                val, _ = winreg.QueryValueEx(k, 'Path')
+        except OSError:
+            continue
+        cai += [os.path.expandvars(d).strip('"')
+                for d in str(val).split(os.pathsep) if d.strip()]
+    return cai
+
+
 def npm():
-    return shutil.which('npm.cmd') or shutil.which('npm')
+    gasit = shutil.which('npm.cmd') or shutil.which('npm')
+    if gasit:
+        return gasit
+    supl = cai_persistente()
+    if not supl:
+        return None
+    unde = os.pathsep.join(supl)
+    return shutil.which('npm.cmd', path=unde) or shutil.which('npm', path=unde)
+
+
+def python_probe():
+    """Interpretorul cu care se ruleaza verificatoarele.
+
+    NU `sys.executable`: hookul porneste cu `python`-ul de sistem, care pe masina
+    asta n-are nici flask, nici playwright. `smoke_ui` n-ar putea nici macar sa
+    porneasca aplicatia si ar pica cu ModuleNotFoundError — o poarta rosie care
+    nu spune NIMIC despre cod, exact felul de esec care face poarta de necrezut.
+    Mediul proiectului e `venv/`, acelasi pe care il activeaza si deployul.
+    Cadem inapoi pe `sys.executable` doar daca venv-ul nu exista.
+    """
+    for rel in ('venv/Scripts/python.exe', 'venv/bin/python'):
+        p = RADACINA / rel
+        if p.exists():
+            return str(p)
+    return sys.executable
+
+
+PYTHON = python_probe()
+NPM = npm()
+# Cum o rulezi cu mana, ca linia din raport sa fie chiar cea care merge.
+PY_MANUAL = 'venv\\Scripts\\python' if PYTHON != sys.executable else 'python'
+
+
+def mediu_probe():
+    """Mediul proceselor copil: PATH-ul mostenit + directorul in care sta Node.
+
+    `npm.cmd` NU e autonom — e un shim care cheama `node` din PATH. Gasirea lui
+    npm in registru rezolva doar jumatatea de sus: procesul copil mostenea tot
+    PATH-ul vechi si pica cu `'"node"' is not recognized`, adica poarta ajungea
+    sa ruleze build-ul doar ca sa-l vada murind dintr-un motiv care n-are nicio
+    legatura cu codul. Directorul lui npm se pune IN FATA, ca `node`-ul de langa
+    el sa fie cel folosit.
+    """
+    mediu = dict(os.environ, PYTHONIOENCODING='utf-8', PYTHONUTF8='1')
+    if NPM:
+        dir_node = os.path.dirname(NPM)
+        cale = mediu.get('PATH') or ''
+        if dir_node and dir_node not in cale.split(os.pathsep):
+            mediu['PATH'] = dir_node + os.pathsep + cale
+    return mediu
 
 
 def porti_pentru(atinse):
@@ -96,19 +179,19 @@ def porti_pentru(atinse):
 
     if any(p.endswith(('.svelte', '.css')) for p in frontend):
         porti.append(('audit_design',
-                      [sys.executable, str(SCRIPTURI / 'audit_design.py')],
-                      RADACINA, 'python scripts/audit_design.py --lista'))
+                      [PYTHON, str(SCRIPTURI / 'audit_design.py')],
+                      RADACINA, '%s scripts/audit_design.py --lista' % PY_MANUAL))
 
     if backend:
         # `--static`: proba pe API cere server pe :5000 + PIN-ul real din mediu,
         # iar PIN-ul n-are unde sa stea fara sa intre intr-un fisier versionat.
         # Rularea reala o face smoke_ui mai jos, cu serverul lui.
         porti.append(('test_suite',
-                      [sys.executable, str(SCRIPTURI / 'test_suite.py'), '--static'],
-                      RADACINA, 'python scripts/test_suite.py --static'))
+                      [PYTHON, str(SCRIPTURI / 'test_suite.py'), '--static'],
+                      RADACINA, '%s scripts/test_suite.py --static' % PY_MANUAL))
 
     if surse_spa:
-        cmd = npm()
+        cmd = NPM
         if not cmd:
             porti.append(('build', None, None, 'npm run build (in frontend/)'))
         else:
@@ -120,19 +203,18 @@ def porti_pentru(atinse):
     # Build-ul nu e nevoie cand s-a atins doar Python — dist-ul e neschimbat.
     if surse_spa or backend:
         porti.append(('smoke_ui',
-                      [sys.executable, str(SCRIPTURI / 'smoke_ui.py')],
-                      RADACINA, 'python scripts/smoke_ui.py'))
+                      [PYTHON, str(SCRIPTURI / 'smoke_ui.py')],
+                      RADACINA, '%s scripts/smoke_ui.py' % PY_MANUAL))
 
     if surse_spa:
         porti.append(('audit_mobil',
-                      [sys.executable, str(SCRIPTURI / 'audit_mobil.py')],
-                      RADACINA, 'python scripts/audit_mobil.py'))
+                      [PYTHON, str(SCRIPTURI / 'audit_mobil.py')],
+                      RADACINA, '%s scripts/audit_mobil.py' % PY_MANUAL))
     return porti
 
 
 def ruleaza(argv, cwd):
-    mediu = dict(os.environ, PYTHONIOENCODING='utf-8', PYTHONUTF8='1')
-    p = subprocess.run(argv, cwd=str(cwd), env=mediu, timeout=TIMP_MAX,
+    p = subprocess.run(argv, cwd=str(cwd), env=mediu_probe(), timeout=TIMP_MAX,
                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return p.returncode, p.stdout.decode('utf-8', 'replace')
 
@@ -193,9 +275,12 @@ def main():
 
     for eticheta, argv, cwd, manual in porti:
         if argv is None:                          # npm lipsa pe masina asta
-            cod, iesire = 1, ('npm nu exista in PATH, deci build-ul Vite nu poate '
-                              'rula. Fara build, smoke_ui ar testa static/dist/ '
-                              'vechi si ar trece pe langa orice greseala din sursa.')
+            cod, iesire = 1, ('npm nu s-a gasit nici in PATH-ul mostenit, nici in '
+                              'cel persistent din registru (`cai_persistente`), '
+                              'deci build-ul Vite nu poate rula. Fara build, '
+                              'smoke_ui ar testa static/dist/ vechi si ar trece pe '
+                              'langa orice greseala din sursa. Verifica unde e '
+                              'instalat Node si adauga-l in PATH-ul de utilizator.')
         else:
             try:
                 cod, iesire = ruleaza(argv, cwd)
