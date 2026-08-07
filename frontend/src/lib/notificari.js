@@ -220,10 +220,22 @@ export async function probeaza() {
       extra: {},
     }],
   })
-  return perm.exacte
-    ? 'Programată peste 40 de secunde, cu alarmă exactă. Închide aplicația.'
-    : 'Programată peste ~40 de secunde, dar alarma EXACTĂ e oprită — poate întârzia. '
-      + 'Setări → Aplicații → PIF Dashboard → Alarme și mementouri.'
+  if (perm.exacte) {
+    return 'Programată peste 40 de secunde, cu alarmă exactă. Închide aplicația.'
+  }
+  // NU-L TRIMITE PRIN MENIURI — DESCHIDE-I ECRANUL.
+  // Calea difera de la un producator la altul („Alarme si mementouri" e sub
+  // Aplicatii la unii, sub Acces special la altii), iar o instructiune care nu
+  // se potriveste cu ce vede pe ecran e mai rea decat niciuna: te face sa crezi
+  // ca ai gresit tu. Sistemul stie unde e comutatorul, deci il lasam pe el.
+  try {
+    await LocalNotifications.changeExactNotificationSetting()
+    return 'Programată, dar alarma EXACTĂ e oprită — dimineața ar putea întârzia. '
+         + 'Ți-am deschis ecranul: pornește comutatorul, apoi repetă proba.'
+  } catch (e) {
+    return 'Programată peste ~40 de secunde, dar alarma EXACTĂ e oprită — poate întârzia. '
+         + 'Setări → Aplicații → PIF → Alarme și mementouri.'
+  }
 }
 
 /** Leaga atingerea notificarii si cele doua actiuni de API. Se cheama O DATA,
