@@ -180,9 +180,11 @@
   /* Ieșirea următoare — singurul lucru cu greutate vizuală din linie. */
   .pr {
     display: inline-flex; align-items: baseline; gap: 8px; min-width: 0;
-    padding: 5px 12px 5px 10px; border-radius: var(--radius-full);
+    /* Dunga de locatie a plecat: `.ico` de langa ea e deja in aceeasi `--c`.
+       Cei 2px pierduti de la muchie se intorc in padding. */
+    padding: 5px 12px 5px 12px; border-radius: var(--radius-full);
     border: 1px solid var(--border); background: var(--bg-surface);
-    border-left: 3px solid var(--c); cursor: pointer; text-align: left;
+    cursor: pointer; text-align: left;
     transition: border-color var(--dur-fast) var(--ease);
   }
   .pr:hover { border-color: var(--c); }

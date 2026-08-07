@@ -47,22 +47,30 @@ export function zilePanaLa(d) {
   return Math.round((t - azi) / 86400000)
 }
 
-/** Culoarea de severitate a unui task, dupa termen. Inlocuieste priorityColor. */
-export function dueColor(d) {
+/* TREI TREPTE, NU CINCI. dueColor() ramifica in cinci, dar --accent si --warning
+   sunt acelasi hex (#ffb454) si ultimele doua ramuri cad pe --border-strong,
+   adica pe culoarea bordurii pe care randul o are oricum: cinci ramuri, doua
+   lucruri deosebibile. Inelul bifei are 18px cu 2px grosime — nu incape mai mult
+   de trei trepte, si nici nu era nevoie de mai multe.
+   Neutrul e --border, NU --border-strong: inelul in repaus trebuie sa ramana
+   exact bifa de azi, altfel fiecare rand neurgent se schimba la vedere. */
+export function dueRing(d) {
   const k = zilePanaLa(d)
-  if (k === null) return 'var(--border-strong)'
+  if (k === null) return 'var(--border)'
   if (k < 0) return 'var(--danger)'
   if (k === 0) return 'var(--accent)'
-  if (k <= 2) return 'var(--warning)'
-  return 'var(--border-strong)'
+  return 'var(--border)'
 }
 
-/* Starea termenului fata de azi — ACEEASI axa si ACELEASI praguri ca dueColor().
+/* Starea termenului fata de azi — ACEEASI axa si ACELEASI praguri ca dueRing().
    Traiau in trei copii locale (Tasks, TodayBoard, ProjectDetail), toate cu
-   `soon <= 7 zile` — in timp ce dueColor() da warning doar pana la 2. Rezultatul,
-   masurabil: un task scadent in 5 zile avea bordura gri si data amber — doua
+   `soon <= 7 zile` — in timp ce axa de culoare se oprea la 2. Rezultatul,
+   masurabil: un task scadent in 5 zile avea un semn gri si data amber — doua
    raspunsuri la aceeasi intrebare, pe acelasi rand. Pragul e unul singur, aici.
-   (Si parsarea e cea din zilePanaLa — pe campuri locale, nu new Date(iso) in UTC.) */
+   (Si parsarea e cea din zilePanaLa — pe campuri locale, nu new Date(iso) in UTC.)
+   `esteCurand` a ramas fara consumator de culoare dupa ce inelul s-a oprit la trei
+   trepte; se pastreaza fiindca „in curand" e o intrebare pe care o pun si listele
+   care nu coloreaza nimic. */
 export function esteDepasit(d) { const k = zilePanaLa(d); return k !== null && k < 0 }
 export function esteAzi(d) { return zilePanaLa(d) === 0 }
 export function esteCurand(d) { const k = zilePanaLa(d); return k !== null && k > 0 && k <= 2 }

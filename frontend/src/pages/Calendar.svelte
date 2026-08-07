@@ -1140,7 +1140,7 @@
             {#each selectate as p (p.id)}
               <div class="it" style="--c: {culoareLucrare(p)}" in:fade={{ duration: motionDuration(DUR_BASE) }}>
                 <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
-                  {p.nume}<ExternalLink size={12} />
+                  <span class="it-punct" aria-hidden="true"></span>{p.nume}<ExternalLink size={12} />
                 </button>
                 <div class="it-m">
                   {#if p.eticheta}<span>{p.eticheta}</span>{/if}
@@ -1239,6 +1239,7 @@
                      aria-pressed={asezare?.proiect_id === pr.proiect_id}
                      title={asezare?.proiect_id === pr.proiect_id ? 'Atinge o zi din calendar — sau atinge din nou ca să renunți' : 'Alege-l, apoi atinge ziua de început (sau trage-l direct pe o zi)'}>
                   <GripVertical size={12} />
+                  <span class="np-punct" aria-hidden="true"></span>
                   <span class="np-t">{pr.nume}</span>
                   <span class="np-s" class:lucru={pr.status === 'pregatire'}>{PROJECT_STATUS_LABELS[pr.status] || pr.status}</span>
                 </button>
@@ -1346,7 +1347,11 @@
   /* Capetele rotunjite spun unde INCEPE si unde se TERMINA lucrarea. La granita de
      saptamana capatul rămâne drept si iese peste marginea celulei: asa se citeste
      „continua", nu „s-a incheiat". */
-  .banda.inceput { margin-left: 6px; padding-left: 5px; border-left: 3px solid var(--c);
+  /* Inceputul se marcheaza prin FORMA, nu prin culoare: banda e deja plina cu
+     `var(--c)`, deci dunga era aceeasi culoare peste ea insasi, doar mai tare.
+     Raza de pe colturile din stanga spune acelasi lucru si nu adauga un al doilea
+     cod de culoare. Cei 3px se intorc in padding. */
+  .banda.inceput { margin-left: 6px; padding-left: 8px;
                    border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
   .banda.sfarsit { margin-right: 6px;
                    border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
@@ -1455,10 +1460,14 @@
     letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-faint); }
   .ag-linie { flex: 1; height: 1px; background: var(--border-subtle); }
   .ag-n { font-variant-numeric: tabular-nums; }
+  /* Identitatea trece de pe muchie pe FUNDAL: randul intreg apartine unei singure
+     lucrari, iar iconita lui de locatie e gri (`--text-dim`), deci nu era un al
+     doilea semn colorat pe care sa ne bazam. Fill tentat, ca la vecinii din
+     Planificator. */
   .ag-rand { display: flex; flex-direction: column; gap: 4px; width: 100%;
-    padding: 8px 9px; text-align: left; border-radius: var(--radius-sm);
-    background: var(--bg-panel); border: 1px solid var(--border);
-    border-left: 3px solid var(--c); cursor: pointer;
+    padding: 8px 9px 8px 11px; text-align: left; border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--c) 8%, var(--bg-panel)); border: 1px solid var(--border);
+    cursor: pointer;
     transition: var(--transition-colors); }
   /* Atingi o zi -> se aprinde iesirea ei, nu se schimba un panou. */
   .ag-rand.aprins { background: var(--accent-subtle); border-color: var(--accent-ring); }
@@ -1488,7 +1497,11 @@
   .urm-d { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); }
   .urm-l { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); }
 
-  .it { border-left: 3px solid var(--c); padding: 2px 0 2px 9px; margin-bottom: 12px; }
+  /* Lista zilei e MIXTA (mai multe lucrari, culori diferite) si randul n-are nici
+     fill, nici iconita colorata — deci identitatea primeste un punct inaintea
+     numelui, nu o dunga pe muchie. */
+  .it { padding: 2px 0; margin-bottom: 12px; }
+  .it-punct { width: 6px; height: 6px; border-radius: 50%; background: var(--c); flex: none; }
   .it-t { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; }
   .it-t:hover { color: var(--accent); }
   .it-m { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; font-size: var(--font-small); color: var(--text-dim); }
@@ -1513,9 +1526,13 @@
   .b.del:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
 
   .rail { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
+  /* Sertarul e o lista MIXTA de proiecte, iar chipul n-are fill si n-are iconita
+     colorata (grip-ul e gri) — deci identitatea primeste un punct, ca in lista
+     zilei de deasupra. */
   .np { display: flex; align-items: center; gap: 5px; padding: 5px 7px; border-radius: var(--radius-sm);
         width: 100%; text-align: left; border: none;
-        background: var(--bg-elevated); border-left: 3px solid var(--c); cursor: grab; }
+        background: var(--bg-elevated); cursor: grab; }
+  .np-punct { width: 6px; height: 6px; border-radius: 50%; background: var(--c); flex: none; }
   .np:active { cursor: grabbing; }
   /* Ales, in asteptarea unei zile. Nu e „selectat" in sensul unei liste — e un
      obiect ridicat, care asteapta sa fie pus jos. De aceea si calendarul se

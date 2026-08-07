@@ -70,7 +70,10 @@
   .ip-add { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; }
   .ip-muted { color: var(--text-dim); font-size: var(--font-small); padding: 6px 2px; }
   .ip-list { display: flex; flex-direction: column; gap: 6px; }
-  .ip-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--il); color: var(--text); cursor: pointer; text-align: left; }
+  /* Dunga de locatie a plecat: `.ip-loc` are deja iconita (`MapPin`/`Building2`)
+     si eticheta colorata cu aceeasi `--il`, la 12px de muchie. Erau doua semne
+     pentru acelasi fapt. `--il` ramane definit — il foloseste eticheta. */
+  .ip-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text); cursor: pointer; text-align: left; }
   .ip-item:hover { border-color: var(--border-strong); }
   .loc-site { --il: var(--loc-site); } .loc-sediu { --il: var(--loc-sediu); }
   .ip-loc { display: inline-flex; align-items: center; gap: 6px; font-weight: var(--fw-medium); font-size: var(--font-small); color: color-mix(in oklab, var(--il) 55%, var(--text)); min-width: 130px; }

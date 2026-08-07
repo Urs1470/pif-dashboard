@@ -1,15 +1,22 @@
 <script>
-  import { X } from '@lucide/svelte'
+  import { X, Info, CircleCheck, TriangleAlert, CircleX } from '@lucide/svelte'
   import { fly } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { ui, closeToast, runToastAction } from '../../stores/ui.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../../lib/motion.svelte.js'
+
+  // Toastul e SINGURUL loc din aplicatie unde dunga de 3px chiar purta
+  // informatie: n-are nici iconita, nici fill, deci nimic altceva nu spunea ce
+  // fel de mesaj e. O ia iconita, in capul randului.
+  const ICO = { info: Info, success: CircleCheck, warning: TriangleAlert, error: CircleX }
 </script>
 
 {#if ui.toasts.length > 0}
   <div class="toast-container" aria-live="polite">
     {#each ui.toasts as t (t.id)}
+      {@const Ico = ICO[t.type] ?? Info}
       <div class="toast toast-{t.type}" transition:fly={{ x: 20, duration: motionDuration(DUR_BASE) }} animate:flip={{ duration: motionDuration(DUR_FAST) }}>
+        <Ico size={15} class="toast-ico" />
         <span>{t.message}</span>
         {#if t.actionLabel}
           <button class="toast-action" onclick={() => runToastAction(t.id)}>{t.actionLabel}</button>
@@ -48,10 +55,14 @@
     max-width: 400px;
   }
 
-  .toast-info { border-left: 3px solid var(--info); }
-  .toast-success { border-left: 3px solid var(--success); }
-  .toast-warning { border-left: 3px solid var(--warning); }
-  .toast-error { border-left: 3px solid var(--danger); }
+  /* Iconita in loc de dunga: se citeste mai repede decat 3px la marginea
+     ecranului si supravietuieste pe telefon, unde toastul e lat cat pagina si
+     muchia ajunge in afara campului in care te uiti. */
+  .toast :global(.toast-ico) { flex: none; color: var(--toast-col, var(--text-dim)); }
+  .toast-info    { --toast-col: var(--info); }
+  .toast-success { --toast-col: var(--success); }
+  .toast-warning { --toast-col: var(--warning); }
+  .toast-error   { --toast-col: var(--danger); }
 
   .toast-action {
     flex-shrink: 0;

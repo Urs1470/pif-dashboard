@@ -102,15 +102,11 @@
     if (k === 1) return { text: 'mâine', cls: 'warm' }
     return null
   }
-  // Severity color for the index / accent.
-  function sevColor(t) {
-    if (isDone(t)) return 'var(--text-faint)'
-    const d = t.data_scadenta ? t.data_scadenta.slice(0, 10) : ''
-    const k = d ? dayDiff(today, d) : null
-    if (k != null && k < 0) return 'var(--danger)'
-    if (k != null && k <= 1) return 'var(--accent)'
-    return 'var(--border-strong)'
-  }
+  // `sevColor()` a plecat: era a DOUA definitie a aceleiasi axe (cea din
+  // formatters.js), si singurii ei consumatori erau indexul `.tix` — scos din
+  // liste in tura 1 — si dunga de 3px de pe rand, scoasa acum. Ganttul n-are bifa
+  // pe rand, deci severitatea ramane unde se citea oricum: in chipul din dreapta
+  // (`dueInfo`), care e text, nu muchie.
 
   // Gruparea pe faze (WBS) a plecat in v32: coloana `tasks.faza` nu putea fi
   // completata din nicio interfata, deci antetele de faza nu s-au randat niciodata.
@@ -222,7 +218,7 @@
         {:else}
           {@const t = row.t}
           {@const due = dueInfo(t)}
-          <button class="tk-row" class:done={isDone(t)} style="--sev:{sevColor(t)}" onclick={() => openTask(t)} title="Deschide în tabul Taskuri">
+          <button class="tk-row" class:done={isDone(t)} onclick={() => openTask(t)} title="Deschide în tabul Taskuri">
             <!-- Doar semnul de bifat. Numarul „01 / 02 / 03" a plecat din toate
                  listele in tura 1 (sub 15 taskuri nu spui „fa taskul 07", si era
                  a doua codificare a severitatii pe care o da deja bordura din
@@ -332,7 +328,6 @@
 
   /* read-only task rows (island look, aligned to timeline) */
   .tk-row { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 0 12px; border: none; border-bottom: 1px solid var(--border); background: none; text-align: left; cursor: pointer; color: var(--text-secondary); position: relative; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
-  .tk-row::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 0 2px 2px 0; background: var(--sev, transparent); opacity: 0.7; }
   .tk-row:hover { background: var(--bg-hover); }
   .tk-row:last-child { border-bottom: 0; }
   .tk-row .tk-stare { min-width: 24px; flex-shrink: 0; display: inline-flex; align-items: center; }
@@ -348,15 +343,21 @@
   .tk-row :global(.tk-chev) { color: var(--text-faint); flex: none; }
 
   /* implementation periods (Site / Sediu EGB) — the editable rows */
-  .impl-lrow { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: 7px; padding: 0 12px; border: none; border-bottom: 1px solid var(--border); border-left: 3px solid var(--il); background: color-mix(in srgb, var(--il) 8%, transparent); color: var(--text); cursor: pointer; text-align: left; }
+  /* Dunga de identitate a plecat: randul e DEJA umplut cu aceeasi culoare
+     (`color-mix(… var(--il) 8% …)`) si poarta si iconita de locatie in ea, deci
+     muchia era a treia oara acelasi lucru. Cei 3px se intorc in padding. */
+  .impl-lrow { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: 7px; padding: 0 12px 0 15px; border: none; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--il) 8%, transparent); color: var(--text); cursor: pointer; text-align: left; }
   .impl-lrow:hover { background: color-mix(in srgb, var(--il) 16%, transparent); }
   .impl-lname { font-size: var(--font-small); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .loc-site { --il: var(--loc-site); } .loc-sediu { --il: var(--loc-sediu); }
   /* Perioada de implementare umple randul, nu pluteste ca o pastila subtire in
      mijlocul lui: e un BLOC de zile in care esti acolo, nu un marcaj. Randul
      ramane cu aceeasi inaltime, doar continutul lui se vede acum. */
-  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; display: flex; align-items: center; gap: 5px; padding: 0 10px; cursor: pointer; overflow: hidden; color: var(--on-color);
-    border: none; border-left: 3px solid color-mix(in oklab, var(--il) 58%, #000);
+  /* Aceeasi regula ca la `.impl-lrow`: banda e DEJA plina cu `var(--il)`, deci
+     muchia era aceeasi culoare peste ea insasi, doar mai inchisa. Cei 3px se
+     intorc in padding. */
+  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; display: flex; align-items: center; gap: 5px; padding: 0 10px 0 13px; cursor: pointer; overflow: hidden; color: var(--on-color);
+    border: none;
     background: linear-gradient(180deg,
       color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
       color-mix(in oklab, var(--il) 90%, #000) 100%);

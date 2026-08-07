@@ -11,7 +11,7 @@
   } from '../stores/projects.svelte.js'
   import { apiJson } from '../lib/api.js'
   import { updateTask, createTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
+  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
   import { etichetaTermen, grupeazaDupaTermen, ORDINE_GRUPE } from '../lib/grupare.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { exportMarkdown } from '../lib/exportMd.js'
@@ -471,8 +471,8 @@
     }
   }
 
-  // isOverdue/isToday/isSoon vin din formatters.js — aceeasi axa si aceleasi
-  // praguri ca dueColor(), o singura definitie pentru toate listele.
+  // isOverdue/isToday vin din formatters.js — aceeasi axa si aceleasi
+  // praguri ca dueRing(), o singura definitie pentru toate listele.
 
   function openFieldEdit(field, label) {
     editField = field
@@ -700,7 +700,7 @@
                `.trow.done` face deja asta. -->
           <!-- Snippetul tine DOAR interiorul randului: `animate:` cere ca elementul
                sa fie unicul copil al unui `{#each}` cheiat, iar Svelte nu poate
-               verifica asta printr-un `{@render}`. Deci invelisul (cu `--sev` si
+               verifica asta printr-un `{@render}`. Deci invelisul (cu `--ring` si
                tranzitiile) sta in fiecare lista, continutul o singura data. -->
           {#snippet randTask(t)}
             {@const gata = t.status === 'done' || t.status === 'finalizat'}
@@ -732,7 +732,7 @@
                          aici randurile sunt tocmai lucrurile pe care le iei in ordine. -->
                     <div class="tinfo">
                       {#if t.data_scadenta}
-                        <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>
+                        <span class="tdeadline" class:sev={isOverdue(t.data_scadenta) || isToday(t.data_scadenta)}>
                           <CalendarDays size={11} />{etichetaTermen(t.data_scadenta)}
                         </span>
                       {/if}
@@ -852,7 +852,7 @@
                 <div class="grup-cap ton-{grupe[gid].ton}"><span class="grup-t">{grupe[gid].titlu}</span><span class="grup-n">{grupe[gid].items.length}</span></div>
               {/if}
               {#each grupe[gid].items as t (t.id)}
-                <div class="trow-wrap" style="--sev: {dueColor(t.data_scadenta)}"
+                <div class="trow-wrap" style="--ring: {dueRing(t.data_scadenta)}"
                      animate:flip={{ duration: motionDuration(DUR_BASE) }}
                      onpointerenter={() => preincarca(t.id)}
                      in:sosire|local out:plecare>
@@ -869,7 +869,7 @@
               {#if showDoneTasks}
                 <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
                 {#each doneTasks as t (t.id)}
-                  <div class="trow-wrap" style="--sev: {dueColor(t.data_scadenta)}"
+                  <div class="trow-wrap" style="--ring: {dueRing(t.data_scadenta)}"
                        animate:flip={{ duration: motionDuration(DUR_BASE) }}
                        onpointerenter={() => preincarca(t.id)}
                        in:sosire|local out:plecare>
@@ -1264,15 +1264,16 @@
      extinderea sunt continutul lui. Aici extinderea era un card SEPARAT (fundal
      propriu, rama proprie, indentat 26px), deci un task deschis se citea ca doua
      cutii lipite — in /tasks aceeasi problema fusese deja rezolvata invers. */
+  /* MUCHIA DE SEVERITATE A PLECAT — severitatea e pe inelul bifei (`--ring`) si
+     pe textul termenului. Aici muchia era in plus si ambigua: un rand de task si
+     unul de implementare stateau unul sub altul cu aceeasi dunga de 3px, una
+     spunand „urgent", cealalta „proiectul X". Cei 2px pierduti de la bordura se
+     intorc in padding, ca lista sa nu se decaleze fata de antetul ei. */
   .trow-wrap { display: flex; flex-direction: column; background: var(--bg-panel);
-    border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong));
+    border: 1px solid var(--border); padding-left: 2px;
     border-radius: var(--radius-md); margin-bottom: 6px; overflow: hidden;
     transition: border-color var(--dur-fast) var(--ease); }
-  .trow-wrap:hover { border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
-  /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia
-     (MEMORY (8): „severitatea se citeste din bordura din stanga, dupa termen").
-     Aici supravietuia varianta veche — underline scurt jos (`::after`) — deci
-     ACELASI task vorbea doua limbaje de severitate pe doua ecrane. */
+  .trow-wrap:hover { border-color: var(--border-strong); }
   /* Ion: „poti face putin mai inguste pe desktop taskurile, pe inaltime?"
      8px sus / 10px jos -> 5/7: randul scade de la ~62 la ~56px, fara sa se
      atinga fontul sau meta-randul. Doar desktop — pe telefon padding-ul
@@ -1319,7 +1320,9 @@
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
   .check:hover { color: var(--accent); }
   .trow.done .check { color: var(--success); }
-  .check-empty { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 50%; }
+  /* `.check-empty` traieste acum in global.css, o singura data pentru toate
+     listele. Bifa urca de la 16 la 18px — e aceeasi bifa ca in /tasks si pe
+     „Astăzi", iar diferenta de 2px nu fusese o decizie. */
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
   /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
      iar severitatea se citeste din bordura din stanga, dupa termen. */
@@ -1340,9 +1343,8 @@
   .note-ind { display: inline-flex; align-items: center; color: var(--text-dim); }
   .tinfo { display: flex; gap: var(--space-sm); font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; align-items: center; }
   .tdeadline { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-small); }
-  .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
-  .tdeadline.today { color: var(--accent); font-weight: var(--fw-semibold); }
-  .tdeadline.soon { color: var(--warning); }
+  /* Al doilea canal al severitatii, din ACELASI `--ring` ca inelul bifei. */
+  .tdeadline.sev { color: var(--ring); font-weight: var(--fw-medium); }
   .task-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .task-del:hover { color: var(--danger); background: var(--danger-subtle); }
 
@@ -1389,7 +1391,6 @@
   .sub-nou:hover { background: var(--accent-subtle); color: var(--accent); }
   .sub-nou-p { display: flex; align-items: center; justify-content: center;
     width: 18px; flex: none; }
-  .check-empty.small { width: 14px; height: 14px; }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   /* Titlul e BUTON (atingerea bifeaza), dar trebuie sa arate ca text: fara
      fundal, fara rama, aliniat la stanga, pe toata latimea ramasa. Aceleasi

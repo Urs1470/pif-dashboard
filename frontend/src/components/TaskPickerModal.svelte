@@ -2,7 +2,7 @@
   import { Search, Plus, FolderKanban, ListTodo } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import { loadCandidates, scheduleForToday } from '../stores/agenda.svelte.js'
-  import { dueColor, formatDate } from '../lib/formatters.js'
+  import { dueRing, formatDate } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
 
   let { open = $bindable(false) } = $props()
@@ -87,7 +87,12 @@
             </div>
             {#each grp.rows as it (it.tip + ':' + it.id)}
               <button class="pk-row" disabled={addingKey === (it.tip + ':' + it.id)} onclick={() => pick(it)}>
-                <span class="pk-prio" style="background: {dueColor(it.data_scadenta)}"></span>
+                <!-- Punctul se randeaza DOAR cand spune ceva. Pe neutru era un
+                     punct de culoarea bordurii: cerneala fara informatie, pe
+                     fiecare rand din lista. -->
+                {#if dueRing(it.data_scadenta) !== 'var(--border)'}
+                  <span class="pk-prio" style="background: {dueRing(it.data_scadenta)}"></span>
+                {/if}
                 <span class="pk-title">{it.titlu}</span>
                 {#if it.data_scadenta}<span class="pk-scad">termen {formatDate(it.data_scadenta)}</span>{/if}
                 <span class="pk-add"><Plus size={15} /></span>

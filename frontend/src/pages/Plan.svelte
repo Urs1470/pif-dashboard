@@ -6,7 +6,7 @@
     setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
   } from '../stores/plan.svelte.js'
   import { buildColumns, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
-  import { formatDate, formatDateShort, zilePanaLa } from '../lib/formatters.js'
+  import { formatDate, formatDateShort, dueRing } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
@@ -691,10 +691,17 @@
         {#if backlogOpen}
           <div class="bl-items">
             {#each plan.backlog as t (t.tip + ':' + t.id)}
-              <div class="bl-chip" class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0}
+              <div class="bl-chip"
                    draggable="true" ondragstart={(e) => backlogDragStart(e, t)} ondragend={backlogDragEnd}
                    title={t.titlu}>
                 <GripVertical size={13} class="bl-grip" />
+                <!-- Chipul n-are bifa si n-are chip de termen, deci severitatea
+                     n-are alt canal aici: primeste punctul, ca in selectorul de
+                     taskuri. Se randeaza DOAR cand spune ceva — pe neutru ar fi
+                     un punct de culoarea bordurii, pe fiecare chip din sertar. -->
+                {#if dueRing(t.data_scadenta) !== 'var(--border)'}
+                  <span class="bl-sev" style="background: {dueRing(t.data_scadenta)}"></span>
+                {/if}
                 <span class="bl-txt">{t.titlu}</span>
                 {#if t.proiect_nume}<span class="bl-proj">{t.proiect_nume}</span>{:else if t.categorie}<span class="bl-proj glob">{t.categorie}</span>{/if}
                 <span class="bl-date"><DatePicker value="" placeholder="Planifică" onchange={(v) => scheduleFromPicker(t, v)} /></span>
@@ -822,8 +829,8 @@
                  in panoul de sub el (glisare spre stanga). Doua liste care arata
                  acelasi lucru trebuie sa se poarte la fel — altfel inveti gestul
                  de doua ori. -->
-            <div class="mrow" data-rand="{t.tip}:{t.id}"
-                 class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0} class:done={isDone(t.status)}
+            <div class="mrow" data-rand="{t.tip}:{t.id}" style="--ring: {dueRing(t.data_scadenta)}"
+                 class:done={isDone(t.status)}
                  use:glisare={{ latime: 118, activ: true, onBifa: isDone(t.status) ? null : () => onDone(t) }}>
               <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
               <div class="gl-actiuni">
@@ -835,7 +842,7 @@
               </div>
               <div class="gl-fata">
                 <button class="mcheck" onclick={() => onDone(t)} title="Bifează">
-                  {#if isDone(t.status)}<CheckCircle2 size={18} />{:else}<span class="mcheck-gol"></span>{/if}
+                  {#if isDone(t.status)}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
                 </button>
                 <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
                   <span class="mrow-title">{t.titlu}</span>
@@ -848,8 +855,11 @@
                        dupa severitate, nu mereu amber, ca peste tot. -->
                   <span class="mrow-meta">
                     {#if t.data_scadenta}
-                      <span class="chip due" class:restant={esteRestant(t.data_scadenta)}
-                            class:azi={esteAzi(t.data_scadenta)}>
+                      <!-- Conditia vine din ACEEASI functie care da `--ring`, nu
+                           din `esteAzi`/`esteRestant` (care se raporteaza la
+                           `plan.today`, ziua serverului): altfel chipul se putea
+                           colora cand inelul nu era colorat, si invers. -->
+                      <span class="chip due" class:sev={dueRing(t.data_scadenta) !== 'var(--border)'}>
                         <CalendarDays size={10} />{formatDateShort(t.data_scadenta)}
                       </span>
                     {/if}
@@ -1055,14 +1065,16 @@
      exact insetul benzii de pregatire, ca cele doua sa se imbine fara decalaj.
      Palid = pregatire, plin = pe teren; culoarea spune unde (teal = site, gold =
      sediu), aceeasi gramatica vizuala ca in Calendar. */
-  /* BLOC, nu pastila. Un bloc are volum (degrade fin sus→jos), o muchie de intrare
-     (bara verticala din stanga = ziua in care ajungi acolo) si o umbra care il
+  /* BLOC, nu pastila. Un bloc are volum (degrade fin sus→jos) si o umbra care il
      ridica peste banda de pregatire. Inelul interior tine doua blocuri lipite de
      categorii diferite despartite — doua perioade de aceeasi categorie sunt deja
-     UN element (vezi `contopeste`), deci n-au cusatura. */
+     UN element (vezi `contopeste`), deci n-au cusatura.
+     Muchia de intrare din stanga a plecat odata cu toate celelalte dungi de 3px:
+     blocul e DEJA plin cu `var(--il)`, deci era aceeasi culoare peste ea insasi.
+     Inceputul se citeste din raza si din marginea blocului, ca in Calendar. */
   .impl-band { position: absolute; top: 5px; bottom: 5px; display: flex; align-items: center; gap: 5px;
-    padding: 0 9px; border-radius: 9px; overflow: hidden; z-index: 0; text-align: left; color: var(--on-color);
-    border: none; border-left: 3px solid color-mix(in oklab, var(--il) 58%, #000);
+    padding: 0 9px 0 12px; border-radius: 9px; overflow: hidden; z-index: 0; text-align: left; color: var(--on-color);
+    border: none;
     background: linear-gradient(180deg,
       color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
       color-mix(in oklab, var(--il) 90%, #000) 100%);
@@ -1092,10 +1104,12 @@
      benzile inguste n-ar incapea, deci nici nu se randeaza (vezi `rect.width`). */
   .ib-zile { flex: none; margin-left: auto; padding-left: 8px; font-family: var(--font-mono);
     font-size: var(--font-small); font-variant-numeric: tabular-nums; opacity: 0.62; white-space: nowrap; }
-  .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px; border-radius: var(--radius-md); border-left: 3px solid var(--mil); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
+  /* Dunga de identitate a plecat: randul e DEJA umplut cu aceeasi culoare si are
+     si eticheta de locatie colorata in ea. Cei 3px se intorc in padding. */
+  .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px 6px 13px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
   .mimpl.loc-site { --mil: var(--loc-site); } .mimpl.loc-sediu { --mil: var(--loc-sediu); }
   /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
-  .mimpl.pregatire { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mil) 32%, transparent); border-left-style: dashed; }
+  .mimpl.pregatire { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mil) 32%, transparent); }
   .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: color-mix(in oklab, var(--mil) 55%, var(--text)); }
   .mimpl-range { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
   /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
@@ -1250,8 +1264,12 @@
   /* `.mg-count` a plecat — sunt doua `.count` din global.css (vezi markup).
      Prima impinge perechea in capatul din dreapta al antetului. */
   .mg-head :global(.count:first-of-type) { margin-left: auto; }
-  .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--lane); border-radius: var(--radius-md); margin-bottom: 6px; }
-  .mrow.urgent { border-left-color: var(--danger); }
+  /* MUCHIA DE 3px A PLECAT, SI AICI ERA CEA MAI INCURCATA: aceeasi bordura din
+     stanga spunea si „proiectul X" (`--lane`), si „intarziat" (`.urgent`) — deci
+     un rand restant isi PIERDEA identitatea ca sa arate severitatea. Acum sunt
+     doua canale separate: identitatea e un fill tentat din culoarea benzii (ca la
+     vecinii ei din aceeasi pagina), severitatea e pe inelul bifei si pe chip. */
+  .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px; background: color-mix(in srgb, var(--lane) 8%, var(--bg-panel)); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; }
   .mrow.done { opacity: 0.6; }
   .mrow.done .mrow-title { text-decoration: line-through; }
   .mrow-main { flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
@@ -1259,8 +1277,11 @@
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
   .chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); display: inline-flex; align-items: center; gap: 3px; }
   .chip.due { color: var(--text-dim); background: var(--bg-elevated); }
-  .chip.due.azi { color: var(--accent); background: var(--accent-subtle); }
-  .chip.due.restant { color: var(--danger); background: var(--danger-subtle); }
+  /* O SINGURA GRAMATICA PENTRU „AZI". Erau doua clase („azi", „restant") cu doua
+     harti de culoare proprii, pe langa inca una pe muchia randului. Acum chipul
+     citeste ACELASI `--ring` ca inelul bifei de langa el, deci cele doua canale
+     nu se pot desincroniza. */
+  .chip.due.sev { color: var(--ring); background: color-mix(in srgb, var(--ring) 14%, transparent); }
   .mrow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
   /* Pe desktop invelisul de glisare nu exista pentru layout, iar panoul lui e
      ascuns: acolo actiunile stau la vedere in rand. */
@@ -1316,11 +1337,13 @@
   .bl-head :global(.bl-chev) { margin-left: auto; color: var(--text-faint); transition: transform var(--dur-fast) var(--ease); }
   .backlog.open .bl-head :global(.bl-chev) { transform: rotate(90deg); }
   .bl-items { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 16px; }
-  .bl-chip { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 4px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--text-faint); border-radius: var(--radius-md); cursor: grab; max-width: 320px; }
+  /* Dunga era `var(--text-faint)` — o linie gri care nu codifica nimic. Se sterge
+     fara inlocuitor; severitatea acestui chip o poarta chipul lui de termen. */
+  .bl-chip { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 7px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: grab; max-width: 320px; }
   .bl-chip:hover { border-color: var(--border-strong); }
   .bl-chip:active { cursor: grabbing; }
-  .bl-chip.urgent { border-left-color: var(--danger); }
   .bl-chip :global(.bl-grip) { color: var(--text-faint); flex-shrink: 0; }
+  .bl-sev { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .bl-txt { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
   .bl-proj { font-size: var(--font-small); color: var(--accent); background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
   .bl-proj.glob { color: var(--text-dim); background: var(--bg-elevated); }
@@ -1407,7 +1430,8 @@
     .mcheck { display: flex; width: var(--tap-min); height: var(--tap-min); flex-shrink: 0;
               align-items: center; justify-content: center; background: none; border: none;
               color: var(--text-dim); cursor: pointer; }
-    .mcheck-gol { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; }
+    /* `.mcheck-gol` era acelasi obiect ca `.check-empty`, sub alt nume — al
+       cincilea loc in care se definea bifa. Traieste acum in global.css. */
     .mrow.done .mcheck { color: var(--success); }
     .mcheck { display: flex; }
 

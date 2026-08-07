@@ -6,7 +6,7 @@
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
-  import { dueColor, formatDate, esteDepasit as isOverdue, esteCurand as isSoon } from '../lib/formatters.js'
+  import { dueRing, formatDate, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
   import { etichetaTermen } from '../lib/grupare.js'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { reordonare } from '../lib/reordonare.js'
@@ -64,8 +64,8 @@
     if (acum.toDateString() !== azi.toDateString()) azi = acum
   }
 
-  // isOverdue/isSoon vin din formatters.js — aceeasi axa si aceleasi praguri ca
-  // dueColor(), o singura definitie pentru toate listele.
+  // isOverdue/isToday vin din formatters.js — aceeasi axa si aceleasi praguri ca
+  // dueRing(), o singura definitie pentru toate listele.
 
   async function doQuickAdd() {
     const t = quickTitle.trim()
@@ -254,7 +254,7 @@
           class:done={it.status === 'done'}
           class:dragover={overIndex === i}
           class:dragging={dragIndex === i}
-          style="--sev: {dueColor(it.data_scadenta)}"
+          style="--ring: {dueRing(it.data_scadenta)}"
           role="listitem"
           ondragover={(e) => onDragOver(e, i)}
           ondrop={(e) => onDrop(e, i)}
@@ -300,7 +300,7 @@
                    si CE stare, si CAT de departe, intr-un singur chip.
                    Numarul din antet („28 restante") ramane: acolo e un rezumat,
                    nu o repetitie. -->
-              {#if it.data_scadenta}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}><CalendarDays size={11} />{etichetaTermen(it.data_scadenta)}</span>{/if}
+              {#if it.data_scadenta}<span class="deadline" class:sev={isOverdue(it.data_scadenta) || isToday(it.data_scadenta)}><CalendarDays size={11} />{etichetaTermen(it.data_scadenta)}</span>{/if}
               {#if it.subtask_total}
                 <span class="tsub-chip" class:gata={it.subtask_done === it.subtask_total}
                       title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">
@@ -359,7 +359,7 @@
         <div
           class="arow"
           class:done={it.status === 'done'}
-          style="--sev: {dueColor(it.data_scadenta)}"
+          style="--ring: {dueRing(it.data_scadenta)}"
           role="listitem"
           in:sosire|local
           out:plecare
@@ -376,7 +376,7 @@
           <button class="amain" onclick={(e) => openItem(e, it)}>
             <span class="atitle">{it.titlu}</span>
             <span class="ainfo">
-              {#if it.data_scadenta}<span class="deadline" class:overdue={isOverdue(it.data_scadenta)} class:soon={isSoon(it.data_scadenta)}><CalendarDays size={11} />{etichetaTermen(it.data_scadenta)}</span>{/if}
+              {#if it.data_scadenta}<span class="deadline" class:sev={isOverdue(it.data_scadenta) || isToday(it.data_scadenta)}><CalendarDays size={11} />{etichetaTermen(it.data_scadenta)}</span>{/if}
               {#if it.subtask_total}
                 <span class="tsub-chip" class:gata={it.subtask_done === it.subtask_total}
                       title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">
@@ -464,17 +464,23 @@
      8px sus / 10px jos -> 5/7: randul scade de la ~62 la ~56px, fara sa se
      atinga fontul sau meta-randul. Doar desktop — pe telefon padding-ul
      vertical e al lui `.gl-fata` si ramane cum e. */
-  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-sm) 7px; background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong)); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  /* MUCHIA DE SEVERITATE A PLECAT. Erau 3px care insemnau, in acelasi ecran, cand
+     „urgent", cand „proiectul X" — iar din cele cinci trepte doar doua se vedeau
+     (--accent si --warning sunt acelasi hex). Severitatea e acum pe inelul bifei
+     (`--ring`) si pe textul termenului. Bordura devine uniforma, iar cei 2px
+     pierduti de la stanga se intorc in padding, ca randul sa nu se decaleze fata
+     de antetul listei. */
+  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-sm) 7px 10px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch :hover se aplica la atingere si RAMANE
      aplicat pana atingi altceva — randul bifat ar rămâne impins 4px la dreapta,
      ceea ce se citeste ca „s-a stricat", nu ca „am atins". */
-  /* `border-left-color` redeclarat: `border-color` scurt vopseste TOATE laturile,
-     deci hover-ul ar sterge tocmai bordura de severitate — culoarea rezervata. */
+  /* Fara reafirmare de `border-left-color`: nu mai exista culoare rezervata pe
+     bordura, deci `border-color` scurt n-are ce sa stearga. */
   @media (hover: hover) {
-    .arow:hover { transform: translateX(4px); border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
+    .arow:hover { transform: translateX(4px); border-color: var(--border-strong); }
   }
   /* Raspunsul la atingere e apasarea, nu deplasarea. */
-  .arow:active { border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
+  .arow:active { border-color: var(--border-strong); }
   /* ===== O SINGURA AXA DE CULOARE PE RAND =====
      Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
      stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele
@@ -514,8 +520,8 @@
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; display: flex; }
   .check:hover { color: var(--accent); }
   .arow.done .check { color: var(--success); }
-  .check-empty { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; display: inline-block; }
-  .check:hover .check-empty { border-color: var(--accent); }
+  /* `.check-empty` traieste acum in global.css, o singura data pentru toate
+     listele — inclusiv haloul de hover, care adauga in loc sa rescrie `--ring`. */
 
   .amain { flex: 1; min-width: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px; }
   .atitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -531,8 +537,11 @@
   .tag.proj { color: var(--text-dim); background: var(--bg-elevated); }
   .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
   .deadline { font-size: var(--font-small); color: var(--text-dim); }
-  .deadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
-  .deadline.soon { color: var(--warning); }
+  /* Al doilea canal al severitatii, si vine din ACELASI `--ring` ca inelul, nu
+     dintr-o a doua harta de culori — asa cele doua nu pot sa se desincronizeze.
+     Treapta „curand" a plecat: era `--warning`, adica exact `--accent`, deci pe
+     boardul asta (unde totul e azi sau restant) nu se putea vedea oricum. */
+  .deadline.sev { color: var(--ring); font-weight: var(--fw-medium); }
 
   /* `contents` = invelisul nu exista pentru layout; cele doua grupuri raman copii
      directi ai randului, exact ca inainte. Pe telefon devine cutie adevarata. */

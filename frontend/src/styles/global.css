@@ -521,6 +521,31 @@ input[type="checkbox"].cbx:focus {
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
+/* O SINGURA BIFA, SI SEVERITATEA E PE EA.
+   Era definita in trei fisiere la patru marimi (18 / 16 / 14 / 22), plus inca o
+   data sub alt nume in Planificator (`.mcheck-gol`) — acelasi obiect, cinci
+   declaratii. Severitatea a plecat de pe muchia din stanga, unde 3px insemnau,
+   in acelasi ecran, cand „urgent", cand „proiectul X". Aici semnul colorat e
+   chiar cel pe care il vei apasa. */
+.check-empty {
+  width: var(--check-size, 18px);
+  height: var(--check-size, 18px);
+  border: 2px solid var(--ring, var(--border));
+  border-radius: 50%;
+  flex: none;
+  transition: box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.check-empty.small { --check-size: 14px; }
+.check-empty.big   { --check-size: 22px; }
+
+/* HOVERUL NU RESCRIE CULOAREA REZERVATA. Exact greseala de la muchia din stanga,
+   unde `:hover` stergea `--sev` si a trebuit reafirmat de mana in trei locuri.
+   Aici hoverul adauga un halou din culoarea inelului — functioneaza si pe neutru,
+   si pe rosu, fara nicio exceptie de scris. */
+.check:hover .check-empty {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring, var(--border-strong)) 26%, transparent);
+}
+
 /* ===== Tabel de date partajat (stil legacy) ===== */
 .data-table-wrap {
   background: var(--bg-surface);

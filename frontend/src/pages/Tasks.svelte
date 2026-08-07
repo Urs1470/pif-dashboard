@@ -6,7 +6,7 @@
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ListChecks, ChevronDown, ChevronRight, Repeat, Search, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { formatDate, dueColor, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, esteCurand as isSoon } from '../lib/formatters.js'
+  import { formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
   import { grupeazaDupaTermen, etichetaTermen, ORDINE_GRUPE } from '../lib/grupare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { router, navigate } from '../lib/router.svelte.js'
@@ -537,8 +537,8 @@
 
 
 
-  // isOverdue/isToday/isSoon vin din formatters.js (esteDepasit/esteAzi/esteCurand):
-  // aceeasi axa si aceleasi praguri ca dueColor(), o singura definitie.
+  // isOverdue/isToday vin din formatters.js (esteDepasit/esteAzi): aceeasi axa
+  // si aceleasi praguri ca dueRing(), o singura definitie.
 
   // Banda de carduri urgente a plecat (Ion, 2026-07-27: „cardurile astea ce apar
   // nu am nevoie de ele"): repeta primele randuri din lista de imediat dedesubt,
@@ -956,7 +956,7 @@
 <!-- Iesirea randului bifat: se stinge si se strange, in loc sa sara.
                Vezi `plecare` in lib/motion.svelte.js. -->
                     <div class="trow-wrap" class:deschis={expandedTask === t.id}
-             style="--sev: {dueColor(t.data_scadenta)}"
+             style="--ring: {dueRing(t.data_scadenta)}"
              animate:flip={{ duration: motionDuration(DUR_BASE) }}
              onpointerenter={() => preincarca(t.id)}
              in:sosire|local out:plecare>
@@ -1007,7 +1007,7 @@
                    „Mâine", „Fără termen") — repetat pe fiecare rand ar fi zgomot. -->
               <div class="tinfo">
                 {#if chipTermen(t, gid)}
-                  <span class="tdeadline" class:overdue={isOverdue(t.data_scadenta)} class:today={isToday(t.data_scadenta)} class:soon={isSoon(t.data_scadenta)}>
+                  <span class="tdeadline" class:sev={isOverdue(t.data_scadenta) || isToday(t.data_scadenta)}>
                     <CalendarDays size={11} />{chipTermen(t, gid)}
                   </span>
                 {/if}
@@ -1076,7 +1076,9 @@
        ramanea o banda goala de ~60px deasupra taskului — spatiu platit degeaba,
        exact acolo unde ochiul cade prima data. -->
   <Modal bind:open={showSheet} size="md" title={sheetTask.categorie || 'Task'}>
-    <div class="ts-cap">
+    <!-- Foaia poarta `--ring` pe cap: bifa mare e primul lucru din foaie, deci e
+         chiar locul unde severitatea trebuie sa se vada. -->
+    <div class="ts-cap" style="--ring: {dueRing(sheetTask.data_scadenta)}">
       <button class="ts-check" onclick={() => { toggleStatus(sheetTask); showSheet = false }}
               aria-label={sheetTask.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
         {#if sheetTask.status === 'done'}<CheckCircle2 size={24} />{:else}<div class="check-empty big"></div>{/if}
@@ -1094,8 +1096,8 @@
             onclick={() => termenDeschis = !termenDeschis}>
       <CalendarDays size={16} />
       {#if sheetTask.data_scadenta}
-        <span class="ts-val" class:overdue={isOverdue(sheetTask.data_scadenta)}
-              class:today={isToday(sheetTask.data_scadenta)}>{etichetaTermen(sheetTask.data_scadenta)}</span>
+        <span class="ts-val" style="--ring: {dueRing(sheetTask.data_scadenta)}"
+              class:sev={isOverdue(sheetTask.data_scadenta) || isToday(sheetTask.data_scadenta)}>{etichetaTermen(sheetTask.data_scadenta)}</span>
       {:else}<span class="ts-val ts-fara">Fără termen</span>{/if}
       <ChevronDown size={15} class="ts-chev" />
     </button>
@@ -1383,8 +1385,8 @@
     min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
     background: var(--bg-elevated); color: var(--text-dim);
     font-size: var(--font-small); line-height: 1; font-variant-numeric: tabular-nums; }
-  /* Tonul repeta EXACT limbajul de culoare al bordurii din stanga randului
-     (`dueColor`), ca sa nu inveti doua coduri pentru acelasi lucru. */
+  /* Tonul repeta EXACT limbajul de culoare al inelului bifei si al termenului
+     (`dueRing`), ca sa nu inveti doua coduri pentru acelasi lucru. */
   .grup-cap.ton-danger { color: var(--danger); }
   .grup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger); }
   .grup-cap.ton-accent { color: var(--accent); }
@@ -1426,13 +1428,16 @@
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
 
   .task-list { display: flex; flex-direction: column; }
+  /* MUCHIA DE SEVERITATE A PLECAT — severitatea e pe inelul bifei (`--ring`) si
+     pe textul termenului. Cei 2px pierduti de la bordura se intorc in padding,
+     ca lista sa nu se decaleze fata de capetele de grupa. */
   .trow-wrap { display: flex; flex-direction: column; background: var(--bg-panel);
-    border: 1px solid var(--border); border-left: 3px solid var(--sev, var(--border-strong));
+    border: 1px solid var(--border); padding-left: 2px;
     border-radius: var(--radius-md); margin-bottom: 6px; overflow: hidden;
     transition: border-color var(--dur-fast) var(--ease); }
-  /* `border-left-color` redeclarat: `border-color` scurt vopseste TOATE laturile,
-     deci hover-ul stergea tocmai bordura de severitate — culoarea rezervata. */
-  .trow-wrap:hover { border-color: var(--border-strong); border-left-color: var(--sev, var(--border-strong)); }
+  /* Fara reafirmare de `border-left-color`: nu mai exista culoare rezervata pe
+     bordura, deci `border-color` scurt n-are ce sa stearga. */
+  .trow-wrap:hover { border-color: var(--border-strong); }
   /* UN SINGUR obiect: rama, fundalul si colturile stau pe WRAPPER. Randul si
      extinderea sunt continutul lui, fara rame proprii — altfel se citeau ca doua
      cutii lipite („de parca sunt rupte in doua"). */
@@ -1475,9 +1480,9 @@
   .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; }
   .check:hover { color: var(--accent); }
   .trow.done .check { color: var(--success); }
-  .check-empty { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; }
-  .check-empty.small { width: 14px; height: 14px; }
-  .check:hover .check-empty { border-color: var(--accent); }
+  /* `.check-empty` (toate cele trei marimi) traieste acum in global.css, o
+     singura data pentru toate listele — inclusiv haloul de hover, care adauga in
+     loc sa rescrie `--ring`. */
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
   .ttitle-row { display: flex; align-items: center; gap: var(--space-xs); min-width: 0; }
   .tchev { display: inline-flex; align-items: center; color: inherit; flex-shrink: 0; }
@@ -1566,7 +1571,6 @@
   .ts-check { flex: none; min-width: var(--tap-min); min-height: var(--tap-min);
     display: flex; align-items: center; justify-content: flex-start; color: var(--success);
     background: none; border: none; cursor: pointer; padding: 0; }
-  .check-empty.big { width: 22px; height: 22px; border: 2px solid var(--border-strong); border-radius: 50%; }
   .ts-titlu { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-semibold);
     color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; padding-top: 9px; }
   .ts-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
@@ -1580,8 +1584,8 @@
   .ts-rand:active { transform: scale(0.995); }
   .ts-rand.activ { border-color: var(--accent); }
   .ts-val { flex: 1; color: var(--text); font-weight: var(--fw-medium); }
-  .ts-val.overdue { color: var(--danger); }
-  .ts-val.today { color: var(--accent); }
+  /* Acelasi `--ring` ca inelul bifei din capul foii — un singur izvor de culoare. */
+  .ts-val.sev { color: var(--ring); }
   .ts-fara { color: var(--text-dim); font-weight: var(--fw-normal); }
   .ts-rand :global(.ts-chev) { flex: none; opacity: 0.5; transition: transform var(--dur-fast) var(--ease); }
   .ts-rand.activ :global(.ts-chev) { transform: rotate(180deg); }
@@ -1635,9 +1639,13 @@
   .task-edit:hover { color: var(--accent); background: var(--accent-subtle); }
   .recur-badge { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
   .tdeadline { font-size: var(--font-small); }
-  .tdeadline.overdue { color: var(--danger); font-weight: var(--fw-semibold); }
-  .tdeadline.today { color: var(--accent); font-weight: var(--fw-semibold); }
-  .tdeadline.soon { color: var(--warning); }
+  /* Al doilea canal al severitatii, si vine din ACELASI `--ring` ca inelul, nu
+     dintr-o a doua harta de culori — asa cele doua nu pot sa se desincronizeze.
+     Treapta „curand" a plecat: era `--warning`, adica exact acelasi hex ca
+     `--accent`, deci „azi" si „in doua zile" erau literalmente acelasi pixel.
+     Textul suporta totusi o treapta in plus fata de inel — „mâine" ramane scris,
+     doar ca in gri: un cuvant poate ce un cerc de 2px nu poate. */
+  .tdeadline.sev { color: var(--ring); font-weight: var(--fw-medium); }
 
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
   /* DOUA coloane pentru DOUA campuri. Grila era `1fr 1fr 1fr` cu numele
