@@ -1,5 +1,36 @@
 import { tick } from 'svelte'
 import { motion } from './motion.svelte.js'
+import { PRAG_TELEFON } from './ecran.svelte.js'
+
+// ATERIZAREA PE TELEFON: fara ruta in URL, aplicatia porneste pe taskurile
+// PERSONALE, nu pe Acasa. Telefonul se deschide ca sa vezi ce ai de facut in
+// viata ta, nu ca sa citesti panoul de proiecte — pe desktop, unde ziua incepe
+// cu proiectele, Acasa ramane aterizarea.
+//
+// Sfera traieste in URL (`?sfera=personal`, vezi Tasks.svelte), deci aterizarea
+// e o singura ruta, nu un state care ar mai trebui pastrat undeva.
+//
+// Se ruleaza AICI, la initializarea modulului, si scrie hash-ul cu
+// `replaceState` INAINTE de prima citire: asa `router` porneste direct pe ruta
+// buna (fara sa clipeasca Acasa) si fara sa lase o intrare de istoric in urma,
+// pe care butonul „inapoi" de pe Android ar duce-o inapoi la Acasa.
+//
+// Pragul e importat, nu rescris: a cincea copie a lui „768" e exact ce previne
+// `ecran.svelte.js`.
+const ATERIZARE_TELEFON = '/tasks?sfera=personal'
+
+function aterizareInitiala() {
+  if (typeof window === 'undefined') return null
+  if (getRaw()) return null            // ruta ceruta explicit: link, notificare, refresh
+  if (!(window.matchMedia?.(PRAG_TELEFON)?.matches ?? false)) return null
+  return ATERIZARE_TELEFON
+}
+
+const _aterizare = aterizareInitiala()
+if (_aterizare) {
+  try { window.history.replaceState(null, '', '#' + _aterizare) }
+  catch (_) { window.location.hash = '#' + _aterizare }
+}
 
 export const router = $state({ path: getPath(), query: getQuery(), params: {} })
 

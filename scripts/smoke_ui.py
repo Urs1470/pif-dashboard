@@ -216,6 +216,45 @@ def verifica(context, baza, ruta, eticheta, ecran, taburi=False):
     return probleme
 
 
+def verifica_aterizarea(context, baza):
+    """Aterizarea implicita, adica ce vezi cand deschizi aplicatia FARA ruta in URL.
+
+    Pe telefon trebuie sa fie taskurile personale (asa se deschide PWA-ul de pe
+    ecranul principal, cu `start_url: "/"`), pe desktop trebuie sa ramana Acasa.
+    Probele de rute de mai jos NU acopera cazul asta: ele navigheaza mereu la
+    `/#<ruta>`, deci hash-ul e deja pus si redirectarea nu se declanseaza
+    niciodata — exact drumul pe care intra Ion in fiecare dimineata.
+    """
+    probleme = []
+    for nume, latime, inalt, asteptat in (
+            ('mobil', 390, 844, '#/tasks?sfera=personal'),
+            ('desktop', 1280, 800, ''),
+    ):
+        page = context.new_page()
+        page.set_viewport_size({'width': latime, 'height': inalt})
+        page.goto(baza + '/', wait_until='load', timeout=30000)
+        page.wait_for_timeout(600)
+        hash_final = page.evaluate('() => window.location.hash')
+        ok = hash_final == asteptat
+        if not ok:
+            probleme.append('%s: hash "%s", asteptat "%s"' % (nume, hash_final, asteptat))
+        # Pe telefon nu e destul sa nimeresti ruta: sfera trebuie sa fie personala.
+        if ok and nume == 'mobil':
+            try:
+                page.wait_for_selector('button.seg.on', timeout=10000)
+                activ = page.inner_text('button.seg.on').strip()
+                if 'Personal' not in activ:
+                    probleme.append('mobil: segmentul activ e „%s", nu „Personal"' % activ)
+            except Exception as e:
+                probleme.append('mobil: comutatorul de sfera nu s-a randat (%s)'
+                                % str(e).split('\n')[0])
+        page.close()
+        out('  %s  %-9s aterizare implicita%s'
+            % ('OK  ' if not probleme else 'PICA', nume,
+               '' if not probleme else '  ' + probleme[-1]))
+    return probleme
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--rapid', action='store_true', help='doar rutele, doar desktop')
@@ -272,6 +311,11 @@ def main():
                 proiecte = proiecte.get('proiecte') or proiecte.get('data') or []
             page.close()
             out('%d proiecte de verificat.\n' % len(proiecte))
+
+            out('--- aterizarea implicita ---')
+            if verifica_aterizarea(context, baza):
+                esecuri += 1
+            out()
 
             ecrane = ECRANE[:1] if arg.rapid else ECRANE
             for ecran in ecrane:
