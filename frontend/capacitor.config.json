@@ -1,6 +1,6 @@
 {
   "appId": "org.iupif.pif",
-  "appName": "PIF Dashboard",
+  "appName": "PIF",
   "webDir": "../static/dist",
   "server": {
     "url": "https://pif.iupif.org",

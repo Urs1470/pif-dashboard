@@ -1,6 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">PIF Dashboard</string>
+    <!-- `app_name` e eticheta de sub iconita, si launcher-ul o taie pe la 11-12
+         caractere: „PIF Dashboard" se vedea „PIF Dashbo…". Numele lung ramane
+         acolo unde chiar incape — titlul ferestrei si lista de aplicatii
+         recente (`title_activity_main`).
+         Vine din `appName` in capacitor.config.json; daca il schimbi, schimba-l
+         ACOLO, altfel o regenerare a proiectului il pune la loc. -->
+    <string name="app_name">PIF</string>
     <string name="title_activity_main">PIF Dashboard</string>
     <string name="package_name">org.iupif.pif</string>
     <string name="custom_url_scheme">org.iupif.pif</string>
