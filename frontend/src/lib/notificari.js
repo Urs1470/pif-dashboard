@@ -209,9 +209,14 @@ export async function probeaza() {
     notifications: [{
       id: 424242,
       title: 'Probă PIF',
-      body: 'Dacă vezi asta, lanțul merge: permisiune, canal, alarmă.',
+      body: 'Dacă vezi asta, lanțul merge: permisiune, canal, alarmă, butoane.',
       schedule: { at: cand, allowWhileIdle: true },
       channelId: CANAL,
+      // CU butoane, ca proba sa arate exact ce vezi dimineata. Nu poarta niciun
+      // `taskId`, deci apasarea lor nu face nimic — ascultatorul iese din prima
+      // linie. Asta e intentia: proba dovedeste ca butoanele APAR si ca sistemul
+      // le accepta, nu inventeaza un task pe care sa-l bifeze.
+      actionTypeId: 'task-personal',
       extra: {},
     }],
   })
