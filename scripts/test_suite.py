@@ -30,7 +30,7 @@ def js_function_check():
     for jsf in js_files:
         p = PROJECT_ROOT / jsf
         if not p.exists(): continue
-        content = p.read_text()
+        content = p.read_text(encoding='utf-8')
         for m in onclick_pattern.finditer(content):
             handler = m.group(1).strip()
             if '(' in handler and not handler.startswith('${'):
@@ -91,7 +91,10 @@ def api_route_check():
     blueprint_prefixes = {}
     for pyp in [PROJECT_ROOT / "app.py"] + list((PROJECT_ROOT / "blueprints").glob("*.py")):
         if not pyp.exists(): continue
-        txt = pyp.read_text()
+        # encoding EXPLICIT: pe Windows read_text() cade pe cp1252, iar sursele
+        # noastre au diacritice si ghilimele romanesti in comentarii. Testul
+        # crapa cu UnicodeDecodeError inainte sa verifice ceva.
+        txt = pyp.read_text(encoding='utf-8')
         
         bp_prefix_match = re.search(r"([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*Blueprint\([^)]*url_prefix\s*=\s*['\"]([^'\"]+)['\"]", txt)
         if bp_prefix_match:
@@ -113,7 +116,7 @@ def api_route_check():
     for jsf in ["static/app.js", "static/core.js", "static/mobile.js"]:
         p = PROJECT_ROOT / jsf
         if not p.exists(): continue
-        for m in rcall.finditer(p.read_text()):
+        for m in rcall.finditer(p.read_text(encoding='utf-8')):
             route = m.group(1).split('?')[0]
             if route.startswith('/'):
                 # apiGet('/proiecte') uses API_BASE='/api' prefix — normalize

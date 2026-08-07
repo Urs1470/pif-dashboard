@@ -97,7 +97,7 @@ def close_db(exc=None):
 #      (ar fi dublat recurenta, subtaskurile si CRUD-ul). Orice interogare pe
 #      global_tasks isi declara sfera explicit; lipsa parametrului = 'munca'
 #      (fail-closed: personalul nu se poate scurge in suprafetele de munca).
-SCHEMA_VERSION = 38
+SCHEMA_VERSION = 39
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1342,6 +1342,44 @@ def migrate_v37_to_v38():
     logger.info("Migration v37->v38 completed (global_tasks.sfera, default 'munca')")
 
 
+def migrate_v38_to_v39():
+    """v38 -> v39: `implementari.confirmata` — perioada s-a facut, proiectul ramane.
+
+    Ion: „daca dau ca s-a facut in calendar la o implementare nu trebuie sa se
+    marcheze ca finalizat proiectul, trebuie sa ramana tot in perioada de
+    pregatire. Dupa implementare pot sa mai am de facut pv-uri sau altceva, sau
+    poate va mai trebui de facut vizita pe care nu stiu cand va fi."
+
+    Butonul „Da" din panoul zilei raspundea la o intrebare despre PERIOADA („a
+    trecut, s-a facut?") inchizand PROIECTUL (`PUT /api/proiecte/<id>`
+    `{status: 'finalizat'}`). Doua lucruri diferite pe acelasi buton — si cel
+    gresit se auto-ascundea: proiectul inchis iese din „Proiecte fara perioada",
+    deci exact vizita urmatoare, cea pe care n-o stii inca, nu mai avea de unde
+    sa fie planificata.
+
+    Confirmarea sta acum pe perioada. `necesita_decizie` = a trecut SI n-a fost
+    confirmata SI proiectul nu e inchis. Statusul proiectului se schimba doar din
+    formularul de proiect, unde langa el sta si „Finalizat pe".
+
+    Fara backfill: 0 inseamna „inca nu s-a raspuns", ceea ce e adevarat pentru
+    tot ce exista. Perioadele proiectelor deja inchise nu intreaba oricum —
+    `necesita_decizie` le sare dupa status.
+
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(implementari)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if 'confirmata' not in cols:
+        cursor.execute("ALTER TABLE implementari ADD COLUMN confirmata INTEGER DEFAULT 0")
+    # Centura de siguranta pentru restaurari dintr-un backup fara coloana.
+    cursor.execute("UPDATE implementari SET confirmata = 0 WHERE confirmata IS NULL")
+    conn.commit()
+    conn.close()
+    logger.info("Migration v38->v39 completed (implementari.confirmata)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1531,6 +1569,11 @@ def run_migrations():
         set_schema_version(38)
         current_version = 38
 
+    if current_version < 39:
+        migrate_v38_to_v39()
+        set_schema_version(39)
+        current_version = 39
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1580,6 +1623,17 @@ def run_migrations():
     if 'implementari' not in existing_tables:
         logger.warning("Self-heal: re-running v25->v26 (implementari table missing)")
         migrate_v25_to_v26()
+    # Aditiv-only, ca la `sfera`: cheia e DOAR lipsa coloanei. PRAGMA se citeste
+    # AICI, nu sus cu celelalte — pe o baza fara tabela ar fi intors multime
+    # goala si am fi dat ALTER pe ceva ce heal-ul de deasupra tocmai crea.
+    conn_impl = get_db()
+    cur_impl = conn_impl.cursor()
+    cur_impl.execute("PRAGMA table_info(implementari)")
+    impl_cols = {row[1] for row in cur_impl.fetchall()}
+    conn_impl.close()
+    if 'confirmata' not in impl_cols:
+        logger.warning("Self-heal: re-running v38->v39 (implementari.confirmata missing)")
+        migrate_v38_to_v39()
     if 'calcule' not in existing_tables:
         logger.warning("Self-heal: re-running v36->v37 (calcule table missing)")
         migrate_v36_to_v37()
@@ -1677,6 +1731,8 @@ def init_db():
             faza TEXT DEFAULT 'implementare',
             eticheta TEXT,
             ordine INTEGER DEFAULT 0,
+            -- „S-a facut?" e despre PERIOADA, nu despre proiect (v39).
+            confirmata INTEGER DEFAULT 0,
             created_at TEXT,
             FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
         )

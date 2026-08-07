@@ -55,6 +55,23 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-07 — „S-a facut" e despre PERIOADA, nu despre proiect (v39).**
+  Butonul „Da" din panoul zilei chema `PUT /api/proiecte {status:'finalizat'}`:
+  intrebarea era despre perioada, raspunsul inchidea proiectul. Ion: dupa
+  implementare mai raman PV-uri, si poate o vizita pe care inca n-o poti data.
+  Greseala se auto-ascundea — proiectul inchis iese din `neplanificate`, deci
+  exact vizita aia nu mai avea de unde sa fie planificata. Acum
+  `implementari.confirmata`; `necesita_decizie` = trecut SI `confirmata=0` SI
+  proiect nedeschis, aceeasi conditie in `de_decis`. Bifa se vede ca „Făcut"
+  (panoul zilei + `ImplPeriods`), se scoate cu „Nu s-a făcut", si NU se pierde
+  la mutarea perioadei. Statusul proiectului se schimba doar din formularul lui.
+  Capcana obisnuita: `INSERT INTO implementari` din restore-ul de backup
+  enumera coloanele explicit — fara `confirmata` acolo, un restore stergea
+  bifele in tacere.
+- **2026-08-07 — `scripts/test_suite.py` crapa pe Windows inainte de orice test.**
+  `Path.read_text()` fara `encoding` cade pe cp1252, iar `google_calendar.py` are
+  ghilimele romanesti in comentarii: `UnicodeDecodeError` in analiza statica, deci
+  ZERO teste rulate. Cele trei citiri au acum `encoding='utf-8'`.
 - **2026-08-04 (5) — Sfera nu e filtru: comutator segmentat, nu chip-uri.**
   Ion, a doua observatie pe acelasi rand: Munca/Personal aratau tot ca
   Active/Arhiva. Dar sfera schimba IN CE LUME esti; filtrul alege ce subset

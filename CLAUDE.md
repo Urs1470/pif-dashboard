@@ -44,7 +44,7 @@ Append important decisions/gotchas to the "Recent decisions" section of `docs/me
 
 ```
 app.py                    # Flask entry, auth, CSP headers, rate limiter
-database.py               # Schema (9 tables), migrations v1-v28, WAL config
+database.py               # Schema (9 tables), migrations v1-v39, WAL config
 utils.py                  # login_required decorator, UUID, app_settings KV
 csrf.py                   # Double-submit CSRF (cookie + X-CSRF-Token header)
 labels.py                 # Centralized status labels (project + task states)
@@ -66,13 +66,13 @@ static/
 
 ## Database
 
-SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 34 migrations (idempotent).
+SQLite file: `pif_dashboard.db` (gitignored). 9 tables, 39 migrations (idempotent).
 
 **Core tables:** proiecte, tasks, task_subtasks (FK CASCADE), task_dependencies, global_tasks, implementari, clienti
 
 **Specialized:** app_settings (KV store), schema_version
 
-**Migrations:** `database.py` — `run_migrations()` chains v1 through v34. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
+**Migrations:** `database.py` — `run_migrations()` chains v1 through v39. Each is idempotent. Auto-runs on first request via `before_request`. (v20 dropped Budget Tracker; v22 dropped timer & jurnal — orele se ponteaza in e100, jurnalul se scrie in observatii; v23 dropped Checklist PIF + Project Templates + Hermes AI — cod mort, zero UI; **v28 dropped parametri_master, fault_codes, echipamente, atasamente** — restrangere de scop la organizare/monitorizare de proiecte, vezi mai jos.)
 
 ### Restrangere de scop (v28, 2026-07-27)
 
@@ -243,6 +243,35 @@ decide ce vezi in Calendar nu are voie sa fie invizibil.
 
 Taierea e doar la CITIRE (`/api/calendar`, `/api/export/ics`); baza rămâne neatinsa, iar
 Ganttul propriu al proiectului arata toate perioadele.
+
+### „S-a facut" e despre PERIOADA, nu despre proiect (v39, 2026-08-07)
+
+Ion: *„daca dau ca s-a facut in calendar la o implementare nu trebuie sa se marcheze
+ca finalizat proiectul, trebuie sa ramana tot in perioada de pregatire. Dupa
+implementare pot sa mai am de facut pv-uri sau altceva, sau poate va mai trebui de
+facut vizita pe care nu stiu cand va fi."*
+
+Panoul zilei intreba despre perioada („A trecut. S-a făcut?") si raspundea pe proiect:
+butonul „Da" chema `PUT /api/proiecte/<id>` cu `status = 'finalizat'`. Doua obiecte
+diferite pe acelasi buton.
+
+Greseala se si auto-ascundea: un proiect inchis iese din „Proiecte fara perioada" (vezi
+`neplanificate` in `/api/calendar`), deci exact vizita urmatoare — cea pe care n-o poti
+inca data — nu mai avea de unde sa fie planificata. Deplasarea inchidea lucrarea.
+
+`implementari.confirmata` (v39) tine raspunsul acolo unde s-a pus intrebarea.
+`necesita_decizie` = a trecut **SI** `confirmata = 0` **SI** proiectul nu e inchis;
+aceeasi conditie in `de_decis` (deciziile ramase in urma ferestrei) si in KPI-ul „de
+clarificat". Statusul proiectului se schimba **doar** din formularul lui, langa
+„Finalizat pe" — un singur loc, cu numele scris pe el.
+
+Bifa se vede in panoul zilei ca eticheta verde „Făcut" (langa loc si faza — toate trei
+sunt despre perioada) si in lista de perioade a proiectului. Anularea sta jos, intre
+actiuni, si se numeste **„Nu s-a făcut"**: e raspunsul opus la aceeasi intrebare si nu
+se poate confunda cu „Scoate", care scoate perioada din calendar.
+
+Mutarea unei perioade **nu** reseteaza bifa: „am fost pe 5, nu pe 4" e o corectare de
+consemnare, nu o replanificare.
 
 ### Trei campuri scoase din formularul de proiect (v36, 2026-07-30)
 

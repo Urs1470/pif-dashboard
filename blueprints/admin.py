@@ -561,12 +561,13 @@ def restore_database():
         for im in data.get('implementari', []):
             cursor.execute('''
                 INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit,
-                    locatie, faza, eticheta, ordine, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    locatie, faza, eticheta, ordine, confirmata, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (im.get('id'), im.get('proiect_id'), im.get('data_start'),
                   im.get('data_sfarsit'), im.get('locatie') or 'site',
                   im.get('faza') or 'implementare',
-                  im.get('eticheta'), im.get('ordine', 0), im.get('created_at')))
+                  im.get('eticheta'), im.get('ordine', 0),
+                  1 if im.get('confirmata') else 0, im.get('created_at')))
 
         # Calcule atasate proiectelor (v37). Campurile JSON se scriu ca text, asa
         # cum stau in tabela — restore-ul nu le interpreteaza.
@@ -925,12 +926,13 @@ def calendar_view():
                      AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) > date(COALESCE(NULLIF(p.data_finalizare, ''), date('now')))
                     THEN date(COALESCE(NULLIF(p.data_finalizare, ''), date('now')))
                     ELSE i.data_sfarsit END AS data_sfarsit,
-               i.eticheta, i.locatie, i.faza,
+               i.eticheta, i.locatie, i.faza, COALESCE(i.confirmata, 0) AS confirmata,
                p.id AS proiect_id, p.nume, p.client, p.locatie AS locatie_proiect,
                p.status, p.tip,
                (SELECT COUNT(*) FROM tasks t
                  WHERE t.proiect_id = p.id AND t.status != 'done') AS taskuri_deschise,
                (CASE WHEN p.status != 'finalizat'
+                      AND COALESCE(i.confirmata, 0) = 0
                       AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) < date('now')
                      THEN 1 ELSE 0 END) AS necesita_decizie
         FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
@@ -942,12 +944,15 @@ def calendar_view():
     perioade = [dict(r) for r in cursor.fetchall()]
 
     # Tot ce cere o decizie, chiar daca a ramas in urma ferestrei afisate —
-    # altfel navighezi pe luna viitoare si semnalul dispare.
+    # altfel navighezi pe luna viitoare si semnalul dispare. Aceeasi conditie ca
+    # `necesita_decizie` de mai sus: perioadele bifate au primit raspuns si nu
+    # mai intreaba (v39).
     cursor.execute("""
         SELECT i.id, i.data_start, i.data_sfarsit, i.eticheta, i.locatie, i.faza,
                p.id AS proiect_id, p.nume, p.client, p.status
         FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
         WHERE p.status NOT IN ('finalizat', 'anulat')
+          AND COALESCE(i.confirmata, 0) = 0
           AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) < date('now')
         ORDER BY i.data_start
     """)

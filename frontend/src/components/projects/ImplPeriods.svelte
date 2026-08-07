@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { MapPin, Building2, Plus, CalendarRange, Pencil } from '@lucide/svelte'
+  import { MapPin, Building2, Plus, CalendarRange, Pencil, Check } from '@lucide/svelte'
   import { apiJson } from '../../lib/api.js'
   import { formatDate } from '../../lib/formatters.js'
   import ImplPeriodModal from './ImplPeriodModal.svelte'
@@ -49,6 +49,10 @@
           </span>
           <span class="ip-range">{formatDate(p.data_start)} – {formatDate(p.data_sfarsit)}{#if days(p)}<span class="ip-days">{days(p)} zile</span>{/if}</span>
           {#if p.eticheta}<span class="ip-tag">{p.eticheta}</span>{/if}
+          <!-- Doar semnul, nu si comutatorul: bifa se pune si se scoate din
+               Calendar, pe ziua respectiva, unde te si intreaba. Aici ar fi un al
+               doilea loc din care se schimba acelasi lucru. -->
+          {#if p.confirmata}<span class="ip-fac"><Check size={12} /> Făcut</span>{/if}
           <Pencil size={13} class="ip-edit" />
         </button>
       {/each}
@@ -73,6 +77,9 @@
   .ip-range { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); display: inline-flex; align-items: center; gap: 8px; }
   .ip-days { font-size: var(--font-micro); color: var(--text-dim); }
   .ip-tag { font-size: var(--font-micro); background: var(--bg-elevated); color: var(--text-dim); padding: 1px 7px; border-radius: var(--radius-xs); }
+  /* Acelasi semn ca in panoul zilei din Calendar: verde conturat, nu plin. */
+  .ip-fac { display: inline-flex; align-items: center; gap: 3px; font-size: var(--font-micro); color: var(--success);
+            padding: 1px 7px; border-radius: var(--radius-full); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
   .ip-item :global(.ip-edit) { margin-left: auto; color: var(--text-faint); flex-shrink: 0; }
   .ip-item:hover :global(.ip-edit) { color: var(--accent); }
 

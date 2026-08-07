@@ -12,7 +12,7 @@
   // plecare, nu ca un bloc care inghite lucrarile.
   import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Download } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
@@ -361,11 +361,21 @@
   }
 
   // ===== actiuni =====
-  async function setStatus(p, status) {
+  /** „S-a facut?" e o intrebare despre PERIOADA, deci raspunsul se scrie tot pe
+   *  ea. Pana in v39, „Da" chema `PUT /api/proiecte {status: 'finalizat'}` —
+   *  adica inchidea proiectul pentru ca ai fost intr-o deplasare. Ion: „dupa
+   *  implementare pot sa mai am de facut pv-uri sau altceva, sau poate va mai
+   *  trebui de facut vizita pe care nu stiu cand va fi."
+   *
+   *  Si greseala se ascundea singura: proiectul inchis iese din „Proiecte fara
+   *  perioada", deci exact vizita aia nedatata nu mai avea de unde sa fie
+   *  planificata. Proiectul se inchide doar din formularul lui, langa
+   *  „Finalizat pe". */
+  async function confirma(p, val) {
     busy = p.id
     try {
-      await apiJson(`/api/proiecte/${p.proiect_id}`, { method: 'PUT', body: { status } })
-      toast(`„${p.nume}" — ${PROJECT_STATUS_LABELS[status] || status}`, 'success')
+      await apiJson(`/api/implementari/${p.id}`, { method: 'PUT', body: { confirmata: val } })
+      toast(val ? 'S-a făcut · proiectul rămâne deschis' : 'Bifa scoasă', 'success')
       await load(true)
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
@@ -732,16 +742,33 @@
                        diferite. -->
                   <span class="loc" title="Unde ești în ziua asta">{p.locatie === 'sediu' ? 'Sediu' : 'Site'}</span>
                   <span class="loc faza" class:pal={p.faza === 'pregatire'} title="Faza acestei perioade">{p.faza === 'pregatire' ? 'Pregătire' : 'Implementare'}</span>
+                  <!-- Bifa e tot despre perioadă, deci stă lipită de loc și fază.
+                       Rămâne etichetă, nu buton: pe deget un chip de 15px e exact
+                       ținta pe care o ratezi. Anularea stă jos, între acțiuni. -->
+                  {#if p.confirmata}
+                    <span class="loc fac" title="Perioada s-a făcut. Statusul proiectului nu s-a schimbat."><Check size={11} /> Făcut</span>
+                  {/if}
                   <span class="tk" class:warn={!p.taskuri_deschise}>{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}</span>
                 </div>
                 {#if p.necesita_decizie}
                   <div class="dec">
                     <span class="dec-q">A trecut. S-a făcut?</span>
-                    <button class="b ok" disabled={busy === p.id} onclick={() => setStatus(p, 'finalizat')}><Check size={12} /> Da</button>
+                    <button class="b ok" disabled={busy === p.id} onclick={() => confirma(p, 1)}
+                            title="Bifează perioada ca făcută. Proiectul NU se închide — asta se face din pagina proiectului.">
+                      <Check size={12} /> Da
+                    </button>
                     <button class="b" disabled={busy === p.id} onclick={() => muta(p, azi)}><Undo2 size={12} /> Mută pe azi</button>
                   </div>
                 {/if}
                 <div class="dec">
+                  <!-- Calea de intoarcere pentru bifă. „Nu s-a făcut", nu „Scoate
+                       bifa": e răspunsul opus la aceeași întrebare, și nu se poate
+                       confunda cu „Scoate", care scoate perioada din calendar. -->
+                  {#if p.confirmata}
+                    <button class="b" disabled={busy === p.id} onclick={() => confirma(p, 0)}>
+                      <X size={12} /> Nu s-a făcut
+                    </button>
+                  {/if}
                   <button class="b" disabled={busy === p.id}
                           onclick={() => { mutaId = mutaId === p.id ? '' : p.id; mutaVal = '' }}>
                     <CalendarDays size={12} /> Mută
@@ -984,6 +1011,10 @@
   /* Faza preia limbajul barelor: palid = pregatire, plin = implementare. */
   .it-m .faza { background: color-mix(in srgb, var(--c) 26%, transparent); color: var(--text); }
   .it-m .faza.pal { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent); color: var(--text-secondary); }
+  /* Verdele spune „s-a facut", nu „urgent" — e singurul loc din rand unde
+     culoarea nu tine de identitatea proiectului, si de aia e conturat, nu plin. */
+  .it-m .fac { display: inline-flex; align-items: center; gap: 3px; background: none;
+               color: var(--success); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
   .it-m .tk.warn { color: var(--warning); }
 
   .dec { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }

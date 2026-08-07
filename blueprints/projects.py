@@ -1078,6 +1078,10 @@ def _impl_row(r):
         'faza': d.get('faza') or 'implementare',
         'eticheta': d.get('eticheta') or '',
         'ordine': d.get('ordine') or 0,
+        # v39: perioada s-a facut. Raspunsul la „a trecut, s-a facut?" sta aici,
+        # nu pe statusul proiectului — dupa implementare mai raman PV-uri, si
+        # poate o vizita pe care inca n-o poti data.
+        'confirmata': 1 if d.get('confirmata') else 0,
     }
 
 
@@ -1132,6 +1136,12 @@ def update_implementare(impl_id):
         faza = faza.strip().lower()
         if faza not in _IMPL_FAZA:
             faza = None
+    # Confirmarea se muta in ambele sensuri: se bifeaza dintr-o singura apasare,
+    # deci trebuie sa se poata si scoate din una. Mutarea perioadei NU o reseteaza
+    # — „am fost pe 5, nu pe 4" e o corectare de consemnare, nu o replanificare.
+    confirmata = data.get('confirmata')
+    if confirmata is not None:
+        confirmata = 1 if confirmata in (1, True, '1', 'true') else 0
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''UPDATE implementari SET
@@ -1140,10 +1150,11 @@ def update_implementare(impl_id):
                         locatie = COALESCE(?, locatie),
                         faza = COALESCE(?, faza),
                         eticheta = COALESCE(?, eticheta),
-                        ordine = COALESCE(?, ordine)
+                        ordine = COALESCE(?, ordine),
+                        confirmata = COALESCE(?, confirmata)
                       WHERE id = ?''',
                    (data.get('data_start'), data.get('data_sfarsit'), loc, faza,
-                    data.get('eticheta'), data.get('ordine'), impl_id))
+                    data.get('eticheta'), data.get('ordine'), confirmata, impl_id))
     updated = cursor.rowcount
     conn.commit()
     conn.close()

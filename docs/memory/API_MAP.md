@@ -6,7 +6,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 **Total: 87 rute.**
 
 
-## blueprints/admin.py (13 rute)
+## blueprints\admin.py (13 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -16,15 +16,15 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/export/ics` | `export_ics` | 303 |
 | GET | `/api/backup` | `backup_database` | 428 |
 | POST | `/api/restore` | `restore_database` | 461 |
-| GET | `/admin/db-upload` | `admin_db_upload_page` | 624 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 670 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 747 |
-| GET | `/api/search` | `global_search` | 806 |
-| GET | `/api/settings/plan-departament` | `plan_departament_get` | 857 |
-| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 868 |
-| GET | `/api/calendar` | `calendar_view` | 885 |
+| GET | `/admin/db-upload` | `admin_db_upload_page` | 625 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 671 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 748 |
+| GET | `/api/search` | `global_search` | 807 |
+| GET | `/api/settings/plan-departament` | `plan_departament_get` | 858 |
+| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 869 |
+| GET | `/api/calendar` | `calendar_view` | 886 |
 
-## blueprints/google_calendar.py (6 rute)
+## blueprints\google_calendar.py (6 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -35,7 +35,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | POST | `/api/google/resync` | `google_resync` | 516 |
 | POST | `/api/google/disconnect` | `google_disconnect` | 525 |
 
-## blueprints/obsidian.py (7 rute)
+## blueprints\obsidian.py (7 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -47,7 +47,7 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 348 |
 | PUT | `/api/obsidian/note` | `obsidian_note_put` | 480 |
 
-## blueprints/projects.py (22 rute)
+## blueprints\projects.py (22 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -66,15 +66,15 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 | POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 587 |
 | POST | `/api/import-archive/preview` | `preview_import_archive` | 797 |
 | POST | `/api/import/debrief` | `import_debrief` | 846 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1084 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1095 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1121 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1155 |
-| GET | `/api/proiecte/<project_id>/calcule` | `get_calcule` | 1193 |
-| POST | `/api/proiecte/<project_id>/calcule` | `create_calcul` | 1204 |
-| DELETE | `/api/calcule/<calc_id>` | `delete_calcul` | 1236 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1088 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1099 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1125 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1166 |
+| GET | `/api/proiecte/<project_id>/calcule` | `get_calcule` | 1204 |
+| POST | `/api/proiecte/<project_id>/calcule` | `create_calcul` | 1215 |
+| DELETE | `/api/calcule/<calc_id>` | `delete_calcul` | 1247 |
 
-## blueprints/tasks.py (23 rute)
+## blueprints\tasks.py (23 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
