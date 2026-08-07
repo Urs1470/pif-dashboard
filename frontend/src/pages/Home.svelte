@@ -15,29 +15,24 @@
   // Fara contoare, pagina nu mai are ce cere de la API: TodayBoard isi incarca
   // singur datele din stores/agenda. Asa ca /api/dashboard/home nu se mai apeleaza
   // de nicaieri.
-  import { onMount, onDestroy } from 'svelte'
+  // SALUTUL A PLECAT DIN BARA, IAR ZIUA S-A MUTAT PE BOARD.
+  //
+  // Statea in `ui.pageHeader`, deci in bara de sus: `position: absolute;
+  // left: 50%`, la o marime pe care n-o numea niciun token, si `display: none`
+  // sub 768px. Trei lucruri nu mergeau deodata:
+  //   — pe telefon nu se vedea nimic din el, deci Acasa era singurul ecran care
+  //     nu spunea CE ZI E (celelalte pagini au titlu propriu; Acasa nu are,
+  //     tocmai ca sa nu existe o banda in plus — cele doua reguli se anulau);
+  //   — era scris o data, la montare: dashboardul deschis dimineata scria „Bună
+  //     dimineața" si la sapte seara;
+  //   — „Bună dimineața, Ion" e singurul titlu al paginii, dar nu e un titlu:
+  //     nu spune nimic despre ce urmeaza sa faci.
+  //
+  // Bara ramane ce e — identitate si tema. Ziua trece pe capul boardului, unde
+  // scria deja „Astăzi": zero randuri in plus, aceeasi informatie pe ambele
+  // ecrane, si se recalculeaza singura (vezi TodayBoard).
   import TodayBoard from '../components/TodayBoard.svelte'
   import UrmatoareaIesire from '../components/UrmatoareaIesire.svelte'
-  import { ui } from '../stores/ui.svelte.js'
-
-  function greeting() {
-    const h = new Date().getHours()
-    if (h < 12) return 'Bună dimineața'
-    if (h < 18) return 'Bună ziua'
-    return 'Bună seara'
-  }
-
-  function todayRO() {
-    return new Date().toLocaleDateString('ro-RO', {
-      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-    })
-  }
-
-  onMount(() => {
-    // Salutul sta in bara de sus (header) — nu avem banda separata pe pagina.
-    ui.pageHeader = { title: `${greeting()}, Ion`, subtitle: todayRO() }
-  })
-  onDestroy(() => { ui.pageHeader = { title: '', subtitle: '' } })
 </script>
 
 <div class="page">

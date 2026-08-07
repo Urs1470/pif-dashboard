@@ -11,6 +11,8 @@
   import Home from './pages/Home.svelte'
   import Skeleton from './components/ui/Skeleton.svelte'
 
+  let paleta = $state(null)
+
   const lazyCache = {}
   function lazy(loader) {
     return { _lazy: true, loader }
@@ -90,8 +92,10 @@
     </main>
   </div>
 
-  <Dock />
-  <CommandPalette />
+  <!-- Docul cheama paleta printr-o functie exportata, nu printr-o apasare de
+       taste fabricata (vezi `deschide()` din CommandPalette). -->
+  <Dock deschideCautarea={() => paleta?.deschide()} />
+  <CommandPalette bind:this={paleta} />
   <Toast />
   <!-- Un singur tooltip pentru toata aplicatia; citeste atributele `title`. -->
   <Tooltip />

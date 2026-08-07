@@ -83,8 +83,10 @@
   }
   .brand-sep { color: var(--text-faint); }
 
-  /* Context de pagina (ex. salutul de pe Home) — CENTRAT in bara, separat de
-     brand si actiuni prin spatiu. pointer-events:none ca sa nu blocheze clickuri. */
+  /* Context de pagina (Calendar, Departament) — CENTRAT in bara, separat de
+     brand si actiuni prin spatiu. pointer-events:none ca sa nu blocheze clickuri.
+     Acasa NU mai scrie aici: salutul si ziua au coborat pe capul boardului, unde
+     se vad si pe telefon (vezi Home.svelte). */
   .header-context {
     position: absolute;
     left: 50%;
@@ -137,8 +139,8 @@
   }
 
   @media (max-width: 768px) {
-    /* Pe telefon salutul centrat se suprapunea peste brand (nu incape la 390px).
-       Il ascundem complet — brandul + titlul propriu al paginii sunt de ajuns. */
+    /* Pe telefon contextul centrat se suprapune peste brand (nu incape la 390px).
+       Il ascundem — paginile care il folosesc au si titlu propriu in pagina. */
     .header-context { display: none; }
     .header {
       flex-wrap: wrap;

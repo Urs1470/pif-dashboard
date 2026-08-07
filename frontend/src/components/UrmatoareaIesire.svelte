@@ -9,7 +9,7 @@
   //
   // Datele vin din /api/calendar, care le calculează deja pentru Calendar.
   import { onMount } from 'svelte'
-  import { MapPin, Building2, AlertTriangle, ChevronRight } from '@lucide/svelte'
+  import { MapPin, Building2, AlertTriangle, ChevronRight, CalendarX2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate } from '../lib/router.svelte.js'
   import { todayISO, addDays, diffDays, shortDate } from '../lib/calendarDates.js'
@@ -68,6 +68,12 @@
   const deClarificat = $derived((data?.de_decis || []).length)
   const faraPerioada = $derived((data?.neplanificate || []).length)
 
+  // `de_decis` vine sortat dupa `data_start`, deci prima e cea mai veche. Chipul
+  // nu mai duce in Calendar „undeva", ci exact pe ziua ei — de aceea scrie „1 / N":
+  // spune si cate au ramas, si pe a cata te duce. Un contor care spune doar „3"
+  // te lasa sa le cauti singur prin luni.
+  const primaDeClarificat = $derived((data?.de_decis || [])[0]?.data_start || '')
+
   function cand(d) {
     const k = diffDays(azi, d.start)
     if (k <= 0) return d.end >= azi ? 'Acum' : 'Azi'
@@ -93,7 +99,14 @@
 {#if data}
   <div class="ctx">
     {#if acum}
-      <button class="pr" style="--c: {acum.sediu ? 'var(--purple)' : 'var(--accent)'}"
+      <!-- LOCATIA ISI FOLOSESTE TOKENUL. Aici scria `--purple` pentru sediu si
+           `--accent` pentru teren — adica un fapt binar imprumuta cerneala
+           IDENTITATII aplicatiei, si inca violetul pe care tura 1 tocmai il
+           scosese de pe antetul „Personal". Comentariul din tokens.css spune de
+           ce exista perechea: „erau opt valori scrise de mana in patru fisiere,
+           cu TREI ambere diferite pentru acelasi «sediu»". Linia asta era al
+           cincilea fisier. Acum e aceeasi pereche ca in Calendar si Planificator. -->
+      <button class="pr" style="--c: {acum.sediu ? 'var(--loc-sediu)' : 'var(--loc-site)'}"
               onclick={() => navigate(`/calendar?zi=${acum.start}`)}
               title="Vezi în Calendar">
         <span class="ico">
@@ -115,16 +128,27 @@
     {:else}
       <span class="gol">
         <MapPin size={14} /> Nicio ieșire planificată
-        {#if faraPerioada}<span class="sep">·</span>{faraPerioada} {faraPerioada === 1 ? 'proiect' : 'proiecte'} fără perioadă{/if}
       </span>
     {/if}
 
     <span class="spatiu"></span>
 
+    <!-- Cele doua contoare stau impreuna, in capatul din dreapta, si se deosebesc
+         prin TON: rosu pentru ce e gresit acum, neutru pentru ce lipseste.
+         „Fara perioada" aparea doar in ramura goala — adica exact cand n-aveai
+         nimic de facut. Dar un proiect fara nicio zi planificata e o scapare mai
+         ales cand ai altele in derulare: atunci se pierde, nu cand ecranul e gol. -->
+    {#if faraPerioada}
+      <button class="ct-nr" onclick={() => navigate('/calendar')}
+              title="{faraPerioada} {faraPerioada === 1 ? 'proiect activ fără nicio zi planificată' : 'proiecte active fără nicio zi planificată'}">
+        <CalendarX2 size={13} /> <span class="ct-n">{faraPerioada}</span> fără perioadă
+      </button>
+    {/if}
+
     {#if deClarificat}
-      <button class="dec" onclick={() => navigate('/calendar')}
-              title="Perioade trecute, cu proiectul neînchis">
-        <AlertTriangle size={13} /> {deClarificat} de clarificat <ChevronRight size={13} />
+      <button class="ct-nr rau" onclick={() => navigate(`/calendar?zi=${primaDeClarificat}`)}
+              title="Perioade trecute, cu proiectul neînchis — te duce la cea mai veche">
+        <AlertTriangle size={13} /> <span class="ct-n">1 / {deClarificat}</span> de clarificat <ChevronRight size={13} />
       </button>
     {/if}
   </div>
@@ -134,6 +158,15 @@
       <AlertTriangle size={14} /> Ieșirile nu s-au putut încărca
     </span>
     <button class="reinc" onclick={incarca}>Reîncearcă</button>
+  </div>
+{:else}
+  <!-- LINIA ISI TINE LOCUL CAT TIMP SE INCARCA. Pana raspundea API-ul componenta
+       nu randa NIMIC, deci boardul „Astazi" statea lipit de bara si sarea in jos
+       cu ~46px in clipa in care sosea raspunsul — fix cand incepeai sa citesti
+       primul task, si fix pe ecranul cu care incepi ziua. Nu e un schelet cu
+       continut fals: e aceeasi caseta, goala, ca sa nu se miste nimic sub ochi. -->
+  <div class="ctx" aria-hidden="true">
+    <span class="pr fantoma"></span>
   </div>
 {/if}
 
@@ -189,13 +222,33 @@
     transition: var(--transition-colors); min-height: 26px; }
   .reinc:hover { border-color: var(--accent); color: var(--accent); }
 
-  .dec {
-    display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+  /* Doua contoare, aceeasi haina, tonul e singura diferenta: neutru = ce
+     lipseste, rosu = ce e gresit acum. Cifra e mono si tabulara — se compara de
+     la o zi la alta. */
+  .ct-nr {
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
     font-size: var(--font-small); padding: 4px 8px 4px 10px; border-radius: var(--radius-full);
-    border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
-    background: var(--danger-subtle); color: var(--danger); cursor: pointer;
+    border: 1px solid var(--border); background: var(--bg-surface);
+    color: var(--text-dim); cursor: pointer;
+    transition: var(--transition-colors);
   }
-  .dec:hover { border-color: var(--danger); }
+  .ct-nr:hover { border-color: var(--text-dim); color: var(--text-secondary); }
+  .ct-n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+
+  .ct-nr.rau {
+    border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+    background: var(--danger-subtle); color: var(--danger);
+  }
+  .ct-nr.rau:hover { border-color: var(--danger); color: var(--danger); }
+  .ct-nr.rau .ct-n { color: var(--danger); }
+
+  /* Casuta care tine locul liniei cat timp se incarca — aceeasi inaltime, fara
+     chenar si fara puls: nu anunta continut, doar nu lasa pagina sa sara. */
+  .pr.fantoma {
+    border-color: transparent; background: transparent;
+    border-left-color: transparent; min-height: 30px; width: 220px;
+    pointer-events: none;
+  }
 
   @media (max-width: 760px) {
     .ctx { gap: var(--space-sm); }
@@ -231,7 +284,9 @@
       display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
     }
 
-    .dec { min-height: var(--tap-min); padding: 4px 12px; font-size: var(--font-small); }
+    /* Amandoua contoarele la 44px, pe acelasi rand — sunt tinte, nu etichete. */
+    .ct-nr { min-height: var(--tap-min); padding: 4px 12px; }
     .gol { min-height: var(--tap-min); }
+    .pr.fantoma { min-height: var(--tap-min); width: 100%; }
   }
 </style>

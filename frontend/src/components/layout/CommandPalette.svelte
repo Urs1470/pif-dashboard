@@ -174,6 +174,18 @@
     selected = 0
   }
 
+  /** Deschide paleta din afara (docul de pe telefon).
+   *
+   *  Exista fiindca butonul de cautare din doc trimitea un `KeyboardEvent`
+   *  SINTETIC catre fereastra si spera ca paleta il asculta — adica lega un
+   *  buton de o scurtatura de tastatura, pe un ecran unde nu exista Ctrl. Mergea,
+   *  dar daca paleta si-ar fi schimbat vreodata ascultatorul, butonul s-ar fi
+   *  stins fara nicio eroare nicaieri. */
+  export function deschide() {
+    open = true
+    requestAnimationFrame(() => inputEl?.focus())
+  }
+
   function onGlobalKey(e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault()

@@ -38,6 +38,32 @@
 
   const restanteCount = $derived(agenda.items.filter(i => i.is_restant).length)
 
+  // ZIUA SE SCRIE AICI, O SINGURA DATA PE ECRAN.
+  // Statea in bara de sus, ca subtitlu al salutului („Bună dimineața, Ion ·
+  // vineri, 7 august 2026") — deci pe telefon nu se vedea deloc: `.header-context`
+  // e `display: none` sub 768px, cu motivul scris in cod („brandul + titlul
+  // propriu al paginii sunt de ajuns"). Numai ca Acasa e SINGURA pagina fara
+  // titlu propriu, tocmai ca sa nu existe o banda in plus. Cele doua reguli se
+  // anulau reciproc si ramanea un ecran care nu spune ce zi e.
+  // Capul boardului scrie deja „Astăzi", deci ziua nu costa niciun rand nou.
+  //
+  // Se RECALCULEAZA, nu se scrie la montare: dashboardul ramane deschis peste
+  // noapte, iar o data gresita pe ecranul cu care incepi ziua e mai rea decat
+  // niciuna. `azi` se improspateaza cand tabul redevine vizibil — momentul in
+  // care te uiti la el — si la trecerea de miezul noptii daca ramane deschis.
+  // Majuscula se pune pe PRIMA litera, nu prin `text-transform: capitalize` —
+  // acela ar scrie „Vineri, 7 August", iar in romana luna e cu litera mica.
+  let azi = $state(new Date())
+  const ziua = $derived.by(() => {
+    const s = azi.toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long' })
+    return s.charAt(0).toUpperCase() + s.slice(1)
+  })
+
+  function improspateazaZiua() {
+    const acum = new Date()
+    if (acum.toDateString() !== azi.toDateString()) azi = acum
+  }
+
   // isOverdue/isSoon vin din formatters.js — aceeasi axa si aceleasi praguri ca
   // dueColor(), o singura definitie pentru toate listele.
 
@@ -173,7 +199,16 @@
 
   onMount(() => {
     loadAgendaToday()
-    return () => inchideGlisarea()
+    // Un ceas care bate la fiecare minut ar fi risipa pentru un text care se
+    // schimba o data pe zi: verificam cand tabul redevine vizibil, plus un tic
+    // rar pentru cazul in care ramane deschis peste miezul noptii.
+    document.addEventListener('visibilitychange', improspateazaZiua)
+    const tic = setInterval(improspateazaZiua, 60_000)
+    return () => {
+      document.removeEventListener('visibilitychange', improspateazaZiua)
+      clearInterval(tic)
+      inchideGlisarea()
+    }
   })
 </script>
 
@@ -182,6 +217,8 @@
     <div class="bh-left">
       <CalendarCheck size={17} />
       <h2>Astăzi</h2>
+      <span class="bh-sep" aria-hidden="true">·</span>
+      <span class="bh-zi">{ziua}</span>
       <span class="count" title="{agenda.items.length} pe azi">{agenda.items.length}</span>
       {#if restanteCount > 0}<span class="count danger" title="{restanteCount} restante">{restanteCount}</span>{/if}
     </div>
@@ -387,6 +424,11 @@
   .board-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); }
   .bh-left { display: flex; align-items: center; gap: var(--space-xs); color: var(--text); min-width: 0; }
   .bh-left h2 { font-family: var(--font-heading); letter-spacing: var(--tracking-tight); font-size: var(--font-h3); font-weight: var(--fw-semibold); }
+  /* Ziua e context, nu titlu: acelasi rang vizual ca subtitlul pe care il avea
+     in bara, dar pe ecranul unde se si vede. */
+  .bh-sep { color: var(--text-faint); }
+  .bh-zi { font-size: var(--font-small); color: var(--text-dim);
+           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   /* `.bh-count` / `.bh-restante` au plecat: sunt `.count` si `.count danger` din
      global.css — aceeasi pastila ca peste tot (vezi comentariul de acolo). */
   .bh-add { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); flex-shrink: 0; }
