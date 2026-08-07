@@ -1556,6 +1556,17 @@ def get_plan():
         fin = (item.get('data_finalizare') or '')[:10]
         return bool(fin) and start_s <= fin < end_s
 
+    # CE A SCAPAT INAINTEA FERESTREI NU MAI DISPARE.
+    # Fereastra porneste mereu din ziua de azi, deci un task cu termen ieri cadea
+    # inaintea ei: `_in_window` il respingea, iar in sertarul „fara termen" nu intra
+    # (acolo intra doar cele fara data). Practic Planificatorul nu putea arata
+    # restantul — iar regulile scrise pentru el (`.bar.urgent`, `.mt-pin.urgent`)
+    # nu se puteau aplica niciodata. Ele nu tin de fereastra, deci nu primesc
+    # geometrie: se desenea intr-o coloana proprie, lipita la stanga grilei.
+    def _restant(item):
+        scad = (item.get('data_scadenta') or '')[:10]
+        return bool(scad) and scad < start_s and item.get('status') != 'done'
+
     conn = get_db()
     cursor = conn.cursor()
 
@@ -1577,10 +1588,13 @@ def get_plan():
              )''',
         {'today': today})
     tasks_by_project = {}
+    restante_by_project = {}
     for r in cursor.fetchall():
         item = _agenda_item(row_to_dict(r), 'proiect', today)
         if _in_window(item):
             tasks_by_project.setdefault(item['proiect_id'], []).append(item)
+        elif _restant(item):
+            restante_by_project.setdefault(item['proiect_id'], []).append(item)
 
     def _task_sort_key(t):
         cand = [x for x in ((t['data_scadenta'] or '')[:10],) if x]
@@ -1618,7 +1632,8 @@ def get_plan():
         band = _span_intersects(inc, ultima, start_s, end_s)
         pimpl = [im for im in toate_impl
                  if _span_intersects(im['data_start'], im['data_sfarsit'], start_s, end_s)]
-        if not ptasks and not band and not pimpl:
+        prestante = sorted(restante_by_project.get(pid, []), key=_task_sort_key)
+        if not ptasks and not band and not pimpl and not prestante:
             continue
         lanes.append({
             'tip': 'proiect',
@@ -1629,6 +1644,7 @@ def get_plan():
             'prima_zi': inc,
             'ultima_zi': ultima,
             'tasks': ptasks,
+            'restante': prestante,
             'implementari': pimpl,
         })
 
@@ -1642,15 +1658,19 @@ def get_plan():
              )''',
         {'today': today})
     gtasks = []
+    grestante = []
     for r in cursor.fetchall():
         item = _agenda_item(row_to_dict(r), 'global', today)
         if _in_window(item):
             gtasks.append(item)
-    if gtasks:
+        elif _restant(item):
+            grestante.append(item)
+    if gtasks or grestante:
         lanes.append({
             'tip': 'global', 'id': '__global__', 'nume': 'Globale',
             'tip_proiect': '', 'status': '', 'prima_zi': '', 'ultima_zi': '',
-            'tasks': sorted(gtasks, key=_task_sort_key), 'implementari': [],
+            'tasks': sorted(gtasks, key=_task_sort_key),
+            'restante': sorted(grestante, key=_task_sort_key), 'implementari': [],
         })
 
     # Backlog: open tasks with NO plan and NO deadline — nowhere to place on the
@@ -1680,7 +1700,7 @@ def get_plan():
     # (acelasi tipar ca la /api/global-tasks si /api/agenda). Fara el, chipul „1/4"
     # ar lipsi tocmai in Planificator, deci acelasi task ar arata altfel decat in
     # celelalte trei liste.
-    toate = [x for l in lanes for x in l.get('tasks', [])] + backlog
+    toate = [x for l in lanes for x in l.get('tasks', []) + l.get('restante', [])] + backlog
     ids = [x['id'] for x in toate if x.get('id')]
     if ids:
         ph = ','.join('?' * len(ids))
@@ -1700,7 +1720,9 @@ def get_plan():
 
     conn.close()
 
-    # Lane order: projects by earliest in-window activity, Globale last.
+    # Lane order: projects by earliest in-window activity, Globale last. Restantele
+    # NU intra in cheie: fiind toate inaintea ferestrei, ar da acelasi minim tuturor
+    # benzilor care au vreuna si ar rupe ordinea celor care chiar au treaba maine.
     def _lane_key(l):
         dates = []
         for t in l['tasks']:

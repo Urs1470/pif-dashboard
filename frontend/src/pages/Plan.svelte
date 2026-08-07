@@ -42,27 +42,64 @@
 
   const columns = $derived(buildColumns(plan.start, plan.days))
   const unit = $derived(columns.unit)
+  // Latimea REALA a pistei, masurata din antet (aceeasi coloana ca `.lane-track`).
+  // Impachetarea are nevoie de ea ca sa stie cati pixeli inseamna o eticheta in
+  // procente — vezi `intinderea`. Pana la prima masuratoare cade pe latimea minima,
+  // adica pe cazul cel mai inghesuit.
+  let pistaMasurata = $state(0)
   const todayIdx = $derived(plan.start && plan.today ? dayDiff(plan.start, plan.today) : null)
   const todayPct = $derived(todayIdx != null ? (todayIdx / plan.days) * 100 : null)
   // Per-column min width by granularity, so a 6-month (monthly) view doesn't force
   // a 180-cell scroll. Daily view stays readable down to ~34px/day.
   const colMin = $derived(unit === 'day' ? (plan.days <= 7 ? 74 : plan.days <= 14 ? 48 : 34) : unit === 'week' ? 66 : 104)
-  const contentMin = $derived(240 + colMin * columns.cols.length) // lane-w(240) + cols
+  const pistaMin = $derived(colMin * columns.cols.length)
+  const pistaPx = $derived(pistaMasurata || pistaMin)
+  // lane-w(240) + coloana de restante (78, doar cand exista) + cols
+  const contentMin = $derived(240 + (areRestante ? 78 : 0) + pistaMin)
   const dayCompact = $derived(unit === 'day' && plan.days > 24)
 
   function isActive(s) { return s === 'in_progress' || s === 'in_lucru' }
   function isDone(s) { return s === 'done' || s === 'finalizat' }
   function effDue(t) { return t.data_scadenta || (isDone(t.status) ? t.data_finalizare : '') }
 
+  // IMPACHETAREA MASOARA CE SE DESENEAZA, NU ZIUA.
+  // Din v33 un task e o ZI, deci cutia lui are latimea unei coloane — dar eticheta
+  // IESE din cutie (`overflow: visible`, `max-width: 220px`). La 14 zile, 220px
+  // inseamna patru zile. Vechea impachetare compara cutiile de o zi: cinci repere
+  // dintr-o saptamana treceau toate testul si isi scriau titlurile unul peste
+  // altul — impachetarea reusea, ecranul nu. Acum se masoara romb + eticheta.
+  const PIN_PX = 18            // romb 12 + gap 6
+  const ETICHETA_MAX = 220     // `.bar.single .bar-txt` max-width
+  // Latimea unui titlu, aproximata: Inter semibold la --font-tiny (11.2px) are
+  // ~0.52em pe caracter. Nu masuram in DOM — ar insemna un layout pass per task
+  // la fiecare re-randare, iar o eroare de cateva procente doar imparte doua
+  // etichete pe randuri diferite, ceea ce oricum voiai.
+  function latimeTitlu(s) { return Math.min(ETICHETA_MAX, (s || '').length * 5.8) }
+
+  /** Intinderea DESENATA a unui reper, in procente din pista. */
+  function intinderea(t, pistaPx) {
+    const px = PIN_PX + latimeTitlu(t.titlu)
+    const w = (px / Math.max(1, pistaPx)) * 100
+    // `.flip`: in ultima treime eticheta se intoarce spre STANGA reperului, deci
+    // si intinderea lui e in partea cealalta. Fara asta, doua repere lipite de
+    // marginea din dreapta ar parea ca nu se ating si ar cadea pe acelasi rand.
+    if (t.rect.single && t.rect.left > 62) {
+      const la = t.rect.left + t.rect.width
+      return { de: la - w, la }
+    }
+    return { de: t.rect.left, la: t.rect.left + Math.max(t.rect.width, w) }
+  }
+
   // Greedy interval packing: non-overlapping bars share a row (sorted by start).
-  function packRows(tasks) {
-    const withRect = tasks.filter(t => t.rect).sort((a, b) => a.rect.left - b.rect.left || a.rect.width - b.rect.width)
+  function packRows(tasks, pistaPx) {
+    const withRect = tasks.filter(t => t.rect)
+      .map(t => ({ ...t, span: intinderea(t, pistaPx) }))
+      .sort((a, b) => a.span.de - b.span.de || a.span.la - b.span.la)
     const rows = []
     for (const t of withRect) {
       let placed = false
       for (const row of rows) {
-        const last = row[row.length - 1]
-        if (t.rect.left >= last.rect.left + last.rect.width - 0.001) { row.push(t); placed = true; break }
+        if (t.span.de >= row[row.length - 1].span.la - 0.001) { row.push(t); placed = true; break }
       }
       if (!placed) rows.push([t])
     }
@@ -166,8 +203,49 @@
     const impl = contopeste(lane.implementari)
       .map(im => ({ ...im, rect: spanRect(im.a, im.b, plan.start, plan.days) }))
       .filter(im => im.rect)
-    return { ...lane, color, pregatire, tasks, packed: packRows(tasks), impl }
+    // Restantele vin de la server ca lista proprie: sunt INAINTEA ferestrei, deci
+    // n-au geometrie si nu pot sta pe pista. Vezi `.rest-col`.
+    const restante = lane.restante || []
+    return { ...lane, color, pregatire, tasks, packed: packRows(tasks, pistaPx), impl, restante }
   }))
+  // Coloana „Restante" apare doar cand are ce arata. O coloana mereu goala e exact
+  // felul de gol rezervat pe care il repara restul turei.
+  const areRestante = $derived(views.some(l => l.restante.length > 0))
+
+  // ACEEASI ORDINE SUS SI JOS (telefon).
+  // Reperele din banda stau dupa data; randurile de dedesubt veneau in ordinea din
+  // `lane.tasks`, adica a serverului. Atingeai primul reper din stanga si `arata()`
+  // te derula la al saptelea rand. Acum lista se asaza pe zile, cu trei capete de
+  // grup — iar restantele, care n-au unde sa stea pe o banda ce incepe azi, devin
+  // primul grup.
+  //
+  // NU folosim `grupeazaDupaTermen` din /tasks: acolo grupele sunt Azi / Mâine /
+  // Zilele astea / Mai târziu, potrivite unei liste deschise. Aici fereastra e
+  // aleasa de tine si poate fi de 6 luni — „Mai târziu" ar fi chiar fereastra.
+  function grupeazaBanda(lane) {
+    const dupaZi = (a, b) => String(a.data_scadenta || '').slice(0, 10)
+      .localeCompare(String(b.data_scadenta || '').slice(0, 10))
+    const azi = lane.tasks.filter(t => esteAzi(t.data_scadenta)).sort(dupaZi)
+    const restul = lane.tasks.filter(t => !esteAzi(t.data_scadenta)).sort(dupaZi)
+    const capAzi = plan.today ? `Azi · ${formatDateShort(plan.today)}` : 'Azi'
+    return [
+      { id: 'restant', titlu: 'Restante', ton: 'danger', items: lane.restante },
+      { id: 'azi', titlu: capAzi, ton: 'accent', items: azi },
+      { id: 'urmeaza', titlu: 'Zilele următoare', ton: 'normal', items: restul },
+    ].filter(g => g.items.length > 0)
+  }
+
+  // PERIOADA, SCRISA O SINGURA DATA.
+  // Era desenata in banda (unde e decor) si repetata dedesubt ca `.mimpl` — un rand
+  // intreg de 44px per perioada, deci un proiect cu trei perioade primea trei
+  // randuri INAINTEA primului task. Ramane cea in curs (sau urmatoarea), cu „+N".
+  function perioadaDeAratat(lane) {
+    if (!lane.impl.length) return null
+    const azi = plan.today || ''
+    const inCurs = lane.impl.find(im => im.a <= azi && azi <= im.b)
+    const urmatoarea = lane.impl.find(im => im.a > azi)
+    return { im: inCurs || urmatoarea || lane.impl[0], rest: lane.impl.length - 1 }
+  }
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
   // --- action popover (desktop) ---
@@ -328,7 +406,11 @@
   function dayFromEvent(e) {
     const body = e.currentTarget
     const rect = body.getBoundingClientRect()
-    const laneW = parseFloat(getComputedStyle(body).getPropertyValue('--lane-w')) || 240
+    const cs = getComputedStyle(body)
+    // Cele DOUA coloane fixe din stanga pistei. Fara `--rest-w` aici, un drop ar
+    // cadea cu 78px mai la dreapta decat ziua pe care o vezi sub cursor.
+    const laneW = (parseFloat(cs.getPropertyValue('--lane-w')) || 240)
+      + (parseFloat(cs.getPropertyValue('--rest-w')) || 0)
     const trackW = rect.width - laneW
     if (trackW <= 0) return null
     const x = e.clientX - rect.left - laneW
@@ -447,10 +529,11 @@
     <div class="print-title">Planificator · {exportRange}</div>
     <div class="chart">
       <div class="chart-scroll">
-        <div class="inner" style="min-width: {contentMin}px">
+        <div class="inner" style="min-width: {contentMin}px; --rest-w: {areRestante ? 78 : 0}px">
           <div class="p-head">
             <div class="lane-label head">Proiect</div>
-            <div class="days">
+            {#if areRestante}<div class="rest-head">Restante</div>{/if}
+            <div class="days" bind:clientWidth={pistaMasurata}>
               {#each columns.cols as c (c.key)}
                 <div class="col-head" class:we={unit === 'day' && plan.showWeekends && c.isWeekend} class:today={c.iso && c.iso === plan.today} class:compact={dayCompact}
                      style="left:{c.leftPct}%; width:{c.widthPct}%">
@@ -458,6 +541,15 @@
                   <span class="ch-main">{c.main}</span>
                 </div>
               {/each}
+              <!-- AZI, SPUS O DATA SI IN AMBER. Coloana amber din antet o avea deja;
+                   linia era ROSIE, adica exact cerneala cu care pagina marcheaza
+                   restantul — iar fereastra pornind mereu din azi, linia statea la
+                   `left: 0`, lipita de cusatura, unde citea ca bordura de tabel.
+                   Eticheta o desparte de bordura; rosul iese de pe grila si ramane
+                   doar pentru intarziat, care are acum unde sta (coloana din stanga). -->
+              {#if todayPct != null && todayPct >= 0 && todayPct < 100}
+                <span class="azi-et" style="left:{todayPct}%">azi</span>
+              {/if}
             </div>
           </div>
 
@@ -483,13 +575,37 @@
                   {#if lane.tip === 'proiect'}
                     <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={lane.nume}>
                       <span class="lane-dot"></span>
-                      <span class="lane-txt">{lane.nume}</span>
+                      <span class="lane-col">
+                        <span class="lane-txt">{lane.nume}</span>
+                        <span class="lane-contor">{lane.tasks.length}{#if lane.restante.length}{' · '}<span class="lc-rest">{lane.restante.length} {lane.restante.length === 1 ? 'restant' : 'restante'}</span>{/if}</span>
+                      </span>
                     </button>
                     {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
                   {:else}
-                    <span class="lane-name static"><span class="lane-dot"></span><span class="lane-txt">{lane.nume}</span></span>
+                    <span class="lane-name static">
+                      <span class="lane-dot"></span>
+                      <span class="lane-col">
+                        <span class="lane-txt">{lane.nume}</span>
+                        <span class="lane-contor">{lane.tasks.length}{#if lane.restante.length}{' · '}<span class="lc-rest">{lane.restante.length} {lane.restante.length === 1 ? 'restant' : 'restante'}</span>{/if}</span>
+                      </span>
+                    </span>
                   {/if}
                 </div>
+                <!-- CE A SCAPAT, INTR-O COLOANA PROPRIE.
+                     Un restant e inaintea ferestrei, deci `spanRect` ii da `null` si
+                     nu se poate desena pe pista — pana acum asta insemna ca nu se
+                     desena NICAIERI. Coloana nu costa coloane de zi, deci se poarta
+                     la fel la 7 zile si la 6 luni. Clickul duce la task. -->
+                {#if areRestante}
+                  <div class="rest-col" class:are={lane.restante.length > 0}>
+                    {#each lane.restante as t (t.tip + ':' + t.id)}
+                      <button class="rest-pin" onclick={(e) => openPopover(e.currentTarget, t, lane.nume)}
+                              title="{t.titlu} · termen {formatDateShort(t.data_scadenta)} — restant"
+                              aria-label="{t.titlu} — restant din {formatDateShort(t.data_scadenta)}"></button>
+                    {/each}
+                    {#if !lane.restante.length}<span class="rest-gol" aria-hidden="true">—</span>{/if}
+                  </div>
+                {/if}
                 <div class="lane-track">
                   {#each lane.pregatire as seg, i (i)}
                     <div class="band" class:clipL={seg.rect.clippedLeft} class:clipR={seg.rect.clippedRight}
@@ -519,13 +635,21 @@
                     {#each lane.packed as row, ri (ri)}
                       <div class="t-row">
                         {#each row as t (t.tip + ':' + t.id)}
+                          <!-- FORMA POARTA STAREA: gol = de facut, plin = in lucru,
+                               bifa = facut. Erau trei nuante ale ACELEIASI culori de
+                               proiect (55% / 100% / 30%) — o scara pe care n-o poti
+                               citi fara sa ai toate trei alaturi, si care pe telefon
+                               spunea altceva (verde pentru „facut"). Gol / plin /
+                               bifa e aceeasi gramatica cu cercul gol si `CheckCircle2`
+                               din liste, si se citeste la 12px.
+                               `urgent` a plecat de aici: fereastra porneste din azi,
+                               deci un task de pe pista nu POATE fi restant. Rosul e
+                               acum doar in coloana din stanga, unde chiar are pe cine
+                               marca. -->
                           <div
                             class="bar"
                             class:active={isActive(t.status)}
-                            class:todo={!isActive(t.status) && !isDone(t.status)}
                             class:done={isDone(t.status)}
-                            class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0}
-                            class:single={t.rect.single}
                             class:flip={t.rect.single && t.rect.left > 62}
                             class:draggable={!isDone(t.status)}
                             style="left:{t.rect.left}%; width:{t.rect.width}%"
@@ -535,14 +659,8 @@
                             onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPopover(e.currentTarget, t, lane.nume) } }}
                             title="{t.titlu}{t.data_scadenta ? ' · termen ' + formatDateShort(t.data_scadenta) : ''}"
                           >
-                            {#if !isDone(t.status) && !t.rect.single}
-                            {/if}
-                            {#if t.rect.single}<span class="pin-dot"></span>{/if}
-                            <span class="bar-txt">{t.titlu}</span>
-                            {#if t.recurenta}<Repeat size={11} />{/if}
-                            {#if !isDone(t.status)}
-                              <!-- taskurile de o zi capătă doar mânerul din dreapta (alungire); mutarea rămâne pe pin -->
-                            {/if}
+                            <span class="pin-dot">{#if isDone(t.status)}<Check size={10} strokeWidth={3.2} />{/if}</span>
+                            <span class="bar-txt">{t.titlu}{#if t.recurenta}<Repeat size={11} class="bar-rep" />{/if}</span>
                           </div>
                         {/each}
                       </div>
@@ -554,7 +672,10 @@
           </div>
         </div>
       </div>
-      <p class="hint">Trage o bară de task ca s-o muți · trage marginile ca să întinzi intervalul · click pentru acțiuni · benzile de perioadă se editează în Calendar</p>
+      <!-- „trage marginile ca să întinzi intervalul" a plecat: din v33 un task are
+           O SINGURA data, deci nu are margini de tras — instructiunea promitea un
+           gest care nu mai exista. Ion, intrebat: termenul ramane pur. -->
+      <p class="hint">Trage un reper ca să-i muți termenul · click pentru acțiuni · benzile de perioadă se editează în Calendar</p>
     </div>
 
     <!-- ===== Backlog (taskuri fără termen) ===== -->
@@ -592,23 +713,34 @@
            si aceeasi scara pentru toate, o coloana inseamna aceeasi zi peste tot,
            iar derularea pe verticala devine exact ce facea ochiul pe desktop cand
            coborai de la un lane la altul. -->
-      <div class="m-scale">
+      <!-- SCARA SPUNE SI CE ZI E, NU DOAR A CATA.
+           Erau paisprezece cifre la rand, fara nicio initiala: weekendul se vedea
+           doar daca „Weekend" era pornit — un comutator dintr-o bara care pe 390px
+           se rupe pe trei randuri. Initiala exista deja in `buildColumns` (`c.sub`),
+           deci nu e un calcul nou: douazeci si sase de pixeli in loc de paisprezece,
+           o singura data pe ecran. Doar la orizonturile pe ZILE — pe saptamani si
+           luni `sub` e „S32" / anul, care n-ar spune ce zi e. -->
+      <div class="m-scale" class:cu-wd={unit === 'day'}>
         <div class="ms-cols">
           {#each columns.cols as c (c.key)}
             <span class="ms-c" class:we={unit === 'day' && plan.showWeekends && c.isWeekend}
                   class:today={c.iso && c.iso === plan.today}
-                  style="left:{c.leftPct}%; width:{c.widthPct}%">{c.main}</span>
+                  style="left:{c.leftPct}%; width:{c.widthPct}%">
+              <span class="ms-n">{c.main}</span>
+              {#if unit === 'day'}<span class="ms-wd">{c.sub}</span>{/if}
+            </span>
           {/each}
         </div>
       </div>
 
       {#each views as lane (lane.tip + ':' + lane.id)}
+        {@const per = perioadaDeAratat(lane)}
         <section class="mgroup" style="--lane:{lane.color}">
           <header class="mg-head">
             <span class="lane-dot"></span>
             <h2>{lane.nume}</h2>
             {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
-            <span class="mg-count">{lane.tasks.length}</span>
+            <span class="mg-count">{lane.tasks.length}{#if lane.restante.length}{' · '}<span class="lc-rest">{lane.restante.length}</span>{/if}</span>
           </header>
 
           <!-- BANDA = LANE-UL DE PE DESKTOP, INTORS LA LATIME PLINA.
@@ -646,14 +778,18 @@
                  care s-o intinzi. Atingerea nu deschide un al treilea meniu: te
                  duce la randul lui din lista de dedesubt, unde stau deja toate
                  actiunile. Punctul spune CAND, randul spune CE si CU CE butoane. -->
+            <!-- Aceeasi gramatica ca pe desktop: gol = de facut, plin = in lucru,
+                 bifa = facut. Aici „facut" era VERDE, deci acelasi task avea o
+                 stare pe telefon si alta pe ecranul mare. `urgent` a plecat: pe o
+                 banda care incepe azi nu poate exista reper restant — restantele
+                 sunt primul GRUP din lista de dedesubt. -->
             {#each lane.tasks as t (t.tip + ':' + t.id)}
               {#if t.rect}
-                <button class="mt-pin" class:done={isDone(t.status)}
-                        class:urgent={zilePanaLa(t.data_scadenta) !== null && zilePanaLa(t.data_scadenta) < 0}
+                <button class="mt-pin" class:done={isDone(t.status)} class:lucru={isActive(t.status)}
                         style="left:{t.rect.left}%"
                         onclick={() => arata(t)}
                         title="{t.titlu}{t.data_scadenta ? ' · termen ' + formatDateShort(t.data_scadenta) : ''}"
-                        aria-label="{t.titlu} — vezi în listă"></button>
+                        aria-label="{t.titlu} — vezi în listă">{#if isDone(t.status)}<Check size={11} strokeWidth={3.2} />{/if}</button>
               {/if}
             {/each}
             {#if todayPct != null && todayPct >= 0 && todayPct < 100}
@@ -663,16 +799,23 @@
 
           <!-- Randul perioadei e si tinta ei: in banda de 26px un bloc de doua
                zile are 23×20px, adica prea putin ca sa-l nimeresti. Aici are
-               latimea intreaga si duce in Calendar, unde perioadele se editeaza. -->
-          {#each lane.impl as im (im.id)}
-            <button class="mimpl loc-{im.locatie}" class:pregatire={im.faza === 'pregatire'}
-                    onclick={() => navigate(`/calendar?zi=${im.a}`)}
-                    title="Vezi în Calendar">
-              <span class="mimpl-loc">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
-              <span class="mimpl-range">{formatDateShort(im.a)} – {formatDateShort(im.b)}</span>
+               latimea intreaga si duce in Calendar, unde perioadele se editeaza.
+               UN SINGUR RAND, nu cate unul per perioada — vezi `perioadaDeAratat`. -->
+          {#if per}
+            <button class="mimpl loc-{per.im.locatie}" class:pregatire={per.im.faza === 'pregatire'}
+                    onclick={() => navigate(`/calendar?zi=${per.im.a}`)}
+                    title="{lane.impl.length > 1 ? `${lane.impl.length} perioade în fereastră — ` : ''}vezi în Calendar">
+              <span class="mimpl-loc">{locLabel(per.im.locatie)}{per.im.eticheta ? ' · ' + per.im.eticheta : ''}</span>
+              <span class="mimpl-range">
+                {formatDateShort(per.im.a)} – {formatDateShort(per.im.b)}
+                {#if per.rest > 0}<span class="mimpl-plus">+{per.rest}</span>{/if}
+              </span>
             </button>
-          {/each}
-          {#each lane.tasks as t (t.tip + ':' + t.id)}
+          {/if}
+
+          {#each grupeazaBanda(lane) as g (g.id)}
+            <div class="mgrup-cap ton-{g.ton}"><span>{g.titlu}</span><span class="grup-n">{g.items.length}</span></div>
+            {#each g.items as t (t.tip + ':' + t.id)}
             <!-- Acelasi rand ca pe „Astazi": o linie, bifa in stanga, actiunile
                  in panoul de sub el (glisare spre stanga). Doua liste care arata
                  acelasi lucru trebuie sa se poarte la fel — altfel inveti gestul
@@ -724,6 +867,7 @@
                 </div>
               </div>
             </div>
+            {/each}
           {/each}
         </section>
       {/each}
@@ -805,7 +949,7 @@
   .skel { display: flex; flex-direction: column; gap: var(--space-sm); }
 
   /* ===== chart shell ===== */
-  .chart { --lane-w: 240px; --day-min: 48px; --row-h: 28px;
+  .chart { --lane-w: 240px; --rest-w: 0px; --day-min: 48px; --row-h: 28px;
     background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
   .chart-scroll { overflow-x: auto; }
   .inner { position: relative; }
@@ -813,7 +957,18 @@
   .p-head { display: flex; border-bottom: 1px solid var(--border-strong); background: var(--bg-overlay); position: sticky; top: 0; z-index: 3; }
   .lane-label { width: var(--lane-w); flex-shrink: 0; box-sizing: border-box; }
   .lane-label.head { padding: 8px 12px; font-family: var(--font-mono); font-size: var(--font-micro); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; }
+  /* Coloana restantelor: lipita la stanga pistei, latime fixa, nu costa zile.
+     Antetul ei e singurul loc din grafic unde a mai ramas rosu. */
+  .rest-head { width: var(--rest-w); flex: none; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px 6px; border-left: 1px solid var(--border);
+    background: var(--danger-subtle); color: var(--danger);
+    font-family: var(--font-mono); font-size: var(--font-micro);
+    letter-spacing: var(--tracking-wide); text-transform: uppercase; }
   .days { flex: 1; position: relative; min-width: 0; height: 42px; }
+  .azi-et { position: absolute; top: 2px; margin-left: 3px; font-family: var(--font-mono);
+    font-size: var(--font-micro); letter-spacing: var(--tracking-wide);
+    text-transform: uppercase; color: var(--accent); pointer-events: none; }
   .col-head { position: absolute; top: 0; bottom: 0; padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
   .col-head.compact { padding: 5px 1px; }
   .col-head.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
@@ -825,11 +980,14 @@
   .col-head.today .ch-main { color: var(--accent); }
 
   .p-body { position: relative; }
-  .overlay { position: absolute; top: 0; bottom: 0; left: var(--lane-w); right: 0; pointer-events: none; z-index: 0; }
+  .overlay { position: absolute; top: 0; bottom: 0; left: calc(var(--lane-w) + var(--rest-w)); right: 0; pointer-events: none; z-index: 0; }
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
   .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 5%, transparent); }
   .col-today { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 7%, transparent); }
-  .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); opacity: 0.75; }
+  /* Amber, nu danger: rosul e cerneala pentru „intarziat" peste toata aplicatia
+     (`.chip.due.restant`, `.mrow.urgent`, `.rest-pin`), iar linia asta spune
+     „acum". Doua intelesuri pe aceeasi culoare, pe acelasi ecran. */
+  .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: 0.85; }
 
   .lane { display: flex; border-bottom: 1px solid var(--border); min-height: calc(var(--row-h) + 14px); }
   .lane:last-child { border-bottom: 0; }
@@ -837,6 +995,11 @@
   .lane-name { display: flex; align-items: flex-start; gap: 7px; min-width: 0; color: var(--text); cursor: pointer; background: none; border: none; text-align: left; font-size: var(--font-small); font-weight: var(--fw-medium); }
   .lane-name.static { cursor: default; }
   .lane-name:not(.static):hover .lane-txt { color: var(--accent); }
+  .lane-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  /* Cate taskuri are banda in fereastra si cate au scapat inaintea ei. Numarul de
+     restante e singurul lucru colorat: e cel care cere ceva. */
+  .lane-contor { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+  .lc-rest { color: var(--danger); }
   .lane-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex-shrink: 0; margin-top: 4px; box-shadow: 0 0 6px color-mix(in srgb, var(--lane) 55%, transparent); }
   /* Numele de proiect sunt lungi si se termina des cu acelasi client
      („… — Continental"), deci trunchierea pe un rand le facea identice: toate
@@ -844,6 +1007,22 @@
   .lane-txt { min-width: 0; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   .tip-chip { font-size: var(--font-micro); font-family: var(--font-mono); padding: 1px 6px; border-radius: var(--radius-chip); background: var(--accent-subtle); color: var(--accent); flex-shrink: 0; }
   .tip-chip.svc { background: color-mix(in srgb, var(--purple) 18%, transparent); color: var(--purple); }
+
+  /* Jgheabul restantelor. Reperele stau centrate si se inghesuie cand sunt multe:
+     numarul exact e scris in coloana de nume, aici conteaza ca EXISTA. */
+  .rest-col { width: var(--rest-w); flex: none; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex-wrap: wrap; padding: 6px 8px; border-right: 1px solid var(--border);
+    background: var(--bg-surface); z-index: 1; }
+  .rest-col.are { background: color-mix(in srgb, var(--danger) 6%, var(--bg-surface)); }
+  .rest-pin { flex: none; width: 11px; height: 11px; padding: 0; border-radius: 2px;
+    transform: rotate(45deg); background: var(--danger);
+    border: 1.5px solid var(--bg-surface);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 22%, transparent);
+    cursor: pointer; transition: transform var(--dur-fast) var(--ease); }
+  .rest-pin:hover { transform: rotate(45deg) scale(1.18); }
+  .rest-pin:active { transform: rotate(45deg) scale(0.9); }
+  .rest-gol { font-family: var(--font-mono); font-size: var(--font-tiny); color: var(--text-faint); }
 
   .lane-track { flex: 1; position: relative; min-width: 0; padding: 7px 0; }
   .band { position: absolute; top: 5px; bottom: 5px; border-radius: 8px;
@@ -916,48 +1095,71 @@
   /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
   .mimpl.pregatire { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mil) 32%, transparent); border-left-style: dashed; }
   .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: color-mix(in oklab, var(--mil) 55%, var(--text)); }
-  .mimpl-range { font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
-  .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 4px;
-    padding: 0 8px; border-radius: 7px; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
-    white-space: nowrap; overflow: hidden; cursor: pointer; text-align: left; touch-action: none;
-    transition: box-shadow var(--dur-fast) var(--ease);
-    animation: barIn 0.4s var(--ease) both; pointer-events: auto; }
-  @keyframes barIn { from { opacity: 0; transform: scaleX(0.4); transform-origin: left; } }
+  .mimpl-range { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--font-micro); color: var(--text-dim); }
+  /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
+     44px fiecare, inaintea primului task. Duc toate in acelasi loc — Calendar. */
+  .mimpl-plus { padding: 0 5px; border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--mil) 20%, transparent);
+    color: color-mix(in oklab, var(--mil) 55%, var(--text)); }
+
+  /* Capetele de grup din lista mobila. Aceeasi haina si acelasi limbaj de culoare
+     ca `.grup-cap` din /tasks — o singura gramatica pentru „ce urmeaza". */
+  .mgrup-cap { display: flex; align-items: center; gap: var(--space-xs);
+    padding: 10px 4px 5px; font-family: var(--font-mono); font-size: var(--font-micro);
+    font-weight: var(--fw-semibold); text-transform: uppercase;
+    letter-spacing: var(--tracking-wide); color: var(--text-faint); }
+  .grup-n { display: inline-flex; align-items: center; justify-content: center;
+    min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
+    background: var(--bg-elevated); color: var(--text-dim);
+    font-size: var(--font-micro); line-height: 1; font-variant-numeric: tabular-nums; }
+  .mgrup-cap.ton-danger { color: var(--danger); }
+  .mgrup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger); }
+  .mgrup-cap.ton-accent { color: var(--accent); }
+  .mgrup-cap.ton-accent .grup-n { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  /* UN TASK E UN REPER, NU O CUTIE.
+     Din v33 `rect.single` e mereu adevarat, deci regulile de cutie (`.bar.todo`,
+     `.bar.active` cu fundal si rama, animatia `barIn` care scala o latime) erau
+     scrise pentru ceva ce nu se mai randeaza. Au plecat. Ce ramane e reperul:
+     romb + eticheta lui, amandoua in aceeasi tinta. */
+  .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 6px;
+    overflow: visible; background: none; border: none; box-shadow: none; padding: 0;
+    justify-content: flex-start; font-size: var(--font-tiny); font-weight: var(--fw-semibold);
+    white-space: nowrap; cursor: pointer; text-align: left; touch-action: none;
+    pointer-events: auto; }
   .bar.draggable { cursor: grab; }
-  .bar:hover { box-shadow: var(--shadow-md); z-index: 5; }
-  .bar.active { background: var(--lane); color: var(--on-color); }
-  .bar.todo { background: color-mix(in oklab, var(--lane) 20%, var(--bg-panel));
-    border: 1px solid color-mix(in oklab, var(--lane) 45%, var(--bg-panel));
-    color: color-mix(in oklab, var(--lane) 70%, var(--text)); }
-  .bar.done { background: color-mix(in oklab, var(--lane) 14%, var(--bg-panel));
-    border: 1px dashed color-mix(in oklab, var(--lane) 40%, var(--bg-panel));
-    color: var(--text-dim); opacity: 0.72; cursor: default; }
-  .bar.done .bar-txt { text-decoration: line-through; }
-  /* single-day task: a diamond marker + the title label beside it (label spills
-     outside the 1-day-wide box), so it's readable without hovering. */
-  .bar.single { overflow: visible; background: none; border: none; box-shadow: none;
-    padding: 0; justify-content: flex-start; gap: 6px; }
-  .bar.single.flip { flex-direction: row-reverse; }
-  .bar.single .pin-dot { flex: none; width: 12px; height: 12px; transform: rotate(45deg);
-    background: var(--lane); border: 1.5px solid var(--bg-surface);
+  .bar.flip { flex-direction: row-reverse; }
+  .bar.done { cursor: default; }
+
+  /* FORMA POARTA STAREA — vezi comentariul din markup.
+     gol (contur) = de facut · plin = in lucru · bifa = facut. */
+  .pin-dot { flex: none; display: flex; align-items: center; justify-content: center;
+    width: 12px; height: 12px; transform: rotate(45deg);
+    background: transparent; border: 2px solid var(--lane);
+    transition: transform var(--dur-fast) var(--ease); }
+  .bar.active .pin-dot { background: var(--lane); border: 1.5px solid var(--bg-surface);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--lane) 22%, transparent); }
-  .bar.single.todo .pin-dot { background: color-mix(in oklab, var(--lane) 55%, var(--bg-panel)); }
-  .bar.single.done .pin-dot { background: color-mix(in oklab, var(--lane) 30%, var(--bg-panel)); box-shadow: none; }
-  /* Eticheta unui task de o zi pluteste peste fundal, fara cutie proprie — iar
-     fundalul poate fi acum blocul plin al unei perioade. Haloul in culoarea
-     suprafetei o desprinde de orice ar fi dedesubt, in ambele teme. */
-  .bar.single .bar-txt { display: inline; max-width: 220px; color: var(--text);
-    text-shadow: 0 0 3px var(--bg-surface), 0 0 6px var(--bg-surface), 0 0 9px var(--bg-surface); }
-  .bar.single.done .bar-txt { color: var(--text-dim); text-decoration: line-through; }
-  .bar.urgent { box-shadow: inset 3px 0 0 0 var(--danger); }
-  .bar.single.urgent { box-shadow: none; }
-  .bar.single.urgent .pin-dot { box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 40%, transparent); }
-  .bar-txt { overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+  /* Bifa nu se roteste: e un semn care se citeste, nu o mostra de culoare. */
+  .bar.done .pin-dot { transform: none; width: 13px; height: 13px;
+    background: none; border: 0; color: color-mix(in oklab, var(--lane) 45%, var(--text-dim)); }
+  .bar:hover .pin-dot { transform: rotate(45deg) scale(1.12); }
+  .bar.done:hover .pin-dot { transform: none; }
 
-  /* single-day task: right handle a touch wider + grip tinted so it reads on the
-     transparent pin bar (extinde ziua într-un interval) */
-
-  @media (prefers-reduced-motion: reduce) { .bar { animation: none; } }
+  /* ETICHETA E IN TINTA, NU LANGA EA.
+     Avea `pointer-events: none`, deci singurul lucru apasabil era rombul de 12px
+     intr-o cutie cat o zi (34px la orizontul de 30 de zile). Cuvintele — singurele
+     care spun ce e taskul — nu raspundeau la click: le citeai si pe urma cautai
+     unde se apasa. Fundalul de la hover arata cat e tinta.
+     Haloul o desprinde de ce e dedesubt (poate fi blocul plin al unei perioade). */
+  .bar-txt { display: inline-flex; align-items: center; gap: 4px; max-width: 220px;
+    overflow: hidden; text-overflow: ellipsis; color: var(--text); padding: 1px 4px;
+    border-radius: var(--radius-xs); pointer-events: auto;
+    text-shadow: 0 0 3px var(--bg-surface), 0 0 6px var(--bg-surface), 0 0 9px var(--bg-surface);
+    transition: var(--transition-colors); }
+  @media (hover: hover) {
+    .bar:hover .bar-txt { background: var(--bg-hover); box-shadow: inset 0 0 0 1px var(--border-strong); text-shadow: none; }
+  }
+  .bar.done .bar-txt { color: var(--text-dim); text-decoration: line-through; }
+  .bar :global(.bar-rep) { flex: none; opacity: 0.7; }
 
   /* dim, nu faint: indicatiile de gest sunt text de citit (masurat 3.18:1 la
      10.4px, sub AA) — faint e doar pentru etichete/large. */
@@ -985,12 +1187,17 @@
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border); border-radius: var(--radius-sm); }
   .ms-cols { position: relative; height: 14px; }
-  .ms-c { position: absolute; top: 0; display: flex; align-items: center; justify-content: center;
-    height: 14px; font-family: var(--font-mono); font-size: var(--font-micro);
+  .m-scale.cu-wd .ms-cols { height: 26px; }
+  .ms-c { position: absolute; top: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 0;
+    height: 100%; font-family: var(--font-mono); font-size: var(--font-micro);
     color: var(--text-dim); font-variant-numeric: tabular-nums;
     overflow: hidden; white-space: nowrap; border-left: 1px solid var(--border-subtle); }
+  .ms-wd { font-size: 0.58rem; line-height: 1.1; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.02em; }
   .ms-c.we { color: var(--purple); }
+  .ms-c.we .ms-wd { color: var(--purple); }
   .ms-c.today { color: var(--accent); font-weight: var(--fw-bold); }
+  .ms-c.today .ms-wd { color: var(--accent); }
 
   /* BANDA PROIECTULUI — acelasi continut ca lane-ul de pe desktop.
      Inaltimea e mica intentionat: e context, nu suprafata de lucru. Ce faci cu un
@@ -998,7 +1205,8 @@
   .m-track { position: relative; height: 26px; margin: 0 3px 8px; border-radius: var(--radius-sm);
     background: var(--bg-panel); box-shadow: inset 0 0 0 1px var(--border-subtle); overflow: hidden; }
   .mt-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 7%, transparent); }
-  .mt-azi { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); opacity: 0.8; z-index: 3; }
+  /* Amber, ca pe desktop: rosul e „intarziat", nu „acum". */
+  .mt-azi { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: 0.85; z-index: 3; }
   /* Reperele stau PESTE benzi si sunt singurul lucru din banda pe care il atingi
      des, deci primesc o caseta transparenta de 26px in jurul punctului de 9px.
      Fara ea ai avea de nimerit un punct cat gamalia acului.
@@ -1009,12 +1217,16 @@
      taskului din lista de dedesubt, iar acel rand e cat toata latimea. */
   .mt-pin { position: absolute; top: 0; bottom: 0; width: 26px; margin-left: -13px;
     display: flex; align-items: center; justify-content: center;
-    background: none; border: none; padding: 0; cursor: pointer; z-index: 2; }
+    background: none; border: none; padding: 0; cursor: pointer; z-index: 2;
+    color: color-mix(in oklab, var(--lane) 45%, var(--text-dim)); }
+  /* Aceeasi forma ca pe desktop: contur = de facut, plin = in lucru, bifa = facut.
+     `done` era VERDE aici si o nuanta palida a culorii de proiect dincolo — acelasi
+     task, doua limbaje, in functie de latimea ecranului. */
   .mt-pin::before { content: ''; width: 9px; height: 9px; border-radius: 2px;
-    background: var(--accent); transform: rotate(45deg);
+    background: transparent; border: 1.5px solid var(--lane); transform: rotate(45deg);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-panel) 85%, transparent); }
-  .mt-pin.urgent::before { background: var(--danger); }
-  .mt-pin.done::before { background: var(--success); opacity: 0.6; }
+  .mt-pin.lucru::before { background: var(--lane); }
+  .mt-pin.done::before { display: none; }
   .mt-pin:active::before { transform: rotate(45deg) scale(1.25); }
 
   /* Benzile refolosesc reteta de pe desktop (aceleasi clase, aceeasi gramatica:
