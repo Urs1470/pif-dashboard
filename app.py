@@ -118,7 +118,15 @@ def inject_version():
 
 # ============ SESSION CONFIG ============
 
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+# UN AN, NU O LUNA (cerut de Ion, 2026-08-07: „nu vreau sa introduc pinul de
+# fiecare data"). De cand exista aplicatia de pe telefon, reautentificarea nu mai
+# e o masura de siguranta, e o taxa: aplicatia sta in spatele ecranului blocat al
+# telefonului, care e granita reala. Cine deschide telefonul deschide si
+# dashboardul — asumat, pentru o unealta personala cu un singur utilizator.
+# Cookie-ul se reinnoieste la fiecare cerere (`session.permanent = True` mai jos
+# + `SESSION_REFRESH_EACH_REQUEST`, implicit adevarat), deci anul se numara de la
+# ultima folosire, nu de la login.
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200 MB
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'true').lower() not in ('0', 'false', 'no')
 app.config['SESSION_COOKIE_HTTPONLY'] = True
