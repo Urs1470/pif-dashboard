@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Build;
 
@@ -28,12 +29,35 @@ public class AlarmaReceiver extends BroadcastReceiver {
 
     static final String CANAL = "taskuri-personale";
 
+    /** Accentul, pe tema deschisa si pe cea intunecata (vezi tokens.css). */
+    static final String ACCENT_DESCHIS = "#5980a6";
+    static final String ACCENT_INTUNECAT = "#8ab2d9";
+
+    /**
+     * TENTA URMEAZA TEMA SISTEMULUI, si se citeste LA FIECARE NOTIFICARE.
+     *
+     * Nu se poate citi o singura data si tine minte: alarma sună dimineața, iar
+     * telefonul poate fi trecut pe temă închisă între programare si sunet
+     * (programul de noapte face exact asta). Cardul e desenat de sistem in
+     * momentul afisarii, deci si culoarea trebuie decisa atunci.
+     */
+    static int accent(Context ctx) {
+        int mod = ctx.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
+        boolean noapte = mod == Configuration.UI_MODE_NIGHT_YES;
+        return Color.parseColor(noapte ? ACCENT_INTUNECAT : ACCENT_DESCHIS);
+    }
+
     static void creeazaCanalul(Context ctx) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationChannel c = new NotificationChannel(
                 CANAL, "Taskuri personale", NotificationManager.IMPORTANCE_HIGH);
         c.setDescription("Dimineața, taskurile personale scadente sau rămase fără termen");
-        c.setLightColor(Color.parseColor("#ffb454"));
+        // LUMINA LED-ULUI E O SINGURA VALOARE, cu buna stiinta: se fixeaza la
+        // CREAREA canalului si Android nu o mai schimba dupa aceea, oricat ai
+        // rescrie-o. Deci aici nu are sens sa urmeze tema — ar fi doar tema din
+        // clipa primei porniri, inghetata pentru totdeauna.
+        c.setLightColor(Color.parseColor(ACCENT_DESCHIS));
         c.setShowBadge(true);
         NotificationManager nm = ctx.getSystemService(NotificationManager.class);
         if (nm != null) nm.createNotificationChannel(c);
@@ -61,7 +85,7 @@ public class AlarmaReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CANAL)
                 .setSmallIcon(R.drawable.ic_stat_pif)
-                .setColor(Color.parseColor("#ffb454"))
+                .setColor(accent(ctx))
                 .setContentTitle(titlu == null ? "Task personal" : titlu)
                 .setContentText(corp == null ? "" : corp)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(corp == null ? "" : corp))

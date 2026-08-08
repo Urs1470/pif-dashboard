@@ -82,7 +82,7 @@
 
 <div class="app-layout">
   <div class="app-main">
-    <Header />
+    <Header deschideCautarea={() => paleta?.deschide()} />
     <main class="app-content" id="main-content">
       {#key routeKey}
         <div class="content-width" in:fade={{ duration: fadeDur, easing: EASE }} out:fade={{ duration: fadeDur, easing: EASE }}>

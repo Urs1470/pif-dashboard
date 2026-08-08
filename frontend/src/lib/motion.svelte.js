@@ -1,12 +1,21 @@
-import { cubicOut } from 'svelte/easing'
-
-// Shared motion tokens (mirrors tokens.css --dur-fast/base/slow, duplicated here since
-// CSS custom properties can't be read as numbers into svelte/transition params) and a
-// single reactive prefers-reduced-motion source, so every component gets a live update
-// if the OS-level preference changes mid-session instead of reading matchMedia() once.
+// Oglinda numerica a lui `--dur-*` din tokens.css (proprietatile CSS nu se pot
+// citi ca numere in parametrii tranzitiilor Svelte), plus o singura sursa
+// reactiva pentru `prefers-reduced-motion`, ca preferinta schimbata la mijlocul
+// sesiunii sa ajunga in toate componentele deodata.
+//
+// TREI DURATE, NIMIC INTRE ELE (redesign 2026-08-08):
+//   90  apasare — sub ~100ms legatura cauza-efect se citeste ca instantanee
+//   220 element — un rand, un chip, un toast: lucruri de marimea unui deget
+//   280 suprafata — o foaie, un panou, un modal: lucruri cat ecranul
+// `--dur-fast` (120) nu e in scara: e vopsea (hover, culoare), nu miscare.
 export const DUR_FAST = 120
-export const DUR_BASE = 240
-export const DUR_SLOW = 320
+export const DUR_BASE = 220
+export const DUR_SLOW = 280
+export const DUR_PRESS = 90
+
+// Cat tine o tranzitie cand utilizatorul a cerut mai putina miscare. NU zero:
+// vezi `motionDuration`.
+const DUR_REDUSA = 120
 
 // CURBA — A PATRA LIMBA VORBITA IN ACELASI ECRAN.
 //
@@ -53,23 +62,13 @@ function bezier(x1, y1, x2, y2) {
 // Perechea exacta a lui `--ease` din tokens.css. O schimbi acolo, o schimbi aici.
 export const EASE = bezier(0.32, 0.72, 0.28, 1)
 
-// Perechea lui `--ease-spring`, esantionata din aceleasi opriri `linear()`.
-// Arcul DEPASESTE tinta (1.05 la 52%) si revine — corect pentru un obiect
-// eliberat din mana, gresit pentru orice altceva. De aceea nu e implicitul.
-const OPRIRI = [[0, 0], [0.12, 0.32], [0.24, 0.72], [0.36, 0.95],
-                [0.52, 1.05], [0.68, 1.02], [0.84, 0.99], [1, 1]]
-export function SPRING(x) {
-  if (x <= 0) return 0
-  if (x >= 1) return 1
-  for (let i = 1; i < OPRIRI.length; i++) {
-    const [x2, y2] = OPRIRI[i]
-    if (x <= x2) {
-      const [x1, y1] = OPRIRI[i - 1]
-      return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
-    }
-  }
-  return 1
-}
+// Perechea exacta a lui `--ease-spring`. O SINGURA curba cu depasire in tot
+// sistemul (era esantionata dintr-un `linear()` cu opt opriri; acum e aceeasi
+// bezier pe care o scrie si CSS-ul, deci nu mai exista doua arcuri usor
+// diferite dupa cine deseneaza miscarea). Depaseste tinta cu ~35% si revine —
+// corect pentru un obiect care urmareste degetul (cursorul de tab, revenirea
+// dintr-un gest), gresit pentru orice altceva. De aceea nu e implicitul.
+export const SPRING = bezier(0.34, 1.35, 0.42, 1)
 
 function readReducedMotion() {
   return typeof window !== 'undefined'
@@ -83,9 +82,19 @@ if (typeof window !== 'undefined' && window.matchMedia) {
     .addEventListener?.('change', (e) => { motion.reduced = e.matches })
 }
 
-// Zeroes out a duration when the user prefers reduced motion.
+// „MAI PUTINA MISCARE" NU INSEAMNA ZERO.
+//
+// Pana acum intorcea 0, si asta avea un cost ascuns: o tranzitie de durata zero
+// nu emite `transitionend`, iar comiterea bifarii asteapta exact evenimentul ala
+// (vezi Tasks.svelte) — deci ramurile care se sincronizeaza pe sfarsitul unei
+// tranzitii aveau nevoie de cronometru de rezerva doar pentru cazul asta.
+// Mai important: la zero, un rand care pleaca si unul care vine se INLOCUIESC
+// intre doua cadre, si nu mai stii care a plecat. Preferinta cere sa nu fie
+// MISCARE (translatie, scalare), nu sa nu fie TIMP.
+//
+// 120ms de stingere, fara translatie — ce se schimba se vede schimbandu-se.
 export function motionDuration(ms) {
-  return motion.reduced ? 0 : ms
+  return motion.reduced ? Math.min(ms, DUR_REDUSA) : ms
 }
 
 
@@ -116,12 +125,15 @@ export function motionDuration(ms) {
 // doua animatii de layout pe acelasi eveniment s-ar calca una pe alta.
 // Se foloseste cu `|local`, ca prima incarcare a listei sa NU se joace:
 // intrarea e pentru randul nou, nu pentru pagina noua.
-export function sosire(node, { duration = 190 } = {}) {
+export function sosire(node, { duration = DUR_BASE } = {}) {
   const d = motionDuration(duration)
+  // Sub `reduced-motion` ramane doar stingerea: translatia e exact ce a cerut
+  // utilizatorul sa nu se mai intample.
+  const dz = motion.reduced ? 0 : 5
   return {
     duration: d,
     easing: EASE,
-    css: (t) => `opacity: ${t}; transform: translateY(${(1 - t) * 5}px);`,
+    css: (t) => `opacity: ${t}; transform: translateY(${(1 - t) * dz}px);`,
   }
 }
 
@@ -145,10 +157,11 @@ export function alunecare(node, { sens = 0, duration = DUR_FAST } = {}) {
   // deja pe celula de deasupra, adica exact suprapunerea pe care o evitam.
   if (!sens) return { duration: 0 }
   const d = motionDuration(duration)
+  const dx = motion.reduced ? 0 : sens * 10
   return {
     duration: d,
     easing: EASE,
-    css: (t) => `opacity: ${t}; transform: translateX(${(1 - t) * sens * 10}px);`,
+    css: (t) => `opacity: ${t}; transform: translateX(${(1 - t) * dx}px);`,
   }
 }
 
@@ -164,7 +177,7 @@ export function alunecare(node, { sens = 0, duration = DUR_FAST } = {}) {
 // Fata de `slide`: opacitatea urca pe prima jumatate a miscarii, nu in primele
 // 5% ca la Svelte. Inaltimea singura se citeste ca o stergere de sus in jos;
 // cu stingerea peste ea, panoul APARE, nu e descoperit.
-export function desfacere(node, { duration = DUR_BASE } = {}) {
+export function desfacere(node, { duration = DUR_SLOW } = {}) {
   const d = motionDuration(duration)
   const s = getComputedStyle(node)
   const nr = (v) => parseFloat(v) || 0
@@ -181,7 +194,9 @@ export function desfacere(node, { duration = DUR_BASE } = {}) {
   const bb = nr(s.borderBottomWidth)
   return {
     duration: d,
-    easing: cubicOut,
+    // `--ease`, ca tot restul. Era `cubicOut` — a doua curba pe acelasi ecran:
+    // panoul se desfacea pe una si randurile din el soseau pe alta.
+    easing: EASE,
     css: (t) => `
       overflow: hidden;
       height: ${t * h}px;
@@ -196,7 +211,7 @@ export function desfacere(node, { duration = DUR_BASE } = {}) {
   }
 }
 
-export function plecare(node, { duration = 190 } = {}) {
+export function plecare(node, { duration = DUR_BASE } = {}) {
   const d = motionDuration(duration)
   const s = getComputedStyle(node)
   const nr = (v) => parseFloat(v) || 0

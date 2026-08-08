@@ -1,213 +1,216 @@
+/* SURSA UNICA A SISTEMULUI DE DESIGN.
+   Redesign 2026-08-08 (handoff „Design audit complet dashboard").
+
+   OPT ROLURI, DOUA SETURI DE VALORI, UN SINGUR ACCENT.
+   Accentul e otel. Restul culorilor nu decoreaza — spun stare: restant, facut.
+   Ce a plecat din sistem, cerut explicit: a doua culoare de brand (amberul
+   Bento), movul decorativ, gradientele mari, glowul, sticla/blurul. */
+
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
 
-  /* Accent — Bento amber (identitate PIF, redesign 2026) */
-  --accent: #ffb454;
-  --accent-hover: #ff8a3d;
-  --accent-subtle: rgba(255, 180, 84, 0.13);
-  --accent-ring: rgba(255, 180, 84, 0.30);
-  --accent-text: #1a1206;      /* ink — amber e deschis, textul pe accent e inchis */
-  --accent-on-subtle: #ffb454; /* ~8:1 pe bg-surface, AA-safe */
+  /* ---- Suprafete: DOUA niveluri, plus o tenta ----
+     Elevatia se citeste prin UMBRA, nu prin linii peste tot (vezi --shadow-*).
+     `--bg-elevated` e „suprafata 2": inset in card (camp, chip, celula). */
+  --bg: #121417;
+  --bg-surface: #191d21;
+  --bg-elevated: #1f242a;
 
-  /* Service (amber) + violet secundar */
-  --service-accent: #ffb454;
-  --service-subtle: rgba(255, 180, 84, 0.13);
-  --purple: #b9a5ff;
-  --purple-subtle: rgba(185, 165, 255, 0.13);
+  /* ---- Linii ---- */
+  --border: #262b31;
+  --border-strong: #343b43;
 
-  /* Backgrounds — Bento dark (negru cald + gri warm).
-     --bg e #12100d (nu #000): pe OLED negrul pur face smear la scroll si
-     aplatizeaza scara de elevatie. Scara de suprafete:
-     bg(pagina) < bg-surface(card) < bg-panel(panou in card) < bg-input(control)
-     < bg-overlay(modal/toast/popover). */
-  --bg: #12100d;
-  --bg-surface: #1b1814;
-  --bg-panel: #14110e;      /* panou nested intr-un card (inset, sub surface) */
-  --bg-input: #14110e;      /* fill pentru inputuri/chips/th */
-  --bg-elevated: #14110e;   /* alias legacy = bg-input (nu-l muta) */
-  --bg-overlay: #262019;    /* suprafata flotanta: modal/toast/palette/popover */
-  --bg-hover: #221e18;
-  --bg-active: #2b261f;
+  /* ---- Text ----
+     `--text-dim` e MINIMUL pentru text mic, verificat pe FOND (nu doar pe
+     suprafata): ~5,6:1 aici, ~4,7:1 pe tema deschisa. Nu se mai deschide. */
+  --text: #e9ecef;
+  --text-secondary: #9ba3ad;
+  --text-dim: #868f99;
 
-  /* Text (contrast AA-safe pe suprafetele dark) */
-  --text: #f0ebe3;
-  --text-secondary: #a89f92;
-  --text-dim: #948a7d;      /* clears body-AA pe surface/elevated/hover */
-  --text-faint: #6f675c;    /* clears 3:1 UI — doar etichete/large */
+  /* ---- Accent (otel) ----
+     `--accent-deep` e CERNEALA PE TENTA. Text pe `--accent-subtle` ia
+     intotdeauna `--accent-deep`, niciodata `--accent`.
+     `--accent-text` e cerneala pe FILLUL saturat. */
+  --accent: #8ab2d9;
+  --accent-deep: #aecbe8;
+  --accent-subtle: #1c2733;
+  --accent-text: #0e1114;
 
-  /* Borders */
-  --border: #2b261f;
-  --border-subtle: #221e18;
-  --border-strong: #3a332a; /* dock, th rules, contururi cb */
+  /* ---- Stare ---- */
+  --danger: #e0917f;
+  --danger-deep: #eaa694;
+  --success: #82c2a2;
+  --success-deep: #9fd4b8;
 
-  /* Semantic */
-  --success: #7ee2a8;
-  --success-subtle: rgba(126, 226, 168, 0.14);
-  /* AVERTISMENTUL NU E ACCENTUL. Erau exact acelasi hex (#ffb454), deci codul se
-     purta ca si cum ar exista doua semnificatii, dar ochiul vedea una singura: un
-     toast de avertisment arata ca unul de identitate, iar treapta „in curand" de
-     pe termen era acelasi pixel cu „azi". (Tema deschisa le deosebea deja —
-     #8a5300 vs #ffb454 — deci abaterea era doar aici.)
-     Valoarea nu e inventata: e `--accent-hover`, portocaliul care exista deja in
-     paleta. Destul de departe de amber ca sa se desparta, si de coralul --danger
-     (#ff7a6b) ca sa nu se citeasca drept eroare. */
-  --warning: #ff8a3d;
-  --warning-subtle: rgba(255, 138, 61, 0.14);
-  --danger: #ff7a6b;
-  --danger-subtle: rgba(255, 122, 107, 0.13);
-  --info: #b9a5ff;
-  --info-subtle: rgba(185, 165, 255, 0.13);
+  /* ---- Umbre: DOUA niveluri, in locul liniilor peste tot ---- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 16px -10px rgba(0, 0, 0, .6);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, .5), 0 14px 34px -16px rgba(0, 0, 0, .75);
 
-  /* Serii de grafic (validate CVD/contrast pe ambele teme) */
-  --chart-1: #bd7420;
-  --chart-2: #0f9257;
-  --chart-3: #7a5fd8;
+  /* ================================================================
+     ALIASURI — nume vechi care raman in cod, mapate pe rolurile noi.
+     Nu sunt roluri in plus: sunt acelasi rol sub numele cu care e deja
+     scris in cele ~70 de fisiere. Fiecare are motivul lui scris.
+     ================================================================ */
 
-  /* LOCATIE (implementari.locatie) — teren vs sediu.
-     Erau opt valori scrise de mana in patru fisiere, cu TREI ambere diferite
-     pentru acelasi „sediu" (#c99a3a, #b98a2e, #c9a13a) — adica un fapt binar
-     desenat in trei culori. Acum e un token, si atat.
-     Chroma e MICA cu intentie: locatia e un fapt binar, deci nu are voie sa
-     concureze cromatic cu identitatea proiectului (vezi lib/culori.js). Inainte
-     `site` era exact `#3f9dc4`, o valoare care se afla SI in paleta de proiecte:
-     in Planificator, unde benzile de locatie si barele de proiect stau pe acelasi
-     ecran, aceeasi culoare insemna cand „proiectul X", cand „esti pe teren". */
-  --loc-site: #8fa3b8;   /* rece — afara, pe teren */
-  --loc-sediu: #b09b7d;  /* cald — inauntru, la sediu */
+  /* Erau doua trepte sub `--text-dim`. Sistemul spune ca `--text-dim` e podeaua
+     pentru text mic; deci a doua treapta nu e o alegere, e o abatere. Colapsata. */
+  --text-faint: var(--text-dim);
+  /* Linia subtire nu mai e o a treia culoare: e aceeasi linie. */
+  --border-subtle: var(--border);
+  /* Panoul si campul sunt „suprafata 2". */
+  --bg-panel: var(--bg-elevated);
+  --bg-input: var(--bg-elevated);
+  /* Suprafata flotanta e tot suprafata — se desprinde prin umbra, nu prin ton. */
+  --bg-overlay: var(--bg-surface);
+  /* Hover/activ se DERIVA din suprafata, ca sa nu fie doua griuri scrise de mana
+     care se desincronizeaza la schimbarea temei. */
+  --bg-hover: color-mix(in oklab, var(--text) 6%, var(--bg-surface));
+  --bg-active: color-mix(in oklab, var(--text) 10%, var(--bg-surface));
 
-  /* Cerneala pe un fill saturat (banda de perioada, bara plina, chip umplut).
-     Inlocuieste #10130f / #14100a / #1a1206 scrise de mana — care nu se
-     schimbau la trecerea pe tema deschisa, pentru ca nu erau tokenuri. */
-  --on-color: #14110d;
+  /* Hoverul unui fill de accent merge spre `--accent-deep`: pe intuneric asta
+     inseamna mai deschis, pe lumina mai inchis — in ambele, mai mult contrast. */
+  --accent-hover: var(--accent-deep);
+  /* REGULA CARE SE REPARA SINGURA: `--accent-on-subtle` e literal
+     `--accent-deep`. Cele 20 de locuri care scriau accentul pe tenta devin
+     corecte fara sa fie atinse unul cate unul. */
+  --accent-on-subtle: var(--accent-deep);
+  --accent-ring: color-mix(in srgb, var(--accent) 40%, transparent);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
-  --shadow-glow-accent: 0 4px 14px rgba(255, 180, 84, 0.30);
+  /* Tentele de stare se deriva la fel ca tenta de accent (~12% peste suprafata),
+     deci raman consecvente cu ea cand se schimba tema. */
+  --danger-subtle: color-mix(in oklab, var(--danger) 14%, var(--bg-surface));
+  --success-subtle: color-mix(in oklab, var(--success) 14%, var(--bg-surface));
 
-  /* Spacing (t-shirt + valori-punte 12/20/40 care lipseau) */
+  /* AVERTISMENTUL NU E O A TREIA STARE. Sistemul are doua culori de stare, iar
+     „de verificat" se desenează cu CANTITATEA de cerneala (contur rosu vs plin
+     rosu — vezi verdictele din Calculator), nu cu un al treilea ton. */
+  --warning: var(--danger);
+  --warning-subtle: var(--danger-subtle);
+  /* Movul decorativ si „service" erau a doua si a treia culoare de brand. */
+  --info: var(--accent);
+  --info-subtle: var(--accent-subtle);
+  --purple: var(--accent);
+  --purple-subtle: var(--accent-subtle);
+  --service-accent: var(--accent);
+  --service-subtle: var(--accent-subtle);
+
+  /* LOCATIA nu mai e codificata cromatic: forma spune faza (plin = implementare,
+     contur/palid = pregatire), iar locul e SCRIS langa titlul benzii. Tokenurile
+     raman ca sa nu ramana referinte moarte, dar sunt neutre. */
+  --loc-site: var(--text-secondary);
+  --loc-sediu: var(--text-dim);
+
+  /* Cerneala pe un fill saturat. */
+  --on-color: var(--accent-text);
+
+  /* Umbra mare si glowul colorat au plecat din sistem (doua niveluri, atat). */
+  --shadow-lg: var(--shadow-md);
+  --shadow-glow-accent: var(--shadow-md);
+
+  /* SERIILE DE GRAFIC raman trei culori distincte — acolo culoarea e DATE
+     (curbe de motor in Calculator), nu identitate de brand. Sunt aceleasi pe
+     ambele teme, ca o curba sa nu-si schimbe intelesul cu tema. */
+  --chart-1: #5980a6;
+  --chart-2: #3f7d5e;
+  --chart-3: #b04a38;
+
+  /* ---- Spatiere (t-shirt + puntile 12/20/40) ---- */
   --space-2xs: 2px;
   --space-xs: 4px;
   --space-sm: 8px;
-  --space-12: 12px;   /* punte sm↔md — cea mai reinventata valoare */
+  --space-12: 12px;
   --space-md: 16px;
-  --space-20: 20px;   /* punte md↔lg */
+  --space-20: 20px;
   --space-lg: 24px;
   --space-xl: 32px;
-  --space-40: 40px;   /* punte xl↔2xl */
+  --space-40: 40px;
   --space-2xl: 48px;
 
-  /* Padding-uri semantice derivate */
   --card-pad: 16px;
   --card-pad-compact: 12px;
 
-  /* Radius */
-  --radius-xs: 6px;
+  /* ---- Raza: PATRU trepte, nimic intre ele ----
+     8 chip · 10 control si rand · 14 suprafata · 20 doar foaia de jos ·
+     cerc doar bifa. */
+  --radius-xs: 8px;
   --radius-sm: 10px;
   --radius-md: 14px;
-  --radius-lg: 22px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
-  /* Erau SASE. Doua perechi nu se deosebeau: `xl` (24) statea la 2px de `lg`
-     (22), iar `chip` (7) la 1px de `xs` (6) — o diferenta pe care n-o vede
-     nimeni nu e o treapta, e o a doua parere, si se alegea din instinct exact ca
-     treptele de font de mai jos. `xl` si `chip` au plecat. */
 
-  /* TIPOGRAFIA — scara.
-     Erau OPT trepte, patru greutati si nicio regula scrisa care sa spuna care
-     unde: titlul lui /planificator era Space Grotesk si titlul lui /taskuri
-     Inter, la aceeasi marime si in acelasi colt de ecran. Sub corp incapeau
-     TREI trepte in patru pixeli (14,4 / 12,8 / 11,2 / 10,4), cu pasi de 0,8px —
-     sub pragul la care ochiul separa doua randuri de text, deci aceeasi
-     metadata era `tiny` pe randul de task si `micro` pe cardul de proiect si
-     niciuna nu era gresita, pentru ca scara nu spunea nimic.
-     Acum: sase trepte, niciun salt sub 2px, valori intregi, si sub corp raman
-     DOUA — 13 pentru tot ce citesti, 11 doar pentru etichete majuscule. */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'Fira Code', monospace;
-  --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-  --font-title: 1.625rem;   /* 26 — titlul paginii */
-  --font-h2: 1.25rem;       /* 20 — titlu de sectiune, nume de proiect */
-  --font-h3: 1.0625rem;     /* 17 — titlu de lista, titlul taskului deschis */
-  --font-body: 0.9375rem;   /* 15 — tot ce citesti */
-  --font-small: 0.8125rem;  /* 13 — metadate, chipuri, ajutoare */
-  --font-label: 0.6875rem;  /* 11 — DOAR etichete majuscule */
+  /* ---- Tipografie ----
+     GABARITO PESTE TOT. DM Mono doar pe cifre si coduri, ca sa se alinieze
+     coloanele. Inter, Space Grotesk si JetBrains Mono au iesit din sistem.
+     Regula se verifica singura: daca textul se poate traduce, nu e mono. */
+  --font-sans: 'Gabarito', system-ui, -apple-system, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'Fira Code', monospace;
+  /* Un singur font: titlul si corpul sunt aceeasi familie, deosebite de marime
+     si greutate. `--font-heading` ramane ca nume, nu ca a doua familie. */
+  --font-heading: var(--font-sans);
 
-  /* Safari mareste pagina cand fontul campului focalizat e sub 16px. Erau trei
-     locuri care scriau `1rem` sau `16px !important` de mana ca sa compenseze —
-     adica o a noua marime, ascunsa intr-un media query. Acum e un token. */
+  /* Scara: micro 12 · meta 13 · rand/corp 15 · panou 21 · pagina 25.
+     NU se introduce 14px nicaieri. */
+  --font-title: 1.5625rem;  /* 25 — titlul paginii */
+  --font-h2: 1.3125rem;     /* 21 — titlu de panou, numele lucrului deschis */
+  --font-h3: 0.9375rem;     /* 15 — eticheta de pagina / titlu de lista (600) */
+  --font-body: 0.9375rem;   /* 15 — tot ce citesti si randul de lista */
+  --font-small: 0.8125rem;  /* 13 — metadate */
+  --font-label: 0.75rem;    /* 12 — DOAR etichete majuscule, 600, ls .05em */
+  /* Controlul din rand: aceeasi marime ca metadata, greutate mai mare, ca sa nu
+     concureze cu titlul randului. */
+  --font-control: 0.8125rem; /* 13/600 */
+  /* Marca din cap — singura treapta din afara scarii, fiindca e logotip. */
+  --font-brand: 1.125rem;    /* 18/600, cu tila de 26px */
+
+  /* Safari mareste pagina cand fontul campului focalizat e sub 16px. */
   --font-input-mobile: 16px;
 
-  /* Font-weight — TREI, nu patru. `--fw-bold` (700) a plecat: la Space Grotesk
-     condensat, 700 la 26px e greu, nu emfatic. Unde chiar purta informatie — pe
-     cifre (`.k-n`, `.ch-main`, `.rprog-num`) — a trecut la semibold, nu la medium. */
   --fw-normal: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
 
-  /* Line-height. In ecrane erau scrise direct 1.25, 1.45, 1.5, 1.6 si 1.65, in
-     douazeci de locuri, niciuna mai buna decat treapta cea mai apropiata. Doua
-     paragrafe alaturate, unul la 1.6 si altul la 1.55, nu arata ca doua decizii:
-     arata ca o eroare de aliniere. `--lh-snug` urca de la 1.3 la 1.35 ca sa
-     acopere 1.25. */
-  --lh-tight: 1.15;   /* titluri */
-  --lh-snug: 1.35;    /* titluri de lista, texte taiate la doua randuri */
-  --lh-normal: 1.55;  /* corp */
-  --lh-relaxed: 1.7;  /* notite lungi, continut bogat */
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.7;
 
-  /* Tracking — trei valori, toate tokenuri. `--tracking-tight` era -0.01em si
-     nu-l folosea nimeni, in timp ce -0.02em era scris de mana in opt locuri din
-     sapte fisiere; tokenul ia acum valoarea pe care o folosea deja toata lumea.
-     `--tracking-label` inlocuieste 0.14em / 0.1em / 0.03em / wide / wider. */
-  --tracking-tight: -0.02em;
+  --tracking-tight: -0.01em;
   --tracking-normal: 0;
-  --tracking-label: 0.08em;
+  --tracking-label: 0.05em;
 
-  /* Focus ring (reutilizat de inputuri + regula globala focus-visible) */
-  --focus-ring: 0 0 0 3px var(--accent-subtle);
+  --focus-ring: 0 0 0 3px var(--accent-ring);
 
-  /* Tinta minima de atingere (touch) */
+  /* ---- Atingere ----
+     44px minim pe telefon, 48 in foaie, randul de lista 52. */
   --tap-min: 44px;
+  --tap-sheet: 48px;
+  --row-h-mobile: 52px;
 
-  /* Z-index */
   --z-dropdown: 100;
   --z-sticky: 200;
   --z-modal: 1000;
   --z-toast: 2000;
   --z-tooltip: 3000;
 
-  /* Transitions */
+  /* ---- Miscare: TREI durate, DOUA curbe ----
+     90ms apasare · 220ms element · 280ms suprafata. */
+  --dur-press: 0.09s;
+  --dur-base: 0.22s;
+  --dur-slow: 0.28s;
+  /* Vopseaua (hover, culoare, umbra) nu e in scara de miscare: nu misca nimic,
+     deci nu are nevoie de cadrul unui element care sosește. */
   --dur-fast: 0.12s;
-  --dur-base: 0.24s;
-  --dur-slow: 0.32s;
-  --ease: cubic-bezier(0.32, 0.72, 0.28, 1);
-  /* Apasarea se intoarce mai repede decat orice altceva: sub ~100ms legatura
-     cauza-efect se citeste ca instantanee, iar peste ea butonul pare moale. */
-  --dur-press: 0.05s;
-  /* ADANCIMEA APASARII, TOKENIZATA CA SI DURATA. Era scrisa de mana in patru
-     fisiere, cu patru valori: `.ts-rand` se stangea cu 0,5% — sub pragul la care
-     ochiul vede ceva, deci singurul obiect apasabil din aplicatie care nu
-     raspundea la apasare — iar `.status-pill` cu 8%, adica de saisprezece ori
-     mai mult. Doua valori, atat: suprafete mari (card, rand, tab) si tinte mici,
-     unde acelasi procent nu s-ar vedea. Nimic nu-si mai alege singur adancimea. */
-  --press-scale: 0.97;
-  --press-scale-sm: 0.93;
+  --ease: cubic-bezier(.32, .72, .28, 1);
+  /* Singura curba cu depasire din sistem. Cursorul de tab o are fiindca
+     urmareste degetul; revenirea dintr-un gest, din acelasi motiv. */
+  --ease-spring: cubic-bezier(.34, 1.35, .42, 1);
 
-  /* Revenirea dintr-un GEST (foaia trasa si eliberata) se aseaza cu un arc mic:
-     `linear()` esantioneaza un spring usor amortizat — depaseste tinta cu ~5%
-     si se intoarce. Pentru hover/culori raman `--ease`; arcul e doar pentru
-     miscari pe care le-a pornit degetul, unde revenirea rigida se citeste ca
-     mecanica. Browserele fara `linear()` cad pe `--ease` la locul folosirii. */
-  --ease-spring: linear(0, 0.32 12%, 0.72 24%, 0.95 36%, 1.05 52%, 1.02 68%, 0.99 84%, 1);
+  /* Adancimea apasarii, tokenizata ca si durata: o singura valoare, ca nimic
+     sa nu-si aleaga singur cat de tare se strange. */
+  --press-scale: 0.965;
+  --press-scale-sm: 0.965;
 
-  /* Tranzitia implicita a unei suprafete interactive (hover/selectat).
-     Exista ca sa NU se mai scrie `transition: all`: `all` urmareste ORICE
-     proprietate care se schimba, deci si pe cele care declanseaza reasezare
-     (width/height/padding) — animate pe firul principal, nu pe GPU. Cand ceva
-     de langa element ii schimba geometria, primeai o animatie pe care n-ai
-     cerut-o. Lista explicita de mai jos e formata doar din proprietati de
-     vopsea (compozitare), niciuna nu reasaza pagina. */
   --transition-colors:
     background-color var(--dur-fast) var(--ease),
     border-color var(--dur-fast) var(--ease),
@@ -215,109 +218,60 @@
     box-shadow var(--dur-fast) var(--ease),
     opacity var(--dur-fast) var(--ease);
 
-  /* Pentru suprafetele care se si APASA (chip, tab, celula). Adauga `transform`
-     — singura proprietate geometrica sigura, pentru ca se compune pe GPU fara
-     sa reaseze nimic — pe durata scurta de apasare. */
   --transition-pressable:
     var(--transition-colors),
     transform var(--dur-press) var(--ease);
 
-  /* Layout */
+  /* ---- Layout ---- */
   --header-height: 56px;
   --content-max: 1400px;
   --dock-h: 68px;
 
-  /* Safe-area insets (notch / home-indicator). Resolve to 0 when the device
-     has no insets sau cand viewport-fit nu e cover. */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
-/* TITLUL PAGINII SE MICSOREAZA PE TELEFON — si doar el.
-   Scara de mai sus e desenata pentru un ecran de 1280px, unde un titlu de 26px
-   ocupa un rand si atat. Pe 375px acelasi 26px inseamna ~19 caractere pe rand:
-   „Punere in functiune linie extrudare cauciuc — motoare principale si
-   periferice" cadea pe PATRU randuri, adica ~150px de titlu inainte sa vezi
-   ceva din proiect, si asta la fiecare deschidere.
-   Efectul al doilea, mai putin evident: titlul si butoanele impart acelasi rand
-   in antetul paginii, iar cand titlul e nemicsorabil butoanele ies din ecran —
-   pe /projects „Proiect Nou" era taiat de marginea din dreapta.
-   Se schimba TOKENUL, nu fiecare pagina.
-
-   Ce NU mai scade: corpul si treptele de sub el. Blocul asta micsora `h2`, `h3`
-   si corpul odata cu titlul — deci exact treptele inghesuite ramaneau inghesuite
-   pe ecranul cu cea mai mica distanta de citire si cea mai proasta lumina, in
-   hala. Corpul ramane 15px pe toate ecranele. */
+/* PE TELEFON TITLUL PAGINII CRESTE, CORPUL CRESTE, RANDUL RAMANE.
+   Nu e o exceptie de la scara, e scara de telefon din sistem: pagina 28,
+   corp 16, rand 15. Titlul creste fiindca pe un ecran ingust el e singurul
+   reper de ierarhie; corpul creste fiindca distanta de citire e mai mica si
+   lumina din hala e proasta. Randul de lista NU creste: el poarta densitate. */
 @media (max-width: 768px) {
   :root {
-    --font-title: 1.375rem;   /* 26 -> 22 */
+    --font-title: 1.75rem;   /* 25 -> 28 */
+    --font-body: 1rem;       /* 15 -> 16 */
   }
 }
 
 [data-theme="light"] {
   color-scheme: light;
 
-  --accent: #ffb454;
-  --accent-hover: #f59d33;
-  --accent-subtle: rgba(255, 180, 84, 0.16);
-  --accent-ring: rgba(200, 130, 20, 0.30);
-  --accent-text: #1a1206;
-  --accent-on-subtle: #8a5300; /* amber ca TEXT pe deschis pica AA — folosim varianta inchisa */
+  --bg: #f4f5f7;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f7f8fa;
 
-  --service-accent: #b06a00;
-  --service-subtle: rgba(200, 130, 20, 0.14);
-  --purple: #6d4fd0;
-  --purple-subtle: rgba(122, 95, 216, 0.12);
+  --border: #e6e8ec;
+  --border-strong: #d2d6dc;
 
-  --bg: #f6f1e7;
-  --bg-surface: #fffdf8;
-  --bg-panel: #efe8da;
-  --bg-input: #efe8da;
-  --bg-elevated: #efe8da;
-  --bg-overlay: #fffdf8;
-  --bg-hover: #ece4d3;
-  --bg-active: #e3dbc9;
+  --text: #1b1e23;
+  --text-secondary: #5a6270;
+  --text-dim: #656c78;
 
-  --text: #1f1a12;
-  --text-secondary: #6b6254;
-  --text-dim: #756c5d;      /* body-AA pe surface */
-  --text-faint: #938a79;    /* UI/large only */
+  --accent: #5980a6;
+  --accent-deep: #3d5f83;
+  --accent-subtle: #ebf1f7;
+  --accent-text: #ffffff;
 
-  --border: #e3dbcb;
-  --border-subtle: #ede6d7;
-  --border-strong: #cfc5b0;
+  --danger: #b04a38;
+  --danger-deep: #8f3a2b;
+  --success: #3f7d5e;
+  --success-deep: #2f6349;
 
-  --success: #1d7f4d;
-  --success-subtle: rgba(29, 127, 77, 0.12);
-  --warning: #8a5300;       /* text-AA pe deschis */
-  --warning-subtle: rgba(200, 130, 20, 0.14);
-  --danger: #d6473a;
-  --danger-subtle: rgba(214, 71, 58, 0.10);
-  --info: #6d4fd0;
-  --info-subtle: rgba(122, 95, 216, 0.12);
+  --shadow-sm: 0 1px 2px rgba(20, 24, 31, .05), 0 4px 12px -8px rgba(20, 24, 31, .10);
+  --shadow-md: 0 1px 2px rgba(20, 24, 31, .05), 0 10px 28px -14px rgba(20, 24, 31, .14);
 
-  --chart-1: #bd7420;
-  --chart-2: #0f9257;
-  --chart-3: #7a5fd8;
-
-  /* --loc-site / --loc-sediu NU se redefinesc pe tema deschisa, cu buna stiinta.
-     Prima incercare le-a inchis aici („ca sa se citeasca pe alb") si a iesit
-     invers: tokenul e FUNDALUL benzii de perioada, care poarta cerneala inchisa
-     (--on-color), deci banda a devenit inchisa cu text inchis pe ea. Rolul lui
-     e fill, nu text — iar un fill de mijloc merge sub cerneala inchisa in
-     ambele teme. Unde valoarea chiar e folosita ca TEXT (eticheta „Pe teren"),
-     se amesteca spre --text la locul folosirii, ca sa urmeze tema.
-
-     Pe hartie cerneala peste un fill saturat ramane tot inchisa — fillurile de
-     identitate sunt aceleasi in ambele teme (vezi lib/culori.js), deci si
-     contrastul lor fata de cerneala e acelasi. */
-
-  /* In light, suprafetele flotante nu pot fi mai albe decat pagina (deja alba),
-     deci elevatia se citeste prin umbra — mai puternica decat in dark. */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.14);
-  --shadow-lg: 0 10px 34px rgba(0, 0, 0, 0.18);
-  --shadow-glow-accent: 0 4px 14px rgba(200, 130, 20, 0.20);
+  /* Toate alisurile de mai sus se rezolva prin `var()` la rolurile redefinite
+     aici, deci nu se repeta. Exceptiile sunt cele care nu depind de tema. */
 }

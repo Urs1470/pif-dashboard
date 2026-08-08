@@ -222,8 +222,13 @@
 {#if open}
   <div class="palette-backdrop" onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
     <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1" transition:scale={{ start: 0.96, duration: motionDuration(DUR_FAST) }}>
+      <!-- RANDUL DE SUS *ESTE* CAMPUL.
+           Era o pastila cu chenar si fundal propriu, asezata INAUNTRUL panoului:
+           doua cutii concentrice, si a doua nu adauga nimic — nu poti scrie
+           altundeva in paleta, deci nu e nevoie sa marchezi unde se scrie.
+           Acum inputul n-are nici chenar, nici fundal; il delimiteaza randul. -->
       <div class="palette-search">
-        <Search size={16} />
+        <Search size={17} strokeWidth={1.5} />
         <input
           bind:this={inputEl}
           type="text"
@@ -241,15 +246,15 @@
               class="palette-item"
               class:selected={i === selected}
               onclick={() => go(cmd)}
-              onmouseenter={() => selected = i}
               role="option"
               aria-selected={i === selected}
             >
               <SolidIcon name={cmd.solid} size={16} />
-              <span>{cmd.label}</span>
+              <span class="pi-eticheta">{cmd.label}</span>
               {#if router.path === cmd.path || (cmd.path !== '/' && router.path.startsWith(cmd.path))}
                 <span class="current">curent</span>
               {/if}
+              {#if i === selected}<span class="enter" aria-hidden="true">⏎</span>{/if}
             </button>
           {/each}
           {#if navFiltered.length === 0}
@@ -272,23 +277,22 @@
                 class="palette-item"
                 class:selected={i === selected}
                 onclick={() => go(item)}
-                onmouseenter={() => selected = i}
-                role="option"
+                  role="option"
                 aria-selected={i === selected}
               >
                 <SolidIcon name={item.solid} size={16} />
-                <span>{item.label}</span>
+                <span class="pi-eticheta">{item.label}</span>
                 {#if router.path === item.path || (item.path !== '/' && router.path.startsWith(item.path))}
                   <span class="current">curent</span>
                 {/if}
+                {#if i === selected}<span class="enter" aria-hidden="true">⏎</span>{/if}
               </button>
             {:else}
               <button
                 class="palette-item result"
                 class:selected={i === selected}
                 onclick={() => activateResult(item)}
-                onmouseenter={() => selected = i}
-                role="option"
+                  role="option"
                 aria-selected={i === selected}
               >
                 <div class="result-body">
@@ -296,6 +300,7 @@
                   {#if item.subtitle}<span class="result-sub">{item.subtitle}</span>{/if}
                   {#if item.snippet}<span class="result-snippet">{@html highlight(item.snippet, query.trim())}</span>{/if}
                 </div>
+                {#if i === selected}<span class="enter" aria-hidden="true">⏎</span>{/if}
               </button>
             {/if}
           {/each}
@@ -315,53 +320,55 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 15vh;
-      backdrop-filter: blur(7px);
-    -webkit-backdrop-filter: blur(7px);
+    /* FARA BLUR. Paleta se desprinde prin UMBRA — la fel ca modalul, toastul si
+       docul. Sticla era singurul loc unde separarea se facea altfel, si costa:
+       `backdrop-filter` forteaza un strat de compozitare cat ecranul, animat
+       la fiecare deschidere, exact cand se asteapta si raspunsul tastaturii. */
   }
 
   .palette {
     background: var(--bg-overlay);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     width: 100%;
-    max-width: 560px;
-    box-shadow: var(--shadow-lg);
+    max-width: 592px;
+    box-shadow: var(--shadow-md);
     overflow: hidden;
   }
 
+  /* Randul de cautare E campul: inputul n-are chenar, fundal sau raza proprie. */
   .palette-search {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-md) var(--space-lg);
+    gap: var(--space-12);
+    height: 56px;
+    padding: 0 var(--space-md);
     border-bottom: 1px solid var(--border);
     color: var(--text-dim);
   }
   .palette-search input {
     flex: 1;
-    min-height: 38px;
-    padding: 6px 14px;
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    background: none;
+    border: none;
     outline: none;
     color: var(--text);
+    font-family: inherit;
     font-size: var(--font-body);
-    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   }
   .palette-search input:focus,
   .palette-search input:focus-visible {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: var(--focus-ring);
+    border: none;
+    box-shadow: none;
   }
   .palette-search input::placeholder { color: var(--text-dim); }
   .palette-search kbd {
     font-family: var(--font-mono);
-    font-size: var(--font-small);
-    padding: 2px 6px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
+    font-size: var(--font-label);
+    padding: 3px 7px;
+    background: var(--bg-elevated);
     border-radius: var(--radius-xs);
     color: var(--text-dim);
   }
@@ -369,53 +376,77 @@
   .palette-list {
     max-height: 400px;
     overflow-y: auto;
-    padding: var(--space-xs);
+    padding: 6px;
   }
 
   .palette-item {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: 10px;
     width: 100%;
-    padding: var(--space-sm) var(--space-md);
+    min-height: 40px;
+    padding: 0 10px;
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
-    font-size: var(--font-small);
+    font-size: var(--font-body);
     text-align: left;
     cursor: pointer;
-    transition: background var(--dur-fast) var(--ease);
+    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
-  .palette-item:hover,
+  .pi-eticheta { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* SELECTIA E UN CURSOR DE TASTATURA, NU UN HOVER.
+     Pana acum `mouseenter` muta `selected`, deci plimbarea mouse-ului peste
+     lista schimba ce face Enter — iar Enter e tot rostul paletei. Acum hoverul
+     spune doar „esti peste", si numai cursorul poarta tenta de accent si `⏎`.
+     Asa Enter se invata din desen si nu mai e nevoie de o bara de ajutor jos. */
+  .palette-item:hover { background: var(--bg-hover); color: var(--text); }
   .palette-item.selected {
-    background: var(--bg-hover);
-    color: var(--text);
+    background: var(--accent-subtle);
+    color: var(--accent-deep);
+    font-weight: var(--fw-medium);
   }
-  .current {
-    margin-left: auto;
+  .enter {
+    flex: none;
+    font-family: var(--font-mono);
     font-size: var(--font-small);
-    color: var(--accent);
-    opacity: 0.7;
+    color: var(--accent-deep);
+    margin-left: 8px;
+  }
+
+  /* „curent" e o eticheta, nu un accent: pe o suprafata neutra, cu text estompat.
+     Era accentul la `opacity: .7` — adica accentul stins, care nu e nici accent
+     (nu mai are contrastul lui) nici neutru (isi pastreaza nuanta). */
+  .current {
+    flex: none;
+    padding: 2px 8px;
+    border-radius: var(--radius-xs);
+    background: var(--bg-elevated);
+    color: var(--text-dim);
+    font-size: var(--font-label);
+    font-weight: var(--fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
   }
 
   .group-label {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: var(--font-small);
+    font-size: var(--font-label);
     font-weight: var(--fw-semibold);
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
-    padding: var(--space-sm) var(--space-md) 2px;
+    padding: var(--space-sm) 10px 2px;
     margin-top: var(--space-xs);
   }
   .group-label:first-child { margin-top: 0; }
 
   .palette-item.result {
-    flex-direction: column;
     align-items: flex-start;
-    gap: 2px;
-    padding: 6px var(--space-md);
+    gap: 8px;
+    padding: 7px 10px;
   }
   .result-body {
     display: flex;
@@ -425,12 +456,13 @@
     width: 100%;
   }
   .result-title {
-    font-size: var(--font-small);
+    font-size: var(--font-body);
     color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .palette-item.result.selected .result-title { color: var(--accent-deep); }
   .result-sub {
     font-size: var(--font-small);
     color: var(--text-dim);
@@ -445,7 +477,7 @@
 
   .palette-item.result :global(mark) {
     background: var(--accent-subtle);
-    color: var(--accent);
+    color: var(--accent-deep);
     border-radius: 2px;
     padding: 0 1px;
   }
@@ -459,14 +491,14 @@
 
   @media (max-width: 768px) {
     .palette-backdrop { padding-top: calc(var(--space-lg) + var(--safe-top)); padding-left: calc(var(--space-md) + var(--safe-left)); padding-right: calc(var(--space-md) + var(--safe-right)); }
-    /* Paleta ramane SUS, nu devine sheet: aici se deschide tastatura imediat, iar
-       tastatura ocupa jumatatea de jos. Un sheet ar fi impins direct sub ea.
-       Ce se schimba e cat loc are lista si cat de mari sunt randurile. */
-    .palette-search { padding: var(--space-12) var(--space-md); }
-    .palette-search input { min-height: var(--tap-min); }
-    /* Sugestia de scurtatura nu are ce cauta pe un ecran fara tastatura fizica. */
+    /* Paleta ramane SUS, nu devine foaie: aici se deschide tastatura imediat, iar
+       tastatura ocupa jumatatea de jos. O foaie ar fi impinsa direct sub ea. */
+    .palette-search { height: 56px; padding: 0 var(--space-md); }
+    /* Sugestia de scurtatura n-are ce cauta pe un ecran fara tastatura fizica. */
     .palette-search kbd { display: none; }
     .palette-list { max-height: min(400px, 52dvh); overscroll-behavior: contain; }
     .palette-item { min-height: var(--tap-min); }
+    /* `⏎` presupune o tasta Enter. Pe telefon randul se atinge. */
+    .enter { display: none; }
   }
 </style>

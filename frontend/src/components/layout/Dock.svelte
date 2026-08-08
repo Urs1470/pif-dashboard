@@ -188,7 +188,11 @@
   )
   const itemsInFoaie = $derived(items.filter((i) => !PE_TELEFON.has(i.path)))
 
+  // Cand esti pe o ruta din foaie, slotul activ e „Mai mult" — altfel dock-ul
+  // n-ar avea NICIUN slot aprins pe /projects, /departament si /calculator, si
+  // ai citi asta ca „nu esti nicaieri". Slotul e drumul catre ea, deci el o tine.
   let foaieDeschisa = $state(false)
+  const inFoaie = $derived(itemsInFoaie.some((i) => isActive(i.path)))
   // O ruta noua inchide foaia — altfel ramane peste pagina in care tocmai ai intrat.
   $effect(() => { router.path; foaieDeschisa = false })
 
@@ -230,7 +234,7 @@
   {/each}
   <span class="sep" aria-hidden="true"></span>
   {#if ecran.telefon}
-    <button class="dock-item" class:active={foaieDeschisa}
+    <button class="dock-item" class:active={foaieDeschisa || inFoaie}
             onclick={() => (foaieDeschisa = !foaieDeschisa)}
             aria-label="Mai mult" aria-expanded={foaieDeschisa} title="Mai mult">
       <MoreHorizontal size={marimeIcon} />
@@ -290,20 +294,24 @@
     display: flex;
     gap: 4px;
     padding: 12px 8px 8px;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     z-index: var(--z-sticky);
-    background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
-    border: 1px solid var(--border-strong);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: var(--shadow-lg);
+    /* OPAC, cu umbra. Era semi-transparent cu `blur(18px)`, deci continutul
+       paginii se plimba dedesubt ca o pata in miscare — exact sub degetul care
+       cauta un tab. O suprafata flotanta se desprinde prin umbra, nu prin
+       sticla; asa se desprind si modalul, si toastul, si popoverul. */
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-md);
   }
 
   .dock-item {
     width: 50px;
     height: 50px;
-    border-radius: 16px;
-    color: var(--text-faint);
+    border-radius: var(--radius-sm);
+    /* `--text-secondary`, nu `--text-faint`: o iconita de navigatie inactiva
+       trebuie sa se poata CITI, nu doar sa se ghiceasca — e singura harta a
+       aplicatiei. Estompatul e pentru text care insoteste, nu pentru drumuri. */
+    color: var(--text-secondary);
     display: grid;
     place-items: center;
     cursor: pointer;
@@ -321,12 +329,16 @@
       transform: translateY(-4px);
     }
   }
-  .dock-item:active { color: var(--text); background: var(--bg-hover); }
-  .dock-item.active:active { background: var(--accent); }
+  .dock-item:active { color: var(--text); background: var(--bg-hover); transform: scale(var(--press-scale)); }
+  /* Activ = TENTA de accent cu cerneala adanca, nu accentul plin.
+     Fillul plin facea din slotul curent lucrul cel mai tare colorat de pe ecran
+     — mai tare decat orice buton de actiune — desi el nu e o actiune, e o
+     informatie despre unde esti. */
   .dock-item.active {
-    color: var(--accent-text);
-    background: var(--accent);
+    color: var(--accent-deep);
+    background: var(--accent-subtle);
   }
+  .dock-item.active:active { background: var(--accent-subtle); }
   .dock-item.active:hover {
     transform: none;
   }
@@ -352,8 +364,6 @@
     inset: 0;
     z-index: calc(var(--z-sticky) - 1);
     background: color-mix(in srgb, var(--bg) 55%, transparent);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
   }
   /* Invelisul: lipit de marginea de sus a docului, centrat pe el. Nu poarta
      `transform`, ca sa nu se bata cu cel scris de `fly` pe copil. */
@@ -372,12 +382,9 @@
     display: flex;
     flex-direction: column;
     padding: 6px;
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--bg-overlay) 96%, transparent);
-    border: 1px solid var(--border-strong);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-md);
+    background: var(--bg-overlay);
+    box-shadow: var(--shadow-md);
   }
   .mm-cauta,
   .mm-rand {
@@ -398,7 +405,11 @@
   .mm-cauta { color: var(--text-dim); }
   .mm-cauta:active,
   .mm-rand:active { background: var(--bg-hover); color: var(--text); }
-  .mm-rand.active { color: var(--accent); }
+  .mm-rand.active {
+    color: var(--accent-deep);
+    background: var(--accent-subtle);
+    font-weight: var(--fw-semibold);
+  }
   .mm-linie { height: 1px; background: var(--border); margin: 5px 8px; }
 
   /* Manerul-linie (prezenta dock-ului). Absolut pe dock -> se misca cu dock-ul. */
@@ -423,7 +434,6 @@
     height: 3px;
     border-radius: var(--radius-full);
     background: var(--border-strong);
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
     transition: background var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
   }
   .dock-grip:hover::before,
@@ -460,7 +470,7 @@
     .dock-item {
       width: 56px;
       height: 56px;
-      border-radius: 18px;
+      border-radius: var(--radius-md);
     }
     /* Ascuns pe telefon inseamna ASCUNS: manerul e `display: none` aici, deci nu
        are ce ramane la vedere. `100% + 6px` (valoarea de pe desktop, calibrata ca

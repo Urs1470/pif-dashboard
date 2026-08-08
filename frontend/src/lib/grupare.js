@@ -20,7 +20,11 @@ import { zilePanaLa } from './formatters.js'
 const GRUPE = [
   { id: 'restant', titlu: 'Restante', ton: 'danger', test: (k) => k !== null && k < 0 },
   { id: 'azi', titlu: 'Azi', ton: 'accent', test: (k) => k === 0 },
-  { id: 'maine', titlu: 'Mâine', ton: 'warning', test: (k) => k === 1 },
+  // „Mâine" e NORMAL, nu un ton propriu. Purta `warning`, iar de cand sistemul
+  // are doua culori de stare (restant / facut) avertismentul a devenit acelasi
+  // rosu ca restantul — deci grupa „Mâine" s-ar fi citit ca inca un teanc de
+  // intarzieri. Mâine nu e o problema, e o zi.
+  { id: 'maine', titlu: 'Mâine', ton: 'normal', test: (k) => k === 1 },
   { id: 'saptamana', titlu: 'Zilele astea', ton: 'normal', test: (k) => k !== null && k >= 2 && k <= 7 },
   { id: 'tarziu', titlu: 'Mai târziu', ton: 'normal', test: (k) => k !== null && k > 7 },
   { id: 'fara', titlu: 'Fără termen', ton: 'sters', test: (k) => k === null },
@@ -93,6 +97,28 @@ export function etichetaTermen(d) {
   if (k < 0) return `acum ${-k} zile`
   // Pana la o saptamana numele zilei e cel mai usor de asezat in cap.
   if (k <= 6) return ZILE[new Date(String(d).slice(0, 10)).getDay()]
+  const t = new Date(String(d).slice(0, 10))
+  return t.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })
+}
+
+/** Aceeasi informatie, dar pentru COLOANA de 46px de la marginea randului.
+ *
+ *  `etichetaTermen` scrie „acum 12 zile" — 11 caractere, care la 12px monospace
+ *  cer ~80px. Pironita intr-o coloana de 46 ar fi fost taiata pe toate randurile
+ *  restante, adica exact pe cele care conteaza. Restanta se scrie deci ca
+ *  marime cu semn: „−12 z". Semnul e minusul tipografic (U+2212), nu cratima:
+ *  in DM Mono cratima e la jumatatea inaltimii cifrelor si se citea ca liniuta
+ *  de despartire, nu ca „minus".
+ *
+ *  Zilele apropiate raman cuvinte („azi", „mâine", numele zilei): un cuvant se
+ *  recunoaste fara sa fie citit, o cifra nu. */
+export function etichetaTermenScurt(d) {
+  const k = zilePanaLa(d)
+  if (k === null) return '—'
+  if (k === 0) return 'azi'
+  if (k === 1) return 'mâine'
+  if (k < 0) return `−${-k} z`
+  if (k <= 6) return ZILE[new Date(String(d).slice(0, 10)).getDay()].slice(0, 3)
   const t = new Date(String(d).slice(0, 10))
   return t.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })
 }

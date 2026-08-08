@@ -3,50 +3,56 @@
 
 /* Self-hosted (OFL-1.1, fisierele in static/fonts/) — fara dependenta CDN,
    merge offline (PWA). Variabile: un fisier per familie acopera toate weights. */
+/* Doua familii, self-hosted (OFL-1.1), fiecare in doua subseturi.
+   Subsetul `latin` are â si î; `latin-ext` are ă, ș si ț — impreuna acopera
+   romana, si browserul incarca al doilea doar cand pagina chiar are diacritice
+   din el. Ordinea nu conteaza: `unicode-range` decide, nu pozitia. */
 @font-face {
-  font-family: 'Inter';
-  src: url('/static/fonts/Inter-Variable-ext.woff2') format('woff2');
-  font-weight: 100 900;
+  font-family: 'Gabarito';
+  src: url('/static/fonts/Gabarito-Variable-ext.woff2') format('woff2');
+  font-weight: 400 900;
   font-style: normal;
   font-display: swap;
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
-  font-family: 'Inter';
-  src: url('/static/fonts/Inter-Variable.woff2') format('woff2');
-  font-weight: 100 900;
+  font-family: 'Gabarito';
+  src: url('/static/fonts/Gabarito-Variable.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* DM Mono nu e variabil: doua greutati, atat — 400 pentru cifre citite si 500
+   pentru cifre care poarta accent. Nu se cere niciodata alta. */
+@font-face {
+  font-family: 'DM Mono';
+  src: url('/static/fonts/DMMono-400-ext.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'DM Mono';
+  src: url('/static/fonts/DMMono-400.woff2') format('woff2');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/static/fonts/SpaceGrotesk-Variable-ext.woff2') format('woff2');
-  font-weight: 300 700;
+  font-family: 'DM Mono';
+  src: url('/static/fonts/DMMono-500-ext.woff2') format('woff2');
+  font-weight: 500 700;
   font-style: normal;
   font-display: swap;
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/static/fonts/SpaceGrotesk-Variable.woff2') format('woff2');
-  font-weight: 300 700;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: url('/static/fonts/JetBrainsMono-Variable-ext.woff2') format('woff2');
-  font-weight: 100 800;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: url('/static/fonts/JetBrainsMono-Variable.woff2') format('woff2');
-  font-weight: 100 800;
+  font-family: 'DM Mono';
+  src: url('/static/fonts/DMMono-500.woff2') format('woff2');
+  font-weight: 500 700;
   font-style: normal;
   font-display: swap;
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -57,18 +63,14 @@ body {
   font-size: var(--font-body);
   font-weight: var(--fw-normal);
   color: var(--text);
+  /* FONDUL E O CULOARE, NU O SCENA.
+     Erau doua glowuri radiale fixate pe viewport (amber sus-dreapta, verde
+     jos-stanga). Interzise explicit — si nu doar stilistic: erau a doua si a
+     treia culoare de brand, desenate sub fiecare suprafata, deci fiecare card
+     alb statea pe un fond care isi schimba nuanta de la un colt la altul.
+     Elevatia se citeste acum din umbra, care are nevoie de un fond uniform. */
   background: var(--bg);
-  /* Glow-uri bento discrete: amber sus-dreapta, verde jos-stanga. */
-  background-image:
-    radial-gradient(1200px 500px at 80% -10%, rgba(255, 180, 84, 0.06), transparent 60%),
-    radial-gradient(900px 420px at -10% 110%, rgba(126, 226, 168, 0.045), transparent 55%);
-  background-attachment: fixed;
   line-height: var(--lh-normal);
-}
-[data-theme="light"] body {
-  background-image:
-    radial-gradient(1200px 500px at 80% -10%, rgba(200, 130, 20, 0.05), transparent 60%),
-    radial-gradient(900px 420px at -10% 110%, rgba(29, 127, 77, 0.04), transparent 55%);
 }
 
 /* TITLURILE NU MOSTENESC INTERLINIA DE PARAGRAF.
@@ -853,7 +855,11 @@ input[type="checkbox"].cbx:focus {
 /* Intrare esalonata pentru celule (stagger). Sub reduced-motion plasa globala
    scurteaza animatia la ~0, dar fortam si opacity ca celulele sa nu ramana invizibile. */
 @keyframes cellIn {
-  from { opacity: 0; transform: translateY(22px) scale(0.97); }
+  /* Fara `scale`. Doua transformari pe acelasi obiect inseamna doua povesti:
+     `translateY` spune „a venit de jos", `scale` spune „a crescut de departe" —
+     iar o celula de dashboard nu face niciuna dintre ele in profunzime, doar
+     soseste. Distanta scade de la 22px la 10, aceeasi cu invelisul de ruta. */
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
 /* INTARZIEREA VINE DE LA ELEMENT (`--i`), NU DE LA POZITIA IN DOM.
@@ -862,11 +868,14 @@ input[type="checkbox"].cbx:focus {
    ordinea pe care o vedeai era inversul ordinii din lista. Iar `nth-child`
    numara frati, nu celule: `.list-cell` din /tasks pornea cu 120ms intarziere
    doar fiindca are doi frati inaintea lui in pagina.
-   Pasul e 32ms, plafonat la 224 (dupa a saptea celula valul nu se mai citeste,
-   doar se asteapta), iar durata coboara de la 500ms — de doua ori `--dur-base`,
-   fara motiv — la `--dur-base`. Ultima celula se aseaza la 464ms in loc de 870. */
+   Pasul e 40ms, PLAFONAT LA SASE CELULE (240ms). Sase e numarul din sistem, si
+   are un motiv masurabil: valul se citeste cat timp ochiul mai poate lega
+   celula care soseste de cea dinaintea ei. Peste sase, ce vezi nu mai e o
+   ordine, e o asteptare — ultima celula ar ajunge la 300ms+ dupa prima, adica
+   mai tarziu decat dureaza propria ei sosire.
+   Durata e `--dur-base` (era 500ms — de doua ori mai mult, fara motiv). */
 .cell-in { opacity: 0; animation: cellIn var(--dur-base) var(--ease) forwards;
-  animation-delay: min(var(--celula, 0) * 32ms, 224ms); }
+  animation-delay: min(var(--celula, 0) * 40ms, 240ms); }
 @media (prefers-reduced-motion: reduce) {
   .cell-in { opacity: 1; animation: none; }
 }

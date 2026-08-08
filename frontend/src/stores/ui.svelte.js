@@ -20,7 +20,28 @@ let toastId = 0
 // ruleaza la expirare / inchidere; „Anulează" (onUndo) o repune.
 const toastMeta = {}
 
-export function toast(message, type = 'info', duration = 3000) {
+// UN SINGUR TOAST PE ECRAN, 4 SECUNDE.
+//
+// Era o stiva: bifezi trei taskuri la rand si primesti trei casete suprapuse,
+// fiecare cu „Anulează", fara sa scrie pe niciuna PE CARE task. Trei butoane
+// identice pentru trei actiuni diferite nu e o confirmare, e o loterie.
+//
+// Inlocuirea nu are voie sa fie tacuta: un toast-undo scos de pe ecran trebuie
+// sa se DECIDA. Daca l-am arunca pur si simplu, `onCommit` n-ar mai rula
+// niciodata — adica randul ar ramane sters din interfata si nesters din baza,
+// exact felul de nepotrivire care se descopera la urmatoarea reincarcare.
+// Deci: cine pleaca, se comite.
+const DURATA_TOAST = 4000
+
+function faceLoc() {
+  for (const t of [...ui.toasts]) {
+    if (toastMeta[t.id]) finishToast(t.id, false)
+    else dismissToast(t.id)
+  }
+}
+
+export function toast(message, type = 'info', duration = DURATA_TOAST) {
+  faceLoc()
   const id = ++toastId
   ui.toasts.push({ id, message, type })
   if (duration > 0) {
@@ -32,7 +53,8 @@ export function toast(message, type = 'info', duration = 3000) {
 // Toast cu buton „Anulează". onCommit ruleaza la expirare/inchidere (comite
 // stergerea), onUndo la apasarea butonului (revine). Fix reversibil pentru
 // stergeri: caller-ul scoate optimist din UI, apoi decide aici comitere vs revenire.
-export function toastUndo(message, { onUndo, onCommit, actionLabel = 'Anulează', duration = 6000 } = {}) {
+export function toastUndo(message, { onUndo, onCommit, actionLabel = 'Anulează', duration = DURATA_TOAST } = {}) {
+  faceLoc()
   const id = ++toastId
   ui.toasts.push({ id, message, type: 'info', actionLabel })
   const timer = duration > 0 ? setTimeout(() => finishToast(id, false), duration) : null

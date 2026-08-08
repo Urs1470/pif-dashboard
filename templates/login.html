@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>PIF Dashboard — Autentificare</title>
 
-    <link rel="preload" href="/static/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/Gabarito-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
     <script nonce="{{ csp_nonce }}">
         // TEMA URMEAZA SISTEMUL. Oglindit din frontend/src/stores/ui.svelte.js
@@ -27,8 +27,8 @@
         })();
     </script>
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffb454'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16 L50 48 Z' fill='%231a1206' opacity='0.3'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16' fill='none' stroke='%231a1206' stroke-width='5.5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='16' r='5' fill='%231a1206'/%3E%3C/svg%3E">
-    <meta name="theme-color" content="#12100d">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235980a6'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16 L50 48 Z' fill='%23ffffff' opacity='0.3'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16' fill='none' stroke='%23ffffff' stroke-width='5.5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='16' r='5' fill='%23ffffff'/%3E%3C/svg%3E">
+    <meta name="theme-color" content="#121417">
 
     <link rel="stylesheet" href="/static/login.css?v={{ style_version }}">
 </head>
@@ -95,7 +95,7 @@
             const efectiv = mod === 'auto' ? temaSistemului() : mod;
             document.documentElement.setAttribute('data-theme', efectiv);
             const mc = document.querySelector('meta[name="theme-color"]');
-            if (mc) mc.setAttribute('content', efectiv === 'dark' ? '#12100d' : '#f6f1e7');
+            if (mc) mc.setAttribute('content', efectiv === 'dark' ? '#121417' : '#f4f5f7');
             const icoane = { auto: 'theme-icon-auto', light: 'theme-icon-sun', dark: 'theme-icon-moon' };
             for (const [k, id] of Object.entries(icoane)) {
                 const el = document.getElementById(id);
@@ -144,17 +144,28 @@
                 if (response.ok) {
                     window.location.href = '/';
                 } else {
-                    errorMessage.classList.add('show');
-                    document.getElementById('pin').value = '';
-                    document.getElementById('pin').focus();
+                    gresit();
                 }
             } catch (error) {
-                errorMessage.classList.add('show');
+                gresit();
             }
+        }
+
+        // Golim campul si ne intoarcem in el — deci semnalul trebuie sa fie SI pe
+        // camp, nu doar pe randul de deasupra: acolo s-a intors cursorul.
+        function gresit() {
+            const camp = document.getElementById('pin');
+            document.getElementById('error-message').classList.add('show');
+            camp.classList.add('eroare');
+            camp.setAttribute('aria-invalid', 'true');
+            camp.value = '';
+            camp.focus();
         }
 
         document.getElementById('pin').addEventListener('input', function() {
             document.getElementById('error-message').classList.remove('show');
+            this.classList.remove('eroare');
+            this.removeAttribute('aria-invalid');
         });
     </script>
 </body>

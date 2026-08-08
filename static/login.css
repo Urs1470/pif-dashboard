@@ -1,53 +1,50 @@
-/* Self-hosted (OFL-1.1, fisierele in static/fonts/) — aceleasi fonturi ca SPA-ul. */
+/* Pagina de autentificare — singurul sablon randat pe server.
+   Isi tine propria copie a tokenurilor fiindca nu incarca bundle-ul SPA-ului;
+   valorile sunt aceleasi cu `frontend/src/styles/tokens.css` si se schimba
+   IMPREUNA cu el. Self-hosted (OFL-1.1), fisierele in static/fonts/. */
 @font-face {
-  font-family: 'Inter';
-  src: url('/static/fonts/Inter-Variable.woff2') format('woff2');
-  font-weight: 100 900;
+  font-family: 'Gabarito';
+  src: url('/static/fonts/Gabarito-Variable.woff2') format('woff2');
+  font-weight: 400 900;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/static/fonts/SpaceGrotesk-Variable.woff2') format('woff2');
-  font-weight: 300 700;
+  font-family: 'Gabarito';
+  src: url('/static/fonts/Gabarito-Variable-ext.woff2') format('woff2');
+  font-weight: 400 900;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
-  font-family: 'JetBrains Mono';
-  src: url('/static/fonts/JetBrainsMono-Variable.woff2') format('woff2');
-  font-weight: 100 800;
+  font-family: 'DM Mono';
+  src: url('/static/fonts/DMMono-500.woff2') format('woff2');
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  /* Accent — Bento amber (identitate PIF, redesign 2026) */
-  --accent: #ffb454;
-  --accent-hover: #ff8a3d;
-  --accent-subtle: rgba(255, 180, 84, 0.13);
-  --accent-ring: rgba(255, 180, 84, 0.30);
-  --accent-text: #1a1206;
+  --bg: #121417;
+  --bg-surface: #191d21;
+  --bg-elevated: #1f242a;
+  --border: #262b31;
+  --border-strong: #343b43;
+  --text: #e9ecef;
+  --text-secondary: #9ba3ad;
+  --text-dim: #868f99;
+  --accent: #8ab2d9;
+  --accent-deep: #aecbe8;
+  --accent-subtle: #1c2733;
+  --accent-text: #0e1114;
+  --danger: #e0917f;
+  --danger-deep: #eaa694;
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, .5), 0 14px 34px -16px rgba(0, 0, 0, .75);
 
-  /* Backgrounds — Bento dark (negru cald) */
-  --bg: #12100d;
-  --bg-surface: #1b1814;
-  --bg-elevated: #14110e;
-  --bg-hover: #221e18;
-
-  --text: #f0ebe3;
-  --text-secondary: #a89f92;
-  --text-dim: #948a7d;
-
-  --border: #2b261f;
-  --border-subtle: #221e18;
-
-  --danger: #ff7a6b;
-  --danger-subtle: rgba(255, 122, 107, 0.13);
-
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'Fira Code', monospace;
-  --font-heading: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-sans: 'Gabarito', system-ui, -apple-system, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'Fira Code', monospace;
 
   --space-xs: 4px;
   --space-sm: 8px;
@@ -55,56 +52,53 @@
   --space-lg: 24px;
   --space-xl: 32px;
 
-  --radius-xs: 6px;
+  --radius-xs: 8px;
   --radius-sm: 10px;
   --radius-md: 14px;
-  --radius-lg: 22px;
 
-  --shadow-lg: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+  --font-body: 0.9375rem;
+  --font-small: 0.8125rem;
+  --font-label: 0.75rem;
+  --font-brand: 1.125rem;
 
   --dur-fast: 0.12s;
-  --ease: cubic-bezier(0.32, 0.72, 0.28, 1);
+  --dur-press: 0.09s;
+  --ease: cubic-bezier(.32, .72, .28, 1);
 }
 
 [data-theme="light"] {
-  --accent: #ffb454;
-  --accent-hover: #f59d33;
-  --accent-subtle: rgba(255, 180, 84, 0.16);
-  --accent-ring: rgba(200, 130, 20, 0.30);
-  --accent-text: #1a1206;
-
-  --bg: #f6f1e7;
-  --bg-surface: #fffdf8;
-  --bg-elevated: #efe8da;
-  --bg-hover: #ece4d3;
-
-  --text: #1f1a12;
-  --text-secondary: #6b6254;
-  --text-dim: #756c5d;
-
-  --border: #e3dbcb;
-  --border-subtle: #ede6d7;
-
-  --danger: #d6473a;
-  --danger-subtle: rgba(214, 71, 58, 0.10);
-
-  --shadow-lg: 0 10px 34px rgba(0, 0, 0, 0.12);
+  --bg: #f4f5f7;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f7f8fa;
+  --border: #e6e8ec;
+  --border-strong: #d2d6dc;
+  --text: #1b1e23;
+  --text-secondary: #5a6270;
+  --text-dim: #656c78;
+  --accent: #5980a6;
+  --accent-deep: #3d5f83;
+  --accent-subtle: #ebf1f7;
+  --accent-text: #ffffff;
+  --danger: #b04a38;
+  --danger-deep: #8f3a2b;
+  --shadow-md: 0 1px 2px rgba(20, 24, 31, .05), 0 10px 28px -14px rgba(20, 24, 31, .14);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: var(--font-sans);
+  /* Fara gradient in spate: caseta se desprinde prin umbra, ca orice suprafata
+     din aplicatie. Un halou de accent sub ea ar fi fost singurul loc din
+     produs unde accentul e decor. */
   background: var(--bg);
-  background-image:
-    radial-gradient(ellipse 90% 55% at 50% -10%, var(--accent-subtle) 0%, transparent 60%);
   color: var(--text);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1.55;
-  font-size: 0.9rem;
+  font-size: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -128,24 +122,26 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--dur-fast) var(--ease);
+  transition: background-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease);
   z-index: 100;
 }
 
 .theme-toggle:hover {
-  background: var(--bg-hover);
-  border-color: var(--border);
+  background: var(--bg-elevated);
   color: var(--text);
 }
+.theme-toggle:active { transform: scale(.965); transition: transform var(--dur-press) var(--ease); }
 
 .login-container {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: var(--space-xl);
   width: 90%;
   max-width: 380px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .login-header {
@@ -158,7 +154,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
 
 .brand-logo {
@@ -167,17 +163,18 @@ body {
   flex-shrink: 0;
 }
 
+/* Marca: un singur font, o greutate, fara separator. */
 .brand-wordmark {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-size: var(--font-brand);
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text);
 }
 
 .login-subtitle {
   color: var(--text-dim);
-  font-size: 0.8rem;
+  font-size: var(--font-small);
 }
 
 .form-group { margin-bottom: var(--space-md); }
@@ -185,16 +182,17 @@ body {
 .form-group label {
   display: block;
   margin-bottom: var(--space-sm);
-  color: var(--text-secondary);
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  color: var(--text-dim);
+  font-size: var(--font-label);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .form-group input {
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   background: var(--bg-elevated);
   color: var(--text);
   font-size: 1.2rem;
@@ -203,18 +201,28 @@ body {
   letter-spacing: 8px;
   transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   caret-color: var(--accent);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
 }
 
 .form-group input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .form-group input::placeholder {
   color: var(--text-dim);
   letter-spacing: 4px;
+}
+
+/* PIN GRESIT: CHENAR PE CAMP, nu doar mesajul de deasupra.
+   Handlerul goleste campul si il refocalizeaza, deci cursorul se intoarce
+   acolo — iar daca singurul semnal e un rand de text peste formular, ochiul e
+   in alt loc decat degetul. Chenarul de restant sta unde te-ai intors. */
+.form-group input.eroare,
+.form-group input.eroare:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 30%, transparent);
 }
 
 .btn {
@@ -225,13 +233,13 @@ body {
   min-height: 44px;
   padding: 12px 24px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--font-body);
   cursor: pointer;
-  transition: all var(--dur-fast) var(--ease);
+  transition: background-color var(--dur-fast) var(--ease);
   border: none;
   font-family: var(--font-sans);
   width: 100%;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
 }
 
 .btn-primary {
@@ -239,21 +247,19 @@ body {
   color: var(--accent-text);
 }
 
-.btn-primary:hover {
-  background: var(--accent-hover);
-}
+.btn-primary:hover { background: var(--accent-deep); }
+.btn-primary:active { transform: scale(.965); transition: transform var(--dur-press) var(--ease); }
 
-.btn-primary:active { opacity: 0.9; }
-
+/* Tenta de restant poarta cerneala ADANCA, niciodata culoarea plina:
+   `--danger` pe `--danger-subtle` e aceeasi familie la aceeasi luminozitate. */
 .error-message {
-  background: var(--danger-subtle);
-  border: 1px solid var(--danger);
-  color: var(--danger);
+  background: color-mix(in oklab, var(--danger) 14%, var(--bg-surface));
+  color: var(--danger-deep);
   padding: 10px 14px;
   margin-bottom: var(--space-md);
-  font-size: 0.85rem;
+  font-size: var(--font-small);
   display: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
 }
 
 .error-message.show { display: block; }
@@ -268,6 +274,10 @@ body {
 @media (max-width: 480px) {
   body { padding: var(--space-sm); }
   .login-container { padding: var(--space-md); }
-  .brand-wordmark { font-size: 1.3rem; }
   .brand-logo { width: 46px; height: 46px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .12s !important; }
+  .theme-toggle:active, .btn-primary:active { transform: none; }
 }

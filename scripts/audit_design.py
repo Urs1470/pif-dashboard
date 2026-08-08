@@ -22,11 +22,18 @@ RADACINA = Path(__file__).resolve().parent.parent
 SRC = RADACINA / 'frontend' / 'src'
 TOKENS = SRC / 'styles' / 'tokens.css'
 
-# Tokenuri de culoare definite O SINGURA data, cu buna stiinta: rolul lor e FILL
-# sub cerneala inchisa, iar un fill de mijloc merge la fel in ambele teme. Daca le
-# redefinesti pe light le inchizi, si banda ajunge inchisa cu text inchis pe ea
-# (s-a intamplat exact asa la prima incercare).
-INDEPENDENTE_DE_TEMA = {'--loc-site', '--loc-sediu', '--on-color'}
+# Tokenuri de culoare definite O SINGURA data, cu buna stiinta.
+#
+# `--chart-1/2/3` sunt SERIILE unui grafic: acolo culoarea e DATE (curbe de motor
+# in Calculator), nu identitate. O curba care isi schimba culoarea cu tema isi
+# schimba intelesul — cititi doua capturi de ecran alaturate si nu mai stii daca
+# rosul de pe una e aceeasi serie cu rosul de pe cealalta. Sunt alese sa treaca
+# pe ambele fonduri, tocmai ca sa nu aiba nevoie de doua valori.
+#
+# (`--loc-*` si `--on-color` au devenit aliasuri la redesignul din 2026-08-08 si
+# se scutesc singure prin regula de alias — raman aici doar ca istoric.)
+INDEPENDENTE_DE_TEMA = {'--loc-site', '--loc-sediu', '--on-color',
+                        '--chart-1', '--chart-2', '--chart-3'}
 
 # Proprietati scrise la RULARE din JS (`element.style.setProperty`), nu declarate
 # in tokens.css. Nu sunt tokenuri de design, sunt stare de gest transmisa catre CSS
@@ -164,12 +171,23 @@ class Audit:
 
 
 def tokenuri_definite(text):
-    """Tokenurile declarate, pe bloc de tema."""
-    blocuri = {}
+    """Tokenurile declarate, pe bloc de tema, plus cele care sunt ALIASURI.
+
+    Un alias e un token a carui valoare trimite la alt token (`var(--x)`, direct
+    sau printr-un `color-mix`). El nu are nevoie de o a doua definitie pe tema
+    deschisa: `var()` se rezolva la LOCUL FOLOSIRII, deci tokenul urmeaza
+    automat ce urmeaza tinta lui. A cere paritate pentru el ar insemna sa scrii
+    aceeasi linie de doua ori — adica exact a doua sursa de adevar pe care
+    regula incearca s-o previna.
+    """
+    blocuri, aliasuri = {}, set()
     for m in re.finditer(r'(:root[^{]*|\[data-theme="[^"]+"\][^{]*)\{(.*?)\n\}', text, re.S):
-        nume = m.group(1).strip()
-        blocuri[nume] = set(re.findall(r'(--[\w-]+)\s*:', m.group(2)))
-    return blocuri
+        corp = m.group(2)
+        blocuri[m.group(1).strip()] = set(re.findall(r'(--[\w-]+)\s*:', corp))
+        for d in re.finditer(r'(--[\w-]+)\s*:([^;]*);', corp):
+            if 'var(' in d.group(2):
+                aliasuri.add(d.group(1))
+    return blocuri, aliasuri
 
 
 def main():
@@ -195,7 +213,7 @@ def main():
 
     # -- R6: tokenuri folosite dar nedefinite -------------------------------
     tk = TOKENS.read_text(encoding='utf-8')
-    blocuri = tokenuri_definite(tk)
+    blocuri, aliasuri = tokenuri_definite(tk)
     definite = set().union(*blocuri.values()) if blocuri else set()
     # tokenurile derivate din env()/definite local in componente sunt permise
     locale = set()
@@ -216,7 +234,9 @@ def main():
     # (spacing/typography/z-index) se definesc o singura data, in :root.
     culoare = re.compile(r'--(accent|bg|text|border|success|warning|danger|info|purple|service|chart|loc|on-color|shadow)')
     doar_dark = sorted(t for t in dark - light
-                       if culoare.match(t) and t not in INDEPENDENTE_DE_TEMA)
+                       if culoare.match(t)
+                       and t not in INDEPENDENTE_DE_TEMA
+                       and t not in aliasuri)
 
     # -- raport -------------------------------------------------------------
     print('AUDIT SISTEM DE DESIGN\n' + '=' * 60)

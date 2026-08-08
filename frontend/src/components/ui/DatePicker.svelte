@@ -2,8 +2,7 @@
   import { Calendar, ChevronLeft, ChevronRight, X } from '@lucide/svelte'
   import { ecran } from '../../lib/ecran.svelte.js'
   import { scale, fly, fade } from 'svelte/transition'
-  import { cubicOut } from 'svelte/easing'
-  import { motionDuration, DUR_FAST, EASE } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
 
   let {
     value = $bindable(''),
@@ -11,6 +10,12 @@
     placeholder = 'Selectează data',
     disabled = false,
     onchange = undefined,
+    // Textul FIX al declansatorului, cand el e un VERB, nu un camp.
+    // Pe randul de task, „Planifică" e o actiune asezata langa termenul deja
+    // scris in coloana lui: daca butonul ar arata tot data, acelasi lucru s-ar
+    // scrie de doua ori pe 46px distanta, si niciunul n-ar spune ce face
+    // atingerea. Gol => se poarta ca un camp (arata valoarea sau placeholderul).
+    eticheta = '',
   } = $props()
 
   const MONTHS = ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
@@ -110,10 +115,18 @@
   function close() { open = false }
 
   // Sheet-ul urca de sub margine; popup-ul de desktop creste din punctul lui.
+  // Foaia e SUPRAFATA (280ms), popoverul e ELEMENT (220ms) — doua marimi, doua
+  // trepte din scara. Amandoua pe `--ease`: `cubicOut` era a doua curba, si se
+  // vedea exact ca la modal (voalul pornea vizibil inaintea casetei).
   function deschide(node) {
-    const duration = motionDuration(DUR_FAST)
-    if (sheet) return { duration, easing: cubicOut, css: (t, u) => `transform: translateY(${u * 100}%)` }
-    return scale(node, { start: 0.96, duration })
+    if (sheet) {
+      return {
+        duration: motionDuration(DUR_SLOW),
+        easing: EASE,
+        css: (t, u) => `transform: translateY(${u * 100}%)`,
+      }
+    }
+    return scale(node, { start: 0.96, duration: motionDuration(DUR_BASE), easing: EASE })
   }
 
   function prevMonth() { direction = -1; if (viewM === 0) { viewM = 11; viewY-- } else viewM-- }
@@ -172,10 +185,10 @@
 
 <div class="dp" class:has-label={label}>
   {#if label}<span class="dp-label">{label}</span>{/if}
-  <button type="button" class="dp-trigger" class:placeholder={!display} {disabled}
+  <button type="button" class="dp-trigger" class:placeholder={!eticheta && !display} {disabled}
     bind:this={triggerEl} onclick={() => open ? close() : openCal()}>
-    <span class="dp-value">{display || placeholder}</span>
-    <Calendar size={15} />
+    <span class="dp-value">{eticheta || display || placeholder}</span>
+    <Calendar size={15} strokeWidth={1.5} />
   </button>
 
   {#if open && sheet}

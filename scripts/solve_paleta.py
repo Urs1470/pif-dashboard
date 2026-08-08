@@ -7,8 +7,9 @@ PROST decat paleta din productie (0,064) — pentru ca sub deficienta rosu-verde
 rosu-verde se prabuseste si nuantele „bine distantate" se suprapun. Ce supravietuieste
 e luminozitatea si axa albastru-galben.
 
-Ruleaza-l daca schimbi accentul, tokenurile semantice sau cele de locatie — paleta
-depinde de ele si trebuie RE-rezolvata, nu ajustata pe bucati.
+Ruleaza-l daca schimbi accentul sau tokenurile semantice — paleta depinde de ele si
+trebuie RE-rezolvata, nu ajustata pe bucati. (Locatia nu mai e codata cromatic din
+redesignul 2026-08-08: forma spune faza, locul e scris — deci nu mai e rezervata.)
 
     python scripts/solve_paleta.py
 
@@ -22,15 +23,12 @@ import random
 # ---- culori rezervate: paleta trebuie sa stea DEPARTE de ele -------------------
 # Tinute sincronizate manual cu frontend/src/styles/tokens.css (tema dark).
 REZERVATE = {
-    '--accent/--warning': '#ffb454',
-    '--info/--purple': '#b9a5ff',
-    '--danger': '#ff7a6b',
-    '--success': '#7ee2a8',
-    '--loc-site': '#8fa3b8',
-    '--loc-sediu': '#b09b7d',
+    '--accent': '#8ab2d9',
+    '--danger': '#e0917f',
+    '--success': '#82c2a2',
 }
-FUNDAL = '#12100d'      # --bg
-CERNEALA = '#1a1206'    # --accent-text / --on-color: textul peste un fill saturat
+FUNDAL = '#121417'      # --bg
+CERNEALA = '#0e1114'    # --accent-text / --on-color: textul peste un fill saturat
 
 # O nuanta per familie => paleta ramane echilibrata, nu aduna trei verzi.
 SECTOARE = [(70, 110), (112, 165), (167, 205), (207, 248), (262, 302), (304, 354)]

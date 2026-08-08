@@ -1,0 +1,115 @@
+<script>
+  import { Sun, Sunrise, CalendarSearch, X } from '@lucide/svelte'
+  import DatePicker from './DatePicker.svelte'
+
+  // ACELASI SET IN ORICE FOAIE SAU PANOU CARE REPLANIFICA.
+  //
+  // Existau trei variante scrise separat: pe /tasks („Azi / Mâine / Alege /
+  // Scoate", text simplu), pe „Astăzi" (patru iconite mute) si in pagina de
+  // proiect (doar un DatePicker). Aceeasi intrebare — CE ZI? — cu trei
+  // raspunsuri diferite, deci se invata de trei ori.
+  //
+  // ICONITELE NU SUNT DECOR: „Azi" si „Mâine" sunt amandoua doua cuvinte scurte
+  // care incep la fel pe un ecran ingust, iar soarele sus vs. soarele care
+  // rasare e diferenta pe care ochiul o prinde inainte sa citeasca.
+  //
+  // „Scoate" sta DEDESUBT, nu al patrulea in rand: primele trei ASEAZA taskul
+  // pe o zi, al patrulea il scoate din calendar cu totul. Un rand de patru
+  // butoane egale ar spune ca sunt patru zile.
+  let {
+    value = '',
+    onalege,          // (iso|null) — null inseamna „fara termen"
+    aratScoate = true,
+  } = $props()
+
+  function ziPeste(n) {
+    const d = new Date()
+    d.setHours(12, 0, 0, 0)          // amiaza: fara surprize la ora de vara
+    d.setDate(d.getDate() + n)
+    const p = (x) => String(x).padStart(2, '0')
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+  }
+</script>
+
+<div class="sz">
+  <div class="sz-rand">
+    <button type="button" class="sz-optiune" onclick={() => onalege?.(ziPeste(0))}>
+      <Sun size={15} strokeWidth={1.5} /> Azi
+    </button>
+    <button type="button" class="sz-optiune" onclick={() => onalege?.(ziPeste(1))}>
+      <Sunrise size={15} strokeWidth={1.5} /> Mâine
+    </button>
+    <span class="sz-optiune sz-dp">
+      <CalendarSearch size={15} strokeWidth={1.5} />
+      <DatePicker {value} eticheta="Alege" onchange={(v) => onalege?.(v || null)} />
+    </span>
+  </div>
+  {#if aratScoate && value}
+    <button type="button" class="sz-scoate" onclick={() => onalege?.(null)}>
+      <X size={14} strokeWidth={1.5} /> Scoate din calendar
+    </button>
+  {/if}
+</div>
+
+<style>
+  .sz { display: flex; flex-direction: column; gap: 6px; }
+  .sz-rand { display: flex; gap: 6px; }
+
+  .sz-optiune {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: var(--tap-min);
+    padding: 0 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: var(--font-control);
+    font-weight: var(--fw-semibold);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: var(--transition-pressable);
+  }
+  .sz-optiune:hover { background: var(--accent-subtle); color: var(--accent-deep); }
+  .sz-optiune:active { transform: scale(var(--press-scale)); }
+
+  /* Al treilea slot poarta iconita LUI si imprumuta declansatorul lui DatePicker
+     pentru text — deci calendarul se deschide de pe tot butonul, nu doar de pe
+     colturi. */
+  .sz-dp { position: relative; padding: 0; }
+  .sz-dp :global(.dp) { width: auto; }
+  .sz-dp :global(.dp-trigger) {
+    min-height: var(--tap-min);
+    padding: 0 10px 0 4px;
+    gap: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: inherit;
+    font-family: inherit;
+    font-size: var(--font-control);
+    font-weight: var(--fw-semibold);
+  }
+  /* Iconita de calendar a declansatorului ar fi a doua pe acelasi buton, langa
+     lupa noastra — doua calendare unul langa altul nu spun de doua ori. */
+  .sz-dp :global(.dp-trigger svg) { display: none; }
+  .sz-dp :global(.dp-trigger:hover) { background: none; color: inherit; }
+
+  .sz-scoate {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 38px;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text-dim);
+    font-size: var(--font-control);
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+    transition: var(--transition-colors);
+  }
+  .sz-scoate:hover { background: var(--danger-subtle); color: var(--danger-deep); }
+</style>

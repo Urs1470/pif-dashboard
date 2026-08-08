@@ -583,10 +583,11 @@ def _pred_titles(data):
 
 
 def _draw_logo(c, x, y, s):
-    """Draw the PIF 'ramp area-chart' mark (amber tile + white accelerating curve
+    """Draw the PIF 'ramp area-chart' mark (steel tile + white accelerating curve
     + operating-point dot) in an s×s box with bottom-left at (x, y)."""
     from reportlab.lib.colors import HexColor, white
-    c.setFillColor(HexColor('#ffb454'))
+    # --accent, tema deschisa: hartia e alba, deci si marca e cea de pe alb.
+    c.setFillColor(HexColor('#5980a6'))
     c.roundRect(x, y, s, s, s * 0.22, fill=1, stroke=0)
 
     def P(gx, gy):  # 64-grid SVG coords (y-down) -> reportlab (y-up)
@@ -650,7 +651,7 @@ def export_gantt_pdf(project_id):
     logo_sz = 24
     _draw_logo(c, m, y - logo_sz + 2, logo_sz)
     tx = m + logo_sz + 9
-    c.setFillColor(colors.HexColor('#1a1206'))
+    c.setFillColor(colors.HexColor('#1b1e23'))
     c.setFont('Helvetica-Bold', 15)
     c.drawString(tx, y - 4, f"{proj.get('nume') or 'Proiect'}")
     c.setFont('Helvetica', 9)

@@ -17,7 +17,7 @@ const CHEIE = 'theme-mod'
 // Culorile barei de sus a browserului pe telefon — `--bg` din tokens.css, per tema.
 // Daca schimbi `--bg`, schimba-le si aici: nu se pot citi din CSS inainte ca tema
 // sa fie aplicata, iar o bara ramasa inchisa peste o aplicatie deschisa se vede.
-const BARA = { dark: '#12100d', light: '#f6f1e7' }
+const BARA = { dark: '#121417', light: '#f4f5f7' }
 
 export function temaSistemului() {
   if (typeof window === 'undefined' || !window.matchMedia) return 'dark'

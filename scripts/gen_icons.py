@@ -13,7 +13,7 @@ DE CE TREI FISIERE, nu unul. Android desenez iconitele „adaptive" pe doua
 straturi si le taie in ce forma vrea producatorul (cerc, patrat rotunjit,
 picatura). Daca dai o singura imagine gata taiata, colturile logo-ului se pierd
 la taiere. Deci:
-    icon-background.png  fundalul amber, plin, pana in margini
+    icon-background.png  tila de accent, plina, pana in margini
     icon-foreground.png  rampa si punctul, DESENATE IN ZONA SIGURA (66% din
                          panza) — restul e transparent si poate fi taiat linistit
     icon.png             logo-ul intreg, pentru locurile care nu stiu de straturi
@@ -27,8 +27,10 @@ import sys
 RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IESIRE = os.path.join(RADACINA, 'frontend', 'assets')
 
-AMBER = '#ffb454'
-INCHIS = '#1a1206'
+# Tila ia --accent (tema deschisa: fillul e acelasi in ambele teme, fiindca
+# iconita de launcher nu stie ce tema are aplicatia), cerneala ia --accent-text.
+ACCENT = '#5980a6'
+CERNEALA = '#ffffff'
 
 # Logo-ul, exact ca in frontend/public/favicon.svg — aceleasi coordonate.
 RAMPA = (
@@ -36,7 +38,7 @@ RAMPA = (
     '<path d="M14 48 C27 48 30 40 33 30 S42 16 50 16" fill="none" stroke="{i}"'
     ' stroke-width="5.5" stroke-linecap="round"/>'
     '<circle cx="50" cy="16" r="5" fill="{i}"/>'
-).format(i=INCHIS)
+).format(i=CERNEALA)
 
 # ZONA SIGURA O PUNE GENERATORUL, NU NOI.
 # `capacitor-assets` scrie XML-ul adaptive cu `inset 16.7%` pe stratul de
@@ -45,7 +47,7 @@ RAMPA = (
 # insetul se aplica a doua oara si rampa iese de doua ori mai mica decat trebuie.
 # Deci desenam pe toata panza si il lasam pe el sa strange.
 SVG_FUNDAL = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
-              f'<rect width="64" height="64" fill="{AMBER}"/></svg>')
+              f'<rect width="64" height="64" fill="{ACCENT}"/></svg>')
 
 SVG_PRIMPLAN = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
                 f'{RAMPA}</svg>')
@@ -53,7 +55,7 @@ SVG_PRIMPLAN = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
 # Acelasi XML pentru ambele forme. Diferenta fata de ce scrie generatorul: FARA
 # inset pe fundal. Fundalul unei iconite adaptive trebuie sa umple panza pana in
 # margini — el e cel pe care sistemul il taie in cerc, patrat sau picatura. Cu
-# inset, amberul se opreste inainte de margine si iconita apare ca un patrat mic
+# inset, tila se opreste inainte de margine si iconita apare ca un patrat mic
 # care pluteste intr-un colt transparent.
 XML_ADAPTIVE = '''<?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
@@ -65,7 +67,7 @@ XML_ADAPTIVE = '''<?xml version="1.0" encoding="utf-8"?>
 '''
 
 SVG_INTREG = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
-              f'<rect width="64" height="64" rx="14" fill="{AMBER}"/>{RAMPA}</svg>')
+              f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{RAMPA}</svg>')
 
 
 def randeaza(pagina, svg, cale, latura):

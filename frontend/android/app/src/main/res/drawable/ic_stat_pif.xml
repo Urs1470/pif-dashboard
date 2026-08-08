@@ -12,7 +12,7 @@
     <path
         android:pathData="M14,48 C27,48 30,40 33,30 S42,16 50,16"
         android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="6.5"
+        android:strokeWidth="7"
         android:strokeLineCap="round" />
     <path
         android:pathData="M50,16 m-5.5,0 a5.5,5.5 0 1,0 11,0 a5.5,5.5 0 1,0 -11,0"
