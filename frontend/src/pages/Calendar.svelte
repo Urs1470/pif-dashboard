@@ -15,17 +15,18 @@
   import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router } from '../lib/router.svelte.js'
-  import { toast } from '../stores/ui.svelte.js'
+  import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { ui } from '../stores/ui.svelte.js'
   import { motion, motionDuration, alunecare, sosire, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { incepeTragere } from '../lib/tragere.js'
+  import { ecran } from '../lib/ecran.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import {
     WEEKDAYS, buildGrid, monthStart, addMonths, addDays, weekStart,
-    diffDays, isWeekend, monthLabel, dayLabel, shortDate, todayISO, parseISO,
+    diffDays, isWeekend, nextWorkday, monthLabel, dayLabel, shortDate, todayISO, parseISO,
   } from '../lib/calendarDates.js'
 
   let data = $state(null)
@@ -311,7 +312,9 @@
         zile: grila.slice(i, capat + 1).map(g => g.iso),
         inceput: grila[i].iso === a,        // capatul ADEVARAT, nu al feliei
         sfarsit: grila[capat].iso === b,
-        cheie: `${p.id}|${grila[i].iso}`,
+        // `p?.id`: taie si intervale care nu apartin unei lucrari (chenarul unei
+        // deplasari), iar acolo cheia se rescrie oricum de apelant.
+        cheie: `${p?.id ?? ''}|${grila[i].iso}`,
       })
       i = capat + 1
     }
@@ -348,6 +351,44 @@
       const banda = benzi.get(p.id) ?? 0
       for (const f of feliaza(v.data_start, v.data_sfarsit || v.data_start, banda, p)) {
         if (banda < (benziPeRand[f.rand - 1] ?? 1)) out.push(f)
+      }
+    }
+    return out
+  })
+
+  /** CHENARUL IESIRII — zilele consecutive la acelasi `loc|client`, ca un singur
+   *  obiect, cu lucrarile desenate INAUNTRU.
+   *
+   *  Fara el, alipirea n-avea ce sa arate: doua perioade care se ating devin o
+   *  singura deplasare (`deplasari` le grupeaza deja pe cheia asta), dar pe ecran
+   *  ramaneau doua bare la fel ca inainte — schimbarea se vedea doar in captura
+   *  din antetul zilei. Acum peretele dintre cele doua chenare chiar se stinge, iar
+   *  colturile din dreptul lui se indreapta: raza sta doar pe capetele ADEVARATE
+   *  ale iesirii, deci la alipire cele doua muchii rotunjite din mijloc dispar.
+   *
+   *  Verticala: chenarul acopera exact benzile lucrarilor lui (de la cea mai de sus
+   *  la cea mai de jos). Perioadele nu se suprapun, deci doua iesiri ajung pe
+   *  aceeasi zi doar cand una e la sediu si alta pe teren — si atunci lucrarile lor
+   *  sunt oricum pe benzi diferite. */
+  const chenare = $derived.by(() => {
+    const out = []
+    for (const d of deplasari) {
+      let sus = Infinity, jos = -1
+      for (const p of d.items.values()) {
+        const l = benzi.get(p.id) ?? 0
+        if (l < sus) sus = l
+        if (l > jos) jos = l
+      }
+      if (jos < 0) continue
+      for (const f of feliaza(d.start, d.end, sus, null)) {
+        const plafon = benziPeRand[f.rand - 1] ?? 1
+        if (sus >= plafon) continue
+        out.push({
+          ...f,
+          d,
+          inalt: Math.min(jos, plafon - 1) - sus + 1,
+          cheie: `${d.cheie}|${f.zile[0]}`,
+        })
       }
     }
     return out
@@ -613,18 +654,128 @@
 
   /** Schimba capetele perioadei, fara sa o mute. Perechea lui `muta`: acolo
    *  durata e fixa si se schimba ziua, aici ziua de sprijin e fixa si se schimba
-   *  durata. */
-  async function redimensioneaza(p, start, sfarsit) {
+   *  durata.
+   *
+   *  PERIOADELE NU SE SUPRAPUN — asta era deja regula, doar ca aici nimeni nu o
+   *  tinea: `redimensioneaza` scria capetele si lasa coliziunea sa se intample.
+   *  Ce se intampla cu vecinul depinde de CINE e vecinul, si cele doua cazuri nu
+   *  seamana deloc:
+   *
+   *    acelasi `loc|client`  -> nu e coliziune, e CONTINUARE. Nu se scrie nimic in
+   *      plus: `deplasari` grupeaza deja zilele consecutive pe cheia asta, deci in
+   *      clipa in care se ating, datele spun „o singura iesire" (o captura, un
+   *      numar de zile mai mare). Desenul ajunge din urma singur.
+   *    alt loc sau alt client -> nu poti fi in doua locuri in aceeasi zi, deci
+   *      vecinul se da mai incolo, cu o zi LUCRATOARE (sare peste weekend), si
+   *      isi pastreaza durata.
+   *
+   *  Amandoua sunt schimbari de date, deci amandoua se pot da inapoi din toast. */
+  async function intinde(p, start, sfarsit) {
+    const s0 = p.data_start
+    const f0 = p.data_sfarsit || p.data_start
+    if (start === s0 && sfarsit === f0) return
+    const cheie = cheieGrup(p)
+    const toate = data?.perioade || []
+
+    // Alipirea nu are nevoie de nicio scriere — se citeste din date. O tinem doar
+    // ca sa stim ce scrie in toast, si NUMAI cand chiar s-a alipit ceva nou: doi
+    // vecini care se atingeau si inainte erau deja o singura deplasare, deci
+    // „s-au unit acum" ar fi o minciuna despre ce tocmai ai facut.
+    const atinge = (q, s, f) => {
+      const qf = q.data_sfarsit || q.data_start
+      return !(qf < addDays(s, -1) || q.data_start > addDays(f, 1))
+    }
+    const alipite = toate.filter((q) => q.id !== p.id && cheieGrup(q) === cheie
+      && atinge(q, start, sfarsit) && !atinge(q, s0, f0))
+
+    // IMPINGEREA SE PROPAGA. Un singur pas ar putea aseza vecinul fix peste
+    // urmatorul — adica exact suprapunerea pe care regula o interzice, doar mutata
+    // cu o casuta mai incolo. Deci se rezolva pana nu mai ramane nicio ciocnire:
+    // fiecare perioada lovita se muta la prima zi LUCRATOARE de dupa ce a lovit-o,
+    // pastrandu-si durata. Cate s-au mutat scrie in toast, si toate se intorc din
+    // „Anulează" — o propagare tacuta ar fi fost singurul lucru inacceptabil aici.
+    const stare = [{ q: p, s: start, f: sfarsit, cheie, fix: true }]
+    for (const q of toate) {
+      if (q.id === p.id) continue
+      stare.push({ q, s: q.data_start, f: q.data_sfarsit || q.data_start, cheie: cheieGrup(q), fix: false })
+    }
+    const mutate = new Map()
+    for (let paza = 0; paza < 60; paza++) {
+      let schimbat = false
+      for (const r of stare) {
+        if (r.fix) continue
+        let pana = ''
+        for (const a of stare) {
+          if (a === r || a.cheie === r.cheie) continue
+          if (r.f < a.s || r.s > a.f) continue
+          // Cine se da la o parte: cel care incepe mai TARZIU. Perioada trasa e
+          // fixa — ea e ce ai cerut, restul se aseaza in jurul ei.
+          if (a.fix || a.s < r.s || (a.s === r.s && String(a.q.id) < String(r.q.id))) {
+            if (a.f > pana) pana = a.f
+          }
+        }
+        if (!pana) continue
+        const durata = Math.max(0, diffDays(r.s, r.f))
+        r.s = nextWorkday(addDays(pana, 1))     // creste mereu -> bucla se opreste
+        r.f = addDays(r.s, durata)
+        mutate.set(r.q.id, { q: r.q, start: r.s, sfarsit: r.f })
+        schimbat = true
+        break                                   // o mutare poate naste alta
+      }
+      if (!schimbat) break
+    }
+    const mutari = [...mutate.values()].sort((a, b) => a.start.localeCompare(b.start))
+
+    const inapoi = [
+      { id: p.id, data_start: s0, data_sfarsit: f0 },
+      ...mutari.map((m) => ({
+        id: m.q.id, data_start: m.q.data_start, data_sfarsit: m.q.data_sfarsit || m.q.data_start,
+      })),
+    ]
+
     busy = p.id
     try {
       await apiJson(`/api/implementari/${p.id}`, {
-        method: 'PUT',
-        body: { data_start: start, data_sfarsit: sfarsit },
+        method: 'PUT', body: { data_start: start, data_sfarsit: sfarsit },
       })
-      const zile = Math.max(0, diffDays(start, sfarsit)) + 1
-      toast(`${shortDate(start)}–${shortDate(sfarsit)} · ${zile} ${zile === 1 ? 'zi' : 'zile'}`, 'success')
+      for (const m of mutari) {
+        await apiJson(`/api/implementari/${m.q.id}`, {
+          method: 'PUT', body: { data_start: m.start, data_sfarsit: m.sfarsit },
+        })
+      }
       selectata = start
       await load(true)
+
+      const refa = async () => {
+        for (const v of inapoi) {
+          await apiJson(`/api/implementari/${v.id}`, {
+            method: 'PUT', body: { data_start: v.data_start, data_sfarsit: v.data_sfarsit },
+          })
+        }
+        await load(true)
+      }
+      if (mutari.length) {
+        const m = mutari[0]
+        const cine = (m.q.client || '').trim() ? scurt(m.q.client) : etichetaLucrare(m.q)
+        toastUndo(mutari.length > 1
+          ? `${mutari.length} perioade împinse — prima pe ${shortDate(m.start)}`
+          : `${cine} · împins pe ${shortDate(m.start)}`, { onUndo: refa })
+      } else if (alipite.length) {
+        // Numarul de zile e al DEPLASARII de dupa, nu al perioadei trase: tocmai
+        // asta s-a schimbat sub ochi (2 zile + 3 zile = o iesire de 5). Se ia din
+        // datele reincarcate, nu se recalculeaza aici — alipirea poate prinde si un
+        // al treilea vecin, iar doua socoteli ale aceluiasi lucru diverg.
+        const d = deplasareaZilei.get(`${start}|${cheie}`)
+        const zile = d ? Math.max(0, diffDays(d.start, d.end)) + 1
+                       : Math.max(0, diffDays(start, sfarsit)) + 1
+        const cine = (p.client || '').trim() ? scurt(p.client) : ''
+        toastUndo(`${cine ? cine + ' · ' : ''}${d ? `${shortDate(d.start)}–${shortDate(d.end)}` : shortDate(start)} · o deplasare, ${zile} zile`,
+                  { onUndo: refa })
+      } else {
+        const zile = Math.max(0, diffDays(start, sfarsit)) + 1
+        toastUndo(`${shortDate(start)}–${shortDate(sfarsit)} · ${zile} ${zile === 1 ? 'zi' : 'zile'}`,
+                  { onUndo: refa })
+      }
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
 
@@ -687,6 +838,22 @@
   // Mecanica gestului (mouse vs deget, praguri, blocarea derularii) sta in
   // `lib/tragere.js`; aici raman doar intelesurile.
 
+  /** PE TELEFON PISTA SE CITESTE, NU SE MANIPULEAZA.
+   *
+   *  Toate trei gesturile de mai jos sunt de precizie: alegi o ZI dintr-o celula
+   *  care pe telefon are ~48px si e acoperita de benzi. Ce iese din gest nu e
+   *  „aproape ce voiai" — e o alta zi, scrisa in baza. Grila ramane harta; ce se
+   *  poate face de pe telefon incape intr-o intrebare: atingi ziua si raspunzi in
+   *  panou (mută, scoate, s-a făcut).
+   *
+   *  `grosier` (adica `@media (hover: none)`), nu doar latimea: pe un ecran fara
+   *  hover nu exista nici afordanta — manerele n-au cum sa apara la apropierea
+   *  cursorului, deci gestul n-ar fi anuntat de nimic. Aceeasi conditie ca in CSS,
+   *  ca desenul si comportamentul sa nu se poata desincroniza. */
+  function seManipuleaza() {
+    return !ecran.telefon && !ecran.grosier
+  }
+
   /** Ziua de sub un punct de pe ecran. Cat timp se trage, benzile si capturile
    *  sunt scoase din calea cursorului (`.grid.trag`), deci aici ajunge celula. */
   function ziDinPunct(x, y) {
@@ -708,6 +875,7 @@
    *  lasi pe joi, a treia zi cade pe joi. Altfel o simpla ajustare de o zi ar
    *  arunca inceputul cu trei zile inainte. */
   function apucaLucrare(e, b) {
+    if (!seManipuleaza()) return
     const p = b.p
     const apucata = ziDinBanda(e.clientX, e.currentTarget, b)
     const decalaj = diffDays(p.data_start, apucata)
@@ -734,6 +902,7 @@
    *  Capetele nu se pot incaleca — perioada se opreste la o zi, nu se intoarce
    *  pe dos. */
   function apucaCapat(e, b, capat) {
+    if (!seManipuleaza()) return
     e.stopPropagation()               // altfel ar porni si mutarea
     const p = b.p
     incepeTragere(e, {
@@ -752,7 +921,7 @@
         const v = previz?.get(p.id)
         curataTragere()
         if (v && (v.data_start !== p.data_start || v.data_sfarsit !== (p.data_sfarsit || p.data_start))) {
-          redimensioneaza(p, v.data_start, v.data_sfarsit)
+          intinde(p, v.data_start, v.data_sfarsit)
         }
       },
       laAnulare: curataTragere,
@@ -762,6 +931,7 @@
   /** Deplasarea intreaga: toate lucrarile ei se decaleaza cu acelasi numar de
    *  zile, deci forma iesirii se pastreaza. */
   function apucaDeplasare(e, d) {
+    if (!seManipuleaza()) return
     e.stopPropagation()
     const lucrari = [...d.items.values()]
     let delta = 0
@@ -836,7 +1006,7 @@
       // Capatul din DREAPTA, ca la maner: perioada nu se poate intoarce pe dos.
       const nou = addDays(f, n)
       if (nou < s) return
-      redimensioneaza(p, s, nou)
+      intinde(p, s, nou)
     } else {
       muta(p, addDays(s, n))
     }
@@ -1072,6 +1242,21 @@
                    singur element, desenat peste coloane mai jos. Celula pastreaza
                    doar antetul, semnalele si inaltimea rezervata benzilor. -->
             </div>
+          {/each}
+
+          <!-- CHENARUL IESIRII, sub benzi. O singura muchie pentru zilele
+               consecutive la acelasi `loc|client`, cu lucrarile inauntru: asa se
+               vede dintr-o privire ca 12–16 august e O deplasare cu doua lucrari,
+               nu cinci zile separate. La alipire, doua chenare devin unul —
+               peretele dintre ele se stinge si colturile se indreapta, fiindca
+               raza sta doar pe capetele adevarate ale iesirii. -->
+          {#each chenare as c (c.cheie)}
+            <div class="chenar"
+                 class:inceput={c.inceput}
+                 class:sfarsit={c.sfarsit}
+                 class:sediu={c.d.sediu}
+                 style="grid-row: {c.rand}; grid-column: {c.col} / span {c.span}; --i: {c.banda}; --n: {c.inalt}"
+                 aria-hidden="true"></div>
           {/each}
 
           <!-- Benzile, peste celule: UN element per lucrare per saptamana. Vezi
@@ -1428,6 +1613,30 @@
      iar pasul unei benzi = inaltimea barei 17 + gap 3 = 20px. Cele doua numere
      sunt aceleasi cu cele din `min-height` al celulei — se schimba impreuna. */
   .grid { --h-antet: 24px; --h-banda: 20px; }
+
+  /* CHENARUL IESIRII. Sta SUB benzi (`z-index: 0`) si nu primeste evenimente:
+     lucrarile raman obiectele pe care le apuci, el doar spune ca fac parte din
+     aceeasi deplasare. Inaltimea acopera exact benzile lui (`--n`), minus gapul de
+     3px de sub ultima, ca sa nu inghita randul urmator.
+     Raza NUMAI pe capetele adevarate: la alipire, cele doua muchii rotunjite din
+     mijloc dispar de la sine — asta E „peretele se stinge". Tranzitia de 280ms e
+     cea de SUPRAFATA (`--dur-slow`): chenarul e o suprafata care se lungeste, nu
+     un element care se muta. */
+  .chenar { position: relative; z-index: 0; align-self: start; pointer-events: none;
+            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) - 3px);
+            height: calc(var(--n) * var(--h-banda) + 3px);
+            border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+            border-left: none; border-right: none;
+            background: color-mix(in srgb, var(--accent) 5%, transparent);
+            transition: height var(--dur-slow) var(--ease), margin-top var(--dur-slow) var(--ease); }
+  .chenar.inceput { margin-left: 3px; border-left: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+                    border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
+  .chenar.sfarsit { margin-right: 3px; border-right: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+                    border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
+  /* Sediul nu e deplasare: chenarul lui e doar o linie punctata, ca sa nu para ca
+     ai plecat undeva. Locul RAMANE SCRIS (captura din antet) — asta e doar forma. */
+  .chenar.sediu { border-style: dashed; background: none; }
+
   .banda { position: relative; z-index: 1; align-self: start;
            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda));
            min-height: 17px; padding: 1px 6px; border: none; text-align: left;
@@ -1452,31 +1661,39 @@
      sa nu depinda de ordinea in care sunt scrise selectoarele. */
   .grid.trag .banda, .grid.trag .cap { pointer-events: none; }
 
-  /* Ce apuci ramane pe loc si se stinge; ce se misca e fantoma. Doua obiecte, ca
-     sa se vada si de UNDE, si PANA UNDE — o singura bara care sare ar sterge
-     prima jumatate a informatiei. */
-  .banda.se-trage { opacity: 0.32; }
-  .fantoma { pointer-events: none; z-index: 2; outline: 1px solid var(--accent);
-             outline-offset: -1px; background: color-mix(in srgb, var(--c) 40%, transparent); }
+  /* FANTOMA E CONTUR PESTE BANDA REALA, NU O MUTA.
+     Inainte banda apucata cobora la 32% si fantoma venea plina peste ea: la
+     intindere cele doua se suprapun aproape complet, deci vedeai un singur
+     dreptunghi cu doua opacitati si nu mai stiai care e starea de acum. Acum
+     lucrarea ramane exact cum e — plina, cu numele ei — iar unde ar ajunge se
+     spune printr-un contur de accent desenat peste ea. Fara fundal si fara text:
+     al doilea exemplar al aceluiasi nume, decalat cu o zi, se citeste ca doua
+     lucrari. */
+  .fantoma { pointer-events: none; z-index: 3; background: none;
+             outline: 2px solid var(--accent); outline-offset: -1px; }
 
-  /* MANERELE DE PERIOADA.
-     Late de 9px, dar zona de prindere se intinde peste toata inaltimea benzii si
-     inca 5px sus/jos (`::before`) — banda are 17px pe desktop si 12px pe telefon,
-     adica sub orice tinta rezonabila daca ne-am opri la conturul ei. */
+  /* MANERELE DE PERIOADA — doua bare subtiri de accent, la hover.
+     Late de 9px ca zona de prindere, dar ce se VEDE e o bara de 2px pe toata
+     inaltimea benzii: la capatul unei perioade, o linie verticala inseamna „de
+     aici se trage", pe cand pastila alba de dinainte era doar un semn ca exista
+     ceva acolo. Zona de prindere se intinde peste inaltimea benzii si inca 5px
+     sus/jos (`::before`) — banda are 17px, adica sub orice tinta rezonabila daca
+     ne-am opri la conturul ei. */
   .maner { position: absolute; top: 0; bottom: 0; width: 9px; cursor: ew-resize;
            opacity: 0; transition: opacity var(--dur-fast) var(--ease); }
   .maner.st { left: 0; }
   .maner.dr { right: 0; }
   .maner::before { content: ''; position: absolute; inset: -5px -2px; }
-  .maner::after { content: ''; position: absolute; top: 50%; left: 50%; width: 2px; height: 9px;
-                  transform: translate(-50%, -50%); border-radius: 1px; background: var(--on-color); }
-  .banda:hover .maner, .banda.se-trage .maner { opacity: 0.75; }
-  .maner:hover { opacity: 1; }
-  /* Fara hover nu exista „apropii cursorul si apare manerul". Pe deget ele
-     trebuie sa se vada de la inceput, altfel nimic nu spune ca perioada se poate
-     lungi tragand de capat. */
+  .maner::after { content: ''; position: absolute; top: -1px; bottom: -1px; left: 50%; width: 2px;
+                  transform: translateX(-50%); border-radius: 1px; background: var(--accent); }
+  .banda:hover .maner, .banda.se-trage .maner { opacity: 1; }
+  /* PE TELEFON PISTA SE CITESTE, NU SE MANIPULEAZA.
+     Manerele nu se ascund doar vizual — gestul insusi e oprit (vezi
+     `incepeTragere` din `apuca*`). Un maner desenat fara gest in spate ar promite
+     ceva ce nu se intampla, exact greseala pe care a facut-o versiunea cu
+     drag-and-drop HTML5. */
   @media (hover: none) {
-    .maner { opacity: 0.6; }
+    .maner { display: none; }
   }
   /* Zi la sediu = hasurat, zi pe teren = plin. Diferenta conteaza: una e zi de
      drum, cealalta nu. Aceeasi culoare de client, alta textura. */
@@ -1508,7 +1725,6 @@
          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cap:active { cursor: grabbing; }
   .cap:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .cap.se-trage { opacity: 0.32; }
   .cap.sediu { color: var(--text-dim); }
 
   /* Cate lucrari are ziua — acelasi inteles pe ambele ecrane (vezi markup). */

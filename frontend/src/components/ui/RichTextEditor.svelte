@@ -19,21 +19,23 @@
   import { renderStoredText, sanitizeHtml } from '../../lib/storedText.js'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
-  // variant: 'box' = caseta clasica cu chenar; 'doc' = pagina de document
-  // (folosit in modalul fullscreen de observatii/notite — toolbar pill plutitor,
-  // coloana de text ALINIATA LA STANGA, plafonata la latime de citit, scroll pe
-  // toata pagina).
+  // O SINGURA FORMA: pagina de document — toolbar pill plutitor, coloana de text
+  // aliniata la stanga si plafonata la latime de citit, scroll pe toata pagina.
+  // Exista si o varianta `box` (caseta cu chenar, cu numarator de caractere in
+  // subsol), dar dupa ce toate cele patru campuri lungi au intrat in acelasi shell
+  // (`EditorLung`) nu mai avea niciun consumator — iar un al doilea desen pe care
+  // nu-l poate cere nimeni nu e o optiune, e cod care se strica in tacere.
+  //
   // `tools`: 'complet' (document — observatii de proiect, wiki) sau 'nota'.
   // Acelasi editor servea DOUA suprafete cu aceeasi bara de treisprezece butoane.
   // Intr-o observatie tehnica de proiect au toate sens; intr-o notita de task nu:
   // Undo/Redo dubleaza Ctrl+Z, „Titlu 1/2/3" presupune ca notita e un document cu
   // structura, iar Citat / Linie orizontala / Curata formatarea sunt moscenire de
   // la Word. Ce chiar folosesti pe teren: accentuare, o lista, si formula.
-  let { value = $bindable(''), placeholder = 'Scrie aici...', variant = 'box', tools = 'complet', onsave = undefined } = $props()
+  let { value = $bindable(''), placeholder = 'Scrie aici...', tools = 'complet', onsave = undefined } = $props()
   const compact = $derived(tools === 'nota')
 
   let editorEl = $state(null)
-  let charCount = $state(0)
 
   // Starea butoanelor din toolbar (sincronizata cu selectia)
   let fmt = $state({ bold: false, italic: false, underline: false, strike: false, ul: false, ol: false, block: 'p' })
@@ -150,20 +152,14 @@
     if (editorEl) {
       editorEl.innerHTML = renderStoredText(value)
       convertTextMath(editorEl)
-      updateCount()
     }
     const onSel = () => syncToolbar()
     document.addEventListener('selectionchange', onSel)
     return () => document.removeEventListener('selectionchange', onSel)
   })
 
-  function updateCount() {
-    if (editorEl) charCount = (editorEl.innerText || '').length
-  }
-
   function onInput() {
     convertTextMath(editorEl, true)
-    updateCount()
     value = serialize()
   }
 
@@ -248,7 +244,6 @@
         editorEl?.appendChild(chip)
       }
     }
-    updateCount()
     value = serialize()
     closeMathBar()
   }
@@ -256,7 +251,6 @@
   function removeMath() {
     if (editingChip) {
       editingChip.remove()
-      updateCount()
       value = serialize()
     }
     closeMathBar()
@@ -283,7 +277,7 @@
 
 <svelte:document onclick={onDocClick} />
 
-<div class="rte" class:doc={variant === 'doc'}>
+<div class="rte">
   <div class="rte-toolbar" role="toolbar" aria-label="Instrumente de formatare">
     {#if !compact}
     <button type="button" class="tbtn" title="Anulează (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
@@ -373,37 +367,47 @@
     onkeydown={onKeydown}
     onclick={onEditorClick}
   ></div>
-
-  {#if variant !== 'doc'}
-    <div class="rte-footer">
-      <span class="rte-counter">{charCount} caractere</span>
-      <span class="rte-hint"><code>$...$</code> devine formulă automat</span>
-    </div>
-  {/if}
 </div>
 
 <style>
+  /* Pagina de document: fara chenar si fara fond propriu — cutia e modalul.
+     Un singur scroller, ca pilula de unelte sa ramana sticky sus. */
   .rte {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    background: var(--bg-elevated);
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
-  /* ===== toolbar (headbar ca la Word) ===== */
+  /* ===== toolbar — pilula plutitoare ===== */
   .rte-toolbar {
+    position: sticky;
+    top: 10px;
+    z-index: 3;
+    align-self: center;
+    width: max-content;
+    max-width: calc(100% - 24px);
+    margin: 10px auto 0;
     display: flex;
     align-items: center;
     flex-wrap: wrap; /* pe ecrane inguste trece pe doua randuri (nu scroll —
                         meniul de stil e pozitionat absolut si ar fi taiat) */
     gap: 2px;
     row-gap: 4px;
-    padding: 6px var(--space-sm);
+    padding: 5px 8px;
+    /* FONDUL E OPAC. Pilula statea pe `backdrop-filter: blur(14px)` peste o
+       suprafata semitransparenta — adica exact „sticla peste tot", scoasa din
+       sistem. Aici blurul nici nu era decor gratuit: pilula pluteste PESTE textul
+       pe care il editezi, deci randurile de dedesubt se citeau prin ea, in ceata.
+       Suprafata plina si umbra spun acelasi lucru — „asta e deasupra" — fara sa
+       amestece doua straturi de text. */
     background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-md);
   }
+  .tbtn, .tstyle { border-radius: var(--radius-full); }
 
   .tbtn {
     width: 30px;
@@ -478,14 +482,21 @@
   .topt-label.t-h3 { font-weight: var(--fw-semibold); }
   .topt-label.t-blockquote { font-style: italic; }
 
-  /* ===== bara de formule ===== */
+  /* ===== bara de formule — sub pilula, tot plutitoare ===== */
   .math-bar {
+    position: sticky;
+    top: 58px;
+    z-index: 3;
+    width: min(680px, calc(100% - 24px));
+    margin: 8px auto 0;
     padding: var(--space-xs) var(--space-sm);
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
   }
   .math-row { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; }
   .math-inp {
@@ -538,20 +549,35 @@
     overflow-x: auto;
   }
 
-  /* ===== editor ===== */
+  /* ===== editor =====
+     COLOANA DE SCRIS INCEPE DIN STANGA, SI ARE LATIME PROPRIE.
+     Ion: „editarea imi incepe la mijlocul modalului, vreau sa inceapa maxim din
+     stanga."
+     Erau doua lucruri, nu unul. `margin: 0 auto` centra coloana — dar `.rte` e un
+     container flex pe COLOANA, iar o margine `auto` pe axa transversala ANULEAZA
+     intinderea (`align-items: stretch`). Deci editorul nu era o coloana de 82ch
+     centrata: se stransese pe latimea CONTINUTULUI. Masurat pe o notita goala,
+     intr-un modal de 1018px: 408px de editor si 316px de margine moarta de fiecare
+     parte. Textul incepea la jumatate, iar dreapta modalului nici macar nu era
+     zona editabila — dadeai click acolo si nu se intampla nimic.
+     `width: 100%` reda intinderea (auto-marginile nu mai exista ca s-o anuleze),
+     `max-width` pastreaza masura de citit, iar fara `margin` coloana se aseaza la
+     inceputul randului.
+     Padding-ul de sus rezerva exact inaltimea pilulei, care pluteste peste text:
+     fara el, primul rand al notitei intra pe sub bara si se citea doar dupa ce
+     derulai. */
   .rte-editor {
     flex: 1;
-    min-height: 280px;
-    max-height: 60vh;
-    overflow-y: auto;
-    padding: var(--space-md);
+    min-height: calc(100% - 62px);
+    width: 100%;
+    max-width: 82ch;
+    padding: 64px 32px 90px;
     font-size: var(--font-body);
     color: var(--text);
     line-height: var(--lh-relaxed);
     outline: none;
     cursor: text;
   }
-  .rte-editor:focus { box-shadow: inset 0 0 0 2px var(--accent-ring); }
   .rte-editor:empty::before {
     content: attr(data-placeholder);
     color: var(--text-faint);
@@ -588,18 +614,6 @@
     padding: 6px 8px;
   }
 
-  .rte-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-    padding: var(--space-xs) var(--space-sm);
-    border-top: 1px solid var(--border);
-    background: var(--bg-surface);
-  }
-  .rte-counter, .rte-hint { font-size: var(--font-small); color: var(--text-dim); }
-  .rte-hint code { font-family: var(--font-mono); background: var(--bg); padding: 1px 5px; border-radius: var(--radius-xs); color: var(--text-secondary); }
-
   @media (max-width: 768px) {
     /* Butoanele de formatare erau de 34px si stau lipite unul de altul intr-o
        bara — cea mai densa insiruire de tinte din aplicatie. La 40px bara tot
@@ -609,85 +623,8 @@
     /* Bara ramane pe `flex-wrap: wrap` (vezi comentariul de la `.rte-toolbar`):
        un scroller ar taia meniul de stil, care e pozitionat absolut. Cu butoane
        mai mari trece pe mai multe randuri — atat. */
-    .rte-toolbar { gap: 3px; }
-    /* `dvh`, nu `vh`: cu bara de adresa vizibila, 52vh depaseste ecranul real si
-       impinge randul de jos al editorului sub el. */
-    .rte-editor { min-height: 220px; max-height: 52dvh; }
-    .rte-hint { display: none; }
-  }
-
-  /* ===== varianta "doc" — pagina de document (V1) ===== */
-  .rte.doc {
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto; /* un singur scroller: pilula ramane sticky sus */
-  }
-  .rte.doc .rte-toolbar {
-    position: sticky;
-    top: 10px;
-    z-index: 3;
-    align-self: center;
-    width: max-content;
-    max-width: calc(100% - 24px);
-    margin: 10px auto 0;
-    padding: 5px 8px;
-    border: 1px solid var(--border-strong);
-    border-bottom: 1px solid var(--border-strong);
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--bg-overlay) 88%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: var(--shadow-lg);
-  }
-  .rte.doc .tbtn { border-radius: var(--radius-full); }
-  .rte.doc .tstyle { border-radius: var(--radius-full); }
-  .rte.doc .math-bar {
-    position: sticky;
-    top: 58px;
-    z-index: 3;
-    width: min(680px, calc(100% - 24px));
-    margin: 8px auto 0;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--bg-overlay) 92%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: var(--shadow-md);
-  }
-  /* PILULA PLUTESTE PESTE TEXT, DECI TEXTUL INCEPE SUB EA.
-     Bara are ~40px si e `sticky top: 10px`, iar coloana de text avea 22px de
-     padding sus: primul rand al notitei intra pe sub bara si se citea doar dupa ce
-     derulai. Padding-ul de sus rezerva exact inaltimea barei. */
-  /* COLOANA DE SCRIS INCEPE DIN STANGA, SI ARE LATIME PROPRIE.
-     Ion: „editarea imi incepe la mijlocul modalului, vreau sa inceapa maxim din
-     stanga."
-     Erau doua lucruri, nu unul. `margin: 0 auto` centra coloana — dar `.rte.doc`
-     e un container flex pe COLOANA, iar o margine `auto` pe axa transversala
-     ANULEAZA intinderea (`align-items: stretch`). Deci editorul nu era o coloana
-     de 82ch centrata: se stransese pe latimea CONTINUTULUI. Masurat pe o notita
-     goala, intr-un modal de 1018px: 408px de editor si 316px de margine moarta de
-     fiecare parte. Textul incepea la jumatate, iar dreapta modalului nici macar nu
-     era zona editabila — dadeai click acolo si nu se intampla nimic.
-     `width: 100%` reda intinderea (auto-marginile nu mai exista ca s-o anuleze),
-     `max-width` pastreaza masura de citit, iar fara `margin` coloana se aseaza la
-     inceputul randului. */
-  .rte.doc .rte-editor {
-    max-height: none;
-    min-height: calc(100% - 62px);
-    width: 100%;
-    max-width: 82ch;
-    padding: 64px 32px 90px;
-    font-size: var(--font-body);
-    line-height: var(--lh-relaxed);
-  }
-  .rte.doc .rte-editor:focus { box-shadow: none; }
-
-  @media (max-width: 768px) {
-    .rte.doc .rte-toolbar { top: 6px; max-width: calc(100% - 12px); }
-    .rte.doc .math-bar { top: 56px; width: calc(100% - 12px); }
-    .rte.doc .rte-editor { padding: 62px 16px 80px; min-height: calc(100% - 58px); }
+    .rte-toolbar { gap: 3px; top: 6px; max-width: calc(100% - 12px); }
+    .math-bar { top: 56px; width: calc(100% - 12px); }
+    .rte-editor { padding: 62px 16px 80px; min-height: calc(100% - 58px); }
   }
 </style>

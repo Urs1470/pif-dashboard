@@ -3,7 +3,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, DUR_FAST } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
@@ -23,7 +23,7 @@
   import SelectorZi from '../components/ui/SelectorZi.svelte'
   import Select from '../components/ui/Select.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
-  import RichTextEditor from '../components/ui/RichTextEditor.svelte'
+  import EditorLung from '../components/ui/EditorLung.svelte'
   import RichText from '../components/ui/RichText.svelte'
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
@@ -60,8 +60,7 @@
   let showNoteModal = $state(false)
   let noteTask = $state(null)
   let noteDraft = $state('')
-  let noteOriginal = ''      // ca sa stim dac-ai schimbat ceva si ce se intoarce la „Anulează"
-  let noteSaving = $state(false)
+  let noteSalveaza = $state(null)
 
 
 
@@ -238,13 +237,6 @@
     } finally { quickAdding = false }
   }
 
-  function openNoteModal(t) {
-    noteTask = t
-    noteDraft = t.descriere || ''
-    noteOriginal = noteDraft
-    showNoteModal = true
-  }
-
   /** INCHIDEREA SALVEAZA. NU EXISTA „ANULEAZĂ" CARE SA ARUNCE CE AI SCRIS.
    *  Inainte: modalul avea „Anulează" si „Salvează", dar un click pe fundal (sau
    *  Escape, sau X) inchidea pur si simplu — fara sa intrebe, fara sa salveze.
@@ -254,26 +246,17 @@
    *  Alternativa clasica — un dialog „ai modificari nesalvate" — pune un al doilea
    *  dialog peste primul si te intreaba ceva ce se poate deduce. Aici inchiderea
    *  COMITE, iar drumul inapoi e cel pe care aplicatia il foloseste deja peste tot:
-   *  un toast cu „Anulează" (vezi bifarea unui task, mutarea unui termen). */
-  async function saveNote() {
-    if (noteSaving || !noteTask) return
-    const taskId = noteTask.id
-    const vechi = noteOriginal
-    if (noteDraft === vechi) { showNoteModal = false; return }   // nimic de salvat, niciun zgomot
-    noteSaving = true
-    try {
-      await updateGlobalTask(taskId, { descriere: noteDraft })
-      showNoteModal = false
+   *  un toast cu „Anulează" (vezi bifarea unui task, mutarea unui termen).
+   *  Ritualul asta traieste acum intr-un singur loc — `EditorLung` — si e acelasi
+   *  pentru toate cele patru campuri lungi din aplicatie. */
+  function openNoteModal(t) {
+    noteTask = t
+    noteDraft = t.descriere || ''
+    noteSalveaza = async (text) => {
+      await updateGlobalTask(t.id, { descriere: text })
       await reload()
-      toastUndo(vechi ? 'Notă actualizată' : 'Notă salvată', {
-        onUndo: async () => {
-          await updateGlobalTask(taskId, { descriere: vechi })
-          await reload()
-        },
-      })
-    } catch (e) {
-      toast(`Eroare: ${e.message}`, 'error')
-    } finally { noteSaving = false }
+    }
+    showNoteModal = true
   }
 
   async function handleEdit() {
@@ -635,7 +618,7 @@
     // Setarile se cer la DESCHIDEREA ferestrei, nu la incarcarea paginii: sunt
     // folosite doar aici, si o cerere in plus la fiecare intrare pe Taskuri ar
     // fi trafic pentru un ecran pe care il deschizi de doua ori pe an.
-    if (esteNativ() && !setari) {
+    if (!setari) {
       apiJson('/api/push/setari').then((s) => { setari = s }).catch(() => {})
     }
     showPushModal = true
@@ -690,14 +673,24 @@
     finally { pushBusy = false }
   }
 
-  // SETARILE DE NOTIFICARI (doar in aplicatia nativa — pe web nu exista canalul
-  // local pe care sa-l regleze). Stau pe server, deci sunt aceleasi de pe orice
+  // SETARILE DE NOTIFICARI. Stau pe SERVER, deci sunt aceleasi de pe orice
   // dispozitiv si supravietuiesc unei reinstalari.
+  //
+  // NU MAI SUNT ASCUNSE PE WEB. Erau gardate pe `esteNativ()`, cu motivul „pe web
+  // nu exista canalul local pe care sa-l regleze" — dar cele patru reglaje nu sunt
+  // ale canalului, sunt ale REGULII, iar regula o citeste si planificatorul de pe
+  // server (`check_and_send_daily`). Deci ora la care suna telefonul se schimba de
+  // pe telefon si de nicaieri altundeva, desi setarea era comuna. Se arata oriunde
+  // exista ceva de programat: nativ mereu, pe web cand exista macar un dispozitiv
+  // abonat (nu neaparat asta — de pe PC regleze ce suna pe telefon).
   let setari = $state(null)
   let setariEroare = $state('')
   const oreDisponibile = Array.from({ length: 24 }, (_, h) => ({
     value: h, label: `${String(h).padStart(2, '0')}:00`,
   }))
+  const arataSetari = $derived(
+    esteNativ() || (pushStatus?.disponibil && (pushLocal?.abonat || pushStatus?.abonamente > 0))
+  )
 
   async function salveazaSetari() {
     if (pushBusy || !setari) return
@@ -707,7 +700,7 @@
       // Serverul valideaza si INTOARCE forma normalizata — o folosim pe aia, nu
       // pe cea din formular: altfel un camp corectat de server (numar venit ca
       // text din <input type=number>) ar ramane afisat gresit.
-      const salvate = await apiJson('/api/push/setari', {
+      const { programate, ...salvate } = await apiJson('/api/push/setari', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ora: Number(setari.ora), zileVechime: Number(setari.zileVechime),
@@ -715,12 +708,18 @@
         }),
       })
       setari = salvate
-      // Reprogramarea IMEDIAT dupa salvare: altfel alarmele deja puse ar suna la
-      // ora veche pana la urmatoarea deschidere a aplicatiei, iar tu ai crede ca
-      // setarea n-a prins.
-      const d = await apiJson('/api/global-tasks?sfera=personal')
-      const cate = await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], salvate)
-      toast(`Salvat — ${cate} notificări programate.`, 'success')
+      // SALVAREA CONFIRMA CU UN NUMAR. O setare de notificari se verifica altfel
+      // abia a doua zi dimineata, deci fara numar nu ai de unde sti daca a prins.
+      // Pe telefon numarul vine din reprogramarea locala — care se face IMEDIAT,
+      // altfel alarmele deja puse ar suna la ora veche pana la urmatoarea
+      // deschidere a aplicatiei. Pe web il da serverul: cate pleaca data viitoare.
+      let cate = programate ?? 0
+      if (esteNativ()) {
+        const d = await apiJson('/api/global-tasks?sfera=personal')
+        cate = await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], salvate)
+      }
+      await reincarcaPush()
+      toast(`Salvat — ${cate} ${cate === 1 ? 'notificare programată' : 'notificări programate'}.`, 'success')
     } catch (e) {
       setariEroare = e.message
     } finally { pushBusy = false }
@@ -1167,22 +1166,10 @@
 <!-- Titlul e TASKUL, nu „Notițe — <task>": ai deschis nota DIN el, deci prefixul
      spunea ce se vede oricum, si tocmai el facea randul sa se taie. Antetul e o
      linie de context (vezi `.modal-doc .modal-title` in Modal.svelte).
-     `tools="nota"`: sapte unelte, nu treisprezece — vezi RichTextEditor.
-     `onclose`: X / fundal / Escape salveaza, ca si butonul. -->
-<Modal bind:open={showNoteModal} onclose={saveNote} size="doc"
-       title={noteTask ? noteTask.titlu : 'Notiță'}>
-  <div class="note-modal">
-    {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} variant="doc" tools="nota"
-                      placeholder="Scrie notițe pentru acest task…" onsave={saveNote} />
-    {/if}
-  </div>
-  {#snippet footer()}
-    <div class="modal-actions">
-      <Button loading={noteSaving} onclick={saveNote}>Gata</Button>
-    </div>
-  {/snippet}
-</Modal>
+     `tools="nota"`: sapte unelte, nu treisprezece — vezi RichTextEditor. -->
+<EditorLung bind:open={showNoteModal} titlu={noteTask ? noteTask.titlu : 'Notiță'}
+            valoare={noteDraft} tools="nota" salveaza={noteSalveaza}
+            placeholder="Scrie notițe pentru acest task…" />
 
 <!-- Sincronizarea cu Google Calendar (doar sfera personala). Trei stari:
      neconfigurat (doar fallback .ics), configurat-neconectat (buton OAuth),
@@ -1239,33 +1226,14 @@
 <!-- Notificările zilnice. Aceeași scară în trepte ca modalul Google:
      indisponibil pe server → browser nesuportat → permisiune refuzată →
      neabonat → abonat. -->
-<Modal bind:open={showPushModal} title="Notificări" size="sm">
+<Modal bind:open={showPushModal} title="Notificări zilnice" size="sm">
   <!-- IN APLICATIA DE PE TELEFON, NIMIC DIN ASTA NU MAI TRECE PRIN SERVER.
        Alarma o pune Android, din timp, deci starea de abonament push de mai jos
        n-are niciun inteles aici — ar arata o masinarie care nu mai e folosita. -->
   {#if esteNativ()}
-    <p class="g-text">Aici alarma o pune telefonul, din timp — nu vine de pe server, deci nu
-      depinde nici de rețea, nici de starea aplicației în momentul în care sună.</p>
-    {#if setari}
-      <!-- Setarile stau pe SERVER, nu pe telefon: le vezi si le schimbi si din
-           browser, si supravietuiesc unei reinstalari a aplicatiei. -->
-      <div class="n-setari">
-        <Select label="Ora" bind:value={setari.ora} options={oreDisponibile} size="sm" />
-        <Input label="Fără termen, după (zile)" type="number" min="0" max="60"
-               bind:value={setari.zileVechime} />
-        <label class="n-comutator">
-          <input type="checkbox" bind:checked={setari.scadente} />
-          <span>Taskurile scadente, în dimineața zilei</span>
-        </label>
-        <label class="n-comutator">
-          <input type="checkbox" bind:checked={setari.faraTermen} />
-          <span>Taskurile fără termen, în fiecare dimineață</span>
-        </label>
-        {#if setariEroare}<p class="g-eroare">{setariEroare}</p>{/if}
-      </div>
-    {:else}
-      <div class="g-skel"><Skeleton width="70%" height="14px" /><Skeleton width="50%" height="14px" /></div>
-    {/if}
+    <p class="g-text">O notificare <strong>per task</strong>, nu un rezumat, cu „Făcut” și „Azi” pe
+      ea. Aici alarma o pune telefonul, din timp — nu vine de pe server, deci nu depinde nici
+      de rețea, nici de starea aplicației în momentul în care sună.</p>
   {:else if pushStatus === null}
     <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
   {:else if !pushStatus.disponibil}
@@ -1292,25 +1260,77 @@
       <Button loading={pushBusy} onclick={activeazaPush}>Activează pe telefonul ăsta</Button>
     </div>
   {:else}
+    <p class="g-text">O notificare <strong>per task</strong>, nu un rezumat, cu „Făcut” și „Azi” pe
+      ea. Setările stau pe server, deci sunt aceleași de pe orice dispozitiv.</p>
     <div class="g-stare">
-      <div class="g-rand"><span class="g-et">Dispozitive abonate</span><span class="g-val">{pushStatus.abonamente}</span></div>
-      <div class="g-rand"><span class="g-et">Ora</span><span class="g-val">{pushStatus.ora}</span></div>
-      <div class="g-rand"><span class="g-et">Regula</span><span class="g-val">{pushStatus.regula}</span></div>
+      <div class="g-rand">
+        <span class="g-et">Dispozitive abonate</span>
+        <span class="g-val">{pushStatus.abonamente}</span>
+      </div>
       {#if pushStatus.last_error}<p class="g-eroare">{pushStatus.last_error}</p>{/if}
     </div>
+    <!-- „Dezactivează aici" e despre ACEST dispozitiv, nu despre regula de pe
+         server — deci sta langa numarul de dispozitive, nu in bara de jos, unde
+         ar fi al treilea verb langa „Salvează" si „Trimite test". -->
+    <button class="g-link" disabled={pushBusy} onclick={dezactiveazaPush}>Nu mai trimite pe dispozitivul ăsta</button>
+  {/if}
+
+  <!-- CELE PATRU REGLAJE. Aceleasi de pe orice dispozitiv (stau pe server) si
+       aceeasi forma pe telefon ca pe web: ora si vechimea sus, cele doua feluri
+       de notificare ca doua propozitii de 48px sub ele. -->
+  {#if arataSetari}
+    {#if setari}
+      <div class="n-setari">
+        <Select label="Ora" bind:value={setari.ora} options={oreDisponibile} size="sm" />
+        <Input label="Vechime (zile)" type="number" min="0" max="60"
+               bind:value={setari.zileVechime} />
+      </div>
+      <div class="n-feluri">
+        <label class="n-comutator">
+          <input type="checkbox" bind:checked={setari.scadente} />
+          <span>Taskurile scadente în ziua respectivă</span>
+        </label>
+        <label class="n-comutator">
+          <input type="checkbox" bind:checked={setari.faraTermen} />
+          <span>Taskurile rămase fără termen</span>
+        </label>
+      </div>
+      <!-- Regula e SCRISA, nu descoperita dintr-o eroare: serverul respinge
+           oprirea amandurora, iar un refuz care apare abia dupa ce ai apasat
+           „Salvează" se citeste ca o defectiune, nu ca o limita. -->
+      <p class="n-nota">
+        <Info size={15} strokeWidth={1.5} />
+        <span>Cel puțin un fel trebuie să rămână pornit — altfel n-ar mai suna nimic, iar
+          tăcerea nu se poate deosebi de o defecțiune.</span>
+      </p>
+      {#if setariEroare}<p class="g-eroare">{setariEroare}</p>{/if}
+    {:else}
+      <div class="g-skel"><Skeleton width="70%" height="14px" /><Skeleton width="50%" height="14px" /></div>
+    {/if}
   {/if}
   {#snippet footer()}
-    {#if esteNativ()}
+    <!-- PROBA E LA STANGA, DEPARTE DE „SALVEAZĂ". Una verifica lantul ACUM,
+         cealalta schimba ce se intampla maine — doua verbe care nu trebuie sa
+         stea lipite, fiindca a le confunda inseamna sa crezi ca ai salvat cand
+         de fapt ai trimis o notificare. -->
+    <div class="n-foot">
+      {#if esteNativ()}
+        <Button variant="secondary" disabled={pushBusy} onclick={probaLocala}>
+          <BellRing size={15} strokeWidth={1.5} />Notificare de probă
+        </Button>
+      {:else if pushStatus?.disponibil && pushLocal?.abonat}
+        <Button variant="secondary" disabled={pushBusy} onclick={testPush}>
+          <BellRing size={15} strokeWidth={1.5} />Notificare de probă
+        </Button>
+      {:else}
+        <span></span>
+      {/if}
       <div class="modal-actions">
-        <Button variant="secondary" disabled={pushBusy} onclick={probaLocala}>Notificare de probă</Button>
-        <Button disabled={pushBusy || !setari} onclick={salveazaSetari}>Salvează</Button>
+        {#if arataSetari}
+          <Button disabled={pushBusy || !setari} onclick={salveazaSetari}>Salvează</Button>
+        {/if}
       </div>
-    {:else if pushStatus?.disponibil && pushLocal?.abonat}
-      <div class="modal-actions">
-        <Button variant="secondary" disabled={pushBusy} onclick={testPush}>Trimite test</Button>
-        <Button variant="danger" disabled={pushBusy} onclick={dezactiveazaPush}>Dezactivează aici</Button>
-      </div>
-    {/if}
+    </div>
   {/snippet}
 </Modal>
 
@@ -1409,21 +1429,38 @@
   .g-link { font-size: var(--font-small); color: var(--text-dim); background: none; border: none;
             cursor: pointer; text-decoration: underline; padding: 0; align-self: center; }
   .g-link:hover { color: var(--text); }
+  .g-link:disabled { color: var(--text-dim); cursor: default; text-decoration: none; }
 
   /* SETARILE DE NOTIFICARI. Fara haina proprie: campurile sunt `Input`/`Select`
      din aceeasi trusa ca peste tot, iar aici raman doar asezarea si comutatoarele.
      Doua coloane pe latime, o coloana pe telefon — ora si pragul sunt scurte si
      ar arata pierdute pe un rand intreg. */
   .n-setari { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-              gap: var(--space-sm) var(--space-md); margin-top: var(--space-sm); }
+              gap: var(--space-sm) var(--space-md); margin-top: var(--space-md); }
+  /* Cele doua feluri de notificare sunt o LISTA, nu doua campuri: rand de 48px,
+     separator de 1px cu marja laterala — aceeasi reteta ca listele din aplicatie.
+     Asa se citesc ca doua intrari intre care alegi, nu ca doua bife razlete. */
+  .n-feluri { display: flex; flex-direction: column; margin-top: var(--space-12); }
+  .n-feluri .n-comutator + .n-comutator { border-top: 1px solid var(--border); }
   /* Comutatoarele sunt propozitii, nu campuri: tin toata latimea si se citesc
      ca o fraza, ca sa se vada CE se opreste, nu doar ca exista un buton. */
-  .n-comutator { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-sm);
-                 font-size: var(--font-small); color: var(--text-secondary);
-                 min-height: var(--tap-min); cursor: pointer; }
+  .n-comutator { display: flex; align-items: center; gap: var(--space-12);
+                 font-size: var(--font-body); color: var(--text);
+                 min-height: 48px; padding: 0 2px; cursor: pointer; }
   .n-comutator input { width: 18px; height: 18px; flex: none; accent-color: var(--accent);
                        cursor: pointer; }
-  .n-setari :global(.g-eroare) { grid-column: 1 / -1; }
+  /* Regula scrisa, in gri, cu iconita — nu un avertisment: nu s-a intamplat
+     nimic rau, doar spune de ce nu se pot stinge amandoua. */
+  .n-nota { display: flex; align-items: flex-start; gap: var(--space-sm);
+            margin-top: var(--space-12); font-size: var(--font-small);
+            color: var(--text-secondary); }
+  .n-nota :global(svg) { flex: none; margin-top: 1px; color: var(--text-dim); }
+  /* Proba la stanga, „Salvează" la dreapta — cat mai departe una de alta pe
+     acelasi rand. Pe telefon `.modal-actions` isi intinde butonul pe toata
+     latimea (regula din Modal), deci cele doua trec pe randuri diferite. */
+  .n-foot { display: flex; align-items: center; justify-content: space-between;
+            gap: var(--space-sm); flex-wrap: wrap; }
+  .n-foot > :global(.modal-actions) { flex: 1; }
   @media (max-width: 620px) {
     .n-setari { grid-template-columns: 1fr; }
   }
@@ -1649,7 +1686,6 @@
 
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
-  .note-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   /* Titlul e BUTON (atingi = redenumesti), dar trebuie sa arate ca text: fara
      fundal, aliniat la stanga, pe toata latimea ramasa. */

@@ -13,15 +13,16 @@ CE MASOARA, pe trei latimi de telefon si pe toate rutele:
   - tinte mici   control sub 40px care nu are nici strat invizibil in jur
   - fonturi      camp sub 16px (Safari face zoom la focus si pagina sare)
   - gesturi      reordonarea prin maner si cele doua glisari, cu deget adevarat
-  - perioade     benzile din Calendar se muta si se redimensioneaza, cu mouse SI cu deget
+  - perioade     benzile din Calendar se muta si se intind cu MOUSE; pe deget, nu se misca
   - de facut     gruparea pe termen, adaugarea cu zi, mutarea din gest, „Anulează"
   - „azi"        boardul de pe Acasa si grupa „Azi" din /tasks sunt aceeasi multime
   - iesire       randul bifat se stinge si pleaca imediat, nu dupa server
 
 TREI CAPCANE DE MASURARE, toate tratate aici — fara ele raportul minte:
   1. `pointer-events: none` inseamna ca elementul NU e o tinta. Altfel ar aparea
-     zeci de false alarme. (Benzile din Calendar NU mai intra aici de la
-     2026-08-07: sunt apucabile, deci masurabile — vezi ACCEPTATE.)
+     zeci de false alarme. (Benzile din Calendar raman masurabile: primesc
+     atingeri, chiar daca de la 2026-08-08 tot ce fac e sa deschida ziua de sub
+     ele — vezi ACCEPTATE.)
   2. Un strat invizibil in jur (`::after` cu inset negativ) mareste suprafata
      reala fara sa umfle eticheta. Se masoara intreband ce raspunde la 21px de
      centru, nu citind `getBoundingClientRect`.
@@ -91,9 +92,9 @@ ACCEPTATE = {
     # Regula de 44px exista ca sa nu ratezi tinta si sa obtii ALTCEVA. Aici o
     # ratare nu produce nimic diferit: o atingere pe banda cheama exact
     # `atingeZi` cu ziua de sub deget, adica fix ce ar fi facut celula de
-    # dedesubt. Banda e tinta distincta doar pentru APASAREA LUNGA, care apuca
-    # lucrarea — un gest cu zabovire, cu confirmare vizuala (banda se stinge,
-    # apare fantoma) si reversibil pana la ridicarea degetului.
+    # dedesubt — si de pe 2026-08-08 asta e SINGURUL lucru pe care il poate face
+    # (pe telefon pista se citeste, nu se manipuleaza: nicio tragere, niciun
+    # maner). Deci banda nu mai e o tinta distincta, e desen peste celula.
     # Nu poate fi facuta de 44px: inaltimea benzii E pasul grilei de benzi
     # (`--h-banda`), deci trei lucrari intr-o zi ar cere o celula de 132px.
     # CHEIA SE POTRIVESTE PE SUBSIR CU SELECTORUL RAPORTAT (`acceptat`), deci
@@ -102,23 +103,12 @@ ACCEPTATE = {
     # events — deci exceptia n-a prins niciodata, iar pagina trecea doar cand
     # masuratoarea apuca sa se faca inainte ca benzile sa se randeze. O exceptie
     # care nu se potriveste e mai rea decat una lipsa: pare acoperita si nu e.
-    'div.banda': 'banda de perioada, 12px pe telefon; atingerea face acelasi lucru ca ziua de sub ea, iar apucarea e apasare lunga',
-    # Manerele de capat ale unei benzi (2026-08-07). Erau `<span>`-uri cu
-    # `onpointerdown`, deci auditul nu le vedea deloc — `controale` masoara
-    # `button, [role=button], [tabindex]`. Au devenit butoane reale ca sa aiba
-    # echivalent la tastatura si ca sa nu mai fie buton-in-buton; masura de 9x12
-    # nu s-a schimbat, doar a devenit VIZIBILA.
-    # Nu pot fi de 44px, si nu din lene: pe telefon banda are 12px si pasul grilei
-    # de benzi e 15px (`--h-banda`), deci un maner de 44px inaltime ar acoperi trei
-    # randuri de benzi — ar fura atingeri de la alte doua lucrari. Pe latime, doua
-    # manere de 44px pe o banda de doua zile (~100px la 390px) n-ar mai lasa de
-    # unde s-o apuci ca s-o muti — acelasi motiv pentru care pe benzile de o zi
-    # manerele sunt deja ascunse (`.banda:not(.lat)`).
-    # O ratare nu e tacuta: prinzi banda in loc de capat, deci MUTI in loc sa
-    # redimensionezi — iar mutarea se vede cat tii degetul (banda se stinge, apare
-    # fantoma) si se anuleaza ridicand degetul inainte de drop. Gestul chiar merge
-    # cu deget adevarat: vezi „deget: capatul s-a mutat, inceputul a stat".
-    'button.maner': 'maner de capat, 9x12 pe telefon; la 44px ar acoperi trei randuri de benzi si ar manca banda de doua zile',
+    'div.banda': 'banda de perioada, 12px pe telefon; atingerea face exact ce face ziua de sub ea, si nimic altceva',
+    # `button.maner` A PLECAT DIN LISTA. Manerele de capat nu mai exista pe
+    # telefon (`@media (hover: none) { .maner { display: none } }`), deci
+    # masuratoarea nici nu le vede — o exceptie pentru un element care nu se
+    # randeaza pare acoperire si nu e nimic. Ca ele chiar lipsesc se verifica
+    # explicit in `perioadele_se_trag`, sectiunea 0.
 }
 
 MASOARA = r"""
@@ -709,7 +699,7 @@ def dockul_pe_telefon(ctx, baza):
 
 
 def perioadele_se_trag(browser, baza):
-    """Perioadele din Calendar se MUTA si se REDIMENSIONEAZA — cu mouse si cu deget.
+    """Perioadele din Calendar se MUTA si se INTIND — cu MOUSE. Pe deget, NU.
 
     DE CE EXISTA
     Pana la 2026-08-07 tragerea era pe HTML5 drag-and-drop. Nu functiona — pe
@@ -719,9 +709,18 @@ def perioadele_se_trag(browser, baza):
     muti lucrarea" deasupra unui calendar care nu muta nimic, si asa a stat pana
     a incercat Ion.
 
-    Un gest care nu se declanseaza e ARATA IDENTIC cu unul care se declanseaza si
+    Un gest care nu se declanseaza ARATA IDENTIC cu unul care se declanseaza si
     nu are ce face. Singurul mod de a face diferenta e sa tragi si sa te uiti pe
     server daca s-a schimbat ceva — exact ce face functia asta.
+
+    CONTRACTUL S-A SCHIMBAT PE 2026-08-08 (handoff-ul de design, turele 7–8):
+    **pe telefon pista se citeste, nu se manipuleaza** — nicio tragere de banda,
+    niciun maner de capat, nicio alipire. Motivul e masura, nu gustul: alegi o ZI
+    dintr-o celula de ~48px acoperita de benzi, iar ce iese din gest nu e „aproape
+    ce voiai", e alta zi scrisa in baza. De pe telefon atingi ziua si raspunzi in
+    panou. Deci verificarea la deget si-a schimbat semnul: nu mai cere ca gestul sa
+    functioneze, ci ca el sa NU existe (nici manere desenate, nici mutare).
+    Cu mouse-ul ramane exact cum era.
 
     Doua contexte, nu unul: cu `has_touch` Chromium transforma intrarile de mouse
     in atingeri, deci un singur context ar testa o singura poarta din doua.
@@ -806,6 +805,43 @@ def perioadele_se_trag(browser, baza):
                 ' return [z.dataset.zi, r.left + r.width / 2, r.top + r.height / 2] })')
             harta = {z[0]: (z[1], z[2]) for z in zile}
 
+            # --- 0. PE DEGET: pista se citeste, nu se manipuleaza ---
+            # O apasare lunga urmata de o tragere lunga nu are voie sa schimbe
+            # nimic, iar manerele de capat nu au voie sa fie desenate. Se verifica
+            # amandoua: un maner vizibil fara gest in spate promite ceva ce nu se
+            # intampla — exact greseala versiunii cu drag-and-drop HTML5.
+            if tactil:
+                vizibile = page.eval_on_selector_all(
+                    '.maner',
+                    'e => e.filter(m => { const s = getComputedStyle(m);'
+                    ' return s.display !== "none" && s.visibility !== "hidden" }).length')
+                if vizibile:
+                    out('  PICA  deget: %d manere de capat desenate (pista nu se manipuleaza)' % vizibile)
+                    probleme += 1
+                else:
+                    out('  OK    deget: niciun maner de capat')
+
+                b0 = page.eval_on_selector(
+                    '.banda[data-perioada]',
+                    'e => { const r = e.getBoundingClientRect();'
+                    ' return [e.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2] }')
+                ord0 = [z[0] for z in zile]
+                in0 = stare(page, b0[0])
+                k0 = ord0.index(in0[0]) if in0[0] in ord0 else 0
+                t0 = ord0[min(k0 + 9, len(ord0) - 1)]
+                trage(page, cdp, b0[1], b0[2], harta[t0][0], harta[t0][1], pauza)
+                if stare(page, b0[0]) == in0:
+                    out('  OK    deget: apasarea lunga + tragerea nu muta nimic')
+                else:
+                    out('  PICA  deget: perioada s-a mutat la atingere (%s -> %s)'
+                        % (in0, stare(page, b0[0])))
+                    probleme += 1
+
+                if erori:
+                    out('  PICA  deget: exceptii in pagina: %s' % erori[:2])
+                    probleme += 1
+                continue          # `finally` inchide pagina si contextul
+
             # --- 1. mutarea ---
             b = page.eval_on_selector(
                 '.banda[data-perioada]',
@@ -860,33 +896,9 @@ def perioadele_se_trag(browser, baza):
                 else:
                     out('  PICA  %s: redimensionare: %s -> %s' % (eticheta, inainte2, dupa2)); probleme += 1
 
-            # --- 3. doar la deget: fara apasare lunga NU se muta nimic ---
-            # Altfel orice derulare a paginii pornita de pe o banda ar tari
-            # lucrarea dupa deget.
-            if tactil:
-                page.reload(wait_until='load')
-                page.wait_for_selector('.banda[data-perioada]', timeout=15000)
-                page.wait_for_timeout(700)
-                b = page.eval_on_selector(
-                    '.banda[data-perioada]',
-                    'e => { const r = e.getBoundingClientRect();'
-                    ' return [e.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2] }')
-                zile3 = page.eval_on_selector_all(
-                    '.zi[data-zi]',
-                    'e => e.map(z => { const r = z.getBoundingClientRect();'
-                    ' return [z.dataset.zi, r.left + r.width / 2, r.top + r.height / 2] })')
-                h3 = {z[0]: (z[1], z[2]) for z in zile3}
-                ord3 = [z[0] for z in zile3]
-                inainte3 = stare(page, b[0])
-                k = ord3.index(inainte3[0]) if inainte3[0] in ord3 else 0
-                t3 = ord3[min(k + 9, len(ord3) - 1)]
-                trage(page, cdp, b[1], b[2], h3[t3][0], h3[t3][1], 0)   # fara apasare
-                dupa3 = stare(page, b[0])
-                if dupa3 == inainte3:
-                    out('  OK    deget: glisarea scurta deruleaza, nu muta')
-                else:
-                    out('  PICA  deget: s-a muta fara apasare lunga (%s -> %s)' % (inainte3, dupa3))
-                    probleme += 1
+            # (Proba „fara apasare lunga nu se muta nimic" a plecat odata cu
+            #  gestul: pe deget nu se mai muta NIMIC, nici cu apasare lunga —
+            #  se verifica mai sus, in sectiunea 0.)
 
             if erori:
                 out('  PICA  %s: exceptii in pagina: %s' % (eticheta, erori[:2])); probleme += 1

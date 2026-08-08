@@ -9,7 +9,7 @@
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
 
-const VERSION = 'v99';
+const VERSION = 'v100';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
@@ -329,8 +329,15 @@ self.addEventListener('message', (event) => {
 self.addEventListener('push', (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch (_) {}
+  // AL DOILEA BUTON VINE DIN PAYLOAD, nu e scris aici.
+  // Era fix „Azi" — corect cat timp serverul trimitea un singur motiv (task fara
+  // termen). De cand trimite si scadentele, „Azi" ar scrie pe un task scadent AZI
+  // data pe care o are deja: un buton care pare ca amana si nu face nimic. Acolo
+  // serverul cere „Mâine". Rezerva ramane „Azi", pentru notificarile vechi, deja
+  // in coada, care n-au campul.
+  const a2 = data.a2 || { id: 'azi', text: 'Azi' };
   const actiuni = data.actions
-    ? [{ action: 'done', title: 'Făcut' }, { action: 'azi', title: 'Azi' }]
+    ? [{ action: 'done', title: 'Făcut' }, { action: a2.id, title: a2.text }]
     : [];
   event.waitUntil(self.registration.showNotification(data.title || 'PIF Dashboard', {
     body: data.body || '',
@@ -349,7 +356,9 @@ self.addEventListener('notificationclick', (event) => {
   const info = event.notification.data || {};
   const url = info.url || '/';
 
-  if (event.action === 'done' || event.action === 'azi') {
+  // `maine` e al doilea buton al notificarilor de SCADENTA; ruta il accepta
+  // dintotdeauna (vezi `push_action`), lista de aici nu-l cunostea.
+  if (event.action === 'done' || event.action === 'azi' || event.action === 'maine') {
     event.notification.close();
     event.waitUntil(
       fetch('/api/push/action', {

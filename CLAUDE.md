@@ -933,6 +933,96 @@ funcția se reia, se reia cu ambele capete.
 **Un singur toast pe ecran, 4s.** Cel înlocuit **se comite** (`onCommit`), nu se aruncă:
 altfel rândul rămânea șters din interfață și neșters din bază.
 
+### Un singur editor pentru toate câmpurile lungi (Proiecte 5a, 2026-08-08)
+
+Observații tehnice, Constatări, Acțiuni și rezultat, nota unui task: patru drumuri către
+același lucru, și nu se purtau la fel. Notele salvau la închidere cu toast de anulare;
+câmpurile de proiect aveau „Anulează" și „Salvează", dar X / fundal / Escape **aruncau
+în tăcere** ce scriseseși. Același gest, două înțelesuri opuse, în aceeași pagină.
+
+`components/ui/EditorLung.svelte` e acum shell-ul unic: Modal `doc` + editor + o bară de
+jos cu indiciul la stânga și „Salvează" la dreapta. **Închiderea COMITE**, cu „Anulează"
+în toast; nu există buton care aruncă.
+
+- **`$effect.pre` + `untrack`, nu `$effect`.** `RichTextEditor` își umple contenteditable-ul
+  **la montare**, din valoarea de atunci; un efect obișnuit rulează după montare, deci
+  editorul s-ar deschide cu textul dinainte. `untrack` fiindcă singura dependență e `open`:
+  dacă părintele reîncarcă datele cât scrii, ciorna nu are voie să fie înlocuită sub degete.
+- **Funcția de scriere se capturează la comitere** (`const scrie = salveaza`). Toastul
+  trăiește 4s, timp în care poți deschide alt câmp — iar `salveaza` e o proprietate, deci
+  citită la apăsarea pe „Anulează" ar fi cea a câmpului NOU: textul vechi al observațiilor
+  s-ar scrie peste nota altui task. Din același motiv fiecare `open*` construiește
+  închiderea cu ținta în ea, nu citește starea curentă.
+- **Pe eroare modalul se REDESCHIDE** cu ciorna intactă: `Modal.inchide()` face `open = false`
+  *înainte* de `onclose`, deci fără asta pagina dispărea cu tot cu textul.
+- `RichTextEditor` a rămas cu o singură formă. Varianta `box` (casetă cu chenar, numărător de
+  caractere) n-avea niciun consumator după unificare, iar `backdrop-filter: blur(14px)` de pe
+  pilula plutitoare a plecat: sticla e scoasă din sistem, și aici nici nu era decor — pilula
+  plutește **peste** textul pe care-l editezi, deci rândurile de dedesubt se citeau prin ea.
+
+### Fereastra de notificări: patru reglaje, aceleași de pe orice dispozitiv (14b, 2026-08-08)
+
+Nu se face pagină de Setări. Singurele reglaje sunt cele patru ale notificărilor și trăiesc
+în fereastra clopoțelului din `/tasks`, vizibil doar în sfera Personal.
+
+- **Nu mai sunt ascunse pe web.** Erau gardate pe `esteNativ()` cu motivul „pe web nu există
+  canalul local pe care să-l regleze" — dar cele patru nu sunt ale canalului, sunt ale
+  REGULII, iar regula o citește și planificatorul de pe server. Deci ora la care sună
+  telefonul se putea schimba doar de pe telefon, deși setarea era comună. Acum se arată
+  oriunde există ceva de programat (nativ mereu; pe web când există măcar un dispozitiv
+  abonat — de pe PC reglezi ce sună pe telefon).
+- **Comutatorul „scadente" chiar comută ceva.** `check_and_send_daily` trimitea DOAR taskurile
+  fără termen (`if setari['faraTermen']`); motivul `scadent` exista doar pe telefon
+  (`lib/notificari.js`). Adăugat `taskuri_scadente()` + `_de_notificat()` în `push.py`. Cu el
+  a trebuit și **al doilea buton din payload** (`a2`): pe un task scadent azi, „Azi" ar scrie
+  data pe care o are deja — service worker-ul îl avea scris în cod. Rezerva rămâne „Azi",
+  pentru notificările vechi din coadă. `VERSION` bumpat la `v100`.
+- **Salvarea confirmă cu numărul** („Salvat — 4 notificări programate"): pe telefon din
+  reprogramarea locală, pe web din `programate`, întors acum de `PUT /api/push/setari`.
+- **Proba stă la stânga, departe de „Salvează"**: una verifică lanțul acum, cealaltă schimbă
+  ce se întâmplă mâine. „Nu mai trimite pe dispozitivul ăsta" a coborât lângă numărul de
+  dispozitive — e despre ACEST aparat, nu despre regulă, deci n-are ce căuta al treilea verb
+  în bara de jos.
+- Regula „cel puțin un fel pornit" e **scrisă în fereastră**, nu descoperită dintr-o eroare
+  după ce ai apăsat Salvează.
+
+### Perioada se întinde, iar vecinul se dă la o parte (Calendar, turele 7–8, 2026-08-08)
+
+`redimensioneaza()` scria capetele și lăsa coliziunea să se întâmple, deși „perioadele nu se
+suprapun" era deja regula. Înlocuit cu `intinde()`, care decide după CINE e vecinul:
+
+- **același `loc\|client` = continuare, nu coliziune.** Nu se scrie nimic în plus: `deplasari`
+  grupează deja zilele consecutive pe cheia asta, deci în clipa atingerii datele spun „o
+  singură ieșire". Toastul o spune („o deplasare, 8 zile") și se poate anula. Se anunță
+  **doar când chiar s-a alipit ceva nou** — doi vecini care se atingeau și înainte erau deja
+  o deplasare.
+- **alt loc sau alt client = vecinul e împins**, cu o zi **lucrătoare** (`nextWorkday` în
+  `calendarDates.js`), păstrându-și durata. **Împingerea se propagă**: un singur pas ar putea
+  așeza vecinul fix peste următorul, adică aceeași suprapunere mutată cu o căsuță. Bucla e
+  mărginită (fiecare mutare împinge strict la dreapta) și toastul spune câte s-au mutat.
+- **Anulează readuce TOT** — perioada trasă și fiecare vecin împins. O propagare tăcută ar fi
+  fost singurul lucru inacceptabil.
+- **Fantoma e CONTUR peste banda reală, nu o mută.** Banda apucată nu se mai stinge la 32%:
+  la întindere cele două se suprapun aproape complet, deci vedeai un dreptunghi cu două
+  opacități și nu mai știai care e starea de acum. Fără fundal și fără text — al doilea
+  exemplar al aceluiași nume, decalat cu o zi, se citește ca două lucrări.
+- **Mânerele sunt două bare subțiri de accent**, la hover, pe toată înălțimea benzii (era o
+  pastilă albă de 2×9px în mijloc).
+- **`chenar` — ieșirea ca un singur obiect.** Fără el alipirea n-avea ce să arate: două
+  perioade care se ating devin o deplasare, dar pe ecran rămâneau două bare la fel ca înainte.
+  Chenarul acoperă zilele consecutive la același `loc\|client` și exact benzile lucrărilor lui;
+  raza stă **doar pe capetele adevărate**, deci la alipire cele două muchii rotunjite din
+  mijloc dispar — asta e „peretele se stinge". Lucrările rămân bare separate înăuntru: s-au
+  unit ieșirile, nu lucrările.
+- **Pe telefon pista se citește, nu se manipulează.** Gestul e oprit în `seManipuleaza()`
+  (`ecran.telefon || ecran.grosier` — perechea în JS a lui `@media (hover: none)`, ca desenul
+  și comportamentul să nu se desincronizeze), iar mânerele sunt `display: none`. Asta
+  **răstoarnă** decizia din 7 august („Perioadele se trag cu mâna" acoperă acum doar mouse-ul):
+  alegi o ZI dintr-o celulă de ~48px acoperită de benzi, iar ce iese din gest nu e „aproape ce
+  voiai", e altă zi scrisă în bază. `audit_mobil.py`, secțiunea „perioadele se trag", a fost
+  întoarsă odată cu contractul: la deget verifică acum că **nu** există mânere și că apăsarea
+  lungă + tragerea **nu** mută nimic.
+
 ## Design system (frontend)
 
 **Sursa unică: `frontend/src/styles/tokens.css`** — citește-l înainte să atingi CSS.

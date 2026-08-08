@@ -304,6 +304,39 @@ def taskuri_de_notificat(cursor, zile_vechime=None):
     return [row_to_dict(r) for r in cursor.fetchall()]
 
 
+def taskuri_scadente(cursor, azi=None):
+    """Taskurile personale cu termen CHIAR IN ZIUA asta.
+
+    Al doilea motiv, si nu se suprapune niciodata cu primul: unul cere data,
+    celalalt cere lipsa ei. Exista deja pe telefon (`taskuriDeNotificat` din
+    `lib/notificari.js`, motivul `scadent`), dar pe server nu — deci comutatorul
+    „Taskurile scadente" din fereastra de setari era un comutator care nu comuta
+    nimic pentru cine primeste notificarile prin web push. Un buton care nu face
+    nimic e mai rau decat unul care lipseste: te invata ca setarile mint.
+    """
+    zi = azi or datetime.now().strftime('%Y-%m-%d')
+    cursor.execute('''
+        SELECT g.* FROM global_tasks g
+        WHERE g.sfera = 'personal' AND g.status != 'done'
+          AND substr(TRIM(COALESCE(g.data_scadenta, '')), 1, 10) = ?
+        ORDER BY g.created_at ASC
+    ''', (zi,))
+    return [row_to_dict(r) for r in cursor.fetchall()]
+
+
+def _de_notificat(cursor, setari, acum):
+    """(task, motiv, zile) pentru o zi — aceeasi ordine si aceleasi doua motive
+    ca pe telefon. Scadentele primele: au un ceas, celelalte doar o vechime."""
+    out = []
+    if setari['scadente']:
+        for t in taskuri_scadente(cursor, acum.strftime('%Y-%m-%d')):
+            out.append((t, 'scadent', 0))
+    if setari['faraTermen']:
+        for t in taskuri_de_notificat(cursor, setari['zileVechime']):
+            out.append((t, 'fara-termen', _zile_de_cand(t.get('created_at'), acum)))
+    return out
+
+
 def _zile_de_cand(created_at, acum):
     try:
         d = datetime.strptime(str(created_at)[:10], '%Y-%m-%d')
@@ -339,23 +372,28 @@ def check_and_send_daily(now=None, trimite=None):
         conn.close()
         return 'claimed-gata'
 
-    randuri = taskuri_de_notificat(cursor, setari['zileVechime']) if setari['faraTermen'] else []
+    randuri = _de_notificat(cursor, setari, now)
     conn.close()
     if not randuri:
         return 'nimic'      # claim consumat: ziua e gata, fara notificare
 
     expeditor = trimite or send_to_all
-    for t in randuri:
-        zile = _zile_de_cand(t.get('created_at'), now)
+    for t, motiv, zile in randuri:
         expeditor({
             'title': t.get('titlu') or 'Task personal',
-            'body': f'Fără termen de {zile} zile — bifează sau pune-i o zi.',
+            'body': ('Scadent azi.' if motiv == 'scadent'
+                     else f'Fără termen de {zile} zile — bifează sau pune-i o zi.'),
             # Aceeasi eticheta per task: notificarea de maine o INLOCUIESTE pe
             # cea de azi, nu se stivuiesc sapte copii ale aceluiasi task.
             'tag': f"pif-task-{t['id']}",
             'url': f"/#/tasks?sfera=personal&focus=global:{t['id']}",
             'token': mint_token(t['id'], now),
             'actions': True,
+            # AL DOILEA BUTON DEPINDE DE MOTIV, ca pe telefon: pe un task scadent
+            # AZI, „Azi" ar scrie data pe care o are deja — pare ca amana si nu
+            # face nimic. Singura amanare cu inteles acolo e „Mâine".
+            'a2': ({'id': 'maine', 'text': 'Mâine'} if motiv == 'scadent'
+                   else {'id': 'azi', 'text': 'Azi'}),
         })
     return 'trimis'
 
@@ -476,7 +514,16 @@ def push_setari_put():
     if eroare:
         return jsonify({'error': eroare}), 400
     set_app_setting(K_SETARI, json.dumps(setari))
-    return jsonify(setari)
+    # CATE. Salvarea trebuie sa confirme cu un numar, altfel n-ai de unde sti
+    # daca setarea a prins — iar o setare de notificari se verifica altfel abia
+    # a doua zi dimineata. Pe telefon numarul vine din reprogramarea locala;
+    # pentru web e cel de aici: cate ar pleca la urmatoarea trimitere.
+    conn = get_db()
+    try:
+        programate = len(_de_notificat(conn.cursor(), setari, datetime.now()))
+    finally:
+        conn.close()
+    return jsonify({**setari, 'programate': programate})
 
 
 @push_bp.route('/api/push/status', methods=['GET'])

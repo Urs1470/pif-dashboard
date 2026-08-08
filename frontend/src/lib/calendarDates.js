@@ -45,6 +45,18 @@ export function isWeekend(iso) {
   return w === 0 || w === 6
 }
 
+/** Prima zi LUCRATOARE incepand cu `iso` (sambata si duminica se sar).
+ *
+ *  Exista fiindca „impins cu o zi" nu inseamna „+1 in calendar": daca perioada
+ *  creste peste vineri, vecinul impins pe sambata ar fi o zi de lucru inventata.
+ *  Aceeasi regula ca in Planificator — se muta cu o zi LUCRATOARE. */
+export function nextWorkday(iso) {
+  let z = iso
+  // Cel mult doua pasi: dupa sambata vine duminica, dupa duminica luni.
+  for (let i = 0; i < 2 && isWeekend(z); i++) z = addDays(z, 1)
+  return z
+}
+
 export function monthLabel(iso) {
   const d = parseISO(iso)
   return d ? `${LUNI[d.getMonth()]} ${d.getFullYear()}` : ''

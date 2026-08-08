@@ -34,7 +34,7 @@
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import MarkdownView from '../components/notes/MarkdownView.svelte'
-  import RichTextEditor from '../components/ui/RichTextEditor.svelte'
+  import EditorLung from '../components/ui/EditorLung.svelte'
   import { todayISO, addDays } from '../lib/calendarDates.js'
 
   let { params } = $props()
@@ -65,8 +65,7 @@
   let showNoteModal = $state(false)
   let noteTask = $state(null)
   let noteDraft = $state('')
-  let noteOriginal = ''
-  let noteSaving = $state(false)
+  let noteSalveaza = $state(null)
 
   let showEditModal = $state(false)
   let showDeleteConfirm = $state(false)
@@ -83,12 +82,12 @@
   // Done tasks collapse
   let showDoneTasks = $state(false)
 
-  // Field edit modal (observatii, service_before, service_after)
+  // Campurile lungi (observatii, service_before, service_after) — acelasi
+  // `EditorLung` ca nota unui task.
   let showFieldEdit = $state(false)
-  let editField = $state(null)
   let editValue = $state('')
   let editLabel = $state('')
-  let editSaving = $state(false)
+  let editSalveaza = $state(null)
 
   // Echipamente + Atasamente scoase din navigatie (2026-07-27, pregatire v28):
   // parametrii de drive stau in wiki (skill drive-backup), backup-urile brute in
@@ -282,28 +281,11 @@
   function openNoteModal(t) {
     noteTask = t
     noteDraft = t.descriere || ''
-    noteOriginal = noteDraft
-    showNoteModal = true
-  }
-
-  /** Inchiderea COMITE, cu drum inapoi prin toast — aceeasi regula ca in /tasks.
-   *  Un click pe fundal nu are voie sa arunce ce ai scris. */
-  async function saveNote() {
-    if (noteSaving || !noteTask) return
-    const taskId = noteTask.id
-    const vechi = noteOriginal
-    if (noteDraft === vechi) { showNoteModal = false; return }
-    noteSaving = true
-    try {
-      await updateTask(taskId, { descriere: noteDraft })
-      showNoteModal = false
+    noteSalveaza = async (text) => {
+      await updateTask(t.id, { descriere: text })
       await reloadTasks()
-      toastUndo(vechi ? 'Notă actualizată' : 'Notă salvată', {
-        onUndo: async () => { await updateTask(taskId, { descriere: vechi }); await reloadTasks() },
-      })
-    } catch (e) {
-      toast(`Eroare: ${e.message}`, 'error')
-    } finally { noteSaving = false }
+    }
+    showNoteModal = true
   }
 
   async function handleDeleteProject() {
@@ -443,23 +425,23 @@
   // isOverdue/isToday vin din formatters.js — aceeasi axa si aceleasi
   // praguri ca dueRing(), o singura definitie pentru toate listele.
 
+  // Observatii tehnice, Constatari, Actiuni si rezultat: acelasi shell ca nota
+  // unui task (`EditorLung`), deci si aceeasi regula — inchiderea COMITE, cu drum
+  // inapoi prin toast. Inainte campurile de proiect aveau „Anulează" si „Salvează",
+  // dar X / fundal / Escape aruncau in tacere tot ce scrisesei; nota, in aceeasi
+  // pagina, salva. Acelasi gest, doua intelesuri opuse.
+  //
+  // Functia de scriere se construieste AICI, cu campul inchis in ea: „Anulează"
+  // din toast ruleaza pana la 4 secunde mai tarziu, cand `editField` poate fi deja
+  // alt camp.
   function openFieldEdit(field, label) {
-    editField = field
     editValue = project[field] || ''
     editLabel = label
+    editSalveaza = async (text) => {
+      await updateProject(params.id, { [field]: text })
+      project = { ...project, [field]: text }
+    }
     showFieldEdit = true
-  }
-
-  async function saveFieldEdit() {
-    editSaving = true
-    try {
-      await updateProject(params.id, { [editField]: editValue })
-      project = { ...project, [editField]: editValue }
-      showFieldEdit = false
-      toast('Salvat', 'success')
-    } catch (e) {
-      toast(`Eroare: ${e.message}`, 'error')
-    } finally { editSaving = false }
   }
 
   onMount(() => { load() })
@@ -955,19 +937,7 @@
 <ConfirmDialog bind:open={showDeleteConfirm} title="Șterge proiect" message={`Ștergi proiectul "${project?.nume}"? Toate taskurile asociate vor fi șterse definitiv.`} confirmLabel="Șterge definitiv" onconfirm={handleDeleteProject} />
 <ConfirmDialog bind:open={showTaskDelete} title="Șterge task" message="Ștergi acest task? Toate subtaskurile asociate vor fi șterse." confirmLabel="Șterge" onconfirm={doDeleteTask} />
 
-<Modal bind:open={showFieldEdit} title={editLabel} size="doc">
-  <div class="field-edit-modal">
-    {#if showFieldEdit}
-      <RichTextEditor bind:value={editValue} variant="doc" placeholder="Scrie aici..." onsave={saveFieldEdit} />
-    {/if}
-  </div>
-  {#snippet footer()}
-    <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showFieldEdit = false}>Anulează</Button>
-      <Button loading={editSaving} onclick={saveFieldEdit}>Salvează</Button>
-    </div>
-  {/snippet}
-</Modal>
+<EditorLung bind:open={showFieldEdit} titlu={editLabel} valoare={editValue} salveaza={editSalveaza} />
 
 <Modal bind:open={showTaskEditModal} title="Editează Task" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
@@ -988,23 +958,11 @@
   {/snippet}
 </Modal>
 
-<!-- Nota de task: acelasi contract ca in /tasks — titlul e taskul, sapte unelte,
-     inchiderea salveaza. Modalul de OBSERVAȚII de mai sus rămâne cum e: acolo scrii
-     un document, cu bara completa si cu „Salvează" explicit. -->
-<Modal bind:open={showNoteModal} onclose={saveNote} size="doc"
-       title={noteTask ? noteTask.titlu : 'Notiță'}>
-  <div class="field-edit-modal">
-    {#if showNoteModal}
-      <RichTextEditor bind:value={noteDraft} variant="doc" tools="nota"
-                      placeholder="Scrie notițe pentru acest task…" onsave={saveNote} />
-    {/if}
-  </div>
-  {#snippet footer()}
-    <div class="modal-actions">
-      <Button loading={noteSaving} onclick={saveNote}>Gata</Button>
-    </div>
-  {/snippet}
-</Modal>
+<!-- Nota de task: ACELASI shell ca observatiile de mai sus — se schimba doar
+     titlul (taskul) si bara de unelte (`nota` = sapte, nu treisprezece). -->
+<EditorLung bind:open={showNoteModal} titlu={noteTask ? noteTask.titlu : 'Notiță'}
+            valoare={noteDraft} tools="nota" salveaza={noteSalveaza}
+            placeholder="Scrie notițe pentru acest task…" />
 
 <style>
   .page { padding: var(--space-lg); }
@@ -1054,7 +1012,6 @@
   .field-body { font-size: var(--font-small); color: var(--text); line-height: var(--lh-relaxed); padding: var(--space-sm) var(--space-lg) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
   .field-empty { padding: var(--space-sm) var(--space-lg) var(--space-md); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
   .field-empty:hover { color: var(--accent); }
-  .field-edit-modal { display: flex; flex-direction: column; gap: var(--space-sm); }
 
   /* `.tab-count` a plecat — e `.count accent` din global.css. */
 

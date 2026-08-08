@@ -16,6 +16,11 @@
 
 export const PRAG_TELEFON = '(max-width: 768px)'
 export const PRAG_LARG = '(min-width: 940px)'
+// Deget, nu cursor. Perechea in JS a lui `@media (hover: none)` din CSS: unde
+// nu exista hover, nu exista nici „apropii cursorul si apare manerul", deci
+// gesturile de precizie (intinsul unei perioade) nu se ofera deloc — vezi
+// Calendar.
+export const PRAG_GROSIER = '(hover: none)'
 
 const are = (q) => typeof window !== 'undefined'
   && (window.matchMedia?.(q)?.matches ?? false)
@@ -23,6 +28,7 @@ const are = (q) => typeof window !== 'undefined'
 export const ecran = $state({
   telefon: are(PRAG_TELEFON),
   larg: are(PRAG_LARG),
+  grosier: are(PRAG_GROSIER),
 })
 
 if (typeof window !== 'undefined' && window.matchMedia) {
@@ -34,4 +40,5 @@ if (typeof window !== 'undefined' && window.matchMedia) {
   }
   lega(PRAG_TELEFON, 'telefon')
   lega(PRAG_LARG, 'larg')
+  lega(PRAG_GROSIER, 'grosier')
 }
