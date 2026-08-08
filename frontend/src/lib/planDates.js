@@ -54,10 +54,25 @@ export function isoWeek(d) {
 //   else      -> one column per calendar MONTH
 // Bars still position by exact day-fraction (spanRect), so granularity is purely
 // a header/gridline concern. Columns carry pct geometry (partial at the edges).
-export function buildColumns(start, days) {
+//
+// FIECARE COLOANA ISI POARTA GRUPA DE DEASUPRA (`grupa`).
+// Antetul are o singura structura — grosier peste fin: saptamani peste zile, luni
+// peste saptamani. Grupa nu se recalculeaza in pagina din data coloanei, fiindca
+// atunci ar exista doua locuri care raspund la „din ce saptamana e ziua asta" si
+// s-ar putea contrazice la granita (o saptamana care incalca doua luni). Coloana
+// spune singura in ce grupa intra; pagina doar aduna coloanele consecutive cu
+// aceeasi eticheta.
+//
+// `unitCerut` forteaza granularitatea fina. Planificatorul cere `week` si la 6L
+// (180 de zile), fiindca la orizontul lung antetul trebuie sa fie luni peste
+// SAPTAMANI, iar reperele se strang intr-un numar pe saptamana — o grila pe luni
+// n-ar avea de ce sa agate numarul. Ganttul de proiect nu cere nimic si ramane
+// pe scara veche: fereastra lui vine din date si poate tine un an, unde 52 de
+// coloane de saptamana ar insemna o pista de trei ecrane.
+export function buildColumns(start, days, unitCerut) {
   const s = parseISO(start)
   if (!s) return { unit: 'day', cols: [] }
-  const unit = days <= 31 ? 'day' : days <= 92 ? 'week' : 'month'
+  const unit = unitCerut || (days <= 31 ? 'day' : days <= 92 ? 'week' : 'month')
   const winStart = s
   const winEnd = new Date(s.getFullYear(), s.getMonth(), s.getDate() + days) // exclusive
   const pct = (dt) => clampNum((dt - winStart) / 86400000 / days, 0, 1) * 100
@@ -72,6 +87,7 @@ export function buildColumns(start, days) {
         main: String(d.getDate()), sub: WD[dow], iso: isoDate(d),
         isWeekend: dow === 0 || dow === 6,
         isMonthStart: d.getDate() === 1 || i === 0, month: MO[d.getMonth()],
+        grupa: 'S' + isoWeek(d),
       })
     }
   } else if (unit === 'week') {
@@ -81,8 +97,17 @@ export function buildColumns(start, days) {
       const next = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 7)
       const l = pct(cur < winStart ? winStart : cur)
       const r = pct(next > winEnd ? winEnd : next)
+      // Luna unei saptamani e cea a JOII ei, regula ISO — si singura care nu
+      // rupe grila: o saptamana care incalca doua luni trebuie sa cada intreaga
+      // sub una din ele, altfel granita de luna ar taia o coloana pe din doua.
+      const joi = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 3)
+      // `iso` ramane gol pe coloanele de saptamana: Ganttul de proiect il compara
+      // cu ziua de azi ca sa marcheze coloana curenta (`c.iso === today`), iar cu
+      // data de luni acolo, saptamana s-ar aprinde o zi din sapte. Coloana care
+      // CONTINE azi se afla din procente (`contineAzi`), nu dintr-o egalitate.
       cols.push({ key: 'w' + cur.getTime(), leftPct: l, widthPct: r - l,
-        main: `${cur.getDate()} ${MO[cur.getMonth()]}`, sub: 'S' + isoWeek(cur), iso: '' })
+        main: `${cur.getDate()} ${MO[cur.getMonth()]}`, sub: 'S' + isoWeek(cur), iso: '',
+        grupa: MO[joi.getMonth()] })
       cur = next
     }
   } else {
@@ -92,11 +117,37 @@ export function buildColumns(start, days) {
       const l = pct(cur < winStart ? winStart : cur)
       const r = pct(next > winEnd ? winEnd : next)
       cols.push({ key: 'm' + cur.getTime(), leftPct: l, widthPct: r - l,
-        main: MO_FULL[cur.getMonth()], sub: String(cur.getFullYear()), iso: '' })
+        main: MO_FULL[cur.getMonth()], sub: String(cur.getFullYear()), iso: '',
+        grupa: String(cur.getFullYear()) })
       cur = next
     }
   }
   return { unit, cols }
+}
+
+/** Coloanele fine, adunate in grupele lor (`col.grupa`), cu geometria luata din
+ *  ele — nu recalculata. Asa cade granita de grupa EXACT peste muchia unei
+ *  coloane: doua socoteli independente ale aceleiasi margini se despart la a
+ *  treia zecimala si se vede, fiindca linia groasa a antetului coboara prin
+ *  toate benzile de dedesubt.
+ *  `ultima` (pe grupa) si `granita` (pe coloana fina) marcheaza unde se ingroasa
+ *  separatorul; ultima coloana din pista nu are separator deloc. */
+export function grupeazaColoane(cols) {
+  const grupe = []
+  cols.forEach((c, i) => {
+    const ult = grupe[grupe.length - 1]
+    if (ult && ult.eticheta === c.grupa) {
+      ult.widthPct = c.leftPct + c.widthPct - ult.leftPct
+      ult.pana = i
+    } else {
+      grupe.push({ key: 'g' + c.key, eticheta: c.grupa, leftPct: c.leftPct, widthPct: c.widthPct, de: i, pana: i })
+    }
+  })
+  const granite = new Set(grupe.slice(0, -1).map(g => g.pana))
+  return {
+    grupe: grupe.map((g, i) => ({ ...g, ultima: i === grupe.length - 1 })),
+    granite,
+  }
 }
 
 // The day columns for the window [start, start+days).
@@ -119,6 +170,18 @@ export function buildDays(start, days) {
     })
   }
   return out
+}
+
+// Luna scurta si ziua unei date ISO, din ACELEASI tabele ca antetul de coloane —
+// subtitlul paginii spune luna pe care antetul n-o mai scrie, deci cele doua nu
+// au voie sa vina din doua surse (una cu „aug", alta cu „aug." de la `toLocale`).
+export function numeLuna(iso) {
+  const d = parseISO(iso)
+  return d ? MO[d.getMonth()] : ''
+}
+export function ziLuna(iso) {
+  const d = parseISO(iso)
+  return d ? String(d.getDate()) : ''
 }
 
 // Add n whole days to a 'YYYY-MM-DD' (local), returning 'YYYY-MM-DD'.
