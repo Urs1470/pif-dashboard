@@ -1072,6 +1072,61 @@ suprapun" era deja regula. Înlocuit cu `intinde()`, care decide după CINE e ve
   - Prins în aceeași trecere: `zileDeCand` din `notificari.js` returna `ZILE_VECHIME`, o
     constantă **inexistentă în modul** — pe un `created_at` necitibil arunca ReferenceError
     și tăcea toată reprogramarea, nu doar taskul cu data stricată.
+### Planificator: înălțimea vine din împachetare (turele 4–6, 2026-08-08)
+
+Ultima bucată a handoff-ului. Restul turei era deja construit din runde vechi (fereastra din
+azi, cele cinci orizonturi, banda de perioadă, coloana de restanțe); ce lipsea era **regula
+rândurilor**, **antetul de timp** și **orizontul lung**.
+
+- **`packRows` măsoară ce se desenează, nu ziua.** Reperul e acum chiar coloana termenului
+  (bară de o zi, 20px, contur = de făcut · plin = în lucru · tentă verde cu bifă = făcut), iar
+  titlul **iese din ea**, la dreapta. Deci întinderea unui reper e *bara + titlul*, nu una din
+  ele. Rândul: `14 + n×20 + (n−1)×4 + 6`, minim 48 → **1 reper 48 · 2 repere 64 · 3 repere 88**.
+  Stiva e centrată în chenarul perioadei, cu aceleași margini ca el (**7px**) — înainte banda
+  avea 5 și stiva 7, deci ultimul reper ieșea de sub chenarul pe care se sprijină.
+  - **Eticheta perioadei ține rândul întâi**, pe lățimea benzii (la orizont lung: bara + textul
+    de lângă ea). Fără asta, singurul lucru vizibil peste bandă era titlul ei tăiat de un reper.
+  - **Suprapunerea se testează cu TOT rândul, nu cu ultimul așezat.** Greedy-ul clasic „după
+    ultimul" presupune că totul intră în ordine; aici rândul întâi pornește ocupat pe mijloc,
+    deci un reper mai timpuriu decât banda are voie să încapă înaintea ei.
+  - **Numele de proiect a revenit pe UN rând.** Cu două rânduri, eticheta cerea 73px și
+    `min-height: 48` nu mai însemna nimic: o bandă cu un reper și una cu trei arătau la fel —
+    adică exact ce trebuia să spună înălțimea. Numele reale se despart de la primele caractere;
+    ce se repetă e *sufixul* de client („— Continental"), adică fix ce pierde o trunchiere la
+    dreapta.
+  - **Întoarcerea titlului (`flip`) e geometrică, nu un prag.** Era `left > 62`, ales pentru
+    altă geometrie: un reper la 64% cu titlu de 15% se măsura spre STÂNGA, peste bandă, și
+    cobora trei rânduri degeaba. Acum se întoarce doar când n-ar încăpea la dreapta —
+    aceeași regulă și pentru eticheta unei perioade, altfel una de la capătul ferestrei își
+    scria numele în afara pistei și creștea lățimea derulabilă cu 200px de gol.
+- **Antetul are o singură structură: grosier peste fin.** Rând de săptămâni (S32 · S33)
+  peste rândul de zile (inițială + cifră), 52px. Separator `--border` între coloane,
+  `--border-strong` la granița grupei, **coborând continuu prin toate benzile**. Grupele nu-și
+  recalculează muchiile: le adună din coloanele fine (`grupeazaColoane`), altfel două socoteli
+  ale aceleiași margini se despart la a treia zecimală — și se vede, fiindcă linia groasă
+  coboară prin bandă. **`.col-line` stă pe muchia din STÂNGA**, deci granița ei e `i-1`.
+  - **Luna nu stă în antet** — o spune subtitlul paginii („de azi, 14 zile · 8–21 aug").
+  - **„Azi" are aceeași formă ca orice coloană**, doar că scrie „azi" în loc de inițială, în
+    accent, pe tentă. **Fără inel** (rezervat zilei de sub cursor la tragere) și **fără linia
+    de 2px**: fereastra pornind mereu din azi, linia stătea la `left: 0`, lipită de cusătură,
+    unde citea ca bordură de tabel. Rămâne coloana tentată, cu două muchii de accent.
+- **La 3L/6L antetul urcă un nivel: luni peste SĂPTĂMÂNI.** De aceea `buildColumns` primește
+  `unitCerut` și Planificatorul cere `week` și la 6L — implicitul dădea luni, iar peste luni
+  n-are ce să mai urce. Ganttul de proiect nu cere nimic și rămâne pe scara veche: fereastra
+  lui vine din date și poate ține un an, unde 52 de coloane de săptămână ar fi trei ecrane.
+  - Perioadele rămân proporționale, dar devin **bare pe rândul întâi** cu eticheta **lângă**
+    ele și **lățime minimă 11px** — la 6L cinci zile înseamnă 25px, deci nu mai e text de pus
+    înăuntru, iar eticheta scoasă afară are nevoie de un rând pe care să stea.
+  - **Reperele se strâng într-un număr pe săptămână** (`.count accent`, aceeași pastilă ca
+    peste tot). Nu deschide nimic și nici n-ar avea unde: fereastra pornește mereu din azi,
+    deci nu există zi pe care să aterizezi. Spune în ce săptămână se îngrămădesc — adică unde
+    cobori la 14z. Indicația de sub pistă se schimbă odată cu ele: una care promite un gest
+    inexistent e mai rea decât niciuna.
+  - Pe telefon scara arată **grupele** (lunile) la 3L/6L: 27 de coloane de săptămână pe 350px
+    ar fi 13px fiecare, adică o dungă fără cifre.
+  - **`iso` rămâne gol pe coloanele de săptămână.** Ganttul de proiect îl compară cu ziua de
+    azi (`c.iso === today`); cu data de luni acolo, săptămâna s-ar aprinde o zi din șapte.
+    Coloana care CONȚINE azi se află din procente (`contineAzi`), nu dintr-o egalitate.
 
 ## Design system (frontend)
 

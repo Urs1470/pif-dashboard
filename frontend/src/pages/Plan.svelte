@@ -5,7 +5,7 @@
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
     setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
   } from '../stores/plan.svelte.js'
-  import { buildColumns, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
+  import { buildColumns, grupeazaColoane, numeLuna, ziLuna, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
   import { formatDate, formatDateShort, dueRing } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
@@ -25,7 +25,13 @@
   // sub al doilea, durata ar manca eticheta, deci o lasam doar in tooltip.
   const BANDA_TEXT_MIN = 6.5
   const BANDA_ZILE_MIN = 14
-  const HORIZONS = [{ d: 7, l: '7z' }, { d: 14, l: '14z' }, { d: 30, l: '30z' }, { d: 90, l: '3L' }, { d: 180, l: '6L' }]
+  // La orizont lung banda nu mai are latime de citit: o perioada de o zi are
+  // 0,55% din 180, adica 5px. Sub 11px n-o mai poti nici vedea, nici apuca.
+  const BANDA_MIN_PX = 11
+  const HORIZONS = [
+    { d: 7, l: '7z', cat: '7 zile' }, { d: 14, l: '14z', cat: '14 zile' }, { d: 30, l: '30z', cat: '30 zile' },
+    { d: 90, l: '3L', cat: '3 luni' }, { d: 180, l: '6L', cat: '6 luni' },
+  ]
 
   // Culoarea benzii vine din lib/culori.js, aceeasi sursa ca in Calendar. Inainte
   // fiecare pagina isi tinea paleta ei si ordinea difera pe ultimele trei pozitii,
@@ -50,8 +56,17 @@
   const esteRestant = (d) => !!d && !!plan.today && String(d).slice(0, 10) < plan.today
   const esteAzi = (d) => !!d && !!plan.today && String(d).slice(0, 10) === plan.today
 
-  const columns = $derived(buildColumns(plan.start, plan.days))
+  // ANTETUL DE TIMP ARE O SINGURA STRUCTURA: grosier peste fin.
+  // Pana la 30 de zile — saptamani peste zile. La 3L si 6L ziua ar avea 10px,
+  // respectiv 5: structura nu se rupe, urca un nivel — LUNI peste SAPTAMANI.
+  // De aceea fereastra lunga cere explicit `week`: implicitul lui `buildColumns`
+  // ar da luni la 6L, iar peste luni n-are ce sa mai urce, si numarul de taskuri
+  // pe saptamana n-ar avea coloana pe care sa stea.
+  const unitCerut = $derived(plan.days <= 31 ? 'day' : 'week')
+  const columns = $derived(buildColumns(plan.start, plan.days, unitCerut))
   const unit = $derived(columns.unit)
+  const lung = $derived(unit !== 'day')
+  const antet = $derived(grupeazaColoane(columns.cols))
   // Latimea REALA a pistei, masurata din antet (aceeasi coloana ca `.lane-track`).
   // Impachetarea are nevoie de ea ca sa stie cati pixeli inseamna o eticheta in
   // procente — vezi `intinderea`. Pana la prima masuratoare cade pe latimea minima,
@@ -59,61 +74,137 @@
   let pistaMasurata = $state(0)
   const todayIdx = $derived(plan.start && plan.today ? dayDiff(plan.start, plan.today) : null)
   const todayPct = $derived(todayIdx != null ? (todayIdx / plan.days) * 100 : null)
-  // Per-column min width by granularity, so a 6-month (monthly) view doesn't force
-  // a 180-cell scroll. Daily view stays readable down to ~34px/day.
-  const colMin = $derived(unit === 'day' ? (plan.days <= 7 ? 74 : plan.days <= 14 ? 48 : 34) : unit === 'week' ? 66 : 104)
+  // AZI E O COLOANA, NU O LINIE — deci se cauta coloana care il CONTINE, nu cea
+  // cu `iso === today`: la orizont lung coloana e o saptamana intreaga si n-are
+  // un `iso` de comparat. (Fereastra pornind din azi, raspunsul e mereu prima
+  // coloana; se calculeaza oricum, ca sa nu depinda de o presupunere.)
+  const contineAzi = (c) => todayPct != null && todayPct >= c.leftPct - 1e-9 && todayPct < c.leftPct + c.widthPct - 1e-9
+  const coloanaAzi = $derived(columns.cols.findIndex(contineAzi))
+  // Pe telefon scara arata unitatea care se poate CITI la 350px: zilele pana la
+  // 30z, iar la 3L/6L grupele — douazeci si sase de saptamani ar fi 13px fiecare,
+  // adica o dunga fara cifre. E acelasi rand de sus din antetul de pe desktop.
+  const mCols = $derived(lung
+    ? antet.grupe.map(g => ({ key: g.key, main: g.eticheta, sub: '', leftPct: g.leftPct, widthPct: g.widthPct, isWeekend: false }))
+    : columns.cols)
+  // Per-column min width by granularity, so a 6-month (weekly) view doesn't force
+  // a 26-cell scroll. Daily view stays readable down to ~34px/day; „S44" in mono
+  // la 12px are ~22px, deci si saptamana suporta 34.
+  const colMin = $derived(unit === 'day' ? (plan.days <= 7 ? 74 : plan.days <= 14 ? 48 : 34) : (plan.days > 92 ? 34 : 66))
   const pistaMin = $derived(colMin * columns.cols.length)
   const pistaPx = $derived(pistaMasurata || pistaMin)
   // lane-w(240) + coloana de restante (78, doar cand exista) + cols
   const contentMin = $derived(240 + (areRestante ? 78 : 0) + pistaMin)
-  const dayCompact = $derived(unit === 'day' && plan.days > 24)
+
+  // LUNA NU STA IN ANTET — o spune subtitlul paginii. In antet ar fi un al
+  // treilea nivel peste saptamani si zile, si tot ar trebui scrisa de doua ori
+  // cand fereastra trece dintr-o luna in alta.
+  const subtitlu = $derived.by(() => {
+    if (!plan.start) return ''
+    const h = HORIZONS.find(x => x.d === plan.days)
+    const ultima = addDays(plan.start, plan.days - 1)
+    const l1 = numeLuna(plan.start)
+    const l2 = numeLuna(ultima)
+    const interval = lung
+      ? (l1 === l2 ? l1 : `${l1}–${l2}`)
+      : (l1 === l2 ? `${ziLuna(plan.start)}–${ziLuna(ultima)} ${l2}`
+                   : `${ziLuna(plan.start)} ${l1} – ${ziLuna(ultima)} ${l2}`)
+    return `de azi, ${h ? h.cat : plan.days + ' zile'} · ${interval}`
+  })
 
   function isActive(s) { return s === 'in_progress' || s === 'in_lucru' }
   function isDone(s) { return s === 'done' || s === 'finalizat' }
   function effDue(t) { return t.data_scadenta || (isDone(t.status) ? t.data_finalizare : '') }
 
   // IMPACHETAREA MASOARA CE SE DESENEAZA, NU ZIUA.
-  // Din v33 un task e o ZI, deci cutia lui are latimea unei coloane — dar eticheta
-  // IESE din cutie (`overflow: visible`, `max-width: 220px`). La 14 zile, 220px
-  // inseamna patru zile. Vechea impachetare compara cutiile de o zi: cinci repere
-  // dintr-o saptamana treceau toate testul si isi scriau titlurile unul peste
-  // altul — impachetarea reusea, ecranul nu. Acum se masoara romb + eticheta.
-  const PIN_PX = 18            // romb 12 + gap 6
-  const ETICHETA_MAX = 220     // `.bar.single .bar-txt` max-width
-  // Latimea unui titlu, aproximata: Inter semibold la --font-small (13px) are
-  // ~0.52em pe caracter. Nu masuram in DOM — ar insemna un layout pass per task
+  // Din v33 un task e o ZI, deci bara lui are latimea unei coloane — dar titlul
+  // sta IN AFARA ei, la dreapta (`left: 100%`). La 14 zile, 220px de eticheta
+  // inseamna patru zile. O impachetare care compara cutiile de o zi lasa cinci
+  // repere dintr-o saptamana pe acelasi rand si le scrie titlurile unul peste
+  // altul — impachetarea reuseste, ecranul nu. Se masoara bara PLUS titlul.
+  const ETICHETA_MAX = 220     // `.bar-txt` max-width
+  const ETICHETA_PAD = 7       // golul dintre bara si titlul ei
+  // Latimea unui titlu, aproximata: Gabarito semibold la --font-small (13px) are
+  // ~0.45em pe caracter. Nu masuram in DOM — ar insemna un layout pass per task
   // la fiecare re-randare, iar o eroare de cateva procente doar imparte doua
   // etichete pe randuri diferite, ceea ce oricum voiai.
   function latimeTitlu(s) { return Math.min(ETICHETA_MAX, (s || '').length * 5.8) }
+  function inProcente(px, pistaPx) { return (px / Math.max(1, pistaPx)) * 100 }
 
-  /** Intinderea DESENATA a unui reper, in procente din pista. */
+  /** Intinderea DESENATA a unui reper, in procente din pista: bara plus titlul. */
   function intinderea(t, pistaPx) {
-    const px = PIN_PX + latimeTitlu(t.titlu)
-    const w = (px / Math.max(1, pistaPx)) * 100
-    // `.flip`: in ultima treime eticheta se intoarce spre STANGA reperului, deci
-    // si intinderea lui e in partea cealalta. Fara asta, doua repere lipite de
+    const et = inProcente(latimeTitlu(t.titlu) + ETICHETA_PAD, pistaPx)
+    // `.flip`: in ultima treime titlul se intoarce spre STANGA barei, deci si
+    // intinderea lui e in partea cealalta. Fara asta, doua repere lipite de
     // marginea din dreapta ar parea ca nu se ating si ar cadea pe acelasi rand.
-    if (t.rect.single && t.rect.left > 62) {
-      const la = t.rect.left + t.rect.width
-      return { de: la - w, la }
-    }
-    return { de: t.rect.left, la: t.rect.left + Math.max(t.rect.width, w) }
+    if (t.flip) return { de: t.rect.left - et, la: t.rect.left + t.rect.width }
+    return { de: t.rect.left, la: t.rect.left + t.rect.width + et }
   }
 
-  // Greedy interval packing: non-overlapping bars share a row (sorted by start).
-  function packRows(tasks, pistaPx) {
-    const withRect = tasks.filter(t => t.rect)
-      .map(t => ({ ...t, span: intinderea(t, pistaPx) }))
-      .sort((a, b) => a.span.de - b.span.de || a.span.la - b.span.la)
-    const rows = []
-    for (const t of withRect) {
-      let placed = false
-      for (const row of rows) {
-        if (t.span.de >= row[row.length - 1].span.la - 0.001) { row.push(t); placed = true; break }
+  const seSuprapun = (a, b) => a.de < b.la - 0.001 && b.de < a.la - 0.001
+
+  /** Primul rand liber, cu ce se deseneaza acolo — nu cu ziua.
+   *
+   *  `blocate` sunt spanurile pe care ETICHETA UNEI PERIOADE le tine pe randul
+   *  intai: ea se scrie pe latimea benzii (sau, la orizont lung, langa bara), deci
+   *  un reper care cade acolo trebuie sa coboare. Fara asta, singurul lucru care
+   *  se vedea peste banda era titlul taiat al perioadei.
+   *
+   *  Suprapunerea se testeaza cu TOT randul, nu doar cu ultimul asezat: randul
+   *  intai porneste deja ocupat pe mijloc, iar un reper mai timpuriu decat banda
+   *  are voie sa incapa inaintea ei. Cu testul „dupa ultimul" ar fi cazut mereu
+   *  pe randul doi, si banda ar fi impins in jos exact reperele pe care nu le
+   *  atinge. Sunt zeci de elemente pe rand, deci n^2 nu costa nimic. */
+  function packRows(repere, blocate) {
+    const randuri = []
+    const ocupat = []
+    if (blocate.length) { randuri.push([]); ocupat.push([...blocate]) }
+    for (const t of repere) {
+      let pus = false
+      for (let i = 0; i < randuri.length; i++) {
+        if (!ocupat[i].some(o => seSuprapun(o, t.span))) {
+          randuri[i].push(t); ocupat[i].push(t.span); pus = true; break
+        }
       }
-      if (!placed) rows.push([t])
+      if (!pus) { randuri.push([t]); ocupat.push([t.span]) }
     }
-    return rows
+    return randuri
+  }
+
+  // INALTIMEA RANDULUI URMEAZA CE A IESIT DIN IMPACHETARE.
+  // 14 sus (marginea benzii + aerul de deasupra primului reper), n randuri de
+  // 20 cu 4 intre ele, 6 jos. Minimul de 48 tine un rand de proiect apucabil si
+  // cand n-are decat o banda. 1 reper 48 · 2 repere 64 · 3 repere 88.
+  const H_REPER = 20
+  const H_GOL = 4
+  function geometrieBanda(n) {
+    const r = Math.max(1, n)
+    const stiva = r * H_REPER + (r - 1) * H_GOL
+    // `min-height`, nu `height`: coloana de nume poate cere mai mult (numele de
+    // proiect se scriu pe doua randuri, ca sa nu iasa noua trunchieri identice).
+    // De aceea randul intai nu se calculeaza din inaltimea ASTA, ci din stiva —
+    // ea e centrata in pista, deci `50% - stiva/2` ramane adevarat si cand banda
+    // creste sub eticheta.
+    return { inaltime: Math.max(48, 14 + stiva + 6), stiva }
+  }
+
+  /** La orizont lung reperele se strang intr-un numar pe saptamana.
+   *  Intrebarea nu mai e „ce am de facut joi", e „cand sunt plecat si cat" —
+   *  iar numarul spune in ce saptamana se ingramadesc, deci unde cobori la 14z. */
+  const PASTILA_PX = 28
+  function numerePeSaptamana(tasks, cols, pistaPx) {
+    const pe = new Map()
+    for (const t of tasks) {
+      if (!t.rect) continue
+      const i = cols.findIndex(c => t.rect.left >= c.leftPct - 1e-9 && t.rect.left < c.leftPct + c.widthPct - 1e-9)
+      if (i < 0) continue
+      pe.set(i, (pe.get(i) || 0) + 1)
+    }
+    return [...pe.entries()].sort((a, b) => a[0] - b[0]).map(([i, n]) => {
+      const c = cols[i]
+      const lat = Math.max(c.widthPct, inProcente(PASTILA_PX, pistaPx))
+      return { cheie: 'w' + c.key, numar: n, leftPct: c.leftPct, widthPct: c.widthPct,
+               eticheta: c.sub, span: { de: c.leftPct, la: c.leftPct + lat } }
+    })
   }
 
   // PREGATIREA NU SE INTRODUCE — E GOLUL.
@@ -206,17 +297,56 @@
         return rect ? { ...seg, rect } : null
       })
       .filter(Boolean)
-    const tasks = lane.tasks.map(t => ({
-      ...t,
-      rect: spanRect(effDue(t), effDue(t), plan.start, plan.days),
-    }))
+    const tasks = lane.tasks.map(t => {
+      const rect = spanRect(effDue(t), effDue(t), plan.start, plan.days)
+      // TITLUL SE INTOARCE DOAR CAND N-AR INCAPEA LA DREAPTA.
+      // Pragul era un procent fix (62), ales cand titlul avea alta geometrie —
+      // si intorcea repere care aveau loc berechet: un reper la 64% cu titlu de
+      // 15% se masura spre STANGA, peste banda de pregatire, si cadea trei
+      // randuri mai jos degeaba. Acum se compara chiar ce se deseneaza cu
+      // marginea pistei.
+      // `flip` se calculeaza O SINGURA DATA, aici: impachetarea si desenul
+      // trebuie sa fie de acord in ce parte iese titlul, altfel un reper se
+      // masoara spre dreapta si se scrie spre stanga.
+      const et = rect ? inProcente(latimeTitlu(t.titlu) + ETICHETA_PAD, pistaPx) : 0
+      return { ...t, rect, flip: !!rect && rect.left + rect.width + et > 100, cheie: t.tip + ':' + t.id }
+    })
     const impl = contopeste(lane.implementari)
       .map(im => ({ ...im, rect: spanRect(im.a, im.b, plan.start, plan.days) }))
       .filter(im => im.rect)
+      .map(im => {
+        const etichetaLunga = `${locLabel(im.locatie)}${im.eticheta ? ' · ' + im.eticheta : ''} · ${im.zile} ${im.zile === 1 ? 'zi' : 'zile'}`
+        // La orizont lung eticheta iese din bara, deci se intoarce dupa aceeasi
+        // regula ca titlul unui reper: numai cand n-ar incapea la dreapta. Fara
+        // ea, o perioada de la capatul ferestrei si-ar scrie numele in afara
+        // pistei si ar creste latimea derulabila cu 200px de gol.
+        const lat = Math.max(im.rect.width, inProcente(BANDA_MIN_PX, pistaPx))
+        const et = inProcente(latimeTitlu(etichetaLunga) + ETICHETA_PAD, pistaPx)
+        return { ...im, etichetaLunga, flip: lung && im.rect.left + lat + et > 100 }
+      })
+    // ETICHETA PERIOADEI TINE RANDUL INTAI.
+    // La orizont scurt se scrie in banda, deci ocupa exact latimea ei; la orizont
+    // lung banda e o bara de 20px si eticheta iese pe langa ea, deci ocupa bara
+    // (minim 11px) plus textul. In ambele cazuri e primul lucru de pe rand, si
+    // reperele care cad peste ea coboara.
+    const benzi = impl.map(im => {
+      if (!lung) return { de: im.rect.left, la: im.rect.left + im.rect.width }
+      const lat = Math.max(im.rect.width, inProcente(BANDA_MIN_PX, pistaPx))
+      const et = inProcente(latimeTitlu(im.etichetaLunga) + ETICHETA_PAD, pistaPx)
+      return im.flip
+        ? { de: im.rect.left - et, la: im.rect.left + lat }
+        : { de: im.rect.left, la: im.rect.left + lat + et }
+    })
+    const repere = lung
+      ? numerePeSaptamana(tasks, columns.cols, pistaPx)
+      : tasks.filter(t => t.rect)
+          .map(t => ({ ...t, span: intinderea(t, pistaPx) }))
+          .sort((a, b) => a.span.de - b.span.de || a.span.la - b.span.la)
+    const packed = packRows(repere, benzi)
     // Restantele vin de la server ca lista proprie: sunt INAINTEA ferestrei, deci
     // n-au geometrie si nu pot sta pe pista. Vezi `.rest-col`.
     const restante = lane.restante || []
-    return { ...lane, color, pregatire, tasks, packed: packRows(tasks, pistaPx), impl, restante }
+    return { ...lane, color, pregatire, tasks, packed, geo: geometrieBanda(packed.length), impl, restante }
   }))
   // Coloana „Restante" apare doar cand are ce arata. O coloana mereu goala e exact
   // felul de gol rezervat pe care il repara restul turei.
@@ -514,6 +644,9 @@
     <div class="page-title-row">
       <CalendarRange size={22} />
       <h1>Planificator</h1>
+      <!-- Ce fereastra vezi, scris o data. Antetul de timp n-o mai spune: acolo
+           luna ar fi un al treilea nivel peste saptamani si zile. -->
+      {#if subtitlu}<span class="page-sub">{subtitlu}</span>{/if}
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Orizont">
@@ -545,39 +678,56 @@
     <div class="chart cell-in" style="--celula: 0">
       <div class="chart-scroll">
         <div class="inner" style="min-width: {contentMin}px; --rest-w: {areRestante ? 78 : 0}px">
+          <!-- ANTETUL DE TIMP, O SINGURA STRUCTURA: grosier peste fin.
+               Randul de sus aduna coloanele de dedesubt (saptamani peste zile,
+               luni peste saptamani) si e centrat pe ELE, nu recalculat — vezi
+               `grupeazaColoane`. Separatorul e `--border` intre coloane si
+               `--border-strong` la granita grupei, iar linia groasa coboara
+               continuu prin toate benzile (aceleasi clase in `.overlay`).
+               AZI are aceeasi forma ca orice coloana, doar ca scrie „azi" in loc
+               de initiala, in accent, pe tenta. Fara inel: inelul e rezervat
+               zilei de sub cursor cand tragi. -->
           <div class="p-head">
             <div class="lane-label head">Proiect</div>
             {#if areRestante}<div class="rest-head">Restante</div>{/if}
-            <div class="days" bind:clientWidth={pistaMasurata}>
-              {#each columns.cols as c (c.key)}
-                <div class="col-head" class:we={unit === 'day' && plan.showWeekends && c.isWeekend} class:today={c.iso && c.iso === plan.today} class:compact={dayCompact}
-                     style="left:{c.leftPct}%; width:{c.widthPct}%">
-                  {#if !(dayCompact && unit === 'day')}<span class="ch-sub">{c.sub}</span>{/if}
-                  <span class="ch-main">{c.main}</span>
-                </div>
-              {/each}
-              <!-- AZI, SPUS O DATA SI IN AMBER. Coloana amber din antet o avea deja;
-                   linia era ROSIE, adica exact cerneala cu care pagina marcheaza
-                   restantul — iar fereastra pornind mereu din azi, linia statea la
-                   `left: 0`, lipita de cusatura, unde citea ca bordura de tabel.
-                   Eticheta o desparte de bordura; rosul iese de pe grila si ramane
-                   doar pentru intarziat, care are acum unde sta (coloana din stanga). -->
-              {#if todayPct != null && todayPct >= 0 && todayPct < 100}
-                <span class="azi-et" style="left:{todayPct}%">azi</span>
-              {/if}
+            <div class="days" class:lung bind:clientWidth={pistaMasurata}>
+              <div class="hd-grupe">
+                {#each antet.grupe as g (g.key)}
+                  <span class="hd-g" class:ultima={g.ultima} style="left:{g.leftPct}%; width:{g.widthPct}%">{g.eticheta}</span>
+                {/each}
+              </div>
+              <div class="hd-fine">
+                {#each columns.cols as c, i (c.key)}
+                  <div class="col-head" class:we={unit === 'day' && plan.showWeekends && c.isWeekend}
+                       class:today={i === coloanaAzi} class:granita={antet.granite.has(i)}
+                       class:ultima={i === columns.cols.length - 1}
+                       style="left:{c.leftPct}%; width:{c.widthPct}%">
+                    <span class="ch-sub">{i === coloanaAzi ? 'azi' : c.sub}</span>
+                    {#if !lung}<span class="ch-main">{c.main}</span>{/if}
+                  </div>
+                {/each}
+              </div>
             </div>
           </div>
 
           <div class="p-body" class:drop-active={!!dragTask} ondragover={onBodyDragOver} ondrop={onBodyDrop} role="presentation">
+            <!-- Linia de granita a antetului COBOARA prin toate benzile: fara
+                 ea, randul de saptamani ar fi o eticheta care nu imparte nimic.
+                 De aceea muchia se ia din acelasi `antet.granite` — o singura
+                 socoteala pentru amandoua. Linia de „azi" a plecat: coloana
+                 tentata o spune deja, iar fereastra pornind mereu din azi, linia
+                 statea lipita de cusatura si citea ca bordura de tabel. -->
             <div class="overlay">
-              {#each columns.cols as c (c.key)}
-                <div class="col-line" style="left:{c.leftPct}%"></div>
+              {#each columns.cols as c, i (c.key)}
+                <!-- `.col-line` sta pe muchia din STANGA coloanei, iar `granite`
+                     tine indicele coloanei care INCHIDE o grupa (acolo se
+                     ingroasa `border-right` in antet). Deci linia lui `i` e
+                     granita cand `i-1` a inchis grupa — altfel linia groasa ar
+                     cobori cu o coloana mai la stanga decat cea din antet. -->
+                <div class="col-line" class:granita={antet.granite.has(i - 1)} style="left:{c.leftPct}%"></div>
                 {#if unit === 'day' && plan.showWeekends && c.isWeekend}<div class="col-we" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
-                {#if c.iso && c.iso === plan.today}<div class="col-today" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
+                {#if i === coloanaAzi}<div class="col-today" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
               {/each}
-              {#if todayPct != null && todayPct >= 0 && todayPct < 100}
-                <div class="today-line" style="left:{todayPct}%"></div>
-              {/if}
               {#if dropDay}
                 <div class="drop-line" style="left:{dropDay.pct}%"></div>
                 <div class="drop-tag" style="left:{dropDay.pct}%">{formatDateShort(dropDay.iso)}</div>
@@ -590,7 +740,9 @@
                  pagina, si s-ar mosteni peste orice `.cell-in` de dedesubt) si
                  nici `--i` (acela inseamna deja „randul benzii" in Calendar). -->
             {#each views as lane, li (lane.tip + ':' + lane.id)}
-              <div class="lane" style="--lane:{lane.color}; --rand:{li}" class:print-hide={exportSel.size > 0 && !exportSel.has(lane.id)}>
+              <!-- Inaltimea vine din impachetare, nu invers: banda are exact
+                   atatea randuri cate au iesit (vezi `geometrieBanda`). -->
+              <div class="lane" style="--lane:{lane.color}; --rand:{li}; --h-lane:{lane.geo.inaltime}px; --h-stiva:{lane.geo.stiva}px" class:print-hide={exportSel.size > 0 && !exportSel.has(lane.id)}>
                 <div class="lane-label">
                   {#if lane.tip === 'proiect'}
                     <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={lane.nume}>
@@ -638,50 +790,76 @@
                        benzi paveaza acelasi rand: gol = pregatire, plin = pe teren.
                        Taskurile se deseneaza PESTE. Perioadele se EDITEAZA in
                        Calendar, nu aici — clickul te duce la ziua ei. -->
+                  <!-- LA ORIZONT LUNG PERIOADA E O BARA PE RANDUL INTAI.
+                       La 6L cinci zile inseamna 25px: eticheta nu mai incape in
+                       banda, deci iese la dreapta ei — ca titlul unui reper — iar
+                       bara primeste latime minima de 11px, ca o perioada de o zi
+                       sa ramana vizibila si apucabila. Nu e o exceptie de stil:
+                       eticheta scoasa afara are nevoie de un RAND pe care sa stea,
+                       si acela e primul (vezi `benzi` din `views`). -->
                   {#each lane.impl as im (im.id)}
                     <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
-                         class:pregatire={im.faza === 'pregatire'} class:doar-ico={im.rect.width < BANDA_TEXT_MIN}
+                         class:pregatire={im.faza === 'pregatire'} class:doar-ico={!lung && im.rect.width < BANDA_TEXT_MIN}
+                         class:lung class:flip={im.flip}
                          class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
                          onclick={() => navigate(`/calendar?zi=${im.a}`)}
                          title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {im.faza === 'pregatire' ? 'pregătire' : 'implementare'} · {formatDateShort(im.a)} → {formatDateShort(im.b)} · {im.zile} {im.zile === 1 ? 'zi' : 'zile'}{im.parti.length > 1 ? ` · ${im.parti.length} perioade lipite` : ''} · click pentru a o vedea în Calendar">
                       {#if im.locatie === 'sediu'}<Building2 size={12} class="ib-ico" />{:else}<MapPin size={12} class="ib-ico" />{/if}
-                      {#if im.rect.width >= BANDA_TEXT_MIN}
-                        <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
+                      {#if lung}
+                        <span class="ib-out">{im.etichetaLunga}</span>
+                      {:else}
+                        {#if im.rect.width >= BANDA_TEXT_MIN}
+                          <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
+                        {/if}
+                        {#if im.rect.width >= BANDA_ZILE_MIN}<span class="ib-zile">{im.zile} {im.zile === 1 ? 'zi' : 'zile'}</span>{/if}
                       {/if}
-                      {#if im.rect.width >= BANDA_ZILE_MIN}<span class="ib-zile">{im.zile} {im.zile === 1 ? 'zi' : 'zile'}</span>{/if}
                     </button>
                   {/each}
                   <div class="rows">
                     {#each lane.packed as row, ri (ri)}
                       <div class="t-row">
-                        {#each row as t (t.tip + ':' + t.id)}
-                          <!-- FORMA POARTA STAREA: gol = de facut, plin = in lucru,
-                               bifa = facut. Erau trei nuante ale ACELEIASI culori de
-                               proiect (55% / 100% / 30%) — o scara pe care n-o poti
-                               citi fara sa ai toate trei alaturi, si care pe telefon
-                               spunea altceva (verde pentru „facut"). Gol / plin /
-                               bifa e aceeasi gramatica cu cercul gol si `CheckCircle2`
-                               din liste, si se citeste la 12px.
-                               `urgent` a plecat de aici: fereastra porneste din azi,
-                               deci un task de pe pista nu POATE fi restant. Rosul e
-                               acum doar in coloana din stanga, unde chiar are pe cine
-                               marca. -->
-                          <div
-                            class="bar"
-                            class:active={isActive(t.status)}
-                            class:done={isDone(t.status)}
-                            class:flip={t.rect.single && t.rect.left > 62}
-                            class:draggable={!isDone(t.status)}
-                            style="left:{t.rect.left}%; width:{t.rect.width}%"
-                            role="button"
-                            tabindex="0"
-                            onpointerdown={(e) => startDrag(e, t, 'move', lane.nume)}
-                            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPopover(e.currentTarget, t, lane.nume) } }}
-                            title="{t.titlu}{t.data_scadenta ? ' · termen ' + formatDateShort(t.data_scadenta) : ''}"
-                          >
-                            <span class="pin-dot">{#if isDone(t.status)}<Check size={10} strokeWidth={3.2} />{/if}</span>
-                            <span class="bar-txt">{t.titlu}{#if t.recurenta}<Repeat size={11} class="bar-rep" />{/if}</span>
-                          </div>
+                        {#each row as it (it.cheie)}
+                          {#if it.numar != null}
+                            <!-- Numarul nu e statistica si nu deschide nimic: la
+                                 orizontul asta nu exista o zi pe care sa aterizezi
+                                 (fereastra porneste mereu din azi). Spune doar in ce
+                                 saptamana se ingramadesc, ca sa sti unde cobori la 14z. -->
+                            <span class="wk" style="left:{it.leftPct}%; width:{it.widthPct}%"
+                                  title="{it.numar} {it.numar === 1 ? 'task' : 'taskuri'} în {it.eticheta}">
+                              <span class="count accent">{it.numar}</span>
+                            </span>
+                          {:else}
+                            <!-- FORMA POARTA STAREA: contur = de facut, plin = in lucru,
+                                 bifa = facut. Erau trei nuante ale ACELEIASI culori de
+                                 proiect (55% / 100% / 30%) — o scara pe care n-o poti
+                                 citi fara sa ai toate trei alaturi, si care pe telefon
+                                 spunea altceva. Contur / plin / bifa e aceeasi gramatica
+                                 cu cercul gol si `CheckCircle2` din liste.
+                                 `urgent` a plecat de aici: fereastra porneste din azi,
+                                 deci un task de pe pista nu POATE fi restant. Rosul e
+                                 acum doar in coloana din stanga, unde chiar are pe cine
+                                 marca.
+                                 BARA E ZIUA, TITLUL IESE DIN EA. Reperul nu mai e un
+                                 romb langa un text: e chiar coloana termenului, la
+                                 inaltimea randului, iar titlul incepe unde se termina
+                                 ziua. De aceea impachetarea masoara suma lor. -->
+                            <div
+                              class="bar"
+                              class:active={isActive(it.status)}
+                              class:done={isDone(it.status)}
+                              class:flip={it.flip}
+                              class:draggable={!isDone(it.status)}
+                              style="left:{it.rect.left}%; width:{it.rect.width}%"
+                              role="button"
+                              tabindex="0"
+                              onpointerdown={(e) => startDrag(e, it, 'move', lane.nume)}
+                              onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPopover(e.currentTarget, it, lane.nume) } }}
+                              title="{it.titlu}{it.data_scadenta ? ' · termen ' + formatDateShort(it.data_scadenta) : ''}"
+                            >
+                              <span class="bar-box">{#if isDone(it.status)}<Check size={12} strokeWidth={3} />{/if}</span>
+                              <span class="bar-txt">{it.titlu}{#if it.recurenta}<Repeat size={11} class="bar-rep" />{/if}</span>
+                            </div>
+                          {/if}
                         {/each}
                       </div>
                     {/each}
@@ -695,7 +873,14 @@
       <!-- „trage marginile ca să întinzi intervalul" a plecat: din v33 un task are
            O SINGURA data, deci nu are margini de tras — instructiunea promitea un
            gest care nu mai exista. Ion, intrebat: termenul ramane pur. -->
-      <p class="hint">Trage un reper ca să-i muți termenul · click pentru acțiuni · benzile de perioadă se editează în Calendar</p>
+      <!-- La 3L/6L nu mai exista repere de tras: taskurile se strang intr-un
+           numar pe saptamana. O indicatie care promite un gest inexistent e mai
+           rea decat niciuna — te pune sa-l cauti. -->
+      {#if lung}
+        <p class="hint">Numărul spune câte taskuri cad în acea săptămână · coboară la 14z ca să le vezi pe zile</p>
+      {:else}
+        <p class="hint">Trage un reper ca să-i muți termenul · click pentru acțiuni · benzile de perioadă se editează în Calendar</p>
+      {/if}
     </div>
 
     <!-- ===== Backlog (taskuri fără termen) ===== -->
@@ -749,9 +934,9 @@
            luni `sub` e „S32" / anul, care n-ar spune ce zi e. -->
       <div class="m-scale" class:cu-wd={unit === 'day'}>
         <div class="ms-cols">
-          {#each columns.cols as c (c.key)}
+          {#each mCols as c (c.key)}
             <span class="ms-c" class:we={unit === 'day' && plan.showWeekends && c.isWeekend}
-                  class:today={c.iso && c.iso === plan.today}
+                  class:today={contineAzi(c)}
                   style="left:{c.leftPct}%; width:{c.widthPct}%">
               <span class="ms-n">{c.main}</span>
               {#if unit === 'day'}<span class="ms-wd">{c.sub}</span>{/if}
@@ -968,8 +1153,13 @@
 <style>
   .page { padding-bottom: 96px; }
   .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
-  .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
+  /* Subtitlul sta pe LINIA DE BAZA a titlului, nu pe mijlocul lui: e continuarea
+     propozitiei „Planificator", nu o eticheta pusa alaturi. Iconita se recentreaza
+     singura — baza unui svg e muchia lui de jos, deci s-ar fi infipt in text. */
+  .page-title-row { display: flex; align-items: baseline; gap: var(--space-sm); color: var(--text); }
+  .page-title-row :global(svg) { align-self: center; }
   .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); font-family: var(--font-heading); letter-spacing: var(--tracking-tight); }
+  .page-sub { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); white-space: nowrap; }
   .controls { display: flex; align-items: center; gap: var(--space-sm); }
   .seg { display: inline-flex; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 2px; }
   .seg-btn { padding: 5px 11px; border-radius: var(--radius-sm); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
@@ -984,56 +1174,99 @@
   .skel { display: flex; flex-direction: column; gap: var(--space-sm); }
 
   /* ===== chart shell ===== */
-  .chart { --lane-w: 240px; --rest-w: 0px; --day-min: 48px; --row-h: 28px;
+  /* `--row-h` e inaltimea unui RAND DE REPERE, si e chiar 20-ul din formula de
+     inaltime a benzii (`geometrieBanda`). Se schimba impreuna. */
+  .chart { --lane-w: 240px; --rest-w: 0px; --day-min: 48px; --row-h: 20px;
     background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
   .chart-scroll { overflow-x: auto; }
   .inner { position: relative; }
 
-  .p-head { display: flex; border-bottom: 1px solid var(--border-strong); background: var(--bg-overlay); position: sticky; top: 0; z-index: 3; }
+  /* ===== ANTETUL DE TIMP: GROSIER PESTE FIN =====
+     Doua randuri intr-o singura structura, 52px. Cele trei celule din capul
+     tabelului (Proiect · Restante · pista) se aliniaza LA BAZA, ca eticheta lor
+     sa stea pe aceeasi linie cu randul de zile, nu la mijlocul a doua randuri. */
+  .p-head { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-overlay); position: sticky; top: 0; z-index: 3; }
   .lane-label { width: var(--lane-w); flex-shrink: 0; box-sizing: border-box; }
-  .lane-label.head { padding: 8px 12px; font-size: var(--font-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: center; }
+  .lane-label.head { padding: 0 14px 8px; font-size: var(--font-label); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: flex-end; }
   /* Coloana restantelor: lipita la stanga pistei, latime fixa, nu costa zile.
      Antetul ei e singurul loc din grafic unde a mai ramas rosu. */
   .rest-head { width: var(--rest-w); flex: none; box-sizing: border-box;
-    display: flex; align-items: center; justify-content: center;
-    padding: 8px 6px; border-left: 1px solid var(--border);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding: 0 6px 8px; border-left: 1px solid var(--border);
     background: var(--danger-subtle); color: var(--danger);
     font-family: var(--font-mono); font-size: var(--font-label);
     letter-spacing: var(--tracking-label); text-transform: uppercase; }
-  .days { flex: 1; position: relative; min-width: 0; height: 42px; }
-  .azi-et { position: absolute; top: 2px; margin-left: 3px; font-family: var(--font-mono);
-    font-size: var(--font-label); letter-spacing: var(--tracking-label);
-    text-transform: uppercase; color: var(--accent); pointer-events: none; }
-  .col-head { position: absolute; top: 0; bottom: 0; padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
-  .col-head.compact { padding: 5px 1px; }
-/* WEEKENDUL E O UMBRA, NU O CULOARE.
+  .days { flex: 1; position: relative; min-width: 0; height: 52px; display: flex; flex-direction: column; }
+  /* Randul grosier. Nu-si calculeaza singur muchiile: le mosteneste din coloanele
+     fine (vezi `grupeazaColoane`), altfel doua socoteli ale aceleiasi margini se
+     despart la a treia zecimala — si se vede, fiindca linia groasa coboara prin
+     toate benzile de dedesubt. */
+  .hd-grupe { position: relative; height: 20px; flex: none; }
+  .hd-g { position: absolute; top: 0; bottom: 0; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
+    border-right: 1px solid var(--border-strong);
+    font-size: var(--font-label); font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label); text-transform: uppercase;
+    color: var(--text-dim); white-space: nowrap; overflow: hidden; }
+  .hd-g.ultima { border-right: 0; }
+  /* Codurile de saptamana sunt cifre care se compara pe verticala, deci mono;
+     numele de luna e un cuvant care s-ar putea traduce, deci nu. */
+  .days:not(.lung) .hd-g { font-family: var(--font-mono); }
+  .hd-fine { position: relative; flex: 1; min-height: 0; }
+  .col-head { position: absolute; top: 0; bottom: 0; box-sizing: border-box; padding: 0 2px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+    border-right: 1px solid var(--border); overflow: hidden; }
+  .col-head.granita { border-right-color: var(--border-strong); }
+  .col-head.ultima { border-right: 0; }
+/* WEEKENDUL E O SUPRAFATA, NU O CULOARE.
      Tinta era `--purple` — adica movul decorativ, care a iesit din sistem si e
      acum un alias catre accent. Cu el, sambata si duminica ar fi purtat exact
      cerneala pe care grila o foloseste ca sa spuna „aici e ceva planificat":
      doua zile libere colorate ca o zi de lucru. Weekendul nu e o stare, e o
-     absenta — deci se deseneaza cu textul paginii, la procent mic. */
-  .col-head.we { background: color-mix(in srgb, var(--text) 5%, transparent); }
+     absenta — deci se deseneaza cu suprafata a doua, nu cu o culoare. */
+  .col-head.we { background: var(--bg-elevated); }
+  /* AZI ARE ACEEASI FORMA CA ORICE COLOANA — scrie doar „azi" in loc de
+     initiala, in accent, pe tenta. Fara inel: inelul e rezervat zilei de sub
+     cursor cand tragi, si daca l-ar purta si azi n-ai mai sti care e care. */
   .col-head.today { background: var(--accent-subtle); }
-  .ch-sub { font-size: var(--font-label); color: var(--text-faint); text-transform: uppercase; letter-spacing: var(--tracking-label); white-space: nowrap; }
-  .col-head.today .ch-sub { color: var(--accent); }
-  .ch-main { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .col-head.compact .ch-main { font-size: var(--font-small); }
-  .col-head.today .ch-main { color: var(--accent); }
+  .ch-sub { font-size: var(--font-label); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-label); white-space: nowrap; }
+  .days.lung .ch-sub { font-family: var(--font-mono); }
+  .col-head.today .ch-sub { color: var(--accent-on-subtle); font-weight: var(--fw-semibold); }
+  .ch-main { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .col-head.we .ch-main { color: var(--text-dim); }
+  .col-head.today .ch-main { color: var(--accent-on-subtle); font-weight: var(--fw-semibold); }
 
   .p-body { position: relative; }
   .overlay { position: absolute; top: 0; bottom: 0; left: calc(var(--lane-w) + var(--rest-w)); right: 0; pointer-events: none; z-index: 0; }
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
-  .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 4%, transparent); }
-  .col-today { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 7%, transparent); }
-  /* Amber, nu danger: rosul e cerneala pentru „intarziat" peste toata aplicatia
-     (`.chip.due.restant`, `.mrow.urgent`, `.rest-pin`), iar linia asta spune
-     „acum". Doua intelesuri pe aceeasi culoare, pe acelasi ecran. */
-  .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: 0.85; }
+  /* Granita de grupa coboara din antet prin toate benzile — altfel randul de
+     saptamani ar fi o eticheta care nu imparte nimic. */
+  .col-line.granita { background: var(--border-strong); }
+  .col-we { position: absolute; top: 0; bottom: 0; background: var(--bg-elevated); }
+  /* AZI E O COLOANA, NU O LINIE: aceeasi forma ca in antet, un nivel mai jos —
+     tenta, cu doua muchii de accent. Linia de 2px a plecat fiindca fereastra
+     porneste mereu din azi, deci statea la `left: 0`, lipita de cusatura, unde
+     citea ca bordura de tabel. */
+  .col-today { position: absolute; top: 0; bottom: 0;
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+    box-shadow: inset 1px 0 0 var(--accent-ring), inset -1px 0 0 var(--accent-ring); }
 
-  .lane { display: flex; border-bottom: 1px solid var(--border); min-height: calc(var(--row-h) + 14px); }
+  /* Inaltimea vine din impachetare (`--h-lane`, pusa din markup): 14 sus,
+     n randuri de 20 cu 4 intre ele, 6 jos, minim 48. */
+  .lane { display: flex; border-bottom: 1px solid var(--border); min-height: var(--h-lane, 48px); }
   .lane:last-child { border-bottom: 0; }
-  .lane-label { padding: 8px 10px; display: flex; align-items: center; gap: 6px; border-right: 1px solid var(--border); background: var(--bg-surface); z-index: 1; }
-  .lane-name { display: flex; align-items: flex-start; gap: 7px; min-width: 0; color: var(--text); cursor: pointer; background: none; border: none; text-align: left; font-size: var(--font-small); font-weight: var(--fw-medium); }
+  /* COLOANA DE NUME TREBUIE SA INCAPA IN RANDUL FORMULEI.
+     Numele statea pe DOUA randuri (fix pentru „toate 9 erau taiate"), plus randul
+     contorului: 73px. Cu `min-height: 48px` pe banda, inaltimea nu mai venea din
+     impachetare, ci din eticheta — deci o banda cu un reper si una cu trei aratau
+     la fel, si tocmai asta trebuia sa spuna inaltimea.
+     Numele revine pe UN rand, ca in fisierul de design, si asta nu reintoarce
+     problema veche: numele reale se despart de la primele caractere („Migrare
+     CU240S…", „Contrapanou A12…", „Parametrizare 3WA…"), iar partea care se
+     repeta e SUFIXUL de client („— Continental"), adica exact ce pierde o
+     trunchiere la dreapta. */
+  .lane-label { padding: 0 12px; display: flex; align-items: center; gap: 8px; border-right: 1px solid var(--border); background: var(--bg-surface); z-index: 1; }
+  .lane-name { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--text); cursor: pointer; background: none; border: none; text-align: left; font-size: var(--font-body); font-weight: var(--fw-medium); }
   .lane-name.static { cursor: default; }
   .lane-name:not(.static):hover .lane-txt { color: var(--accent); }
   .lane-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
@@ -1041,11 +1274,8 @@
      restante e singurul lucru colorat: e cel care cere ceva. */
   .lane-contor { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-faint); font-variant-numeric: tabular-nums; }
   .lc-rest { color: var(--danger); }
-  .lane-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex-shrink: 0; margin-top: 4px; box-shadow: 0 0 6px color-mix(in srgb, var(--lane) 55%, transparent); }
-  /* Numele de proiect sunt lungi si se termina des cu acelasi client
-     („… — Continental"), deci trunchierea pe un rand le facea identice: toate
-     9 erau taiate. Doua randuri arata partea care le distinge. */
-  .lane-txt { min-width: 0; line-height: var(--lh-snug); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .lane-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex-shrink: 0; box-shadow: 0 0 6px color-mix(in srgb, var(--lane) 55%, transparent); }
+  .lane-txt { min-width: 0; line-height: var(--lh-snug); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tip-chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--accent-subtle); color: var(--accent); flex-shrink: 0; }
   .tip-chip.svc { background: var(--accent-subtle); color: var(--accent-deep); }
 
@@ -1065,7 +1295,14 @@
   .rest-pin:active { transform: rotate(45deg) scale(var(--press-scale-sm)); }
   .rest-gol { font-size: var(--font-small); color: var(--text-faint); }
 
-  .lane-track { flex: 1; position: relative; min-width: 0; padding: 7px 0; }
+  /* STIVA DE REPERE E CENTRATA IN CHENARUL PERIOADEI, CU ACELEASI MARGINI.
+     Benzile stau la 7px sus si jos; daca stiva ar avea alt inset, ultimul reper
+     ar iesi sub chenarul benzii pe care se sprijina — si atunci banda n-ar mai
+     citi ca fundalul randului, ci ca inca un obiect care se intampla sa fie pe
+     acolo. `justify-content: center` distribuie surplusul de 6px al formulei
+     egal sus si jos. */
+  .lane-track { flex: 1; position: relative; min-width: 0; padding: 7px 0;
+    display: flex; flex-direction: column; justify-content: center; }
 
   /* ===== SOSIREA PISTEI (tura 13e) =====
      CE ARE INCEPUT, CRESTE DIN EL. CE DOAR ACOPERA UN INTERVAL, APARE.
@@ -1105,7 +1342,7 @@
   /* Anularea la reduced-motion sta LA SFARSITUL foii, dupa `.bar` — media query-ul
      nu adauga specificitate, deci ar fi pierdut aici in fata regulii de mai jos. */
 
-  .band { position: absolute; top: 5px; bottom: 5px; border-radius: 8px;
+  .band { position: absolute; top: 7px; bottom: 7px; border-radius: var(--radius-xs);
     background: color-mix(in oklab, var(--accent) 10%, transparent);
     border: 1px solid color-mix(in oklab, var(--accent) 26%, transparent); z-index: 0;
     animation: pregatireIn var(--dur-base) var(--ease) backwards;
@@ -1142,8 +1379,12 @@
      Muchia de intrare din stanga a plecat odata cu toate celelalte dungi de 3px:
      blocul e DEJA plin cu `var(--il)`, deci era aceeasi culoare peste ea insasi.
      Inceputul se citeste din raza si din marginea blocului, ca in Calendar. */
-  .impl-band { position: absolute; top: 5px; bottom: 5px; display: flex; align-items: center; gap: 5px;
-    padding: 0 9px 0 12px; border-radius: 9px; overflow: hidden; z-index: 0; text-align: left; color: var(--on-color);
+  /* Eticheta sta LA CAPUL benzii, nu la mijlocul ei: ea ocupa randul intai al
+     impachetarii (vezi `benzi` din `views`), deci trebuie sa fie chiar acolo
+     unde impachetarea o crede — altfel reperele coboara pentru un text care
+     pluteste cu doua randuri mai jos. */
+  .impl-band { position: absolute; top: 7px; bottom: 7px; display: flex; align-items: flex-start; gap: 5px;
+    padding: 3px 9px 0 11px; border-radius: var(--radius-sm); overflow: hidden; z-index: 0; text-align: left; color: var(--on-color);
     border: none;
     background: linear-gradient(180deg,
       color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
@@ -1173,7 +1414,24 @@
   .impl-band:hover { filter: brightness(1.08);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent),
                 0 0 0 2px color-mix(in srgb, var(--bg-panel) 60%, transparent), 0 3px 10px rgba(0,0,0,0.34); }
-  .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; }
+  .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; margin-top: 2px; }
+  /* LA ORIZONT LUNG, O BARA PE RANDUL INTAI.
+     `50% - stiva/2` e chiar coordonata randului intai: stiva de repere e
+     centrata in pista, iar pista are acelasi inset sus si jos (7px). Se
+     calculeaza asa, si nu din inaltimea benzii, fiindca banda poate creste sub
+     coloana de nume — vezi `geometrieBanda`. */
+  .impl-band.lung { top: calc(50% - var(--h-stiva, 20px) / 2); bottom: auto; height: var(--row-h);
+    min-width: 11px; padding: 0; gap: 0; align-items: center; justify-content: center;
+    border-radius: var(--radius-xs); overflow: visible; }
+  .impl-band.lung :global(.ib-ico) { margin-top: 0; }
+  /* Eticheta iese la dreapta barei, ca titlul unui reper — la 6L nici cinci zile
+     n-au latime de text. Ea E ce tine randul intai in impachetare, deci se
+     masoara si acolo (`benzi`). */
+  .ib-out { position: absolute; left: 100%; top: 0; height: var(--row-h);
+    display: flex; align-items: center; padding-left: 7px; white-space: nowrap;
+    font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary);
+    text-shadow: 0 0 3px var(--bg-surface), 0 0 6px var(--bg-surface); }
+  .impl-band.flip .ib-out { left: auto; right: 100%; padding-left: 0; padding-right: 7px; }
   /* O zi, la 30 de zile fereastra, are 38px: nu incape nici „Si…". Ramane icoana,
      centrata, si tot tooltipul. */
   .impl-band.doar-ico { padding: 0 2px; justify-content: center; }
@@ -1225,50 +1483,60 @@
      left` = ziua lui: eticheta se desface spre dreapta, de la reper incolo,
      adica in aceeasi directie ca banda de sub ea. Scalare uniforma, nu pe X:
      `scaleX` ar turti si rombul, si scrisul. */
-  .bar { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; gap: 6px;
-    overflow: visible; background: none; border: none; box-shadow: none; padding: 0;
-    justify-content: flex-start; font-size: var(--font-small); font-weight: var(--fw-semibold);
+  .bar { position: absolute; top: 0; bottom: 0; background: none; border: none; box-shadow: none; padding: 0;
+    font-size: var(--font-small); font-weight: var(--fw-semibold);
     white-space: nowrap; cursor: pointer; text-align: left; touch-action: none;
     pointer-events: auto; transform-origin: left center;
     animation: reperIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
-  /* Reperul de la marginea din dreapta isi scrie eticheta spre STANGA
-     (`row-reverse`), deci si desfacerea trebuie sa mearga intr-acolo — altfel
-     jumatate din randuri cresc dinspre punct, iar cealalta jumatate spre el. */
-  .bar.flip { flex-direction: row-reverse; transform-origin: right center; }
+  /* Reperul din ultima treime isi scrie titlul spre STANGA, deci si desfacerea
+     merge intr-acolo — altfel jumatate din randuri cresc dinspre ziua lor, iar
+     cealalta jumatate spre ea. */
+  .bar.flip { transform-origin: right center; }
   .bar.draggable { cursor: grab; }
   .bar.done { cursor: default; }
 
-  /* FORMA POARTA STAREA — vezi comentariul din markup.
-     gol (contur) = de facut · plin = in lucru · bifa = facut. */
-  .pin-dot { flex: none; display: flex; align-items: center; justify-content: center;
-    width: 12px; height: 12px; transform: rotate(45deg);
-    background: transparent; border: 2px solid var(--accent);
-    transition: transform var(--dur-fast) var(--ease); }
-  .bar.active .pin-dot { background: var(--accent); border: 1.5px solid var(--bg-surface);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent); }
-  /* Bifa nu se roteste: e un semn care se citeste, nu o mostra de culoare. */
-  .bar.done .pin-dot { transform: none; width: 13px; height: 13px;
-    background: none; border: 0; color: var(--text-dim); }
-  .bar:hover .pin-dot { transform: rotate(45deg) scale(1.12); }
-  .bar.done:hover .pin-dot { transform: none; }
+  /* BARA E ZIUA. Umple coloana termenului, la inaltimea randului — deci pozitia
+     ei nu mai e un punct pe care sa-l cauti, e chiar celula.
+     FORMA POARTA STAREA: contur = de facut · plin = in lucru · tenta cu bifa =
+     facut. Aceeasi gramatica cu cercul gol si `CheckCircle2` din liste. */
+  .bar-box { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-xs); background: var(--bg-surface);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+    transition: var(--transition-colors); }
+  .bar.active .bar-box { background: var(--accent); box-shadow: none; }
+  .bar.done .bar-box { background: var(--success-subtle); color: var(--success-deep);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
+  /* Haloul se ADAUGA, nu rescrie cutia: `box-shadow` la hover ar sterge conturul
+     starii, si un reper facut ar redeveni unul de facut cat tii cursorul pe el —
+     exact greseala reparata la muchia de severitate din liste. */
+  @media (hover: hover) {
+    .bar:hover .bar-box { outline: 2px solid var(--accent-ring); outline-offset: 1px; }
+  }
 
-  /* ETICHETA E IN TINTA, NU LANGA EA.
-     Avea `pointer-events: none`, deci singurul lucru apasabil era rombul de 12px
-     intr-o cutie cat o zi (34px la orizontul de 30 de zile). Cuvintele — singurele
-     care spun ce e taskul — nu raspundeau la click: le citeai si pe urma cautai
-     unde se apasa. Fundalul de la hover arata cat e tinta.
-     Haloul o desprinde de ce e dedesubt (poate fi blocul plin al unei perioade). */
-  .bar-txt { display: inline-flex; align-items: center; gap: 4px; max-width: 220px;
-    overflow: hidden; text-overflow: ellipsis; color: var(--text); padding: 1px 4px;
-    border-radius: var(--radius-xs); pointer-events: auto;
+  /* TITLUL IESE DIN BARA, la dreapta ei — deci impachetarea masoara suma lor
+     (`intinderea`), nu ziua. Ramane apasabil: cuvintele sunt singurul lucru care
+     spune ce e taskul, iar o zi are 34px la orizontul de 30.
+     Haloul de text il desprinde de ce e dedesubt (poate fi banda plina a unei
+     perioade). */
+  .bar-txt { position: absolute; left: 100%; top: 0; bottom: 0;
+    display: inline-flex; align-items: center; gap: 4px; max-width: 220px;
+    padding-left: 7px; overflow: hidden; color: var(--text); pointer-events: auto;
     text-shadow: 0 0 3px var(--bg-surface), 0 0 6px var(--bg-surface), 0 0 9px var(--bg-surface);
     transition: var(--transition-colors); }
+  .bar.flip .bar-txt { left: auto; right: 100%; padding-left: 0; padding-right: 7px; justify-content: flex-end; }
   @media (hover: hover) {
-    .bar:hover .bar-txt { background: var(--bg-hover); box-shadow: inset 0 0 0 1px var(--border-strong); text-shadow: none; }
+    .bar:hover .bar-txt { color: var(--accent); }
   }
   .bar.done .bar-txt { color: var(--text-dim); text-decoration: line-through; }
   .bar :global(.bar-rep) { flex: none; opacity: 0.7; }
+
+  /* NUMARUL PE SAPTAMANA (3L/6L). Aceeasi pastila ca peste tot in aplicatie
+     (`.count` din global.css) — „cate" se scrie intr-un singur fel. */
+  .wk { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center;
+    pointer-events: auto;
+    animation: reperIn var(--dur-base) var(--ease) backwards;
+    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
 
   /* dim, nu faint: indicatiile de gest sunt text de citit (masurat 3.18:1 la
      10.4px, sub AA) — faint e doar pentru etichete/large. */
@@ -1577,7 +1845,7 @@
      Aici, la sfarsit: media query-ul nu adauga specificitate, deci scris mai sus
      ar fi fost anulat de `.band` / `.impl-band` / `.bar`. */
   @media (prefers-reduced-motion: reduce) {
-    .band, .impl-band, .bar, .mt-pin { animation: none; }
+    .band, .impl-band, .bar, .wk, .mt-pin { animation: none; }
   }
 
   /* ===== print (browser print-to-PDF) ===== */
@@ -1595,7 +1863,7 @@
     /* Aceeasi grija ca la `.cell-in` in global.css: sosirile astea pornesc de la
        `opacity: 0`, iar la print animatia nu se joaca — fara `none` explicit,
        benzile ar lipsi din PDF si ar ramane un grafic cu randuri goale. */
-    .bar, .band, .impl-band { animation: none !important; opacity: 1 !important; }
+    .bar, .wk, .band, .impl-band { animation: none !important; opacity: 1 !important; }
     .bar { box-shadow: none !important; }
   }
   :global(body.plan-pagebreak) .lane { break-after: page; }

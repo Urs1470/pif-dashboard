@@ -55,6 +55,24 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-08 (2) — Planificator, turele 4-6: inaltimea vine din impachetare.**
+  `packRows` masoara bara PLUS titlul care iese din ea (reperul e acum coloana
+  termenului, 20px, cu titlul la `left: 100%`), iar eticheta perioadei tine
+  randul intai. Rand: `14 + n*20 + (n-1)*4 + 6`, minim 48 (1/2/3 repere =
+  48/64/88). Suprapunerea se testeaza cu TOT randul, nu cu ultimul asezat —
+  randul intai porneste ocupat pe mijloc. Numele de proiect a revenit pe UN rand:
+  cu doua, eticheta cerea 73px si `min-height: 48` nu mai insemna nimic.
+  Antetul: saptamani peste zile (52px), `--border-strong` la granita, coborand
+  prin benzi; luna NU mai e in antet, o spune subtitlul. La 3L/6L urca un nivel
+  (luni peste saptamani) — de aceea `buildColumns` primeste `unitCerut`, iar
+  Planificatorul cere `week` si la 6L; Ganttul de proiect ramane pe scara veche.
+  Perioadele devin bare de rand cu eticheta langa si `min-width: 11px`, reperele
+  se strang intr-un numar pe saptamana. **Capcane:** `.col-line` sta pe muchia
+  din STANGA, deci granita ei e `i-1`, nu `i`; `iso` trebuie sa ramana gol pe
+  coloanele de saptamana (Ganttul il compara cu `today`); `flip` e geometric
+  (`left + width + eticheta > 100`), nu un prag fix — cel vechi (62) intorcea
+  repere care aveau loc si le cobora trei randuri degeaba.
+
 - **2026-08-07 (3) — Tura 13: miscarea nu se reinventeaza, se pune unde lipsea.**
   Patru locuri neprinse de gramatica existenta. (1) Calendar si Plan n-aveau
   deschidere: `.ruta-in` (nou in `global.css`) + `.cell-in` pe celule. (2)
