@@ -857,7 +857,6 @@
             </div>
           {/if}
         {/each}
-        <p class="nav-count">{shown.length} {shown.length === 1 ? 'modul' : 'module'}</p>
       </aside>
 
       {#if activeMod}
@@ -898,7 +897,6 @@
         </div>
         {/if}
       {/each}
-      <p class="acc-status">{shown.length} {shown.length === 1 ? 'modul' : 'module'} • {[...expanded].filter((id) => shown.some((m) => m.id === id)).length} deschise</p>
     </div>
   {/if}
 
@@ -1085,7 +1083,7 @@
   .imp-eq span { font-size: var(--font-small); font-weight: var(--fw-normal); color: var(--text-dim); }
   .imp-eq .imp-eq-name { display: flex; align-items: center; gap: 7px; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
   .imp-eq-tag { font-style: normal; font-size: var(--font-small); font-weight: var(--fw-semibold); padding: 1px 7px; border-radius: 999px; background: var(--accent-subtle); color: var(--accent); }
-  .imp-eq-tag.warn { background: var(--service-subtle); color: var(--service-accent); }
+  .imp-eq-tag.warn { background: var(--danger-subtle); color: var(--danger-deep); }
   .imp input[type=file] { font-size: var(--font-small); color: var(--text-secondary); }
   .imp-hint { font-size: var(--font-small); color: var(--text-dim); }
   .imp-hint code { font-family: var(--font-mono); background: var(--bg-hover); padding: 0 4px; border-radius: 3px; }
@@ -1190,8 +1188,8 @@
   .acc-sub { font-size: var(--font-small); font-weight: var(--fw-normal); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .star-btn { display: flex; flex-shrink: 0; padding: 4px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
   .star-btn:hover { background: var(--bg-hover); color: var(--text); }
-  .star-btn.on { color: var(--warning); }
-  .star-btn.on :global(svg) { fill: var(--warning); }
+  .star-btn.on { color: var(--accent); }
+  .star-btn.on :global(svg) { fill: var(--accent); }
   .acc-body {
     padding: var(--space-md); border-top: 1px solid var(--border);
     display: flex; flex-direction: column; gap: var(--space-md); min-width: 0;
@@ -1248,7 +1246,6 @@
   }
   .nav-star { opacity: 0; margin-right: 4px; }
   .nav-item:hover .nav-star, .nav-star.on { opacity: 1; }
-  .nav-count { font-size: var(--font-small); color: var(--text-dim); text-align: center; padding-top: 8px; }
   .mod-cell { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; min-width: 0; }
   .mod-cell-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
   .mod-cell-empty { padding: var(--space-lg); }
@@ -1384,22 +1381,35 @@
      propozitia apare doar cand NU e in regula, ca sa nu umple cardul cu
      confirmari inutile. Culoarea nu e singurul canal: fiecare bulina are
      title/aria-label, iar textul spune de ce. */
+  /* TREI TREPTE, DOUA CULORI — deci diferenta o face CANTITATEA DE CERNEALA:
+       plin verde   = in limite
+       CONTUR rosu  = de verificat
+       plin rosu    = in afara limitelor
+     Mai multa cerneala = mai rau, pe o singura cheie de culoare. Inainte
+     „atentie" purta `--warning`, adica un al treilea ton semantic pe care
+     sistemul nu-l are: cu doua culori de stare, portocaliul era ori rosu (si
+     atunci „de verificat" arata ca „in afara limitelor"), ori amber (si atunci
+     imprumuta identitatea aplicatiei pentru o stare).
+
+     ABSENTA BULINEI RAMANE ABSENTA, nu verde: codul e explicit ca „fara
+     verdict" inseamna „pragul inca nu e scris" — vezi `verdictsFor`. */
   .vd-dot {
-    width: 8px; height: 8px;
+    width: 9px; height: 9px;
     border-radius: 50%;
     flex-shrink: 0;
     display: inline-block;
     align-self: center;
+    box-sizing: border-box;
   }
   .vd-dot.ok { background: var(--success); }
-  .vd-dot.atentie { background: var(--warning); }
+  .vd-dot.atentie { background: transparent; border: 1.5px solid var(--danger); }
   .vd-dot.critic { background: var(--danger); }
   .vd-dot.nav-dot { margin-right: 6px; vertical-align: middle; }
   .acc-title .vd-dot { margin-right: 7px; vertical-align: middle; }
 
-  .res-row.has-vd { border-left: 2px solid transparent; padding-left: 8px; margin-left: -10px; }
-  .res-row.has-vd:has(.vd-text.atentie) { border-left-color: var(--warning); }
-  .res-row.has-vd:has(.vd-text.critic) { border-left-color: var(--danger); }
+  /* Muchia colorata de pe randul de rezultat a plecat: buleta si textul de
+     dedesubt spun deja acelasi lucru, de doua ori, in aceeasi culoare. */
+  .res-row.has-vd { padding-left: 8px; margin-left: -10px; }
 
   .vd-text {
     font-size: var(--font-small);
@@ -1408,8 +1418,10 @@
     border-radius: var(--radius-sm);
     margin: 1px 0 2px;
   }
-  .vd-text.atentie { color: var(--warning); background: var(--warning-subtle); }
-  .vd-text.critic { color: var(--danger); background: var(--danger-subtle); }
+  /* Amandoua pe tenta de restant, cu cerneala adanca. Deosebirea dintre ele o
+     face bulina de pe rand (contur vs plin), nu inca o culoare. */
+  .vd-text.atentie { color: var(--danger-deep); background: var(--danger-subtle); }
+  .vd-text.critic { color: var(--danger-deep); background: var(--danger-subtle); font-weight: var(--fw-medium); }
   .vd-src {
     display: block;
     margin-top: 2px;

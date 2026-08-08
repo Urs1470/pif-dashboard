@@ -12,14 +12,13 @@
   // plecare, nu ca un bloc care inghite lucrarile.
   import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, AlertTriangle, GripVertical, CalendarDays, Download } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router } from '../lib/router.svelte.js'
   import { toast } from '../stores/ui.svelte.js'
   import { ui } from '../stores/ui.svelte.js'
   import { motion, motionDuration, alunecare, sosire, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
-  import { culoareProiect } from '../lib/culori.js'
   import { incepeTragere } from '../lib/tragere.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
@@ -34,7 +33,19 @@
   let error = $state(null)
   let mod = $state('luna')            // 'luna' | 'saptamani'
   let anchor = $state(monthStart(todayISO()))
-  let selectata = $state(todayISO())
+  // PANOUL FACE LOC, NU ACOPERA — deci la incarcare NU e selectata nicio zi.
+  // Grila are toata latimea (127 -> 176px pe zi, adica textul din bare se
+  // citeste), iar „azi" ramane marcat in grila. Panoul intra cu coloana lui abia
+  // cand ceri o zi. Inainte pornea cu ziua de azi selectata, deci pagina se
+  // deschidea mereu ingustata, pentru un panou pe care de cele mai multe ori nu
+  // il ceruse nimeni.
+  let selectata = $state('')
+  // Sursa „Proiecte fara perioada", urcata din panou in capul paginii.
+  let deschideNeplanificate = $state(false)
+  // Coloana panoului exista doar cand are ce arata. Cand nu, grila e pe toata
+  // latimea — ceea ce inseamna 176px pe zi in loc de 127, adica exact pragul de
+  // la care eticheta unei lucrari se poate citi in bara ei.
+  const panouDeschis = $derived(!!selectata || deschideNeplanificate)
   let busy = $state('')
   // Gestul in curs: { tip: 'lucrare'|'capat'|'deplasare'|'proiect', ... }.
   let trag = $state(null)
@@ -397,7 +408,17 @@
 
   /** Culoarea urmareste PROIECTUL, ca aceeasi lucrare sa fie acelasi lucru de la
    *  o zi la alta. Pe client n-avea sens: aproape tot e Continental. */
-  function culoareLucrare(p) { return culoareProiect(p.proiect_id || p.nume) }
+  /* CULOAREA PE PROIECT A PLECAT (turele 7-8).
+     Sapte nuante impartite peste proiecte pareau informatie, dar nu SELECTAU
+     nimic: din 12 perioade ale anului, 11 sunt la acelasi client — deci grila
+     iesea aproape monocroma oricum, iar cele doua-trei exceptii erau singurele
+     care primeau o culoare proprie, adica exact pe dos fata de cat conteaza.
+     Mai grav, culoarea de identitate statea pe ACELASI ecran cu fillul care
+     spune faza: acelasi canal, doua intelesuri.
+     Acum: FORMA spune faza (plin = implementare, contur palid = pregatire),
+     TEXTURA spune locul (hasurat la sediu), iar culoarea e una singura. Numele
+     lucrarii scrie in bara — el deosebeste lucrarile, si el se poate citi. */
+  function culoareLucrare(_p) { return 'var(--accent)' }
 
   /** Deplasarile care INCEP in ziua asta — captura mica de deasupra barelor.
    *  Doar la inceput, nu in fiecare zi: altfel „Continental" s-ar repeta peste tot. */
@@ -627,6 +648,7 @@
       })
       toast(`„${proj.nume}" planificat pe ${shortDate(zi)}`, 'success')
       selectata = zi
+      deschideNeplanificate = false
       await load(true)
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
@@ -871,6 +893,7 @@
     const zi = router.query?.zi
     if (zi && /^\d{4}-\d{2}-\d{2}$/.test(zi)) {
       selectata = zi
+      deschideNeplanificate = false
       anchor = monthStart(zi)
     }
     load()
@@ -901,8 +924,10 @@
         <button class="b-azi" onclick={laAzi}>Azi</button>
       </div>
       <div class="mods">
-        <button class:on={mod === 'saptamani'} onclick={() => setMod('saptamani')}>2 săpt.</button>
-        <button class:on={mod === 'luna'} onclick={() => setMod('luna')}>Lună</button>
+        <!-- „2 săpt." a plecat: orizontul scurt e PLANIFICATORUL, care il
+             deseneaza pe zile si cu taskuri peste. Doua ecrane cu acelasi
+             orizont, unul cu jumatate din informatie, e o alegere pe care nu
+             vrei s-o faci de fiecare data. Calendarul ramane luna. -->
         <!-- Exportul .ics a venit aici din Admin (sters): calendarul de abonat din
              telefon apartine paginii de calendar, nu unui sertar de intretinere. -->
         <button class="ics" onclick={() => window.open('/api/export/ics', '_blank')}
@@ -912,36 +937,47 @@
       </div>
     </div>
 
-    <div class="kpis cell-in" style="--celula: 0">
-      <div class="kpi"><span class="k-n">{rezumat.zile}</span><span class="k-l">zile pe teren</span></div>
-      <div class="kpi"><span class="k-n">{rezumat.deplasari}</span><span class="k-l">{rezumat.deplasari === 1 ? 'deplasare' : 'deplasări'}</span></div>
-      {#if rezumat.zileSediu}
-        <div class="kpi"><span class="k-n">{rezumat.zileSediu}</span><span class="k-l">{rezumat.zileSediu === 1 ? 'zi la sediu' : 'zile la sediu'}</span></div>
+    <!-- RANDUL DE KPI A PLECAT. „Zile pe teren", „deplasări", „zile la sediu"
+         sunt statistici: le citeai, dadeai din cap si mergeai mai departe —
+         niciuna nu decidea o actiune, iar toate trei se pot NUMARA uitandu-te la
+         grila de dedesubt, care le si arata UNDE sunt.
+
+         Raman cele doua care duc undeva si cer ceva de facut. Plus „Proiecte
+         fara perioada", urcat aici din coloana care dispare: e o SURSA (proiecte
+         care asteapta sa fie asezate pe zile), nu un detaliu al zilei selectate
+         — iar in panou nu se vedea tocmai cand n-aveai nicio zi deschisa. -->
+    <div class="surse cell-in" style="--celula: 0">
+      {#if data.neplanificate?.length}
+        <button class="sursa" onclick={() => { selectata = ''; deschideNeplanificate = !deschideNeplanificate }}
+                aria-expanded={deschideNeplanificate}
+                title="Proiecte active fără nicio zi planificată">
+          <CalendarX2 size={14} strokeWidth={1.5} />
+          <span class="s-n">{data.neplanificate.length}</span> fără perioadă
+        </button>
       {/if}
       {#if rezumat.deDecis}
         <!-- Contorul PARCURGE lista: fiecare apasare duce la urmatoarea zi de
-             clarificat, si arata unde esti. Inainte numara `de_decis.length` dar
-             sarea mereu la `de_decis[0]` — apasai a doua oara si nu se intampla
-             nimic, erai deja acolo. -->
-        <button class="kpi warn" onclick={urmatorulDeClarificat}
+             clarificat, si arata unde esti. -->
+        <button class="sursa rau" onclick={urmatorulDeClarificat}
                 title="Mergi la următoarea zi de clarificat">
-          <span class="k-n">{rezumat.deDecis > 1 ? `${decisCurent + 1}/${rezumat.deDecis}` : rezumat.deDecis}</span>
-          <span class="k-l">de clarificat</span>
+          <TriangleAlert size={14} strokeWidth={1.5} />
+          <span class="s-n">{rezumat.deDecis > 1 ? `${decisCurent + 1}/${rezumat.deDecis}` : rezumat.deDecis}</span> de clarificat
         </button>
       {/if}
       {#if data.probleme?.length}
         <!-- Nimic nu dispare in tacere: o data pe care aplicatia nu o poate citi
              nu se aseaza pe nicio zi, deci randul lipseste din calendar fara
              niciun semn. Mai bine un semnal suparator decat o absenta tacuta. -->
-        <button class="kpi warn" onclick={() => navigate(`/projects/${data.probleme[0].proiect_id}`)}
+        <button class="sursa rau" onclick={() => navigate(`/projects/${data.probleme[0].proiect_id}`)}
                 title={data.probleme.map(p => `${p.nume} — ${p.unde}, ${p.camp}: „${p.valoare}”`).join('\n')}>
-          <span class="k-n">{data.probleme.length}</span>
-          <span class="k-l">{data.probleme.length === 1 ? 'dată necitibilă' : 'date necitibile'}</span>
+          <TriangleAlert size={14} strokeWidth={1.5} />
+          <span class="s-n">{data.probleme.length}</span>
+          {data.probleme.length === 1 ? 'dată necitibilă' : 'date necitibile'}
         </button>
       {/if}
     </div>
 
-    <div class="wrap">
+    <div class="wrap" class:cu-panou={panouDeschis}>
       <div class="cal cell-in" style="--celula: 1">
         <div class="wd">
           {#each WEEKDAYS as w}<span>{w}</span>{/each}
@@ -1030,7 +1066,7 @@
                   <span class="nr-lucrari" class:ascunse title="{items.length} {items.length === 1 ? 'lucrare' : 'lucrări'} în ziua asta{ascunse ? ` · ${ascunse} nu încap în benzi` : ''}">{items.length}</span>
                 {/if}
               </div>
-              {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><AlertTriangle size={11} /></span>{/if}
+              {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><TriangleAlert size={11} /></span>{/if}
 
               <!-- Barele NU mai stau in celula: o lucrare de mai multe zile e un
                    singur element, desenat peste coloane mai jos. Celula pastreaza
@@ -1102,38 +1138,13 @@
         </div>
         {/key}
 
-        <!-- Legenda de culori a plecat: culoarea urmareste proiectul, iar numele
-             lucrarii scrie chiar in bara, deci o legenda ar repeta ce se vede.
-             Ramane doar textura, care nu se poate citi altfel. -->
-        {#if data.perioade?.length}
-          <!-- DOUA AXE CARE SE COMBINA SE DESENEAZA CA O MATRICE, NU CA DOUA LISTE.
-               Incercarea de dinainte scria „Unde" si „Fază" in fata a doua liste —
-               dar asta EXPLICA coliziunea, n-o scotea: „pe teren" si „implementare"
-               ramaneau exact aceeasi mostra, la un centimetru una de alta, fiindca
-               ambele axe folosesc „plin" pentru valoarea lor pozitiva. Ochiul care
-               scaneaza vedea tot acelasi patratel de doua ori, si nimic nu spunea ca
-               cele doua axe SE COMBINA.
-               Patru mostre = patru combinatii reale, cu ACELEASI retete ca benzile
-               din grila, doar cu o culoare neutra in loc de cea a proiectului. Si
-               raspunde si la „cum arata pregatire la sediu", la care cele doua liste
-               nu raspundeau deloc. -->
-          <div class="leg">
-            <!-- Coltul gol e OBLIGATORIU, nu decor: fara el auto-plasarea grilei
-                 pune „Implementare" fix in celula libera din stanga-sus si toata
-                 matricea aluneca cu o coloana (masurat). Cele noua celule se
-                 scriu in ordine, fara nicio regula de pozitionare. -->
-            <span aria-hidden="true"></span>
-            <span class="leg-ax">Pe teren</span>
-            <span class="leg-ax">La sediu</span>
-            <span class="leg-r">Implementare</span>
-            <i class="sw neted"></i>
-            <i class="sw hatch"></i>
-            <span class="leg-r">Pregătire</span>
-            <i class="sw palid"></i>
-            <i class="sw palid hatch"></i>
-          </div>
-        {/if}
-
+        <!-- LEGENDA A PLECAT DE TOT.
+             Avea patru mostre pentru cele doua axe combinate (loc x faza) — o
+             matrice corecta, dar care exista fiindca aveam TREI canale de citit
+             deodata: culoare (proiect), textura (loc) si intensitate (faza).
+             Culoarea de identitate a plecat, deci raman doua, iar amandoua se
+             spun si in CUVINTE in panoul zilei, langa lucrare. O legenda care
+             traduce ce scrie la un centimetru mai jos nu invata pe nimeni nimic. -->
         <!-- IESIRILE FERESTREI, SCRISE. Doar pe telefon: acolo grila e o harta de
              dungi fara nume (vezi `agendaLunii`). Grila ramane harta — unde esti,
              cat de plin e — iar dedesubt scrie ce sunt dungile, in ordinea zilelor. -->
@@ -1164,6 +1175,7 @@
         {/if}
       </div>
 
+      {#if panouDeschis}
       <aside class="side cell-in" style="--celula: 2">
         <!-- PANOUL E UN OBIECT CARE SE SCHIMBA, NU O LISTA CARE CLIPESTE SUB UN
              TITLU FIX.
@@ -1183,7 +1195,7 @@
           {#if selectate.length}
             <div class="pan-sub">
               {#if grupuriSelectate.length > 1}
-                <AlertTriangle size={13} /> {grupuriSelectate.length} locuri diferite în aceeași zi — verifică
+                <TriangleAlert size={13} /> {grupuriSelectate.length} locuri diferite în aceeași zi — verifică
               {:else if grupuriSelectate[0]?.sediu}
                 <!-- la sediu NU esti in deplasare: nu urci in masina -->
                 <Building2 size={13} /> la sediu{grupuriSelectate[0].client ? ' · ' + scurt(grupuriSelectate[0].client) : ''} · {selectate.length} {selectate.length === 1 ? 'lucrare' : 'lucrări'}
@@ -1277,7 +1289,7 @@
         </div>
         {/key}
 
-        {#if data.neplanificate?.length}
+        {#if deschideNeplanificate && data.neplanificate?.length}
           <div class="pan">
             <!-- „fara perioada", nu „fara data": perioada e un interval (unde
                  esti), termenul e un punct (pana cand). Sertarul din Planificator
@@ -1291,7 +1303,7 @@
               {#each data.neplanificate as pr (pr.proiect_id)}
                 <button class="np" class:ales={asezare?.proiect_id === pr.proiect_id}
                      class:se-trage={trag?.id === pr.proiect_id}
-                     style="--c: {culoareProiect(pr.proiect_id)}"
+                     style="--c: var(--accent)"
                      onpointerdown={(e) => apucaProiect(e, pr)}
                      onclick={() => { if (!tocmaiTras) comutaAsezare(pr) }}
                      aria-pressed={asezare?.proiect_id === pr.proiect_id}
@@ -1306,6 +1318,7 @@
           </div>
         {/if}
       </aside>
+      {/if}
     </div>
   {/if}
 </div>
@@ -1329,17 +1342,29 @@
   .mods button.on { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent-ring); }
   .mods button.ics { gap: 5px; margin-left: 6px; }
 
-  .kpis { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
-  .kpi { display: flex; align-items: baseline; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); }
-  .kpi.warn { background: color-mix(in srgb, var(--danger) 14%, transparent); border-color: var(--danger); cursor: pointer; }
-  .k-n { font-family: var(--font-mono); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); font-variant-numeric: tabular-nums; }
-  .kpi.warn .k-n { color: var(--danger); }
-  .k-l { font-size: var(--font-small); color: var(--text-dim); }
-  .kpi.warn .k-l { color: var(--danger); }
+  /* SURSELE — controale cu numar in capul paginii, nu contoare.
+     Fiecare DUCE undeva si cere ceva de facut; aceeasi haina ca perechea de pe
+     Acasa, ca sa se recunoasca de pe un ecran pe altul. Tonul e singura
+     diferenta: neutru = ce lipseste, restant = ce e gresit acum. */
+  .surse { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
+  .sursa { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+    min-height: 34px; padding: 0 12px; border-radius: var(--radius-xs);
+    background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none;
+    color: var(--text-dim); font-family: inherit; font-size: var(--font-small);
+    cursor: pointer; transition: var(--transition-pressable); }
+  .sursa:hover { background: var(--bg-hover); color: var(--text-secondary); }
+  .sursa:active { transform: scale(var(--press-scale)); }
+  .s-n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+  /* Tenta de restant poarta cerneala ADANCA, niciodata culoarea plina. */
+  .sursa.rau { background: var(--danger-subtle); color: var(--danger-deep); box-shadow: none; }
+  .sursa.rau:hover { background: color-mix(in oklab, var(--danger) 22%, var(--bg-surface)); }
+  .sursa.rau .s-n { color: var(--danger-deep); }
 
-  .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--space-md); align-items: start; }
+  /* PANOUL FACE LOC, NU ACOPERA: coloana lui apare ODATA CU EL. */
+  .wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-md); align-items: start; }
+  .wrap.cu-panou { grid-template-columns: minmax(0, 1fr) 300px; }
 
-  .cal { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-sm); }
+  .cal { background: var(--bg-surface); border: 0; border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: var(--space-sm); }
   .wd { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-bottom: 4px; }
   .wd span { font-size: var(--font-label); color: var(--text-faint); text-align: center; text-transform: uppercase; letter-spacing: var(--tracking-label); }
   /* `minmax(0, 1fr)`, nu `1fr`: `1fr` inseamna `minmax(auto, 1fr)`, deci o banda
@@ -1485,31 +1510,6 @@
     color: var(--text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .nr-lucrari.ascunse { color: var(--text-dim); font-weight: var(--fw-semibold); }
 
-  /* MATRICE 2×2, nu doua liste. Coloanele = unde, randurile = faza; fiecare mostra
-     e o combinatie reala, cu aceeasi reteta ca banda din grila. */
-  /* `justify-content: start`: fara el coloana `auto` inghite tot spatiul ramas
-     (masurat: 700px) si cele doua coloane de mostre ajung la marginea din dreapta,
-     departe de etichetele lor de rand. Matricea trebuie sa fie compacta ca sa se
-     citeasca DREPT matrice. */
-  .leg { display: grid; grid-template-columns: auto 76px 76px; gap: 7px 14px;
-    justify-content: start; align-items: center;
-    padding: 10px 4px 2px; margin-top: 6px; border-top: 1px solid var(--border); }
-  .leg-ax { font-size: var(--font-label); text-transform: uppercase;
-    letter-spacing: var(--tracking-label); color: var(--text-faint); }
-  .leg-r { font-size: var(--font-small); color: var(--text-secondary); }
-  /* Mostrele au forma benzilor (dreptunghi lat, nu patrat de 10px): la 10×10 o
-     hasura de 4px arata ca doua dungi, nu ca o textura. */
-  .sw { display: block; width: 66px; height: 13px; border-radius: 3px; flex-shrink: 0; --c: var(--text); }
-  .sw.neted { background: color-mix(in srgb, var(--c) 26%, transparent); }
-  .sw.hatch { background: repeating-linear-gradient(135deg,
-      color-mix(in srgb, var(--c) 30%, transparent) 0 4px, transparent 4px 8px); }
-  .sw.palid { background: color-mix(in srgb, var(--c) 9%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent); }
-  /* Pregatire LA SEDIU: cele doua axe se combina, deci si retetele. E fix
-     combinatia la care legenda veche nu raspundea deloc. */
-  .sw.palid.hatch { background: repeating-linear-gradient(135deg,
-      color-mix(in srgb, var(--c) 16%, transparent) 0 4px, transparent 4px 8px); }
-
   /* ===== agenda ferestrei (telefon) ===== */
   .agenda { display: none; flex-direction: column; gap: 6px; margin-top: 6px; }
   .ag-cap { display: flex; align-items: center; gap: var(--space-sm);
@@ -1618,7 +1618,7 @@
     .page { display: flex; flex-direction: column; }
     .bar { order: 0; }
     .wrap { order: 1; }
-    .kpis { order: 2; margin: var(--space-md) 0 0; }
+    .surse { order: 2; margin: var(--space-md) 0 0; }
   }
   @media (max-width: 620px) {
     .page { padding: var(--space-md); }
@@ -1673,7 +1673,7 @@
     .np-t { font-size: var(--font-small); }
     .rail { max-height: none; gap: 6px; }
 
-    .kpi { min-height: var(--tap-min); }
+    .sursa { min-height: var(--tap-min); }
     .it-t { min-height: var(--tap-min); }
   }
 </style>

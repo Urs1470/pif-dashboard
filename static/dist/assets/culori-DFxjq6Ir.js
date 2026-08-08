@@ -1,1 +1,0 @@
-var e=[`#afe07e`,`#27a348`,`#83c1cc`,`#867ee0`,`#b858b8`,`#cc6270`],t=`#948a7d`;function n(e){let t=0;for(let n=0;n<e.length;n++)t=t*31+e.charCodeAt(n)>>>0;return t}function r(r){let i=(r||``).trim();return i?e[n(i)%e.length]:t}export{r as n,t};
