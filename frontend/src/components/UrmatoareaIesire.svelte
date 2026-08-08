@@ -106,7 +106,12 @@
            ce exista perechea: „erau opt valori scrise de mana in patru fisiere,
            cu TREI ambere diferite pentru acelasi «sediu»". Linia asta era al
            cincilea fisier. Acum e aceeasi pereche ca in Calendar si Planificator. -->
-      <button class="pr" style="--c: {acum.sediu ? 'var(--loc-sediu)' : 'var(--loc-site)'}"
+      <!-- LOCUL SE SCRIE, NU SE COLOREAZA (redesign 2026-08-08). Perechea
+           `--loc-site`/`--loc-sediu` era a doua axa cromatica de pe linie, langa
+           accent — iar diferenta „teren vs sediu" e deja spusa de iconita si de
+           cuvantul de langa ea. Ce ramane colorat e CAND, fiindca doar asta
+           decide daca te uiti mai departe. -->
+      <button class="pr"
               onclick={() => navigate(`/calendar?zi=${acum.start}`)}
               title="Vezi în Calendar">
         <span class="ico">
@@ -182,17 +187,18 @@
     display: inline-flex; align-items: baseline; gap: 8px; min-width: 0;
     /* Dunga de locatie a plecat: `.ico` de langa ea e deja in aceeasi `--c`.
        Cei 2px pierduti de la muchie se intorc in padding. */
-    padding: 5px 12px 5px 12px; border-radius: var(--radius-full);
-    border: 1px solid var(--border); background: var(--bg-surface);
+    padding: 5px 12px; border-radius: var(--radius-sm);
+    background: var(--bg-surface); box-shadow: var(--shadow-sm);
     cursor: pointer; text-align: left;
-    transition: border-color var(--dur-fast) var(--ease);
+    transition: var(--transition-pressable);
   }
-  .pr:hover { border-color: var(--c); }
-  .ico { color: var(--c); align-self: center; display: inline-flex; }
+  .pr:hover { background: var(--bg-hover); }
+  .pr:active { transform: scale(var(--press-scale)); }
+  .ico { color: var(--text-secondary); align-self: center; display: inline-flex; }
   /* Fara Space Grotesk: „În 3 zile" e o propozitie scurta, nu numele unui lucru,
      iar fontul de titlu nu coboara sub 17px — aici e la 13. */
   .cand { font-weight: var(--fw-semibold);
-          font-size: var(--font-small); color: var(--c); white-space: nowrap; }
+          font-size: var(--font-small); color: var(--accent-deep); white-space: nowrap; }
   .unde { font-size: var(--font-small); color: var(--text); white-space: nowrap; }
   .sep { color: var(--text-faint); }
   .ce { font-size: var(--font-small); color: var(--text-dim); min-width: 0;
@@ -217,7 +223,7 @@
   /* Eroarea foloseste limbajul semantic, nu pe cel de „gol": danger pe semn,
      ca sa nu se citeasca drept o zi libera. */
   .gol.eroare :global(svg) { color: var(--danger); }
-  .reinc { padding: 3px 12px; border-radius: var(--radius-full);
+  .reinc { padding: 3px 12px; border-radius: var(--radius-xs);
     border: 1px solid var(--border); background: var(--bg-surface);
     color: var(--text-secondary); font-size: var(--font-small);
     font-weight: var(--fw-medium); cursor: pointer;
@@ -229,26 +235,24 @@
      la o zi la alta. */
   .ct-nr {
     display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-    font-size: var(--font-small); padding: 4px 8px 4px 10px; border-radius: var(--radius-full);
-    border: 1px solid var(--border); background: var(--bg-surface);
+    font-size: var(--font-small); padding: 4px 8px 4px 10px; border-radius: var(--radius-xs);
+    background: var(--bg-surface); box-shadow: var(--shadow-sm);
     color: var(--text-dim); cursor: pointer;
-    transition: var(--transition-colors);
+    transition: var(--transition-pressable);
   }
-  .ct-nr:hover { border-color: var(--text-dim); color: var(--text-secondary); }
+  .ct-nr:hover { background: var(--bg-hover); color: var(--text-secondary); }
+  .ct-nr:active { transform: scale(var(--press-scale)); }
   .ct-n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-secondary); }
 
-  .ct-nr.rau {
-    border-color: color-mix(in srgb, var(--danger) 35%, transparent);
-    background: var(--danger-subtle); color: var(--danger);
-  }
-  .ct-nr.rau:hover { border-color: var(--danger); color: var(--danger); }
-  .ct-nr.rau .ct-n { color: var(--danger); }
+  /* Tenta de restant poarta cerneala ADANCA, niciodata culoarea plina. */
+  .ct-nr.rau { background: var(--danger-subtle); color: var(--danger-deep); box-shadow: none; }
+  .ct-nr.rau:hover { background: color-mix(in oklab, var(--danger) 22%, var(--bg-surface)); }
+  .ct-nr.rau .ct-n { color: var(--danger-deep); }
 
   /* Casuta care tine locul liniei cat timp se incarca — aceeasi inaltime, fara
      chenar si fara puls: nu anunta continut, doar nu lasa pagina sa sara. */
   .pr.fantoma {
-    border-color: transparent; background: transparent;
-    border-left-color: transparent; min-height: 30px; width: 220px;
+    background: transparent; box-shadow: none; min-height: 30px; width: 220px;
     pointer-events: none;
   }
 
@@ -268,7 +272,7 @@
       row-gap: 2px; column-gap: 7px;
       width: 100%; min-height: var(--tap-min);
       padding: 8px 12px 8px 10px;
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-sm);
     }
     .sep { display: none; }
     /* Pozitiile sunt EXPLICITE, nu lasate pe seama ordinii din DOM: `.ce` vine

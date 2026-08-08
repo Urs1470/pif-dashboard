@@ -1,13 +1,13 @@
 <script>
   import { onMount } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, ChevronRight, CheckCircle2, Repeat, ListPlus, Check, CalendarDays, ListChecks, User } from '@lucide/svelte'
+  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, CheckCircle2, ListPlus, Check, CalendarDays, User } from '@lucide/svelte'
   import {
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
   import { dueRing, formatDate, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
-  import { etichetaTermen } from '../lib/grupare.js'
+  import { etichetaTermenScurt } from '../lib/grupare.js'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { reordonare } from '../lib/reordonare.js'
   import { ecran } from '../lib/ecran.svelte.js'
@@ -37,6 +37,22 @@
   const flipDur = $derived(motionDuration(DUR_BASE))
 
   const restanteCount = $derived(agenda.items.filter(i => i.is_restant).length)
+
+  /** A doua linie a randului: UNDE e taskul. Proiectul, daca vine dintr-unul;
+   *  altfel categoria — dar niciodata „General", valoarea implicita, care apare
+   *  pe jumatate din randuri fara sa deosebeasca nimic de nimic. */
+  function contextRand(it) {
+    if (it.tip === 'proiect' && it.proiect_nume) return it.proiect_nume
+    if (it.categorie && it.categorie !== 'General') return it.categorie
+    return ''
+  }
+
+  /** Coloana pironita din dreapta. Un task recurent isi spune CADENTA: pentru el
+   *  „când" nu e o zi, e un ritm. */
+  function termenScurt(it) {
+    if (it.recurenta && !it.data_scadenta) return it.recurenta
+    return etichetaTermenScurt(it.data_scadenta)
+  }
 
   // ZIUA SE SCRIE AICI, O SINGURA DATA PE ECRAN.
   // Statea in bara de sus, ca subtitlu al salutului („Bună dimineața, Ion ·
@@ -214,13 +230,17 @@
 
 <section class="board cell-in">
   <div class="board-head">
+    <!-- „Astăzi · sâmbătă, 8 august · 2 restante".
+         Contorul total a plecat: pe un board unde vezi toate randurile deodata,
+         „14" nu decide nimic — le numeri uitandu-te. Restantele raman, fiindca
+         ele decid daca te apuci de ce ai pe azi sau recuperezi ce n-ai facut.
+         Iconita a plecat si ea: titlul scrie deja „Astăzi". -->
     <div class="bh-left">
-      <CalendarCheck size={17} />
       <h2>Astăzi</h2>
-      <span class="bh-sep" aria-hidden="true">·</span>
       <span class="bh-zi">{ziua}</span>
-      <span class="count" title="{agenda.items.length} pe azi">{agenda.items.length}</span>
-      {#if restanteCount > 0}<span class="count danger" title="{restanteCount} restante">{restanteCount}</span>{/if}
+      {#if restanteCount > 0}
+        <span class="bh-restante"><span class="bh-punct"></span>{restanteCount} restante</span>
+      {/if}
     </div>
     <button class="bh-add" onclick={() => showPicker = true}>
       <ListPlus size={14} /> <span class="bh-add-txt">Adaugă task existent</span>
@@ -276,7 +296,13 @@
           <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>
 
           <div class="gl-fata">
+          <!-- Doua manere in ACELASI slot de 16px, niciodata amandoua deodata:
+               `.grip` are drag nativ (mouse), `.gl-maner` e suprafata de apucat
+               cu degetul (lib/reordonare.js). Statea la capatul din dreapta al
+               randului, adica exact unde e coloana de termen — deci pe telefon
+               reordonarea si termenul se bateau pe aceiasi pixeli. -->
           <span class="grip" role="button" tabindex="-1" aria-label="Trage pentru a reordona" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
+          <span class="gl-maner" aria-hidden="true"><GripVertical size={17} /></span>
 
           <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">
             {#if it.status === 'done'}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
@@ -284,33 +310,18 @@
 
           <button class="amain" onclick={(e) => openItem(e, it)}>
             <span class="atitle">{it.titlu}</span>
-            <span class="ainfo">
-              <!-- ACEEASI ORDINE CA IN /tasks (si ca la Todoist): intai CAND,
-                   apoi CAT, iar proiectul/categoria la capatul din dreapta. Un
-                   task trebuie sa arate la fel oriunde apare — altfel inveti
-                   pagina, nu taskul. -->
-              <!-- UN SINGUR SEMN PENTRU TERMEN, nu trei.
-                   Aici erau doua pastile („Restant" rosu, „Termen azi" amber) SI
-                   data, colorata tot dupa severitate. Pe un board unde totul e
-                   scadent azi sau restant, pastilele partitioneaza lista si atat:
-                   „Termen azi" e pur si simplu starea implicita a boardului, iar
-                   „Restant" spunea in cuvinte exact ce spunea deja data rosie de
-                   langa el. Doua lucruri rosii cu acelasi inteles, pe fiecare rand.
-                   Ramane data, scrisa relativ: „azi", „ieri", „acum 3 zile" — spune
-                   si CE stare, si CAT de departe, intr-un singur chip.
-                   Numarul din antet („28 restante") ramane: acolo e un rezumat,
-                   nu o repetitie. -->
-              {#if it.data_scadenta}<span class="deadline" class:sev={isOverdue(it.data_scadenta) || isToday(it.data_scadenta)}><CalendarDays size={11} />{etichetaTermen(it.data_scadenta)}</span>{/if}
-              {#if it.subtask_total}
-                <span class="tsub-chip" class:gata={it.subtask_done === it.subtask_total}
-                      title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">
-                  <ListChecks size={11} />{it.subtask_done || 0}/{it.subtask_total}
-                </span>
-              {/if}
-              {#if it.recurenta}<span class="recur" title="Recurent: {it.recurenta}"><Repeat size={10} /> {it.recurenta}</span>{/if}
-              {#if it.tip === 'proiect' && it.proiect_nume}<span class="tag proj">{it.proiect_nume}</span>
-              {:else if it.categorie}<span class="tag">{it.categorie}</span>{/if}
-            </span>
+            <!-- A DOUA LINIE, doar cand are ce spune: unde e taskul (proiectul
+                 sau categoria) si cat s-a facut din el. Erau cinci chipuri pe un
+                 rand — termen, pasi, recurenta, proiect, categorie — dintre care
+                 termenul si recurenta au urcat in coloana pironita din dreapta,
+                 iar restul erau pastile colorate mai tari decat titlul.
+                 Aici raman ca TEXT, la 13px, gri: se citesc cand le cauti. -->
+            {#if contextRand(it)}
+              <span class="ainfo">
+                {#if contextRand(it)}<span class="a-unde">{contextRand(it)}</span>{/if}
+                {#if it.subtask_total}<span class="a-pasi">{it.subtask_done || 0}/{it.subtask_total}</span>{/if}
+              </span>
+            {/if}
           </button>
 
           <!-- Un singur invelis pentru cele doua grupuri de actiuni. Pe desktop e
@@ -319,23 +330,21 @@
                rupe randul si iesea pe trei linii (bifa singura sus, titlu, actiuni)
                = 172px pe task, adica patru taskuri pe ecran. -->
           <div class="arow-tools">
-          <!-- Manerul de tragere, doar pe telefon (vezi lib/reordonare.js). Nu e
-               un <button>: nu face nimic la atingere scurta, e o suprafata de
-               apucat. `aria-hidden` fiindca reordonarea are si un drum accesibil
-               pe desktop (grip + drag), iar aici n-avem ce anunta. -->
-          <span class="gl-maner" aria-hidden="true"><GripVertical size={17} /></span>
-
+          <!-- TREI ACTIUNI, CU TEXT. Erau patru iconite mute, si una dintre ele
+               („Deschide") repeta ce face deja clicul pe rand. Toate trei
+               raspund la aceeasi intrebare — CAND — deci stau impreuna, in
+               ordinea in care le folosesti. -->
           <div class="arow-actions">
-            <button class="abtn" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={15} /></button>
+            <button class="abtn" onclick={() => onTomorrow(it)}><ArrowRight size={14} strokeWidth={1.5} />Mâine</button>
             <span class="row-date" title="Planifică pe altă zi">
-              <DatePicker value={it.data_scadenta} placeholder="Planifică" onchange={(v) => onMoveDate(it, v)} />
+              <DatePicker value={it.data_scadenta} eticheta="Altă zi" onchange={(v) => onMoveDate(it, v)} />
             </span>
-            <button class="abtn danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={15} /></button>
-            <!-- Pe telefon lipseste: titlul randului deschide deja taskul, iar un
-                 al saselea buton de 44px ar imbatrani randul cu inca un rand. -->
-            <button class="abtn deschide" onclick={(e) => openItem(e, it)} title="Deschide"><ChevronRight size={15} /></button>
+            <button class="abtn danger" onclick={() => onRemove(it)}
+                    title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={14} strokeWidth={1.5} />Scoate</button>
           </div>
           </div>
+          <span class="atermen" class:sev={isOverdue(it.data_scadenta)}
+                class:acum={isToday(it.data_scadenta)}>{termenScurt(it)}</span>
           </div>
         </div>
       {/each}
@@ -369,34 +378,35 @@
           <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>
 
           <div class="gl-fata">
+          <!-- Coloana manerului ramane REZERVATA si aici, unde nu se reordoneaza:
+               altfel randurile personale ar incepe cu 16px mai la stanga decat
+               cele de munca, iar decalajul s-ar citi ca o greseala de aliniere,
+               nu ca „astea nu se muta". -->
+          <span class="grip-loc" aria-hidden="true"></span>
+
           <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">
             {#if it.status === 'done'}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
           </button>
 
           <button class="amain" onclick={(e) => openItem(e, it)}>
             <span class="atitle">{it.titlu}</span>
-            <span class="ainfo">
-              {#if it.data_scadenta}<span class="deadline" class:sev={isOverdue(it.data_scadenta) || isToday(it.data_scadenta)}><CalendarDays size={11} />{etichetaTermen(it.data_scadenta)}</span>{/if}
-              {#if it.subtask_total}
-                <span class="tsub-chip" class:gata={it.subtask_done === it.subtask_total}
-                      title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">
-                  <ListChecks size={11} />{it.subtask_done || 0}/{it.subtask_total}
-                </span>
-              {/if}
-              {#if it.recurenta}<span class="recur" title="Recurent: {it.recurenta}"><Repeat size={10} /> {it.recurenta}</span>{/if}
-            </span>
+            {#if it.subtask_total}
+              <span class="ainfo"><span class="a-pasi">{it.subtask_done || 0}/{it.subtask_total}</span></span>
+            {/if}
           </button>
 
           <div class="arow-tools">
           <div class="arow-actions">
-            <button class="abtn" onclick={() => onTomorrow(it)} title="Mută pe mâine"><ArrowRight size={15} /></button>
+            <button class="abtn" onclick={() => onTomorrow(it)}><ArrowRight size={14} strokeWidth={1.5} />Mâine</button>
             <span class="row-date" title="Planifică pe altă zi">
-              <DatePicker value={it.data_scadenta} placeholder="Planifică" onchange={(v) => onMoveDate(it, v)} />
+              <DatePicker value={it.data_scadenta} eticheta="Altă zi" onchange={(v) => onMoveDate(it, v)} />
             </span>
-            <button class="abtn danger" onclick={() => onRemove(it)} title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={15} /></button>
-            <button class="abtn deschide" onclick={(e) => openItem(e, it)} title="Deschide"><ChevronRight size={15} /></button>
+            <button class="abtn danger" onclick={() => onRemove(it)}
+                    title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={14} strokeWidth={1.5} />Scoate</button>
           </div>
           </div>
+          <span class="atermen" class:sev={isOverdue(it.data_scadenta)}
+                class:acum={isToday(it.data_scadenta)}>{termenScurt(it)}</span>
           </div>
         </div>
       {/each}
@@ -419,23 +429,33 @@
 {/if}
 
 <style>
-  .board { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); margin-bottom: var(--space-lg); }
+  /* Suprafata se desprinde prin umbra. Padding-ul lateral scade la 8, fiindca
+     randul isi aduce propriii 12 — separatorul iese la 20 de la marginea
+     cardului, adica marja laterala ceruta, fara s-o scrie nimeni a doua oara. */
+  .board { background: var(--bg-surface); border: 0; border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md); padding: var(--space-20) var(--space-sm) 6px;
+    margin-bottom: var(--space-lg); }
 
-  .board-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); }
-  .bh-left { display: flex; align-items: center; gap: var(--space-xs); color: var(--text); min-width: 0; }
-  .bh-left h2 { font-family: var(--font-heading); letter-spacing: var(--tracking-tight); font-size: var(--font-h3); font-weight: var(--fw-semibold); }
-  /* Ziua e context, nu titlu: acelasi rang vizual ca subtitlul pe care il avea
-     in bara, dar pe ecranul unde se si vede. */
-  .bh-sep { color: var(--text-faint); }
-  .bh-zi { font-size: var(--font-small); color: var(--text-dim);
+  .board-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); margin: 0 var(--space-sm) var(--space-md); }
+  /* Alinierea e pe LINIA DE BAZA, nu pe centru: „Astăzi" e la 25px si ziua la
+     13, deci centrate ar pluti una fata de alta. Pe baza, se citesc ca o
+     propozitie. */
+  .bh-left { display: flex; align-items: baseline; gap: var(--space-12); color: var(--text); min-width: 0; }
+  .bh-left h2 { font-size: var(--font-title); font-weight: var(--fw-semibold);
+                letter-spacing: -0.015em; }
+  .bh-zi { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim);
            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .bh-restante { display: inline-flex; align-items: center; gap: 6px; flex: none;
+    font-size: var(--font-small); font-weight: var(--fw-semibold);
+    color: var(--danger); white-space: nowrap; }
+  .bh-punct { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); }
   /* `.bh-count` / `.bh-restante` au plecat: sunt `.count` si `.count danger` din
      global.css — aceeasi pastila ca peste tot (vezi comentariul de acolo). */
-  .bh-add { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); flex-shrink: 0; }
+  .bh-add { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-elevated); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); flex-shrink: 0; }
   .bh-add:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
 
-  .quick-add { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); }
-  .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
+  .quick-add { display: flex; gap: var(--space-sm); margin: 0 var(--space-sm) 18px; }
+  .quick-add input { flex: 1; min-height: 44px; padding: 0 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-body); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
   .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
@@ -470,17 +490,20 @@
      (`--ring`) si pe textul termenului. Bordura devine uniforma, iar cei 2px
      pierduti de la stanga se intorc in padding, ca randul sa nu se decaleze fata
      de antetul listei. */
-  .arow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-sm) 7px 10px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  /* Doar unde exista cursor. Pe touch :hover se aplica la atingere si RAMANE
-     aplicat pana atingi altceva — randul bifat ar rămâne impins 4px la dreapta,
-     ceea ce se citeste ca „s-a stricat", nu ca „am atins". */
-  /* Fara reafirmare de `border-left-color`: nu mai exista culoare rezervata pe
-     bordura, deci `border-color` scurt n-are ce sa stearga. */
+  /* ACELASI RAND CA IN /tasks: 46px, gap 12, coloana de termen pironita la 46px.
+     Un task trebuie sa arate la fel oriunde apare — altfel inveti pagina, nu
+     taskul. Cardul cu rama si 6px de distanta a plecat: lista e un obiect citit
+     pe verticala, iar ce desparte doua randuri e o linie cu marja laterala.
+     Fara `translateX(4px)` la hover: deplasarea muta si coloana de termen, adica
+     exact ce trebuie sa stea pe loc cat cauti actiunile. */
+  .arow { position: relative; display: flex; align-items: center; gap: var(--space-12);
+    min-height: 46px; padding: 0 var(--space-12); background: none; border: 0;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .arow + .arow { border-top: 1px solid var(--border); }
   @media (hover: hover) {
-    .arow:hover { transform: translateX(4px); border-color: var(--border-strong); }
+    .arow:hover { background: var(--bg-elevated); }
   }
-  /* Raspunsul la atingere e apasarea, nu deplasarea. */
-  .arow:active { border-color: var(--border-strong); }
   /* ===== O SINGURA AXA DE CULOARE PE RAND =====
      Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
      stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele
@@ -495,7 +518,6 @@
      metadatelor sunt gri — se citesc cand le cauti, nu striga cand nu le cauti.
      Titlul creste la `--font-body`, indexul devine ce spunea documentatia ca e:
      o fantoma. */
-  .arow.done { opacity: 0.5; }
   /* Drag & drop — minimal, on-brand: the grabbed row fades; the drop target shows a
      crisp accent insertion line (no heavy fill); rows settle via animate:flip. */
   .arow.dragging { opacity: 0.45; cursor: grabbing; }
@@ -504,8 +526,17 @@
     .arow { transition: none; }
   }
 
-  .grip { display: flex; align-items: center; color: var(--text-faint); cursor: grab; flex-shrink: 0; padding: 2px; }
+  /* Manerul apare la hover, ca actiunile — dar coloana lui de 16px e rezervata
+     pe TOATE randurile (vezi si `.grip-loc`). `opacity`, nu `display`: daca
+     aparitia lui ar imbrancit randul, hoverul ar muta titlul sub cursor. */
+  .grip, .grip-loc { width: 16px; flex: none; display: flex; align-items: center;
+    justify-content: center; color: var(--text-secondary); }
+  .grip { cursor: grab; }
   .grip:active { cursor: grabbing; }
+  @media (hover: hover) {
+    .grip { opacity: 0; transition: opacity var(--dur-fast) var(--ease); }
+    .arow:hover .grip, .grip:focus-visible { opacity: 1; }
+  }
 
   /* Tragere de reordonare (lib/reordonare.js). Randul tras se ridica deasupra
      celorlalte si NU are tranzitie pe transform — altfel `.arow`-ul de mai sus i-ar
@@ -526,52 +557,48 @@
   .amain { flex: 1; min-width: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px; }
   .atitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .arow.done .atitle { text-decoration: line-through; color: var(--text-dim); }
-  .ainfo { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; font-size: var(--font-small); color: var(--text-dim); }
-  /* Ca in /tasks: eticheta de context pleaca la capatul din dreapta. */
-  .ainfo .tag { margin-left: auto; flex: none; }
-  .deadline { display: inline-flex; align-items: center; gap: 3px; }
-  /* ACEEASI PASTILA CA `.task-cat` DIN /tasks: acelasi obiect (contextul
-     taskului — categorie sau proiect) avea aici colturi de radius-xs si acolo
-     radius-full. Un obiect, un desen, pe orice ecran apare. */
-  .tag { padding: 1px 8px; background: var(--bg-elevated); border-radius: var(--radius-full); font-weight: var(--fw-medium); white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
-  .tag.proj { color: var(--text-dim); background: var(--bg-elevated); }
-  .recur { display: inline-flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); font-weight: var(--fw-medium); }
-  .deadline { font-size: var(--font-small); color: var(--text-dim); }
-  /* Al doilea canal al severitatii, si vine din ACELASI `--ring` ca inelul, nu
-     dintr-o a doua harta de culori — asa cele doua nu pot sa se desincronizeze.
-     Treapta „curand" a plecat: era `--warning`, adica exact `--accent`, deci pe
-     boardul asta (unde totul e azi sau restant) nu se putea vedea oricum. */
-  .deadline.sev { color: var(--ring); font-weight: var(--fw-medium); }
+  /* A doua linie: text gri, doua bucati, nicio pastila. Erau cinci chipuri
+     (termen, pasi, recurenta, proiect, categorie) — trei au urcat in coloana
+     pironita sau au plecat, iar celelalte doua nu au nevoie de fundal ca sa se
+     citeasca: sunt SUB titlu, deci deja subordonate prin pozitie. */
+  .ainfo { display: flex; align-items: center; gap: 10px; min-width: 0; overflow: hidden;
+    font-size: var(--font-small); color: var(--text-dim); }
+  /* `flex: 0 1 auto` + `min-width: 0`: fara ele, un copil de flex se dimensioneaza
+     dupa continut si IESE din parinte in loc sa se taie — deci `text-overflow`
+     n-avea pe ce sa se aplice si numele proiectului era retezat fara puncte. */
+  .a-unde { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .a-pasi { font-family: var(--font-mono); flex: none; font-variant-numeric: tabular-nums; }
 
-  /* `contents` = invelisul nu exista pentru layout; cele doua grupuri raman copii
-     directi ai randului, exact ca inainte. Pe telefon devine cutie adevarata. */
+  /* COLOANA DE TERMEN — aceeasi ca in /tasks, pana la pixel. */
+  .atermen { flex: none; width: 46px; text-align: right;
+    font-family: var(--font-mono); font-size: var(--font-label);
+    color: var(--text-dim); font-variant-numeric: tabular-nums;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .atermen.sev { color: var(--danger); font-weight: var(--fw-medium); }
+  .atermen.acum { color: var(--accent-deep); font-weight: var(--fw-medium); }
+
+  /* Invelisul nu are geometrie proprie pe desktop: e doar ce cade pe linia a
+     doua PE TELEFON, intreg. Fara `display: contents` aici, cele doua lucruri
+     dinauntru (manerul de deget si actiunile) se stiveau pe verticala, iar
+     randul crestea la ~50px cu un maner care oricum nu se foloseste cu mouse-ul.
+     Regula exista deja in blocul de telefon; lipsea de la desktop. */
   .arow-tools { display: contents; }
+  /* Manerul de DEGET (lib/reordonare.js) e al telefonului. Pe desktop se
+     reordoneaza din `.grip`, cu drag nativ. */
   .gl-maner { display: none; }
-  .arow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-  .abtn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .abtn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); }
-  .abtn.danger:hover:not(:disabled) { color: var(--danger); background: var(--danger-subtle); }
-  .abtn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-  /* Inline reschedule = a calendar ICON button (the date is implicit on the
-     "today" board), styled like the other row actions; opens the shared DatePicker.
-     The date text is hidden so rows stay compact. */
-  /* Calendarul deschis din gest: prezent in DOM, invizibil ca declansator.
-     `overflow: hidden` strange butonul, dar NU taie sheet-ul — acela e mutat in
-     `body` cu `use:portal`, deci nu mai are invelisul asta ca stramos. */
-  .dp-gest { position: fixed; top: 0; left: 0; width: 0; height: 0;
-    overflow: hidden; pointer-events: none; }
-
-  .row-date { width: 30px; flex-shrink: 0; }
-  .row-date :global(.dp-trigger) {
-    width: 30px; min-height: 30px; padding: 0;
-    justify-content: center;
-    background: transparent; border: none; box-shadow: none;
-    color: var(--text-faint);
-  }
-  .row-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--text); }
-  .row-date :global(.dp-trigger svg) { color: inherit; }
-  .row-date :global(.dp-value) { display: none; }
+  .arow-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .abtn, .row-date :global(.dp-trigger) {
+    display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px;
+    border-radius: var(--radius-xs); background: var(--bg-surface); box-shadow: var(--shadow-sm);
+    border: none; color: var(--text-secondary); font-family: inherit;
+    font-size: var(--font-control); font-weight: var(--fw-semibold);
+    white-space: nowrap; cursor: pointer; transition: var(--transition-pressable); }
+  .abtn:hover:not(:disabled), .row-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--text); }
+  .abtn:active { transform: scale(var(--press-scale)); }
+  .abtn.danger:hover:not(:disabled) { background: var(--danger-subtle); color: var(--danger-deep); }
+  .row-date { flex-shrink: 0; }
+  .row-date :global(.dp) { width: auto; }
+  .row-date :global(.dp-trigger) { min-height: 0; flex-direction: row-reverse; }
 
   /* ===== glisare (doar telefon) ===== */
   .gl-fata { display: contents; }
@@ -586,11 +613,15 @@
          atingere pe titlu    -> deschide taskul
        Reordonarea (sagetile) ramane, dar numai cat timp ai ceva de reordonat —
        vezi `.arow-arrows` mai jos. */
-    .arow { flex-wrap: nowrap; row-gap: 0; padding: 0; overflow: hidden; position: relative;
-            touch-action: pan-y; }
-    .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
-               padding: 7px var(--space-sm) 9px; background: var(--bg-panel);
-               border-radius: var(--radius-md); position: relative; z-index: 1;
+    .arow { flex-wrap: nowrap; row-gap: 0; min-height: var(--row-h-mobile);
+            padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
+    /* Fondul e al SUPRAFETEI, nu al unui panou propriu: randul nu mai e un card.
+       Trebuie totusi OPAC — pista de bifare sta dedesubt si se descopera pe
+       masura ce tragi. */
+    .gl-fata { display: flex; align-items: center; gap: 10px; width: 100%;
+               min-height: var(--row-h-mobile); padding: 0 var(--space-12);
+               background: var(--bg-surface);
+               border-radius: var(--radius-sm); position: relative; z-index: 1;
                will-change: transform; }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
@@ -609,7 +640,10 @@
     .arow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
 
     .bh-add-txt { display: none; }
+    /* Cu degetul se apuca `.gl-maner`; `.grip` are drag nativ, care pe touch nu
+       se declanseaza niciodata. Acelasi slot, celalalt maner. */
     .grip { display: none; }
+    .gl-maner { display: flex; }
     .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
     .quick-add-btn { width: var(--tap-min); }
     /* „Adaugă task existent" ramane doar iconita pe telefon — deci iconita trebuie
@@ -635,7 +669,6 @@
     /* Ca in /tasks pe telefon: contextul devine TEXT, nu pastila — pe un rand
        ingust pastila era cel mai tare lucru dupa titlu, adica invers decat
        conteaza. (Acolo regula exista deja; aici ramasese pastila.) */
-    .tag { max-width: 96px; background: none; padding: 0; font-weight: var(--fw-normal); color: var(--text-faint); }
 
     /* Din cele sase butoane raman doua la vedere: bifa (actiunea principala) si
        reordonarea. Restul stau in panoul de sub rand. */
@@ -651,10 +684,15 @@
        `touch-action: none` DOAR aici: pe restul randului derularea verticala si
        glisarea laterala raman ale browserului si ale lui `glisare.js`. Daca ar
        sta pe rand, lista n-ar mai putea fi derulata cu degetul. */
+    /* 16px de LATIME (slotul rezervat), dar 44px de ATINS: suprafata revine
+       dintr-un strat invizibil care se intinde in padding-ul randului. Aceeasi
+       solutie ca la bifa de langa — o tinta de deget nu trebuie sa fie si o
+       coloana de layout. */
     .gl-maner { display: flex; align-items: center; justify-content: center;
-                width: var(--tap-min); height: var(--tap-min); flex-shrink: 0;
-                margin-right: -6px; color: var(--text-faint);
+                position: relative; width: 16px; height: var(--tap-min); flex: none;
+                color: var(--text-secondary);
                 touch-action: none; cursor: grab; }
+    .gl-maner::after { content: ''; position: absolute; inset: 0 -14px; }
     .gl-maner:active { cursor: grabbing; }
     /* BIFA: 44px de ATINS, dar nu 44px de LATIME.
        Cercul are 18px si statea centrat intr-o caseta de 44 — adica 13px de aer
