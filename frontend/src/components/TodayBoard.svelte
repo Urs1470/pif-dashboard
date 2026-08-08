@@ -256,7 +256,7 @@
   </form>
 
   {#if agenda.loading && agenda.items.length === 0}
-    <div class="a-skel">{#each Array(3) as _}<Skeleton height="40px" />{/each}</div>
+    <Skeleton varianta="rand" randuri={4} />
   {:else if agenda.error}
     <!-- ErrorState cu retry, ca in restul aplicatiei (regula de design: „erori:
          <ErrorState> (cu retry)"). Aici era un paragraf rosu fara niciun drum

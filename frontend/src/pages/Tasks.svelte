@@ -952,7 +952,7 @@
        `&& items.length === 0`: schelete doar cand chiar n-ai ce arata. Aceeasi
        regula o avea deja TodayBoard. -->
   {#if globalTasks.loading && globalTasks.items.length === 0}
-    <div class="list">{#each Array(5) as _}<div class="task-skeleton"><Skeleton width="70%" height="16px" /></div>{/each}</div>
+    <Skeleton varianta="rand" randuri={4} />
   {:else if globalTasks.error}
     <ErrorState message={globalTasks.error} onretry={() => reload()} />
   {:else if globalTasks.items.length === 0}

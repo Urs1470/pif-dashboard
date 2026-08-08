@@ -9,7 +9,7 @@
   // serverul lor prin cererea HTTP si nu apare in logurile nimanui. Il tinem in
   // app_settings (baza de date e gitignored), niciodata in cod sau in wiki.
   import { onMount, onDestroy } from 'svelte'
-  import { ExternalLink, Link2, Save, X } from '@lucide/svelte'
+  import { ExternalLink, Link2, Save, X, TriangleAlert } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { ui, toast } from '../stores/ui.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -87,9 +87,14 @@
           Din aplicația de plan, ia linkul de partajare și lipește-l aici. Se acceptă
           doar adrese <code>https://{host}</code>.
         </p>
+        <!-- AVERTISMENTUL E CONTINUT, NU DECOR. Era o dunga de 3px pe stanga
+             — adica al saptelea inteles al aceleiasi muchii de 3px din
+             aplicatie. Acum e o suprafata in tenta de restant, cu iconita: se
+             citeste ca o casuta de atentie, nu ca un citat. -->
         <p class="atentie">
-          Linkul conține cheia de acces la plan — cine îl are, intră. Se salvează în
-          baza de date a Dashboard-ului, care nu ajunge în git.
+          <TriangleAlert size={16} strokeWidth={1.5} />
+          <span>Linkul conține cheia de acces la plan — cine îl are, intră. Se salvează în
+          baza de date a Dashboard-ului, care nu ajunge în git.</span>
         </p>
         <div class="rand">
           <input
@@ -120,19 +125,14 @@
 </div>
 
 <style>
-  /* Pagina se incadreaza EXACT in fereastra: nu vrem scroll pe toata aplicatia,
-     ci doar in interiorul planului.
-
-     `.app-content` rezerva jos loc pentru dock (--dock-h + spatiu), pentru toate
-     paginile. Aici il anulam cu o margine negativa si rezervam noi cat trebuie:
-     pe DESKTOP dock-ul e ascuns si apare doar cand impingi cursorul in marginea
-     de jos, deci 10px ajung; pe telefon e fix si vizibil, deci ii lasam tot locul.
-     Asa planul castiga vreo 80px de inaltime pe desktop. */
-  .page { --rezerva: 10px;
-          padding: var(--space-md) var(--space-lg);
+  /* MARJA NEGATIVA A PLECAT. Pagina isi lua ~80px inaltime in plus anuland
+     rezerva pe care `.app-content` o pastreaza pentru dock — deci pe pagina
+     asta, si numai pe ea, dockul plutea PESTE continut in loc sa stea sub el.
+     Un plan de departament nu e destul de important cat sa mute navigatia
+     aplicatiei; dockul sta unde sta peste tot. */
+  .page { padding: var(--space-md) var(--space-lg);
           display: flex; flex-direction: column;
-          height: calc(100dvh - var(--header-height) - var(--rezerva));
-          margin-bottom: calc(-1 * (var(--dock-h) + var(--space-lg) + var(--safe-bottom)));
+          height: calc(100dvh - var(--header-height) - var(--dock-h) - var(--space-lg) - var(--safe-bottom));
           min-height: 380px; overflow: hidden; }
 
   .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: 28px; }
@@ -148,15 +148,22 @@
 
   /* Fundal alb sub cadru: aplicatia lor e pe tema deschisa, iar pe fundalul
      nostru cald-inchis marginile ar aparea ca o rama murdara in timpul incarcarii. */
-  iframe { flex: 1; width: 100%; border: 1px solid var(--border); border-radius: var(--radius-lg);
-           background: #fff; min-height: 0; }
+  /* CADRUL RAMANE ALB SI PE TEMA INTUNECATA: aplicatia dinauntru e desenata pe
+     temă deschisă, deci un fundal inchis sub ea ar aparea ca o rama murdara —
+     si in timpul incarcarii, si pe marginile pe care ea nu le acopera. */
+  iframe { flex: 1; width: 100%; border: 0; border-radius: var(--radius-md);
+           box-shadow: var(--shadow-md); background: #fff; min-height: 0; }
 
-  .config { max-width: 640px; background: var(--bg-surface); border: 1px solid var(--border);
-            border-radius: var(--radius-lg); padding: var(--space-lg); }
-  .config h2 { font-family: var(--font-heading); font-size: var(--font-h3); margin-bottom: var(--space-sm); }
+  .config { max-width: 640px; background: var(--bg-surface); border: 0;
+            border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+            padding: var(--space-lg); }
+  .config h2 { font-size: var(--font-h2); margin-bottom: var(--space-sm); }
   .config p { font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-sm); line-height: var(--lh-normal); }
   .config code { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); }
-  .atentie { border-left: 3px solid var(--danger); padding-left: 10px; }
+  .atentie { display: flex; gap: 10px; align-items: flex-start;
+             background: var(--danger-subtle); color: var(--danger-deep);
+             border-radius: var(--radius-xs); padding: 10px 12px; }
+  .atentie :global(svg) { flex: none; margin-top: 1px; }
 
   .rand { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-md); }
   .rand input { flex: 1; min-width: 260px; height: 32px; padding: 0 10px; font-family: var(--font-mono);
