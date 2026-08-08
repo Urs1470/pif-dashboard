@@ -230,27 +230,33 @@
 
 <style>
   .dp { position: relative; display: inline-flex; flex-direction: column; gap: 4px; width: 100%; }
-  .dp-label { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-label); }
+  .dp-label { font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-label); }
 
+  /* Al patrulea camp al sistemului: aceeasi reteta ca `.field-input` din
+     Input.svelte (suprafata a doua · muchie interioara 1px · raza de control ·
+     46px, 48 in foaie · focus la 1,5px accent). Era 40px si raza 14 — adica
+     singurul camp cu alta inaltime si alt colt decat celelalte trei. */
   .dp-trigger {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    min-height: 40px; padding: 8px 12px; width: 100%;
-    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);
+    min-height: 46px; padding: 10px 12px; width: 100%;
+    background: var(--bg-elevated); border: none; border-radius: var(--radius-sm);
+    box-shadow: inset 0 0 0 1px var(--border);
     color: var(--text); font-size: var(--font-body); font-family: inherit; cursor: pointer; text-align: left;
-    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    transition: box-shadow var(--dur-fast) var(--ease);
   }
-  .dp-trigger:hover:not(:disabled) { border-color: var(--text-dim); }
-  .dp-trigger:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+  .dp-trigger:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--border-strong); }
+  .dp-trigger:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px var(--accent); }
   .dp-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
   .dp-trigger.placeholder .dp-value { color: var(--text-dim); }
   .dp-trigger :global(svg) { color: var(--text-dim); flex-shrink: 0; }
   .dp-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+  /* Suprafata flotanta: se desprinde prin UMBRA, nu si prin chenar. */
   .dp-pop {
     position: fixed; z-index: var(--z-tooltip);
     width: 268px; padding: 12px;
-    background: var(--bg-overlay); border: 1px solid var(--border);
-    border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+    background: var(--bg-overlay);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-md);
   }
   .dp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .dp-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
@@ -293,7 +299,7 @@
     /* Declansatorul in forma lui normala (camp de formular) avea 40px. Variantele
        comprimate — iconita din randul de task — isi impun singure 44 in
        componentele lor. */
-    .dp-trigger { min-height: var(--tap-min); }
+    .dp-trigger { min-height: var(--tap-sheet); }
   }
 
   /* Fara blur, ca la voalul modalului: sticla a iesit din sistem. */

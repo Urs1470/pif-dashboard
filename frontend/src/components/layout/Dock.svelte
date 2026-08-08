@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { fly, fade } from 'svelte/transition'
-  import { Search, MoreHorizontal } from '@lucide/svelte'
+  import { Search, MoreHorizontal, Download } from '@lucide/svelte'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { router, link } from '../../lib/router.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
@@ -214,6 +214,34 @@
     foaieDeschisa = false
     deschideCautarea()
   }
+
+  // INSTALAREA PE ECRANUL PRINCIPAL — un rand, nu o pagina de setari.
+  //
+  // `main.js` prindea `beforeinstallprompt`, ii dadea `preventDefault()` (deci
+  // browserul nu-si mai arata singur indiciul) si expunea `window.pifInstallApp`.
+  // Pe care NU-l chema nimeni: zero apelanti in tot frontendul. Rezultatul net era
+  // ca aplicatia nu se putea instala nici de la noi, nici de la browser.
+  //
+  // Randul apare DOAR dupa `pif-install-ready`, adica doar cand exista efectiv un
+  // prompt de aratat: pe iPhone, in aplicatia deja instalata, sau in WebView-ul
+  // Android evenimentul nu vine niciodata, si atunci nici randul n-are ce cauta
+  // acolo. Dupa instalare pleaca — `pifInstallApp()` consuma promptul, care nu se
+  // mai poate folosi a doua oara.
+  let potInstala = $state(false)
+  onMount(() => {
+    const gata = () => { potInstala = true }
+    window.addEventListener('pif-install-ready', gata)
+    // Evenimentul poate fi deja trecut cand dockul se monteaza (`main.js` il
+    // arunca la incarcare), deci se intreaba si direct.
+    if (typeof window.pifPoateInstala === 'function') potInstala = window.pifPoateInstala()
+    return () => window.removeEventListener('pif-install-ready', gata)
+  })
+
+  async function instaleaza() {
+    foaieDeschisa = false
+    await window.pifInstallApp?.()
+    potInstala = window.pifPoateInstala?.() ?? false
+  }
 </script>
 
 <nav class="dock" class:hidden aria-label="Navigație principală">
@@ -268,6 +296,12 @@
               {item.label}
             </a>
           {/each}
+          {#if potInstala}
+            <span class="mm-linie" aria-hidden="true"></span>
+            <button class="mm-rand" onclick={instaleaza} role="menuitem">
+              <Download size={18} strokeWidth={1.5} /> Instalează pe ecranul principal
+            </button>
+          {/if}
         </div>
       </div>
     {/if}

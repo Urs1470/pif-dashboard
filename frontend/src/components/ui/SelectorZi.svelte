@@ -112,4 +112,15 @@
     transition: var(--transition-colors);
   }
   .sz-scoate:hover { background: var(--danger-subtle); color: var(--danger-deep); }
+
+  /* IN FOAIE, 48. Componenta asta traieste in foi si in panouri de replanificare,
+     iar foaia exista doar pe telefon (Modal devine sheet sub 768px) — deci pragul
+     de foaie se aplica exact aici, nu peste tot. „Scoate" ramane mai scund cu
+     bunastiinta: e actiunea din care pierzi ceva, si nu are voie sa fie la fel de
+     usor de nimerit ca cele trei care aseaza taskul pe o zi. */
+  @media (max-width: 768px) {
+    .sz-optiune,
+    .sz-dp :global(.dp-trigger) { min-height: var(--tap-sheet); }
+    .sz-scoate { min-height: var(--tap-min); }
+  }
 </style>

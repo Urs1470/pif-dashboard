@@ -688,34 +688,11 @@ input[type="checkbox"].cbx:focus {
   animation: htpulse 1.8s ease-out infinite;
 }
 
-.sw-update-bar {
-  position: fixed;
-  bottom: calc(var(--dock-h) + 28px + var(--safe-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
-  padding: 10px var(--space-20);
-  background: var(--bg-overlay);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  z-index: var(--z-toast);
-  font-size: var(--font-small);
-  color: var(--text);
-}
-.sw-update-bar button {
-  padding: 4px 12px;
-  background: var(--accent);
-  color: var(--accent-text);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-small);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
+/* `.sw-update-bar` a fost stearsa: anuntul de actualizare se randeaza prin
+   `Toast` (vezi `toastFix` in `stores/ui.svelte.js` si cele doua blocuri din
+   `main.js`). Banda era singura bucata de interfata construita cu
+   `document.createElement`, in afara Svelte — de aceea era si singura fara
+   `aria-live`, fara miscare, cu buton de 26px si imposibil de inchis. */
 
 /* ===== Utilitare Bento (redesign 2026) — partajate intre pagini ===== */
 .bento {

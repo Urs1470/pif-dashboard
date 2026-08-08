@@ -106,13 +106,15 @@
     position: relative;
     min-width: 0;
   }
+  /* Treapta MICRO, ca la Input — aceeasi eticheta peste tot. */
   .field-label {
-    font-size: var(--font-small);
-    font-weight: var(--fw-medium);
-    color: var(--text-secondary);
+    font-size: var(--font-label);
+    font-weight: var(--fw-semibold);
+    color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
   }
+  /* Aceeasi reteta ca `.field-input` (vezi nota din Input.svelte). */
   .field-select {
     display: flex;
     align-items: center;
@@ -121,34 +123,37 @@
     width: 100%;
     padding: 10px 12px;
     min-height: 46px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    border: none;
+    border-radius: var(--radius-sm);
+    box-shadow: inset 0 0 0 1px var(--border);
     color: var(--text);
+    font-family: inherit;
     font-size: var(--font-body);
     text-align: left;
-    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    transition: box-shadow var(--dur-fast) var(--ease);
     cursor: pointer;
   }
   .field-select.sm {
     min-height: 38px;
     padding: 6px 10px;
-    font-size: var(--font-small);
+    font-size: var(--font-control);
+    font-weight: var(--fw-semibold);
   }
   .fs-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .field-select.ph .fs-text { color: var(--text-dim); }
   .field-select :global(.fs-chev) { color: var(--text-dim); flex-shrink: 0; transition: transform var(--dur-fast) var(--ease); }
   .field-select.open :global(.fs-chev) { transform: rotate(180deg); }
-  .field-select:hover:not(:disabled):not(:focus) { border-color: var(--text-dim); }
+  .field-select:hover:not(:disabled):not(:focus) { box-shadow: inset 0 0 0 1px var(--border-strong); }
   .field-select:focus, .field-select.open {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: var(--focus-ring);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
   }
   .field-select:disabled { opacity: 0.5; cursor: not-allowed; }
-  .has-error .field-select { border-color: var(--danger); }
-  .has-error .field-select:focus { box-shadow: 0 0 0 3px var(--danger-subtle); }
+  .has-error .field-select { box-shadow: inset 0 0 0 1px var(--danger); }
+  .has-error .field-select:focus { box-shadow: inset 0 0 0 1.5px var(--danger); }
 
+  /* Meniul e o suprafata FLOTANTA: se desprinde prin umbra, nu prin chenar. */
   .menu {
     position: absolute;
     top: calc(100% + 5px);
@@ -158,9 +163,8 @@
     max-width: 260px;
     z-index: var(--z-dropdown, 50);
     background: var(--bg-overlay);
-    border: 1px solid var(--border-strong);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
     padding: 4px;
     max-height: 260px;
     overflow-y: auto;
@@ -191,6 +195,8 @@
        loc din aplicatie in care alegi randul de deasupra celui pe care il voiai.
        Meniul se intinde si pe toata latimea declansatorului: la 260px ramanea
        ingust langa un camp de 343px si taia etichetele lungi. */
+    /* In foaie, 48 — aceeasi regula ca la Input. */
+    .field-select { min-height: var(--tap-sheet); }
     .field-select.sm { min-height: var(--tap-min); }
     .opt { min-height: var(--tap-min); font-size: var(--font-body); padding: 8px 12px; }
     .menu { max-width: none; max-height: 50dvh; overscroll-behavior: contain; }

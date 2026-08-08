@@ -26,33 +26,36 @@
     flex-direction: column;
     gap: var(--space-xs);
   }
+  /* Treapta MICRO, ca la Input — aceeasi eticheta peste tot. */
   .field-label {
-    font-size: var(--font-small);
-    font-weight: var(--fw-medium);
-    color: var(--text-secondary);
+    font-size: var(--font-label);
+    font-weight: var(--fw-semibold);
+    color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
   }
+  /* Aceeasi reteta ca `.field-input` (vezi nota din Input.svelte): suprafata a
+     doua, muchie interioara de 1px, raza de control, focus la 1,5px accent. */
   .field-textarea {
     padding: 10px 12px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    border: none;
+    border-radius: var(--radius-sm);
+    box-shadow: inset 0 0 0 1px var(--border);
     color: var(--text);
     font-size: var(--font-body);
     font-family: inherit;
     resize: vertical;
     min-height: 72px;
     line-height: var(--lh-normal);
-    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    transition: box-shadow var(--dur-fast) var(--ease);
   }
   .field-textarea:hover:not(:disabled):not(:focus) {
-    border-color: var(--text-dim);
+    box-shadow: inset 0 0 0 1px var(--border-strong);
   }
   .field-textarea:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: var(--focus-ring);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
   }
   .field-textarea:disabled {
     opacity: 0.5;
@@ -62,9 +65,9 @@
     color: var(--text-dim);
   }
   .has-error .field-textarea {
-    border-color: var(--danger);
+    box-shadow: inset 0 0 0 1px var(--danger);
   }
   .has-error .field-textarea:focus {
-    box-shadow: 0 0 0 3px var(--danger-subtle);
+    box-shadow: inset 0 0 0 1.5px var(--danger);
   }
 </style>

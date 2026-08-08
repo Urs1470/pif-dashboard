@@ -113,6 +113,16 @@
       {/each}
     </div>
     <svg bind:this={svgEl} viewBox="0 0 {W} {H}" role="img" aria-label="{d.c.yLabel} în funcție de {d.c.xLabel}" onmousemove={onMove} onmouseleave={onLeave}>
+      <!-- Umbra tooltipului. In SVG nu exista `box-shadow`, iar fara ea caseta
+           avea nevoie de un chenar ca sa se desprinda de curbe — adica exact
+           conturul pe care sistemul l-a scos de pe suprafetele flotante.
+           `--shadow-md` nu se poate cita intr-un filtru, deci valorile sunt
+           echivalentul lui la scara desenului: o umbra scurta si joasa. -->
+      <defs>
+        <filter id="chart-umbra" x="-30%" y="-30%" width="160%" height="180%">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgb(0 0 0)" flood-opacity="0.28" />
+        </filter>
+      </defs>
       {#each d.c.zones || [] as z}
         <rect class="zone-band" x={d.xp(z.x0)} y={T} width={Math.max(0, d.xp(z.x1) - d.xp(z.x0))} height={H - T - B} fill={z.color || 'var(--accent)'} />
         <text x={(d.xp(z.x0) + d.xp(z.x1)) / 2} y={T + 11} class="zone-lbl" text-anchor="middle" fill={z.color || 'var(--accent)'}>{z.label}</text>
@@ -145,7 +155,7 @@
           {#if it.y != null}<circle cx={hover.px} cy={d.yp(it.y)} r="3.5" fill={it.color} stroke="var(--bg-surface)" stroke-width="1.2" />{/if}
         {/each}
         <g transform="translate({hover.px > W / 2 ? L + 4 : W - R - 116}, {T + 4})">
-          <rect width="112" height={14 + hover.items.length * 12} rx="3" class="tip-bg" />
+          <rect width="112" height={14 + hover.items.length * 12} rx="8" class="tip-bg" filter="url(#chart-umbra)" />
           <text x="6" y="11" class="tip-x">{d.c.xLabel.replace(/[_^{}]/g, '')}: {d.fmt(hover.x)}</text>
           {#each hover.items as it, i}
             <text x="6" y={24 + i * 12} class="tip-v"><tspan fill={it.color}>■ </tspan>{d.fmt(it.y)}</text>
@@ -181,7 +191,10 @@
   /* Eticheta cu halou (paint-order:stroke in culoarea fundalului) ca sa ramana lizibila peste curbe/grila. */
   .zone-lbl { font-size: var(--font-small); font-weight: var(--fw-semibold); paint-order: stroke; stroke: var(--bg-surface); stroke-width: 2.4px; stroke-linejoin: round; }
   .cross { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; }
-  .tip-bg { fill: var(--bg-overlay); stroke: var(--border); stroke-width: 1; opacity: 0.96; }
+  /* Suprafata OPACA, cu umbra din filtru — nu chenar si nu semitransparenta:
+     prin 4% de transparenta se citeau curbele pe sub cifre, adica exact ce
+     tooltipul trebuia sa scoata din calea ochiului. */
+  .tip-bg { fill: var(--bg-overlay); }
   .tip-x { fill: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); font-family: var(--font-mono); }
   .tip-v { fill: var(--text-secondary); font-size: var(--font-small); font-family: var(--font-mono); }
   .chart-desc { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); margin-top: 6px; }

@@ -6,6 +6,7 @@ import { navigate } from './lib/router.svelte.js'
 import { todayISO } from './lib/calendarDates.js'
 import { esteNativ, reprogrameaza } from './lib/notificari.js'
 import { verifica as verificaActualizarea, descarcaSiInstaleaza } from './lib/actualizare.js'
+import { toastFix, actualizeazaToast } from './stores/ui.svelte.js'
 // Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
 // deci extrasele de carti se vad. Pe /calc public, calc-main.js le gateaza dupa autentificare.
 
@@ -99,23 +100,40 @@ if ('serviceWorker' in navigator && !import.meta.env.DEV) {
   })
 }
 
+// ANUNTUL DE ACTUALIZARE E UN TOAST, NU O BANDA PROPRIE.
+//
+// Mecanica de aici nu s-a schimbat cu nimic — verificarea la 15 minute,
+// `skipWaiting` inainte de reload, procentul in timpul descarcarii, eroarea care
+// RAMANE pe ecran in loc sa treaca. S-a schimbat doar CINE deseneaza: banda era
+// construita cu `document.createElement`, deci era singurul loc de interfata din
+// aplicatie in afara Svelte — si se vedea (buton de 26px pe telefon, chenar
+// colorat, fara `aria-live`, imposibil de inchis, si se putea dubla).
+//
+// Toastul avea deja tot ce-i lipsea benzii. Vezi `toastFix` in `stores/ui`:
+// `cheie` tine una singura pe ecran, `prioritate` decide care, cand apar
+// amandoua.
+const PRIO_INTERFATA = 1
+const PRIO_CARCASA = 2       // carcasa cere o INSTALARE; interfata doar o reincarcare
+
 function showUpdateBanner(reg) {
-  const bar = document.createElement('div')
-  bar.className = 'sw-update-bar'
-  bar.innerHTML = '<span>Versiune nouă disponibilă</span><button>Actualizează</button>'
-  bar.querySelector('button').onclick = () => {
-    // (3) Reincarcam DUPA ce noul worker a preluat pagina. Un reload imediat era
-    // servit tot de workerul vechi: bannerul reaparea si nimic nu se schimba.
-    navigator.serviceWorker.addEventListener('controllerchange',
-      () => window.location.reload(), { once: true })
-    reg.waiting?.postMessage('skipWaiting')
-    // Plasa de siguranta daca `controllerchange` nu vine (worker blocat).
-    setTimeout(() => window.location.reload(), 2500)
-  }
-  document.body.appendChild(bar)
+  toastFix('actualizare', {
+    message: 'Versiune nouă a interfeței',
+    ico: 'reload',
+    actionLabel: 'Reîncarcă',
+    prioritate: PRIO_INTERFATA,
+    onAction: () => {
+      // (3) Reincarcam DUPA ce noul worker a preluat pagina. Un reload imediat era
+      // servit tot de workerul vechi: bannerul reaparea si nimic nu se schimba.
+      navigator.serviceWorker.addEventListener('controllerchange',
+        () => window.location.reload(), { once: true })
+      reg.waiting?.postMessage('skipWaiting')
+      // Plasa de siguranta daca `controllerchange` nu vine (worker blocat).
+      setTimeout(() => window.location.reload(), 2500)
+    },
+  })
 }
 
-// ACTUALIZAREA CARCASEI NATIVE — acelasi banner ca cel al service worker-ului,
+// ACTUALIZAREA CARCASEI NATIVE — acelasi anunt ca cel al service worker-ului,
 // pentru ca inseamna acelasi lucru pentru tine: „ce rulezi e vechi, apasa aici".
 // Diferenta e sub capota (un APK, nu un bundle) si nu are de ce sa se vada.
 // Verificam o SINGURA data, la pornire: carcasa se schimba de cateva ori pe an,
@@ -124,29 +142,50 @@ if (esteNativ()) {
   ;(async () => {
     const stare = await verificaActualizarea(apiJson)
     if (!stare?.nou) return
-    const bar = document.createElement('div')
-    bar.className = 'sw-update-bar'
     const mb = stare.size ? ` · ${(stare.size / 1048576).toFixed(1)} MB` : ''
-    bar.innerHTML = `<span>Aplicație nouă: ${stare.nume}${mb}</span><button>Actualizează</button>`
-    const buton = bar.querySelector('button')
-    buton.onclick = async () => {
-      buton.disabled = true
-      buton.textContent = 'Descarc…'
+
+    async function descarca() {
+      // Chipul nu mai e buton cat timp se descarca: `progres` il transforma in
+      // afisaj. Asa nu mai trebuie disabled si nu mai poti porni a doua
+      // descarcare peste prima.
+      actualizeazaToast(id, { message: 'Se descarcă…', rol: 'accent', actionLabel: '', progres: 0 })
       try {
-        await descarcaSiInstaleaza((p) => { buton.textContent = `${p}%` })
-        buton.textContent = 'Instalează…'   // dialogul de sistem preia de aici
+        await descarcaSiInstaleaza((p) => actualizeazaToast(id, { progres: p }))
+        // Dialogul de sistem preia de aici.
+        actualizeazaToast(id, { message: 'Instalează…', progres: null })
       } catch (e) {
-        // Mesajul ramane PE BANNER, nu intr-un toast care pleaca: daca a picat
-        // permisiunea de instalare, trebuie sa poti citi ce ai de facut.
-        bar.querySelector('span').textContent = e.message
-        buton.disabled = false
-        buton.textContent = 'Încearcă din nou'
+        // Mesajul serverului RAMANE pe ecran, exact cum vine, si nu pleaca singur:
+        // daca a picat permisiunea de instalare, trebuie sa poti citi ce ai de
+        // facut. Tocmai de asta anuntul e un toast FIX, nu unul de 4 secunde.
+        actualizeazaToast(id, {
+          message: e.message, rol: 'restant', ico: 'eroare',
+          progres: null, actionLabel: 'Încearcă din nou',
+        })
       }
     }
-    document.body.appendChild(bar)
+
+    const id = toastFix('actualizare', {
+      message: `Aplicație nouă: ${stare.nume}${mb}`,
+      ico: 'descarca',
+      actionLabel: 'Actualizează',
+      prioritate: PRIO_CARCASA,
+      onAction: descarca,
+    })
   })()
 }
 
+// INSTALAREA PE ECRANUL PRINCIPAL.
+//
+// `preventDefault()` opreste indiciul propriu al browserului, deci de aici
+// inainte SINGURA cale de instalare e a noastra. Multa vreme n-a existat niciuna:
+// `pifInstallApp` era expus si nu-l chema nimeni, deci aplicatia nu se putea
+// instala nici de la noi, nici de la browser. Cine il cheama acum: randul din
+// foaia „Mai mult" a docului (`Dock.svelte`), aratat doar dupa evenimentul de
+// mai jos.
+//
+// `pifPoateInstala` exista fiindca evenimentul poate trece INAINTE ca dockul sa
+// se monteze: un ascultator pus dupa aceea n-ar mai auzi nimic, iar randul n-ar
+// aparea decat la urmatoarea incarcare.
 let deferredInstallPrompt = null
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault()
@@ -154,10 +193,14 @@ window.addEventListener('beforeinstallprompt', (e) => {
   window.dispatchEvent(new CustomEvent('pif-install-ready'))
 })
 
+window.pifPoateInstala = () => !!deferredInstallPrompt
+
 window.pifInstallApp = async () => {
   if (!deferredInstallPrompt) return false
   deferredInstallPrompt.prompt()
   const result = await deferredInstallPrompt.userChoice
+  // Promptul se consuma la prima folosire, indiferent de raspuns: browserul nu
+  // mai accepta un al doilea `prompt()` pe acelasi eveniment.
   deferredInstallPrompt = null
   return result.outcome === 'accepted'
 }

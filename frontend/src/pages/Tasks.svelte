@@ -3,7 +3,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, DUR_FAST } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink, CalendarSync, CircleAlert, RotateCw, Unplug, Link as LinkIcon } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
@@ -493,6 +493,18 @@
       },
     })
   }
+
+  // INTREBAREA DE STERGERE SE SCRIE CU NUMELE SI CU CE DISPARE ODATA CU EL.
+  // Vezi `ConfirmDialog`: butonul poarta verbul si obiectul, iar consecinta are
+  // voie sa fie un numar, fiindca ea decide actiunea.
+  //
+  // Subtaskurile se numara din `subtasksCache`, care e deja plin cand se poate
+  // apasa „Șterge": pe desktop butonul apare la hover, iar hoverul chema deja
+  // `preincarca`; in foaie le incarca `deschideFoaia` inainte s-o ridice. Daca
+  // totusi n-au apucat sa vina, propozitia NU inventeaza o cifra — spune doar ce
+  // stie sigur.
+  const taskDeSters = $derived(globalTasks.items.find(x => x.id === taskDeleteId) || null)
+  const subDeSters = $derived(taskDeleteId ? (subtasksCache[taskDeleteId] || null) : null)
 
   async function doDeleteTask() {
     if (!taskDeleteId) return
@@ -1182,7 +1194,12 @@
   {/snippet}
 </Modal>
 
-<ConfirmDialog bind:open={showTaskDelete} title="Șterge task" message="Ștergi acest task? Toate subtaskurile asociate vor fi șterse." confirmLabel="Șterge" onconfirm={doDeleteTask} />
+<ConfirmDialog bind:open={showTaskDelete}
+               title={taskDeSters ? `Ștergi „${taskDeSters.titlu}”?` : 'Ștergi taskul?'}
+               message={subDeSters?.length
+                 ? `Dispar odată cu el ${subDeSters.length} ${subDeSters.length === 1 ? 'subtask' : 'subtaskuri'}. Nu se poate anula.`
+                 : 'Nu se poate anula.'}
+               confirmLabel="Șterge taskul" onconfirm={doDeleteTask} />
 
 <!-- Titlul e TASKUL, nu „Notițe — <task>": ai deschis nota DIN el, deci prefixul
      spunea ce se vede oricum, si tocmai el facea randul sa se taie. Antetul e o
@@ -1192,57 +1209,91 @@
             valoare={noteDraft} tools="nota" salveaza={noteSalveaza}
             placeholder="Scrie notițe pentru acest task…" />
 
-<!-- Sincronizarea cu Google Calendar (doar sfera personala). Trei stari:
-     neconfigurat (doar fallback .ics), configurat-neconectat (buton OAuth),
-     conectat (stare + resincronizare/deconectare). -->
+<!-- O LEGATURA CU UN SERVICIU DIN AFARA SE CITESTE CA O STARE, NU CA UN FORMULAR.
+     E pornita sau nu, iar cand e pornita trebuie sa stii ce se sincronizeaza si
+     cand s-a intamplat ultima oara. Era o insiruire de paragrafe si butoane
+     egale, in care „Deconectează" (rar, si ireversibil pe jumatate) statea la fel
+     de tare ca „Resincronizează" (des si inofensiv).
+     Ordinea: iconita + nume + sursa · pastila de stare · ce se sincronizeaza ·
+     ultima sincronizare · (eroarea) · actiunea principala · (linie) · .ics si
+     Deconectează. Zona de lipit JSON apare DOAR cand nu exista credentiale — nu e
+     un camp permanent intr-un ecran deschis zilnic. -->
 <Modal bind:open={showGoogleModal} title="Google Calendar" size="sm">
   {#if googleStatus === null}
     <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
-  {:else if !googleStatus.configurat || schimbCred}
-    <p class="g-text">Lipește mai jos conținutul fișierului JSON descărcat din Google Cloud
-      Console (clientul OAuth de tip „Web application”). Se salvează pe server și nu intră
-      în backup-uri.</p>
-    <Textarea label="JSON-ul descărcat de la Google" bind:value={credText} rows={4}
-              placeholder={'{"web": {"client_id": "...", "client_secret": "..."}}'} />
-    <div class="g-actiuni">
-      <Button loading={credSaving} disabled={!credText.trim()} onclick={salveazaCred}>Salvează</Button>
-      {#if schimbCred}
-        <Button variant="secondary" onclick={() => { schimbCred = false; credText = '' }}>Anulează</Button>
-      {:else}
-        <Button variant="secondary" onclick={copiazaLinkIcs}>Copiază link .ics</Button>
-      {/if}
-    </div>
-  {:else if !googleStatus.conectat}
-    <p class="g-text">Conectează-ți contul Google: taskurile personale cu termen apar în
-      calendarul „PIF Personal” în momentul în care le setezi.</p>
-    {#if googleStatus.last_error}<p class="g-eroare">{googleStatus.last_error}</p>{/if}
-    <div class="g-actiuni">
-      <Button onclick={() => { window.location.href = '/oauth/google/start' }}>Conectează cu Google</Button>
-      <Button variant="secondary" onclick={copiazaLinkIcs}>Copiază link .ics</Button>
-      {#if googleStatus.sursa === 'setari'}
-        <button class="g-link" onclick={() => { schimbCred = true }}>Schimbă credențialele</button>
-      {/if}
-    </div>
   {:else}
-    <div class="g-stare">
-      <div class="g-rand"><span class="g-et">Calendar</span><span class="g-val">{googleStatus.calendar || 'PIF Personal'}</span></div>
-      <div class="g-rand"><span class="g-et">Ultima sincronizare</span><span class="g-val">{googleStatus.last_sync ? formatDate(googleStatus.last_sync) : '—'}</span></div>
-      {#if googleStatus.last_error}<p class="g-eroare">{googleStatus.last_error}</p>{/if}
+    {@const cerCred = !googleStatus.configurat || schimbCred}
+    <div class="g-card">
+      <div class="g-cap">
+        <span class="g-emblema"><CalendarSync size={19} strokeWidth={1.5} /></span>
+        <div class="g-nume">
+          <span class="g-t">Google Calendar</span>
+          <span class="g-sub">
+            {#if !googleStatus.configurat}Fără credențiale
+            {:else if googleStatus.sursa === 'env'}Credențiale din serverul tău
+            {:else}Credențiale salvate pe server{/if}
+          </span>
+        </div>
+        <span class="g-pastila" class:on={googleStatus.conectat}>
+          {#if googleStatus.conectat}<Check size={13} strokeWidth={2} />Conectat{:else}Neconectat{/if}
+        </span>
+      </div>
+
+      {#if googleStatus.conectat}
+        <div class="g-stare">
+          <div class="g-rand"><span class="g-et">Se scrie în</span><span class="g-val">{googleStatus.calendar || 'PIF Personal'}</span></div>
+          <span class="g-linie"></span>
+          <div class="g-rand"><span class="g-et">Ultima sincronizare</span><span class="g-val g-mono">{googleStatus.last_sync ? formatDate(googleStatus.last_sync) : '—'}</span></div>
+        </div>
+      {:else if !cerCred}
+        <p class="g-text">Taskurile personale cu termen apar în calendarul „PIF Personal” în
+          momentul în care le setezi.</p>
+      {/if}
+
+      <!-- Mesajul serverului se scrie EXACT cum vine, in mono: e singurul indiciu
+           despre ce s-a stricat, iar rescris de noi ar deveni o presupunere. -->
+      {#if googleStatus.last_error}
+        <div class="g-eroare"><CircleAlert size={15} strokeWidth={1.5} /><span>{googleStatus.last_error}</span></div>
+      {/if}
+
+      {#if cerCred}
+        <p class="g-text">Lipește conținutul fișierului JSON descărcat din Google Cloud
+          Console (clientul OAuth de tip „Web application”). Se salvează pe server și nu intră
+          în backup-uri.</p>
+        <Textarea label="JSON-ul descărcat de la Google" bind:value={credText} rows={4}
+                  placeholder={'{"web": {"client_id": "...", "client_secret": "..."}}'} />
+        <button class="g-main" disabled={credSaving || !credText.trim()} onclick={salveazaCred}>Salvează credențialele</button>
+      {:else if !googleStatus.conectat}
+        <button class="g-main" onclick={() => { window.location.href = '/oauth/google/start' }}>Conectează cu Google</button>
+      {:else}
+        <button class="g-main" disabled={googleBusy} onclick={resyncGoogle}>
+          <RotateCw size={16} strokeWidth={1.5} />Resincronizează
+        </button>
+      {/if}
+
+      <!-- Sub linie stau actiunile rare: linkul .ics (drumul de rezerva, cand
+           OAuth-ul nu merge) si deconectarea. -->
+      <div class="g-rar">
+        <span class="g-linie"></span>
+        <div class="g-rar-rand">
+          <button class="g-actiune" onclick={copiazaLinkIcs}><LinkIcon size={15} strokeWidth={1.5} />Copiază link .ics</button>
+          <span class="g-sp"></span>
+          {#if googleStatus.conectat}
+            <button class="g-actiune g-per" onclick={() => showGoogleDisconnect = true}><Unplug size={15} strokeWidth={1.5} />Deconectează</button>
+          {:else if schimbCred}
+            <button class="g-actiune" onclick={() => { schimbCred = false; credText = '' }}>Renunță la schimbare</button>
+          {:else if googleStatus.sursa === 'setari'}
+            <button class="g-actiune" onclick={() => { schimbCred = true }}>Schimbă credențialele</button>
+          {/if}
+        </div>
+      </div>
     </div>
   {/if}
-  {#snippet footer()}
-    {#if googleStatus?.configurat && googleStatus?.conectat}
-      <div class="modal-actions">
-        <Button variant="secondary" disabled={googleBusy} onclick={resyncGoogle}>Resincronizează</Button>
-        <Button variant="danger" onclick={() => showGoogleDisconnect = true}>Deconectează</Button>
-      </div>
-    {/if}
-  {/snippet}
 </Modal>
 
-<ConfirmDialog bind:open={showGoogleDisconnect} title="Deconectează Google Calendar"
-               message="Se deconectează de la Google. Evenimentele deja create rămân în calendar."
-               confirmLabel="Deconectează" onconfirm={disconnectGoogle} />
+<ConfirmDialog bind:open={showGoogleDisconnect} title="Deconectezi Google Calendar?"
+               message="Taskurile personale nu se mai scriu în calendar. Evenimentele deja create rămân acolo."
+               confirmLabel="Deconectează contul" onconfirm={disconnectGoogle} />
 
 <!-- Notificările zilnice. Aceeași scară în trepte ca modalul Google:
      indisponibil pe server → browser nesuportat → permisiune refuzată →
@@ -1474,14 +1525,59 @@
 
   /* Modalul Google Calendar — text de stare, nu formular. */
   .g-skel { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .g-text { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); }
+  .g-text { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); text-wrap: pretty; }
   .g-mono { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text); }
-  .g-actiuni { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-md); }
-  .g-stare { display: flex; flex-direction: column; gap: var(--space-xs); }
-  .g-rand { display: flex; justify-content: space-between; gap: var(--space-md); font-size: var(--font-small); }
-  .g-et { color: var(--text-dim); }
-  .g-val { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text); }
-  .g-eroare { font-size: var(--font-small); color: var(--danger); margin-top: var(--space-sm); }
+
+  /* ===== Legatura cu Google, ca STARE (N8) ===== */
+  .g-card { display: flex; flex-direction: column; gap: var(--space-md); }
+  .g-cap { display: flex; align-items: center; gap: 11px; }
+  .g-emblema { flex: none; display: grid; place-items: center; width: 38px; height: 38px;
+    border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text-secondary); }
+  .g-nume { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .g-t { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); }
+  .g-sub { font-size: var(--font-small); color: var(--text-dim); }
+  /* Pastila spune UN lucru: e pornita sau nu. Verde in tenta cu cerneala adanca
+     cand e; neutra cand nu — „neconectat" nu e o eroare, e o stare de repaus. */
+  .g-pastila { flex: none; display: inline-flex; align-items: center; gap: 6px;
+    height: 26px; padding: 0 10px; border-radius: var(--radius-xs);
+    background: var(--bg-elevated); color: var(--text-dim);
+    font-size: var(--font-small); font-weight: var(--fw-semibold); }
+  .g-pastila.on { background: var(--success-subtle); color: var(--success-deep); }
+
+  .g-stare { display: flex; flex-direction: column; }
+  .g-rand { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
+    min-height: 38px; font-size: var(--font-body); color: var(--text-secondary); }
+  .g-et { color: var(--text-secondary); }
+  .g-val { color: var(--text); text-align: right; }
+  .g-linie { height: 1px; background: var(--border); }
+
+  .g-eroare { display: flex; gap: 9px; padding: 11px 13px; border-radius: var(--radius-sm);
+    background: var(--danger-subtle); color: var(--danger-deep);
+    font-family: var(--font-mono); font-size: var(--font-small); line-height: var(--lh-snug);
+    overflow-wrap: anywhere; }
+  .g-eroare :global(svg) { flex: none; margin-top: 2px; }
+
+  /* O SINGURA actiune principala pe ecran, pe toata latimea: care e ea depinde de
+     starea de deasupra, si tocmai de aceea nu poate sta langa alta la fel de tare. */
+  .g-main { display: flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: var(--tap-min); border-radius: var(--radius-sm);
+    background: var(--accent); color: var(--accent-text);
+    font-size: var(--font-body); font-weight: var(--fw-semibold);
+    cursor: pointer; transition: var(--transition-pressable); }
+  .g-main:hover:not(:disabled) { background: var(--accent-deep); }
+  .g-main:active:not(:disabled) { transform: scale(var(--press-scale)); }
+  .g-main:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .g-rar { display: flex; flex-direction: column; gap: 10px; }
+  .g-rar-rand { display: flex; align-items: center; gap: var(--space-md); }
+  .g-sp { flex: 1; }
+  .g-actiune { display: inline-flex; align-items: center; gap: 7px; height: 38px;
+    background: none; border: none; color: var(--text-dim);
+    font-family: inherit; font-size: var(--font-control); font-weight: var(--fw-semibold);
+    cursor: pointer; transition: var(--transition-colors); }
+  .g-actiune:hover { color: var(--text); }
+  .g-per { color: var(--danger-deep); }
+  .g-per:hover { color: var(--danger); }
   .g-link { font-size: var(--font-small); color: var(--text-dim); background: none; border: none;
             cursor: pointer; text-decoration: underline; padding: 0; align-self: center; }
   .g-link:hover { color: var(--text); }
@@ -1683,9 +1779,11 @@
   .ta-dp :global(.dp-trigger) { min-height: 0; flex-direction: row-reverse; }
 
   /* COLOANA DE TERMEN — pironita, 46px, mono ca sa se alinieze pe verticala.
-     Severitatea se citeste din ea SI din inelul bifei, amandoua din `--ring`. */
+     Severitatea se citeste din ea SI din inelul bifei, amandoua din `--ring`.
+     13, nu 12: pe rand termenul e METADATA, iar 12 e treapta etichetelor
+     majuscule — o alta clasa de text, cu alt rol si alt tracking. */
   .ttermen { flex: none; width: 46px; text-align: right;
-    font-family: var(--font-mono); font-size: var(--font-label);
+    font-family: var(--font-mono); font-size: var(--font-small);
     color: var(--text-dim); font-variant-numeric: tabular-nums;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ttermen.sev { color: var(--danger); }
@@ -1924,15 +2022,23 @@
        deasupra spune deja azi/mâine/zilele astea, cu actiuni cu tot. Pe desktop
        ramane — acolo sta pe coloana din dreapta si nu ia nimic de la lista. */
 
-    /* Interiorul taskului deschis: aici se bifeaza subtaskuri si se scrie unul nou,
-       deci sunt tinte ca oricare altele. Erau 28-39px. */
-    .sub-add input, .sub-add-btn { min-height: var(--tap-min); }
-    .sub-add-btn { width: var(--tap-min); }
+    /* IN FOAIE, 48 — NU 44.
+       `--tap-sheet` era definit in tokens si folosit intr-un singur loc din tot
+       frontendul, deci foile mergeau la minimul de 44. Diferenta e a contextului,
+       nu a gustului: 44 e pragul de la care NIMERESTI, iar in foaie apesi cu
+       telefonul in mana, adesea pe teren, pe randuri lipite unul de altul. Cele
+       44 raman pe controalele PAGINII (bifa din lista, filtrele, butoanele din
+       cap); ce e mai jos e continutul foii.
+       Interiorul taskului deschis: aici se bifeaza subtaskuri si se scrie unul nou. */
+    .ts-check { min-width: var(--tap-sheet); min-height: var(--tap-sheet); }
+    .ts-rand { min-height: var(--tap-sheet); }
+    .sub-add input, .sub-add-btn { min-height: var(--tap-sheet); }
+    .sub-add-btn { width: var(--tap-sheet); }
     /* Cardul isi pastreaza padding-ul orizontal si pe telefon — `2px 0` de aici
        anula (a doua oara) rama-la-0px reparata mai sus. Vertical ramane strans:
        inaltimea o da oricum bifa de 40px. */
-    .sub-row { padding: 0 6px; min-height: var(--tap-min); }
-    .sub-nou { min-height: var(--tap-min); font-size: var(--font-small); }
+    .sub-row { padding: 0 6px; min-height: var(--tap-sheet); }
+    .sub-nou { min-height: var(--tap-sheet); font-size: var(--font-small); }
     .sub-nou-p { width: 26px; }
     /* ACEEASI SOCOTEALA CA LA RANDUL PARINTE, care a coborat de la 96px la 66px
        pana la prima litera. Masurat pe 390px, un subtask incepea la x=111: 28%
@@ -1958,7 +2064,7 @@
     /* Randul devine pista: invelisul se translateaza peste fundalul colorat.
        Aceeasi mecanica exacta ca la `.trow`, doar cu metricile subtaskului. */
     .sub-row { position: relative; overflow: hidden; touch-action: pan-y; padding: 0; }
-    .sub-row .gl-fata { padding: 0 6px; gap: 9px; min-height: var(--tap-min);
+    .sub-row .gl-fata { padding: 0 6px; gap: 9px; min-height: var(--tap-sheet);
       background: var(--bg-overlay); border-radius: var(--radius-xs); }
     .sub-row:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
     /* Titlul e tinta cea mai mare si face lucrul cel mai des: bifeaza. */
@@ -1968,12 +2074,12 @@
        titlul la `--font-body` (14.4px) textul crestea cu 1.6px fix cand incepeai
        sa-l editezi. Egalarea se face in sus, nu in jos — sub 16 nu se poate. */
     .sub-title, .sub-edit { font-size: var(--font-input-mobile); }
-    .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); padding: 0 16px;
+    .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-sheet); padding: 0 16px;
       font-size: var(--font-small); }
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */
     .qa-hint { display: none; }
-    .td-link { min-height: var(--tap-min); font-size: var(--font-small); }
-    .td-dp :global(.dp-trigger) { min-height: var(--tap-min); font-size: var(--font-small); }
+    .td-link { min-height: var(--tap-sheet); font-size: var(--font-small); }
+    .td-dp :global(.dp-trigger) { min-height: var(--tap-sheet); font-size: var(--font-small); }
     .td-jos { gap: var(--space-lg); }
   }
 </style>

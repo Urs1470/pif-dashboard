@@ -23,15 +23,25 @@
 </div>
 
 <style>
+  /* ACELASI SHELL, DOAR FARA DOCK SI FARA MARCA. Calculatorul public e aceeasi
+     aplicatie vazuta din afara, nu alta — deci nici comutatorul de tema nu e un
+     obiect propriu: e o suprafata flotanta ca oricare alta, adica umbra, nu
+     chenar, si aceeasi raza de control. */
   .sa { min-height: 100dvh; background: var(--bg); color: var(--text); }
-  /* fara header — doar un buton mic flotant pentru tema */
   .sa-theme {
     position: fixed; top: 12px; right: 14px; z-index: 50;
     display: inline-flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; border-radius: var(--radius-sm);
-    border: 1px solid var(--border); color: var(--text-dim); background: var(--bg-surface); cursor: pointer;
+    width: 36px; height: 36px; border-radius: var(--radius-sm);
+    border: none; color: var(--text-dim); background: var(--bg-surface);
+    box-shadow: var(--shadow-sm); cursor: pointer;
+    transition: var(--transition-pressable);
   }
-  .sa-theme:hover { border-color: var(--accent); color: var(--accent); }
+  .sa-theme:hover { background: var(--bg-hover); color: var(--text); }
+  .sa-theme:active { transform: scale(var(--press-scale)); }
   .sa-main { max-width: 1400px; margin: 0 auto; }
   .sa-foot { text-align: center; padding: 18px; font-size: var(--font-small); color: var(--text-dim); border-top: 1px solid var(--border); }
+
+  @media (max-width: 768px) {
+    .sa-theme { width: var(--tap-min); height: var(--tap-min); }
+  }
 </style>

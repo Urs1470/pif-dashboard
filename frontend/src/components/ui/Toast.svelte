@@ -1,5 +1,5 @@
 <script>
-  import { X, Info, CircleCheck, CircleAlert } from '@lucide/svelte'
+  import { X, Info, CircleCheck, CircleAlert, ArrowDownToLine, RefreshCw } from '@lucide/svelte'
   import { fly } from 'svelte/transition'
   import { ui, closeToast, runToastAction } from '../../stores/ui.svelte.js'
   import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
@@ -17,17 +17,34 @@
   // sa arate ca o eroare.
   const ICO = { success: CircleCheck, error: CircleAlert, warning: CircleAlert, info: Info }
   const ROL = { success: 'facut', error: 'restant', warning: 'restant', info: 'neutru' }
+
+  // ICONITELE TOASTULUI FIX. Patru stari, aceeasi forma: disponibil (sageata in
+  // jos) · se descarca (chip cu procent) · eroare (cerc de alerta, in restant) ·
+  // interfata (reincarcare). Numele sunt cerute explicit de apelant, nu deduse
+  // din `type`: aici starea nu e „a mers / n-a mers", e „ce urmeaza sa faci".
+  const ICO_FIX = { descarca: ArrowDownToLine, reload: RefreshCw, eroare: CircleAlert, info: Info }
 </script>
 
 {#if ui.toasts.length > 0}
   <div class="toast-container" aria-live="polite">
     {#each ui.toasts as t (t.id)}
-      {@const Ico = ICO[t.type] ?? Info}
-      <div class="toast rol-{ROL[t.type] ?? 'neutru'}"
+      {@const Ico = (t.ico ? ICO_FIX[t.ico] : ICO[t.type]) ?? Info}
+      <div class="toast rol-{t.rol ?? ROL[t.type] ?? 'neutru'}"
            transition:fly={{ y: 16, duration: motionDuration(DUR_BASE), easing: EASE }}>
         <Ico size={17} strokeWidth={1.5} class="toast-ico" />
         <span class="toast-text">{t.message}</span>
-        {#if t.actionLabel}
+        {#if t.progres != null}
+          <!-- CHIPUL CARE POARTA PROCENT. Acelasi obiect ca butonul de langa el —
+               aceeasi inaltime, aceeasi raza, aceeasi tenta — doar ca nu se apasa
+               si are o umplere in spatele cifrei. Procentul e in mono fiindca se
+               schimba de zeci de ori pe secunda: cu latimi de cifra inegale,
+               chipul ar pulsa. -->
+          <span class="toast-action toast-progres" style="--p: {t.progres}%"
+                role="progressbar" aria-valuenow={t.progres} aria-valuemin="0" aria-valuemax="100">
+            <span class="toast-umplere" aria-hidden="true"></span>
+            <span class="toast-procent">{t.progres}%</span>
+          </span>
+        {:else if t.actionLabel}
           <button class="toast-action" onclick={() => runToastAction(t.id)}>{t.actionLabel}</button>
         {/if}
         <button class="toast-close" onclick={() => closeToast(t.id)} aria-label="Închide">
@@ -45,6 +62,7 @@
     right: var(--space-lg);
     display: flex;
     flex-direction: column;
+    gap: var(--space-sm);
     z-index: var(--z-toast);
   }
 
@@ -73,6 +91,9 @@
   .rol-facut   { --rol: var(--success); }
   .rol-restant { --rol: var(--danger); }
   .rol-neutru  { --rol: var(--text-dim); }
+  /* Cat timp se intampla ceva, iconita e in accentul ADANC: e singurul semn ca
+     lucrarea merge, cand chipul de langa arata doar o cifra. */
+  .rol-accent  { --rol: var(--accent-deep); }
 
   .toast-text { flex: 1; min-width: 0; }
 
@@ -92,8 +113,23 @@
     white-space: nowrap;
     transition: var(--transition-pressable);
   }
-  .toast-action:hover { background: var(--accent); color: var(--accent-text); }
-  .toast-action:active { transform: scale(var(--press-scale)); }
+  button.toast-action:hover { background: var(--accent); color: var(--accent-text); }
+  button.toast-action:active { transform: scale(var(--press-scale)); }
+
+  /* Umplerea sta SUB cifra, nu in locul chipului: chipul isi pastreaza forma si
+     tenta, iar progresul e un strat peste ea. Altfel bara ar creste de la zero
+     si primul procent ar arata ca un chip pe jumatate desenat. */
+  .toast-progres { position: relative; overflow: hidden; justify-content: center; min-width: 58px; }
+  .toast-umplere {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: var(--p, 0%);
+    background: color-mix(in srgb, var(--accent) 26%, transparent);
+    transition: width var(--dur-fast) linear;
+  }
+  /* `linear`, nu `--ease`: procentul creste monoton si des, iar o curba cu
+     acceleratie l-ar face sa para ca se opreste si porneste. */
+  .toast-procent { position: relative; font-family: var(--font-mono); }
 
   .toast-close {
     flex: none;
@@ -107,6 +143,10 @@
   }
   .toast-close:hover { background: var(--bg-hover); color: var(--text); }
 
+  @media (prefers-reduced-motion: reduce) {
+    .toast-umplere { transition: none; }
+  }
+
   @media (max-width: 768px) {
     /* PESTE DOCK, nu sub el: sub dock ar fi acoperit exact de bara pe care o ai
        mereu pe ecran, iar „Anulează" e butonul care nu are voie sa fie ascuns. */
@@ -117,6 +157,7 @@
     }
     .toast { min-height: 56px; max-width: 100%; padding: 0 8px 0 16px; font-size: var(--font-body); }
     .toast-action { height: var(--tap-min); padding: 0 16px; }
+    .toast-progres { min-width: 66px; }
     .toast-close { width: var(--tap-min); height: var(--tap-min); }
   }
 </style>

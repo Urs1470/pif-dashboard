@@ -5,8 +5,10 @@
   import Toast from './components/ui/Toast.svelte'
   import Tooltip from './components/ui/Tooltip.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
-  import { setLucideProps } from '@lucide/svelte'
-  import { router, resolveRoute, viewTransitionsOn, setPreincarcaRuta } from './lib/router.svelte.js'
+  import { setLucideProps, Compass, ArrowLeft } from '@lucide/svelte'
+  import EmptyState from './components/ui/EmptyState.svelte'
+  import ErrorState from './components/ui/ErrorState.svelte'
+  import { router, resolveRoute, viewTransitionsOn, setPreincarcaRuta, link } from './lib/router.svelte.js'
   import { motionDuration, DUR_FAST, EASE } from './lib/motion.svelte.js'
 
   /* ICONITELE SUNT LA 1.5, NU LA 2.
@@ -64,9 +66,14 @@
   let LoadedComponent = $state(null)
   let loadedParams = $state({})
   let loadError = $state(null)
+  // Se numara reincercarile, ca efectul de mai jos sa se re-rule pe aceeasi ruta.
+  // Fara ceva de care sa depinda, „Încearcă din nou" n-ar avea ce sa reporneasca:
+  // `rawMatch` e neschimbat, deci efectul nu s-ar mai executa niciodata.
+  let reincercare = $state(0)
 
   $effect(() => {
     const m = rawMatch
+    reincercare
     if (!m) { LoadedComponent = null; return }
 
     if (m.component._lazy) {
@@ -90,6 +97,11 @@
       loadedParams = m.params
     }
   })
+
+  function incearcaDinNou() {
+    loadError = null
+    reincercare++
+  }
 </script>
 
 <a class="skip-link" href="#main-content">Sari la continut</a>
@@ -100,17 +112,29 @@
     <main class="app-content" id="main-content">
       {#key routeKey}
         <div class="content-width" in:fade={{ duration: fadeDur, easing: EASE }} out:fade={{ duration: fadeDur, easing: EASE }}>
+          <!-- DOUA LUCRURI DIFERITE, DOUA FORME.
+               O ADRESA GRESITA NU E O EROARE: patratul ramane neutru, ca la orice
+               stare goala, si primesti drumul inapoi. O pagina care n-a putut fi
+               INCARCATA chiar a picat: patrat in tenta de restant si un buton care
+               reincearca. Amandoua erau text simplu intr-un `<div>` — singurele
+               doua ecrane din aplicatie care nu foloseau componentele desenate
+               pentru exact situatiile astea. -->
           {#if loadError}
-            <div class="not-found"><p>Eroare: {loadError}</p></div>
+            <ErrorState title="Pagina nu s-a încărcat"
+                        message="Probabil s-a pierdut rețeaua în timpul încărcării. ({loadError})"
+                        onretry={incearcaDinNou} />
           {:else if LoadedComponent}
             <LoadedComponent params={loadedParams}></LoadedComponent>
           {:else if rawMatch}
             <div class="page-loading"><Skeleton width="60%" height="24px" /><Skeleton width="100%" height="200px" /></div>
           {:else}
-            <div class="not-found">
-              <h2>404</h2>
-              <p>Pagina nu a fost găsită.</p>
-            </div>
+            <EmptyState icon={Compass} title="Aici nu e nimic"
+                        description="Adresa asta nu duce nicăieri în aplicație.">
+              <div class="nf">
+                <code class="nf-adresa">{router.path}</code>
+                <a class="nf-inapoi" href="/" use:link><ArrowLeft size={15} strokeWidth={1.5} />Înapoi la Astăzi</a>
+              </div>
+            </EmptyState>
           {/if}
         </div>
       {/key}
@@ -163,19 +187,42 @@
     padding-bottom: calc(var(--dock-h) + var(--space-lg) + var(--safe-bottom));
   }
 
-  .not-found {
+  /* Adresa e un COD, nu o propozitie — deci mono, si sub explicatia care o
+     anunta. Butonul e acelasi obiect ca „Reîncearcă" din ErrorState: suprafata
+     cu umbra, 44px, cerneala secundara. */
+  .nf {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: var(--space-2xl);
-    color: var(--text-dim);
+    gap: 12px;
   }
-  .not-found h2 {
-    font-size: var(--font-title);
-    font-weight: var(--fw-semibold);
+  .nf-adresa {
+    font-family: var(--font-mono);
+    font-size: var(--font-small);
     color: var(--text-secondary);
+    background: var(--bg-elevated);
+    padding: 3px 10px;
+    border-radius: var(--radius-xs);
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
+  .nf-inapoi {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-sm);
+    color: var(--text-secondary);
+    font-size: var(--font-control);
+    font-weight: var(--fw-semibold);
+    text-decoration: none;
+    transition: var(--transition-pressable);
+  }
+  .nf-inapoi:hover { background: var(--bg-hover); color: var(--text); }
+  .nf-inapoi:active { transform: scale(var(--press-scale)); }
 
   .page-loading {
     padding: var(--space-lg);

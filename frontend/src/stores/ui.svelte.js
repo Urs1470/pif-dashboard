@@ -35,6 +35,11 @@ const DURATA_TOAST = 4000
 
 function faceLoc() {
   for (const t of [...ui.toasts]) {
+    // Toastul FIX nu e „locul" nimanui: el nu confirma o actiune care tocmai s-a
+    // intamplat, ci anunta o stare care tine pana o rezolvi. Aruncat de un
+    // „Task șters" care trece, anuntul de actualizare n-ar mai reveni pana la
+    // urmatoarea reincarcare — adica exact pana dupa ce nu mai era nevoie de el.
+    if (t.fix) continue
     if (toastMeta[t.id]) finishToast(t.id, false)
     else dismissToast(t.id)
   }
@@ -62,6 +67,50 @@ export function toastUndo(message, { onUndo, onCommit, actionLabel = 'Anulează'
   return id
 }
 
+// ===== TOASTUL FIX — anuntul care nu pleaca singur =====
+//
+// Banda de actualizare era construita cu `document.createElement` in `main.js`,
+// adica singurul loc de interfata din aplicatie care n-a trecut prin nicio tura
+// de design: buton de 26px pe telefon, chenar colorat pe o suprafata plutitoare,
+// fara `aria-live`, fara miscare, imposibil de inchis, si se putea DUBLA (fiecare
+// `updatefound` adauga inca una, iar in WebView banda de service worker si cea de
+// APK apareau amandoua).
+//
+// Banda ESTE un toast — o fasie plutitoare cu un mesaj si o actiune. Toastul are
+// deja pozitia, miscarea, tinta de 44px, unicitatea si `aria-live`. Ii trebuiau
+// doua lucruri: sa nu plece dupa 4 secunde, si un chip care poate purta procent.
+//
+// `cheie` + `prioritate` rezolva dublarea LA SURSA, nu prin curatenie dupa:
+// exista un singur toast fix per cheie, iar cine are prioritate mai mare il ia pe
+// al celuilalt. Carcasa (APK) bate interfata (service worker) fiindca ea cere o
+// instalare, cealalta doar o reincarcare.
+const cheiFixe = {}
+
+/**
+ * @param {string} cheie  ce anume anunta (o singura instanta per cheie)
+ * @returns {number} id-ul toastului, sau 0 daca a fost refuzat de unul cu
+ *   prioritate mai mare — apelantul NU trebuie sa retina id-ul altcuiva.
+ */
+export function toastFix(cheie, {
+  message, ico = 'info', rol = 'neutru', actionLabel = '', onAction, progres = null, prioritate = 0,
+} = {}) {
+  const vechi = ui.toasts.find(t => t.fix && t.cheie === cheie)
+  if (vechi) {
+    if (prioritate < (vechi.prioritate ?? 0)) return 0
+    dismissToast(vechi.id)
+  }
+  const id = ++toastId
+  ui.toasts.push({ id, message, ico, rol, actionLabel, onAction, progres, prioritate, cheie, fix: true })
+  cheiFixe[cheie] = id
+  return id
+}
+
+/** Schimba pe loc ce scrie un toast fix (stare, procent, actiune). */
+export function actualizeazaToast(id, patch) {
+  const t = ui.toasts.find(x => x.id === id)
+  if (t) Object.assign(t, patch)
+}
+
 function finishToast(id, undone) {
   const m = toastMeta[id]
   if (!m || m.done) return
@@ -76,8 +125,12 @@ function finishToast(id, undone) {
   }
 }
 
-// Butonul de actiune al unui toast-undo -> revine (onUndo).
+// Butonul de actiune: la un toast fix executa ce i s-a dat si il LASA pe ecran
+// (apesi „Actualizează", incepe descarcarea, si tocmai acolo apare procentul);
+// la un toast-undo revine (onUndo).
 export function runToastAction(id) {
+  const t = ui.toasts.find(x => x.id === id)
+  if (t?.onAction) { t.onAction(id); return }
   finishToast(id, true)
 }
 
@@ -90,6 +143,9 @@ export function closeToast(id) {
 
 export function dismissToast(id) {
   const idx = ui.toasts.findIndex(t => t.id === id)
-  if (idx !== -1) ui.toasts.splice(idx, 1)
+  if (idx === -1) return
+  const t = ui.toasts[idx]
+  if (t.cheie && cheiFixe[t.cheie] === id) delete cheiFixe[t.cheie]
+  ui.toasts.splice(idx, 1)
 }
 

@@ -9,7 +9,7 @@
 // Aici e o singura definitie, peste lista de perioade — aceeasi din care se
 // deseneaza calendarul.
 
-import { addDays, diffDays } from './calendarDates.js'
+import { addDays, diffDays, nextWorkday } from './calendarDates.js'
 
 /** Cheia care spune „aceeasi iesire": unde esti si la cine. */
 export function cheieDeplasare(p) {
@@ -73,4 +73,103 @@ export function grupeazaDeplasari(perioade) {
     }
   }
   return out.sort((a, b) => a.start.localeCompare(b.start))
+}
+
+/* ==================================================================
+   CE SE INTAMPLA CU VECINUL, cand o perioada isi schimba intervalul.
+
+   Regula e a DATELOR, nu a ecranului: se aplica la fel din Calendar (unde tragi
+   de capete) si din formularul perioadei (unde scrii datele). De aceea sta aici
+   si nu in pagina care se intampla s-o ceara prima.
+
+   Ce se intampla depinde de CINE e vecinul, iar cele doua cazuri nu seamana:
+
+     acelasi `loc|client`  -> nu e coliziune, e CONTINUARE. Nu se scrie nimic in
+       plus: `grupeazaDeplasari` uneste deja zilele consecutive pe cheia asta,
+       deci in clipa in care se ating, datele spun „o singura iesire".
+     alt loc sau alt client -> nu poti fi in doua locuri in aceeasi zi, deci
+       vecinul se da mai incolo, cu o zi LUCRATOARE, pastrandu-si durata.
+   ================================================================== */
+
+/** Zilele lui `p`, ca pereche [inceput, sfarsit] — sfarsitul lipsa = o zi. */
+function interval(p) {
+  return [p.data_start, p.data_sfarsit || p.data_start]
+}
+
+/** Se ating sau se suprapun cele doua intervale? (lipite = se ating) */
+export function seAting(p, start, sfarsit) {
+  const [a, b] = interval(p)
+  return !(b < addDays(start, -1) || a > addDays(sfarsit, 1))
+}
+
+/** Se suprapun efectiv? (lipite NU inseamna suprapuse — poti termina joi la un
+ *  client si incepe vineri la altul.) */
+export function seSuprapun(p, start, sfarsit) {
+  const [a, b] = interval(p)
+  return !(b < start || a > sfarsit)
+}
+
+/**
+ * Deplasarea din care ar face parte `fixata` daca s-ar salva asa, cu vecinii ei
+ * la aceeasi cheie. Raspunde la „cate zile are iesirea, cu totul".
+ *
+ * `fixata` poate fi o perioada noua (fara `id`).
+ */
+export function deplasareaCu(perioade, fixata) {
+  const id = fixata.id ?? '__nou__'
+  const lista = [
+    { ...fixata, id },
+    ...(perioade || []).filter((q) => !(fixata.id != null && q.id === fixata.id)),
+  ]
+  return grupeazaDeplasari(lista).find((d) => d.items.has(id)) || null
+}
+
+/**
+ * Perioadele care se muta ca sa nu stea peste `fixata`, care ramane unde ai
+ * cerut-o. Intoarce DOAR ce s-a mutat: `[{ p, data_start, data_sfarsit }]`.
+ *
+ * IMPINGEREA SE PROPAGA. Un singur pas ar putea aseza vecinul fix peste
+ * urmatorul — adica exact suprapunerea pe care regula o interzice, doar mutata
+ * cu o casuta mai incolo. Deci se rezolva pana nu mai ramane nicio ciocnire.
+ * Bucla se opreste fiindca fiecare mutare impinge strict la DREAPTA.
+ */
+export function rezolvaCiocniri(perioade, fixata) {
+  const [s0, f0] = interval(fixata)
+  if (!s0 || !f0) return []
+
+  const stare = [{ p: fixata, s: s0, f: f0, cheie: cheieDeplasare(fixata), fix: true }]
+  for (const q of perioade || []) {
+    if (!q?.data_start) continue
+    if (fixata.id != null && q.id === fixata.id) continue
+    const [a, b] = interval(q)
+    stare.push({ p: q, s: a, f: b, cheie: cheieDeplasare(q), fix: false })
+  }
+
+  const mutate = new Map()
+  for (let paza = 0; paza < 60; paza++) {
+    let schimbat = false
+    for (const r of stare) {
+      if (r.fix) continue
+      let pana = ''
+      for (const a of stare) {
+        // Aceeasi cheie = aceeasi iesire: se pot atinge, nu se ciocnesc.
+        if (a === r || a.cheie === r.cheie) continue
+        if (r.f < a.s || r.s > a.f) continue
+        // Cine se da la o parte: cel care incepe mai TARZIU. Perioada ceruta e
+        // fixa — ea e ce ai scris, restul se aseaza in jurul ei.
+        if (a.fix || a.s < r.s || (a.s === r.s && String(a.p.id) < String(r.p.id))) {
+          if (a.f > pana) pana = a.f
+        }
+      }
+      if (!pana) continue
+      const durata = Math.max(0, diffDays(r.s, r.f))
+      r.s = nextWorkday(addDays(pana, 1))
+      r.f = addDays(r.s, durata)
+      mutate.set(r.p.id, { p: r.p, data_start: r.s, data_sfarsit: r.f })
+      schimbat = true
+      break                                   // o mutare poate naste alta
+    }
+    if (!schimbat) break
+  }
+  return [...mutate.values()].sort((a, b) => a.data_start.localeCompare(b.data_start))
 }

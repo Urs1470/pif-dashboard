@@ -18,10 +18,25 @@
   // corecte. Tooltipul in sine e aria-hidden.
   import { motion } from '../../lib/motion.svelte.js'
 
-  const INTARZIERE = 380     // ca la sistem: nu sare la fiecare trecere peste
+  // REGULA CONTEAZA MAI MULT DECAT FORMA: PE TELEFON TOOLTIPUL NU EXISTA.
+  // El citeste `title`, iar pe atingere nu exista hover — deci nimic din ce spune
+  // n-are voie sa fie SINGURA explicatie a unui control. Daca un buton se
+  // intelege doar prin tooltip, butonul e gresit, nu tooltipul. Ce ramane in
+  // sarcina lui: scurtaturile si numele intreg al unui text taiat.
+  const INTARZIERE = 400     // ca la sistem: nu sare la fiecare trecere peste
   const MARGINE = 8          // distanta fata de element si fata de marginea ferestrei
 
+  /** Scurtatura din coada etichetei („Bold (Ctrl+B)") se desprinde ca sa poata fi
+   *  scrisa in mono, la dreapta: e un COD de apasat, nu o parte a propozitiei, si
+   *  in mono se recunoaste fara sa fie citita. */
+  const SCURTATURA = /^(.*?\S)\s*\(([^()]*(?:Ctrl|Cmd|⌘|Alt|Shift|Esc|Enter|Tab|Del)[^()]*)\)$/i
+  function taie(rand) {
+    const m = SCURTATURA.exec(rand || '')
+    return m ? { text: m[1], scurt: m[2] } : { text: rand || '', scurt: '' }
+  }
+
   let linii = $state([])
+  const cap = $derived(taie(linii[0]))
   let x = $state(0)
   let y = $state(0)
   let dedesubt = $state(false)
@@ -151,13 +166,20 @@
 {#if linii.length}
   <div bind:this={el} class="tip" class:vaz={vizibil} class:jos={dedesubt}
        style="left:{x}px; top:{y}px" aria-hidden="true">
-    {#each linii as l, i (i)}
-      <span class="l" class:prima={i === 0}>{l}</span>
+    <span class="cap">
+      <span class="l prima">{cap.text}</span>
+      {#if cap.scurt}<span class="sc">{cap.scurt}</span>{/if}
+    </span>
+    {#each linii.slice(1) as l, i (i)}
+      <span class="l">{l}</span>
     {/each}
   </div>
 {/if}
 
 <style>
+  /* Suprafata cu UMBRA, raza de chip (8) — nu chenar. Un tooltip e cel mai mic
+     obiect plutitor din aplicatie; daca el se contureaza, atunci si el spune „sunt
+     o cutie", iar sistemul tocmai a scos cutiile desenate din linii. */
   .tip {
     position: fixed;
     z-index: var(--z-tooltip, 900);
@@ -166,10 +188,9 @@
     flex-direction: column;
     gap: 2px;
     padding: 7px 10px;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-xs);
     background: var(--bg-overlay);
-    border: 1px solid var(--border-strong);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
     color: var(--text-secondary);
     font-size: var(--font-small);
     line-height: var(--lh-normal);
@@ -181,10 +202,13 @@
   .tip.jos { transform: translateY(-3px); }
   .tip.vaz { opacity: 1; transform: translateY(0); }
 
-  /* Prima linie e subiectul, restul e detaliu — asa arata bine si tooltipurile
-     multi-linie din Calendar („Deplasare · Continental" + lista lucrarilor). */
+  /* Un singur rand, cu scurtatura la dreapta. Randurile de dedesubt exista doar
+     pentru tooltipurile multi-linie din Calendar („Deplasare · Continental" +
+     lista lucrarilor), unde chiar e o listă, nu o a doua propozitie. */
+  .cap { display: flex; align-items: baseline; gap: 10px; }
   .l { white-space: pre-wrap; overflow-wrap: anywhere; }
-  .l.prima { color: var(--text); font-weight: var(--fw-medium); }
+  .l.prima { flex: 1; min-width: 0; color: var(--text); font-weight: var(--fw-medium); }
+  .sc { flex: none; font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-dim); }
 
   @media (prefers-reduced-motion: reduce) {
     .tip { transition: none; }

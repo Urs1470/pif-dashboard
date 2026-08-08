@@ -19,8 +19,8 @@
   import { renderStoredText, sanitizeHtml } from '../../lib/storedText.js'
   import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
 
-  // O SINGURA FORMA: pagina de document — toolbar pill plutitor, coloana de text
-  // aliniata la stanga si plafonata la latime de citit, scroll pe toata pagina.
+  // O SINGURA FORMA: pagina de document — bara de unelte in capul suprafetei,
+  // coloana de text la stanga plafonata la latime de citit, scroll pe toata pagina.
   // Exista si o varianta `box` (caseta cu chenar, cu numarator de caractere in
   // subsol), dar dupa ce toate cele patru campuri lungi au intrat in acelasi shell
   // (`EditorLung`) nu mai avea niciun consumator — iar un al doilea desen pe care
@@ -32,7 +32,12 @@
   // Undo/Redo dubleaza Ctrl+Z, „Titlu 1/2/3" presupune ca notita e un document cu
   // structura, iar Citat / Linie orizontala / Curata formatarea sunt moscenire de
   // la Word. Ce chiar folosesti pe teren: accentuare, o lista, si formula.
-  let { value = $bindable(''), placeholder = 'Scrie aici...', tools = 'complet', onsave = undefined } = $props()
+  //
+  // `stare`: textul de stare din capatul din dreapta al barei („salvat", „se
+  // salvează…"). Editorul NU-l calculeaza singur — el nu stie nimic despre
+  // salvare, aceea e a shell-ului care il deschide (`EditorLung`). Gol => randul
+  // nu se randeaza deloc, ca sa nu ramana o coloana goala in bara.
+  let { value = $bindable(''), placeholder = 'Scrie aici...', tools = 'complet', stare = '', onsave = undefined } = $props()
   const compact = $derived(tools === 'nota')
 
   let editorEl = $state(null)
@@ -326,6 +331,11 @@
     {#if !compact}
     <button type="button" class="tbtn" title="Curăță formatarea" onmousedown={keepSel} onclick={clearFmt}><RemoveFormatting size={15} /></button>
     {/if}
+
+    {#if stare}
+      <span class="tspatiu" aria-hidden="true"></span>
+      <span class="tstare" aria-live="polite">{stare}</span>
+    {/if}
   </div>
 
   {#if mathOpen}
@@ -380,71 +390,79 @@
     overflow-y: auto;
   }
 
-  /* ===== toolbar — pilula plutitoare ===== */
+  /* ===== bara editorului — UN RAND, NU O PILULA =====
+     Era o pastila plutitoare, centrata, care statea PESTE textul pe care il
+     editezi: primul rand al notitei trebuia impins cu 64px de padding ca sa nu
+     intre pe sub ea, iar starea „salvat" n-avea unde sa stea „la dreapta" intr-un
+     obiect de latime `max-content`.
+     Acum e capul suprafetei: un rand pe toata latimea, cu o linie sub el.
+     Butoanele sunt discrete (32px, fara chenar), grupate cu separatoare de 1px,
+     iar cel activ ia SUPRAFATA A DOUA — nu tenta de accent: intr-o bara de
+     formatare „bold e pornit" e o stare a textului, nu a aplicatiei, iar accentul
+     ramane rezervat. */
   .rte-toolbar {
     position: sticky;
-    top: 10px;
+    top: 0;
     z-index: 3;
-    align-self: center;
-    width: max-content;
-    max-width: calc(100% - 24px);
-    margin: 10px auto 0;
+    align-self: stretch;
     display: flex;
     align-items: center;
-    flex-wrap: wrap; /* pe ecrane inguste trece pe doua randuri (nu scroll —
-                        meniul de stil e pozitionat absolut si ar fi taiat) */
+    flex-wrap: wrap;   /* vezi nota de la blocul de telefon */
     gap: 2px;
     row-gap: 4px;
-    padding: 5px 8px;
-    /* FONDUL E OPAC. Pilula statea pe `backdrop-filter: blur(14px)` peste o
-       suprafata semitransparenta — adica exact „sticla peste tot", scoasa din
-       sistem. Aici blurul nici nu era decor gratuit: pilula pluteste PESTE textul
-       pe care il editezi, deci randurile de dedesubt se citeau prin ea, in ceata.
-       Suprafata plina si umbra spun acelasi lucru — „asta e deasupra" — fara sa
-       amestece doua straturi de text. */
+    padding: 8px 10px;
     background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-full);
-    box-shadow: var(--shadow-md);
+    border-bottom: 1px solid var(--border);
   }
-  .tbtn, .tstyle { border-radius: var(--radius-full); }
 
   .tbtn {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
+    border-radius: var(--radius-xs);
+    color: var(--text-dim);
     cursor: pointer;
     flex-shrink: 0;
     transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
   .tbtn:hover { background: var(--bg-hover); color: var(--text); }
-  .tbtn.on { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  .tbtn.on { background: var(--bg-elevated); color: var(--text-secondary); }
   .tbtn.tmath { font-weight: var(--fw-semibold); }
 
-  .tsep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+  .tsep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; flex-shrink: 0; }
+
+  /* Impinge starea la dreapta. Cand `stare` e gol nu se randeaza nimic, deci
+     spatiul nu ramane rezervat degeaba. */
+  .tspatiu { flex: 1; min-width: 0; }
+  .tstare {
+    flex: none;
+    padding-right: 4px;
+    font-family: var(--font-mono);
+    font-size: var(--font-label);
+    color: var(--text-dim);
+  }
 
   .tstyle-wrap { position: relative; flex-shrink: 0; }
   .tstyle {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    height: 30px;
+    height: 32px;
     padding: 0 10px;
-    font-size: var(--font-small);
+    font-size: var(--font-control);
     font-weight: var(--fw-semibold);
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
+    background: var(--bg-elevated);
+    border: none;
+    border-radius: var(--radius-xs);
+    color: var(--text-secondary);
     cursor: pointer;
-    transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
-  .tstyle:hover { border-color: var(--text-dim); }
-  .tstyle.on { border-color: var(--accent); background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  .tstyle:hover { color: var(--text); }
+  .tstyle.on { background: var(--bg-elevated); color: var(--text); }
+  /* Suprafata flotanta: umbra, nu chenar. */
   .tstyle-menu {
     position: absolute;
     top: calc(100% + 6px);
@@ -452,9 +470,8 @@
     z-index: 6;
     min-width: 150px;
     background: var(--bg-overlay);
-    border: 1px solid var(--border-strong);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
     padding: 4px;
   }
   .topt {
@@ -474,18 +491,17 @@
   .topt:hover { background: var(--bg-hover); color: var(--text); }
   .topt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .topt-label { font-size: var(--font-small); }
-  /* Fara `--font-heading`: e eticheta unei optiuni de meniu, nu titlul unui
-     lucru. Space Grotesk aici anunta ce PRODUCE optiunea, dar rândul insusi se
-     citeste ca orice alta comanda din lista. */
+  /* Eticheta unei optiuni de meniu arata CE PRODUCE optiunea — deci greutate si
+     marime, nu culoare: „Titlu 2" nu e o stare, iar accentul e rezervat starii. */
   .topt-label.t-h1 { font-weight: var(--fw-semibold); font-size: var(--font-body); }
-  .topt-label.t-h2 { font-weight: var(--fw-semibold); color: var(--accent); }
+  .topt-label.t-h2 { font-weight: var(--fw-semibold); }
   .topt-label.t-h3 { font-weight: var(--fw-semibold); }
   .topt-label.t-blockquote { font-style: italic; }
 
-  /* ===== bara de formule — sub pilula, tot plutitoare ===== */
+  /* ===== bara de formule — sub bara de unelte, tot plutitoare ===== */
   .math-bar {
     position: sticky;
-    top: 58px;
+    top: 50px;
     z-index: 3;
     width: min(680px, calc(100% - 24px));
     margin: 8px auto 0;
@@ -494,11 +510,11 @@
     flex-direction: column;
     gap: var(--space-xs);
     background: var(--bg-surface);
-    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
   }
   .math-row { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; }
+  /* Aceeasi reteta de camp ca `.field-input` (Input.svelte), la scara barei. */
   .math-inp {
     flex: 1;
     min-width: 160px;
@@ -506,13 +522,14 @@
     padding: 6px 10px;
     font-family: var(--font-mono);
     font-size: var(--font-small);
-    background: var(--bg-input);
-    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    border: none;
     border-radius: var(--radius-sm);
+    box-shadow: inset 0 0 0 1px var(--border);
     color: var(--text);
-    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    transition: box-shadow var(--dur-fast) var(--ease);
   }
-  .math-inp:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
+  .math-inp:focus { outline: none; box-shadow: inset 0 0 0 1.5px var(--accent); }
   .math-disp {
     display: inline-flex;
     align-items: center;
@@ -563,18 +580,17 @@
      `width: 100%` reda intinderea (auto-marginile nu mai exista ca s-o anuleze),
      `max-width` pastreaza masura de citit, iar fara `margin` coloana se aseaza la
      inceputul randului.
-     Padding-ul de sus rezerva exact inaltimea pilulei, care pluteste peste text:
-     fara el, primul rand al notitei intra pe sub bara si se citea doar dupa ce
-     derulai. */
+     Padding-ul de sus nu mai rezerva inaltimea unei pilule plutitoare: bara e
+     acum in FLUX, deasupra, deci textul incepe de unde incepe suprafata. */
   .rte-editor {
     flex: 1;
-    min-height: calc(100% - 62px);
+    min-height: calc(100% - 50px);
     width: 100%;
     max-width: 82ch;
-    padding: 64px 32px 90px;
+    padding: 20px 32px 90px;
     font-size: var(--font-body);
     color: var(--text);
-    line-height: var(--lh-relaxed);
+    line-height: var(--lh-normal);
     outline: none;
     cursor: text;
   }
@@ -585,18 +601,32 @@
     pointer-events: none;
   }
 
-  .rte-editor :global(h1) { color: var(--text); font-family: var(--font-heading); font-size: var(--font-h2); margin: 16px 0 8px; font-weight: var(--fw-semibold); letter-spacing: var(--tracking-tight); }
-  .rte-editor :global(h2) { color: var(--accent); font-size: var(--font-h3); margin: 14px 0 8px; font-weight: var(--fw-semibold); }
-  .rte-editor :global(h3) { color: var(--text); font-size: var(--font-h3); margin: 12px 0 6px; font-weight: var(--fw-semibold); }
+  /* ACEEASI SCARA CA NOTA CITITA (`MarkdownView`): titlu de sectiune 21/600,
+     corp 15/1,55, cod si valori mono 13, tabel cu doar linii de rand. Ce scrii si
+     ce citesti sunt acelasi text — daca se despart, editorul minte despre cum va
+     arata. `h2` era pe `--accent`: culoarea e stare in sistemul asta, iar un
+     subtitlu de notita nu e o stare. */
+  .rte-editor :global(h1) { color: var(--text); font-size: var(--font-h2); margin: 16px 0 8px; font-weight: var(--fw-semibold); letter-spacing: var(--tracking-tight); }
+  .rte-editor :global(h2) { color: var(--text); font-size: var(--font-h3); margin: 14px 0 8px; font-weight: var(--fw-semibold); }
+  .rte-editor :global(h3) { color: var(--text-secondary); font-size: var(--font-h3); margin: 12px 0 6px; font-weight: var(--fw-semibold); }
   .rte-editor :global(p) { margin: 6px 0; }
   .rte-editor :global(ul), .rte-editor :global(ol) { padding-left: 26px; margin: 6px 0; }
   .rte-editor :global(li) { margin: 3px 0; }
   .rte-editor :global(a) { color: var(--accent); text-decoration: underline; }
   .rte-editor :global(hr) { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
-  .rte-editor :global(blockquote) { border-left: 3px solid var(--border); padding: 4px 14px; color: var(--text-secondary); margin: 8px 0; background: var(--bg-surface); }
-  .rte-editor :global(table) { border-collapse: collapse; margin: 10px 0; max-width: 100%; border: 1px solid var(--border); }
-  .rte-editor :global(th), .rte-editor :global(td) { border: 1px solid var(--border); padding: 6px 11px; text-align: left; vertical-align: top; }
-  .rte-editor :global(th) { background: var(--bg-elevated); color: var(--text-secondary); font-weight: var(--fw-semibold); }
+  /* Muchia ramane, dar fara fond: un citat nu e o alta suprafata, e o alta voce. */
+  .rte-editor :global(blockquote) { border-left: 3px solid var(--border); padding: 2px 0 2px 14px; color: var(--text-secondary); margin: 8px 0; }
+  .rte-editor :global(table) { border-collapse: collapse; margin: 10px 0; max-width: 100%; }
+  .rte-editor :global(th), .rte-editor :global(td) { border-bottom: 1px solid var(--border); padding: 8px 2px; text-align: left; vertical-align: top; }
+  .rte-editor :global(th) {
+    font-size: var(--font-label); font-weight: var(--fw-semibold);
+    text-transform: uppercase; letter-spacing: var(--tracking-label);
+    color: var(--text-dim); padding-bottom: 7px;
+  }
+  .rte-editor :global(code) {
+    background: var(--bg-elevated); padding: 1px 6px; border-radius: var(--radius-xs);
+    font-family: var(--font-mono); font-size: var(--font-small); color: var(--accent-deep);
+  }
 
   /* chip formula — click pentru editare */
   .rte-editor :global(.mchip) {
@@ -615,16 +645,18 @@
   }
 
   @media (max-width: 768px) {
-    /* Butoanele de formatare erau de 34px si stau lipite unul de altul intr-o
-       bara — cea mai densa insiruire de tinte din aplicatie. La 40px bara tot
-       incape pe latime (se si deruleaza), dar nu mai apesi „italic" cand vrei
-       „bold". */
-    .tbtn { width: 40px; height: 40px; }
-    /* Bara ramane pe `flex-wrap: wrap` (vezi comentariul de la `.rte-toolbar`):
-       un scroller ar taia meniul de stil, care e pozitionat absolut. Cu butoane
-       mai mari trece pe mai multe randuri — atat. */
-    .rte-toolbar { gap: 3px; top: 6px; max-width: calc(100% - 12px); }
+    /* Butoanele de formatare stau lipite unul de altul intr-o bara — cea mai
+       densa insiruire de tinte din aplicatie. La 44px nu mai apesi „italic" cand
+       vrei „bold". */
+    .tbtn { width: var(--tap-min); height: var(--tap-min); }
+    .tstyle { height: var(--tap-min); }
+    /* BARA RAMANE PE `flex-wrap: wrap`, NU DEVINE UN SCROLLER ORIZONTAL.
+       Desenul cere un rand care deruleaza, dar `overflow-x: auto` inseamna si
+       `overflow-y` care taie — iar meniul de stil e `position: absolute` sub
+       buton, deci ar fi retezat exact la deschidere. Cu butoane mai mari bara
+       trece pe doua randuri; atat. */
+    .rte-toolbar { gap: 3px; }
     .math-bar { top: 56px; width: calc(100% - 12px); }
-    .rte-editor { padding: 62px 16px 80px; min-height: calc(100% - 58px); }
+    .rte-editor { padding: 16px 16px 80px; min-height: calc(100% - 58px); }
   }
 </style>

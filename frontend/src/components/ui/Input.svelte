@@ -1,5 +1,8 @@
 <script>
-  let { label = '', value = $bindable(''), type = 'text', placeholder = '', error = '', disabled = false, ...rest } = $props()
+  // `ref` e legabil fiindca `bind:this` nu se poate trece printr-un spread:
+  // cine deschide un formular trebuie sa poata pune focusul pe campul care
+  // conteaza, nu pe primul element focalizabil din modal.
+  let { label = '', value = $bindable(''), ref = $bindable(null), type = 'text', placeholder = '', error = '', disabled = false, ...rest } = $props()
 </script>
 
 <label class="field" class:has-error={error}>
@@ -8,6 +11,7 @@
   {/if}
   <input
     class="field-input"
+    bind:this={ref}
     {type}
     {placeholder}
     {disabled}
@@ -26,30 +30,44 @@
     flex-direction: column;
     gap: 4px;
   }
+  /* Eticheta e treapta MICRO: 12/600 majuscule cu .05em. Era la 13/500 — adica
+     aceeasi marime ca metadatele din randuri, dar in majuscule, deci concura cu
+     ele fara sa fie de acelasi fel. */
   .field-label {
-    font-size: var(--font-small);
-    font-weight: var(--fw-medium);
-    color: var(--text-secondary);
+    font-size: var(--font-label);
+    font-weight: var(--fw-semibold);
+    color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
   }
+
+  /* CAMPUL, SCRIS O SINGURA DATA (vezi si Textarea, Select, DatePicker):
+     suprafata a doua · muchie INTERIOARA de 1px · raza de control (10) · 46px
+     (48 in foaie) · focus = muchie de accent 1,5px.
+
+     Muchia e `inset box-shadow`, nu `border`: cu border, trecerea de la 1px la
+     1,5px la focus ar schimba cutia si tot randul ar tresari cu jumatate de
+     pixel. Interioara, muchia se ingroasa peste desen, nu peste geometrie.
+     Pe telefon textul e la 16px din `--font-body`, deci Safari nu mai mareste
+     pagina la focus — nu e nevoie de o a doua valoare scrisa de mana. */
   .field-input {
     padding: 10px 12px;
     min-height: 46px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    border: none;
+    border-radius: var(--radius-sm);
+    box-shadow: inset 0 0 0 1px var(--border);
     color: var(--text);
+    font-family: inherit;
     font-size: var(--font-body);
-    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    transition: box-shadow var(--dur-fast) var(--ease);
   }
   .field-input:hover:not(:disabled):not(:focus) {
-    border-color: var(--text-dim);
+    box-shadow: inset 0 0 0 1px var(--border-strong);
   }
   .field-input:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: var(--focus-ring);
+    box-shadow: inset 0 0 0 1.5px var(--accent);
   }
   .field-input:disabled {
     opacity: 0.5;
@@ -59,13 +77,19 @@
     color: var(--text-dim);
   }
   .has-error .field-input {
-    border-color: var(--danger);
+    box-shadow: inset 0 0 0 1px var(--danger);
   }
   .has-error .field-input:focus {
-    box-shadow: 0 0 0 3px var(--danger-subtle);
+    box-shadow: inset 0 0 0 1.5px var(--danger);
   }
   .field-error {
     font-size: var(--font-small);
     color: var(--danger);
+  }
+
+  @media (max-width: 768px) {
+    /* In foaie, 48. Modalele sunt foi pe telefon, iar acolo se scrie cu
+       telefonul in mana. */
+    .field-input { min-height: var(--tap-sheet); }
   }
 </style>
