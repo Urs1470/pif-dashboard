@@ -30,6 +30,16 @@
   // Culoarea benzii vine din lib/culori.js, aceeasi sursa ca in Calendar. Inainte
   // fiecare pagina isi tinea paleta ei si ordinea difera pe ultimele trei pozitii,
   // deci 43% dintre proiecte aveau o culoare aici si alta in Calendar.
+  /* IDENTITATEA RAMANE UN PUNCT, NU O BANDA.
+     `--lane` colora si punctul din eticheta, si FONDUL benzii de pregatire —
+     deci pe acelasi ecran culoarea insemna si „proiectul X", si (prin
+     palid/plin) „in ce faza esti". Doua intelesuri pe acelasi canal, exact
+     abaterea pe care sistemul o interzice.
+     Acum banda e in accent, iar forma spune faza: palid+contur = pregatire,
+     plin = implementare. Culoarea de proiect ramane doar pe `.lane-dot` si pe
+     punctele din sertar/export, unde e o LISTA MIXTA si punctul e singurul
+     lucru care deosebeste doua randuri altfel identice — cazul in care
+     sistemul chiar permite un punct de identitate. */
   function laneColor(id) {
     return id === '__global__' ? CULOARE_NEUTRA : culoareProiect(id)
   }
@@ -1096,8 +1106,8 @@
      nu adauga specificitate, deci ar fi pierdut aici in fata regulii de mai jos. */
 
   .band { position: absolute; top: 5px; bottom: 5px; border-radius: 8px;
-    background: color-mix(in oklab, var(--lane) 13%, transparent);
-    border: 1px solid color-mix(in oklab, var(--lane) 28%, transparent); z-index: 0;
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 26%, transparent); z-index: 0;
     animation: pregatireIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
   .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; }
@@ -1233,13 +1243,13 @@
      gol (contur) = de facut · plin = in lucru · bifa = facut. */
   .pin-dot { flex: none; display: flex; align-items: center; justify-content: center;
     width: 12px; height: 12px; transform: rotate(45deg);
-    background: transparent; border: 2px solid var(--lane);
+    background: transparent; border: 2px solid var(--accent);
     transition: transform var(--dur-fast) var(--ease); }
-  .bar.active .pin-dot { background: var(--lane); border: 1.5px solid var(--bg-surface);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--lane) 22%, transparent); }
+  .bar.active .pin-dot { background: var(--accent); border: 1.5px solid var(--bg-surface);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent); }
   /* Bifa nu se roteste: e un semn care se citeste, nu o mostra de culoare. */
   .bar.done .pin-dot { transform: none; width: 13px; height: 13px;
-    background: none; border: 0; color: color-mix(in oklab, var(--lane) 45%, var(--text-dim)); }
+    background: none; border: 0; color: var(--text-dim); }
   .bar:hover .pin-dot { transform: rotate(45deg) scale(1.12); }
   .bar.done:hover .pin-dot { transform: none; }
 
@@ -1324,16 +1334,16 @@
   .mt-pin { position: absolute; top: 0; bottom: 0; width: 26px; margin-left: -13px;
     display: flex; align-items: center; justify-content: center;
     background: none; border: none; padding: 0; cursor: pointer; z-index: 2;
-    color: color-mix(in oklab, var(--lane) 45%, var(--text-dim));
+    color: var(--text-dim);
     animation: reperIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
   /* Aceeasi forma ca pe desktop: contur = de facut, plin = in lucru, bifa = facut.
      `done` era VERDE aici si o nuanta palida a culorii de proiect dincolo — acelasi
      task, doua limbaje, in functie de latimea ecranului. */
   .mt-pin::before { content: ''; width: 9px; height: 9px; border-radius: 2px;
-    background: transparent; border: 1.5px solid var(--lane); transform: rotate(45deg);
+    background: transparent; border: 1.5px solid var(--accent); transform: rotate(45deg);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-panel) 85%, transparent); }
-  .mt-pin.lucru::before { background: var(--lane); }
+  .mt-pin.lucru::before { background: var(--accent); }
   .mt-pin.done::before { display: none; }
   .mt-pin:active::before { transform: rotate(45deg) scale(1.25); }
 
@@ -1361,7 +1371,7 @@
      un rand restant isi PIERDEA identitatea ca sa arate severitatea. Acum sunt
      doua canale separate: identitatea e un fill tentat din culoarea benzii (ca la
      vecinii ei din aceeasi pagina), severitatea e pe inelul bifei si pe chip. */
-  .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px; background: color-mix(in srgb, var(--lane) 8%, var(--bg-panel)); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; }
+  .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; }
   .mrow.done { opacity: 0.6; }
   .mrow.done .mrow-title { text-decoration: line-through; }
   .mrow-main { flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
