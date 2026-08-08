@@ -312,8 +312,8 @@ input:focus, select:focus, textarea:focus {
    confirmarii de bifare. */
 .gl-dreapta .gl-actiuni { visibility: hidden; }
 
-/* ===== PISTA DE STANGA — „Mâine" =====
-   Oglinda pistei de bifare, in amber: acelasi mecanism (`--gl-s` creste cu degetul,
+/* ===== PISTA DE STANGA — „Planifică" =====
+   Oglinda pistei de bifare, in accent: acelasi mecanism (`--gl-s` creste cu degetul,
    eticheta intra abia la prag), doar ancorata invers. Inlocuieste panoul de patru
    actiuni de 58px: 232px din 390 insemna ca taskul pe care actionai dispare de sub
    deget, iar „Șterge" cadea exact unde ajunge o glisare rapida. Data exacta si
@@ -790,10 +790,11 @@ input[type="checkbox"].cbx:focus {
 .ico-green { background: var(--success-subtle); color: var(--success-deep); }
 .ico-red   { background: var(--danger-subtle); color: var(--danger-deep); }
 
-/* Numerale mari de afisaj. Ramane Space Grotesk, desi regula spune „cifrele
-   sunt mono": mono e pentru cifre care se COMPARA pe verticala, intr-o coloana.
-   Asta e o cifra singura, la rang de titlu — exact cazul pentru care sistemul
-   pastreaza Space Grotesk la titluri si numerale mari. */
+/* Numerale mari de afisaj. Ia familia de TITLU (`--font-heading`, azi Gabarito),
+   desi regula spune „cifrele sunt mono": mono e pentru cifre care se COMPARA pe
+   verticala, intr-o coloana. Asta e o cifra singura, la rang de titlu.
+   Comentariul spunea „ramane Space Grotesk" — font care a IESIT din sistem odata
+   cu redesignul; asa scris, era o invitatie sa fie pus la loc. */
 .big-num {
   font-family: var(--font-heading);
   font-weight: var(--fw-semibold);

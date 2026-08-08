@@ -646,8 +646,11 @@
        se declanseaza niciodata. Acelasi slot, celalalt maner. */
     .grip { display: none; }
     .gl-maner { display: flex; }
-    .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
-    .quick-add-btn { width: var(--tap-min); }
+    /* Compozitorul e desenat la 48 (`Acasă.dc.html` 3c): e panoul de scris al
+       boardului, stă jos, si se atinge cu degetul mare intins — de aceea
+       `--tap-sheet`, nu podeaua de 44 a tintelor obisnuite. */
+    .quick-add input, .quick-add-btn { min-height: var(--tap-sheet); }
+    .quick-add-btn { width: var(--tap-sheet); }
     /* „Adaugă task existent" ramane doar iconita pe telefon — deci iconita trebuie
        sa aiba caseta unui buton, nu 40×28. */
     .bh-add { min-width: var(--tap-min); min-height: var(--tap-min); justify-content: center; padding: 0 10px; }

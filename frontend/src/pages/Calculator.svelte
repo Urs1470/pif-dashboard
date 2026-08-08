@@ -1223,7 +1223,7 @@
   .nav-equip:hover { border-color: var(--accent); background: var(--accent-subtle); }
   .nav-equip-h { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-label); }
   .nav-equip-sum { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); overflow-wrap: anywhere; }
-  /* aceeasi reteta de grup ca nav-ul din Parametri: separator dashed + punct amber */
+  /* aceeasi reteta de grup ca nav-ul din Parametri: separator dashed + punct de accent */
   .nav-sec {
     font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase;
     letter-spacing: var(--tracking-label); color: var(--text-faint); padding: 14px 10px 6px;

@@ -1181,7 +1181,7 @@
                        lipit de o grila de zile, iar o data relativa langa o coloana
                        care arata ziua exacta te pune sa faci conversia in cap.
                        Ce se aliniaza cu restul e CULOAREA: termenul se coloreaza
-                       dupa severitate, nu mereu amber, ca peste tot. -->
+                       dupa severitate, nu cu o culoare fixa, ca peste tot. -->
                   <span class="mrow-meta">
                     {#if t.data_scadenta}
                       <!-- Conditia vine din ACEEASI functie care da `--ring`, nu
@@ -1696,7 +1696,7 @@
   .m-track { position: relative; height: 26px; margin: 0 3px 8px; border-radius: var(--radius-sm);
     background: var(--bg-panel); box-shadow: inset 0 0 0 1px var(--border-subtle); overflow: hidden; }
   .mt-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 5%, transparent); }
-  /* Amber, ca pe desktop: rosul e „intarziat", nu „acum". */
+  /* Accent, ca pe desktop: rosul e „intarziat", nu „acum". */
   .mt-azi { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: 0.85; z-index: 3; }
   /* Reperele stau PESTE benzi si sunt singurul lucru din banda pe care il atingi
      des, deci primesc o caseta transparenta de 26px in jurul punctului de 9px.
@@ -1734,8 +1734,9 @@
   .mt-pin:active::before { transform: rotate(45deg) scale(var(--press-scale)); }
 
   /* Benzile refolosesc reteta de pe desktop (aceleasi clase, aceeasi gramatica:
-     palid = pregatire, plin = pe teren, teal = site, gold = sediu). Se schimba
-     doar dimensiunile, fiindca aici randul are 26px, nu 42. */
+     FORMA spune faza — palid = pregatire, plin = implementare — iar locul se
+     SCRIE, nu se coloreaza). Se schimba doar dimensiunile, fiindca aici randul
+     are 26px, nu 42. */
   .m-track .band { top: 3px; bottom: 3px; border-radius: var(--radius-xs); }
   .m-track .impl-band { top: 3px; bottom: 3px; gap: 4px; padding: 0 6px; border-radius: var(--radius-xs);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent); }
@@ -2041,7 +2042,11 @@
     /* Fara panou, grila de lucru redevine o coloana — altfel PDF-ul ar pastra
        cei 320px de gol in dreapta pistei. */
     .lucru, .lucru.cu-panou { display: block !important; }
-    .print-title { display: block; font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); color: #1a1206; margin-bottom: 8px; }
+    /* Cerneala de hartie e `#1b1e23`, cea din direcție. Era `#1a1206` — maro, din
+       paleta veche: singura culoare scrisa de mana ramasa pe iesirea tiparita,
+       si tocmai pe titlu. Ramane scrisa literal (nu ca token) fiindca hartia e
+       mereu tema deschisa, indiferent de tema din care tiparesti. */
+    .print-title { display: block; font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); color: #1b1e23; margin-bottom: 8px; }
     /* Force the swimlane on: A4 portrait (~794px) is under the 820px mobile
        breakpoint, which would otherwise hide .chart and blank the page. */
     .chart { display: block !important; overflow: visible !important; border: none !important; box-shadow: none !important; background: #fff !important; }

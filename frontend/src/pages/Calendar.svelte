@@ -7,9 +7,11 @@
   // care raspunde ecranul asta e „unde sunt marti si ce fac", iar deciziile stau
   // TOT aici, pe ziua respectiva — nu intr-o lista separata de reprosuri.
   //
-  // O bara per LUCRARE, cu numele ei; culoarea urmareste proiectul. Deplasarea
-  // (zile consecutive la acelasi client) ramane, dar ca o captura in ziua de
-  // plecare, nu ca un bloc care inghite lucrarile.
+  // O bara per LUCRARE, cu numele ei. Culoarea NU mai urmareste proiectul: din 12
+  // perioade ale anului 11 sunt la acelasi client, deci identitatea cromatica nu
+  // selecta nimic (vezi `culoareLucrare`, care intoarce accentul pentru toate).
+  // Deplasarea (zile consecutive la acelasi loc si client) e un chenar, cu
+  // eticheta pe primul lui rand si lucrarile inauntru.
   import { onMount, onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
   import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download } from '@lucide/svelte'
@@ -1549,14 +1551,16 @@
      cu centrare si `padding: 0 10px`, deci numarul zilei de azi sta centrat in
      mijlocul celulei in loc de colt. Doua lucruri diferite, doua nume. */
   /* O SINGURA HAINA DE CONTROL PE ECRAN. Erau 28px cu chenar, imediat deasupra
-     lui `.sursa` care e 34px, fara chenar, cu umbra — doua haine pentru acelasi
-     fel de buton, iar a doua e cea din sistem (suprafata se desprinde prin umbra).
-     Marimea urca la 34 ca sa se potriveasca cu perechea de sub ea. */
+     lui `.sursa`, care e fara chenar si cu umbra — doua haine pentru acelasi fel
+     de buton, iar a doua e cea din sistem (suprafata se desprinde prin umbra).
+     38px, cat spune desenul (`Calendar.dc.html`), si aceeasi valoare pe `.sursa`
+     de sub ele: doua randuri de controale nu se pot deosebi prin patru pixeli
+     pe care nu i-a ales nimeni. */
   .ico, .b-azi, .mods button { border: none; background: var(--bg-surface); color: var(--text-secondary);
     box-shadow: var(--shadow-sm); transition: var(--transition-pressable);
     border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-  .ico { width: 34px; height: 34px; }
-  .b-azi, .mods button { height: 34px; padding: 0 12px; font-size: var(--font-control); font-weight: var(--fw-semibold); }
+  .ico { width: 38px; height: 38px; }
+  .b-azi, .mods button { height: 38px; padding: 0 12px; font-size: var(--font-control); font-weight: var(--fw-semibold); }
   .ico:hover, .b-azi:hover, .mods button:hover { background: var(--bg-hover); color: var(--text); }
   .ico:active, .b-azi:active, .mods button:active { transform: scale(var(--press-scale)); }
   .mods { display: flex; gap: 4px; }
@@ -1570,7 +1574,7 @@
      diferenta: neutru = ce lipseste, restant = ce e gresit acum. */
   .surse { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
   .sursa { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
-    min-height: 34px; padding: 0 12px; border-radius: var(--radius-xs);
+    min-height: 38px; padding: 0 12px; border-radius: var(--radius-xs);
     background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none;
     color: var(--text-dim); font-family: inherit; font-size: var(--font-small);
     cursor: pointer; transition: var(--transition-pressable); }
@@ -1956,8 +1960,11 @@
 
     /* Actiunile din panoul zilei — „Da", „Mută pe azi", „Mută", „Scoate". Erau
        pastile de 22px, adica exact tipul de buton pe care il ratezi si apesi
-       „Scoate" in loc de „Mută". */
-    .b { min-height: var(--tap-min); padding: 0 12px; font-size: var(--font-small); }
+       „Scoate" in loc de „Mută".
+       `--tap-sheet` (48), nu `--tap-min` (44): panoul zilei sta jos pe ecran si
+       se atinge cu degetul mare INTINS, nu cu varful. Regula era scrisa in
+       tokenuri si folosita intr-un singur loc din tot frontendul. */
+    .b { min-height: var(--tap-sheet); padding: 0 12px; font-size: var(--font-small); }
     .dec { gap: var(--space-xs); }
     .mut { flex-wrap: wrap; }
     .mut :global(.dp) { flex: 1 1 160px; }
