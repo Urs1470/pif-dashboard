@@ -86,15 +86,15 @@ Toate rutele Flask. Pentru schema DB vezi SCHEMA_REFERENCE.md.
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/push/vapid-public` | `push_vapid_public` | 393 |
-| POST | `/api/push/subscribe` | `push_subscribe` | 401 |
-| POST | `/api/push/unsubscribe` | `push_unsubscribe` | 420 |
-| POST | `/api/push/tokens` | `push_tokens` | 431 |
-| GET | `/api/push/setari` | `push_setari_get` | 466 |
-| PUT | `/api/push/setari` | `push_setari_put` | 472 |
-| GET | `/api/push/status` | `push_status` | 482 |
-| POST | `/api/push/test` | `push_test` | 496 |
-| POST | `/api/push/action` | `push_action` | 514 |
+| GET | `/api/push/vapid-public` | `push_vapid_public` | 431 |
+| POST | `/api/push/subscribe` | `push_subscribe` | 439 |
+| POST | `/api/push/unsubscribe` | `push_unsubscribe` | 458 |
+| POST | `/api/push/tokens` | `push_tokens` | 469 |
+| GET | `/api/push/setari` | `push_setari_get` | 504 |
+| PUT | `/api/push/setari` | `push_setari_put` | 510 |
+| GET | `/api/push/status` | `push_status` | 529 |
+| POST | `/api/push/test` | `push_test` | 543 |
+| POST | `/api/push/action` | `push_action` | 561 |
 
 ## blueprints\tasks.py (23 rute)
 
