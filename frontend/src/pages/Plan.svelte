@@ -1270,7 +1270,10 @@
   .toggle:hover { border-color: var(--border-strong); color: var(--text); }
   .toggle.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
   .toggle:disabled { opacity: 0.4; cursor: not-allowed; }
-  .tk-box { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border-strong); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  /* 4px nu e o treapta din scara (8 chip · 10 control · 14 suprafata · 20 foaie).
+     Cercul e rezervat bifei de task; asta e o casuta de filtru, deci ramane
+     patrata si ia treapta cea mai mica. */
+  .tk-box { width: 16px; height: 16px; border-radius: var(--radius-xs); border: 1.5px solid var(--border-strong); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .toggle.on .tk-box { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
   .skel { display: flex; flex-direction: column; gap: var(--space-sm); }
 
@@ -1375,10 +1378,17 @@
      restante e singurul lucru colorat: e cel care cere ceva. */
   .lane-contor { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-faint); font-variant-numeric: tabular-nums; }
   .lc-rest { color: var(--danger); }
-  .lane-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex-shrink: 0; box-shadow: 0 0 6px color-mix(in srgb, var(--lane) 55%, transparent); }
+  /* PUNCT PLAT, FARA HALO. Glowul colorat e interzis explicit — si aici statea pe
+     identitatea de proiect, adica stralucea exact lucrul care nu cere nimic.
+     Punctul spune „care proiect", nu „uita-te la mine". */
+  .lane-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lane); flex-shrink: 0; }
   .lane-txt { min-width: 0; line-height: var(--lh-snug); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tip-chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--accent-subtle); color: var(--accent); flex-shrink: 0; }
-  .tip-chip.svc { background: var(--accent-subtle); color: var(--accent-deep); }
+  /* CHIP NEUTRU PENTRU AMANDOUA. PIF si Service se deosebeau prin doua cerneli
+     inrudite pe acelasi fundal (`--accent` vs `--accent-deep`) — o diferenta care
+     pur si simplu nu se citeste, iar prima incalca si regula cernelii pe tenta.
+     Tipul e SCRIS in chip, deci cuvantul il spune; culoarea n-are ce adauga.
+     (In Proiecte tipul e deja o iconita gri, fara fill — aceeasi solutie.) */
+  .tip-chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); flex-shrink: 0; }
 
   /* Jgheabul restantelor. Reperele stau centrate si se inghesuie cand sunt multe:
      numarul exact e scris in coloana de nume, aici conteaza ca EXISTA. */
@@ -1474,22 +1484,19 @@
   .t-row { position: relative; height: var(--row-h); }
   /* Perioada de implementare (Site / Sediu EGB) — banda pe toata inaltimea randului,
      exact insetul benzii de pregatire, ca cele doua sa se imbine fara decalaj.
-     Palid = pregatire, plin = pe teren; culoarea spune unde (teal = site, gold =
-     sediu), aceeasi gramatica vizuala ca in Calendar. */
-  /* BLOC, nu pastila. Un bloc are volum (degrade fin sus→jos) si o umbra care il
-     ridica peste banda de pregatire. Inelul interior tine doua blocuri lipite de
-     categorii diferite despartite — doua perioade de aceeasi categorie sunt deja
-     UN element (vezi `contopeste`), deci n-au cusatura.
-     Muchia de intrare din stanga a plecat odata cu toate celelalte dungi de 3px:
-     blocul e DEJA plin cu `var(--il)`, deci era aceeasi culoare peste ea insasi.
-     Inceputul se citeste din raza si din marginea blocului, ca in Calendar. */
+     FORMA spune faza: palid = pregatire, plin = implementare. Locul NU se
+     codifica cromatic (se scrie, cu iconita si eticheta) — aceeasi gramatica ca
+     in Calendar si in Ganttul de proiect.
+     Inelul interior tine despartite doua benzi lipite de categorii diferite;
+     doua perioade de aceeasi categorie sunt deja UN element (vezi `contopeste`),
+     deci n-au cusatura. Inceputul se citeste din raza si din marginea benzii. */
   /* Eticheta sta LA CAPUL benzii, nu la mijlocul ei: ea ocupa randul intai al
      impachetarii (vezi `benzi` din `views`), deci trebuie sa fie chiar acolo
      unde impachetarea o crede — altfel reperele coboara pentru un text care
      pluteste cu doua randuri mai jos. */
   /* BANDA E O SUPRAFATA IN ACCENT, NU UN BLOC LUCIOS.
      Era desenata ca un bloc cu degrade pe verticala, inel alb si umbra proprie,
-     in `--il` = `--loc-site`/`--loc-sediu` — care dupa redesign sunt GRI NEUTRU.
+     in tokenurile de locatie — care dupa redesign sunt GRI NEUTRU.
      Deci pe ecran iesea o pastila gri-metalica: un gradient (interzis explicit),
      o umbra care o ridica peste randul ei, si singura culoare din pista care nu
      spunea nimic. Locul nu se mai codifica cromatic — se SCRIE, cu iconita si
@@ -1720,7 +1727,11 @@
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-panel) 85%, transparent); }
   .mt-pin.lucru::before { background: var(--accent); }
   .mt-pin.done::before { display: none; }
-  .mt-pin:active::before { transform: rotate(45deg) scale(1.25); }
+  /* APASAREA STRANGE, NU CRESTE. Era `scale(1.25)` — adica reperul se umfla cu un
+     sfert sub deget, exact invers fata de token (`--press-scale`, 0.965 in 90ms).
+     `rotate(45deg)` RAMANE scris: rombul isi tine forma din el, iar o valoare care
+     nu-l repeta l-ar lasa patrat fix in timpul apasarii. */
+  .mt-pin:active::before { transform: rotate(45deg) scale(var(--press-scale)); }
 
   /* Benzile refolosesc reteta de pe desktop (aceleasi clase, aceeasi gramatica:
      palid = pregatire, plin = pe teren, teal = site, gold = sediu). Se schimba

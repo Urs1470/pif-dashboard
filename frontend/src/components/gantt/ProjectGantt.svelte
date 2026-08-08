@@ -200,8 +200,13 @@
       <span class="lg"><span class="dot prog leg"></span>în lucru</span>
       <span class="lg"><span class="dot todo leg"></span>de făcut</span>
       <span class="lg"><span class="sw-ms"></span>milestone</span>
-      <span class="lg"><span class="sw" style="background:var(--loc-site)"></span>site</span>
-      <span class="lg"><span class="sw" style="background:var(--loc-sediu)"></span>sediu</span>
+      <!-- „site" si „sediu" nu mai au mostra de culoare. Purtau `--loc-site` /
+           `--loc-sediu`, care de la redesign sunt aliasuri neutre — deci legenda
+           arata doua griuri aproape identice si promitea un cod cromatic pe care
+           banda nu-l mai foloseste (amandoua sunt pe accent). O legenda care
+           explica o regula inexistenta e mai rea decat lipsa ei; locul se scrie,
+           cu iconita si numele, chiar in bandă. -->
+
     </span>
   </div>
 
@@ -314,9 +319,6 @@
     border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; }
   .lg-btn:hover { border-color: var(--accent); color: var(--accent); }
   .lg { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-dim); font-family: var(--font-mono); }
-  .sw { width: 18px; height: 10px; border-radius: 3px; }
-  .sw.done { background: var(--success); } .sw.prog { background: var(--accent); }
-  .sw.todo { background: var(--bg-elevated); border: 1px solid var(--border-strong); }
   .sw-ms { width: 10px; height: 10px; background: var(--accent); transform: rotate(45deg); }
 
   /* ===== two-pane gantt ===== */
@@ -343,19 +345,23 @@
   .tk-row :global(.tk-chev) { color: var(--text-faint); flex: none; }
 
   /* implementation periods (Site / Sediu EGB) — the editable rows */
-  /* Dunga de identitate a plecat: randul e DEJA umplut cu aceeasi culoare
-     (`color-mix(… var(--il) 8% …)`) si poarta si iconita de locatie in ea, deci
-     muchia era a treia oara acelasi lucru. Cei 3px se intorc in padding. */
-  .impl-lrow { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: 7px; padding: 0 12px 0 15px; border: none; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--il) 8%, transparent); color: var(--text); cursor: pointer; text-align: left; }
-  .impl-lrow:hover { background: color-mix(in srgb, var(--il) 16%, transparent); }
+  /* Dunga de identitate a plecat: randul e DEJA umplut si poarta si iconita de
+     locatie in el, deci muchia era a treia oara acelasi lucru. Cei 3px se intorc
+     in padding.
+     ACEEASI TENTA CA BANDA. Randul statea pe `--il`, adica pe `--loc-site` /
+     `--loc-sediu` — care de la redesign sunt aliasuri NEUTRE (`--text-secondary`
+     / `--text-dim`), deci iesea gri-metalic langa banda pe accent de dedesubt:
+     acelasi obiect, doua haine, in acelasi tabel. Locul nu se codifica cromatic
+     nici aici — se scrie, cu iconita si numele. */
+  .impl-lrow { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: 7px; padding: 0 12px 0 15px; border: none; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--accent) 8%, transparent); color: var(--text); cursor: pointer; text-align: left; }
+  .impl-lrow:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); }
   .impl-lname { font-size: var(--font-small); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .loc-site { --il: var(--loc-site); } .loc-sediu { --il: var(--loc-sediu); }
   /* Perioada de implementare umple randul, nu pluteste ca o pastila subtire in
      mijlocul lui: e un BLOC de zile in care esti acolo, nu un marcaj. Randul
      ramane cu aceeasi inaltime, doar continutul lui se vede acum. */
-  /* Aceeasi regula ca la `.impl-lrow`: banda e DEJA plina cu `var(--il)`, deci
-     muchia era aceeasi culoare peste ea insasi, doar mai inchisa. Cei 3px se
-     intorc in padding. */
+  /* Aceeasi regula ca la `.impl-lrow`: banda e DEJA plina, deci muchia era
+     aceeasi culoare peste ea insasi, doar mai inchisa. Cei 3px se intorc in
+     padding. */
   /* Aceeasi banda ca in Planificator si in Calendar: tenta de accent cu inelul
      ei, fara gradient si fara umbra proprie. Locul nu se codifica cromatic — se
      scrie, cu iconita si eticheta. */
