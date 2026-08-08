@@ -1,22 +1,24 @@
 <script>
   import { onMount } from 'svelte'
-  import { CalendarRange, ChevronRight, CalendarDays, ListChecks, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2 } from '@lucide/svelte'
+  import { CalendarRange, ChevronRight, CalendarDays, ListChecks, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2, Calendar } from '@lucide/svelte'
   import {
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
     setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
   } from '../stores/plan.svelte.js'
+  import { loadSubtasks, updateSubtask } from '../stores/tasks.svelte.js'
   import { buildColumns, grupeazaColoane, numeLuna, ziLuna, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
   import { formatDate, formatDateShort, dueRing } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
-  import { motion } from '../lib/motion.svelte.js'
+  import { motion, panou } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import Modal from '../components/ui/Modal.svelte'
+  import SelectorZi from '../components/ui/SelectorZi.svelte'
   import { culoareProiect, CULOARE_NEUTRA } from '../lib/culori.js'
 
   // Praguri pentru continutul unei benzi de perioada, in PROCENTE din fereastra —
@@ -388,20 +390,51 @@
   }
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
-  // --- action popover (desktop) ---
+  // --- TASKUL DESCHIS: PANOU LATERAL, NU POPOVER (4e) ---
+  //
+  // Era un popover plutitor de 256px, ancorat la bara apasata, cu patru linii de
+  // actiuni. Trei lucruri nu mergeau:
+  //   · ACOPEREA. Sistemul cere „panoul face loc, nu acopera": coloana lui apare
+  //     odata cu el si continutul se stramteaza. Un popover peste pista ascunde
+  //     exact zilele din jurul taskului pe care tocmai l-ai deschis.
+  //   · ERA AL TREILEA TIPAR pentru acelasi lucru. „Un detaliu, o componenta":
+  //     panou lateral pe desktop, foaie de jos pe telefon — nu si popover.
+  //   · NU ARATA TASKUL, doar verbe. Termenul, perioada peste care cade, nota si
+  //     pasii nu se vedeau nicaieri, desi ei sunt motivul pentru care il deschizi.
+  //
+  // Pe telefon panoul nu se randeaza deloc: acolo `.chart` e ascuns, iar reperul
+  // duce la randul din lista, care are deja foaia lui de actiuni.
   let sel = $state(null)
   let anchorEl = null
-  let popX = $state(0)
-  let popY = $state(0)
+  let pasi = $state([])
+  let pasiSeIncarca = $state(false)
 
-  function openPopover(barEl, task, laneNume) {
-    anchorEl = barEl
-    const r = barEl.getBoundingClientRect()
-    popX = Math.max(8, Math.min(r.left, window.innerWidth - 268))
-    popY = Math.min(r.bottom + 6, window.innerHeight - 230)
-    sel = { ...task, laneNume }
+  async function deschideTask(task, lane, el) {
+    anchorEl = el || null
+    sel = { ...task, laneNume: lane?.nume, laneId: lane?.id, laneImpl: lane?.impl || [] }
+    pasi = []
+    if (!task.subtask_total) return
+    pasiSeIncarca = true
+    try { pasi = await loadSubtasks(task.id) } catch { pasi = [] }
+    finally { pasiSeIncarca = false }
   }
-  function closePop() { sel = null; anchorEl = null }
+  function closePop() { sel = null; anchorEl = null; pasi = [] }
+
+  async function comutaPas(p) {
+    // Optimist, ca in /tasks: fractia din antet se recalculeaza din lista.
+    pasi = pasi.map(x => x.id === p.id ? { ...x, done: p.done ? 0 : 1 } : x)
+    try { await updateSubtask(p.id, { done: p.done ? 0 : 1 }) }
+    catch (e) { pasi = pasi.map(x => x.id === p.id ? { ...x, done: p.done } : x); toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  /** Perioada peste care cade termenul taskului — randul „Perioadă" din panou.
+   *  Nu e o cautare noua: benzile lane-ului sunt deja contopite si decupate pe
+   *  fereastra, deci raspunsul e chiar banda pe care se deseneaza reperul. */
+  function perioadaTaskului(t) {
+    const zi = (t?.data_scadenta || '').slice(0, 10)
+    if (!zi || !sel?.laneImpl) return null
+    return sel.laneImpl.find(im => im.a <= zi && zi <= im.b) || null
+  }
 
   function openTask(t, srcEl) {
     const el = srcEl || anchorEl
@@ -457,7 +490,7 @@
   let drag = null
   let dragLabel = $state(null)
 
-  function startDrag(e, t, mode, laneNume) {
+  function startDrag(e, t, mode, lane) {
     if (e.button != null && e.button !== 0) return
     if (isDone(t.status)) return // finished tasks are read-only on the timeline
     const barEl = e.currentTarget.closest('.bar')
@@ -465,7 +498,7 @@
     if (!barEl || !trackEl) return
     const w = trackEl.getBoundingClientRect().width
     drag = {
-      t, mode, barEl, laneNume,
+      t, mode, barEl, lane,
       startX: e.clientX,
       dayW: w / plan.days,
       unit: 100 / plan.days,
@@ -519,7 +552,7 @@
     if (!d.moved || d.effDelta === 0) {
       d.barEl.style.left = d.origLeft + '%'
       d.barEl.style.width = d.origWidth + '%'
-      openPopover(d.barEl, d.t, d.laneNume)
+      deschideTask(d.t, d.lane, d.barEl)
       return
     }
     try {
@@ -675,6 +708,10 @@
   {:else}
     <!-- ===== Desktop swimlane ===== -->
     <div class="print-title">Planificator · {exportRange}</div>
+    <!-- PANOUL FACE LOC, NU ACOPERA: coloana lui apare odata cu el si pista se
+         stramteaza. Cand nu e nimic deschis — starea implicita la incarcare —
+         grila are o singura coloana si pagina e pe toata latimea. -->
+    <div class="lucru" class:cu-panou={!!sel}>
     <div class="chart cell-in" style="--celula: 0">
       <div class="chart-scroll">
         <div class="inner" style="min-width: {contentMin}px; --rest-w: {areRestante ? 78 : 0}px">
@@ -771,9 +808,14 @@
                 {#if areRestante}
                   <div class="rest-col" class:are={lane.restante.length > 0}>
                     {#each lane.restante as t (t.tip + ':' + t.id)}
-                      <button class="rest-pin" onclick={(e) => openPopover(e.currentTarget, t, lane.nume)}
+                      <!-- CU DATA SCRISA, nu un romb cu data in tooltip.
+                           Un restant n-are geometrie pe pista, deci coloana asta e
+                           singurul loc unde poate spune CAND a fost termenul — iar
+                           „cand" e chiar informatia pentru care exista coloana.
+                           Rombul o ascundea intr-un `title`, adica intr-un gest. -->
+                      <button class="rest-zi" onclick={(e) => deschideTask(t, lane, e.currentTarget)}
                               title="{t.titlu} · termen {formatDateShort(t.data_scadenta)} — restant"
-                              aria-label="{t.titlu} — restant din {formatDateShort(t.data_scadenta)}"></button>
+                              aria-label="{t.titlu} — restant din {formatDateShort(t.data_scadenta)}">{formatDateShort(t.data_scadenta)}</button>
                     {/each}
                     {#if !lane.restante.length}<span class="rest-gol" aria-hidden="true">—</span>{/if}
                   </div>
@@ -852,8 +894,8 @@
                               style="left:{it.rect.left}%; width:{it.rect.width}%"
                               role="button"
                               tabindex="0"
-                              onpointerdown={(e) => startDrag(e, it, 'move', lane.nume)}
-                              onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPopover(e.currentTarget, it, lane.nume) } }}
+                              onpointerdown={(e) => startDrag(e, it, 'move', lane)}
+                              onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); deschideTask(it, lane, e.currentTarget) } }}
                               title="{it.titlu}{it.data_scadenta ? ' · termen ' + formatDateShort(it.data_scadenta) : ''}"
                             >
                               <span class="bar-box">{#if isDone(it.status)}<Check size={12} strokeWidth={3} />{/if}</span>
@@ -879,8 +921,87 @@
       {#if lung}
         <p class="hint">Numărul spune câte taskuri cad în acea săptămână · coboară la 14z ca să le vezi pe zile</p>
       {:else}
-        <p class="hint">Trage un reper ca să-i muți termenul · click pentru acțiuni · benzile de perioadă se editează în Calendar</p>
+        <p class="hint">Trage un reper ca să-i muți termenul · click îl deschide în panou · benzile de perioadă se editează în Calendar</p>
       {/if}
+    </div>
+
+    <!-- ===== Taskul deschis · panou lateral (4e) ===== -->
+    {#if sel}
+      {@const per = perioadaTaskului(sel)}
+      {@const gata = pasi.filter(p => p.done).length}
+      <aside class="panou" transition:panou aria-label="Detaliu task">
+        <header class="pan-cap">
+          <span class="pan-proiect"><span class="pan-dot" style="--lane:{laneColor(sel.laneId)}"></span>{sel.laneNume}</span>
+          <button class="pan-x" onclick={closePop} aria-label="Închide"><X size={17} /></button>
+        </header>
+
+        <div class="pan-corp">
+          <h2 class="pan-titlu">{sel.titlu}</h2>
+
+          <div class="pan-fapte">
+            <div class="fapt">
+              <span class="fapt-et">Termen</span>
+              <span class="fapt-val" class:sev={dueRing(sel.data_scadenta) !== 'var(--border)'}
+                    style="--ring: {dueRing(sel.data_scadenta)}">
+                {sel.data_scadenta ? formatDate(sel.data_scadenta) : 'fără termen'}
+              </span>
+              <Calendar size={16} class="fapt-ico" />
+            </div>
+            <!-- Perioada peste care cade termenul. E un CHEVRON, nu un buton de
+                 editare: perioadele se schimba in Calendar, iar clicul te duce
+                 chiar in ziua ei. -->
+            {#if per}
+              <button class="fapt link" onclick={() => navigate(`/calendar?zi=${per.a}`)}>
+                <span class="fapt-et">Perioadă</span>
+                <span class="fapt-val">{locLabel(per.locatie)}{per.eticheta ? ' · ' + per.eticheta : ''} · {formatDateShort(per.a)}–{formatDateShort(per.b)}</span>
+                <ChevronRight size={16} class="fapt-ico" />
+              </button>
+            {/if}
+            <div class="fapt">
+              <span class="fapt-et">Repetare</span>
+              <span class="fapt-val slab">{sel.recurenta || 'nu se repetă'}</span>
+            </div>
+          </div>
+
+          {#if sel.nota}
+            <div class="pan-sec">Notă</div>
+            <p class="pan-nota">{sel.nota}</p>
+          {/if}
+
+          {#if sel.subtask_total}
+            <div class="pan-sec">Pași <span class="pan-frac">{gata}/{pasi.length || sel.subtask_total}</span></div>
+            {#if pasiSeIncarca && pasi.length === 0}
+              <Skeleton height="30px" varianta="rand" />
+            {:else}
+              <ul class="pasi">
+                {#each pasi as p (p.id)}
+                  <li>
+                    <button class="pas" class:gata={p.done} onclick={() => comutaPas(p)}>
+                      <span class="pas-bifa">{#if p.done}<Check size={12} strokeWidth={3} />{:else}<span class="check-empty"></span>{/if}</span>
+                      <span class="pas-txt">{p.titlu}</span>
+                    </button>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
+          {/if}
+        </div>
+
+        <!-- „Planifică" e SelectorZi, acelasi set ca in orice foaie sau panou care
+             replanifica ceva: Azi · Mâine · Alege, plus Scoate. -->
+        <div class="pan-plan">
+          <span class="pan-sec">Planifică</span>
+          <SelectorZi value={sel.data_scadenta || ''} onalege={(v) => onMove(sel, v)} />
+        </div>
+
+        <footer class="pan-actiuni">
+          <button class="pan-b prim" onclick={() => onDone(sel)}>
+            <CheckCircle2 size={16} /> {isDone(sel.status) ? 'Redeschide' : 'Bifează'}
+          </button>
+          <button class="pan-b" onclick={() => openTask(sel)}><ExternalLink size={15} /> Deschide</button>
+        </footer>
+      </aside>
+    {/if}
     </div>
 
     <!-- ===== Backlog (taskuri fără termen) ===== -->
@@ -1099,26 +1220,6 @@
   <div class="drag-label" style="left:{dragLabel.x + 14}px; top:{dragLabel.y - 34}px">{dragLabel.text}</div>
 {/if}
 
-{#if sel}
-  <div class="pop-backdrop" onclick={closePop} role="presentation"></div>
-  <div class="pop" style="left:{popX}px; top:{popY}px" role="dialog" aria-label="Acțiuni task">
-    <div class="pop-title">{sel.titlu}</div>
-    <div class="pop-meta">
-      {#if sel.laneNume}<span>{sel.laneNume}</span>{/if}
-      {#if sel.data_scadenta}<span class="pm-due">termen {formatDate(sel.data_scadenta)}</span>{/if}
-    </div>
-    <button class="pop-act" onclick={() => openTask(sel)}><ExternalLink size={15} /> Deschide</button>
-    <div class="pop-act datewrap">
-      <span class="pa-ico"><CalendarRange size={15} /></span>
-      <span class="pa-label">Mută pe…</span>
-      <DatePicker value={sel.data_scadenta} placeholder="alege" onchange={(v) => onMove(sel, v)} />
-    </div>
-    <button class="pop-act" onclick={() => onTomorrow(sel)}><ArrowRight size={15} /> Mută pe mâine</button>
-    <button class="pop-act" onclick={() => onDone(sel)}><CheckCircle2 size={15} /> {isDone(sel.status) ? 'Redeschide' : 'Bifează'}</button>
-    <button class="pop-close" onclick={closePop} aria-label="Închide"><X size={14} /></button>
-  </div>
-{/if}
-
 <Modal bind:open={showExport} title="Export PDF" size="sm">
   <div class="exp">
     <p class="exp-note">Se deschide dialogul de printare al browserului — alege <b>„Salvează ca PDF"</b>. Fereastra exportată: <b>{exportRange}</b>.</p>
@@ -1286,13 +1387,16 @@
     flex-wrap: wrap; padding: 6px 8px; border-right: 1px solid var(--border);
     background: var(--bg-surface); z-index: 1; }
   .rest-col.are { background: color-mix(in srgb, var(--danger) 6%, var(--bg-surface)); }
-  .rest-pin { flex: none; width: 11px; height: 11px; padding: 0; border-radius: 2px;
-    transform: rotate(45deg); background: var(--danger);
-    border: 1.5px solid var(--bg-surface);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 22%, transparent);
-    cursor: pointer; transition: transform var(--dur-fast) var(--ease); }
-  .rest-pin:hover { transform: rotate(45deg) scale(1.18); }
-  .rest-pin:active { transform: rotate(45deg) scale(var(--press-scale-sm)); }
+  /* Data scrisa, ca un chip de termen — nu un romb care o ascunde in tooltip.
+     Cerneala e `--danger-deep`, fiindca sta pe tenta de restant. */
+  .rest-zi { flex: none; padding: 0 7px; height: 19px; border-radius: var(--radius-xs);
+    background: var(--danger-subtle); color: var(--danger-deep);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 34%, transparent);
+    border: none; font-family: var(--font-mono); font-size: var(--font-label);
+    font-weight: var(--fw-medium); font-variant-numeric: tabular-nums; white-space: nowrap;
+    cursor: pointer; transition: var(--transition-pressable); }
+  .rest-zi:hover { box-shadow: inset 0 0 0 1px var(--danger); }
+  .rest-zi:active { transform: scale(var(--press-scale)); }
   .rest-gol { font-size: var(--font-small); color: var(--text-faint); }
 
   /* STIVA DE REPERE E CENTRATA IN CHENARUL PERIOADEI, CU ACELEASI MARGINI.
@@ -1436,10 +1540,14 @@
      centrata, si tot tooltipul. */
   .impl-band.doar-ico { padding: 0 2px; justify-content: center; }
   .ib-txt { font-size: var(--font-small); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* Durata umple capatul liber al blocurilor late si spune cat stai acolo — pe
-     benzile inguste n-ar incapea, deci nici nu se randeaza (vezi `rect.width`). */
-  .ib-zile { flex: none; margin-left: auto; padding-left: 8px; font-family: var(--font-mono);
-    font-size: var(--font-small); font-variant-numeric: tabular-nums; opacity: 0.62; white-space: nowrap; }
+  /* NUMARUL DE ZILE STA LIPIT DE TITLU, NU LA MARGINEA DIN DREAPTA.
+     Avea `margin-left: auto`, adica exact ce interzice regula: impins in capatul
+     benzii, cadea peste eticheta reperului care incepe imediat dupa ea. Lipit de
+     titlu, ocupa spatiul pe care impachetarea l-a rezervat deja pentru banda.
+     Fara `opacity` (regula sistemului): tonul il da culoarea, nu stingerea. */
+  .ib-zile { flex: none; padding-left: 2px; font-family: var(--font-mono);
+    font-size: var(--font-small); font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, var(--on-color) 62%, transparent); white-space: nowrap; }
   /* Dunga de identitate a plecat: randul e DEJA umplut cu aceeasi culoare si are
      si eticheta de locatie colorata in ea. Cei 3px se intorc in padding. */
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px 6px 13px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
@@ -1560,8 +1668,9 @@
   .m-scale { --m-pad: 12px;
     position: sticky; top: var(--header-height); z-index: 4;
     padding: 6px var(--m-pad) 5px;
-    background: color-mix(in srgb, var(--bg) 92%, transparent);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    /* Fond OPAC, fara blur: sticla a iesit din sistem. Semitransparentul cerea
+       blurul ca sa nu se vada benzile trecand pe sub cifre. */
+    background: var(--bg);
     border-bottom: 1px solid var(--border); border-radius: var(--radius-sm); }
   .ms-cols { position: relative; height: 14px; }
   .m-scale.cu-wd .ms-cols { height: 26px; }
@@ -1640,8 +1749,10 @@
      doua canale separate: identitatea e un fill tentat din culoarea benzii (ca la
      vecinii ei din aceeasi pagina), severitatea e pe inelul bifei si pe chip. */
   .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; }
-  .mrow.done { opacity: 0.6; }
-  .mrow.done .mrow-title { text-decoration: line-through; }
+  /* NICIO OPACITATE PE UN RAND DE TEXT. „Facut" se spune prin taierea titlului si
+     prin rolul de culoare, nu prin `opacity: .6` — care se inmulteste peste tokenuri
+     deja la limita de contrast si scoate randul sub AA. */
+  .mrow.done .mrow-title { text-decoration: line-through; color: var(--text-dim); }
   .mrow-main { flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
   .mrow-title { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -1665,23 +1776,83 @@
   .mrow-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--text); }
   .mrow-date :global(.dp-value) { display: none; }
 
-  /* ===== action popover ===== */
-  .pop-backdrop { position: fixed; inset: 0; z-index: var(--z-modal); }
-  .pop { position: fixed; z-index: calc(var(--z-modal) + 1); width: 256px; background: var(--bg-overlay);
-    border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
-    padding: 10px; display: flex; flex-direction: column; gap: 3px; }
-  .pop-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); padding: 2px 4px 0; padding-right: 22px; }
-  .pop-meta { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 4px 6px; font-size: var(--font-small); color: var(--text-dim); border-bottom: 1px solid var(--border); margin-bottom: 4px; }
-  .pop-meta .pm-due { color: var(--accent); }
-  .pop-act { display: flex; align-items: center; gap: 8px; padding: 8px 8px; border-radius: var(--radius-sm); background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: var(--font-small); text-align: left; }
-  .pop-act:hover { background: var(--bg-hover); color: var(--text); }
-  .pop-act.datewrap { cursor: default; }
-  .pop-act.datewrap:hover { background: none; }
-  .datewrap .pa-ico { display: flex; color: var(--text-faint); }
-  .datewrap .pa-label { color: var(--text-secondary); }
-  .datewrap :global(.dp-trigger) { margin-left: auto; min-height: 30px; padding: 4px 8px; }
-  .pop-close { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-xs); color: var(--text-faint); background: none; border: none; cursor: pointer; }
-  .pop-close:hover { background: var(--bg-hover); color: var(--text); }
+  /* ===== TASKUL DESCHIS · PANOU LATERAL (4e) =====
+     Panoul are COLOANA lui in grila de lucru, deci pista se stramteaza cand se
+     deschide. `minmax(0, 1fr)` pe prima coloana: cu `1fr` (adica `minmax(auto,
+     1fr)`) pista, care are latime minima proprie (`contentMin`), ar refuza sa se
+     micsoreze si ar impinge panoul in afara ecranului. */
+  .lucru { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-md); align-items: start; }
+  .lucru.cu-panou { grid-template-columns: minmax(0, 1fr) 320px; }
+
+  .panou { background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+    display: flex; flex-direction: column; overflow: hidden;
+    position: sticky; top: calc(var(--header-height) + var(--space-md));
+    max-height: calc(100dvh - var(--header-height) - var(--space-lg)); }
+  .pan-cap { display: flex; align-items: center; gap: var(--space-xs);
+    padding: 10px 8px 10px 14px; border-bottom: 1px solid var(--border); }
+  .pan-proiect { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;
+    font-size: var(--font-small); color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pan-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex: none; }
+  .pan-x { width: 32px; height: 32px; flex: none; display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm); background: none; border: none; color: var(--text-dim); cursor: pointer;
+    transition: var(--transition-colors); }
+  .pan-x:hover { background: var(--bg-hover); color: var(--text); }
+
+  .pan-corp { padding: 14px; overflow-y: auto; flex: 1; min-height: 0; }
+  .pan-titlu { font-size: var(--font-h2); font-weight: var(--fw-semibold);
+    line-height: var(--lh-tight); color: var(--text); margin-bottom: var(--space-md); overflow-wrap: anywhere; }
+
+  /* Faptele taskului: eticheta la stanga, valoarea la dreapta, iconita la capat.
+     Randul care DUCE undeva e buton si poarta chevron; celelalte sunt text. */
+  .pan-fapte { display: flex; flex-direction: column; }
+  .fapt { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
+    padding: 9px 2px; border-bottom: 1px solid var(--border); text-align: left;
+    background: none; border-left: 0; border-right: 0; border-top: 0; color: var(--text); }
+  .fapt:last-child { border-bottom: 0; }
+  .fapt.link { cursor: pointer; transition: var(--transition-colors); }
+  .fapt.link:hover { color: var(--accent); }
+  .fapt-et { flex: none; width: 74px; font-size: var(--font-label); font-weight: var(--fw-semibold);
+    text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
+  .fapt-val { flex: 1; min-width: 0; font-size: var(--font-small); color: var(--text); overflow-wrap: anywhere; }
+  .fapt-val.slab { color: var(--text-dim); }
+  /* Severitatea termenului citeste ACELASI `--ring` ca inelul bifei din liste. */
+  .fapt-val.sev { color: var(--ring); font-weight: var(--fw-medium); }
+  .fapt :global(.fapt-ico) { flex: none; color: var(--text-dim); }
+
+  .pan-sec { display: flex; align-items: center; gap: var(--space-xs);
+    margin: var(--space-md) 0 var(--space-xs); font-size: var(--font-label);
+    font-weight: var(--fw-semibold); text-transform: uppercase;
+    letter-spacing: var(--tracking-label); color: var(--text-dim); }
+  .pan-frac { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .pan-nota { font-size: var(--font-small); color: var(--text-secondary);
+    line-height: var(--lh-relaxed); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  .pasi { display: flex; flex-direction: column; list-style: none; }
+  .pas { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
+    padding: 7px 2px; background: none; border: none; text-align: left; cursor: pointer;
+    font-size: var(--font-small); color: var(--text); transition: var(--transition-colors); }
+  .pas-bifa { flex: none; width: 18px; height: 18px; display: flex; align-items: center;
+    justify-content: center; border-radius: 50%; color: var(--success-deep); }
+  .pas.gata .pas-bifa { background: var(--success-subtle); }
+  /* Fara `opacity` pe randul facut — rolul de culoare si taierea o spun. */
+  .pas.gata .pas-txt { color: var(--text-dim); text-decoration: line-through; }
+  .pas-txt { min-width: 0; overflow-wrap: anywhere; }
+
+  .pan-plan { padding: 0 14px 12px; }
+  .pan-plan .pan-sec { margin-top: 0; }
+  .pan-actiuni { display: flex; gap: var(--space-xs); padding: 10px 14px;
+    border-top: 1px solid var(--border); background: var(--bg-elevated); }
+  .pan-b { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 38px; padding: 0 12px; border-radius: var(--radius-sm);
+    background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary);
+    font-size: var(--font-control); font-weight: var(--fw-semibold); cursor: pointer;
+    transition: var(--transition-pressable); }
+  .pan-b:hover { border-color: var(--border-strong); color: var(--text); }
+  .pan-b:active { transform: scale(var(--press-scale)); }
+  .pan-b.prim { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+
 
   /* ===== Telefon =====
      Bara de controale avea 502px intr-un ecran de 375: `.page-header` are
@@ -1754,6 +1925,11 @@
   @media (max-width: 820px) {
     .chart { display: none; }
     .mlist { display: flex; }
+    /* Pe telefon pista nu se randeaza, deci nici panoul ei: acolo reperul duce la
+       randul din lista, care are deja foaia lui. Regula e si o plasa — daca
+       micsorezi fereastra cu panoul deschis, el nu ramane atarnat singur. */
+    .panou { display: none; }
+    .lucru, .lucru.cu-panou { display: block; }
   }
 
   @media (max-width: 768px) {
@@ -1852,7 +2028,10 @@
   .print-title { display: none; }
   @media print {
     .page { padding: 0 !important; }
-    .page-header, .controls, .hint, .mlist, .backlog, .drag-label, .pop, .pop-backdrop { display: none !important; }
+    .page-header, .controls, .hint, .mlist, .backlog, .drag-label, .panou { display: none !important; }
+    /* Fara panou, grila de lucru redevine o coloana — altfel PDF-ul ar pastra
+       cei 320px de gol in dreapta pistei. */
+    .lucru, .lucru.cu-panou { display: block !important; }
     .print-title { display: block; font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); color: #1a1206; margin-bottom: 8px; }
     /* Force the swimlane on: A4 portrait (~794px) is under the 820px mobile
        breakpoint, which would otherwise hide .chart and blank the page. */

@@ -474,7 +474,10 @@
     background: var(--success-subtle); color: var(--success);
     font-family: var(--font-mono); font-size: var(--font-small);
     line-height: 1; font-variant-numeric: tabular-nums; }
-  .archived { opacity: 0.7; }
+  /* NICIO OPACITATE PE UN RAND DE TEXT (regula sistemului). Ca e arhivat o spune
+     ANTETUL sectiunii, sub care randul chiar sta — nu o stingere care se inmulteste
+     peste tokenuri deja la limita si scoate randul sub AA. */
+  .archived .arch-name { color: var(--text-secondary); }
   .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
   .arch-row { display: flex; align-items: center; gap: var(--space-sm); width: 100%; padding: 10px 16px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; background: transparent; border: none; border-bottom: 1px solid var(--border); transition: background var(--dur-fast) var(--ease); }
   .arch-row:last-child { border-bottom: none; }

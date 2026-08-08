@@ -137,6 +137,24 @@ export function sosire(node, { duration = DUR_BASE } = {}) {
   }
 }
 
+/** PANOUL LATERAL DE PE DESKTOP: 200ms, 8px, dinspre marginea din dreapta.
+ *
+ *  E aceeasi componenta ca foaia de jos de pe telefon (280/220), doar ca pe
+ *  desktop intra ca panou — deci are propria pereche de numere, scrisa in sistem:
+ *  „pe desktop aceeasi componenta intra ca panou lateral: 200ms, 8px".
+ *  Mai scurt decat o suprafata (280) fiindca nu acopera nimic: face loc, iar
+ *  latimea coloanei se anima oricum din grila.
+ *  Ca peste tot, `reduced-motion` lasa doar stingerea, fara drum. */
+export function panou(node, { duration = 200 } = {}) {
+  const d = motionDuration(duration)
+  const dx = motion.reduced ? 0 : 8
+  return {
+    duration: d,
+    easing: EASE,
+    css: (t) => `opacity: ${t}; transform: translateX(${(1 - t) * dx}px);`,
+  }
+}
+
 // NAVIGAREA CU DIRECTIE (tura 13).
 //
 // Schimbarea lunii era singura navigare din aplicatie fara sens: apasai

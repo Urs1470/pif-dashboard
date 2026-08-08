@@ -5,8 +5,22 @@
   import Toast from './components/ui/Toast.svelte'
   import Tooltip from './components/ui/Tooltip.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
+  import { setLucideProps } from '@lucide/svelte'
   import { router, resolveRoute, viewTransitionsOn, setPreincarcaRuta } from './lib/router.svelte.js'
   import { motionDuration, DUR_FAST, EASE } from './lib/motion.svelte.js'
+
+  /* ICONITELE SUNT LA 1.5, NU LA 2.
+     Regula („Lucide la stroke-width 1.5") era scrisa in handoff si in sistemul de
+     design, dar nu se aplicase nicaieri: 155 din cele 209 de iconite nu primeau
+     deloc `strokeWidth`, deci cadeau pe implicitul bibliotecii, 2. Se vedea ca o
+     interfata mai apasata decat tot restul redesignului — dar nu se vedea NICAIERI
+     in cod, fiindca lipsa unei proprietati nu se poate grepa.
+     Contextul lui Lucide da doar IMPLICITUL (`strokeWidth = props.strokeWidth ??
+     globalProps.strokeWidth ?? 2`), deci cele 54 de locuri care cer explicit altceva
+     raman neatinse — bifele de 3, care la 12px trebuie sa se vada ca un semn, nu ca
+     o linie. NU se poate face din CSS: Lucide scrie `stroke-width` ca ATRIBUT, iar
+     o regula CSS ar bate si suprascrierile explicite, adica exact pe cele dorite. */
+  setLucideProps({ strokeWidth: 1.5 })
 
   import Home from './pages/Home.svelte'
   import Skeleton from './components/ui/Skeleton.svelte'

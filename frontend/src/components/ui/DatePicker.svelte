@@ -296,10 +296,10 @@
     .dp-trigger { min-height: var(--tap-min); }
   }
 
+  /* Fara blur, ca la voalul modalului: sticla a iesit din sistem. */
   .dp-voal {
     position: fixed; inset: 0; z-index: calc(var(--z-tooltip) - 1);
     background: rgba(0, 0, 0, 0.5);
-    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
   }
   .dp-pop.sheet {
     top: auto; bottom: 0; left: 0; right: 0;

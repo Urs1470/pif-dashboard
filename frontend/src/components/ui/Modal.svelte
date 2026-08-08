@@ -223,12 +223,15 @@
 {/if}
 
 <style>
+  /* FARA BLUR PE VOAL. Blurul a iesit din sistem odata cu redesignul — de pe
+     header, dock si paleta a fost scos atunci, dar voalul modalului a ramas cu
+     `blur(7px)`, adica singurul loc din aplicatie unde fondul mai e sticla.
+     Un voal nu are nevoie de el: opacitatea singura desprinde caseta, iar blurul
+     costa un strat de compozitare cat ecranul, animat la fiecare deschidere. */
   .backdrop {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(7px);
-    -webkit-backdrop-filter: blur(7px);
     display: flex;
     align-items: center;
     justify-content: center;
