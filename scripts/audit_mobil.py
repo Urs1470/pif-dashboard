@@ -498,20 +498,37 @@ def lista_de_facut(ctx, baza):
     zi('Fără termen' not in capete or capete[-1] == 'Fără termen',
        '„Fără termen" e ultima, nu prima', capete)
 
-    # adaugare cu zi
+    # ADAUGAREA PE TELEFON TRECE PRIN BUTONUL MARE CU PLUS.
+    #
+    # Testul verifica alt contract decat pana acum, si nu fiindca s-a stricat
+    # ceva: redesignul din 2026-08-08 cere O SINGURA cale de adaugare per ecran
+    # — linia cu Enter pe desktop, butonul cu plus pe telefon. Compozitorul
+    # inline de pe /tasks a plecat de pe latimea asta (pe „Astăzi" ramane, e al
+    # boardului). Deci aici se verifica: butonul EXISTA, e o tinta adevarata, si
+    # duce la formularul din care poti pune si termenul din prima.
     MARCA = 'Audit — task de proba'
     n0 = page.eval_on_selector_all('.trow', 'e => e.length')
-    page.fill('.quick-add input', MARCA)
-    page.wait_for_timeout(400)
-    chip = page.locator('.qa-chip', has_text='Azi').first
-    zi(chip.is_visible(), 'chipurile de zi apar cat timp scrii')
-    if chip.is_visible():
-        chip.click()
-        page.wait_for_timeout(1400)
-        grup = page.evaluate(GRUPUL_LUI, MARCA)
-        zi(page.eval_on_selector_all('.trow', 'e => e.length') == n0 + 1, 'taskul s-a creat')
-        zi(grup == 'Azi', 'taskul nou aterizeaza direct in ziua aleasa', grup)
-        zi(page.input_value('.quick-add input') == '', 'campul ramane gol si focusat pentru urmatorul')
+    zi(page.locator('.quick-add').count() == 0,
+       'compozitorul inline nu se dubleaza cu butonul de adaugare')
+    fab = page.locator('.fab').first
+    zi(fab.count() > 0 and fab.is_visible(), 'butonul mare cu plus e pe ecran')
+    if fab.count() and fab.is_visible():
+        c = fab.bounding_box()
+        zi(c and c['width'] >= 44 and c['height'] >= 44,
+           'butonul de adaugare e o tinta de deget', c)
+        fab.click()
+        page.wait_for_timeout(700)
+        camp = page.locator('.modal input[type="text"], .modal-body input[type="text"]').first
+        zi(camp.count() > 0, 'butonul deschide formularul de task nou')
+        if camp.count():
+            camp.fill(MARCA)
+            page.wait_for_timeout(200)
+            trimite = page.locator('.modal-actions button', has_text='Adaugă').first
+            if trimite.count() == 0:
+                trimite = page.locator('.modal-actions button').last
+            trimite.click()
+            page.wait_for_timeout(1600)
+            zi(page.eval_on_selector_all('.trow', 'e => e.length') == n0 + 1, 'taskul s-a creat')
 
     # mutare din gest: glisarea spre stanga deschide FOAIA cu panoul de termen
     # desfacut, si alegi ziua acolo. Pe /tasks termenele sunt imprastiate pe
@@ -522,7 +539,7 @@ def lista_de_facut(ctx, baza):
         cx, cy = r[0] + r[2] * 0.5, r[1] + r[3] / 2
         page.evaluate(TRAGE, [cx, cy, [[cx - d, cy] for d in (30, 100, 180, 240)], 5])
         page.wait_for_timeout(900)
-        zi(page.locator('.ts-zile .ts-zi').count() > 0,
+        zi(page.locator('.ts-zile .sz-optiune').count() > 0,
            'glisarea deschide foaia cu ziua de ales')
         page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
         page.wait_for_timeout(1400)
@@ -571,8 +588,11 @@ CAUTA_RAND = """(marca) => {
 # deschide foaia taskului cu panoul de termen desfacut (Azi / Mâine / Alege ziua /
 # Scoate). Panoul din rand — patru actiuni × 58px = 232px din 390 — a plecat cu
 # tot cu CSS-ul lui, deci `.gl-actiuni .glb` nu mai exista.
+# `.sz-optiune` — butoanele lui `components/ui/SelectorZi.svelte`. Erau scrise
+# local in fiecare foaie (`.ts-zi`), cu alt desen in fiecare loc; de la redesign
+# sunt o componenta, deci si testul intreaba de ea.
 ALEGE_ZI_IN_FOAIE = """(eticheta) => {
-  const b = [...document.querySelectorAll('.ts-zile .ts-zi')].find(x => x.textContent.includes(eticheta));
+  const b = [...document.querySelectorAll('.ts-zile .sz-optiune')].find(x => x.textContent.includes(eticheta));
   if (!b) return false;
   b.click();
   return true;
@@ -635,7 +655,14 @@ def dockul_pe_telefon(ctx, baza):
     # masurat (prima varianta a testului „a trecut" exact asa, degeaba).
     page.goto(baza + '/#/calculator', wait_until='load')
     page.wait_for_selector('.dock', timeout=15000)
-    page.wait_for_timeout(1500)
+    # SE ASTEAPTA CONTINUTUL, NU INVELISUL. `.dock` e in shell-ul aplicatiei si
+    # apare imediat; modulele Calculatorului vin dintr-un chunk de ~880 KB, si
+    # pana soseste el pagina e cat ecranul — deci masuratoarea de mai jos gasea
+    # `scrollHeight == 844` si pica pe „nu se poate derula", desi pagina reala
+    # are 1600+. Nu era o regresie, era o cursa.
+    page.wait_for_function('() => document.documentElement.scrollHeight > window.innerHeight + 40',
+                           timeout=20000)
+    page.wait_for_timeout(600)
 
     s0 = page.evaluate(STARE)
     if not s0:
@@ -962,7 +989,11 @@ def azi_peste_tot(ctx, baza):
         return page.evaluate(
             "(m) => [...document.querySelectorAll('.arow .atitle')].some(e => e.textContent.includes(m))", MARCA)
 
-    page.goto(baza + '/#/tasks', wait_until='load')
+    # Taskul se naste de pe ACASA: acolo a ramas compozitorul pe telefon (e al
+    # boardului „Astăzi"), iar pe /tasks adaugarea trece prin butonul cu plus.
+    # Intrebarea testului nu s-a schimbat — „azi" inseamna aceeasi zi pe ambele
+    # ecrane — doar usa prin care intra taskul.
+    page.goto(baza + '/#/', wait_until='load')
     try:
         page.wait_for_selector('.quick-add input', timeout=15000)
     except Exception:
@@ -971,14 +1002,9 @@ def azi_peste_tot(ctx, baza):
         return 0
     page.wait_for_timeout(800)
     page.fill('.quick-add input', MARCA)
-    page.wait_for_timeout(400)
-    page.locator('.qa-chip', has_text='Azi').first.click()
-    page.wait_for_timeout(1400)
-
-    page.goto(baza + '/#/', wait_until='load')
-    page.wait_for_selector('.arow', timeout=15000)
-    page.wait_for_timeout(1400)
-    zi(pe_acasa(), 'taskul pus pe „Azi" apare si in boardul de pe Acasa')
+    page.keyboard.press('Enter')
+    page.wait_for_timeout(1600)
+    zi(pe_acasa(), 'taskul scris pe board apare in boardul de azi')
 
     page.goto(baza + '/#/tasks', wait_until='load')
     page.wait_for_selector('.trow', timeout=15000)

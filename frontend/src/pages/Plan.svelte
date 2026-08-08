@@ -996,7 +996,13 @@
     text-transform: uppercase; color: var(--accent); pointer-events: none; }
   .col-head { position: absolute; top: 0; bottom: 0; padding: 6px 2px 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
   .col-head.compact { padding: 5px 1px; }
-  .col-head.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
+/* WEEKENDUL E O UMBRA, NU O CULOARE.
+     Tinta era `--purple` — adica movul decorativ, care a iesit din sistem si e
+     acum un alias catre accent. Cu el, sambata si duminica ar fi purtat exact
+     cerneala pe care grila o foloseste ca sa spuna „aici e ceva planificat":
+     doua zile libere colorate ca o zi de lucru. Weekendul nu e o stare, e o
+     absenta — deci se deseneaza cu textul paginii, la procent mic. */
+  .col-head.we { background: color-mix(in srgb, var(--text) 5%, transparent); }
   .col-head.today { background: var(--accent-subtle); }
   .ch-sub { font-size: var(--font-label); color: var(--text-faint); text-transform: uppercase; letter-spacing: var(--tracking-label); white-space: nowrap; }
   .col-head.today .ch-sub { color: var(--accent); }
@@ -1007,7 +1013,7 @@
   .p-body { position: relative; }
   .overlay { position: absolute; top: 0; bottom: 0; left: calc(var(--lane-w) + var(--rest-w)); right: 0; pointer-events: none; z-index: 0; }
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
-  .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 5%, transparent); }
+  .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 4%, transparent); }
   .col-today { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 7%, transparent); }
   /* Amber, nu danger: rosul e cerneala pentru „intarziat" peste toata aplicatia
      (`.chip.due.restant`, `.mrow.urgent`, `.rest-pin`), iar linia asta spune
@@ -1031,7 +1037,7 @@
      9 erau taiate. Doua randuri arata partea care le distinge. */
   .lane-txt { min-width: 0; line-height: var(--lh-snug); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
   .tip-chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--accent-subtle); color: var(--accent); flex-shrink: 0; }
-  .tip-chip.svc { background: color-mix(in srgb, var(--purple) 18%, transparent); color: var(--purple); }
+  .tip-chip.svc { background: var(--accent-subtle); color: var(--accent-deep); }
 
   /* Jgheabul restantelor. Reperele stau centrate si se inghesuie cand sunt multe:
      numarul exact e scris in coloana de nume, aici conteaza ca EXISTA. */
@@ -1287,8 +1293,8 @@
     color: var(--text-dim); font-variant-numeric: tabular-nums;
     overflow: hidden; white-space: nowrap; border-left: 1px solid var(--border-subtle); }
   .ms-wd { font-size: var(--font-label); line-height: var(--lh-tight); color: var(--text-faint); text-transform: uppercase; letter-spacing: var(--tracking-label); }
-  .ms-c.we { color: var(--purple); }
-  .ms-c.we .ms-wd { color: var(--purple); }
+  .ms-c.we { color: var(--text-dim); }
+  .ms-c.we .ms-wd { color: var(--text-dim); }
   .ms-c.today { color: var(--accent); font-weight: var(--fw-semibold); }
   .ms-c.today .ms-wd { color: var(--accent); }
 
@@ -1297,7 +1303,7 @@
      task faci pe randul lui, dedesubt. */
   .m-track { position: relative; height: 26px; margin: 0 3px 8px; border-radius: var(--radius-sm);
     background: var(--bg-panel); box-shadow: inset 0 0 0 1px var(--border-subtle); overflow: hidden; }
-  .mt-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 7%, transparent); }
+  .mt-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 5%, transparent); }
   /* Amber, ca pe desktop: rosul e „intarziat", nu „acum". */
   .mt-azi { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: 0.85; z-index: 3; }
   /* Reperele stau PESTE benzi si sunt singurul lucru din banda pe care il atingi

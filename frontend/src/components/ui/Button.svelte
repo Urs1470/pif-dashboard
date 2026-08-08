@@ -61,9 +61,11 @@
     background: var(--accent);
     color: var(--accent-text);
   }
+  /* Fara glow colorat (interzis explicit). Hoverul merge spre `--accent-deep`:
+     pe intuneric asta inseamna mai deschis, pe lumina mai inchis — in ambele,
+     mai mult contrast, care e chiar raspunsul cerut. */
   .btn-primary:hover:not(:disabled) {
-    background: var(--accent-hover);
-    box-shadow: var(--shadow-glow-accent);
+    background: var(--accent-deep);
   }
   /* Ridicarea de 1px doar unde exista cursor: pe touch ramane lipita dupa apasare
      si butonul pare desprins de rand. */

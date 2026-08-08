@@ -869,25 +869,101 @@ Shared working tree → shared git index, so coordinate before staging/committin
 
 > See `AGENT_BRIEFING.md` (spawn template) for the multi-agent workflow.
 
+### Redesign complet: oțel, Gabarito, o singură axă de culoare (2026-08-08)
+
+Handoff-ul „Design audit complet dashboard" (10 prototipuri `.dc.html` + `DIRECTIA-DE-DESIGN.md`).
+Ce s-a schimbat la nivel de sistem și **de ce**, ca să nu se re-deschidă din instinct:
+
+- **Accentul amber a plecat.** Nu ca stil: amberul Bento, movul „info/purple" și „service"
+  erau a **doua și a treia culoare de brand**, iar `--accent` și `--warning` erau *exact
+  același hex*. Acum accentul e unul, iar restul culorilor spun doar **stare** (restant,
+  făcut). Ce era codificat cromatic și nu mai e: identitatea proiectului în Calendar,
+  locația (Site/Sediu), tipul PIF/Service, weekendul.
+- **Cele ~25 de nume vechi de token sunt ALIASURI**, nu roluri în plus (`--warning` →
+  `--danger`, `--purple`/`--info`/`--service-*` → accent, `--text-faint` → `--text-dim`).
+  Aliasul rezolvă prin `var()`, deci urmează automat tema țintei — de aceea
+  `audit_design.py` scutește aliasurile de regula de paritate între teme (R7); a cere o a
+  doua definiție ar însemna exact a doua sursă de adevăr pe care regula o previne.
+  `--accent-on-subtle` e literal `--accent-deep`, deci regula „text pe tentă ia adâncul" se
+  repară singură în cele ~20 de locuri care o încălcau.
+- **Fonturi: Gabarito (text) + DM Mono (cifre)**, self-hosted în `static/fonts/`. Inter,
+  Space Grotesk și JetBrains Mono au ieșit. Subsetul `latin` are â/î, `latin-ext` are ă/ș/ț
+  — **verificat pe `cmap`, nu presupus**; împreună acoperă româna.
+- **Scara: 12 · 13 · 15 · 21 · 25.** Pe telefon **pagina crește** (28) și corpul crește (16);
+  rândul rămâne 15, fiindcă el poartă densitate. `--font-h3` s-a colapsat la 15/600
+  („etichetă de pagină"), nu la 17 — 17 nu mai există în scară.
+- **Raze: 8 chip · 10 control/rând · 14 suprafață · 20 foaie · cerc doar bifa.** Nimic între.
+- **Elevația se citește din UMBRĂ, nu din linii peste tot** — două niveluri. Deci: fondul
+  redevine o culoare (glowurile radiale de sub fiecare card au plecat), `backdrop-filter`
+  a plecat de pe header, dock, paletă și voaluri, iar cardurile pierd chenarul.
+- **Mișcare: 90 apăsare · 220 element · 280 suprafață**, o curbă standard și **un singur**
+  arc (`cubic-bezier(.34,1.35,.42,1)`). Staggerul e 40ms, plafonat la **șase** celule.
+  **`reduced-motion` nu mai înseamnă durată ZERO, ci 120ms fără translație** — o tranziție
+  de durată zero nu emite `transitionend`, iar bifarea se sincronizează pe el.
+
+**RÂNDUL DE TASK E UN SINGUR OBIECT, în trei liste.** `/tasks`, boardul „Astăzi" și tabul
+Taskuri al proiectului au acum aceeași geometrie, până la pixel: 46px înălțime, gap 12,
+**termenul pironit într-o coloană de 46px cu valoare pe fiecare rând**, acțiunile cu **text**
+(nu iconițe mute) apărute la hover **la stânga** termenului, titlul cedează lățimea.
+Coloana de 16px a mânerului de reordonare e **rezervată pe toate rândurile**, ca absența să
+nu pară greșeală. Listele n-au rânduri-card: un separator de 1px cu marjă laterală.
+Ce a plecat de pe rând: categoria, fracția de pași, indicatorul de notiță, săgeata de
+desfacere. Dacă schimbi forma, schimb-o în **toate trei** — sursa e `Tasks.svelte`.
+
+**O singură cale de adăugare per ecran:** linia cu Enter pe desktop, butonul mare cu plus pe
+telefon (`/tasks`). Pe „Astăzi" rămâne compozitorul, fiindcă acolo e al boardului.
+
+**Căutarea trăiește într-un singur loc: paleta din dock.** Câmpurile locale de pe `/tasks` și
+`/projects` au plecat — același gest („caut un task") avea două unelte cu rezultate diferite,
+iar paleta le găsește pe toate și aterizează pe rând (`?focus=`). Pe telefon lupa rămâne în
+cap, fiindcă dockul de acolo n-o are.
+
+**Panoul face loc, nu acoperă.** În Calendar coloana panoului apare **odată cu el**, iar la
+încărcare **nu e selectată nicio zi** — grila trece de la 127 la 176px pe zi, exact pragul de
+la care eticheta unei lucrări se poate citi în bara ei. „Proiecte fără perioadă" a urcat din
+panou în capul paginii: e o **sursă**, nu un detaliu al zilei, și în panou nu se vedea tocmai
+când n-aveai nicio zi deschisă.
+
+**Tabul „Calcule" a plecat din pagina proiectului — și cu el, butonul „Proiect" din
+Calculator.** Handoff-ul cerea doar tabul, dar tabul era **singurul cititor** al lui
+`POST /api/proiecte/<id>/calcule`: scos singur, ar fi rămas un buton care salvează într-un loc
+pe care nu-l mai poți deschide. Ruta de API și datele existente sunt neatinse — dacă
+funcția se reia, se reia cu ambele capete.
+
+**Un singur toast pe ecran, 4s.** Cel înlocuit **se comite** (`onCommit`), nu se aruncă:
+altfel rândul rămânea șters din interfață și neșters din bază.
+
 ## Design system (frontend)
 
-**Sursa unică: `frontend/src/styles/tokens.css`** — citește-l înainte să atingi CSS. Estetica e
-**Bento** (dark warm + amber, celule rotunjite, dock plutitor). Două teme (`dark` default,
-`light` warm-paper), ambele definite în tokens — dacă atingi culori, păstrează ambele.
+**Sursa unică: `frontend/src/styles/tokens.css`** — citește-l înainte să atingi CSS.
+Estetica e **oțel pe hârtie** (redesign 2026-08-08, handoff „Design audit complet
+dashboard"): opt roluri, două seturi de valori, **un singur accent** (`#5980a6` deschis /
+`#8ab2d9` întunecat). Două teme (`dark` default, `light`), ambele în tokens — dacă atingi
+culori, păstrează ambele.
 
-- **Suprafețe (elevație):** `--bg` (pagină) < `--bg-surface` (card) — `--bg-panel/--bg-input`
-  sunt INSET < `--bg-overlay` (modal/toast/popover). Text: `--text/-secondary/-dim/-faint`
-  (faint DOAR etichete/large — e 3:1). Cerneala pe fill saturat: `--on-color`.
-- **Culoarea e semantică, nu decor:** amber = accent/warning (identitate), `--danger`,
-  `--success`, `--info` (violet). Pe rândurile de task **culoarea e rezervată severității**
-  (**inelul bifei + textul termenului**, amândouă din `--ring`, pus cu `dueRing()`);
-  restul metadatelor sunt gri. **Muchia colorată de 3px nu mai există nicăieri** —
-  nici pentru severitate, nici pentru identitate (vezi tura 9).
-- **Identitatea proiectului:** `lib/culori.js` — `culoareProiect(id)`, SINGURA sursă (paleta
-  e rezolvată numeric de `scripts/solve_paleta.py`, nu aleasă din ochi; NU o copia în pagini).
-  Locația: `--loc-site/--loc-sediu` (chroma mică intenționat; NU se redefinesc pe light).
-- **Mișcare:** `--dur-fast/base/slow/press`, `--ease`, `--ease-spring` (doar revenirea din
-  gest). NU `transition: all` — folosește `--transition-colors` sau `--transition-pressable`.
+- **Suprafețe (elevație): DOUĂ niveluri plus o tentă.** `--bg` (pagină) < `--bg-surface`
+  (card) < `--bg-elevated` (suprafață 2: câmp, chip, celulă inset). Elevația se citește din
+  `--shadow-sm`/`--shadow-md`, **nu din chenare peste tot** — și nu din `backdrop-filter`,
+  care a ieșit din sistem. `--bg-panel`/`--bg-input`/`--bg-overlay` sunt aliasuri.
+  Text: `--text` / `--text-secondary` / `--text-dim`; **`--text-dim` e podeaua pentru text
+  mic** (verificat pe FOND, nu doar pe suprafață) — `--text-faint` e alias către el.
+- **Culoarea e stare, nu decor. UN accent (oțel).** `--accent` / `--accent-deep` (cerneala pe
+  tentă) / `--accent-subtle` (tentă, SOLIDĂ) / `--accent-text` (cerneala pe fill). Restul:
+  `--danger` + `--danger-deep`, `--success` + `--success-deep`. **Text pe o tentă ia
+  întotdeauna varianta `-deep`, niciodată culoarea plină.** `--warning`, `--info`,
+  `--purple`, `--service-*` sunt aliasuri — nu introduce o a treia stare.
+  Pe rândurile de task culoarea e rezervată **severității** (inelul bifei + textul
+  termenului, amândouă din `--ring`, pus cu `dueRing()`). **Muchia colorată de 3px nu mai
+  există nicăieri.**
+- **Identitatea proiectului NU se mai codează cromatic în Calendar** (11 din 12 perioade
+  sunt la același client, deci nu selecta nimic): forma spune faza, textura spune locul,
+  numele lucrării scrie în bară. `lib/culori.js` + `solve_paleta.py` rămân pentru
+  Planificator; `--loc-site`/`--loc-sediu` sunt aliasuri neutre — **locul se scrie**.
+- **Mișcare — trei durate, două curbe:** `--dur-press` 90 (apăsare, `--press-scale` .965) ·
+  `--dur-base` 220 (element) · `--dur-slow` 280 (suprafață). `--dur-fast` 120 e VOPSEA
+  (hover/culoare), nu e în scara de mișcare. `--ease` peste tot; `--ease-spring` doar unde
+  ceva urmărește degetul. NU `transition: all` — `--transition-colors` sau
+  `--transition-pressable`.
   Doar `transform`/`opacity` pe animații; ieșirea/intrarea rândurilor: `plecare`/`sosire`
   din `lib/motion.svelte.js` (`sosire` cu `|local`). Reduced-motion e global.
 - **Apăsare:** pe pointer grosier există podeaua globală de `:active` din `global.css`
@@ -895,19 +971,22 @@ Shared working tree → shared git index, so coordinate before staging/committin
 - **Componente — folosește librăria `components/ui/`, nu reinventa:** `<Input>`/`<Textarea>`
   (NU `<input>` brut în formulare), `<Select>` (NU `<select>` nativ), `<DatePicker>`
   (NU `type="date"`), `<Modal>`/`<ConfirmDialog>`, `<Toast>`, `<EmptyState>`,
-  `<ErrorState>` (cu retry — orice pagină/listă la eșec), `<Skeleton>` (DOAR prima
-  încărcare: gardă `loading && items.length === 0`). Butoanele modalului în
+  `<ErrorState>` (cu retry; `marime="sectiune"` pentru o bucată căzută, ca să nu golească
+  pagina), `<Skeleton>` (DOAR prima încărcare: gardă `loading && items.length === 0`;
+  `varianta="rand"` are forma rândului real), `<SelectorZi>` (Azi · Mâine · Alege +
+  Scoate — oriunde se replanifică ceva). Butoanele modalului în
   `{#snippet footer()}` cu `.modal-actions`.
 - **Iconițe:** `<SolidIcon>` pentru navigație/feature (solid); Lucide outline pentru
   afordanțe mici (plus, chevron, search, x). Zero emoji în UI.
-- **Tipografie — șase trepte, o regulă de familii.** Scara: `--font-title` 26 ·
-  `--font-h2` 20 · `--font-h3` 17 · `--font-body` 15 · `--font-small` 13 ·
-  `--font-label` 11 (DOAR etichete majuscule). Pe telefon scade **doar** `--font-title`
-  (→22); corpul rămâne 15 peste tot, iar câmpurile folosesc `--font-input-mobile`.
-  Familii: **Space Grotesk** = numele unui lucru (titluri, nume de proiect, numerale
-  mari) — niciodată sub 17px; **Inter** = tot ce citești; **JetBrains Mono** = cifre
-  care se compară pe verticală. Regula se verifică singură: *dacă textul se poate
-  traduce, nu e mono*. Tracking: `--tracking-tight/-normal/-label`. Line-height:
+- **Tipografie — cinci trepte, DOUĂ familii.** Scara: `--font-title` 25 · `--font-h2` 21 ·
+  `--font-h3` = `--font-body` 15 · `--font-small` 13 · `--font-label` 12 (DOAR etichete
+  majuscule, 600, `--tracking-label` .05em). În plus: `--font-control` 13/600 (control în
+  rând) și `--font-brand` 18/600 (marca — singura treaptă din afara scării, fiindcă e
+  logotip). **Nu se introduce 14px nicăieri.** Pe telefon **cresc** `--font-title` (→28) și
+  `--font-body` (→16); rândul de listă rămâne 15.
+  Familii: **Gabarito** = tot textul (titlu și corp, deosebite de mărime și greutate);
+  **DM Mono** = cifre care se compară pe verticală. Regula se verifică singură: *dacă
+  textul se poate traduce, nu e mono*. Tracking: `--tracking-tight/-normal/-label`. Line-height:
   `--lh-tight/snug/normal/relaxed`. Greutăți: 400/500/600 (`--fw-bold` nu mai există).
   **Nimic scris de mână** — `font-size` în `rem`/`px`, `letter-spacing` sau
   `line-height` în afara `tokens.css` sunt abateri, prinse de `audit_design.py`.

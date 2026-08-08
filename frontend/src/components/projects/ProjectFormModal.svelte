@@ -118,8 +118,12 @@
   .tip-label { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-label); }
   .tip-toggle { display: flex; gap: var(--space-xs); }
   .tip-btn { flex: 1; padding: 10px; min-height: 46px; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); font-weight: var(--fw-semibold); cursor: pointer; transition: var(--transition-colors); }
-  .tip-btn.active-pif { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent); }
-  .tip-btn.active-service { background: var(--service-subtle); border-color: var(--service-accent); color: var(--service-accent); }
+  /* PIF si Service erau doua CULORI (amber vs accent). Sistemul are un singur
+     accent, deci alegerea nu se mai poate face cromatic — o face SELECTIA:
+     butonul ales are tenta si cerneala adanca, celalalt e neutru. Care e care
+     scrie pe ele. */
+  .tip-btn.active-pif,
+  .tip-btn.active-service { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent-deep); }
 
   @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 </style>

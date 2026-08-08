@@ -1,8 +1,6 @@
 @import './reset.css';
 @import './tokens.css';
 
-/* Self-hosted (OFL-1.1, fisierele in static/fonts/) — fara dependenta CDN,
-   merge offline (PWA). Variabile: un fisier per familie acopera toate weights. */
 /* Doua familii, self-hosted (OFL-1.1), fiecare in doua subseturi.
    Subsetul `latin` are â si î; `latin-ext` are ă, ș si ț — impreuna acopera
    romana, si browserul incarca al doilea doar cand pagina chiar are diacritice
@@ -943,7 +941,6 @@ input[type="checkbox"].cbx:focus {
 .ico-amber { background: var(--accent-subtle); color: var(--accent); }
 .ico-green { background: var(--success-subtle); color: var(--success); }
 .ico-red   { background: var(--danger-subtle); color: var(--danger); }
-.ico-vio   { background: var(--purple-subtle); color: var(--purple); }
 
 /* Numerale mari de afisaj. Ramane Space Grotesk, desi regula spune „cifrele
    sunt mono": mono e pentru cifre care se COMPARA pe verticala, intr-o coloana.

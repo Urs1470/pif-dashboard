@@ -62,16 +62,16 @@
   }
   .md-rendered :global(th) { background: var(--bg-elevated); font-weight: var(--fw-semibold); }
   .md-rendered :global(img) { max-width: 100%; border-radius: var(--radius-xs); }
-  .md-rendered :global(mark) { background: var(--warning-subtle); color: var(--warning); border-radius: 2px; padding: 0 2px; }
+  .md-rendered :global(mark) { background: var(--accent-subtle); color: var(--accent-deep); border-radius: 2px; padding: 0 2px; }
   .md-rendered :global(input[type="checkbox"]) { margin-right: 4px; accent-color: var(--accent); }
 
   .md-rendered :global(.md-wikilink) {
-    color: var(--purple); cursor: pointer; border-bottom: 1px dashed var(--purple);
+    color: var(--accent-deep); cursor: pointer; border-bottom: 1px dashed var(--accent);
     border-radius: 2px; padding: 0 1px; transition: background var(--dur-fast) var(--ease);
   }
-  .md-rendered :global(.md-wikilink:hover) { background: var(--purple-subtle); }
+  .md-rendered :global(.md-wikilink:hover) { background: var(--accent-subtle); }
   .md-rendered :global(.md-tag) {
-    color: var(--info); background: var(--info-subtle); border-radius: var(--radius-full);
+    color: var(--accent-deep); background: var(--accent-subtle); border-radius: var(--radius-full);
     padding: 0 7px; font-size: 0.82em;
   }
 
@@ -89,14 +89,14 @@
   .md-rendered :global(.md-callout-tip .md-callout-title) { color: var(--success); }
   .md-rendered :global(.md-callout-success) { border-left-color: var(--success); background: var(--success-subtle); }
   .md-rendered :global(.md-callout-success .md-callout-title) { color: var(--success); }
-  .md-rendered :global(.md-callout-question) { border-left-color: var(--purple); background: var(--purple-subtle); }
-  .md-rendered :global(.md-callout-question .md-callout-title) { color: var(--purple); }
-  .md-rendered :global(.md-callout-warning) { border-left-color: var(--warning); background: var(--warning-subtle); }
-  .md-rendered :global(.md-callout-warning .md-callout-title) { color: var(--warning); }
+  .md-rendered :global(.md-callout-question) { border-left-color: var(--accent); background: var(--accent-subtle); }
+  .md-rendered :global(.md-callout-question .md-callout-title) { color: var(--accent-deep); }
+  .md-rendered :global(.md-callout-warning) { border-left-color: var(--danger); background: var(--danger-subtle); }
+  .md-rendered :global(.md-callout-warning .md-callout-title) { color: var(--danger-deep); }
   .md-rendered :global(.md-callout-danger) { border-left-color: var(--danger); background: var(--danger-subtle); }
   .md-rendered :global(.md-callout-danger .md-callout-title) { color: var(--danger); }
-  .md-rendered :global(.md-callout-example) { border-left-color: var(--purple); background: var(--purple-subtle); }
-  .md-rendered :global(.md-callout-example .md-callout-title) { color: var(--purple); }
+  .md-rendered :global(.md-callout-example) { border-left-color: var(--accent); background: var(--accent-subtle); }
+  .md-rendered :global(.md-callout-example .md-callout-title) { color: var(--accent-deep); }
   .md-rendered :global(.md-callout-quote) { border-left-color: var(--text-dim); background: var(--bg-elevated); }
   .md-rendered :global(.md-callout-quote .md-callout-title) { color: var(--text-secondary); }
 

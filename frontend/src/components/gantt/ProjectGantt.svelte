@@ -377,7 +377,13 @@
   .g-time-inner { position: relative; }
   .time-head { position: relative; }
   .col-h { position: absolute; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-left: 1px solid var(--border); overflow: hidden; }
-  .col-h.we { background: color-mix(in srgb, var(--purple) 6%, transparent); }
+/* WEEKENDUL E O UMBRA, NU O CULOARE.
+     Tinta era `--purple` — adica movul decorativ, care a iesit din sistem si e
+     acum un alias catre accent. Cu el, sambata si duminica ar fi purtat exact
+     cerneala pe care grila o foloseste ca sa spuna „aici e ceva planificat":
+     doua zile libere colorate ca o zi de lucru. Weekendul nu e o stare, e o
+     absenta — deci se deseneaza cu textul paginii, la procent mic. */
+  .col-h.we { background: color-mix(in srgb, var(--text) 5%, transparent); }
   .col-h.today { background: var(--accent-subtle); }
   .ch-sub { font-size: var(--font-label); color: var(--text-faint); text-transform: uppercase; white-space: nowrap; }
   .ch-main { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); white-space: nowrap; }
@@ -386,7 +392,7 @@
   .g-body { position: relative; }
   .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
-  .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--purple) 5%, transparent); }
+  .col-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 4%, transparent); }
   /* Pregatirea = golul dintre etape. Tenta cea mai discreta posibila: e un fundal
      de stare, nu un obiect — barele si punctele trebuie sa ramana citibile peste ea. */
   .prep { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text-faint) 7%, transparent);

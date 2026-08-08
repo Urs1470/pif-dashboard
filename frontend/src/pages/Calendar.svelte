@@ -1382,7 +1382,13 @@
   .zi:hover { border-color: var(--border-strong); }
   .zi:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .zi.alta { opacity: 0.42; }
-  .zi.we { background: color-mix(in srgb, var(--purple) 5%, var(--bg-elevated)); }
+/* WEEKENDUL E O UMBRA, NU O CULOARE.
+     Tinta era `--purple` — adica movul decorativ, care a iesit din sistem si e
+     acum un alias catre accent. Cu el, sambata si duminica ar fi purtat exact
+     cerneala pe care grila o foloseste ca sa spuna „aici e ceva planificat":
+     doua zile libere colorate ca o zi de lucru. Weekendul nu e o stare, e o
+     absenta — deci se deseneaza cu textul paginii, la procent mic. */
+  .zi.we { background: color-mix(in srgb, var(--text) 4%, var(--bg-elevated)); }
   /* UN CANAL PER INTREBARE.
      Erau sase stari pe doua canale, patru dintre ele amber: azi (chenar), selectata
      (fundal + contur), de clarificat (chenar), tinta de asezare (chenar punctat),
@@ -1403,7 +1409,7 @@
      atingere face altceva decat de obicei. */
   .zi.tinta { border-style: dashed; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
   .zi.tinta:hover, .zi.tinta:active { border-color: var(--accent); background: var(--accent-subtle); }
-  .zi.split { box-shadow: inset 0 -3px 0 var(--purple); }
+  .zi.split { box-shadow: inset 0 -3px 0 var(--border-strong); }
 
   .n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 15px; height: 15px; padding: 0 3px; border-radius: var(--radius-full);
@@ -1571,7 +1577,7 @@
      culoarea nu tine de identitatea proiectului, si de aia e conturat, nu plin. */
   .it-m .fac { display: inline-flex; align-items: center; gap: 3px; background: none;
                color: var(--success); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
-  .it-m .tk.warn { color: var(--warning); }
+  .it-m .tk.warn { color: var(--danger); }
 
   .dec { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }
   .dec-q { font-size: var(--font-small); color: var(--danger); width: 100%; }

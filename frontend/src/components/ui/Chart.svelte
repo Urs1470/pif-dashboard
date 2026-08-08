@@ -186,5 +186,5 @@
   .tip-v { fill: var(--text-secondary); font-size: var(--font-small); font-family: var(--font-mono); }
   .chart-desc { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); margin-top: 6px; }
   .cd-l { font-weight: var(--fw-semibold); color: var(--text); }
-  .cd-w { color: var(--service-accent); margin-left: 2px; }
+  .cd-w { color: var(--accent); margin-left: 2px; }
 </style>

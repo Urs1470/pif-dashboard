@@ -1018,7 +1018,7 @@
   .header-actions { display: flex; gap: var(--space-xs); flex-wrap: wrap; flex-shrink: 0; }
   .tip { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
   .tip.pif { background: var(--accent-subtle); color: var(--accent); }
-  .tip.service { background: var(--service-subtle); color: var(--service-accent); }
+  .tip.service { background: var(--accent-subtle); color: var(--accent-deep); }
   /* `flex-wrap` + `min-width: 0`: fara ele cele trei fapte (client, echipament, cod)
      imparteau latimea in trei coloane egale si fiecare se rupea inauntru —
      „ACS880-07-" pe un rand, „0640A-3" pe urmatorul, langa „P-2026-" / „001".
@@ -1123,7 +1123,6 @@
   .grup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger); }
   .grup-cap.ton-accent { color: var(--accent); }
   .grup-cap.ton-accent .grup-n { background: var(--accent-subtle); color: var(--accent-on-subtle); }
-  .grup-cap.ton-warning { color: var(--warning); }
   /* UN SINGUR OBIECT: rama, fundalul si colturile stau pe WRAPPER, iar randul si
      extinderea sunt continutul lui. Aici extinderea era un card SEPARAT (fundal
      propriu, rama proprie, indentat 26px), deci un task deschis se citea ca doua
