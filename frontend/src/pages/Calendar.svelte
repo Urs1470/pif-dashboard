@@ -1158,6 +1158,8 @@
               aria-selected={g.iso === selectata}
               style="grid-row: {Math.floor(i / 7) + 1}; grid-column: {i % 7 + 1}; --benzi: {benziPeRand[Math.floor(i / 7)] ?? 1}"
               class:alta={g.alta}
+              class:col-ultima={i % 7 === 6}
+              class:rand-ultim={i >= grila.length - 7}
               class:we={isWeekend(g.iso)}
               class:azi={g.iso === azi}
               class:sel={g.iso === selectata}
@@ -1175,15 +1177,17 @@
                    sa repare benzile. Un rand in plus intr-o singura celula strica
                    alinierea intregii saptamani. -->
               <div class="zi-h">
-                <!-- AZI E PE CIFRA, NU PE CHENAR.
-                     Chenarul si conturul raman EXCLUSIV pentru selectie. Inainte
-                     azi era chenar amber, selectia contur amber, „de clarificat"
-                     chenar coral — iar cand ziua de azi era si zi de clarificat,
-                     chenarul rosu il acoperea pe cel amber: codul spunea „bate pe
-                     azi", dar rezultatul era ca AZI dispare exact in ziua in care
-                     te uiti la ea. Pastila se vede de la distanta si nu se bate cu
-                     nimic, fiindca e singurul lucru care sta pe cifra. -->
+                <!-- AZI E TENTA PE CELULA + CUVANTUL; PASTILA E A SELECTIEI.
+                     Erau invers, si asta costa doua lucruri. Azi purta pastila
+                     plina, deci ziua in care te uiti tipa mai tare decat orice
+                     actiune de pe o pagina care e despre planificare. Iar selectia
+                     lua tenta PLUS un inel de 2px — deci inelul era deja ocupat si
+                     la tragere nu mai aveai cu ce arata ziua de sub deget, exact
+                     rolul pentru care fusese rezervat.
+                     Cuvantul „azi" e scris, nu doar colorat: o tenta singura nu
+                     spune CARE din stari e, iar un cuvant nu se confunda cu nimic. -->
                 <span class="n">{parseISO(g.iso).getDate()}</span>
+                {#if g.iso === azi}<span class="azi-et">azi</span>{/if}
                 {#each capturi as d (d.cheie)}
                   <button class="cap" class:sediu={d.sediu}
                           class:se-trage={trag?.tip === 'deplasare' && trag.cheie === d.cheie}
@@ -1529,61 +1533,80 @@
   .wrap.cu-panou { grid-template-columns: minmax(0, 1fr) 300px; }
 
   .cal { background: var(--bg-surface); border: 0; border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: var(--space-sm); }
-  .wd { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-bottom: 4px; }
+  .wd { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; margin-bottom: 4px; }
   .wd span { font-size: var(--font-label); color: var(--text-faint); text-align: center; text-transform: uppercase; letter-spacing: var(--tracking-label); }
   /* `minmax(0, 1fr)`, nu `1fr`: `1fr` inseamna `minmax(auto, 1fr)`, deci o banda
      care se intinde peste coloane si are `nowrap` isi impune latimea minima si
      largeste coloanele pe care le acopera. Zilele nu mai erau egale si nu se mai
      aliniau cu antetul de zile al saptamanii. */
-  .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; }
 
-  .zi { position: relative; min-height: calc(38px + var(--benzi, 1) * 20px); padding: 5px 5px 4px; border-radius: var(--radius-md);
-        border: 1px solid var(--border); background: var(--bg-elevated); text-align: left; cursor: pointer;
+  /* O LUNA E O HARTA, NU 35 DE OBIECTE.
+     Celula statea pe `border: 1px` + `radius-md` + fond propriu, intr-o grila cu
+     gap de 4px — deci pagina desena 35 de cutii rotunjite, fiecare cu conturul ei,
+     si ochiul le numara una cate una in loc sa citeasca luna. Acum grila e O
+     SINGURA suprafata (`.cal`), iar celulele se desprind din linii INTERIOARE:
+     muchia din dreapta desparte zilele, cea de jos desparte saptamanile — de aceea
+     a doua e `--border-strong`, ca randul de saptamana sa se citeasca mai tare
+     decat coloana de zi.
+     `gap: 0` e obligatoriu: cu spatiu intre celule liniile ar pluti separat si n-ar
+     mai forma o grila. Consecinta se vede mai jos, la benzi — capetele care
+     „continua" nu mai au un gol de acoperit, deci margina negativa a plecat. */
+  .zi { position: relative; min-height: calc(32px + var(--benzi, 1) * 20px); padding: 5px 8px 0;
+        border: 0; background: none; text-align: left; cursor: pointer;
+        box-shadow: inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border-strong);
         display: flex; flex-direction: column; gap: 3px; overflow: hidden;
-        transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
-  /* In „2 sapt." sunt doar doua randuri de afisat, deci celulele pot respira. */
-  .grid.sapt .zi { min-height: calc(62px + var(--benzi, 1) * 20px); }
-  .zi:hover { border-color: var(--border-strong); }
+        transition: background var(--dur-fast) var(--ease); }
+  .zi:hover { background: var(--bg-hover); }
   .zi:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   /* Ziua din alta luna: cifra trece pe `--text-dim`, nu toata celula pe 42%.
      Opacitatea inmulteste peste tokenuri deja la limita — si stingea si benzile,
      nu doar cifra, desi lucrarile din ele sunt la fel de reale. */
   .zi.alta .n { color: var(--text-dim); }
-/* WEEKENDUL E O UMBRA, NU O CULOARE.
-     Tinta era `--purple` — adica movul decorativ, care a iesit din sistem si e
-     acum un alias catre accent. Cu el, sambata si duminica ar fi purtat exact
-     cerneala pe care grila o foloseste ca sa spuna „aici e ceva planificat":
-     doua zile libere colorate ca o zi de lucru. Weekendul nu e o stare, e o
-     absenta — deci se deseneaza cu textul paginii, la procent mic. */
-  .zi.we { background: color-mix(in srgb, var(--text) 4%, var(--bg-elevated)); }
-  /* UN CANAL PER INTREBARE.
-     Erau sase stari pe doua canale, patru dintre ele amber: azi (chenar), selectata
-     (fundal + contur), de clarificat (chenar), tinta de asezare (chenar punctat),
-     drop (chenar punctat), impartita (bara jos). Trei stateau pe chenar, doua pe
-     contur. Iar cand ziua de azi era si zi de clarificat, chenarul rosu il acoperea
-     pe cel amber — codul spunea „bate pe azi", dar rezultatul era ca AZI dispare
-     exact in ziua in care te uiti la ea.
-       chenar / contur = SELECTIE (si starile ei momentane: drop, tinta)
-       cifra           = azi (pastila amber plina, vezi `.zi.azi .n`)
-       coltul          = de clarificat (triunghiul `.flag`, care era deja acolo)
-       bara de jos     = zi impartita intre locuri
-     Atentie la o capcana: in tema asta --warning === --accent (#ffb454), deci
-     avertizarile NU pot folosi warning — ar arata exact ca „azi". */
-  .zi.sel { background: var(--accent-subtle); outline: 2px solid var(--accent); outline-offset: -2px; }
-  .zi.drop { border-style: dashed; border-color: var(--accent); background: var(--accent-subtle); }
+  /* Liniile sunt SEPARATOARE, deci nu au ce cauta pe marginea de afara: acolo n-au
+     ce despartii, si impreuna ar desena inapoi chiar chenarul scos de R1 — doar cu
+     un pas mai incolo, pe cardul intreg. */
+  .zi.col-ultima { box-shadow: inset 0 -1px 0 var(--border-strong); }
+  .zi.rand-ultim { box-shadow: inset -1px 0 0 var(--border); }
+  .zi.col-ultima.rand-ultim { box-shadow: none; }
+  /* WEEKENDUL E SUPRAFATA A DOUA, NU UN PROCENT DE TEXT.
+     Statea pe `color-mix(--text 4%, --bg-elevated)` — adica o culoare inventata
+     peste un fond care era el insusi ridicat. Acum, grila fiind o singura
+     suprafata (`--bg-surface`), sambata si duminica sunt pur si simplu
+     `--bg-elevated`: contrastul vine din NIVELUL de suprafata, pe care sistemul
+     il are deja, nu dintr-un procent ales de mana. */
+  .zi.we { background: var(--bg-elevated); }
+  /* UN CANAL PER INTREBARE — si canalele NU sunt cele de dinainte.
+     Erau inversate: azi purta pastila plina (deci tipa mai tare decat orice
+     actiune de pe ecran), iar selectia lua tenta PLUS un inel de 2px. Doua
+     consecinte: ziua in care te uiti domina o pagina care e despre planificare,
+     si — mai grav — inelul era deja ocupat, deci la TRAGERE nu mai aveai cu ce
+     arata ziua de sub deget, exact rolul pentru care fusese rezervat.
+       tenta pe celula + cuvantul „azi" = AZI (o zi ca oricare, doar insemnata)
+       cifra in pastila plina           = ziua SELECTATA
+       inelul                           = ziua de sub deget, la tragere
+       coltul                           = de clarificat (triunghiul `.flag`)
+     „azi" se si SCRIE, nu doar se coloreaza: o tenta singura n-ar spune care din
+     cele doua stari e, iar cuvantul nu se poate confunda cu nimic. */
+  .zi.azi { background: var(--accent-subtle); }
+  .zi.drop, .zi.tinta:hover, .zi.tinta:active {
+    outline: 2px solid var(--accent); outline-offset: -2px; background: var(--accent-subtle); }
   /* Cat timp un proiect asteapta sa fie asezat, TOATE zilele arata ca destinatii
      posibile — altfel „alege un proiect, apoi ziua" cere sa stii ca a doua
      atingere face altceva decat de obicei. */
-  .zi.tinta { border-style: dashed; border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
-  .zi.tinta:hover, .zi.tinta:active { border-color: var(--accent); background: var(--accent-subtle); }
-  .zi.split { box-shadow: inset 0 -3px 0 var(--border-strong); }
+  .zi.tinta { outline: 2px dashed color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: -2px; }
 
   .n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 15px; height: 15px; padding: 0 3px; border-radius: var(--radius-full);
     font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim);
     font-variant-numeric: tabular-nums; }
-  /* Pastila plina: se vede de la distanta si nu se bate cu niciun chenar. */
-  .zi.azi .n { background: var(--accent); color: var(--on-color); font-weight: var(--fw-semibold); }
+  /* Pastila plina e a SELECTIEI: ea e raspunsul la „ce zi am deschis", si e
+     singura stare pe care o alegi tu. Azi doar se intampla sa fie azi. */
+  .zi.sel .n { background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
+  /* Cuvantul, nu inca o culoare. Sta pe cerneala adanca fiindca fondul celulei e
+     deja tenta de accent — text pe tenta ia intotdeauna varianta `-deep`. */
+  .azi-et { font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--accent-deep);
+            letter-spacing: var(--tracking-label); }
   .flag { position: absolute; top: 4px; right: 4px; color: var(--danger); display: inline-flex; }
 
   /* O LUCRARE = O BANDA, oricat de multe zile ar tine. Se intinde peste coloane,
@@ -1591,10 +1614,11 @@
      latimea lucrarii la dispozitie.
      `--i` e banda (randul) lucrarii. Decalajul de sus trebuie sa fie EXACT cel al
      zonei de bare din celula, altfel benzile plutesc pe langa celule:
-       bordura 1 + padding 5 + antet 15 + gap 3 = 24px
+       padding 5 + antet 15 + gap 3 = 23px
      iar pasul unei benzi = inaltimea barei 17 + gap 3 = 20px. Cele doua numere
-     sunt aceleasi cu cele din `min-height` al celulei — se schimba impreuna. */
-  .grid { --h-antet: 24px; --h-banda: 20px; }
+     sunt aceleasi cu cele din `min-height` al celulei — se schimba impreuna.
+     Erau 24 cat timp celula avea bordura de 1px; R1 a scos-o, deci si pixelul ei. */
+  .grid { --h-antet: 23px; --h-banda: 20px; }
 
   /* CHENARUL IESIRII. Sta SUB benzi (`z-index: 0`) si nu primeste evenimente:
      lucrarile raman obiectele pe care le apuci, el doar spune ca fac parte din
@@ -1635,8 +1659,11 @@
                    border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
   .banda.sfarsit { margin-right: 6px;
                    border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
-  .banda:not(.inceput) { margin-left: -3px; }
-  .banda:not(.sfarsit) { margin-right: -3px; }
+  /* Capatul care CONTINUA se opreste fix pe muchia celulei. Cat timp grila avea
+     gap de 4px, `-3px` il faceau sa treaca peste gol, ca sa nu para intrerupt;
+     acum golul nu mai exista (R1), deci aceiasi 3px ar intra peste ziua vecina. */
+  .banda:not(.inceput) { margin-left: 0; }
+  .banda:not(.sfarsit) { margin-right: 0; }
   /* Cat timp se trage, nimic din ce pluteste peste celule nu mai raspunde la
      pointer: `ziDinPunct` foloseste `elementFromPoint`, deci ar nimeri banda in
      locul zilei. Fantoma e oricum inertă, dar o trecem si pe ea prin regula ca
@@ -1827,8 +1854,7 @@
     /* Benzile sunt mai subtiri pe telefon, deci si pasul lor — cele doua numere
        trebuie sa rămână in acord cu `--h-banda`, altfel benzile ies din celule. */
     .grid { --h-banda: 15px; }
-    .zi { min-height: calc(30px + var(--benzi, 1) * 15px); }
-    .grid.sapt .zi { min-height: calc(46px + var(--benzi, 1) * 15px); }
+    .zi { min-height: calc(25px + var(--benzi, 1) * 15px); }
     .banda { min-height: 12px; }
     .banda-t { display: none; }
     /* Captura se taia oricum la o felie ilizibila intr-o celula de ~48px. Ce spune
