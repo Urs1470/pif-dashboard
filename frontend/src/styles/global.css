@@ -581,23 +581,9 @@ input[type="checkbox"].cbx:focus {
 /* Notite task (continut rich, randat de RichText intr-un sub-component) */
 .note-content { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-relaxed); overflow-x: auto; }
 
-/* ===== Stat cards (stil legacy) ===== */
-.stat-value {
-  font-size: var(--font-title);
-  font-weight: var(--fw-semibold);
-  color: var(--text);
-  font-family: var(--font-heading);
-  letter-spacing: var(--tracking-tight);
-  font-variant-numeric: tabular-nums;
-  line-height: var(--lh-tight);
-}
-.stat-label {
-  font-size: var(--font-label);
-  font-weight: var(--fw-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--text-secondary);
-}
+/* `.stat-value` / `.stat-label` („stat cards, stil legacy") au fost sterse:
+   nefolosite nicaieri in frontend. Ce nu se randeaza nu se vede — dar se copiaza,
+   si erau exact forma de contor pe care Acasa a scos-o. */
 
 /* ===== O pastila de numaratoare, nu sase =====
    Erau `.count` (Tasks), `.count` (Projects), `.bh-count`, `.bh-restante`,
@@ -646,12 +632,18 @@ input[type="checkbox"].cbx:focus {
   scrollbar-width: none;
 }
 .tabs::-webkit-scrollbar { display: none; }
+/* TABUL E O ETICHETA DE SECTIUNE, DECI STA PE TREAPTA DE CORP.
+   Era la 13 (`--font-small`, treapta metadatelor) cu iconita de 14 — adica
+   navigatia principala a paginii de proiect se citea mai marunt decat randurile
+   pe care le comuta. Desenat: 15, iconita 16, iar cel activ la 600 pe cerneala
+   ADANCA — `--accent` plin pe fondul paginii e culoarea unui fill, nu a unui
+   text. Cursorul de 2px il avea deja corect ca `border-bottom`. */
 .tab {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: var(--space-sm) var(--space-md);
-  font-size: var(--font-small);
+  font-size: var(--font-body);
   font-weight: var(--fw-medium);
   color: var(--text-secondary);
   border-bottom: 2px solid transparent;
@@ -662,7 +654,7 @@ input[type="checkbox"].cbx:focus {
   transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
 .tab:hover { color: var(--text); }
-.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab.active { color: var(--accent-deep); font-weight: var(--fw-semibold); border-bottom-color: var(--accent); }
 
 /* ===== Section header uppercase (stil legacy) ===== */
 .section-title {
@@ -673,20 +665,10 @@ input[type="checkbox"].cbx:focus {
   color: var(--text-secondary);
 }
 
-/* ===== Timer dot pulsant ===== */
-@keyframes htpulse {
-  0% { box-shadow: 0 0 0 0 var(--accent-ring), 0 0 14px var(--accent); }
-  70% { box-shadow: 0 0 0 8px transparent, 0 0 14px var(--accent); }
-  100% { box-shadow: 0 0 0 0 transparent; }
-}
-.timer-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex-shrink: 0;
-  animation: htpulse 1.8s ease-out infinite;
-}
+/* `@keyframes htpulse` + `.timer-dot` au fost sterse. Erau nefolosite din v22,
+   cand timerul a plecat — dar purtau `box-shadow: … 0 0 14px var(--accent)`,
+   adica GLOW COLORAT, interzis explicit. O regula moarta care contrazice sistemul
+   e cel mai usor de reinviat: e deja scrisa, si pare aprobata. */
 
 /* `.sw-update-bar` a fost stearsa: anuntul de actualizare se randeaza prin
    `Toast` (vezi `toastFix` in `stores/ui.svelte.js` si cele doua blocuri din

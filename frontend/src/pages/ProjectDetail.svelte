@@ -608,7 +608,7 @@
     <div class="tabs">
       {#each tabs as tab}
         <button class="tab" class:active={activeTab === tab.key} onclick={() => activeTab = tab.key}>
-          <tab.icon size={14} />
+          <tab.icon size={16} />
           {tab.label}
         </button>
       {/each}
