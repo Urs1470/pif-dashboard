@@ -193,24 +193,73 @@
   // doua zile ar aparea pe randul 1 luni si pe randul 2 marti, iar bara n-ar mai
   // citi ca un singur lucru — ar sari. Impachetarea e cea clasica pe intervale:
   // primul rand liber, in ordinea inceputului.
-  const MAX_BENZI = 3
+  // Plafonul numara RANDURI, nu lucrari: de cand eticheta iesirii are randul ei
+  // (vezi `impachetare`), o deplasare cu doua lucrari ocupa trei. Era 3 cat timp
+  // un rand insemna o lucrare.
+  const MAX_BENZI = 5
 
-  const benzi = $derived.by(() => {
-    const m = new Map()
-    const items = [...(data?.perioade || [])].sort((a, b) =>
-      (a.data_start || '').localeCompare(b.data_start || '') ||
-      String(a.id).localeCompare(String(b.id)))
-    const ultima = []                       // ultima[banda] = ultima zi ocupata
-    for (const p of items) {
-      const a = p.data_start
-      const b = p.data_sfarsit || p.data_start
-      let l = 0
-      while (ultima[l] !== undefined && ultima[l] >= a) l++
-      ultima[l] = b
-      m.set(p.id, l)
+  /** Un identificator stabil pentru o deplasare: `cheie` singura se repeta (acelasi
+   *  loc si acelasi client, alta saptamana), iar ziua de plecare o face unica. */
+  function idDeplasare(d) { return `${d.cheie}|${d.start}` }
+
+  /** IMPACHETAREA: o deplasare ocupa un BLOC de randuri consecutive — primul e al
+   *  ETICHETEI ei, restul sunt lucrarile.
+   *
+   *  Inainte se impachetau lucrarile una cate una, iar eticheta („Sediu EGB · 3
+   *  zile") era un chip lipit de cifra zilei, in antet. Chenarul iesirii exista ca
+   *  obiect, dar numele lui statea in afara lui — deci „asta e o iesire de 3 zile,
+   *  cu lucrarile astea" se citea din doua locuri, nu dintr-o privire.
+   *
+   *  Ca eticheta sa incapa INAUNTRU, ii trebuie un rand pe care nimic altceva
+   *  nu-l poate ocupa: de-aia blocul se aloca intreg, nu rand cu rand. Altfel
+   *  lucrarea altei deplasari s-ar aseza fix pe randul etichetei, iar chenarul ar
+   *  ingloba o bara care nu-i apartine.
+   *
+   *  Pe telefon nu se rezerva nimic: `.chenar-et` e ascunsa acolo (o celula de
+   *  ~48px n-are loc de text), deci un rand gol ar fi 15px de nimic in fiecare
+   *  saptamana cu o iesire. */
+  const impachetare = $derived.by(() => {
+    const lucrari = new Map()
+    const etichete = new Map()
+    const cuEticheta = !ecran.telefon
+    const ultima = []                       // ultima[rand] = ultima zi ocupata
+    const ds = [...deplasari].sort((a, b) =>
+      (a.start || '').localeCompare(b.start || '') || idDeplasare(a).localeCompare(idDeplasare(b)))
+    for (const d of ds) {
+      const items = [...d.items.values()].sort((a, b) =>
+        (a.data_start || '').localeCompare(b.data_start || '') ||
+        String(a.id).localeCompare(String(b.id)))
+      // Cate randuri ii trebuie: lucrarile ei, impachetate intre ele.
+      const intern = []
+      const local = new Map()
+      for (const p of items) {
+        const a = p.data_start
+        const b = p.data_sfarsit || p.data_start
+        let k = 0
+        while (intern[k] !== undefined && intern[k] >= a) k++
+        intern[k] = b
+        local.set(p.id, k)
+      }
+      const cap = cuEticheta ? 1 : 0
+      const inalt = cap + Math.max(1, intern.length)
+      // Primul BLOC de `inalt` randuri libere pe intervalul deplasarii.
+      let baza = 0
+      for (;;) {
+        let liber = true
+        for (let k = 0; k < inalt; k++) {
+          if (ultima[baza + k] !== undefined && ultima[baza + k] >= d.start) { liber = false; break }
+        }
+        if (liber) break
+        baza++
+      }
+      for (let k = 0; k < inalt; k++) ultima[baza + k] = d.end
+      if (cuEticheta) etichete.set(idDeplasare(d), baza)
+      for (const [id, k] of local) lucrari.set(id, baza + cap + k)
     }
-    return m
+    return { lucrari, etichete }
   })
+
+  const benzi = $derived(impachetare.lucrari)
 
   // INALTIMEA URMEAZA SAPTAMANA, NU FEREASTRA.
   //
@@ -351,12 +400,17 @@
         if (l > jos) jos = l
       }
       if (jos < 0) continue
+      // Randul etichetei e capatul de sus al chenarului: numele iesirii sta
+      // INAUNTRU, pe primul ei rand, iar lucrarile incep sub el.
+      const et = impachetare.etichete.get(idDeplasare(d))
+      if (et !== undefined && et < sus) sus = et
       for (const f of feliaza(d.start, d.end, sus, null)) {
         const plafon = benziPeRand[f.rand - 1] ?? 1
         if (sus >= plafon) continue
         out.push({
           ...f,
           d,
+          areEticheta: et !== undefined,
           inalt: Math.min(jos, plafon - 1) - sus + 1,
           cheie: `${d.cheie}|${f.zile[0]}`,
         })
@@ -433,12 +487,6 @@
      lucrarile, si el se poate citi. Nicio textura: ar fi a treia axa. */
   function culoareLucrare(_p) { return 'var(--accent)' }
 
-  /** Deplasarile care INCEP in ziua asta — captura mica de deasupra barelor.
-   *  Doar la inceput, nu in fiecare zi: altfel „Continental" s-ar repeta peste tot. */
-  function incepDeplasari(iso) {
-    return deplasari.filter(d => d.start === iso)
-  }
-
   /** Clientul obisnuit al ferestrei. Din 12 perioade ale anului, 11 sunt la
    *  Continental — deci numele lui nu selecteaza nimic. */
   const clientObisnuit = $derived.by(() => {
@@ -500,7 +548,7 @@
 
   // AGENDA FERESTREI — raspunsul la „ce am luna asta", pe telefon.
   //
-  // Sub 620px `.banda-t` si `.cap` sunt `display: none`, deci grila ramane o harta
+  // Sub 620px `.banda-t` si `.chenar-et` sunt `display: none`, deci grila ramane o harta
   // de dungi colorate in care singurul purtator de identitate e CULOAREA — iar
   // `culoareProiect()` imparte sapte culori peste toate proiectele, deci doua pot
   // cadea pe aceeasi. Pe desktop numele le desparte; aici nu le despartea nimic.
@@ -950,9 +998,9 @@
 
   // ===== tastatura: aceleasi trei intelesuri, cu alta unealta =====
   //
-  // `.cap` (muta toata deplasarea) si `.maner` (schimba capetele) erau `<span>`-uri
-  // cu `onpointerdown`, fara `role` si fara `tabindex`, si stateau IN INTERIORUL
-  // unui `<button>` (`.zi`, respectiv `.banda`). Buton in buton e markup invalid,
+  // Eticheta iesirii (`.chenar-et`, care muta toata deplasarea) si `.maner` (schimba
+  // capetele) erau `<span>`-uri cu `onpointerdown`, fara `role` si fara `tabindex`,
+  // si stateau IN INTERIORUL unui `<button>`. Buton in buton e markup invalid,
   // iar doua din cele trei gesturi principale ale ecranului n-aveau niciun
   // echivalent la tastatura — „Mută" din panou acoperea doar mutarea unei lucrari.
   //
@@ -1144,7 +1192,6 @@
           {#each grila as g, i (g.iso)}
             {@const items = aleZilei(g.iso)}
             {@const decizie = items.some(p => p.necesita_decizie)}
-            {@const capturi = incepDeplasari(g.iso)}
             {@const ascunse = ascunseZi(g.iso)}
             <!-- Celulele se asaza EXPLICIT in grila. Fara asta, benzile (care au
                  poziție explicită) ar impinge celulele auto-plasate din loc.
@@ -1188,16 +1235,6 @@
                      spune CARE din stari e, iar un cuvant nu se confunda cu nimic. -->
                 <span class="n">{parseISO(g.iso).getDate()}</span>
                 {#if g.iso === azi}<span class="azi-et">azi</span>{/if}
-                {#each capturi as d (d.cheie)}
-                  <button class="cap" class:sediu={d.sediu}
-                          class:se-trage={trag?.tip === 'deplasare' && trag.cheie === d.cheie}
-                          onpointerdown={(e) => apucaDeplasare(e, d)}
-                          onclick={(e) => e.stopPropagation()}
-                          title={etichetaDeplasare(d)}
-                          aria-label="Deplasare {d.client || 'la sediu'} — {textCaptura(d)}. Trage ca să muți toată ieșirea.">
-                    {#if d.sediu}<Building2 size={9} />{:else}<MapPin size={9} />{/if}{textCaptura(d)}
-                  </button>
-                {/each}
                 {#if items.length > 1 || ascunse}
                   <!-- UN SINGUR INTELES PE AMBELE ECRANE: cate lucrari are ziua.
                        Aceeasi pozitie si acelasi stil aratau „+N" (doar cele
@@ -1231,8 +1268,25 @@
                  class:inceput={c.inceput}
                  class:sfarsit={c.sfarsit}
                  class:sediu={c.d.sediu}
-                 style="grid-row: {c.rand}; grid-column: {c.col} / span {c.span}; --i: {c.banda}; --n: {c.inalt}"
-                 aria-hidden="true"></div>
+                 style="grid-row: {c.rand}; grid-column: {c.col} / span {c.span}; --i: {c.banda}; --n: {c.inalt}">
+              <!-- ETICHETA STA IN CHENARUL EI, pe primul lui rand. Era un chip
+                   lipit de cifra zilei, in antet — deci numele iesirii statea in
+                   AFARA obiectului pe care il numeste, iar „asta e o iesire de 3
+                   zile, cu lucrarile astea" se citea din doua locuri.
+                   Doar pe felia de INCEPUT: la granita de saptamana chenarul se
+                   taie, iar a doua bucata nu incepe nimic — ar scrie a doua oara
+                   durata intregii iesiri, ca si cum ar reincepe. -->
+              {#if c.inceput && c.areEticheta}
+                <button class="chenar-et" class:sediu={c.d.sediu}
+                        class:se-trage={trag?.tip === 'deplasare' && trag.cheie === c.d.cheie}
+                        onpointerdown={(e) => apucaDeplasare(e, c.d)}
+                        onclick={(e) => e.stopPropagation()}
+                        title={etichetaDeplasare(c.d)}
+                        aria-label="Deplasare {c.d.client || 'la sediu'} — {textCaptura(c.d)}. Trage ca să muți toată ieșirea.">
+                  {#if c.d.sediu}<Building2 size={12} />{:else}<MapPin size={12} />{/if}{textCaptura(c.d)}
+                </button>
+              {/if}
+            </div>
           {/each}
 
           <!-- Benzile, peste celule: UN element per lucrare per saptamana. Vezi
@@ -1668,7 +1722,7 @@
      pointer: `ziDinPunct` foloseste `elementFromPoint`, deci ar nimeri banda in
      locul zilei. Fantoma e oricum inertă, dar o trecem si pe ea prin regula ca
      sa nu depinda de ordinea in care sunt scrise selectoarele. */
-  .grid.trag .banda, .grid.trag .cap { pointer-events: none; }
+  .grid.trag .banda, .grid.trag .chenar-et { pointer-events: none; }
 
   /* FANTOMA E CONTUR PESTE BANDA REALA, NU O MUTA.
      Inainte banda apucata cobora la 32% si fantoma venea plina peste ea: la
@@ -1725,14 +1779,22 @@
      ca ramane pe un rand oricat de lung ar fi numele clientului. */
   .zi-h { display: flex; align-items: center; gap: 5px; min-height: 15px; max-width: 100%;
           white-space: nowrap; overflow: hidden; padding-right: 14px; }
-  .cap { display: inline-flex; align-items: center; gap: 3px; min-width: 0;
-         padding: 0 5px 0 3px; border-radius: var(--radius-full);
-         font-size: var(--font-small); line-height: var(--lh-normal); color: var(--text-secondary);
-         background: var(--bg-hover); border: 1px solid var(--border); cursor: grab;
-         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cap:active { cursor: grabbing; }
-  .cap:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .cap.sediu { color: var(--text-dim); }
+  /* Eticheta iesirii: primul rand DIN chenar, nu un chip langa cifra zilei.
+     Chenarul e `pointer-events: none` (lucrarile raman obiectele pe care le
+     apuci), deci eticheta si-l reia pe al ei — ea E manerul cu care muti toata
+     ieșirea. Inaltimea e exact un rand de banda fara gap (20 - 3), ca lucrarile
+     de sub ea sa cada pe randurile lor. */
+  .chenar-et { pointer-events: auto; display: inline-flex; align-items: center; gap: 4px;
+               max-width: calc(100% - 10px); height: 17px; margin: 3px 0 0 7px; padding: 0 4px;
+               border: none; background: none; cursor: grab;
+               font-size: var(--font-label); font-weight: var(--fw-semibold);
+               letter-spacing: var(--tracking-label); color: var(--accent-deep);
+               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chenar-et:active { cursor: grabbing; }
+  .chenar-et:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  /* Sediul nu e o deplasare, deci nici eticheta lui nu striga: chenarul lui e
+     punctat, iar numele trece pe cerneala neutra. */
+  .chenar-et.sediu { color: var(--text-secondary); }
 
   /* Cate lucrari are ziua — acelasi inteles pe ambele ecrane (vezi markup). */
   .nr-lucrari { margin-left: auto; font-family: var(--font-mono); font-size: var(--font-small);
@@ -1859,7 +1921,12 @@
     .banda-t { display: none; }
     /* Captura se taia oricum la o felie ilizibila intr-o celula de ~48px. Ce spune
        ea — cine si cat — scrie acum in AGENDA de sub grila, unde incape. */
-    .cap { display: none; }
+    /* Eticheta iesirii NU se ascunde de aici. Decizia e a lui `impachetare`, care
+       pe telefon nu-i mai rezerva randul deloc (o celula de ~48px n-are loc de
+       text, iar un rand gol ar fi insemnat 15px de nimic in fiecare saptamana cu
+       o iesire). Un `display: none` scris aici ar fi fost a doua sursa — si cu alt
+       prag: blocul asta e la 620px, iar `ecran.telefon` la 768. Numele lucrarilor
+       stau in agenda de dedesubt. */
     /* Grila ramane harta (unde esti, cat de plin e); numele lucrarilor stau jos. */
     .agenda { display: flex; }
     .ag-rand { min-height: var(--tap-min); }
