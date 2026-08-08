@@ -87,6 +87,12 @@ SETARI_IMPLICITE = {
     'zileVechime': ZILE_VECHIME,
     'scadente': True,        # notifica in dimineata zilei de scadenta
     'faraTermen': True,      # notifica zilnic taskurile fara termen
+    # PLECAREA PE TEREN (turul 15). Alta intrebare, deci alt comutator si alta
+    # ora: nu „ce am de facut azi", ci „maine plec". Alarma se pune pe telefon,
+    # pe canalul „Deplasări", si NU trece niciodata pe aici (serverul nu trimite
+    # notificari de plecare prin web push — vezi `notificari.js`).
+    'deplasari': True,
+    'oraDeplasare': 18,      # seara dinainte
 }
 
 
@@ -119,6 +125,17 @@ def _valideaza_setari(d):
     out['ora'], out['zileVechime'] = ora, zile
     out['scadente'] = bool(d.get('scadente', out['scadente']))
     out['faraTermen'] = bool(d.get('faraTermen', out['faraTermen']))
+    # Plecarea pe teren NU intra in regula „cel putin unul pornit": aia pazeste
+    # notificarile de TASKURI, ca sa nu ramai fara niciun semnal de dimineata.
+    # Deplasarile sunt alt fel de intrebare — ai voie sa nu le vrei deloc.
+    try:
+        ora_dep = int(d.get('oraDeplasare', out['oraDeplasare']))
+    except (TypeError, ValueError):
+        return None, 'Ora plecării trebuie să fie un număr.'
+    if not 0 <= ora_dep <= 23:
+        return None, 'Ora plecării trebuie să fie între 0 și 23.'
+    out['oraDeplasare'] = ora_dep
+    out['deplasari'] = bool(d.get('deplasari', out['deplasari']))
     if not out['scadente'] and not out['faraTermen']:
         return None, 'Cel puțin un fel de notificare trebuie să rămână pornit.'
     return out, None

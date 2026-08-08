@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fără rețea — PIF</title>
+<!--
+  ECRANUL „FARA RETEA" — singurul ecran de continut al carcasei Android.
+
+  DE CE EXISTA. `capacitor.config.json` are `server.url = https://pif.iupif.org`,
+  deci aplicatia E site-ul: fara retea nu ramai cu o versiune veche, ramai cu un
+  webview gol si cu pagina de eroare a lui Chrome. Capacitor incarca fisierul asta
+  in loc (`server.errorPath`), iar el vine din ASSET-urile aplicatiei, nu de pe
+  server — de aceea nu importa nimic si nu cere nimic din retea.
+
+  DE CE E SCRIS DE MANA, cu valorile temei in el. Nu poate folosi `tokens.css`:
+  foaia aia e in bundle-ul de pe server, adica exact lucrul care lipseste. Cele
+  patru culori de mai jos sunt copiate din `tokens.css` (fond, suprafata, text,
+  accent) si sunt singurele care se pot desincroniza — daca se schimba paleta,
+  se schimba si aici.
+
+  SPUNE CE MAI MERGE. Notificarile de dimineata NU depind de retea: alarma e pusa
+  pe telefon, cu zile inainte (vezi `lib/notificari.js`). Fara randul asta,
+  ecranul ar parea „aplicatia e moarta"; cu el, e „nu pot citi acum".
+-->
+<style>
+  :root {
+    --g: #121417; --pl: #191d21; --ln: #262b31;
+    --tx: #e9ecef; --tx2: #9ba3ad; --tx3: #868f99;
+    --ac: #8ab2d9; --ac-i: #0e1114;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --g: #f4f5f7; --pl: #ffffff; --ln: #e6e8ec;
+      --tx: #1b1e23; --tx2: #5a6270; --tx3: #656c78;
+      --ac: #5980a6; --ac-i: #ffffff;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--g);
+    color: var(--tx);
+    font-family: Gabarito, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing: antialiased;
+  }
+  .cutie { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 20px; }
+  .tila {
+    width: 44px; height: 44px; border-radius: 14px;
+    background: var(--ac); color: var(--ac-i);
+    display: grid; place-items: center;
+  }
+  h1 { font-size: 25px; font-weight: 600; letter-spacing: -.01em; }
+  p { color: var(--tx2); text-wrap: pretty; }
+  .card {
+    background: var(--pl); border: 1px solid var(--ln); border-radius: 14px;
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .et {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--tx3);
+  }
+  .val { font-size: 15px; color: var(--tx); }
+  button {
+    min-height: 48px; padding: 0 20px; border: none; border-radius: 10px;
+    background: var(--ac); color: var(--ac-i);
+    font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: transform 90ms cubic-bezier(.32,.72,.28,1);
+  }
+  button:active { transform: scale(.965); }
+</style>
+</head>
+<body>
+  <div class="cutie">
+    <span class="tila" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 17c3.5 0 5-9 9-9s4.5 5 9 5"/>
+        <circle cx="12" cy="8" r="1.6" fill="currentColor" stroke="none"/>
+      </svg>
+    </span>
+    <div>
+      <h1>Fără rețea</h1>
+      <p>Aplicația citește datele de pe server, deci acum nu are de unde.
+         Notificările de dimineață continuă să vină — alarma e pusă pe telefon,
+         nu pe rețea.</p>
+    </div>
+    <div class="card">
+      <span class="et">Ultima dată văzut</span>
+      <span class="val" id="stare">—</span>
+    </div>
+    <button id="reia" type="button">Încearcă din nou</button>
+  </div>
+
+<script>
+  // Puntea Capacitor exista si aici: pagina e servita de serverul LOCAL al
+  // aplicatiei (`https://localhost`), acolo unde traieste bridge-ul. De aceea
+  // ecranul poate spune cand a fost ultima sincronizare si cate alarme sunt puse —
+  // date pe care le tine partea nativa, nu serverul.
+  var P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NotificariPif;
+
+  function candSpune(ms) {
+    if (!ms) return 'niciodată de la instalare';
+    var d = new Date(ms);
+    var acum = new Date();
+    var ora = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    var azi = d.toDateString() === acum.toDateString();
+    var ieri = new Date(acum.getTime() - 86400000).toDateString() === d.toDateString();
+    if (azi) return 'azi la ' + ora;
+    if (ieri) return 'ieri la ' + ora;
+    return d.getDate() + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + ' la ' + ora;
+  }
+
+  if (P && P.stare) {
+    P.stare().then(function (s) {
+      var t = candSpune(s && s.ultimaVizita);
+      var n = (s && s.programate) || 0;
+      if (n) t += ' · ' + n + (n === 1 ? ' notificare programată' : ' notificări programate');
+      document.getElementById('stare').textContent = t;
+    }).catch(function () {
+      document.getElementById('stare').textContent = 'necunoscut';
+    });
+  } else {
+    document.getElementById('stare').textContent = 'necunoscut';
+  }
+
+  // Reincarcarea o face partea nativa: ea stie adresa serverului din
+  // `capacitor.config.json`. Scrisa aici, ar fi a doua copie a unei adrese care
+  // se schimba intr-un singur loc.
+  document.getElementById('reia').addEventListener('click', function () {
+    if (P && P.reincarca) P.reincarca().catch(function () { location.reload(); });
+    else location.reload();
+  });
+</script>
+</body>
+</html>

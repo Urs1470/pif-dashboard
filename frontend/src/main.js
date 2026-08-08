@@ -3,6 +3,7 @@ import './styles/global.css'
 import App from './App.svelte'
 import { apiJson } from './lib/api.js'
 import { navigate } from './lib/router.svelte.js'
+import { todayISO } from './lib/calendarDates.js'
 import { esteNativ, reprogrameaza } from './lib/notificari.js'
 import { verifica as verificaActualizarea, descarcaSiInstaleaza } from './lib/actualizare.js'
 // Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
@@ -23,13 +24,20 @@ const app = mount(App, {
 if (esteNativ()) {
   const reprogrameazaDinServer = async () => {
     try {
-      // Setarile SI lista, in paralel: sunt doua cereri independente, iar
-      // programarea are nevoie de amandoua ca sa fie corecta.
-      const [d, setari] = await Promise.all([
+      // Setarile, taskurile SI perioadele, in paralel: trei cereri independente,
+      // iar programarea are nevoie de toate trei ca sa fie corecta. Perioadele
+      // sunt pentru alarma de plecare pe teren (turul 15) — o fereastra de 60 de
+      // zile, mai lunga decat cele 7 zile de notificari, ca sa prinda si o
+      // deplasare planificata de mult.
+      const [d, setari, cal] = await Promise.all([
         apiJson('/api/global-tasks?sfera=personal'),
         apiJson('/api/push/setari').catch(() => null),
+        // `todayISO()`, NU `toISOString()`: a doua e in UTC, iar la est de
+        // Greenwich miezul noptii local cade in ziua precedenta — fereastra ar
+        // porni cu o zi mai devreme, fix in orele in care se pune alarma de seara.
+        apiJson(`/api/calendar?start=${todayISO()}&zile=60`).catch(() => null),
       ])
-      await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], setari)
+      await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], setari, cal?.perioade || [])
     } catch (e) {
       // Fara retea nu putem reprograma, dar alarmele deja puse raman valabile —
       // exact motivul pentru care fereastra e de mai multe zile.

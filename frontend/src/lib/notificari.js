@@ -1,4 +1,4 @@
-// NOTIFICARILE DE DIMINEATA, PROGRAMATE PE TELEFON.
+// NOTIFICARILE PROGRAMATE PE TELEFON: diminetile de taskuri si plecarile pe teren.
 //
 // DE CE EXISTA. Pana acum notificarea se DECIDEA si se TRIMITEA de pe server:
 // o bucla la 300s in procesul Flask, la ora 8, prin VAPID -> Chrome -> service
@@ -21,11 +21,18 @@
 // se invechesc (un task bifat de pe PC ar mai suna o data), dar tacerea e mai rea
 // decat o notificare in plus, iar deschiderea aplicatiei le reconciliaza.
 //
+// AL DOILEA FEL DE ALARMA: PLECAREA PE TEREN (turul 15). Alta intrebare — nu
+// „ce am de facut azi", ci „maine plec" — deci alt comutator, alta ora (seara
+// dinainte), alt canal Android si FARA butoane: o plecare nu se bifeaza, iar un
+// buton care ar muta planul de pe ecranul de blocare e ireversibil de acolo.
+// Regula ei: `plecariDeNotificat` mai jos.
+//
 // PE WEB NU FACE NIMIC. Acelasi bundle ruleaza si in browserul de pe PC, unde
 // `isNativePlatform()` e fals si totul se opreste la prima linie.
 
 import { Capacitor, registerPlugin } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
+import { grupeazaDeplasari } from './deplasari.js'
 
 // PROGRAMAREA E NATIVA, NU A PLUGIN-ULUI.
 // `@capacitor/local-notifications` ramane pentru ce face bine — permisiuni si
@@ -42,9 +49,24 @@ const NotificariPif = registerPlugin('NotificariPif')
 // se rupe tacut: una se schimba, alta nu, si telefonul incepe sa creada altceva
 // decat serverul despre aceeasi regula. Astea de mai jos sunt doar plasa de
 // siguranta pentru cazul in care cererea de setari cade.
-const IMPLICITE = { ora: 8, zileVechime: 2, scadente: true, faraTermen: true }
+const IMPLICITE = {
+  ora: 8, zileVechime: 2, scadente: true, faraTermen: true,
+  deplasari: true, oraDeplasare: 18,
+}
 const ZILE_INAINTE = 7       // cate dimineti programam in avans
+// PLECARILE SE PROGRAMEAZA MULT MAI DEPARTE decat diminetile. Nu din simetrie:
+// diminetile se recalculeaza din lista de taskuri, care se schimba zilnic, deci
+// o fereastra scurta e si suficienta si ieftina. O deplasare se pune in calendar
+// cu saptamani inainte si nu se mai schimba — iar daca telefonul n-ar deschide
+// aplicatia in ultimele sapte zile dinaintea plecarii, singura notificare care
+// conteaza n-ar mai fi programata deloc. Alarmele sunt ieftine, tacerea nu.
+const ZILE_PLECARI = 60
 const CANAL = 'taskuri-personale'
+// CANAL PROPRIU PENTRU PLECARI. Nu e un capriciu de organizare: canalul e
+// unitatea pe care o poate opri UTILIZATORUL din setarile Android. „Nu vreau sa
+// ma anunte seara ca plec maine" si „nu vreau taskurile de dimineata" sunt doua
+// decizii diferite, si daca ar sta pe acelasi canal ar trebui luate impreuna.
+const CANAL_DEPLASARI = 'deplasari'
 
 export function esteNativ() {
   return Capacitor?.isNativePlatform?.() === true
@@ -64,7 +86,10 @@ function idNotificare(taskId, zi) {
 
 function zileDeCand(createdAt, acum) {
   const d = new Date(String(createdAt).slice(0, 10))
-  if (Number.isNaN(d.getTime())) return ZILE_VECHIME
+  // `IMPLICITE.zileVechime`, nu `ZILE_VECHIME`: constanta aia nu exista in modul,
+  // deci pe un `created_at` necitibil ramura asta arunca ReferenceError si tacea
+  // toata reprogramarea, nu doar taskul cu data stricata.
+  if (Number.isNaN(d.getTime())) return IMPLICITE.zileVechime
   const zi = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate())
   return Math.max(0, Math.round((zi - d) / 86400000))
 }
@@ -106,6 +131,24 @@ export function taskuriDeNotificat(items, zi, setari = IMPLICITE) {
 // se si afiseaza notificarile — un canal creat din doua locuri ar diverge tacut
 // la prima schimbare de importanta.
 
+/** Alarma exacta e pornita? `null` cand intrebarea n-are sens (web, sau Android
+ *  sub 12, unde toate alarmele sunt exacte). */
+export async function alarmaExacta() {
+  if (!esteNativ()) return null
+  try {
+    const e = await LocalNotifications.checkExactNotificationSetting()
+    return e.exact_alarm === 'granted'
+  } catch (_) { return null }
+}
+
+/** Deschide ecranul de sistem al alarmei exacte. NU dam indicatii prin meniuri:
+ *  calea difera de la un producator la altul, iar o instructiune care nu se
+ *  potriveste cu ce vezi pe ecran te face sa crezi ca ai gresit tu. */
+export async function deschideAlarmaExacta() {
+  if (!esteNativ()) return
+  await LocalNotifications.changeExactNotificationSetting()
+}
+
 /** Permisiunea de notificari (Android 13+ o cere explicit) + alarme exacte.
  *  Intoarce ce s-a obtinut, ca apelantul sa poata spune ce s-a pierdut. */
 export async function cerePermisiuni() {
@@ -127,9 +170,52 @@ export async function cerePermisiuni() {
   return out
 }
 
+/** PLECARILE PE TEREN — alarma pe PRIMA zi a unei iesiri la Site, seara dinainte.
+ *
+ *  Alta intrebare decat taskurile („maine plec", nu „ce am de facut azi"), deci
+ *  alt comutator, alta ora si alt canal. Ce NU declanseaza, si de ce:
+ *    - pregatirea la Sediu EGB — nu pleci nicaieri, deci n-ai ce pregati de seara;
+ *    - zilele 2…n ale aceleiasi iesiri — esti deja acolo;
+ *    - a doua perioada cand s-a alipit de prima la acelasi `loc|client` — o
+ *      iesire, o notificare. Nu e o exceptie scrisa de mana: `grupeazaDeplasari`
+ *      le vede deja ca pe una singura, iar noi luam doar `start`-ul ei.
+ *
+ *  FARA BUTOANE. O plecare nu se bifeaza, iar un buton care ar muta planul de pe
+ *  ecranul de blocare e ireversibil de acolo.
+ */
+export function plecariDeNotificat(perioade, acum, setari = IMPLICITE) {
+  const s = { ...IMPLICITE, ...(setari || {}) }
+  if (!s.deplasari) return []
+  const out = []
+  const azi = ziISO(acum)
+  const pana = ziISO(new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + ZILE_PLECARI))
+  for (const d of grupeazaDeplasari(perioade)) {
+    if (d.sediu) continue
+    if (d.start <= azi || d.start > pana) continue      // trecute sau prea departe
+    const seara = new Date(d.start.slice(0, 4), Number(d.start.slice(5, 7)) - 1,
+                           Number(d.start.slice(8, 10)) - 1, s.oraDeplasare, 0, 0, 0)
+    if (seara <= acum) continue                          // seara dinainte a trecut
+    const zileIesire = Math.max(1, Math.round(
+      (new Date(d.end) - new Date(d.start)) / 86400000) + 1)
+    const lucrari = [...d.items.values()]
+    out.push({
+      d, seara, zileIesire,
+      titlu: `Mâine pleci${d.client ? ` la ${d.client}` : ''}`,
+      corp: `${zileIesire} ${zileIesire === 1 ? 'zi' : 'zile'}`
+          + `${lucrari.length ? ' · ' + lucrari.map(etichetaLucrare).join(' · ') : ''}`,
+    })
+  }
+  return out
+}
+
+function etichetaLucrare(p) {
+  return (p.eticheta || '').trim() || (p.nume || '').trim() || 'lucrare'
+}
+
 /** Rescrie fereastra de notificari din lista de taskuri primita.
+ *  `perioade` (optional) aduce si plecarile pe teren — turul 15.
  *  Intoarce cate alarme au ramas programate. */
-export async function reprogrameaza(items, setari = IMPLICITE) {
+export async function reprogrameaza(items, setari = IMPLICITE, perioade = []) {
   if (!esteNativ()) return 0
   const s = { ...IMPLICITE, ...(setari || {}) }
   const perm = await cerePermisiuni()
@@ -137,6 +223,20 @@ export async function reprogrameaza(items, setari = IMPLICITE) {
 
   const acum = new Date()
   const deProgramat = []
+  for (const pl of plecariDeNotificat(perioade, acum, s)) {
+    deProgramat.push({
+      // Id-ul e al IESIRII (cheie + zi de plecare), nu al unei lucrari: doua
+      // lucrari in aceeasi deplasare trebuie sa scrie aceeasi alarma, nu doua.
+      id: idNotificare(`plecare:${pl.d.cheie}`, pl.d.start),
+      at: pl.seara.getTime(),
+      titlu: pl.titlu,
+      corp: pl.corp,
+      url: `/#/calendar?zi=${pl.d.start}`,
+      server: window.location.origin,
+      canal: CANAL_DEPLASARI,
+      actiuni: false,
+    })
+  }
   for (let d = 0; d < ZILE_INAINTE; d++) {
     const zi = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + d, s.ora, 0, 0, 0)
     if (zi <= acum) continue                       // ora de azi a trecut deja
@@ -151,6 +251,7 @@ export async function reprogrameaza(items, setari = IMPLICITE) {
           : `Fără termen de ${zile} zile — bifează sau pune-i o zi.`,
         url: `/#/tasks?sfera=personal&focus=global:${t.id}`,
         server: window.location.origin,
+        canal: CANAL,
         actiuni: true,
         // AL DOILEA BUTON DEPINDE DE MOTIV.
         // Pe „fara termen", iesirea e sa-i dai o zi: „Azi".
@@ -167,7 +268,10 @@ export async function reprogrameaza(items, setari = IMPLICITE) {
   // WebView, deci nici cookie de sesiune, nici token CSRF — la fel ca service
   // worker-ul, pentru care `/api/push/action` a fost deja construita. Cerem de
   // aici cate un token semnat per task si il punem in alarma; moare cu ea.
-  const idsUnice = [...new Set(deProgramat.map((n) => n.taskId))]
+  // `.filter(Boolean)`: alarmele de plecare n-au task, deci n-au ce token sa
+  // ceara — fara filtru ar intra un `undefined` in lista de id-uri si serverul
+  // ar primi o cerere pentru un task inexistent.
+  const idsUnice = [...new Set(deProgramat.map((n) => n.taskId).filter(Boolean))]
   if (idsUnice.length) {
     try {
       const tokenuri = await apiJsonIntern('/api/push/tokens', { ids: idsUnice })

@@ -28,6 +28,11 @@ import androidx.core.app.NotificationManagerCompat;
 public class AlarmaReceiver extends BroadcastReceiver {
 
     static final String CANAL = "taskuri-personale";
+    /** Plecarile pe teren (turul 15). Canal separat fiindca se poate refuza
+     *  separat: „nu vreau sa ma anunte seara ca plec maine" si „nu vreau
+     *  taskurile de dimineata" sunt doua decizii diferite, iar canalul e exact
+     *  unitatea pe care Android o da utilizatorului ca s-o ia. */
+    static final String CANAL_DEPLASARI = "deplasari";
 
     /** Accentul, pe tema deschisa si pe cea intunecata (vezi tokens.css). */
     static final String ACCENT_DESCHIS = "#5980a6";
@@ -50,6 +55,9 @@ public class AlarmaReceiver extends BroadcastReceiver {
 
     static void creeazaCanalul(Context ctx) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        NotificationManager nm = ctx.getSystemService(NotificationManager.class);
+        if (nm == null) return;
+
         NotificationChannel c = new NotificationChannel(
                 CANAL, "Taskuri personale", NotificationManager.IMPORTANCE_HIGH);
         c.setDescription("Dimineața, taskurile personale scadente sau rămase fără termen");
@@ -59,8 +67,14 @@ public class AlarmaReceiver extends BroadcastReceiver {
         // clipa primei porniri, inghetata pentru totdeauna.
         c.setLightColor(Color.parseColor(ACCENT_DESCHIS));
         c.setShowBadge(true);
-        NotificationManager nm = ctx.getSystemService(NotificationManager.class);
-        if (nm != null) nm.createNotificationChannel(c);
+        nm.createNotificationChannel(c);
+
+        NotificationChannel d = new NotificationChannel(
+                CANAL_DEPLASARI, "Deplasări", NotificationManager.IMPORTANCE_HIGH);
+        d.setDescription("Seara dinaintea unei plecări pe teren");
+        d.setLightColor(Color.parseColor(ACCENT_DESCHIS));
+        d.setShowBadge(true);
+        nm.createNotificationChannel(d);
     }
 
     @Override
@@ -74,6 +88,8 @@ public class AlarmaReceiver extends BroadcastReceiver {
         String url = intent.getStringExtra("url");
         String server = intent.getStringExtra("server");
         boolean actiuni = intent.getBooleanExtra("actiuni", true);
+        String canal = intent.getStringExtra("canal");
+        if (canal == null || canal.isEmpty()) canal = CANAL;
 
         Intent deschide = new Intent(ctx, MainActivity.class);
         deschide.setAction(Intent.ACTION_MAIN);
@@ -83,7 +99,7 @@ public class AlarmaReceiver extends BroadcastReceiver {
                 ctx, id, deschide,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CANAL)
+        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, canal)
                 .setSmallIcon(R.drawable.ic_stat_pif)
                 .setColor(accent(ctx))
                 .setContentTitle(titlu == null ? "Task personal" : titlu)

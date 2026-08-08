@@ -4,7 +4,8 @@
   "webDir": "../static/dist",
   "server": {
     "url": "https://pif.iupif.org",
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "errorPath": "fara-retea.html"
   },
   "android": {
     "allowMixedContent": false

@@ -59,6 +59,39 @@ public class NotificariPlugin extends Plugin {
         call.resolve();
     }
 
+    /**
+     * STAREA PENTRU ECRANUL „FARA RETEA".
+     *
+     * Ecranul ala (`fara-retea.html`) e servit din asset-urile aplicatiei, de pe
+     * `https://localhost` — alt origin decat site-ul, deci nu poate citi nimic din
+     * ce a lasat aplicatia in `localStorage`. Singurul lucru pe care il poate
+     * intreba e partea nativa, care stie doua fapte utile: cand a mers ultima
+     * oara si cate alarme sunt puse. Amandoua contrazic exact frica pe care o are
+     * cineva cand vede ecranul: „s-a stricat si nu mai stiu nimic".
+     */
+    @PluginMethod
+    public void stare(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("ultimaVizita", Programator.prefs(getContext()).getLong("ultima_vizita", 0));
+        r.put("programate", numarViitoare(Programator.lista(getContext())));
+        call.resolve(r);
+    }
+
+    /**
+     * Reincarca site-ul. Adresa o stie puntea (din `capacitor.config.json`), deci
+     * ecranul de „fara retea" nu trebuie s-o mai scrie o data — o a doua copie a
+     * unei adrese e cea care ramane in urma cand se schimba.
+     */
+    @PluginMethod
+    public void reincarca(PluginCall call) {
+        final String url = getBridge().getServerUrl();
+        getActivity().runOnUiThread(() -> {
+            if (url != null && !url.isEmpty()) getBridge().getWebView().loadUrl(url);
+            else getBridge().getWebView().reload();
+        });
+        call.resolve();
+    }
+
     /** Cate sunt efectiv in viitor — ce raportam trebuie sa fie ce va suna. */
     private int numarViitoare(JSONArray lista) {
         long acum = System.currentTimeMillis();

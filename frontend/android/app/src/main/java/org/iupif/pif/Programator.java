@@ -121,6 +121,11 @@ public class Programator {
         i.putExtra("url", n.optString("url"));
         i.putExtra("server", n.optString("server"));
         i.putExtra("actiuni", n.optBoolean("actiuni", true));
+        // Canalul: „taskuri-personale" implicit, „deplasari" pentru alarma de
+        // plecare pe teren. Canalul e unitatea pe care o poate opri utilizatorul
+        // din setarile Android, deci doua feluri de notificare care se pot refuza
+        // separat trebuie sa stea pe canale separate.
+        i.putExtra("canal", n.optString("canal", AlarmaReceiver.CANAL));
         // Al doilea buton difera dupa motivul notificarii (vezi `notificari.js`):
         // „Azi" pe un task fara termen, „Maine" pe unul deja scadent azi.
         i.putExtra("a2id", n.optString("a2id", "azi"));

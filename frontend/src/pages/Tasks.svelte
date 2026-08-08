@@ -3,7 +3,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, DUR_FAST } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
@@ -28,7 +28,7 @@
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
   import { suportaPush, esteIosNeinstalat, stareAbonament, aboneaza, dezaboneaza } from '../lib/push.js'
-  import { esteNativ, probeaza, reprogrameaza } from '../lib/notificari.js'
+  import { esteNativ, probeaza, reprogrameaza, alarmaExacta, deschideAlarmaExacta } from '../lib/notificari.js'
 
   // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
   // adresabila — un link din paleta, din cautare sau de pe Acasa aterizeaza
@@ -614,6 +614,17 @@
     pushLocal = local
   }
 
+  // Alarma exacta: `null` = intrebarea n-are sens aici (web, sau Android sub 12).
+  let exacta = $state(null)
+
+  async function pornesteAlarma() {
+    try {
+      await deschideAlarmaExacta()
+      // Se re-citeste la revenirea in aplicatie, nu acum: ecranul de sistem e
+      // deschis peste noi, iar raspunsul vine dupa ce-l inchizi.
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
   async function deschidePush() {
     // Setarile se cer la DESCHIDEREA ferestrei, nu la incarcarea paginii: sunt
     // folosite doar aici, si o cerere in plus la fiecare intrare pe Taskuri ar
@@ -621,6 +632,7 @@
     if (!setari) {
       apiJson('/api/push/setari').then((s) => { setari = s }).catch(() => {})
     }
+    alarmaExacta().then((v) => { exacta = v }).catch(() => {})
     showPushModal = true
     try { await reincarcaPush() }
     catch (e) { showPushModal = false; toast(`Eroare: ${e.message}`, 'error') }
@@ -715,8 +727,14 @@
       // deschidere a aplicatiei. Pe web il da serverul: cate pleaca data viitoare.
       let cate = programate ?? 0
       if (esteNativ()) {
-        const d = await apiJson('/api/global-tasks?sfera=personal')
-        cate = await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], salvate)
+        // Si perioadele, nu doar taskurile: de la turul 15 incoace reprogramarea
+        // pune si alarma de plecare pe teren, iar ea se calculeaza din deplasari.
+        const [d, cal] = await Promise.all([
+          apiJson('/api/global-tasks?sfera=personal'),
+          apiJson(`/api/calendar?start=${todayISO()}&zile=60`).catch(() => null),
+        ])
+        cate = await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], salvate,
+                                   cal?.perioade || [])
       }
       await reincarcaPush()
       toast(`Salvat — ${cate} ${cate === 1 ? 'notificare programată' : 'notificări programate'}.`, 'success')
@@ -1294,6 +1312,20 @@
           <input type="checkbox" bind:checked={setari.faraTermen} />
           <span>Taskurile rămase fără termen</span>
         </label>
+        <!-- AL TREILEA COMUTATOR E ALTĂ ÎNTREBARE: nu „ce am de făcut azi", ci
+             „mâine plec". De aceea are ora lui (seara dinainte), canalul lui pe
+             Android („Deplasări", se poate opri separat din sistem) și NU intră în
+             regula „cel puțin un fel pornit" — aia păzește taskurile. -->
+        <!-- Randul asta NU e un `<label>` intreg: eticheta ar prinde si clicul pe
+             selectorul de ora, deci alegerea orei ar stinge comutatorul. Label-ul
+             tine doar bifa si textul. -->
+        <div class="n-comutator">
+          <label class="n-com-et">
+            <input type="checkbox" bind:checked={setari.deplasari} />
+            <span>Seara dinaintea unei plecări pe site</span>
+          </label>
+          <Select bind:value={setari.oraDeplasare} options={oreDisponibile} size="sm" />
+        </div>
       </div>
       <!-- Regula e SCRISA, nu descoperita dintr-o eroare: serverul respinge
            oprirea amandurora, iar un refuz care apare abia dupa ce ai apasat
@@ -1303,6 +1335,27 @@
         <span>Cel puțin un fel trebuie să rămână pornit — altfel n-ar mai suna nimic, iar
           tăcerea nu se poate deosebi de o defecțiune.</span>
       </p>
+      <!-- ALARMA EXACTĂ E O PERMISIUNE SEPARATĂ (Android 12+), și fără ea
+           sistemul adună alarmele într-o trezire: o notificare de dimineață care
+           vine la 8:40 nu mai e o notificare de dimineață. Se verifică și la
+           fiecare pornire (`MainActivity.onResume`), dar acolo ecranul de sistem
+           se deschide o singură dată per retragere — drumul care rămâne mereu la
+           îndemână e ăsta. Nu-i dăm calea prin meniuri: diferă de la un
+           producător la altul, iar o instrucțiune care nu se potrivește cu ce
+           vezi pe ecran te face să crezi că ai greșit tu. -->
+      {#if exacta === false}
+        <div class="n-alarma">
+          <AlarmClockOff size={16} strokeWidth={1.5} />
+          <div>
+            <strong>Alarma exactă e oprită</strong>
+            <p>Dimineața ar putea întârzia cu zeci de minute. Deschide comutatorul din
+              sistem — nu-ți spunem calea, fiindcă diferă de la un telefon la altul.</p>
+            <button class="n-alarma-b" onclick={pornesteAlarma}>
+              <ExternalLink size={14} strokeWidth={1.5} />Deschide ecranul
+            </button>
+          </div>
+        </div>
+      {/if}
       {#if setariEroare}<p class="g-eroare">{setariEroare}</p>{/if}
     {:else}
       <div class="g-skel"><Skeleton width="70%" height="14px" /><Skeleton width="50%" height="14px" /></div>
@@ -1449,6 +1502,28 @@
                  min-height: 48px; padding: 0 2px; cursor: pointer; }
   .n-comutator input { width: 18px; height: 18px; flex: none; accent-color: var(--accent);
                        cursor: pointer; }
+  /* Ora plecarii sta CHIAR PE RANDUL ei, nu intr-un al treilea camp sus: e ora
+     acelui comutator, nu inca un reglaj global. */
+  .n-com-et { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-12);
+              cursor: pointer; }
+  .n-comutator :global(.field) { flex: none; width: 96px; }
+  /* Alarma exacta oprita — o stare a SISTEMULUI, deci suprafata in tenta de
+     restant, cu iconita si cu drumul catre ecranul care o repara. */
+  .n-alarma { display: flex; gap: var(--space-12); margin-top: var(--space-12);
+              padding: var(--space-12); border-radius: var(--radius-md);
+              background: var(--danger-subtle); }
+  .n-alarma :global(svg) { flex: none; margin-top: 2px; color: var(--danger-deep); }
+  .n-alarma strong { display: block; font-size: var(--font-body); font-weight: var(--fw-semibold);
+                     color: var(--text); }
+  .n-alarma p { margin-top: 4px; font-size: var(--font-small); color: var(--text-secondary); }
+  .n-alarma-b { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-sm);
+                min-height: var(--tap-min); padding: 0 var(--space-12);
+                border: 1px solid var(--border); border-radius: var(--radius-md);
+                background: var(--bg-surface); color: var(--text);
+                font-size: var(--font-control); font-weight: var(--fw-semibold); cursor: pointer;
+                transition: var(--transition-colors); }
+  .n-alarma-b:hover { border-color: var(--text-dim); }
+
   /* Regula scrisa, in gri, cu iconita — nu un avertisment: nu s-a intamplat
      nimic rau, doar spune de ce nu se pot stinge amandoua. */
   .n-nota { display: flex; align-items: flex-start; gap: var(--space-sm);

@@ -21,6 +21,7 @@
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { incepeTragere } from '../lib/tragere.js'
   import { ecran } from '../lib/ecran.svelte.js'
+  import { cheieDeplasare, grupeazaDeplasari } from '../lib/deplasari.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
@@ -122,10 +123,11 @@
   // Continental inseamna ca te urci o data in masina. Deci grupam perioadele
   // zilei pe (loc, client) si desenam UN bloc per grup, nu cate o dunga per
   // lucrare. O zi la SEDIU nu e deplasare — e grup separat si nu se numara.
-  function cheieGrup(p) {
-    const loc = p.locatie === 'sediu' ? 'sediu' : 'site'
-    return `${loc}|${(p.client || '').trim().toLowerCase()}`
-  }
+  // Cheia si gruparea in rulaje traiesc in `lib/deplasari.js`: aceeasi regula o
+  // citeste si notificarea de plecare pe teren (turul 15), iar scrisa in doua
+  // locuri s-ar rupe tacut — calendarul ar arata o iesire, telefonul ar suna de
+  // doua ori.
+  const cheieGrup = cheieDeplasare
 
   const grupuriPeZi = $derived.by(() => {
     const m = new Map()
@@ -148,32 +150,11 @@
   /** Ziua e impartita intre locuri diferite? (doi clienti, sau sediu + teren) */
   function impartita(iso) { return grupurile(iso).length > 1 }
 
-  // O DEPLASARE = rulajul contiguu de zile cu aceeasi cheie de grup. O construim
-  // explicit ca sa putem eticheta blocul cu identitatea iesirii, nu cu numele
-  // unei lucrari: pe 28 era doar „Migrare CU240S", dar blocul tine pana pe 30,
-  // asa ca eticheta aia facea sa para ca migrarea dureaza trei zile.
-  const deplasari = $derived.by(() => {
-    const perCheie = new Map()
-    for (const iso of [...grupuriPeZi.keys()].sort()) {
-      for (const b of grupurile(iso)) {
-        if (!perCheie.has(b.cheie)) perCheie.set(b.cheie, [])
-        perCheie.get(b.cheie).push({ iso, b })
-      }
-    }
-    const out = []
-    for (const [cheie, lista] of perCheie) {
-      let cur = null
-      for (const { iso, b } of lista) {
-        if (cur && diffDays(cur.end, iso) === 1) cur.end = iso
-        else {
-          cur = { cheie, client: b.client, sediu: b.sediu, start: iso, end: iso, items: new Map() }
-          out.push(cur)
-        }
-        for (const p of b.items) cur.items.set(p.id, p)
-      }
-    }
-    return out
-  })
+  // O DEPLASARE = rulajul contiguu de zile cu aceeasi cheie de grup. O eticheta
+  // cu identitatea IESIRII, nu cu numele unei lucrari: pe 28 era doar „Migrare
+  // CU240S", dar blocul tine pana pe 30, asa ca eticheta aia facea sa para ca
+  // migrarea dureaza trei zile.
+  const deplasari = $derived(grupeazaDeplasari(data?.perioade || []))
 
   const deplasareaZilei = $derived.by(() => {
     const m = new Map()
