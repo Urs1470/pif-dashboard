@@ -420,11 +420,11 @@
      terminat de urcat. Hoverul e raspunsul la o intentie care inca se formeaza —
      trebuie sa ajunga inaintea deciziei, nu dupa. Ridicarea ramane 4px; doar
      viteza se aliniaza. */
-  .pcard { position: relative; display: flex; flex-direction: column; min-height: 132px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; cursor: pointer; text-align: left; transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .pcard { position: relative; display: flex; flex-direction: column; min-height: 132px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch, cardul atins ramanea ridicat cu 4px si cu
      umbra pana atingeai altceva — parea selectat, desi nu era. */
   @media (hover: hover) {
-    .pcard:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow-lg); }
+    .pcard:hover { box-shadow: var(--shadow-md); }
   }
   .pcard:active { border-color: var(--border-strong); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -478,7 +478,7 @@
      ANTETUL sectiunii, sub care randul chiar sta — nu o stingere care se inmulteste
      peste tokenuri deja la limita si scoate randul sub AA. */
   .archived .arch-name { color: var(--text-secondary); }
-  .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
   .arch-row { display: flex; align-items: center; gap: var(--space-sm); width: 100%; padding: 10px 16px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; background: transparent; border: none; border-bottom: 1px solid var(--border); transition: background var(--dur-fast) var(--ease); }
   .arch-row:last-child { border-bottom: none; }
   .arch-row:hover { background: var(--bg-hover); opacity: 1; }

@@ -75,11 +75,13 @@
     padding: 0 7px; font-size: 0.82em;
   }
 
+  /* Suprafata in tenta, FARA dunga: „bara de accent pe stanga" e interdictie
+     explicita, iar aici era chiar figura ei — tenta plus muchie colorata. */
   .md-rendered :global(.md-callout) {
-    border-left: 3px solid var(--accent); background: var(--accent-subtle);
+    background: var(--accent-subtle);
     border-radius: var(--radius-xs); padding: 10px 14px; margin: 0.7em 0;
   }
-  .md-rendered :global(.md-callout-title) { font-weight: var(--fw-semibold); font-size: var(--font-body); color: var(--accent); }
+  .md-rendered :global(.md-callout-title) { font-weight: var(--fw-semibold); font-size: var(--font-body); color: var(--accent-on-subtle); }
   .md-rendered :global(.md-callout-body) { margin-top: 4px; }
   .md-rendered :global(.md-callout-body > *:first-child) { margin-top: 0; }
   .md-rendered :global(.md-callout-body > *:last-child) { margin-bottom: 0; }

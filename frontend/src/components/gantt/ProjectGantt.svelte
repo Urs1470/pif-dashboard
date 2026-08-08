@@ -320,7 +320,7 @@
   .sw-ms { width: 10px; height: 10px; background: var(--accent); transform: rotate(45deg); }
 
   /* ===== two-pane gantt ===== */
-  .gantt2 { --row-h: 46px; --head-h: 38px; display: flex; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-panel); }
+  .gantt2 { --row-h: 46px; --head-h: 38px; display: flex; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; background: var(--bg-panel); }
 
   .g-table { flex: none; width: 340px; border-right: 2px solid var(--border-strong); background: var(--bg-surface); }
   .gh-row { height: var(--head-h); display: flex; align-items: center; background: var(--bg-overlay); border-bottom: 1px solid var(--border-strong); font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
@@ -356,19 +356,16 @@
   /* Aceeasi regula ca la `.impl-lrow`: banda e DEJA plina cu `var(--il)`, deci
      muchia era aceeasi culoare peste ea insasi, doar mai inchisa. Cei 3px se
      intorc in padding. */
-  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: 5px; display: flex; align-items: center; gap: 5px; padding: 0 10px 0 13px; cursor: pointer; overflow: hidden; color: var(--on-color);
-    border: none;
-    background: linear-gradient(180deg,
-      color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
-      color-mix(in oklab, var(--il) 90%, #000) 100%);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent), 0 1px 3px rgba(0,0,0,0.28); }
-  .impl-band.loc-sediu { --il: var(--loc-sediu); }
-  /* A doua axa, ca in Calendar si in Planificator: palid = pregatire, plin =
-     implementare. Aceeasi perioada, alta faza — nu acelasi bloc. */
-  .impl-band.pregatire { background: color-mix(in oklab, var(--il) 16%, transparent);
-    border-left-color: color-mix(in oklab, var(--il) 70%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent);
-    color: color-mix(in oklab, var(--il) 55%, var(--text)); }
+  /* Aceeasi banda ca in Planificator si in Calendar: tenta de accent cu inelul
+     ei, fara gradient si fara umbra proprie. Locul nu se codifica cromatic — se
+     scrie, cu iconita si eticheta. */
+  .impl-band { position: absolute; top: 2px; bottom: 2px; border-radius: var(--radius-xs); display: flex; align-items: center; gap: 5px; padding: 0 10px 0 13px; cursor: pointer; overflow: hidden;
+    color: var(--accent-deep); border: none;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent); }
+  /* FORMA spune faza: implementarea e tenta plina, pregatirea e mai palida. */
+  .impl-band.pregatire { background: color-mix(in srgb, var(--accent) 5%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
   .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; }
   .ib-txt { font-size: var(--font-small); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 

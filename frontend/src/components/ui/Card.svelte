@@ -17,27 +17,29 @@
 </div>
 
 <style>
+  /* SUPRAFATA SE DESPRINDE PRIN UMBRA, NU PRIN CHENAR.
+     Cardul avea si `border: 1px`, si `box-shadow` — deci fiecare card era
+     conturat, exact aspectul de „cadre desenate din linii peste tot" pe care
+     sistemul il scoate. Liniile de 1px raman doar ca separatoare INTRE randuri.
+     Raza e 14 (suprafata), nu 20: 20 e treapta rezervata foii de jos. */
   .card {
     background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
     overflow: hidden;
-    transition: border-color var(--dur-fast) var(--ease);
+    transition: box-shadow var(--dur-fast) var(--ease);
   }
   .padded {
     padding: var(--card-pad);
   }
-  .hoverable {
-    transition: border-color var(--dur-fast) var(--ease);
-  }
+  /* Fara chenar, hoverul se face tot din umbra: cardul se ridica un nivel. */
   .hoverable:hover {
-    border-color: var(--text-dim);
+    box-shadow: var(--shadow-md);
   }
   .clickable {
     cursor: pointer;
   }
   .clickable:hover {
-    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
   }
 </style>

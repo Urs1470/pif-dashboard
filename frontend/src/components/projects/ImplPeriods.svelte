@@ -63,7 +63,7 @@
 <ImplPeriodModal bind:open {projectId} period={editing} onsaved={load} />
 
 <style>
-  .ip-sec { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--card-pad, 16px); }
+  .ip-sec { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--card-pad, 16px); }
   .ip-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
   .ip-title { display: flex; align-items: center; gap: 8px; color: var(--text); }
   .ip-title h3 { font-size: var(--font-body); font-weight: var(--fw-semibold); }

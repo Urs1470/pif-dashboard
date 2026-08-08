@@ -69,7 +69,6 @@
   {:else}
     <div class="bara">
       {#if url && !editeaza}
-        <span class="sursa" title={host}>{host}</span>
         <span class="spatiu"></span>
         <a class="b" href={url} target="_blank" rel="noopener noreferrer">
           <ExternalLink size={13} /> Deschide în tab nou
@@ -135,14 +134,18 @@
           height: calc(100dvh - var(--header-height) - var(--dock-h) - var(--space-lg) - var(--safe-bottom));
           min-height: 380px; overflow: hidden; }
 
-  .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: 28px; }
+  .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: 38px; }
   .spatiu { flex: 1; }
-  .sursa { font-size: var(--font-small); color: var(--text-faint); }
 
-  .b { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px;
-       font-size: var(--font-small); border: 1px solid var(--border); background: var(--bg-surface);
-       color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer; }
-  .b:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  /* Controlul in rand: 38px, 15/600, suprafata cu umbra fina — fara chenar, ca
+     peste tot dupa redesign. Erau 28px si 13px fara greutate. */
+  .b { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 13px;
+       font-size: var(--font-body); font-weight: var(--fw-semibold); border: none;
+       background: var(--bg-surface); box-shadow: var(--shadow-sm);
+       color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer;
+       transition: var(--transition-pressable); }
+  .b:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); }
+  .b:active:not(:disabled) { transform: scale(var(--press-scale)); }
   .b:disabled { opacity: 0.5; cursor: default; }
   .b.ok { color: var(--success); border-color: color-mix(in srgb, var(--success) 45%, transparent); }
 

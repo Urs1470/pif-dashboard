@@ -1094,7 +1094,10 @@
        Todoist. Fara titlu, `Modal` randa oricum bara cu butonul de inchidere, deci
        ramanea o banda goala de ~60px deasupra taskului — spatiu platit degeaba,
        exact acolo unde ochiul cade prima data. -->
-  <Modal bind:open={showSheet} size="md" title={sheetTask.categorie || 'Task'}>
+  <!-- Titlul foii e TITLUL TASKULUI. Era `categorie`, care e implicit „General"
+       si nu se scrie niciodata in interfata — deci fiecare foaie deschisa pe
+       telefon se numea „General". -->
+  <Modal bind:open={showSheet} size="md" title={sheetTask.titlu || 'Task'}>
     <!-- Foaia poarta `--ring` pe cap: bifa mare e primul lucru din foaie, deci e
          chiar locul unde severitatea trebuie sa se vada. -->
     <div class="ts-cap" style="--ring: {dueRing(sheetTask.data_scadenta)}">

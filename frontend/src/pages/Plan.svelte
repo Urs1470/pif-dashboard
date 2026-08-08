@@ -1278,7 +1278,7 @@
   /* `--row-h` e inaltimea unui RAND DE REPERE, si e chiar 20-ul din formula de
      inaltime a benzii (`geometrieBanda`). Se schimba impreuna. */
   .chart { --lane-w: 240px; --rest-w: 0px; --day-min: 48px; --row-h: 20px;
-    background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
   .chart-scroll { overflow-x: auto; }
   .inner { position: relative; }
 
@@ -1487,27 +1487,28 @@
      impachetarii (vezi `benzi` din `views`), deci trebuie sa fie chiar acolo
      unde impachetarea o crede — altfel reperele coboara pentru un text care
      pluteste cu doua randuri mai jos. */
+  /* BANDA E O SUPRAFATA IN ACCENT, NU UN BLOC LUCIOS.
+     Era desenata ca un bloc cu degrade pe verticala, inel alb si umbra proprie,
+     in `--il` = `--loc-site`/`--loc-sediu` — care dupa redesign sunt GRI NEUTRU.
+     Deci pe ecran iesea o pastila gri-metalica: un gradient (interzis explicit),
+     o umbra care o ridica peste randul ei, si singura culoare din pista care nu
+     spunea nimic. Locul nu se mai codifica cromatic — se SCRIE, cu iconita si
+     eticheta („Sediu EGB · 3 zile"). Ce ramane e tenta de accent cu inelul ei. */
   .impl-band { position: absolute; top: 7px; bottom: 7px; display: flex; align-items: flex-start; gap: 5px;
-    padding: 3px 9px 0 11px; border-radius: var(--radius-sm); overflow: hidden; z-index: 0; text-align: left; color: var(--on-color);
-    border: none;
-    background: linear-gradient(180deg,
-      color-mix(in oklab, var(--il) 88%, #fff) 0%, var(--il) 46%,
-      color-mix(in oklab, var(--il) 90%, #000) 100%);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent), 0 1px 3px rgba(0,0,0,0.28);
-    cursor: pointer; pointer-events: auto; transition: filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    padding: 3px 9px 0 11px; border-radius: var(--radius-sm); overflow: hidden; z-index: 0; text-align: left;
+    color: var(--accent-deep); border: none;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent);
+    cursor: pointer; pointer-events: auto; transition: var(--transition-colors);
     /* Se descopera, nu se intinde: `scaleX` ar turti textul dinauntru la jumatate
        de latime pe la mijlocul miscarii, iar o eticheta care se lateste inapoi la
        normal se citeste ca elastic, nu ca o perioada care incepe. */
     animation: benziIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
-  .impl-band.loc-site { --il: var(--loc-site); } .impl-band.loc-sediu { --il: var(--loc-sediu); }
-  /* Faza e a doua axa, ca in Calendar: palid = pregatire, plin = implementare.
-     O zi de pregatire blocata explicit (parametrizare in atelier) e tot pregatire,
-     deci sta peste banda ei, cu conturul culorii, nu ca bloc plin. */
-  .impl-band.pregatire { background: color-mix(in oklab, var(--il) 16%, transparent);
-    border-left-color: color-mix(in oklab, var(--il) 70%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent);
-    color: color-mix(in oklab, var(--il) 55%, var(--text)); }
+  /* FORMA spune faza, o singura axa de culoare: implementarea e tenta plina de
+     mai sus, pregatirea e mai palida, cu inelul ei. Amandoua pe accent. */
+  .impl-band.pregatire { background: color-mix(in srgb, var(--accent) 5%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
   /* Taiata de fereastra: muchie dreapta, fara bara de intrare — ziua de start nu e
      acolo, e mai devreme. Deci nici sosirea nu poate porni de acolo: descoperirea
      din stanga ar arata un inceput fix in locul in care muchia dreapta spune
@@ -1515,9 +1516,8 @@
   .impl-band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-width: 0;
     animation-name: pregatireIn; }
   .impl-band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-  .impl-band:hover { filter: brightness(1.08);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 20%, transparent),
-                0 0 0 2px color-mix(in srgb, var(--bg-panel) 60%, transparent), 0 3px 10px rgba(0,0,0,0.34); }
+  .impl-band:hover { background: color-mix(in srgb, var(--accent) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 48%, transparent); }
   .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; margin-top: 2px; }
   /* LA ORIZONT LUNG, O BARA PE RANDUL INTAI.
      `50% - stiva/2` e chiar coordonata randului intai: stiva de repere e
@@ -1550,17 +1550,15 @@
     color: color-mix(in srgb, var(--on-color) 62%, transparent); white-space: nowrap; }
   /* Dunga de identitate a plecat: randul e DEJA umplut cu aceeasi culoare si are
      si eticheta de locatie colorata in ea. Cei 3px se intorc in padding. */
-  .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px 6px 13px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--mil) 12%, transparent); margin-bottom: 6px; }
-  .mimpl.loc-site { --mil: var(--loc-site); } .mimpl.loc-sediu { --mil: var(--loc-sediu); }
+  .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px 6px 13px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--accent) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent); margin-bottom: 6px; }
   /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
-  .mimpl.pregatire { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mil) 32%, transparent); }
-  .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: color-mix(in oklab, var(--mil) 55%, var(--text)); }
+  .mimpl.pregatire { background: color-mix(in srgb, var(--accent) 5%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent-deep); }
   .mimpl-range { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
   /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
      44px fiecare, inaintea primului task. Duc toate in acelasi loc — Calendar. */
   .mimpl-plus { padding: 0 5px; border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--mil) 20%, transparent);
-    color: color-mix(in oklab, var(--mil) 55%, var(--text)); }
+    background: var(--accent-subtle); color: var(--accent-on-subtle); }
 
   /* Capetele de grup din lista mobila. Aceeasi haina si acelasi limbaj de culoare
      ca `.grup-cap` din /tasks — o singura gramatica pentru „ce urmeaza". */
@@ -1727,17 +1725,17 @@
   /* Benzile refolosesc reteta de pe desktop (aceleasi clase, aceeasi gramatica:
      palid = pregatire, plin = pe teren, teal = site, gold = sediu). Se schimba
      doar dimensiunile, fiindca aici randul are 26px, nu 42. */
-  .m-track .band { top: 3px; bottom: 3px; border-radius: 6px; }
-  .m-track .impl-band { top: 3px; bottom: 3px; gap: 4px; padding: 0 6px; border-radius: 6px;
-    border-left-width: 2px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-color) 18%, transparent); }
-  .m-track .impl-band.pregatire { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--il) 45%, transparent); }
+  .m-track .band { top: 3px; bottom: 3px; border-radius: var(--radius-xs); }
+  .m-track .impl-band { top: 3px; bottom: 3px; gap: 4px; padding: 0 6px; border-radius: var(--radius-xs);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent); }
+  .m-track .impl-band.pregatire { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
   .m-track .ib-txt { font-size: var(--font-small); }
   /* In banda, perioada e DESEN, nu buton: un bloc de doua zile are ~23×20px.
      Cine vrea s-o deschida o atinge pe randul ei, de sub banda (`.mimpl`), unde
      are latimea intreaga. */
   .m-track .impl-band { pointer-events: none; cursor: default; }
 
-  .mgroup { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
+  .mgroup { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
   .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
   .mg-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* `.mg-count` a plecat — sunt doua `.count` din global.css (vezi markup).
@@ -1784,8 +1782,8 @@
   .lucru { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-md); align-items: start; }
   .lucru.cu-panou { grid-template-columns: minmax(0, 1fr) 320px; }
 
-  .panou { background: var(--bg-surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  .panou { background: var(--bg-surface);
+    border-radius: var(--radius-md); box-shadow: var(--shadow-md);
     display: flex; flex-direction: column; overflow: hidden;
     position: sticky; top: calc(var(--header-height) + var(--space-md));
     max-height: calc(100dvh - var(--header-height) - var(--space-lg)); }
@@ -1870,7 +1868,7 @@
   .drop-tag { position: absolute; top: 2px; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); z-index: 7; white-space: nowrap; }
 
   /* ===== backlog rail ===== */
-  .backlog { margin-top: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .backlog { margin-top: var(--space-md); background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
   .bl-head { width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 12px 16px; background: none; border: none; cursor: pointer; color: var(--text); }
   .bl-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); }
   /* `.bl-count` a plecat — e `.count accent` din global.css. */

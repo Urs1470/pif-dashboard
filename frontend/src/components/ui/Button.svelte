@@ -67,15 +67,10 @@
   .btn-primary:hover:not(:disabled) {
     background: var(--accent-deep);
   }
-  /* Ridicarea de 1px doar unde exista cursor: pe touch ramane lipita dupa apasare
-     si butonul pare desprins de rand. */
-  @media (hover: hover) {
-    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
-  }
   .btn-primary:active:not(:disabled) {
-    transform: translateY(0) scale(0.98);
+    transform: scale(var(--press-scale));
     box-shadow: none;
-    transition-duration: 0.05s;
+    transition-duration: var(--dur-press);
   }
 
   .btn-secondary {
@@ -89,8 +84,8 @@
   }
   .btn-secondary:active:not(:disabled) {
     background: var(--bg-active);
-    transform: scale(0.98);
-    transition-duration: 0.05s;
+    transform: scale(var(--press-scale));
+    transition-duration: var(--dur-press);
   }
 
   .btn-ghost {
@@ -103,20 +98,22 @@
   }
   .btn-ghost:active:not(:disabled) {
     background: var(--bg-active);
-    transform: scale(0.98);
-    transition-duration: 0.05s;
+    transform: scale(var(--press-scale));
+    transition-duration: var(--dur-press);
   }
 
   .btn-danger {
     background: var(--danger);
-    color: white;
+    color: var(--on-color);
   }
+  /* Ca la `.btn-primary`: hoverul merge spre varianta ADANCA, nu pe opacitate —
+     care s-ar inmulti peste cerneala si ar scoate textul sub prag. */
   .btn-danger:hover:not(:disabled) {
-    opacity: 0.85;
+    background: var(--danger-deep);
   }
   .btn-danger:active:not(:disabled) {
-    transform: scale(0.98);
-    transition-duration: 0.05s;
+    transform: scale(var(--press-scale));
+    transition-duration: var(--dur-press);
   }
 
   /* `sm` inseamna „compact intr-o bara de unelte", nu „mai greu de atins". Pe

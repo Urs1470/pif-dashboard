@@ -593,7 +593,7 @@
   .rte-editor :global(li) { margin: 3px 0; }
   .rte-editor :global(a) { color: var(--accent); text-decoration: underline; }
   .rte-editor :global(hr) { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
-  .rte-editor :global(blockquote) { border-left: 3px solid var(--accent); padding: 4px 14px; color: var(--text-secondary); margin: 8px 0; background: var(--bg-surface); }
+  .rte-editor :global(blockquote) { border-left: 3px solid var(--border); padding: 4px 14px; color: var(--text-secondary); margin: 8px 0; background: var(--bg-surface); }
   .rte-editor :global(table) { border-collapse: collapse; margin: 10px 0; max-width: 100%; border: 1px solid var(--border); }
   .rte-editor :global(th), .rte-editor :global(td) { border: 1px solid var(--border); padding: 6px 11px; text-align: left; vertical-align: top; }
   .rte-editor :global(th) { background: var(--bg-elevated); color: var(--text-secondary); font-weight: var(--fw-semibold); }

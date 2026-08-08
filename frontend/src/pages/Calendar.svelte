@@ -173,21 +173,11 @@
 
   // O deplasare = zile CONSECUTIVE cu acelasi grup de teren. 28-29-30 la
   // Continental = o singura iesire; o pauza de o zi rupe deplasarea in doua.
-  const rezumat = $derived.by(() => {
-    if (!data) return { zile: 0, deplasari: 0, zileSediu: 0, deDecis: 0 }
-    const zileGrila = grila.filter(g => !g.alta).map(g => g.iso).sort()
-    let zile = 0, deplasari = 0, zileSediu = 0
-    let ieri = new Set()
-    for (const iso of zileGrila) {
-      const grupuri = grupurile(iso)
-      const teren = new Set(grupuri.filter(b => !b.sediu).map(b => b.cheie))
-      if (teren.size) zile++
-      if (grupuri.some(b => b.sediu)) zileSediu++
-      for (const k of teren) if (!ieri.has(k)) deplasari++
-      ieri = teren
-    }
-    return { zile, deplasari, zileSediu, deDecis: (data.de_decis || []).length }
-  })
+  /* Randul de KPI („zile pe teren", „deplasari", „zile la sediu") a plecat in
+     turele 7-8: numere care nu decideau nicio actiune. Calculul lor a ramas si
+     s-a rulat degeaba la fiecare randare — si, mai rau, tinea randul la un pas
+     de a se intoarce. Ce ramane e singurul numar care duce undeva. */
+  const rezumat = $derived({ deDecis: (data?.de_decis || []).length })
 
   const selectate = $derived(aleZilei(selectata))
   const grupuriSelectate = $derived(grupurile(selectata))
@@ -438,8 +428,9 @@
      Mai grav, culoarea de identitate statea pe ACELASI ecran cu fillul care
      spune faza: acelasi canal, doua intelesuri.
      Acum: FORMA spune faza (plin = implementare, contur palid = pregatire),
-     TEXTURA spune locul (hasurat la sediu), iar culoarea e una singura. Numele
-     lucrarii scrie in bara — el deosebeste lucrarile, si el se poate citi. */
+     LOCUL SE SCRIE (iconita + „Sediu EGB · 3 zile" in eticheta iesirii), iar
+     culoarea e una singura. Numele lucrarii scrie in bara — el deosebeste
+     lucrarile, si el se poate citi. Nicio textura: ar fi a treia axa. */
   function culoareLucrare(_p) { return 'var(--accent)' }
 
   /** Deplasarile care INCEP in ziua asta — captura mica de deasupra barelor.
@@ -1499,13 +1490,20 @@
      selector neprefixat o prindea si pe ea — celula primea `display: inline-flex`
      cu centrare si `padding: 0 10px`, deci numarul zilei de azi sta centrat in
      mijlocul celulei in loc de colt. Doua lucruri diferite, doua nume. */
-  .ico, .b-azi, .mods button { border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-secondary);
+  /* O SINGURA HAINA DE CONTROL PE ECRAN. Erau 28px cu chenar, imediat deasupra
+     lui `.sursa` care e 34px, fara chenar, cu umbra — doua haine pentru acelasi
+     fel de buton, iar a doua e cea din sistem (suprafata se desprinde prin umbra).
+     Marimea urca la 34 ca sa se potriveasca cu perechea de sub ea. */
+  .ico, .b-azi, .mods button { border: none; background: var(--bg-surface); color: var(--text-secondary);
+    box-shadow: var(--shadow-sm); transition: var(--transition-pressable);
     border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-  .ico { width: 28px; height: 28px; }
-  .b-azi, .mods button { height: 28px; padding: 0 10px; font-size: var(--font-small); }
-  .ico:hover, .b-azi:hover, .mods button:hover { border-color: var(--accent); color: var(--accent); }
+  .ico { width: 34px; height: 34px; }
+  .b-azi, .mods button { height: 34px; padding: 0 12px; font-size: var(--font-control); font-weight: var(--fw-semibold); }
+  .ico:hover, .b-azi:hover, .mods button:hover { background: var(--bg-hover); color: var(--text); }
+  .ico:active, .b-azi:active, .mods button:active { transform: scale(var(--press-scale)); }
   .mods { display: flex; gap: 4px; }
-  .mods button.on { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent-ring); }
+  /* Cerneala pe tenta, adanca. */
+  .mods button.on { background: var(--accent-subtle); color: var(--accent-on-subtle); box-shadow: none; }
   .mods button.ics { gap: 5px; margin-left: 6px; }
 
   /* SURSELE — controale cu numar in capul paginii, nu contoare.
@@ -1547,7 +1545,10 @@
   .grid.sapt .zi { min-height: calc(62px + var(--benzi, 1) * 20px); }
   .zi:hover { border-color: var(--border-strong); }
   .zi:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-  .zi.alta { opacity: 0.42; }
+  /* Ziua din alta luna: cifra trece pe `--text-dim`, nu toata celula pe 42%.
+     Opacitatea inmulteste peste tokenuri deja la limita — si stingea si benzile,
+     nu doar cifra, desi lucrarile din ele sunt la fel de reale. */
+  .zi.alta .n { color: var(--text-dim); }
 /* WEEKENDUL E O UMBRA, NU O CULOARE.
      Tinta era `--purple` — adica movul decorativ, care a iesit din sistem si e
      acum un alias catre accent. Cu el, sambata si duminica ar fi purtat exact
@@ -1676,17 +1677,15 @@
   @media (hover: none) {
     .maner { display: none; }
   }
-  /* Zi la sediu = hasurat, zi pe teren = plin. Diferenta conteaza: una e zi de
-     drum, cealalta nu. Aceeasi culoare de client, alta textura. */
-  .banda.sediu { background: repeating-linear-gradient(135deg,
-      color-mix(in srgb, var(--c) 30%, transparent) 0 4px,
-      transparent 4px 8px); }
-  /* Faza e a DOUA axa, independenta de locatie: pregatirea e mai palida si
-     conturata, implementarea e plina. Se combina cu hasura de sediu. */
+  /* FORMA SPUNE FAZA, LOCUL SE SCRIE.
+     Hasura de „sediu" (`repeating-linear-gradient`) era a TREIA axa de citit pe
+     acelasi obiect — ramasa din versiunea dinaintea redesenarii, desi comentariul
+     de la `culoareLucrare` explica de ce culoarea de identitate a plecat. Locul
+     il spun iconita (`building-2` / `map-pin`) si eticheta ieșirii („Sediu EGB ·
+     3 zile"), adica un canal care se poate CITI. Ramane o singura diferenta de
+     desen: plin = implementare, contur palid = pregatire. */
   .banda.pregatire { background: color-mix(in srgb, var(--c) 9%, transparent);
                      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent); }
-  .banda.pregatire.sediu { background: repeating-linear-gradient(135deg,
-      color-mix(in srgb, var(--c) 16%, transparent) 0 4px, transparent 4px 8px); }
   .banda.pregatire .banda-t { color: var(--text-secondary); }
   .banda-t { display: block; font-size: var(--font-small); line-height: var(--lh-snug); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Numele nu intra sub maner: linia lui de prindere ar cadea peste prima si
@@ -1742,7 +1741,7 @@
   .ag-l.pregatire { color: var(--text-faint); }
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
-  .pan { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); }
+  .pan { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-md); }
   .pan-zi { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
   .pan-sub { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-dim); margin: 3px 0 10px; }
   .pan-h { display: flex; align-items: center; gap: 8px; font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }

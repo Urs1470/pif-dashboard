@@ -241,7 +241,7 @@
   .modal {
     background: var(--bg-overlay);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     width: 100%;
     max-height: 85dvh;
     display: flex;

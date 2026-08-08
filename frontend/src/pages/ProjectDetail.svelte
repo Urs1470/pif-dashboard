@@ -610,7 +610,6 @@
         <button class="tab" class:active={activeTab === tab.key} onclick={() => activeTab = tab.key}>
           <tab.icon size={14} />
           {tab.label}
-          {#if tab.key === 'tasks'}<span class="count accent">{tasks.length}</span>{/if}
         </button>
       {/each}
     </div>
@@ -676,10 +675,10 @@
                        apoi cati pasi (doar daca are), actiunile cu text la hover,
                        si termenul pironit intr-o coloana de 46px. -->
                   <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
+                    <!-- Fara fractia de pasi: randul poarta doua lucruri, ce e de
+                         facut si cand. Progresul se citeste din railul din dreapta
+                         si din randul desfacut. -->
                     <span class="ttitle">{t.titlu}</span>
-                    {#if t.subtask_total}
-                      <span class="tinfo"><span class="t-pasi">{t.subtask_done || 0}/{t.subtask_total}</span></span>
-                    {/if}
                   </button>
                   <div class="task-actions">
                     <span class="ta-dp" title="Planifică — alege ziua">
@@ -879,7 +878,7 @@
 
     <aside class="rail">
       <section class="rcell cell-in" style="--celula: 0">
-        <div class="cell-label"><span class="ico ico-amber"><ListTodo size={12} /></span>Progres taskuri</div>
+        <div class="cell-label"><span class="ico ico-accent"><ListTodo size={12} /></span>Progres taskuri</div>
         <div class="rprog">
           <span class="rprog-num">{tasksDone}/{tasks.length}</span>
           <div class="rbar"><i style="width: {taskPct}%"></i></div>
@@ -988,7 +987,7 @@
   .rail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
   .rail-main { min-width: 0; }
   .rail { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-height) + 16px); }
-  .rcell { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
+  .rcell { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 16px 18px; }
   .rprog { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; }
   .rprog-num { font-family: var(--font-mono); font-size: var(--font-title); font-weight: var(--fw-semibold); color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
   .rbar { flex: 1; height: 6px; border-radius: var(--radius-full); background: var(--bg-panel); overflow: hidden; }
@@ -1000,7 +999,10 @@
 
   /* Field sections in coloana stanga (observatii, service) */
   /* "Coala de document" (V1): gradient cald, umbra, antet cu chip + meta */
-  .field-section { margin-bottom: var(--space-sm); background: linear-gradient(170deg, color-mix(in srgb, var(--accent) 5%, var(--bg-surface)) 0%, var(--bg-surface) 55%); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); transition: border-color var(--dur-fast) var(--ease); cursor: pointer; text-align: left; }
+  /* HAINA NEUTRA PE TOATE TREI SECTIUNILE. Aveau un degrade dinspre accent —
+     deci rubrica isi lua o culoare, desi culoarea e rezervata STARII. Un fond
+     plat le face egale, cum au fost desenate. */
+  .field-section { margin-bottom: var(--space-sm); background: var(--bg-surface); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow var(--dur-fast) var(--ease); cursor: pointer; text-align: left; }
   .field-section:hover { border-color: var(--accent-ring); }
   .field-section:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .field-header { display: flex; align-items: center; gap: var(--space-sm); padding: 11px var(--space-md); font-size: var(--font-small); color: var(--text-secondary); border-bottom: 1px dashed var(--border); }

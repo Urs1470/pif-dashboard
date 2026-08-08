@@ -171,7 +171,6 @@ code, pre {
    Fara asta, cand ajungi la capatul unei liste din modal/panou, gestul continua in
    pagina din spate si o muta sub deget. */
 .modal-body,
-.data-table-wrap,
 .tabs {
   overscroll-behavior: contain;
 }
@@ -546,118 +545,6 @@ input[type="checkbox"].cbx:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring, var(--border-strong)) 26%, transparent);
 }
 
-/* ===== Tabel de date partajat (stil legacy) ===== */
-.data-table-wrap {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  overflow-x: auto;
-}
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.data-table th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  font-weight: var(--fw-semibold);
-  font-size: var(--font-label);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  white-space: nowrap;
-}
-.data-table td {
-  padding: 8px 12px;
-  border-bottom: 1px dashed var(--border);
-  font-size: var(--font-small);
-  color: var(--text);
-  max-width: 280px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* Coloane numerice: aliniate la dreapta + cifre tabulare ca sa se compare pe verticala */
-.data-table td.num, .data-table th.num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
-}
-/* Variant cu corp scrollabil intern: headerul sticky ramane pe loc (folosit la Params).
-   Doar pe desktop — pe mobil tabelul se reflow-eaza in carduri (vezi mai jos). */
-@media (min-width: 769px) {
-  .data-table-wrap.sticky-scroll {
-    overflow-y: auto;
-    max-height: calc(100dvh - 320px);
-  }
-}
-/* Zebra optional pentru tabele foarte dense (Params/Fault) — usureaza urmarirea randului */
-.data-table.zebra tbody tr:nth-child(even) td {
-  background: color-mix(in srgb, var(--text) 3%, transparent);
-}
-
-/* ===== Mobil: tabelele .reflow devin carduri (label:valoare) in loc de scroll orizontal ===== */
-@media (max-width: 768px) {
-  .data-table.reflow thead {
-    position: absolute;
-    width: 1px; height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-  }
-  .data-table.reflow, .data-table.reflow tbody, .data-table.reflow tr, .data-table.reflow td {
-    display: block;
-    width: 100%;
-  }
-  .data-table.reflow tr {
-    padding: var(--space-sm) var(--space-12);
-    border-bottom: 1px solid var(--border);
-  }
-  .data-table.reflow tbody tr:hover td { background: transparent; }
-  .data-table.reflow td {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--space-md);
-    max-width: none;
-    white-space: normal;
-    padding: 3px 0;
-    border: none;
-    text-align: right;
-  }
-  .data-table.reflow td::before {
-    content: attr(data-label);
-    color: var(--text-dim);
-    font-size: var(--font-label);
-    font-weight: var(--fw-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-label);
-    text-align: left;
-    flex-shrink: 0;
-  }
-  .data-table.reflow td[data-label=""]::before { content: none; }
-}
-.data-table tbody tr {
-  transition: background var(--dur-fast) var(--ease);
-}
-.data-table tbody tr:last-child td {
-  border-bottom: none;
-}
-.data-table tbody tr:hover td {
-  background: var(--bg-elevated);
-}
-.data-table tbody tr.clickable-row {
-  cursor: pointer;
-}
-.data-table tbody tr.clickable-row:hover td:first-child {
-  box-shadow: inset 2px 0 0 var(--accent);
-}
-
 /* ===== Continut rich (observatii, notite): randare finala — KaTeX + tabele ===== */
 .rich-content { color: var(--text); line-height: var(--lh-normal); }
 .rich-content > :first-child { margin-top: 0; }
@@ -676,7 +563,7 @@ input[type="checkbox"].cbx:focus {
 .rich-content pre code { background: none; padding: 0; color: var(--text); }
 .rich-content img { max-width: 100%; border-radius: var(--radius-xs); }
 .rich-content hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
-.rich-content blockquote { border-left: 3px solid var(--accent); padding: 4px 14px; margin: 8px 0; color: var(--text-secondary); background: var(--bg-surface); }
+.rich-content blockquote { border-left: 3px solid var(--border); padding: 4px 14px; margin: 8px 0; color: var(--text-secondary); background: var(--bg-surface); }
 /* Tabele lipite din Word/Excel/web.
    Acelasi motiv ca la wiki (MarkdownView): un tabel nu poate cobori sub latimea
    lui minima, deci `max-width: 100%` nu il incadreaza — doar il lasa sa iasa si
@@ -938,9 +825,11 @@ input[type="checkbox"].cbx:focus {
      11.2px, sub AA pentru text mic). Eticheta uppercase ramane faint. */
   color: var(--text-dim);
 }
-.ico-amber { background: var(--accent-subtle); color: var(--accent); }
-.ico-green { background: var(--success-subtle); color: var(--success); }
-.ico-red   { background: var(--danger-subtle); color: var(--danger); }
+/* Text/iconita pe o TENTA ia intotdeauna varianta adanca — regula pentru care
+   `-deep` a fost adaugat. Numele `.ico-amber` venea din paleta care a plecat. */
+.ico-accent { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+.ico-green { background: var(--success-subtle); color: var(--success-deep); }
+.ico-red   { background: var(--danger-subtle); color: var(--danger-deep); }
 
 /* Numerale mari de afisaj. Ramane Space Grotesk, desi regula spune „cifrele
    sunt mono": mono e pentru cifre care se COMPARA pe verticala, intr-o coloana.

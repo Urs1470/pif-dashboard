@@ -1024,7 +1024,7 @@
   .ghid-p :global(b) { color: var(--text); font-weight: var(--fw-semibold); }
 
   /* === Date echipament partajate === */
-  .equip-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-surface); margin-bottom: var(--space-md); padding: 10px 12px; }
+  .equip-panel { border-radius: var(--radius-md); box-shadow: var(--shadow-sm); background: var(--bg-surface); margin-bottom: var(--space-md); padding: 10px 12px; }
   .equip-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
   .equip-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: var(--font-small); color: var(--text); cursor: pointer; }
   .equip-sub { font-size: var(--font-small); font-weight: var(--fw-normal); color: var(--text-dim); }
@@ -1167,7 +1167,7 @@
   .acc-item {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     overflow: hidden;
     transition: border-color var(--dur-fast) var(--ease);
     scroll-margin-top: 16px; /* la navigare cardul incepe de sus, cu putin spatiu */
@@ -1211,7 +1211,7 @@
     position: sticky; top: calc(var(--header-height) + 16px);
     max-height: calc(100dvh - var(--header-height) - var(--dock-h) - 48px);
     overflow-y: auto;
-    background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);
     padding: 12px; display: flex; flex-direction: column; gap: 2px;
   }
   .nav-equip {
@@ -1246,7 +1246,7 @@
   }
   .nav-star { opacity: 0; margin-right: 4px; }
   .nav-item:hover .nav-star, .nav-star.on { opacity: 1; }
-  .mod-cell { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; min-width: 0; }
+  .mod-cell { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; min-width: 0; }
   .mod-cell-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
   .mod-cell-empty { padding: var(--space-lg); }
 

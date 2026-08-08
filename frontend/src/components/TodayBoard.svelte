@@ -520,7 +520,9 @@
      o fantoma. */
   /* Drag & drop — minimal, on-brand: the grabbed row fades; the drop target shows a
      crisp accent insertion line (no heavy fill); rows settle via animate:flip. */
-  .arow.dragging { opacity: 0.45; cursor: grabbing; }
+  /* FARA OPACITATE PE RANDUL TRAS: identitatea lui e tocmai ce urmaresti cat il
+     muti. Unde ajunge o spune deja linia de insertie de mai jos. */
+  .arow.dragging { cursor: grabbing; box-shadow: var(--shadow-md); }
   .arow.dragover { box-shadow: inset 0 2px 0 0 var(--accent); }
   @media (prefers-reduced-motion: reduce) {
     .arow { transition: none; }

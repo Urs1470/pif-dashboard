@@ -18,7 +18,11 @@
     font-weight: var(--fw-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
-    color: var(--badge-color);
+    /* CERNEALA PE TENTA SE INCHIDE. Fondul e 12% din culoarea primita, iar textul
+       era scris cu culoarea PLINA peste el — exact cazul pentru care exista
+       treapta `-deep`. `Badge` e generic si nu stie ce rol i s-a dat, deci isi
+       deriva adancul din culoarea primita, in loc sa ceara inca un parametru. */
+    color: color-mix(in oklab, var(--badge-color) 72%, var(--text));
     background: color-mix(in srgb, var(--badge-color) 12%, transparent);
     white-space: nowrap;
     transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);

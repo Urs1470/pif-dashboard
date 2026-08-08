@@ -323,10 +323,12 @@
   /* Ridicarea e un raspuns la cursor. Pe touch ramanea ridicata tableta atinsa
      ultima data, deci dock-ul arata mereu ca si cum ai fi peste un alt tab decat
      cel activ. */
+  /* Fara ridicare la hover: „translateY" nu e in setul de miscare — el are trei
+     durate si o apasare, nu o plutire. Hoverul schimba doar cerneala si fondul. */
   @media (hover: hover) {
     .dock-item:hover {
       color: var(--text);
-      transform: translateY(-4px);
+      background: var(--bg-hover);
     }
   }
   .dock-item:active { color: var(--text); background: var(--bg-hover); transform: scale(var(--press-scale)); }
