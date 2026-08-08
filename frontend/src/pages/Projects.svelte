@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { fly, slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { FolderKanban, Search, Plus, ChevronDown, Archive, CheckSquare, Square, ArrowUpDown, Zap, Wrench } from '@lucide/svelte'
+  import { FolderKanban, Plus, ChevronDown, Archive, CheckSquare, Square, ArrowUpDown, Zap, Wrench } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { projects, loadProjects, updateProject, deleteProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
@@ -95,8 +95,6 @@
     } catch (err) { toast(`Eroare: ${err.message}`, 'error') }
   }
 
-  let searchInput = $state('')
-  let debounceTimer
   let showNewModal = $state(false)
   let showArchive = $state(false)
   let sort = $state({ key: 'nume', dir: 1 })
@@ -150,15 +148,6 @@
       await loadProjects()
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
     finally { batchBusy = false }
-  }
-
-  function onSearch(e) {
-    searchInput = e.target.value
-    clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(() => {
-      projects.filters.search = searchInput
-      loadProjects()
-    }, 300)
   }
 
   let sortOpen = $state(false)
@@ -250,10 +239,11 @@
   {/if}
 
   <div class="toolbar">
-    <div class="search-box">
-      <Search size={14} />
-      <input type="text" placeholder={ecran.telefon ? 'Caută…' : 'Caută proiecte...'} value={searchInput} oninput={onSearch} />
-    </div>
+    <!-- PAGINA PROIECTE NU ARE CAMP DE CAUTARE.
+         Sunt 21 de proiecte si se vad TOATE, in grila de sub bara asta. Un camp
+         de cautare peste o lista pe care o cuprinzi din ochi nu scurteaza nimic
+         — te pune sa scrii ca sa ajungi unde ajungeai uitandu-te. Cautarea care
+         chiar cauta (peste note, taskuri, clienti) traieste in paleta din dock. -->
     <div class="sort-box" bind:this={sortEl}>
       <button class="sort-trigger" class:on={sortOpen} onclick={() => sortOpen = !sortOpen} title="Sortare: {sortLabel} {sort.dir === 1 ? '\u2191' : '\u2193'}" aria-haspopup="listbox" aria-expanded={sortOpen}>
         <ArrowUpDown size={ecran.telefon ? 17 : 13} />
@@ -396,11 +386,6 @@
   /* `.count` a plecat in global.css — vezi nota din Tasks.svelte. */
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
-  .search-box { display: flex; align-items: center; gap: var(--space-xs); padding: 6px 12px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-full); color: var(--text-dim); flex: 1; max-width: 320px; }
-  .search-box input { background: transparent; border: none; color: var(--text); font-size: var(--font-small); flex: 1; outline: none; box-shadow: none; }
-  .search-box input:focus { box-shadow: none; border: none; }
-  .search-box input::placeholder { color: var(--text-dim); }
-  .search-box:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
 
   /* Arhiva si „Selectează": actiuni-fantoma, aceeasi haina cu sortarea de langa
      ele si cu „Arhivă" din /tasks. Nu sunt filtre, deci nu poarta chip. */
@@ -538,9 +523,6 @@
     /* Caseta are 44px, dar inputul dinauntru avea 25 — iar el e singurul care
        primeste focus (caseta e un <div>, nu un <label>), deci tinta reala era de
        25px. `align-self: stretch` il face sa umple caseta. */
-    .search-box { max-width: none; align-items: stretch; padding: 0 14px; }
-    .search-box input { align-self: stretch; min-height: var(--tap-min); font-size: var(--font-input-mobile); }
-    .search-box :global(svg) { align-self: center; }
     .batch-bar { flex-direction: column; align-items: stretch; }
 
     /* Iconite patrate de 44px: eticheta e in `title`, forma o spune. */

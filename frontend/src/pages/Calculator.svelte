@@ -3,7 +3,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide, fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../lib/motion.svelte.js'
-  import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download, FolderPlus, Trash2 } from '@lucide/svelte'
+  import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download, Trash2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG, LIMITS, computeVerdicts, worstVerdict, INTREBARI, ghidCalculator } from '../lib/driveCalc.js'
@@ -412,71 +412,6 @@
   })
   const VERDICT_TITLU = { ok: 'În limite', atentie: 'De verificat', critic: 'În afara limitelor' }
 
-  // ---- Ataseaza calculul la un proiect ----
-  // Calculul era efemer: il faceai pe teren, apoi il retastai in debrief si in PV.
-  // Se trimite ce s-a vazut pe ecran (intrari + rezultate + verdicte), serverul
-  // nu recalculeaza nimic — e o consemnare, nu o formula vie (vezi migratia v37).
-  let attachOpen = $state(false)
-  let attachMod = $state(null)
-  let attachProiecte = $state([])
-  let attachProiectId = $state('')
-  let attachTitlu = $state('')
-  let attachNota = $state('')
-  let attachBusy = $state(false)
-  let attachMsg = $state('')
-
-  async function openAttach(m) {
-    attachMod = m
-    attachTitlu = m.title
-    attachNota = ''
-    attachMsg = ''
-    attachOpen = true
-    if (!attachProiecte.length) {
-      try {
-        const lista = await apiJson('/api/proiecte?limit=500')
-        attachProiecte = (Array.isArray(lista) ? lista : lista.proiecte || [])
-          .filter((p) => p.status !== 'finalizat')
-          .concat((Array.isArray(lista) ? lista : lista.proiecte || []).filter((p) => p.status === 'finalizat'))
-        if (!attachProiectId && attachProiecte.length) attachProiectId = attachProiecte[0].id
-      } catch (e) {
-        attachMsg = 'Nu am putut incarca lista de proiecte: ' + e.message
-      }
-    }
-  }
-
-  async function saveAttach() {
-    if (!attachMod || !attachProiectId) return
-    attachBusy = true
-    attachMsg = ''
-    try {
-      const ev = effVals(attachMod)
-      const r = computeModule(attachMod, ev)
-      const vd = LIMITS[attachMod.id] ? computeVerdicts(attachMod, ev, r) : {}
-      // Etichetele intra in payload: peste un an, "dUproc: 1.93" nu spune nimic
-      // singur, iar cheile se pot redenumi.
-      const intrari = {}
-      for (const f of attachMod.fields) intrari[f.key] = { eticheta: descLabel(f.label, f.key), valoare: ev[f.key], um: f.unit || '' }
-      const rezultate = {}
-      for (const res of attachMod.results) rezultate[res.key] = { eticheta: res.label, valoare: r[res.key], um: res.unit || '' }
-      await apiJson(`/api/proiecte/${attachProiectId}/calcule`, {
-        method: 'POST',
-        body: {
-          titlu: attachTitlu.trim() || attachMod.title,
-          modul_id: attachMod.id,
-          modul_titlu: attachMod.title,
-          intrari, rezultate, verdicte: vd,
-          stare: worstVerdict(vd) || '',
-          nota: attachNota.trim(),
-        },
-      })
-      attachMsg = 'Salvat la proiect.'
-      setTimeout(() => { attachOpen = false; attachMsg = '' }, 1200)
-    } catch (e) {
-      attachMsg = 'Nu am putut salva: ' + e.message
-    } finally {
-      attachBusy = false
-    }
-  }
 
   // export rezultate (cardurile deschise) pentru raportul PIF
   function exportResults() {
@@ -826,7 +761,6 @@
     <div class="acc-body-head">
       <span class="cat-badge">{catLabel(catOf(m))}</span>
       {#if authed && m.results.length}
-        <button class="attach-btn" title="Salvează calculul la un proiect" onclick={() => openAttach(m)}><FolderPlus size={13} /> Proiect</button>
       {/if}
       <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
     </div>
@@ -1026,28 +960,6 @@
   </Modal>
 
   <!-- Ataseaza calculul la un proiect (doar logat) -->
-  <Modal bind:open={attachOpen} title="Salvează calculul la proiect" size="md">
-    <div class="attach-form">
-      {#if attachMod}
-        <p class="attach-mod">{attachMod.title}</p>
-      {/if}
-      <label class="attach-l">Proiect
-        <Select bind:value={attachProiectId} options={attachProiecte.map((p) => ({ value: p.id, label: `${p.cod_proiect ? p.cod_proiect + ' — ' : ''}${p.nume}` }))} />
-      </label>
-      <label class="attach-l">Titlu
-        <input class="attach-inp" type="text" bind:value={attachTitlu} placeholder="ex. Cablu motor pompa 2" />
-      </label>
-      <label class="attach-l">Notă (opțional)
-        <textarea class="attach-inp attach-ta" rows="2" bind:value={attachNota} placeholder="ce s-a decis, ce rămâne de verificat"></textarea>
-      </label>
-      <p class="attach-hint">Se salvează intrările, rezultatele și verdictele așa cum sunt acum. Înregistrarea nu se recalculează mai târziu — e consemnarea zilei.</p>
-      <div class="attach-actions">
-        <button class="attach-save" disabled={attachBusy || !attachProiectId} onclick={saveAttach}>{attachBusy ? 'Se salvează…' : 'Salvează'}</button>
-        {#if attachMsg}<span class="attach-msg">{attachMsg}</span>{/if}
-      </div>
-    </div>
-  </Modal>
-
   <Modal bind:open={importOpen} title="Import date echipament" size="md">
     <div class="imp">
       <p class="imp-hint">Încarcă un backup de drive: ABB <code>.dcparamsbak</code> (poți selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge și fără login.</p>
@@ -1379,47 +1291,6 @@
     cursor: pointer;
   }
   .reset-btn:hover { background: var(--bg-hover); color: var(--text); }
-
-  .attach-btn {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: var(--font-small);
-    color: var(--text-dim);
-    padding: 4px 8px;
-    border-radius: var(--radius-sm);
-    flex-shrink: 0;
-    margin-left: auto;
-    transition: var(--transition-colors);
-    cursor: pointer;
-  }
-  .attach-btn:hover { background: var(--accent-subtle); color: var(--accent); }
-
-  .attach-form { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .attach-mod {
-    font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent);
-    padding-bottom: 2px;
-  }
-  .attach-l {
-    display: flex; flex-direction: column; gap: 4px;
-    font-size: var(--font-small); color: var(--text-dim);
-  }
-  .attach-inp {
-    background: var(--bg-surface); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 7px 9px;
-    color: var(--text); font-size: var(--font-small); font-family: inherit;
-  }
-  .attach-inp:focus { outline: none; border-color: var(--accent); }
-  .attach-ta { resize: vertical; }
-  .attach-hint { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); }
-  .attach-actions { display: flex; align-items: center; gap: var(--space-sm); margin-top: 2px; }
-  .attach-save {
-    background: var(--accent); color: var(--bg);
-    border: none; border-radius: var(--radius-sm);
-    padding: 7px 14px; font-size: var(--font-small); font-weight: var(--fw-semibold);
-    cursor: pointer;
-  }
-  .attach-save:disabled { opacity: 0.55; cursor: default; }
-  .attach-msg { font-size: var(--font-small); color: var(--text-secondary); }
-
   .inputs {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -1699,8 +1570,6 @@
     /* „Proiect" si „Reset" stau in acelasi rand, deasupra campurilor. Masurate pe
        telefon: 25px inaltime. Umflate la 44 ar impinge randul in jos degeaba —
        primesc aceeasi solutie ca steaua: raman de 25px la vedere, 45 la atingere. */
-    .attach-btn, .reset-btn { position: relative; }
-    .attach-btn::after, .reset-btn::after { content: ''; position: absolute; inset: -10px; }
     /* Intrarea pe sarcina: o intrebare pe rand, nu doua pe jumatate de latime. */
     .intreb-grid { grid-template-columns: 1fr; }
   }
