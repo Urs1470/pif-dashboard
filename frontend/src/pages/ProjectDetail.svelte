@@ -974,7 +974,7 @@
   .title-area h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); color: var(--text); }
   .header-actions { display: flex; gap: var(--space-xs); flex-wrap: wrap; flex-shrink: 0; }
   .tip { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; padding: 2px 8px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); }
-  .tip.pif { background: var(--accent-subtle); color: var(--accent); }
+  .tip.pif { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .tip.service { background: var(--accent-subtle); color: var(--accent-deep); }
   /* `flex-wrap` + `min-width: 0`: fara ele cele trei fapte (client, echipament, cod)
      imparteau latimea in trei coloane egale si fiecare se rupea inauntru —
@@ -1006,7 +1006,10 @@
   .field-section:hover { border-color: var(--accent-ring); }
   .field-section:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .field-header { display: flex; align-items: center; gap: var(--space-sm); padding: 11px var(--space-md); font-size: var(--font-small); color: var(--text-secondary); border-bottom: 1px dashed var(--border); }
-  .f-ico { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-subtle); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  /* Aceeasi familie cu `.ico-*` din global.css, deci aceeasi regula: cerneala pe
+     tenta ia varianta adanca. Erau doua patratele identice ca forma, unul pe
+     `--accent` si unul pe `--accent-on-subtle`, in aceeasi pagina. */
+  .f-ico { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-subtle); color: var(--accent-on-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .f-ico.f-red { background: var(--danger-subtle); color: var(--danger); }
   .f-ico.f-green { background: var(--success-subtle); color: var(--success); }
   .f-meta { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-faint); white-space: nowrap; flex-shrink: 0; }
@@ -1126,7 +1129,9 @@
      de contrast. Ce e facut o spun taietura si culoarea bifei. */
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
   .tinfo { display: flex; align-items: center; gap: 10px; font-size: var(--font-small); color: var(--text-dim); }
-  .t-pasi { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  /* `.t-pasi` (fractia de pasi) a plecat din rand odata cu E1 — pe rand sunt doua
+     lucruri: ce e de facut si cand. Progresul se citeste din railul din dreapta
+     („Progres taskuri 7/12") si din panoul deschis. Regula ramasese fara marcaj. */
 
   .task-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   @media (hover: hover) {

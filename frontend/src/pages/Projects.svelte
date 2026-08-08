@@ -2,21 +2,17 @@
   import { onMount } from 'svelte'
   import { fly, slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { FolderKanban, Plus, ChevronDown, Archive, CheckSquare, Square, ArrowUpDown, Zap, Wrench } from '@lucide/svelte'
-  import SolidIcon from '../components/ui/SolidIcon.svelte'
-  import { projects, loadProjects, updateProject, deleteProject } from '../stores/projects.svelte.js'
+  import { FolderKanban, Plus, ChevronDown, Archive, ArrowUpDown, Zap, Wrench } from '@lucide/svelte'
+  import { projects, loadProjects, updateProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
-  import Button from '../components/ui/Button.svelte'
-  import Select from '../components/ui/Select.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
-  import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
 
   // CHIPURILE DE FILTRU AU PLECAT. Grila separa deja finalizatele in „Arhivă"
@@ -31,11 +27,6 @@
     { value: 'tip', label: 'Tip' },
     { value: 'status', label: 'Status' },
     { value: 'urmatoarea', label: 'Următoarea ieșire' },
-  ]
-
-  const batchStatusOptions = [
-    { value: 'pregatire', label: 'În pregătire' },
-    { value: 'finalizat', label: 'Finalizat' },
   ]
 
   function daysUntil(zi) {
@@ -99,56 +90,15 @@
   let showArchive = $state(false)
   let sort = $state({ key: 'nume', dir: 1 })
 
-  let batchMode = $state(false)
-  let selected = $state(new Set())
-  let batchStatus = $state('')
-  let showBatchDelete = $state(false)
-  let batchBusy = $state(false)
-
-  function toggleBatch() {
-    batchMode = !batchMode
-    if (!batchMode) selected = new Set()
-  }
-
-  function toggleSelect(id) {
-    const next = new Set(selected)
-    if (next.has(id)) next.delete(id); else next.add(id)
-    selected = next
-  }
-
-  function toggleSelectAll() {
-    if (selected.size === activeItems.length) {
-      selected = new Set()
-    } else {
-      selected = new Set(activeItems.map(p => p.id))
-    }
-  }
-
-  async function batchUpdateStatus() {
-    if (!batchStatus || selected.size === 0) return
-    batchBusy = true
-    try {
-      await Promise.all([...selected].map(id => updateProject(id, { status: batchStatus })))
-      toast(`${selected.size} proiecte actualizate`, 'success')
-      selected = new Set()
-      batchStatus = ''
-      await loadProjects()
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-    finally { batchBusy = false }
-  }
-
-  async function batchDeleteSelected() {
-    if (selected.size === 0) return
-    batchBusy = true
-    try {
-      for (const id of selected) await deleteProject(id)
-      toast(`${selected.size} proiecte șterse`, 'success')
-      selected = new Set()
-      showBatchDelete = false
-      await loadProjects()
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-    finally { batchBusy = false }
-  }
+  // MODUL „SELECTEAZA" A PLECAT (N7, decis de Ion pe 2026-08-08).
+  //
+  // Desenul il scosese la cererea lui; codul il pastra. Era o stare intreaga —
+  // buton in antet, bara de actiuni in masa pe tenta de accent, casuta pe fiecare
+  // card, o a doua semnificatie pentru click si pentru Enter — pentru douazeci si
+  // ceva de proiecte si o singura actiune in masa: stergerea. Iar stergerea in
+  // masa a mai multor proiecte, fiecare cu taskurile si perioadele lui, e exact
+  // genul de actiune pe care nu vrei s-o poti face din doua atingeri distrate.
+  // Se sterg unul cate unul, prin confirmarea din pagina proiectului.
 
   let sortOpen = $state(false)
   let sortEl = $state(null)
@@ -166,8 +116,7 @@
   function cardKeydown(e, p) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
-      if (batchMode) toggleSelect(p.id)
-      else openProject(p)
+      openProject(p)
     }
   }
 
@@ -207,36 +156,11 @@
       <h1>Proiecte</h1>
       <span class="count">{projects.items.length}</span>
     </div>
-    <div class="header-btns">
-      <!-- „Selectează" lua jumatate din antet pentru un mod in care intri o data
-           pe luna. Pe telefon ramane doar iconita; „Proiect Nou" devine „Nou". -->
-      <button class="b-select" class:on={batchMode} onclick={toggleBatch}
-              title="Selectează mai multe" aria-pressed={batchMode}>
-        <CheckSquare size={ecran.telefon ? 17 : 14} />
-        {#if !ecran.telefon}<span>Selectează</span>{/if}
-      </button>
-      <Button size="sm" onclick={() => showNewModal = true}><Plus size={14} /> {ecran.telefon ? 'Nou' : 'Proiect Nou'}</Button>
-    </div>
+    <!-- ANTETUL NU MAI ARE BUTON DE ADAUGARE. O singura cale per ecran: pe
+         desktop cardul punctat din grila (e chiar in locul unde ar aparea
+         proiectul nou), pe telefon butonul mare cu plus de jos. Erau amandoua,
+         pe amandoua ecranele. -->
   </div>
-
-  <!-- TOT CE TINE DE SELECTIE INTR-O SINGURA BARA. Era imprastiat in trei locuri:
-       butonul in antet, „Selectează toate" ca al patrulea element in bara de
-       filtre si actiunile intr-o a treia bara care se deschidea dedesubt — trei
-       asezari pentru o singura stare, si niciun „ieși" limpede. Bara apare acum
-       de la INTRAREA in mod, nu abia dupa prima bifa, ca sa aiba unde sta iesirea. -->
-  {#if batchMode}
-    <div class="batch-bar" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-      <span class="batch-count">{selected.size} selectate</span>
-      <button class="select-all" onclick={toggleSelectAll}>
-        {#if selected.size === activeItems.length && activeItems.length > 0}<CheckSquare size={14} />{:else}<Square size={14} />{/if}
-        Selectează toate
-      </button>
-      <Select size="sm" bind:value={batchStatus} placeholder="Schimbă status..." options={batchStatusOptions} aria-label="Schimbă status" />
-      <Button size="sm" disabled={!batchStatus || selected.size === 0 || batchBusy} onclick={batchUpdateStatus}>Aplică</Button>
-      <Button size="sm" variant="danger" disabled={selected.size === 0 || batchBusy} onclick={() => showBatchDelete = true}><SolidIcon name="trash" size={12} /> Șterge</Button>
-      <Button size="sm" variant="ghost" onclick={toggleBatch}>Ieși</Button>
-    </div>
-  {/if}
 
   <div class="toolbar">
     <!-- PAGINA PROIECTE NU ARE CAMP DE CAUTARE.
@@ -294,13 +218,8 @@
     <div class="cards-grid">
       {#each activeItems as p, i (p.id)}
         {@const urm = urmatoarea(p)}
-        <div class="pcard cell-in" style="--celula: {i}" class:batch-selected={batchMode && selected.has(p.id)} role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={(e) => { if (batchMode) { e.stopPropagation(); toggleSelect(p.id) } else openProject(p) }} onkeydown={(e) => cardKeydown(e, p)}>
+        <div class="pcard cell-in" style="--celula: {i}" role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)} onkeydown={(e) => cardKeydown(e, p)}>
           <div class="card-top">
-            {#if batchMode}
-              <button class="batch-check card-check" onclick={(e) => { e.stopPropagation(); toggleSelect(p.id) }}>
-                {#if selected.has(p.id)}<CheckSquare size={16} />{:else}<Square size={16} />{/if}
-              </button>
-            {/if}
             <!-- TIPUL, SPUS O SINGURA DATA. Era un fulger amber intr-un chip
                  patrat PLUS cuvantul „PIF" — doua obiecte pentru un fapt care nu
                  se schimba niciodata, chiar langa pastila de status, care se
@@ -334,7 +253,11 @@
           </div>
         </div>
       {/each}
-      {#if !batchMode}
+      <!-- Cardul punctat e calea de pe DESKTOP: sta chiar in locul in care va
+           aparea proiectul. Pe telefon grila e o coloana si cardul ar cadea sub
+           tot — la capatul unei derulari — deci acolo calea e butonul mare cu
+           plus, la indemana degetului mare. Una pe ecran, nu amandoua. -->
+      {#if !ecran.telefon}
         <button class="pcard new-card cell-in" style="--celula: {activeItems.length}" onclick={() => showNewModal = true}>
           <span class="new-plus">+</span>
           <span class="new-label">Proiect nou</span>
@@ -366,18 +289,25 @@
       </div>
     {/if}
   {/if}
+
+  <!-- BUTONUL MARE CU PLUS — singura cale de adaugare de pe telefon, acelasi
+       obiect ca in Taskuri (`Tasks.svelte`), la aceleasi coordonate: peste dock,
+       in dreapta, unde ajunge degetul mare fara sa muti telefonul in mana.
+       Ascuns in arhiva: acolo te uiti la ce s-a terminat, nu adaugi. -->
+  {#if ecran.telefon && !showArchive}
+    <button class="fab" onclick={() => showNewModal = true} aria-label="Proiect nou">
+      <Plus size={26} strokeWidth={2} />
+    </button>
+  {/if}
 </div>
 
 <ProjectFormModal bind:open={showNewModal} onsaved={() => loadProjects()} />
-<ConfirmDialog bind:open={showBatchDelete} title="Șterge proiecte" message={`Ștergi ${selected.size} proiecte selectate? Această acțiune este ireversibilă.`} confirmLabel="Șterge" onconfirm={batchDeleteSelected} />
 
 <style>
   .page { padding: var(--space-lg); }
-  /* `flex-wrap` + `gap`: fara ele randul nu se putea rupe, iar „Selectează" si
-     „Proiect Nou" nu se puteau micsora sub textul lor — deci ieseau din ecran si
-     `.app-main { overflow-x: clip }` le taia in tacere. Pe 375px „Proiect Nou"
-     era retezat de marginea din dreapta. Acum, cand nu incap langa titlu, coboara
-     pe randul lor si il umplu. */
+  /* `flex-wrap` a ramas desi antetul nu mai are butoane de adaugare: titlul plus
+     numarul tot pot depasi un ecran ingust, iar `.app-main { overflow-x: clip }`
+     le-ar taia in tacere. */
   .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md); }
   .page-title-row { min-width: 0; }
   .page-title-row h1 { overflow-wrap: anywhere; }
@@ -387,15 +317,15 @@
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
 
-  /* Arhiva si „Selectează": actiuni-fantoma, aceeasi haina cu sortarea de langa
-     ele si cu „Arhivă" din /tasks. Nu sunt filtre, deci nu poarta chip. */
-  .a-ico, .b-select { display: inline-flex; align-items: center; gap: 6px;
+  /* „Arhivă": actiune-fantoma, aceeasi haina cu sortarea de langa ea si cu
+     „Arhivă" din /tasks. Nu e filtru, deci nu poarta chip. */
+  .a-ico { display: inline-flex; align-items: center; gap: 6px;
     min-height: 30px; padding: 0 10px; border-radius: var(--radius-sm);
     background: transparent; border: 1px solid transparent;
     font-size: var(--font-small); font-weight: var(--fw-medium);
     color: var(--text-faint); cursor: pointer; transition: var(--transition-colors); }
-  .a-ico:hover, .b-select:hover { color: var(--text); background: var(--bg-hover); }
-  .a-ico.on, .b-select.on { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  .a-ico:hover { color: var(--text); background: var(--bg-hover); }
+  .a-ico.on { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .a-n { font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .a-ico.on .a-n { color: inherit; }
 
@@ -410,8 +340,6 @@
   .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
   .sort-opt:hover { background: var(--bg-hover); color: var(--text); }
   .sort-opt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
-  .select-all { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--bg-input); border: 1px solid var(--border); }
-  .select-all:hover { color: var(--text); border-color: var(--border-strong); }
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
   /* HOVERUL RASPUNDE IN `--dur-fast`, CA RESTUL APLICATIEI. Cardul urca 4px pe
@@ -428,7 +356,6 @@
   }
   .pcard:active { border-color: var(--border-strong); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .pcard.batch-selected { background: var(--accent-subtle); border-color: var(--accent); }
   /* dim, nu faint: „Proiect nou" e o actiune de citit, nu o eticheta —
      masurat 3.18:1 la 12.8px, sub AA. Cardul ramane discret prin rama
      punctata si fundalul gol, nu prin text ilizibil. */
@@ -487,11 +414,16 @@
   .arch-tail { margin-left: auto; display: inline-flex; align-items: center; gap: var(--space-sm); }
   .arch-deadline { font-size: var(--font-small); font-family: var(--font-mono); }
 
-  .header-btns { display: flex; gap: var(--space-xs); }
-  .batch-bar { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--accent-subtle); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: var(--radius-md); margin-bottom: var(--space-md); flex-wrap: wrap; }
-  .batch-count { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); }
-  .batch-check { display: flex; align-items: center; justify-content: center; color: var(--text-dim); cursor: pointer; background: transparent; border: none; padding: 0; }
-  .batch-check:hover { color: var(--accent); }
+  /* Butonul mare cu plus (doar telefon). Aceleasi valori ca in `Tasks.svelte`:
+     e acelasi obiect, deci nu-si alege singur nici marimea, nici pozitia. */
+  .fab { position: fixed; right: calc(var(--space-md) + var(--safe-right));
+    bottom: calc(var(--dock-h) + 14px + var(--safe-bottom) + var(--space-md));
+    width: 56px; height: 56px; display: grid; place-items: center;
+    border-radius: var(--radius-md); border: none;
+    background: var(--accent); color: var(--accent-text);
+    box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
+    cursor: pointer; transition: var(--transition-pressable); }
+  .fab:active { transform: scale(var(--press-scale)); }
   /* Fill discret in loc de contur gol: o pastila conturata se citeste ca eticheta,
      iar asta comuta statusul. Chevronul o spune fara `title`. Culoarea vine din
      `--st` (STATUS_COLORS), deci fondul se deduce din ea — o singura regula
@@ -516,7 +448,7 @@
        37% din ecran, exact procentul pentru care /tasks a fost strans; pagina
        asta ramasese in urma. Nimic nu dispare, doar distantele. */
     .page { padding-top: var(--space-12); }
-    .page-header, .toolbar, .batch-bar { margin-bottom: 10px; }
+    .page-header, .toolbar { margin-bottom: 10px; }
     /* UN RAND DE BARA, NU TREI. Reparatia de dinainte a scazut doar marginile de
        la 16 la 10 — dar cei 37% pana la primul card erau ELEMENTELE, nu
        distantele: cautare, trei chipuri si sortare, fiecare pe randul lui, ~150px.
@@ -526,10 +458,8 @@
     /* Caseta are 44px, dar inputul dinauntru avea 25 — iar el e singurul care
        primeste focus (caseta e un <div>, nu un <label>), deci tinta reala era de
        25px. `align-self: stretch` il face sa umple caseta. */
-    .batch-bar { flex-direction: column; align-items: stretch; }
-
     /* Iconite patrate de 44px: eticheta e in `title`, forma o spune. */
-    .sort-trigger, .a-ico, .b-select {
+    .sort-trigger, .a-ico {
       width: var(--tap-min); height: var(--tap-min); min-height: var(--tap-min);
       padding: 0; justify-content: center; flex-shrink: 0;
       border-radius: var(--radius-md); }
@@ -539,8 +469,8 @@
     /* PASTILA DE STATUS E ETICHETA PE TOUCH (vezi markup: nici nu mai e <button>),
        deci stratul invizibil de 44px din jurul ei — care fura atingeri de la card
        — a plecat cu totul. Un card = o tinta. */
-    /* „Proiect Nou" ramane singurul buton cu text si primeste latimea ramasa. */
-    .header-btns :global(.btn) { min-height: var(--tap-min); }
+    /* Antetul nu mai are butoane: adaugarea e butonul mare cu plus de jos, iar
+       „Selectează" a plecat cu tot cu modul (N7). */
   }
 
   @media (max-width: 560px) {

@@ -1895,7 +1895,7 @@
   .bl-chip :global(.bl-grip) { color: var(--text-faint); flex-shrink: 0; }
   .bl-sev { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .bl-txt { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-  .bl-proj { font-size: var(--font-small); color: var(--accent); background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  .bl-proj { font-size: var(--font-small); color: var(--accent-on-subtle); background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
   .bl-proj.glob { color: var(--text-dim); background: var(--bg-elevated); }
   .bl-date { width: 30px; flex-shrink: 0; }
   .bl-date :global(.dp-trigger) { width: 30px; min-height: 30px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-faint); }
