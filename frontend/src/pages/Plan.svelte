@@ -113,6 +113,23 @@
     return `de azi, ${h ? h.cat : plan.days + ' zile'} · ${interval}`
   })
 
+  // CLIENTUL E SUFIXUL NUMELUI, SI E SINGURUL CARE SPUNE UNDE DUCE BANDA.
+  // Proiectele se cheama „Migrare CU240S — Continental": partea dinaintea liniutei
+  // se deosebeste de la primele caractere, cea de dupa e clientul — adica exact ce
+  // manca trunchierea la dreapta a unui nume de 240px. Desenat (5a): titlul pe
+  // randul intai, „Continental · 5 taskuri" pe al doilea.
+  // Se taie DOAR pe liniuta lunga sau medie, cu spatii in jur. Cratima simpla nu:
+  // „Revizie - hala 3" ar pierde jumatate de nume si ar castiga un client inventat.
+  // Fara liniuta, proiectul n-are client scris in nume si randul al doilea ramane
+  // doar numarul („2 taskuri", ca banda generala din desen).
+  // `numeIntreg` ramane pentru `title` si pentru cautare: pe ecran numele se scurteaza,
+  // in tooltip nu — altfel doua proiecte cu acelasi inceput devin imposibil de deosebit
+  // fara sa le deschizi.
+  function despartClient(nume) {
+    const m = String(nume || '').match(/^(.+?)\s+[—–]\s+(.+)$/)
+    return m ? { nume: m[1], client: m[2], numeIntreg: nume } : { nume, client: '', numeIntreg: nume }
+  }
+
   function isActive(s) { return s === 'in_progress' || s === 'in_lucru' }
   function isDone(s) { return s === 'done' || s === 'finalizat' }
   function effDue(t) { return t.data_scadenta || (isDone(t.status) ? t.data_finalizare : '') }
@@ -348,7 +365,7 @@
     // Restantele vin de la server ca lista proprie: sunt INAINTEA ferestrei, deci
     // n-au geometrie si nu pot sta pe pista. Vezi `.rest-col`.
     const restante = lane.restante || []
-    return { ...lane, color, pregatire, tasks, packed, geo: geometrieBanda(packed.length), impl, restante }
+    return { ...lane, ...despartClient(lane.nume), color, pregatire, tasks, packed, geo: geometrieBanda(packed.length), impl, restante }
   }))
   // Coloana „Restante" apare doar cand are ce arata. O coloana mereu goala e exact
   // felul de gol rezervat pe care il repara restul turei.
@@ -771,11 +788,18 @@
               <div class="lane" style="--lane:{lane.color}; --rand:{li}; --h-lane:{lane.geo.inaltime}px; --h-stiva:{lane.geo.stiva}px" class:print-hide={exportSel.size > 0 && !exportSel.has(lane.id)}>
                 <div class="lane-label">
                   {#if lane.tip === 'proiect'}
-                    <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={lane.nume}>
+                    <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={lane.numeIntreg}>
                       <span class="lane-dot"></span>
                       <span class="lane-col">
                         <span class="lane-txt">{lane.nume}</span>
-                        <span class="lane-contor">{lane.tasks.length}{#if lane.restante.length}{' · '}<span class="lc-rest">{lane.restante.length} {lane.restante.length === 1 ? 'restant' : 'restante'}</span>{/if}</span>
+                        <!-- CLIENTUL, APOI CATE. Randul scria doar cifra, iar cifra
+                             singura nu spune UNDE te duce banda — la fel arata trei
+                             proiecte diferite. Numarul ramane mono (se compara pe
+                             verticala cu vecinii), clientul e text.
+                             Restantele NU se mai scriu aici: au coloana lor, cu ziua
+                             scrisa in chip, iar inghesuite pe acelasi rand mancau
+                             exact clientul pe care il aduce inapoi punctul asta. -->
+                        <span class="lane-contor">{#if lane.client}{lane.client}{' · '}{/if}<span class="lc-n">{lane.tasks.length}</span> {lane.tasks.length === 1 ? 'task' : 'taskuri'}</span>
                       </span>
                     </button>
                     {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
@@ -784,7 +808,7 @@
                       <span class="lane-dot"></span>
                       <span class="lane-col">
                         <span class="lane-txt">{lane.nume}</span>
-                        <span class="lane-contor">{lane.tasks.length}{#if lane.restante.length}{' · '}<span class="lc-rest">{lane.restante.length} {lane.restante.length === 1 ? 'restant' : 'restante'}</span>{/if}</span>
+                        <span class="lane-contor">{#if lane.client}{lane.client}{' · '}{/if}<span class="lc-n">{lane.tasks.length}</span> {lane.tasks.length === 1 ? 'task' : 'taskuri'}</span>
                       </span>
                     </span>
                   {/if}
@@ -1103,6 +1127,24 @@
            doar indicele randului, ca decalajul sa urmeze grupurile. -->
       {#each views as lane, li (lane.tip + ':' + lane.id)}
         {@const per = perioadaDeAratat(lane)}
+        {@const gol = !per && !lane.tasks.length && !lane.restante.length}
+        {#if gol}
+          <!-- PROIECTUL FARA NIMIC IN FEREASTRA STA PE UN RAND (desen 4c).
+               Primea cardul intreg — antet, apoi nimic: fara perioada, fara grupuri,
+               fara randuri. Adica exact „golul rezervat" pe care restul paginii il
+               scoate, si inca de doua-trei ori pe o lista de noua proiecte, intre
+               cardurile care chiar au ce spune. Ramane identitatea (punct + nume) si
+               drumul: atingerea duce la proiect, unde sunt taskurile lui din afara
+               ferestrei. Numarul NU se mai scrie — in fereastra e zero prin chiar
+               conditia care aduce randul aici, iar un „0" langa nume nu e informatie. -->
+          <button class="mgol" style="--lane:{lane.color}" title={lane.numeIntreg}
+                  onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)}>
+            <span class="lane-dot"></span>
+            <span class="mgol-n">{lane.nume}</span>
+            {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
+            <ChevronRight size={16} class="mgol-chev" />
+          </button>
+        {:else}
         <section class="mgroup" style="--lane:{lane.color}; --rand:{li}">
           <header class="mg-head">
             <span class="lane-dot"></span>
@@ -1172,14 +1214,14 @@
                            `plan.today`, ziua serverului): altfel chipul se putea
                            colora cand inelul nu era colorat, si invers. -->
                       <span class="chip due" class:sev={dueRing(t.data_scadenta) !== 'var(--border)'}>
-                        <CalendarDays size={10} />{formatDateShort(t.data_scadenta)}
+                        <CalendarDays size={11} />{formatDateShort(t.data_scadenta)}
                       </span>
                     {/if}
                     <!-- FRACTIA DE PASI NU STA PE RAND (aceeasi interdictie ca E1, in
                          ProjectDetail). Randul poarta DOUA lucruri: ce e de facut si
                          cand. Cati pasi sunt gata se citeste in foaia taskului, ca titlu
                          de sectiune („Pasi · 1/3", desenat in turul 4e). -->
-                    {#if t.recurenta}<span class="chip"><Repeat size={10} /> {t.recurenta}</span>{/if}
+                    {#if t.recurenta}<span class="chip"><Repeat size={11} /> {t.recurenta}</span>{/if}
                   </span>
                 </button>
                 <div class="mrow-actions">
@@ -1192,6 +1234,7 @@
             {/each}
           {/each}
         </section>
+        {/if}
       {/each}
     </div>
   {/if}
@@ -1378,10 +1421,13 @@
   .lane-name.static { cursor: default; }
   .lane-name:not(.static):hover .lane-txt { color: var(--accent); }
   .lane-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-  /* Cate taskuri are banda in fereastra si cate au scapat inaintea ei. Numarul de
-     restante e singurul lucru colorat: e cel care cere ceva. */
-  .lane-contor { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-faint); font-variant-numeric: tabular-nums; }
-  .lc-rest { color: var(--danger); }
+  /* Clientul si cate taskuri are banda in fereastra. Desenat (5a): 13, `--tx2`,
+     pe UN rand cu trunchiere — coloana are 240px si titlul e deasupra. Mono e doar
+     cifra, fiindca doar ea se compara pe verticala cu vecinele ei; clientul e un
+     cuvant, deci text. (Numarul de restante a plecat de aici in coloana lui.) */
+  .lane-contor { font-size: var(--font-small); color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lc-n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   /* PUNCT PLAT, FARA HALO. Glowul colorat e interzis explicit — si aici statea pe
      identitatea de proiect, adica stralucea exact lucrul care nu cere nimic.
      Punctul spune „care proiect", nu „uita-te la mine". */
@@ -1462,7 +1508,7 @@
 
   /* PREGATIREA E O SPALATURA NEUTRA, NU O A DOUA BANDA DE ACCENT.
      Avea `accent 10% + chenar accent 26%`, adica exact intensitatea lui
-     `.impl-band` (`accent 10% + inel 32%`) — deci „plin = implementare, palid =
+     `.impl-band` (accent 10% + inel) — deci „plin = implementare, palid =
      pregatire" nu se mai citea: doua obiecte la aceeasi tarie, unul langa altul.
      Desenat (turul 4a, banda de 88px): golul de pregatire e o spalatura NEUTRA,
      fara inel; accentul ramane al implementarii, singur. Asa cele doua se
@@ -1524,7 +1570,12 @@
     padding: 3px 9px 0 11px; border-radius: var(--radius-sm); overflow: hidden; z-index: 0; text-align: left;
     color: var(--accent-deep); border: none;
     background: color-mix(in srgb, var(--accent) 10%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent);
+    /* Inelul e 26%, cat scrie in desen (5a) — nu 32%. Pe pista de desktop banda
+       are 88px si sta langa alte trei, deci diferenta de sase puncte se aduna cu
+       celelalte trepte prea grele si scoate perioada in fata reperelor, care sunt
+       subiectul randului. Pe telefon (`.mp-track .impl-band`) ramane 34%: acolo
+       banda are 34px, e singurul obiect din pista si n-are eticheta. */
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent);
     cursor: pointer; pointer-events: auto; transition: var(--transition-colors);
     /* Se descopera, nu se intinde: `scaleX` ar turti textul dinauntru la jumatate
        de latime pe la mijlocul miscarii, iar o eticheta care se lateste inapoi la
@@ -1573,9 +1624,13 @@
      Fara `opacity` SI fara procent: cerneala e `--accent-deep`, plina. `--on-color` e
      cerneala fillului SATURAT — banda e insa tenta de 10%, deci acolo ar fi iesit alb
      pe alb (tema deschisa), respectiv negru pe negru (tema intunecata). Desenat
-     (`Planificator.dc.html`, turul 4): mono, `--ac-d`, plin. */
+     (`Planificator.dc.html`, turul 4): mono, `--ac-d`, plin.
+     Treapta: desenul scrie 11, scara aplicatiei se opreste la 12 (`--font-label`,
+     vezi `tokens.css`) si nu exista nicaieri un `px` brut de font. Ia treapta cea
+     mai mica din scara — 13 il facea sa concureze cu titlul benzii, ceea ce era
+     chiar reprosul. */
   .ib-zile { flex: none; padding-left: 2px; font-family: var(--font-mono);
-    font-size: var(--font-small); font-variant-numeric: tabular-nums;
+    font-size: var(--font-label); font-variant-numeric: tabular-nums;
     color: var(--accent-deep); white-space: nowrap; }
   /* RANDUL PERIOADEI E NEUTRU, NU O A TREIA BANDA DE ACCENT (desen 4c).
      Purta `accent 10% + inel 32%` — exact haina benzii de implementare, repetata
@@ -1585,9 +1640,21 @@
      „aici e perioada pe axa timpului"; jos scrie ce e si unde duce.
      Locul se SCRIE (iconita + eticheta), nu se coloreaza — aceeasi gramatica ca
      in Calendar si in Ganttul de proiect. */
+  /* PULSUL SPUNE CA RANDUL E ATINGIBIL. Pe telefon nu exista hover, iar randul e o
+     suprafata a doua fara chenar si fara fill de accent — deci nimic din el nu
+     spunea ca duce undeva; chevronul singur e prea mic ca sa se vada ca afordanta.
+     Desenat (4c, `pfAprindere`): o aprindere lenta de accent 20% care se stinge
+     inapoi in suprafata, 3.4s, la infinit. Lenta si pe fond, nu pe text: nu cere
+     atentie, doar arata ca obiectul e viu. Se anuleaza la `reduced-motion` si la
+     print, ca toate celelalte animatii ale paginii. */
+  @keyframes pfAprindere {
+    0%, 12% { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+    100% { background: var(--bg-elevated); }
+  }
   .mimpl { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
     border: none; cursor: pointer; padding: 0 10px; border-radius: var(--radius-sm);
-    background: var(--bg-elevated); margin-bottom: 6px; }
+    background: var(--bg-elevated); margin-bottom: 6px;
+    animation: pfAprindere 3.4s var(--ease) infinite; }
   /* Pregatirea ramane mai palida decat implementarea — doar ca acum diferenta e
      de CERNEALA, nu de procent de accent: randul e acelasi obiect, cu alt ton. */
   .mimpl.pregatire .mimpl-loc { color: var(--text-secondary); font-weight: var(--fw-medium); }
@@ -1654,7 +1721,15 @@
     border-radius: var(--radius-xs); background: var(--bg-surface);
     box-shadow: inset 0 0 0 1.5px var(--accent);
     transition: var(--transition-colors); }
-  .bar.active .bar-box { background: var(--accent); box-shadow: none; }
+  /* REPERUL IN LUCRU E DECUPAT DIN PISTA, NU DOAR PLIN.
+     Avea `box-shadow: none`, deci un reper plin de accent asezat peste banda de
+     implementare — care e o tenta din ACELASI accent — se topea in ea: exact
+     reperul care cere atentie era singurul care disparea. Desenat (5a): fill plin
+     plus doua inele exterioare, unul de suprafata si unul de accent estompat, care
+     il taie din orice ar fi dedesubt. Umbra e in AFARA cutiei (fara `inset`), deci
+     nu concureaza cu conturul de 1.5px al reperului „de facut". */
+  .bar.active .bar-box { background: var(--accent);
+    box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent); }
   .bar.done .bar-box { background: var(--success-subtle); color: var(--success-deep);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
   /* Haloul se ADAUGA, nu rescrie cutia: `box-shadow` la hover ar sterge conturul
@@ -1667,12 +1742,14 @@
   /* TITLUL IESE DIN BARA, la dreapta ei — deci impachetarea masoara suma lor
      (`intinderea`), nu ziua. Ramane apasabil: cuvintele sunt singurul lucru care
      spune ce e taskul, iar o zi are 34px la orizontul de 30.
-     Haloul de text il desprinde de ce e dedesubt (poate fi banda plina a unei
-     perioade). */
+     FARA HALO DE TEXT. Avea trei straturi de `text-shadow` in culoarea suprafetei,
+     ca sa se citeasca peste banda plina — un simptom tratat, nu cauza: in desen
+     eticheta sta pe fundalul pistei, iar banda de pregatire de sub ea e o spalatura
+     neutra, nu un bloc saturat. Cu P2 aplicat, cauza a plecat; haloul ramas doar
+     ingrosa scrisul si il facea sa pluteasca. */
   .bar-txt { position: absolute; left: 100%; top: 0; bottom: 0;
     display: inline-flex; align-items: center; gap: 4px; max-width: 220px;
     padding-left: 7px; overflow: hidden; color: var(--text); pointer-events: auto;
-    text-shadow: 0 0 3px var(--bg-surface), 0 0 6px var(--bg-surface), 0 0 9px var(--bg-surface);
     transition: var(--transition-colors); }
   .bar.flip .bar-txt { left: auto; right: 100%; padding-left: 0; padding-right: 7px; justify-content: flex-end; }
   @media (hover: hover) {
@@ -1768,6 +1845,17 @@
   .mp-track .impl-band :global(.ib-ico) { margin-top: 0; opacity: 1; }
 
   .mgroup { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
+  /* Cardul strans: aceeasi suprafata si aceeasi raza ca `.mgroup`, ca sa se citeasca
+     drept acelasi obiect in stare mica — nu un al doilea fel de card. Inaltimea o da
+     continutul (un rand), deci lista nu mai are goluri intre proiectele active. */
+  .mgol { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    padding: var(--space-sm); border: none; cursor: pointer;
+    background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
+    transition: var(--transition-pressable); }
+  .mgol:active { transform: scale(var(--press-scale)); }
+  .mgol-n { flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-semibold);
+    color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mgol :global(.mgol-chev) { flex: none; color: var(--text-faint); }
   .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
   .mg-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* `.mg-count` a plecat — sunt doua `.count` din global.css (vezi markup).
@@ -1789,7 +1877,15 @@
      de CITIT al unei liste. */
   .mrow-title { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
-  .chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); display: inline-flex; align-items: center; gap: 3px; }
+  /* CHIPUL DE TERMEN E O CUTIE DE 22px CU CIFRE MONO (desen 4c).
+     Avea `padding: 1px 6px` — deci inaltimea o dadea textul, si atat chipul cat si
+     vecinul lui de recurenta ieseau cu 2-3px diferiti de la un rand la altul,
+     langa un titlu de 15 care nu se misca. Data e o CIFRA care se compara pe
+     verticala cu data randului urmator: mono, tabular, la treapta de 12. */
+  .chip { height: 22px; padding: 0 7px; border-radius: var(--radius-xs);
+    font-family: var(--font-mono); font-size: var(--font-label); font-weight: var(--fw-medium);
+    font-variant-numeric: tabular-nums; background: var(--bg-elevated); color: var(--text-dim);
+    display: inline-flex; align-items: center; gap: 4px; flex: none; white-space: nowrap; }
   .chip.due { color: var(--text-dim); background: var(--bg-elevated); }
   /* O SINGURA GRAMATICA PENTRU „AZI". Erau doua clase („azi", „restant") cu doua
      harti de culoare proprii, pe langa inca una pe muchia randului. Acum chipul
@@ -1980,7 +2076,13 @@
     .controls { flex-wrap: wrap; width: 100%; }
     /* Orizontul e alegerea principala — ia randul lui, cu cele cinci trepte
        impartite egal. */
-    .seg { display: flex; width: 100%; }
+    /* `gap: 2px` (desen 4c): pe desktop treptele stau lipite, fiindca fillul
+       activului e singurul lucru care le desparte si latimea o da textul. Aici sunt
+       intinse egal pe toata latimea, deci doua trepte vecine ar fi un dreptunghi de
+       340px taiat de o culoare — golul le face din nou butoane.
+       Treapta ramane la `--tap-min` (deci cutia 50, nu 48 ca in desen): 44 e pragul
+       de atins al sistemului, iar 2px de inaltime nu-l cumpara. */
+    .seg { display: flex; width: 100%; gap: 2px; }
     .seg-btn { flex: 1; min-height: var(--tap-min); font-size: var(--font-body); }
     /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
        butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
@@ -2067,6 +2169,10 @@
      ar fi fost anulat de `.band` / `.impl-band` / `.bar`. */
   @media (prefers-reduced-motion: reduce) {
     .band, .impl-band, .bar, .wk { animation: none; }
+    /* Pulsul randului de perioada e o animatie INFINITA, deci aici nu e vorba de
+       stagger: e chiar felul de miscare pe care cererea il interzice. Fara ea
+       randul ramane suprafata a doua, cu chevron — se pierde doar afordanta. */
+    .mimpl { animation: none; }
   }
 
   /* ===== print (browser print-to-PDF) ===== */
