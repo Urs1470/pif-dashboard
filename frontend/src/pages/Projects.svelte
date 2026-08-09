@@ -366,7 +366,10 @@
   .card-top { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 10px; }
   .card-top { display: flex; align-items: center; }
   .card-top .status-pill { margin-left: auto; }
-  .card-check { width: auto; height: auto; }
+  /* `.card-check` a plecat: era casuta de selectie a modului „Selectează", scos
+     din Proiecte la feedbackul lui Ion (N7). Clasa nu mai apare in markup, deci
+     Svelte taia oricum regula din build — un rand care nu putea ajunge niciodata
+     pe ecran. */
   /* Numele proiectului urca pe `--font-h2`: e numele unui lucru, deci poarta
      fontul de titlu la o treapta care EXISTA. Era la 1.05rem — o marime pe care
      n-o numea niciun token, intre h3 si body, aleasa o data si ramasa acolo. */

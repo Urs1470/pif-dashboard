@@ -462,7 +462,9 @@
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  .a-skel { display: flex; flex-direction: column; gap: var(--space-xs); }
+  /* `.a-skel` a plecat: invelisul de schelet al boardului nu mai exista in
+     markup (scheletul vine acum din `Skeleton.svelte`, cu forma randului real).
+     Clasa nu se mai randeaza nicaieri, deci Svelte taia regula din build. */
 
   /* Antetul sectiunii personale: micro/mono/uppercase ca .cell-label, cu punctul
      violet (--purple — huea „libera"; amber e severitate/identitate). Bordura de
