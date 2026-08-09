@@ -24,6 +24,11 @@ pif-dashboard.service
 # Data files (never track)
 proj_tasks.json
 
+# Handoff-uri de design (zipuri din proiectul de design, aterizate in radacina).
+# Sunt surse de citit, nu cod: raman pe disc, dar nu intra in istoric — regula
+# „fara binare mari in git". Nu exista niciun .zip trackat, deci sablonul e sigur.
+*.zip
+
 # Scratch / scripts artifacts (LLM batch runs, audit dumps, ad-hoc inspections)
 scripts/*_b*_input.json
 scripts/*_b*_out.json
