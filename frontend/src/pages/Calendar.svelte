@@ -41,15 +41,25 @@
   // dar starea si toate ramurile lui au ramas — masinarie moarta, pe care o
   // citeai ca specificatie si o copiai. Calendarul e LUNA, peste tot.
   let anchor = $state(monthStart(todayISO()))
-  // PANOUL FACE LOC, NU ACOPERA — deci la incarcare NU e selectata nicio zi.
-  // Grila are toata latimea (127 -> 176px pe zi, adica textul din bare se
-  // citeste), iar „azi" ramane marcat in grila. Panoul intra cu coloana lui abia
-  // cand ceri o zi. Inainte pornea cu ziua de azi selectata, deci pagina se
-  // deschidea mereu ingustata, pentru un panou pe care de cele mai multe ori nu
-  // il ceruse nimeni.
-  let selectata = $state('')
-  // Sursa „Proiecte fara perioada", urcata din panou in capul paginii.
-  let deschideNeplanificate = $state(false)
+  // PAGINA SE DESCHIDE CU AZI SELECTAT SI CU SERTARUL DESCHIS — cerut explicit de
+  // Ion (2026-08-09): „vizualizarea default cand deschid pagina vreau sa fie azi
+  // selectat si proiecte fara perioade selectate, adica sa fie cele doua pe partea
+  // dreapta".
+  //
+  // Asta RASTOARNA regula de dinainte („panoul face loc, nu acopera, deci la
+  // incarcare nu e selectata nicio zi"), scrisa cand panoul costa latime pe care
+  // grila n-o avea de dat: fara el ziua trecea de la 127 la 176px, adica pragul de
+  // la care textul din bara se putea citi. Argumentul s-a stins intre timp — de la
+  // C8 bara e plina, de 24px, cu numele scris pe ea, iar de la C3 celula are 100px
+  // inaltime, deci lucrarea se citeste si pe coloana ingusta.
+  //
+  // Ce ramane adevarat: cu panoul deschis ziua e mai ingusta. E o alegere, nu o
+  // scapare — pagina se deschide aratand raspunsul la „ce am azi" si „ce n-am pus
+  // inca pe calendar", care sunt exact intrebarile cu care intri pe ea.
+  let selectata = $state(todayISO())
+  // Sursa „Proiecte fara perioada", urcata din panou in capul paginii. Deschisa
+  // din start, ca sa stea langa ziua de azi in coloana din dreapta.
+  let deschideNeplanificate = $state(true)
   // Coloana panoului exista doar cand are ce arata. Cand nu, grila e pe toata
   // latimea — ceea ce inseamna 176px pe zi in loc de 127, adica exact pragul de
   // la care eticheta unei lucrari se poate citi in bara ei.
@@ -1071,9 +1081,23 @@
          In DOM stau INAINTEA navigatiei, nu mutate cu `order`: altfel tabularea ar
          merge invers decat se citeste. -->
     <div class="bar">
+      <!-- CAPUL BAREI EXISTA DOAR PE TELEFON (M8). Pe desktop titlul si luna stau
+           in antetul paginii (C1) — dar `.header-context` e `display: none` sub
+           768px, deci acolo luna ar disparea cu totul: ai naviga intre luni fara
+           sa scrie niciunde in care esti. Pragul e 768, nu 620 ca restul blocului
+           mobil, fiindca ala e pragul la care se ascunde antetul — doua praguri
+           diferite ar lasa o fasie intre 620 si 768 fara luna. -->
+      <div class="bar-cap" aria-hidden="true">
+        <span class="bar-marca">Calendar</span>
+        <span class="bar-luna">{monthLabel(anchor)}</span>
+      </div>
       <div class="surse cell-in" style="--celula: 0">
         {#if data.neplanificate?.length}
-          <button class="sursa" onclick={() => { selectata = ''; deschideNeplanificate = !deschideNeplanificate }}
+          <!-- Comuta DOAR sertarul. Golea si ziua selectata, ca sa nu stea doua
+               panouri in aceeasi coloana — dar de cand pagina se deschide cu
+               amandoua (cerinta lui Ion), asta ar inchide exact ce trebuie sa
+               ramana. Coloana le tine pe amandoua, una sub alta. -->
+          <button class="sursa" onclick={() => { deschideNeplanificate = !deschideNeplanificate }}
                   aria-expanded={deschideNeplanificate}
                   title="Proiecte active fără nicio zi planificată">
             <CalendarX2 size={14} strokeWidth={1.5} />
@@ -1129,7 +1153,12 @@
     <div class="wrap" class:cu-panou={panouDeschis}>
       <div class="cal cell-in" style="--celula: 1">
         <div class="wd">
-          {#each WEEKDAYS as w}<span>{w}</span>{/each}
+          <!-- Doua scrieri ale aceleiasi zile, comutate din CSS (M7): pe telefon
+               coloana are ~50px, iar „Sâ"/„Du" plus separatoarele fac antetul mai
+               inghesuit decat grila de sub el. Initiala vine din `w[0]`, nu dintr-o
+               a doua lista scrisa de mana — `WEEKDAYS` ramane singura sursa, si
+               iese exact L M M J V S D. -->
+          {#each WEEKDAYS as w}<span><i class="wd-lung">{w}</i><i class="wd-scurt">{w[0]}</i></span>{/each}
         </div>
         <!-- Inaltimea celulei urmeaza numarul real de benzi din fereastra: o luna
              cu o singura lucrare pe zi nu mai are jumatate de celula goala, iar
@@ -1284,6 +1313,13 @@
                    `etichetaBara` il taia doar pentru ca inainte fiecare bara avea
                    latimea unei singure celule. Acum se taie doar cand chiar nu
                    incape. -->
+              <!-- ICONITA LOCULUI, DOAR PE TELEFON (M1). Acolo banda isi poarta
+                   singura starea — chenarul iesirii nu se deseneaza (M6) — deci
+                   „Site sau sediu" n-are de unde sa se citeasca altfel. Pe desktop
+                   o spune eticheta chenarului, si aici ar fi a doua oara. -->
+              <span class="banda-ico" aria-hidden="true">
+                {#if b.p.locatie === 'sediu'}<Building2 size={10} />{:else}<MapPin size={10} />{/if}
+              </span>
               <!-- Bifa sta INAINTEA numelui, ca pe randul de task: „s-a facut" e o
                    stare a lucrarii, deci se citeste odata cu ea, nu dupa. -->
               {#if b.p.confirmata}<Check size={12} class="banda-bifa" />{/if}
@@ -1520,6 +1556,13 @@
   /* Separatorul dintre surse si navigatie: 24px, cat inaltimea la care se citesc
      doua grupuri ca fiind despartite fara sa para doua bare. */
   .nav { display: flex; align-items: center; gap: 6px; }
+  /* Capul barei si initialele zilelor exista doar sub 768px — vezi marcajul.
+     Ascunse din start, aprinse in blocul mobil. */
+  .bar-cap { display: none; }
+  .wd-scurt { display: none; }
+  .wd-lung { font-style: normal; }
+  /* Iconita locului de pe banda: doar pe telefon (M1). */
+  .banda-ico { display: none; }
   /* Separatorul e un `::before` de 24px, nu un `border-left`: bordura ar fi cat
      toata inaltimea randului (38px) si ar arata ca marginea unei bare, nu ca o
      cusatura intre doua grupuri.
@@ -1790,15 +1833,19 @@
      Late de 9px ca zona de prindere, dar ce se VEDE e o bara de 2px pe toata
      inaltimea benzii: la capatul unei perioade, o linie verticala inseamna „de
      aici se trage", pe cand pastila alba de dinainte era doar un semn ca exista
-     ceva acolo. Zona de prindere se intinde peste inaltimea benzii si inca 5px
-     sus/jos (`::before`) — banda are 17px, adica sub orice tinta rezonabila daca
-     ne-am opri la conturul ei. */
+     ceva acolo.
+     LINIA INCAPE IN BARA, nu o depaseste. Iesea 1px sus si 1px jos, iar zona de
+     prindere inca 5px peste ea (`::before`): valorile erau alese cand banda avea
+     17px si trebuia ingrosata ca sa poata fi apucata. De cand bara are 24px (C8)
+     ea e ea insasi o tinta buna, iar linia care trece peste muchii nu mai citeste
+     ca maner, ci ca o taietura prin bara. Acum sta la 4px de sus si de jos —
+     inauntru, limpede — si zona de prindere se lateste doar pe orizontala. */
   .maner { position: absolute; top: 0; bottom: 0; width: 9px; cursor: ew-resize;
            opacity: 0; transition: opacity var(--dur-fast) var(--ease); }
   .maner.st { left: 0; }
   .maner.dr { right: 0; }
-  .maner::before { content: ''; position: absolute; inset: -5px -2px; }
-  .maner::after { content: ''; position: absolute; top: -1px; bottom: -1px; left: 50%; width: 2px;
+  .maner::before { content: ''; position: absolute; inset: 0 -2px; }
+  .maner::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; width: 2px;
                   transform: translateX(-50%); border-radius: 1px; background: var(--accent); }
   .banda:hover .maner, .banda.se-trage .maner { opacity: 1; }
   /* PE TELEFON PISTA SE CITESTE, NU SE MANIPULEAZA.
@@ -1999,21 +2046,77 @@
      tocmai ai citit-o, nu o intrebare cu care incepi. Semnalul care chiar cere
      actiune („de clarificat") e oricum DESENAT pe zi, cu chenar rosu. */
   @media (max-width: 900px) {
-    .wrap { grid-template-columns: minmax(0, 1fr); }
+    /* `.wrap.cu-panou` (doua clase) BATE `.wrap` (una), deci regula de o coloana
+       trebuie sa se adreseze si ei — altfel coloana de 330px a panoului ramanea si
+       pe telefon, iar cele sapte zile se imparteau ce mai ramanea: 4px pe zi.
+       Bug-ul exista dinainte, dar se vedea doar dupa ce atingeai o zi (panoul se
+       deschidea), iar `audit_mobil` nu atinge zile — deci trecea verde. De cand
+       pagina se deschide cu ziua de azi selectata, apare din prima. */
+    .wrap, .wrap.cu-panou { grid-template-columns: minmax(0, 1fr); }
     .side { order: 0; }
     .page { display: flex; flex-direction: column; }
     .bar { order: 0; }
     .wrap { order: 1; }
-    .surse { order: 2; margin: var(--space-md) 0 0; }
+    /* `.surse { order: 2 }` A PLECAT, si nu ca rafinare — devenise gresit.
+       Cat timp sursele erau copil al `.page`, `order` le trimitea la coada
+       paginii. Din C2 sunt copil al `.bar`, deci acelasi `order: 2` le impingea
+       DUPA sageti, adica exact invers decat le-am asezat in DOM. */
+  }
+  /* PRAGUL E AL ANTETULUI, NU AL GRILEI. `.header-context` (titlul paginii si
+     luna) e `display: none` sub 768px, deci de la latimea asta in jos luna
+     trebuie sa reapara in bara — altfel navighezi intre luni fara sa scrie
+     niciunde in care esti. Restul blocului mobil e la 620; daca puneam si asta
+     acolo, ramanea o fasie de 148px fara luna. */
+  @media (max-width: 768px) {
+    .bar-cap { display: flex; align-items: baseline; gap: 7px; margin-right: auto; min-width: 0; }
+    .bar-marca { font-size: var(--font-h3); font-weight: var(--fw-semibold); color: var(--text); }
+    .bar-luna { font-size: var(--font-small); color: var(--text-dim); white-space: nowrap;
+                overflow: hidden; text-overflow: ellipsis; }
+    /* Bara are acum ceva in stanga, deci nu se mai strange la dreapta. */
+    .bar { justify-content: space-between; }
   }
   @media (max-width: 620px) {
     .page { padding: var(--space-md); }
     /* Benzile sunt mai subtiri pe telefon, deci si pasul lor — cele doua numere
-       trebuie sa rămână in acord cu `--h-banda`, altfel benzile ies din celule. */
-    .grid { --h-banda: 15px; }
-    .zi { min-height: calc(25px + var(--benzi, 1) * 15px); }
-    .banda { min-height: 12px; }
-    .banda-t { display: none; }
+       trebuie sa rămână in acord cu `--h-banda`, altfel benzile ies din celule.
+       Banda urca de la 12 la 15px (M1): sub 15 nu incape o iconita de 10px cu
+       text langa ea, iar M1 cere si iconita, si numele. Pasul e 19, nu 18: textul
+       de 12px cu `--lh-snug` inalta banda la 16px reali, deci cu 18 golul dintre
+       benzi ar fi iesit 2, nu 3. Masurat, nu presupus. */
+    .grid { --h-banda: 19px; }
+    /* Podeaua celulei e `--tap-min` (M2): ziua e o tinta pe care o atingi cu
+       degetul, iar la 40px o ratai in favoarea vecinei. Creste doar cat cer
+       benzile, ca pe desktop — aceeasi regula, alt prag. */
+    /* ABATERE CONSTIENTA DE LA DESEN: M2 scrie „randuri fixe de 44px", aici e 44
+       ca PODEA, cu crestere. Fix ar insemna ca intr-o celula intra o singura
+       banda, iar restul se taie — si de la C6 nu mai exista contorul care sa
+       spuna ca s-au taiat. Adica lucrari invizibile fara niciun semn, exact ce
+       C6 a putut fi scos pentru ca NU se intampla. Pe datele reale randul cel mai
+       plin iese ~93px; daca vrei totusi 44 strict, se schimba `max(...)` in `44px`
+       si atunci trebuie sa se intoarca un semn pentru ce nu incape. */
+    .zi { min-height: max(var(--tap-min), calc(21px + var(--benzi, 1) * 19px));
+          padding: 4px 2px 0; }
+    /* Cifra sta CENTRATA (M2): la 50px latime, aliniata la stanga cadea peste
+       capatul benzii de dedesubt si se citeau ca un singur bloc. */
+    .zi-h { justify-content: center; }
+    /* FARA SEPARATOARE VERTICALE (M3). La ~50px pe coloana, sapte linii verticale
+       plus sapte cifre fac un grilaj in care ziua nu se mai desprinde. Raman doar
+       liniile orizontale, care despart SAPTAMANILE — singura impartire pe care o
+       citesti cu adevarat pe telefon. */
+    .zi, .zi.col-ultima { box-shadow: inset 0 -1px 0 var(--border-strong); }
+    .zi.rand-ultim, .zi.col-ultima.rand-ultim { box-shadow: none; }
+    /* Banda isi poarta numele si locul (M1): pe telefon ea E lucrarea, fiindca
+       chenarul nu se deseneaza. */
+    .banda { min-height: 15px; padding: 0 4px; gap: 3px; }
+    .banda-t { display: block; font-size: var(--font-label); font-weight: var(--fw-semibold); }
+    .banda-ico { display: inline-flex; align-items: center; flex: none; }
+    /* CHENARUL NU SE DESENEAZA PE TELEFON (M6). El spune „zilele astea sunt o
+       singura iesire" — un fapt care, pe o celula de 50px, ar fi o rama in plus
+       peste benzi deja inghesuite. Pe telefon iesirile se citesc SCRISE, in agenda
+       de sub grila, unde au loc de nume si de durata.
+       `display: none`, nu transparent: altfel ramanea un element care primeste
+       tranzitii si inaltime degeaba in fiecare saptamana cu o iesire. */
+    .chenar { display: none; }
     /* Captura se taia oricum la o felie ilizibila intr-o celula de ~48px. Ce spune
        ea — cine si cat — scrie acum in AGENDA de sub grila, unde incape. */
     /* Eticheta iesirii NU se ascunde de aici. Decizia e a lui `impachetare`, care
@@ -2039,11 +2142,21 @@
        o singura zi, doua manere de 9px ar manca o celula de 44px. */
     .banda:not(.lat) .maner { display: none; }
 
+    /* Antetul zilelor: 26px si o singura litera (M7). */
+    .wd span { height: 26px; }
+    .wd-lung { display: none; }
+    .wd-scurt { display: inline; font-style: normal; }
+
     /* Navigarea si butoanele barei: erau de 28px inaltime. */
     .ico { width: var(--tap-min); height: var(--tap-min); }
-    .b-azi, .ics { height: var(--tap-min); padding: 0 14px; font-size: var(--font-small); }
-    .nav { gap: var(--space-xs); flex: 1; }
-    /* `.titlu` a plecat cu C1 si aici: luna se scrie in subtitlul paginii. */
+    .b-azi { height: var(--tap-min); padding: 0 14px; font-size: var(--font-small); }
+    /* `.ics` NU APARE PE TELEFON (M8). Descarci un fisier de abonament o data, de
+       pe calculator; pe telefon te abonezi din aplicatia de calendar, nu dintr-un
+       buton care ocupa un sfert din bara. */
+    .ics { display: none; }
+    .nav { gap: var(--space-xs); }
+    /* `.titlu` a plecat cu C1 si aici: luna se scrie in capul barei (`.bar-cap`),
+       fiindca antetul paginii e ascuns sub 768px. */
     .bar { gap: var(--space-xs); }
 
     /* Actiunile din panoul zilei — „Da", „Mută pe azi", „Mută", „Scoate". Erau
