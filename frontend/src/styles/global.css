@@ -619,7 +619,7 @@ input[type="checkbox"].cbx:focus {
 }
 .count.danger {
   background: var(--danger-subtle);
-  color: var(--danger);
+  color: var(--danger-deep);
 }
 
 /* ===== Tab-uri underline partajate (ProjectDetail, Params) ===== */

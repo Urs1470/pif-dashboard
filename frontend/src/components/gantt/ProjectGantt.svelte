@@ -340,7 +340,7 @@
   .tk-row.done .row-title { color: var(--text-dim); text-decoration: line-through; text-decoration-color: var(--text-faint); }
   .tk-row.done .tk-stare { color: var(--success); }
   .due-chip { font-family: var(--font-mono); font-size: var(--font-small); padding: 3px 9px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
-  .due-chip.hot { background: var(--danger-subtle); color: var(--danger); }
+  .due-chip.hot { background: var(--danger-subtle); color: var(--danger-deep); }
   .due-chip.warm { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .tk-row :global(.tk-chev) { color: var(--text-faint); flex: none; }
 
@@ -404,7 +404,10 @@
     -webkit-mask-image: linear-gradient(to right, #000 55%, transparent 100%);
     mask-image: linear-gradient(to right, #000 55%, transparent 100%); }
 
-  .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); opacity: 0.7; z-index: 1; }
+  /* AZI NU E O EROARE. Rosul e al restantei; azi e pe accent, ca `.mt-azi` din
+     Planificator — o singura gramatica pentru „acum" in toata aplicatia. Fara
+     `opacity`: tonul il da culoarea, nu stingerea. */
+  .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); z-index: 1; }
 
   .gb-row { position: relative; height: var(--row-h); border-bottom: 1px solid var(--border); }
   .gb-row:last-child { border-bottom: 0; }

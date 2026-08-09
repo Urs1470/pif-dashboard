@@ -1297,7 +1297,7 @@
   .rest-head { width: var(--rest-w); flex: none; box-sizing: border-box;
     display: flex; align-items: flex-end; justify-content: center;
     padding: 0 6px 8px; border-left: 1px solid var(--border);
-    background: var(--danger-subtle); color: var(--danger);
+    background: var(--danger-subtle); color: var(--danger-deep);
     font-family: var(--font-mono); font-size: var(--font-label);
     letter-spacing: var(--tracking-label); text-transform: uppercase; }
   .days { flex: 1; position: relative; min-width: 0; height: 52px; display: flex; flex-direction: column; }
@@ -1551,10 +1551,13 @@
      Avea `margin-left: auto`, adica exact ce interzice regula: impins in capatul
      benzii, cadea peste eticheta reperului care incepe imediat dupa ea. Lipit de
      titlu, ocupa spatiul pe care impachetarea l-a rezervat deja pentru banda.
-     Fara `opacity` (regula sistemului): tonul il da culoarea, nu stingerea. */
+     Fara `opacity` SI fara procent: cerneala e `--accent-deep`, plina. `--on-color` e
+     cerneala fillului SATURAT — banda e insa tenta de 10%, deci acolo ar fi iesit alb
+     pe alb (tema deschisa), respectiv negru pe negru (tema intunecata). Desenat
+     (`Planificator.dc.html`, turul 4): mono, `--ac-d`, plin. */
   .ib-zile { flex: none; padding-left: 2px; font-family: var(--font-mono);
     font-size: var(--font-small); font-variant-numeric: tabular-nums;
-    color: color-mix(in srgb, var(--on-color) 62%, transparent); white-space: nowrap; }
+    color: var(--accent-deep); white-space: nowrap; }
   /* Dunga de identitate a plecat: randul e DEJA umplut cu aceeasi culoare si are
      si eticheta de locatie colorata in ea. Cei 3px se intorc in padding. */
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px 6px 13px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--accent) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent); margin-bottom: 6px; }
@@ -1578,7 +1581,7 @@
     background: var(--bg-elevated); color: var(--text-dim);
     font-size: var(--font-small); line-height: 1; font-variant-numeric: tabular-nums; }
   .mgrup-cap.ton-danger { color: var(--danger); }
-  .mgrup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger); }
+  .mgrup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger-deep); }
   .mgrup-cap.ton-accent { color: var(--accent); }
   .mgrup-cap.ton-accent .grup-n { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   /* UN TASK E UN REPER, NU O CUTIE.
@@ -1771,8 +1774,10 @@
   /* O SINGURA GRAMATICA PENTRU „AZI". Erau doua clase („azi", „restant") cu doua
      harti de culoare proprii, pe langa inca una pe muchia randului. Acum chipul
      citeste ACELASI `--ring` ca inelul bifei de langa el, deci cele doua canale
-     nu se pot desincroniza. */
-  .chip.due.sev { color: var(--ring); background: color-mix(in srgb, var(--ring) 14%, transparent); }
+     nu se pot desincroniza. Cerneala e varianta ADANCA a rolului din spatele inelului
+     (reteta din `Badge.svelte`): pe tenta se scrie mereu cu adancul, iar aici rolul e
+     dinamic — accent sau restant — deci se deriva, nu se numeste. */
+  .chip.due.sev { color: color-mix(in oklab, var(--ring) 72%, var(--text)); background: color-mix(in srgb, var(--ring) 14%, transparent); }
   .mrow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
   /* Pe desktop invelisul de glisare nu exista pentru layout, iar panoul lui e
      ascuns: acolo actiunile stau la vedere in rand. */
