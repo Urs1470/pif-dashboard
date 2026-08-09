@@ -110,6 +110,44 @@ if (-not $apk) {
 }
 "APK: {0} ({1:N1} MB, {2})" -f $apk.FullName, ($apk.Length / 1MB), $apk.LastWriteTime
 
+# SEMNATURA SE COMPARA CU CEA DE PE TELEFON, NU DOAR „exista o cheie".
+#
+# Poarta de mai sus verifica doar ca fisierul cu chei EXISTA. Dar o cheie gresita
+# — alta copiata, alta regenerata, sau un keystore cu mai multe aliasuri din care
+# Gradle il ia pe altul — produce un APK perfect valid, semnat cu altceva. Android
+# refuza sa-l instaleze peste aplicatia existenta, si afli abia pe telefon, dupa ce
+# l-ai publicat pentru toate dispozitivele.
+#
+# Amprenta de mai jos e a APK-ului chiar acum publicat (`GET /api/app/apk`,
+# `versionCode 1367786`, 7 aug 2026). NU e un secret: e certificatul PUBLIC, prezent
+# in fiecare copie a aplicatiei. De aceea poate sta in git — secreta e cheia
+# PRIVATA din `.jks`, care nu intra niciodata aici.
+#
+# Daca vreodata schimbi intentionat cheia de semnare, valoarea asta se schimba
+# odata cu ea — si abia dupa ce ai acceptat ca toti utilizatorii dezinstaleaza.
+$AMPRENTA = '753182ea0825c9766885c922092fb826b28d075a2815fde38e5f7efec38ecbf0'
+
+if ($Release) {
+    $bt2 = (Get-ChildItem "$T\android-sdk\build-tools" -Directory | Sort-Object Name -Descending | Select-Object -First 1).FullName
+    $certs = & "$bt2\apksigner.bat" verify --print-certs $apk.FullName 2>&1
+    $m = $certs | Select-String -Pattern 'certificate SHA-256 digest:\s*([0-9a-f]{64})'
+    if (-not $m) { throw "Nu pot citi semnatura APK-ului construit — apksigner n-a intors nicio amprenta." }
+    $amp = $m.Matches[0].Groups[1].Value
+    if ($amp -ne $AMPRENTA) {
+        $dn = ($certs | Select-String -Pattern 'certificate DN:\s*(.+)$').Matches[0].Groups[1].Value
+        throw @"
+SEMNATURA NU SE POTRIVESTE — NU se urca nimic.
+  construit : $amp
+              $dn
+  asteptat  : $AMPRENTA
+Un APK semnat altfel nu se poate instala peste aplicatia de pe telefon. Ori ai
+copiat alt keystore, ori Gradle a folosit alt alias din el, ori build-ul a iesit
+nesemnat (debug). Verifica `~\Repos\Tools\keys\keystore.properties`.
+"@
+    }
+    "Semnatura: se potriveste cu aplicatia publicata."
+}
+
 if (-not $Upload) { exit 0 }
 
 # ---------------------------------------------------------------- publicare
