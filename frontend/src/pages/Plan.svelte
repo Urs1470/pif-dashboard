@@ -1257,9 +1257,11 @@
   .toggle { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 12px; font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); }
   .toggle:hover { background: var(--bg-hover); color: var(--text); }
   .toggle:active { transform: scale(var(--press-scale)); }
-  /* Activul e TENTA CU CERNEALA ADANCA, ca `.mods button.on` din Calendar — nu
-     `--accent` plin scris ca text pe fondul panoului. Umbra pleaca: obiectul nu
-     mai e o suprafata care se ridica, ci o stare aprinsa. */
+  /* Activul e TENTA CU CERNEALA ADANCA (regula sistemului: pe tenta se scrie
+     mereu cu adancul) — nu `--accent` plin scris ca text pe fondul panoului.
+     Umbra pleaca: obiectul nu mai e o suprafata care se ridica, ci o stare
+     aprinsa. Model viu: `.seg-btn.active` de mai sus si `.tab.active` din
+     global.css. */
   .toggle.on { background: var(--accent-subtle); color: var(--accent-on-subtle); box-shadow: none; }
   .toggle:disabled { opacity: 0.4; cursor: not-allowed; }
   /* 4px nu e o treapta din scara (8 chip · 10 control · 14 suprafata · 20 foaie).
