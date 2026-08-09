@@ -22,10 +22,22 @@ param([switch]$Release, [switch]$Upload, [string]$Server = 'https://pif.iupif.or
 
 $ErrorActionPreference = 'Stop'
 $rad = Split-Path -Parent $PSScriptRoot
-$T = "C:\Users\Ion Ursu\Repos\Tools"
 
-if (-not (Test-Path "$T\jdk-21")) { throw "JDK lipseste in $T\jdk-21 — vezi references/pc-config.md" }
-if (-not (Test-Path "$T\android-sdk\platforms")) { throw "Android SDK incomplet in $T\android-sdk" }
+# UNDE E TOOLCHAIN-UL. Era scris literal `C:\Users\Ion Ursu\Repos\Tools`, adica
+# numele de utilizator al UNEI masini — deci scriptul nu putea rula pe cealalta,
+# desi acolo se dezvolta mai des. Acum se deduce din profil, si iese exact aceeasi
+# cale pe PC-ul vechi.
+# `$env:PIF_TOOLS` il muta oriunde (alt disc, folder partajat), fara sa atinga
+# scriptul.
+#
+# ATENTIE: `app/build.gradle` citeste cheile ca
+# `${user.home}/Repos/Tools/keys/keystore.properties` — deci daca muti Tools cu
+# `PIF_TOOLS`, cheile TREBUIE sa ramana totusi sub profil, la calea aia. Gradle
+# n-are de unde sti de variabila.
+$T = if ($env:PIF_TOOLS) { $env:PIF_TOOLS } else { "$env:USERPROFILE\Repos\Tools" }
+
+if (-not (Test-Path "$T\jdk-21")) { throw "JDK lipseste in $T\jdk-21 — ruleaza scripts\setup-apk-toolchain.ps1" }
+if (-not (Test-Path "$T\android-sdk\platforms")) { throw "Android SDK incomplet in $T\android-sdk — ruleaza scripts\setup-apk-toolchain.ps1" }
 
 # SEMNATURA SE VERIFICA INAINTE DE BUILD, nu dupa — si aici, langa celelalte doua
 # porti de masina, nu mai jos: toate trei raspund la „pot construi de pe PC-ul
@@ -39,9 +51,12 @@ if (-not (Test-Path "$T\android-sdk\platforms")) { throw "Android SDK incomplet 
 # asta decat cu o reinstalare de la zero. Acelasi motiv pentru care mai jos se
 # refuza urcarea unui build de debug; acolo era pazit, aici nu.
 #
-# Calea vine din `$T`, ca sa nu existe doua adevaruri: `build.gradle` o citeste ca
-# `${user.home}/Repos/Tools/keys/keystore.properties`.
-$CHEI = "$T\keys\keystore.properties"
+# Calea e cea pe care o citeste `build.gradle` — `${user.home}/Repos/Tools/keys/`
+# — scrisa din profil, NU din `$T`: Gradle nu stie de `PIF_TOOLS`, deci daca am
+# lua-o din `$T` si toolchain-ul ar fi mutat, poarta ar cauta cheile in alt loc
+# decat cel in care Gradle le cauta, si ar trece un build nesemnat exact pe drumul
+# pe care vrea sa-l pazeasca.
+$CHEI = "$env:USERPROFILE\Repos\Tools\keys\keystore.properties"
 if ($Release -and -not (Test-Path $CHEI)) {
     throw "Cheile de semnare lipsesc ($CHEI). Un release fara ele iese NESEMNAT si rupe actualizarea pe telefon — construieste pe masina care le are."
 }
