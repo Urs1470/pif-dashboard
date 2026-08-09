@@ -1124,6 +1124,7 @@
             <button class="mimpl loc-{per.im.locatie}" class:pregatire={per.im.faza === 'pregatire'}
                     onclick={() => navigate(`/calendar?zi=${per.im.a}`)}
                     title="{lane.impl.length > 1 ? `${lane.impl.length} perioade în fereastră — ` : ''}vezi în Calendar">
+              {#if per.im.locatie === 'sediu'}<Building2 size={15} class="mimpl-ico" />{:else}<MapPin size={15} class="mimpl-ico" />{/if}
               <span class="mimpl-loc">{locLabel(per.im.locatie)}{per.im.eticheta ? ' · ' + per.im.eticheta : ''}</span>
               <span class="mimpl-range">
                 {formatDateShort(per.im.a)} – {formatDateShort(per.im.b)}
@@ -1576,18 +1577,28 @@
   .ib-zile { flex: none; padding-left: 2px; font-family: var(--font-mono);
     font-size: var(--font-small); font-variant-numeric: tabular-nums;
     color: var(--accent-deep); white-space: nowrap; }
-  /* Dunga de identitate a plecat: randul e DEJA umplut cu aceeasi culoare si are
-     si eticheta de locatie colorata in ea. Cei 3px se intorc in padding. */
-  .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px 6px 13px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--accent) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent); margin-bottom: 6px; }
-  /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
-  .mimpl.pregatire { background: color-mix(in srgb, var(--accent) 5%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
+  /* RANDUL PERIOADEI E NEUTRU, NU O A TREIA BANDA DE ACCENT (desen 4c).
+     Purta `accent 10% + inel 32%` — exact haina benzii de implementare, repetata
+     imediat sub pista care o desena deja. Doua obiecte identice cromatic, unul
+     sub altul, pentru acelasi lucru. In desen randul e o SUPRAFATA A DOUA cu
+     iconita, nume, data si chevron: accentul ramane sus, in pista, unde spune
+     „aici e perioada pe axa timpului"; jos scrie ce e si unde duce.
+     Locul se SCRIE (iconita + eticheta), nu se coloreaza — aceeasi gramatica ca
+     in Calendar si in Ganttul de proiect. */
+  .mimpl { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    border: none; cursor: pointer; padding: 0 10px; border-radius: var(--radius-sm);
+    background: var(--bg-elevated); margin-bottom: 6px; }
+  /* Pregatirea ramane mai palida decat implementarea — doar ca acum diferenta e
+     de CERNEALA, nu de procent de accent: randul e acelasi obiect, cu alt ton. */
+  .mimpl.pregatire .mimpl-loc { color: var(--text-secondary); font-weight: var(--fw-medium); }
+  .mimpl :global(.mimpl-ico) { flex: none; color: var(--text-secondary); }
   /* Numele ia randul, data si chevronul stau la dreapta — ca in desen. */
   .mimpl-loc { flex: 1; min-width: 0; font-size: var(--font-small); font-weight: var(--fw-semibold);
-    color: var(--accent-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Chevronul spune ca randul DUCE undeva (in Calendar) — inainte nu se vedea
      din nimic ca perioada e o tinta. */
   .mimpl :global(.mimpl-chev) { flex: none; color: var(--text-faint); }
-  .mimpl-range { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
+  .mimpl-range { display: inline-flex; align-items: center; gap: 6px; flex: none; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); }
   /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
      44px fiecare, inaintea primului task. Duc toate in acelasi loc — Calendar. */
   .mimpl-plus { padding: 0 5px; border-radius: var(--radius-full);
