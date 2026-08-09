@@ -1456,13 +1456,23 @@
   /* Anularea la reduced-motion sta LA SFARSITUL foii, dupa `.bar` — media query-ul
      nu adauga specificitate, deci ar fi pierdut aici in fata regulii de mai jos. */
 
-  .band { position: absolute; top: 7px; bottom: 7px; border-radius: var(--radius-xs);
-    background: color-mix(in oklab, var(--accent) 10%, transparent);
-    border: 1px solid color-mix(in oklab, var(--accent) 26%, transparent); z-index: 0;
+  /* PREGATIREA E O SPALATURA NEUTRA, NU O A DOUA BANDA DE ACCENT.
+     Avea `accent 10% + chenar accent 26%`, adica exact intensitatea lui
+     `.impl-band` (`accent 10% + inel 32%`) — deci „plin = implementare, palid =
+     pregatire" nu se mai citea: doua obiecte la aceeasi tarie, unul langa altul.
+     Desenat (turul 4a, banda de 88px): golul de pregatire e o spalatura NEUTRA,
+     fara inel; accentul ramane al implementarii, singur. Asa cele doua se
+     deosebesc dintr-o privire, nu dintr-o masuratoare de procente.
+     Raza urca la `--radius-sm`, ca sa se imbine fara decalaj cu `.impl-band`,
+     care e pe aceeasi treapta. Animatiile raman: pregatirea NU creste din stanga
+     (n-are zi de start), doar se stinge in ecran. */
+  .band { position: absolute; top: 7px; bottom: 7px; border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--text-dim) 9%, transparent);
+    border: none; z-index: 0;
     animation: pregatireIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
-  .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; }
-  .band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
+  .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
   /* CAPATUL NESIGUR SE STINGE, CEL SIGUR RAMANE NET.
      Nesigur e START-ul: nu exista o zi „de cand se pregateste" (v36). Capatul din
      dreapta e prima zi de implementare — data reala, deci muchie clara. Cand nu e
@@ -1484,9 +1494,14 @@
   .t-row { position: relative; height: var(--row-h); }
   /* Perioada de implementare (Site / Sediu EGB) — banda pe toata inaltimea randului,
      exact insetul benzii de pregatire, ca cele doua sa se imbine fara decalaj.
-     FORMA spune faza: palid = pregatire, plin = implementare. Locul NU se
-     codifica cromatic (se scrie, cu iconita si eticheta) — aceeasi gramatica ca
-     in Calendar si in Ganttul de proiect.
+     ACCENTUL E AL IMPLEMENTARII, SINGUR. Golul de pregatire (`.band`, mai sus) e
+     o spalatura NEUTRA, deci intre cele doua nu se compara doua procente de
+     accent, ci doua lucruri diferite. Inauntrul `.impl-band` faza se mai spune
+     inca o data, mai fin: 10% pentru perioada inceputa, 5% + inel mai subtire
+     pentru cea inca in pregatire — dar acolo obiectul are eticheta lui, deci
+     nuanta e un adaos, nu singurul semnal. Locul NU se codifica cromatic (se
+     scrie, cu iconita si eticheta) — aceeasi gramatica ca in Calendar si in
+     Ganttul de proiect.
      Inelul interior tine despartite doua benzi lipite de categorii diferite;
      doua perioade de aceeasi categorie sunt deja UN element (vezi `contopeste`),
      deci n-au cusatura. Inceputul se citeste din raza si din marginea benzii. */
