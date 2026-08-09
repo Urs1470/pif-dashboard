@@ -1136,14 +1136,24 @@
                cardurile care chiar au ce spune. Ramane identitatea (punct + nume) si
                drumul: atingerea duce la proiect, unde sunt taskurile lui din afara
                ferestrei. Numarul NU se mai scrie — in fereastra e zero prin chiar
-               conditia care aduce randul aici, iar un „0" langa nume nu e informatie. -->
-          <button class="mgol" style="--lane:{lane.color}" title={lane.numeIntreg}
-                  onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)}>
-            <span class="lane-dot"></span>
-            <span class="mgol-n">{lane.nume}</span>
-            {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
-            <ChevronRight size={16} class="mgol-chev" />
-          </button>
+               conditia care aduce randul aici, iar un „0" langa nume nu e informatie.
+               Banda generala („Taskuri generale") n-are proiect in spate, deci n-are
+               unde duce: acolo randul ramane text, fara chevron. Chevronul e o
+               promisiune, nu un ornament. -->
+          {#if lane.tip === 'proiect'}
+            <button class="mgol" style="--lane:{lane.color}" title={lane.numeIntreg}
+                    onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)}>
+              <span class="lane-dot"></span>
+              <span class="mgol-n">{lane.nume}</span>
+              {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
+              <ChevronRight size={16} class="mgol-chev" />
+            </button>
+          {:else}
+            <div class="mgol static" style="--lane:{lane.color}">
+              <span class="lane-dot"></span>
+              <span class="mgol-n">{lane.nume}</span>
+            </div>
+          {/if}
         {:else}
         <section class="mgroup" style="--lane:{lane.color}; --rand:{li}">
           <header class="mg-head">
@@ -1853,6 +1863,8 @@
     background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
     transition: var(--transition-pressable); }
   .mgol:active { transform: scale(var(--press-scale)); }
+  .mgol.static { cursor: default; }
+  .mgol.static:active { transform: none; }
   .mgol-n { flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-semibold);
     color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mgol :global(.mgol-chev) { flex: none; color: var(--text-faint); }
