@@ -287,17 +287,11 @@
     return out.map(v => Math.max(1, v || 0))
   })
 
-  /** Cate benzi incap in randul din care face parte ziua. */
-  function plafonZi(iso) {
-    const i = indexZile.get(iso)
-    return i === undefined ? 1 : (benziPeRand[Math.floor(i / 7)] ?? 1)
-  }
-
-  /** Lucrarile care nu incap in benzile disponibile — se numara in „+N". */
-  function ascunseZi(iso) {
-    const plafon = plafonZi(iso)
-    return aleZilei(iso).filter(p => (benzi.get(p.id) ?? 0) >= plafon).length
-  }
+  /* `plafonZi` si `ascunseZi` au plecat odata cu contorul din celula (C6): erau
+     folosite DOAR de el. Plafonul in sine ramane — `benziPeRand` il aplica la
+     desenare (`MAX_BENZI`), deci o zi cu prea multe lucrari tot nu le arata pe
+     toate; ce nu mai exista e numarul care o spunea. Pe baza reala nu se atinge:
+     maximul masurat e 3 lucrari suprapuse, plafonul e 5. */
 
   /** Ce se deseneaza: UN element per lucrare per SAPTAMANA, nu per zi.
    *
@@ -1144,7 +1138,6 @@
           {#each grila as g, i (g.iso)}
             {@const items = aleZilei(g.iso)}
             {@const decizie = items.some(p => p.necesita_decizie)}
-            {@const ascunse = ascunseZi(g.iso)}
             <!-- Celulele se asaza EXPLICIT in grila. Fara asta, benzile (care au
                  poziție explicită) ar impinge celulele auto-plasate din loc.
                  `div role="gridcell"`, nu `<button>`: captura din antet e ea insasi
@@ -1186,19 +1179,13 @@
                      spune CARE din stari e, iar un cuvant nu se confunda cu nimic. -->
                 <span class="n">{parseISO(g.iso).getDate()}</span>
                 {#if g.iso === azi}<span class="azi-et">azi</span>{/if}
-                {#if items.length > 1 || ascunse}
-                  <!-- UN SINGUR INTELES PE AMBELE ECRANE: cate lucrari are ziua.
-                       Aceeasi pozitie si acelasi stil aratau „+N" (doar cele
-                       ascunse) pe desktop si `items.length` (toate) pe telefon —
-                       doua numere diferite pentru aceeasi zi, in functie de latimea
-                       ecranului. Ca una e ascunsa se vede din faptul ca numarul e
-                       mai mare decat benzile desenate.
-                       `|| ascunse` prinde cazul in care ziua are O SINGURA lucrare
-                       si TOCMAI ea e peste plafon (indicele de banda vine din
-                       impachetarea globala, deci poate fi mare si intr-o zi goala):
-                       fara el, lucrarea ar fi invizibila si fara niciun semn. -->
-                  <span class="nr-lucrari" class:ascunse title="{items.length} {items.length === 1 ? 'lucrare' : 'lucrări'} în ziua asta{ascunse ? ` · ${ascunse} nu încap în benzi` : ''}">{items.length}</span>
-                {/if}
+                <!-- CONTORUL DE LUCRARI A PLECAT (C6): singurul numar din celula e
+                     cifra zilei. Numara ce se vede oricum — la 100px randul isi
+                     desfasoara toate benzile, fiecare cu numele scris in ea, deci
+                     „2" statea langa doua bare pe care le vezi. Era pus si ca semn
+                     pentru lucrarile peste `MAX_BENZI`, care nu se deseneaza; masurat
+                     pe baza reala, maximul e 3 lucrari suprapuse intr-o zi si ZERO
+                     zile peste plafon, deci ramura aia nu s-a randat niciodata. -->
               </div>
               {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><TriangleAlert size={11} /></span>{/if}
 
@@ -1538,9 +1525,24 @@
   .wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-md); align-items: start; }
   .wrap.cu-panou { grid-template-columns: minmax(0, 1fr) 300px; }
 
-  .cal { background: var(--bg-surface); border: 0; border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: var(--space-sm); }
-  .wd { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; margin-bottom: 4px; }
-  .wd span { font-size: var(--font-label); color: var(--text-faint); text-align: center; text-transform: uppercase; letter-spacing: var(--tracking-label); }
+  /* Cardul nu mai are padding (C7): grila ATINGE marginile lui, deci linia de sub
+     antetul zilelor si separatoarele dintre coloane merg dintr-o muchie in alta.
+     Cu `--space-sm` de jur imprejur, capetele liniilor se opreau in aer si grila
+     plutea intr-o rama de fond — adica exact cele 35 de cutii pe care R1 le-a scos,
+     doar mutate cu un pas mai incolo. Raza sta pe card, deci `overflow: hidden`
+     taie colturile celulelor din primul si ultimul rand. */
+  .cal { background: var(--bg-surface); border: 0; border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 0; overflow: hidden; }
+  /* Antetul zilelor e PRIMUL RAND AL GRILEI, nu o eticheta deasupra ei: aceleasi
+     sapte coloane, aceleasi separatoare verticale `--border`, si o linie
+     `--border-strong` dedesubt — mai tare decat cele dintre zile, fiindca desparte
+     antetul de continut, nu o zi de alta. */
+  .wd { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0;
+        box-shadow: inset 0 -1px 0 var(--border-strong); }
+  .wd span { height: 32px; display: inline-flex; align-items: center; justify-content: center;
+             font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-faint);
+             text-transform: uppercase; letter-spacing: var(--tracking-label);
+             box-shadow: inset -1px 0 0 var(--border); }
+  .wd span:last-child { box-shadow: none; }
   /* `minmax(0, 1fr)`, nu `1fr`: `1fr` inseamna `minmax(auto, 1fr)`, deci o banda
      care se intinde peste coloane si are `nowrap` isi impune latimea minima si
      largeste coloanele pe care le acopera. Zilele nu mai erau egale si nu se mai
@@ -1558,7 +1560,13 @@
      `gap: 0` e obligatoriu: cu spatiu intre celule liniile ar pluti separat si n-ar
      mai forma o grila. Consecinta se vede mai jos, la benzi — capetele care
      „continua" nu mai au un gol de acoperit, deci margina negativa a plecat. */
-  .zi { position: relative; min-height: calc(32px + var(--benzi, 1) * 20px); padding: 5px 8px 0;
+  /* CELULA E O SUPRAFATA DE CITIT, NU UN RAND STRANS IN JURUL BENZILOR (C3/C4).
+     `calc(32px + benzi * 20px)` dadea 52px pe o luna cu o lucrare pe zi: luna se
+     citea ca o listă indesata, nu ca o harta pe care vezi unde esti. Acum podeaua
+     e 100px si randul CRESTE doar daca benzile chiar cer mai mult — `max()`, nu
+     invers. Cu MAX_BENZI = 5 plafonul urca la 132px; augustul real, cu 3 benzi pe
+     randul cel mai plin, sta la 124. */
+  .zi { position: relative; min-height: max(100px, calc(32px + var(--benzi, 1) * 20px)); padding: 5px 8px 0;
         border: 0; background: none; text-align: left; cursor: pointer;
         box-shadow: inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border-strong);
         display: flex; flex-direction: column; gap: 3px; overflow: hidden;
@@ -1602,17 +1610,33 @@
      atingere face altceva decat de obicei. */
   .zi.tinta { outline: 2px dashed color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: -2px; }
 
+  /* Cifra zilei sta pe `--text-secondary`, nu pe `--text-dim`: intr-o celula de
+     100px ea e reperul dupa care citesti luna, iar `--text-dim` e podeaua pentru
+     text mic — o folosea si ziua din alta luna, deci cele doua nu se deosebeau. */
   .n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 15px; height: 15px; padding: 0 3px; border-radius: var(--radius-full);
-    font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim);
-    font-variant-numeric: tabular-nums; }
+    font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-medium);
+    color: var(--text-secondary); font-variant-numeric: tabular-nums; }
   /* Pastila plina e a SELECTIEI: ea e raspunsul la „ce zi am deschis", si e
      singura stare pe care o alegi tu. Azi doar se intampla sa fie azi. */
-  .zi.sel .n { background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
+  /* DREPTUNGHI, NU BULINA. Bulina de 15px era rotunda ca bifa unui task si nu
+     incapea decat o cifra ingusta — „31" o umfla intr-un oval. 24×22 cu
+     `--radius-xs` tine orice zi la aceeasi latime si se citeste ca o CELULA
+     insemnata, nu ca un punct. Paddingul celulei scade la `3px 3px 0` doar pe ea,
+     ca dreptunghiul sa nu impinga benzile in jos cu cei 5px in plus. */
+  .zi.sel { padding: 3px 3px 0; }
+  .zi.sel .n { width: 24px; height: 22px; min-width: 0; padding: 0; border-radius: var(--radius-xs);
+               background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
   /* Cuvantul, nu inca o culoare. Sta pe cerneala adanca fiindca fondul celulei e
      deja tenta de accent — text pe tenta ia intotdeauna varianta `-deep`. */
-  .azi-et { font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--accent-deep);
-            letter-spacing: var(--tracking-label); }
+  /* Pe ziua de azi cifra poarta ea insasi accentul: tenta celulei spune „azi",
+     dar pe un rand de 100px tenta e o suprafata mare si palida, iar cifra ramanea
+     la fel ca in orice alta zi. Cuvantul de langa ea sta pe aceeasi linie de baza,
+     nu centrat — doua marimi centrate una langa alta plutesc. */
+  .zi.azi .n { color: var(--accent-deep); font-weight: var(--fw-semibold); }
+  .zi.azi .zi-h { align-items: baseline; }
+  .azi-et { font-family: var(--font-mono); font-size: var(--font-label); font-weight: var(--fw-semibold);
+            color: var(--accent-deep); letter-spacing: var(--tracking-label); }
   .flag { position: absolute; top: 4px; right: 4px; color: var(--danger); display: inline-flex; }
 
   /* O LUCRARE = O BANDA, oricat de multe zile ar tine. Se intinde peste coloane,
@@ -1748,10 +1772,7 @@
      punctat, iar numele trece pe cerneala neutra. */
   .chenar-et.sediu { color: var(--text-secondary); }
 
-  /* Cate lucrari are ziua — acelasi inteles pe ambele ecrane (vezi markup). */
-  .nr-lucrari { margin-left: auto; font-family: var(--font-mono); font-size: var(--font-small);
-    color: var(--text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .nr-lucrari.ascunse { color: var(--text-dim); font-weight: var(--fw-semibold); }
+  /* `.nr-lucrari` a plecat cu C6 — motivul e scris in markup, langa cifra zilei. */
 
   /* ===== agenda ferestrei (telefon) ===== */
   .agenda { display: none; flex-direction: column; gap: 6px; margin-top: 6px; }
