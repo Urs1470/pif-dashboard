@@ -32,6 +32,13 @@ IESIRE = os.path.join(RADACINA, 'frontend', 'assets')
 ACCENT = '#5980a6'
 CERNEALA = '#ffffff'
 
+# ECRANUL DE INCARCARE = FONDUL APLICATIEI, nu o imagine de marca.
+# Splash-ul se vede o secunda, exact inainte ca pagina sa apara — daca e alta
+# culoare decat fondul care ii urmeaza, pornirea clipeste. De aceea valorile sunt
+# `--bg` din `tokens.css`, pe teme, nu ceva ales aici.
+FOND_INCHIS  = '#121417'    # --bg, [data-theme="dark"]
+FOND_DESCHIS = '#f4f5f7'    # --bg, [data-theme="light"]
+
 # Logo-ul, exact ca in frontend/public/favicon.svg — aceleasi coordonate.
 RAMPA = (
     '<path d="M14 48 C27 48 30 40 33 30 S42 16 50 16 L50 48 Z" fill="{i}" opacity="0.3"/>'
@@ -70,6 +77,20 @@ SVG_INTREG = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
               f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{RAMPA}</svg>')
 
 
+def svg_splash(fond):
+    """Panza patrata (`capacitor-assets` o taie pentru fiecare densitate si
+    orientare), cu logo-ul mic in mijloc.
+
+    Logo-ul ocupa 22% din latura: splash-ul se decupeaza diferit pe fiecare
+    ecran, iar ce e in afara centrului se poate pierde. La 22% incape intreg
+    chiar si pe cea mai ingusta taietura de peisaj."""
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
+            f'<rect width="100" height="100" fill="{fond}"/>'
+            f'<g transform="translate(39 39) scale(0.34375)">'
+            f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{RAMPA}</g>'
+            f'</svg>')
+
+
 def randeaza(pagina, svg, cale, latura):
     pagina.set_viewport_size({'width': latura, 'height': latura})
     pagina.set_content(
@@ -94,6 +115,13 @@ def main():
         randeaza(p, SVG_INTREG, os.path.join(IESIRE, 'icon.png'), 1024)
         randeaza(p, SVG_FUNDAL, os.path.join(IESIRE, 'icon-background.png'), 1024)
         randeaza(p, SVG_PRIMPLAN, os.path.join(IESIRE, 'icon-foreground.png'), 1024)
+        # 2732 e latura pe care o cere `capacitor-assets`: din ea taie fiecare
+        # densitate SI ambele orientari, deci trebuie sa fie cea mai mare
+        # diagonala de care are nevoie.
+        randeaza(p, svg_splash(FOND_DESCHIS),
+                 os.path.join(IESIRE, 'splash.png'), 2732)
+        randeaza(p, svg_splash(FOND_INCHIS),
+                 os.path.join(IESIRE, 'splash-dark.png'), 2732)
         br.close()
     print('\nAcum: cd frontend && npx capacitor-assets generate --android')
     print('apoi:  python scripts/gen_icons.py --repara-xml   (scoate insetul de pe fundal)')
