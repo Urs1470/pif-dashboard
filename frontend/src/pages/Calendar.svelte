@@ -1082,14 +1082,13 @@
         <span class="titlu">{mod === 'luna' ? monthLabel(anchor) : `${shortDate(weekStart(anchor))} – ${shortDate(addDays(weekStart(anchor), 13))}`}</span>
         <button class="ico" onclick={() => pas(1)} aria-label="Înainte"><ChevronRight size={16} /></button>
         <button class="b-azi" onclick={laAzi}>Azi</button>
-      </div>
-      <div class="mods">
-        <!-- „2 săpt." a plecat: orizontul scurt e PLANIFICATORUL, care il
-             deseneaza pe zile si cu taskuri peste. Doua ecrane cu acelasi
-             orizont, unul cu jumatate din informatie, e o alegere pe care nu
-             vrei s-o faci de fiecare data. Calendarul ramane luna. -->
         <!-- Exportul .ics a venit aici din Admin (sters): calendarul de abonat din
-             telefon apartine paginii de calendar, nu unui sertar de intretinere. -->
+             telefon apartine paginii de calendar, nu unui sertar de intretinere.
+             STA IN RANDUL DE NAVIGARE, imediat dupa „Azi", cum e desenat
+             (`Calendar.dc.html`, bara din 6a/7a/8a). Ramasese singur in `.mods` —
+             containerul comutatorului „Luna / 2 sapt.", care a fost sters: pe
+             desktop iesea un grup separat impins la capatul barei, iar pe telefon
+             `.mods { width: 100% }` ii dadea un RAND intreg doar lui, sub bara. -->
         <button class="ics" onclick={() => window.open('/api/export/ics', '_blank')}
                 title="Descarcă .ics — perioadele și scadențele de task. Abonează-te din calendarul telefonului.">
           <Download size={13} /> .ics
@@ -1523,18 +1522,17 @@
      de buton, iar a doua e cea din sistem (suprafata se desprinde prin umbra).
      38px, cat spune desenul (`Calendar.dc.html`), si aceeasi valoare pe `.sursa`
      de sub ele: doua randuri de controale nu se pot deosebi prin patru pixeli
-     pe care nu i-a ales nimeni. */
-  .ico, .b-azi, .mods button { border: none; background: var(--bg-surface); color: var(--text-secondary);
+     pe care nu i-a ales nimeni.
+     Treapta de text e `--font-body` (15/600), nu `--font-control` (13): bara
+     Calendarului e ETICHETA DE PAGINA, nu un control asezat in rand. */
+  .ico, .b-azi, .ics { border: none; background: var(--bg-surface); color: var(--text-secondary);
     box-shadow: var(--shadow-sm); transition: var(--transition-pressable);
     border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   .ico { width: 38px; height: 38px; }
-  .b-azi, .mods button { height: 38px; padding: 0 12px; font-size: var(--font-control); font-weight: var(--fw-semibold); }
-  .ico:hover, .b-azi:hover, .mods button:hover { background: var(--bg-hover); color: var(--text); }
-  .ico:active, .b-azi:active, .mods button:active { transform: scale(var(--press-scale)); }
-  .mods { display: flex; gap: 4px; }
-  /* Cerneala pe tenta, adanca. */
-  .mods button.on { background: var(--accent-subtle); color: var(--accent-on-subtle); box-shadow: none; }
-  .mods button.ics { gap: 5px; margin-left: 6px; }
+  .b-azi, .ics { height: 38px; padding: 0 12px; font-size: var(--font-body); font-weight: var(--fw-semibold); }
+  .ico:hover, .b-azi:hover, .ics:hover { background: var(--bg-hover); color: var(--text); }
+  .ico:active, .b-azi:active, .ics:active { transform: scale(var(--press-scale)); }
+  .ics { gap: 5px; }
 
   /* SURSELE — controale cu numar in capul paginii, nu contoare.
      Fiecare DUCE undeva si cere ceva de facut; aceeasi haina ca perechea de pe
@@ -1916,15 +1914,12 @@
        de unde s-o apuci ca s-o muti. */
     .banda:not(.lat) .maner { display: none; }
 
-    /* Navigarea si comutatoarele de mod: erau de 28px inaltime. */
+    /* Navigarea si butoanele barei: erau de 28px inaltime. */
     .ico { width: var(--tap-min); height: var(--tap-min); }
-    .b-azi, .mods button { height: var(--tap-min); padding: 0 14px; font-size: var(--font-small); }
+    .b-azi, .ics { height: var(--tap-min); padding: 0 14px; font-size: var(--font-small); }
     .nav { gap: var(--space-xs); flex: 1; }
     .titlu { flex: 1; min-width: 0; font-size: var(--font-small); }
     .bar { gap: var(--space-xs); }
-    .mods { width: 100%; }
-    .mods button { flex: 1; }
-    .mods button.ics { flex: 0 0 auto; margin-left: 0; }
 
     /* Actiunile din panoul zilei — „Da", „Mută pe azi", „Mută", „Scoate". Erau
        pastile de 22px, adica exact tipul de buton pe care il ratezi si apesi
