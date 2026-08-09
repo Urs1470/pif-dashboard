@@ -575,7 +575,10 @@
           ...d, lucrari,
           titlu: d.sediu ? (d.client ? `Sediu · ${scurt(d.client)}` : 'Sediu') : (scurt(d.client) || 'Pe teren'),
           cand: d.start === d.end ? shortDate(d.start) : `${shortDate(d.start)} – ${shortDate(d.end)}`,
-          culoare: culoareLucrare(lucrari[0] || {}),
+          // `culoare` a plecat odata cu fillul tentat al randului (M5): randurile nu
+          // mai sunt carduri colorate, iar `culoareLucrare` intoarce oricum accentul
+          // pentru orice lucrare de cand identitatea nu se mai codeaza cromatic.
+          necesitaDecizie: lucrari.some(p => p.necesita_decizie),
         }
       })
   })
@@ -1355,34 +1358,10 @@
              Culoarea de identitate a plecat, deci raman doua, iar amandoua se
              spun si in CUVINTE in panoul zilei, langa lucrare. O legenda care
              traduce ce scrie la un centimetru mai jos nu invata pe nimeni nimic. -->
-        <!-- IESIRILE FERESTREI, SCRISE. Doar pe telefon: acolo grila e o harta de
-             dungi fara nume (vezi `agendaLunii`). Grila ramane harta — unde esti,
-             cat de plin e — iar dedesubt scrie ce sunt dungile, in ordinea zilelor. -->
-        {#if agendaLunii.length}
-          <div class="agenda">
-            <div class="ag-cap">
-              <span>Ieșirile lunii</span>
-              <span class="ag-linie"></span>
-              <span class="ag-n">{agendaLunii.length}</span>
-            </div>
-            {#each agendaLunii as d (d.cheie + '|' + d.start)}
-              <button class="ag-rand" class:aprins={esteAprinsa(d)}
-                      style="--c: {d.culoare}"
-                      onclick={() => atingeZi(d.start)}>
-                <span class="ag-sus">
-                  <span class="ag-ico">{#if d.sediu}<Building2 size={11} />{:else}<MapPin size={11} />{/if}</span>
-                  <span class="ag-titlu">{d.titlu}</span>
-                  <span class="ag-cand">{d.cand}</span>
-                </span>
-                <span class="ag-lucrari">
-                  {#each d.lucrari as p (p.id)}
-                    <span class="ag-l" class:pregatire={p.faza === 'pregatire'}>{etichetaLucrare(p)}</span>
-                  {/each}
-                </span>
-              </button>
-            {/each}
-          </div>
-        {/if}
+        <!-- Agenda iesirilor a IESIT din cardul grilei (M5) — sta mai jos, pe
+             fundalul paginii. Aici era inauntru, iar de la C7 cardul are
+             `padding: 0` si `overflow: hidden`: randurile ei ar fi atins muchiile
+             si le-ar fi taiat colturile. -->
       </div>
 
       {#if panouDeschis}
@@ -1440,13 +1419,19 @@
                   <span class="it-data">{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ` – ${shortDate(p.data_sfarsit)}` : ''}</span>
                 </div>
                 {#if p.necesita_decizie}
-                  <div class="dec">
+                  <!-- E O INTREBARE, NU O NOTA (M10). Statea ca o linie rosie cu
+                       doua pastile de 22px langa ea — se citea ca un avertisment
+                       pe care il inchizi, nu ca ceva ce trebuie sa raspunzi.
+                       Acum e un bloc cu tenta si inel, cu intrebarea la 15/600 si
+                       doua raspunsuri de 48px: „Da, s-a facut" plin, fiindca e
+                       raspunsul asteptat, si „Muta pe azi" pe suprafata. -->
+                  <div class="dec intrebare">
                     <span class="dec-q">A trecut. S-a făcut?</span>
                     <button class="b ok" disabled={busy === p.id} onclick={() => confirma(p, 1)}
                             title="Bifează perioada ca făcută. Proiectul NU se închide — asta se face din pagina proiectului.">
-                      <Check size={12} /> Da
+                      <Check size={14} /> Da, s-a făcut
                     </button>
-                    <button class="b" disabled={busy === p.id} onclick={() => muta(p, azi)}><Undo2 size={12} /> Mută pe azi</button>
+                    <button class="b" disabled={busy === p.id} onclick={() => muta(p, azi)}><Undo2 size={14} /> Mută pe azi</button>
                   </div>
                 {/if}
                 <div class="dec">
@@ -1541,6 +1526,39 @@
           </div>
         {/if}
       </aside>
+      {/if}
+
+      <!-- IESIRILE FERESTREI, SCRISE. Doar pe telefon: acolo grila e o harta de
+           dungi cu nume scurte (vezi `agendaLunii`), iar aici scrie cine, cand si
+           ce lucrari — in ordinea zilelor.
+           Sta ULTIMA in `.wrap`, dupa panou: pe o coloana ordinea trebuie sa fie
+           harta -> ziua pe care tocmai ai atins-o -> restul lunii. Intre grila si
+           panou ar fi impins raspunsul in afara ecranului, exact ce repara ordinea
+           de la 900px. -->
+      {#if agendaLunii.length}
+        <div class="agenda">
+          <div class="ag-cap">
+            <span>Ieșirile lunii</span>
+            <span class="ag-linie"></span>
+            <span class="ag-n">{agendaLunii.length}</span>
+          </div>
+          {#each agendaLunii as d (d.cheie + '|' + d.start)}
+            <button class="ag-rand" class:aprins={esteAprinsa(d)}
+                    class:rau={d.necesitaDecizie}
+                    onclick={() => atingeZi(d.start)}>
+              <span class="ag-sus">
+                <span class="ag-ico">{#if d.sediu}<Building2 size={11} />{:else}<MapPin size={11} />{/if}</span>
+                <span class="ag-titlu">{d.titlu}</span>
+                <span class="ag-cand">{d.cand}</span>
+              </span>
+              <span class="ag-lucrari">
+                {#each d.lucrari as p (p.id)}
+                  <span class="ag-l" class:pregatire={p.faza === 'pregatire'}>{etichetaLucrare(p)}</span>
+                {/each}
+              </span>
+            </button>
+          {/each}
+        </div>
       {/if}
     </div>
   {/if}
@@ -1918,28 +1936,44 @@
   /* `.nr-lucrari` a plecat cu C6 — motivul e scris in markup, langa cifra zilei. */
 
   /* ===== agenda ferestrei (telefon) ===== */
-  .agenda { display: none; flex-direction: column; gap: 6px; margin-top: 6px; }
+  /* Agenda sta pe FUNDALUL paginii, nu in cardul grilei (M5) — de aceea n-are
+     nici fond, nici umbra: e o lista, nu o a doua suprafata sub prima.
+     `gap: 0`: randurile se despart prin linia lor, nu prin spatiu; cu amandoua,
+     linia ar fi plutit la mijlocul unui gol. */
+  .agenda { display: none; flex-direction: column; gap: 0; margin-top: var(--space-md); }
   .ag-cap { display: flex; align-items: center; gap: var(--space-sm);
     padding: 12px 2px 6px; border-top: 1px solid var(--border);
     font-family: var(--font-mono); font-size: var(--font-label);
     letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-faint); }
   .ag-linie { flex: 1; height: 1px; background: var(--border-subtle); }
   .ag-n { font-variant-numeric: tabular-nums; }
-  /* Identitatea trece de pe muchie pe FUNDAL: randul intreg apartine unei singure
-     lucrari, iar iconita lui de locatie e gri (`--text-dim`), deci nu era un al
-     doilea semn colorat pe care sa ne bazam. Fill tentat, ca la vecinii din
-     Planificator. */
+  /* RANDURILE NU SUNT CARDURI (M5). Erau fill tentat plus chenar de 1px — pe
+     fundalul paginii, una sub alta, faceau o coloana de cutii in care ochiul
+     numara cutii, nu iesiri. Acum sunt transparente si se despart printr-o linie;
+     singura care poarta o haina e cea care cere ceva: „de clarificat".
+     Fara `--c`: identitatea nu se mai codeaza cromatic, deci fillul era aceeasi
+     tenta de accent pe toate randurile. */
   .ag-rand { display: flex; flex-direction: column; gap: 4px; width: 100%;
-    padding: 8px 9px 8px 11px; text-align: left; border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--c) 8%, var(--bg-panel)); border: 1px solid var(--border);
+    padding: 8px 10px; text-align: left; border-radius: var(--radius-sm);
+    background: none; border: none;
     cursor: pointer;
     transition: var(--transition-colors); }
+  /* Linia dintre grupuri, cu marja laterala: separa fara sa inchida randul intr-o
+     cutie. Nu si dupa ultimul — acolo n-are ce despartii. */
+  .ag-rand + .ag-rand { box-shadow: inset 0 1px 0 var(--border); }
   /* Atingi o zi -> se aprinde iesirea ei, nu se schimba un panou. */
-  .ag-rand.aprins { background: var(--accent-subtle); border-color: var(--accent-ring); }
+  .ag-rand.aprins { background: var(--accent-subtle); }
+  /* Singura haina din lista: iesirea care asteapta un raspuns. */
+  .ag-rand.rau { background: var(--danger-subtle);
+                 box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 30%, transparent); }
+  .ag-rand.rau .ag-titlu, .ag-rand.rau .ag-ico { color: var(--danger-deep); }
   .ag-sus { display: flex; align-items: center; gap: 6px; min-height: 20px; }
   .ag-ico { display: inline-flex; color: var(--text-dim); flex: none; }
-  .ag-titlu { flex: 1; min-width: 0; font-size: var(--font-small); font-weight: var(--fw-semibold);
+  /* Clientul la 15: e numele iesirii, nu o metadata. 600 doar cand e o urgenta —
+     altfel 500, ca lista sa nu strige toata deodata. */
+  .ag-titlu { flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-medium);
     color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ag-rand.rau .ag-titlu { font-weight: var(--fw-semibold); }
   .ag-cand { flex: none; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
   .ag-lucrari { display: flex; flex-wrap: wrap; gap: 4px 8px; }
   .ag-l { font-size: var(--font-small); color: var(--text-secondary); }
@@ -1999,7 +2033,20 @@
   .it-m .tk.warn { color: var(--danger); }
 
   .dec { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }
-  .dec-q { font-size: var(--font-small); color: var(--danger); width: 100%; }
+  /* Blocul de intrebare (M10): tenta si inel de restant, ca sa se citeasca drept
+     ceva ce asteapta un raspuns — nu ca o eticheta de stare. */
+  .dec.intrebare { gap: 8px; margin-top: 10px; padding: 12px; border-radius: var(--radius-sm);
+                   background: var(--danger-subtle);
+                   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 30%, transparent); }
+  .dec-q { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--danger-deep); width: 100%; }
+  /* Raspunsurile sunt de 48px si impart randul: la 22px erau exact tipul de tinta
+     pe care o ratezi, iar asta e o intrebare la care raspunzi o singura data. */
+  .dec.intrebare .b { flex: 1; justify-content: center; min-height: var(--tap-sheet);
+                      font-size: var(--font-small); font-weight: var(--fw-semibold); }
+  /* „Da" e raspunsul asteptat, deci e plin. Verdele ar fi spus „succes"; aici
+     spune „asta e actiunea", si actiunea poarta accentul. */
+  .dec.intrebare .b.ok { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+  .dec.intrebare .b.ok:hover:not(:disabled) { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--accent-text); }
   .mut { display: flex; align-items: flex-end; gap: 6px; width: 100%; margin-top: 4px; }
   .b { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); padding: 3px 8px; border-radius: var(--radius-sm);
        border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; }
