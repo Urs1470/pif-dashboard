@@ -170,7 +170,7 @@
          chiar cauta (peste note, taskuri, clienti) traieste in paleta din dock. -->
     <div class="sort-box" bind:this={sortEl}>
       <button class="sort-trigger" class:on={sortOpen} onclick={() => sortOpen = !sortOpen} title="Sortare: {sortLabel} {sort.dir === 1 ? '\u2191' : '\u2193'}" aria-haspopup="listbox" aria-expanded={sortOpen}>
-        <ArrowUpDown size={ecran.telefon ? 17 : 13} />
+        <ArrowUpDown size={ecran.telefon ? 18 : 15} />
         {#if !ecran.telefon}
           <span>{sortLabel}</span>
           <span class="sort-dir-ind">{sort.dir === 1 ? '\u2191' : '\u2193'}</span>
@@ -192,7 +192,7 @@
     {#if archivedItems.length > 0}
       <button class="a-ico" class:on={showArchive} onclick={() => showArchive = !showArchive}
               title="Arhivă ({archivedItems.length} finalizate)" aria-pressed={showArchive}>
-        <Archive size={ecran.telefon ? 17 : 14} />
+        <Archive size={ecran.telefon ? 18 : 14} />
         {#if !ecran.telefon}<span>Arhivă</span>{/if}
         <span class="a-n">{archivedItems.length}</span>
       </button>
@@ -241,7 +241,7 @@
               <span class="status-pill" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</span>
             {:else}
               <button class="status-pill act" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Schimbă statusul">
-                {PROJECT_STATUS_LABELS[p.status] || p.status || '—'}<ChevronDown size={11} strokeWidth={2.2} />
+                {PROJECT_STATUS_LABELS[p.status] || p.status || '—'}<ChevronDown size={12} strokeWidth={2.2} />
               </button>
             {/if}
           </div>
@@ -259,7 +259,10 @@
            plus, la indemana degetului mare. Una pe ecran, nu amandoua. -->
       {#if !ecran.telefon}
         <button class="pcard new-card cell-in" style="--celula: {activeItems.length}" onclick={() => showNewModal = true}>
-          <span class="new-plus">+</span>
+          <!-- ICONITA, NU CARACTERUL „+”. Un plus tipografic la 21px are alta
+               greutate si alta forma decat plusul Lucide de pe butonul mare de pe
+               telefon si de pe restul aplicatiei — acelasi gest, doua desene. -->
+          <Plus size={24} strokeWidth={1.5} />
           <span class="new-label">Proiect nou</span>
         </button>
       {/if}
@@ -277,12 +280,13 @@
               <span class="dim arch-client">{p.client || '—'}</span>
               <!-- Acelasi tip, aceeasi haina ca pe card: linie subtire + cuvant.
                    Aici statea ca pastila colorata — a doua definitie a aceluiasi
-                   fapt, si tocmai cea care nu se potrivea cu prima. -->
-              {#if p.tip}<span class="ptip"><span class="tip-ico">{#if p.tip === 'PIF'}<Zap size={12} strokeWidth={1.7} />{:else}<Wrench size={12} strokeWidth={1.7} />{/if}</span>{p.tip}</span>{/if}
-              <span class="arch-tail">
-                <Badge label="Finalizat" color="var(--success)" small />
-                <span class="dim arch-deadline">{p.urmatoarea ? formatDate(p.urmatoarea) : '—'}</span>
-              </span>
+                   fapt, si tocmai cea care nu se potrivea cu prima.
+                   COLOANA SE RANDEAZA SI GOALA, cand proiectul n-are tip: o coloana
+                   care dispare de pe un rand muta data si badge-ul fata de randurile
+                   de deasupra, adica exact alinierea pentru care exista latimi fixe. -->
+              <span class="ptip">{#if p.tip}<span class="tip-ico">{#if p.tip === 'PIF'}<Zap size={12} strokeWidth={1.7} />{:else}<Wrench size={12} strokeWidth={1.7} />{/if}</span>{p.tip}{/if}</span>
+              <span class="dim arch-urm">{p.urmatoarea ? formatDate(p.urmatoarea) : '—'}</span>
+              <span class="arch-badge"><Badge label="Finalizat" color="var(--success)" small /></span>
             </button>
           {/each}
         </div>
@@ -317,10 +321,14 @@
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
 
-  /* „Arhivă": actiune-fantoma, aceeasi haina cu sortarea de langa ea si cu
-     „Arhivă" din /tasks. Nu e filtru, deci nu poarta chip. */
+  /* „Arhivă": actiune-fantoma. Nu e filtru, deci nu poarta chip.
+     Inaltimea urca la 36, cat sortarea de langa ea — doua controale pe acelasi
+     rand nu se pot deosebi prin sase pixeli pe care nu i-a ales nimeni. Haina
+     insa NU se schimba pe desktop: e aceeasi cu „Arhivă" din /tasks, si daca se
+     muta pe suprafata, se muta acolo, in amandoua locurile odata. Pe telefon
+     primeste suprafata (vezi blocul de 768). */
   .a-ico { display: inline-flex; align-items: center; gap: 6px;
-    min-height: 30px; padding: 0 10px; border-radius: var(--radius-sm);
+    min-height: 36px; padding: 0 10px; border-radius: var(--radius-sm);
     background: transparent; border: 1px solid transparent;
     font-size: var(--font-small); font-weight: var(--fw-medium);
     color: var(--text-faint); cursor: pointer; transition: var(--transition-colors); }
@@ -329,12 +337,18 @@
   .a-n { font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .a-ico.on .a-n { color: inherit; }
 
-  /* Sortare — control ghost discret + meniu custom; click pe optiunea
-     activa inverseaza directia (sageata arata directia curenta). */
+  /* Sortare — control + meniu custom; click pe optiunea activa inverseaza
+     directia (sageata arata directia curenta).
+     SUPRAFATA SE DESPRINDE PRIN UMBRA, NU PRIN CHENAR. Sortarea ramasese in
+     haina veche (30px, contur, rază plină) dupa ce Calendarul (M3) si
+     Departamentul (C2) au primit-o pe cea din sistem: 36px, fond de suprafata,
+     `--shadow-sm`, raza de control (10). */
   .sort-box { position: relative; }
-  .sort-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim); background: transparent; border: 1px solid transparent; border-radius: var(--radius-full); cursor: pointer; transition: var(--transition-colors); }
+  .sort-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; font-size: var(--font-control); font-weight: var(--fw-semibold); color: var(--text-secondary); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-colors); }
   .sort-trigger:hover { color: var(--text); background: var(--bg-hover); }
-  .sort-trigger.on { color: var(--accent-on-subtle); background: var(--accent-subtle); border-color: var(--accent); }
+  /* Meniul deschis: tenta poarta cerneala ADANCA (`--accent-on-subtle` e literal
+     `--accent-deep`), iar umbra pleaca — o suprafata tentata nu mai e ridicata. */
+  .sort-trigger.on { color: var(--accent-on-subtle); background: var(--accent-subtle); box-shadow: none; }
   .sort-dir-ind { font-size: var(--font-small); opacity: .8; }
   .sort-menu { position: absolute; top: calc(100% + 5px); right: 0; z-index: var(--z-dropdown, 50); min-width: 150px; background: var(--bg-overlay); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 4px; }
   .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
@@ -348,7 +362,7 @@
      terminat de urcat. Hoverul e raspunsul la o intentie care inca se formeaza —
      trebuie sa ajunga inaintea deciziei, nu dupa. Ridicarea ramane 4px; doar
      viteza se aliniaza. */
-  .pcard { position: relative; display: flex; flex-direction: column; min-height: 132px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease); }
+  .pcard { position: relative; display: flex; flex-direction: column; min-height: 142px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch, cardul atins ramanea ridicat cu 4px si cu
      umbra pana atingeai altceva — parea selectat, desi nu era. */
   @media (hover: hover) {
@@ -356,15 +370,19 @@
   }
   .pcard:active { border-color: var(--border-strong); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  /* dim, nu faint: „Proiect nou" e o actiune de citit, nu o eticheta —
-     masurat 3.18:1 la 12.8px, sub AA. Cardul ramane discret prin rama
-     punctata si fundalul gol, nu prin text ilizibil. */
-  .pcard.new-card { border-style: dashed; align-items: center; justify-content: center; gap: 6px; color: var(--text-dim); background: transparent; }
+  /* Conturul e SCRIS, nu mostenit: `.pcard` n-are bordura (suprafata se desprinde
+     prin umbra), deci `border-style: dashed` singur cadea pe implicite — 3px in
+     currentColor. Desenul cere 1.5px `--border-strong`. Umbra pleaca: cardul asta
+     nu e o suprafata, e un loc gol conturat.
+     Cerneala e `--text-secondary`, nu `--text-dim`: „Proiect nou" e o actiune de
+     citit, la 15px, si e singurul text de pe card. */
+  .pcard.new-card { border: 1.5px dashed var(--border-strong); box-shadow: none; align-items: center; justify-content: center; gap: 6px; color: var(--text-secondary); background: transparent; }
   .pcard.new-card:hover { color: var(--accent); border-color: var(--accent); box-shadow: none; }
-  .new-plus { font-size: var(--font-h2); line-height: 1; }
-  .new-label { font-size: var(--font-small); font-weight: var(--fw-semibold); }
-  .card-top { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 10px; }
-  .card-top { display: flex; align-items: center; }
+  .new-label { font-size: var(--font-body); font-weight: var(--fw-semibold); }
+  /* Regula era scrisa de doua ori la rand, a doua fara `gap` si fara marja — deci
+     `gap` ramanea 4 (mostenit din prima) si `margin-bottom` 10. Una singura, cu
+     valorile din desen: 7 intre iconita si cuvant, 12 pana la numele proiectului. */
+  .card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
   .card-top .status-pill { margin-left: auto; }
   /* `.card-check` a plecat: era casuta de selectie a modului „Selectează", scos
      din Proiecte la feedbackul lui Ion (N7). Clasa nu mai apare in markup, deci
@@ -390,32 +408,52 @@
   .dim { color: var(--text-secondary); }
   /* Tipul e o LINIE, nu un fill: aceeasi definitie pe card si in arhiva. */
   .tip-ico { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
-  .ptip { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
-  .tip-label { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); margin-left: 7px; }
+  .ptip { width: 74px; flex: none; display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  /* Fara `margin-left`: distanta pana la iconita o da `gap`-ul lui `.card-top`.
+     Erau amandoua — 4 din gap plus 7 din marja, adica 11 in loc de 7. */
+  .tip-label { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
 
   .archive { margin-top: var(--space-lg); }
+  /* DM Mono e doar pentru cifre si coduri. „Arhivă · finalizate" e text — deci
+     fontul paginii; cifra de langa el ramane mono. */
   .arch-cap { display: flex; align-items: center; gap: var(--space-xs);
     padding: 0 2px var(--space-sm); color: var(--text-faint);
-    font-family: var(--font-mono); font-size: var(--font-label);
+    font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
     letter-spacing: var(--tracking-label); }
-  .grup-n { display: inline-flex; align-items: center; justify-content: center;
-    min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
-    background: var(--success-subtle); color: var(--success);
-    font-family: var(--font-mono); font-size: var(--font-small);
-    line-height: 1; font-variant-numeric: tabular-nums; }
+  /* Cifra sta pe FUNDAL, nu pe tenta de „facut". Tenta ar fi cerut cerneala
+     adanca (`--success-deep`, nu `--success` plin, cum era) — dar aici nu spune
+     nimic in plus: lista de dedesubt e numai finalizate, verdele ar repeta-o. */
+  .grup-n { font-family: var(--font-mono); font-size: var(--font-label);
+    color: var(--text-secondary); font-variant-numeric: tabular-nums; }
   /* NICIO OPACITATE PE UN RAND DE TEXT (regula sistemului). Ca e arhivat o spune
      ANTETUL sectiunii, sub care randul chiar sta — nu o stingere care se inmulteste
      peste tokenuri deja la limita si scoate randul sub AA. */
   .archived .arch-name { color: var(--text-secondary); }
   .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
-  .arch-row { display: flex; align-items: center; gap: var(--space-sm); width: 100%; padding: 10px 16px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; background: transparent; border: none; border-bottom: 1px solid var(--border); transition: background var(--dur-fast) var(--ease); }
-  .arch-row:last-child { border-bottom: none; }
+  /* COLOANE FIXE, NU FLEX CU GAP. Cu `gap` + `margin-left: auto` pe coada,
+     clientul incepea imediat dupa nume — adica pe fiecare rand in alt loc — si
+     lista se citea ca trei propozitii, nu ca un tabel. Latimile sunt cele din
+     desen; intr-o lista de trei randuri clientii stau unul sub altul.
+     Randul e 44 (randul de lista pe desktop), nu 34, iar numele urca la treapta
+     lui: la 13 era aceeasi marime ca metadatele de langa el. */
+  .arch-row { position: relative; display: flex; align-items: center; gap: var(--space-md);
+    width: 100%; min-height: 44px; padding: 0 18px; font-size: var(--font-small);
+    color: var(--text); text-align: left; cursor: pointer; background: transparent;
+    border: none; transition: background var(--dur-fast) var(--ease); }
+  /* Separatorul e RETRAS 18px de fiecare parte, exact cat paddingul randului —
+     nu merge dintr-o muchie a suprafetei in cealalta. Din `::before` pe randurile
+     2..n (aceeasi reteta ca `.arow` din TodayBoard), nu din `border-bottom` pe
+     fiecare rand plus o exceptie pe ultimul. */
+  .arch-row + .arch-row::before { content: ''; position: absolute; top: 0;
+    left: 18px; right: 18px; height: 1px; background: var(--border); }
   .arch-row:hover { background: var(--bg-hover); opacity: 1; }
-  .arch-name { font-weight: var(--fw-medium); }
-  .arch-client { font-size: var(--font-small); }
-  .arch-tail { margin-left: auto; display: inline-flex; align-items: center; gap: var(--space-sm); }
-  .arch-deadline { font-size: var(--font-small); font-family: var(--font-mono); }
+  .arch-name { flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-medium);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .arch-client { width: 120px; flex: none; font-size: var(--font-small);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .arch-urm { width: 52px; flex: none; text-align: right; font-size: var(--font-small); font-family: var(--font-mono); }
+  .arch-badge { width: 82px; flex: none; display: inline-flex; justify-content: center; }
 
   /* Butonul mare cu plus (doar telefon). Aceleasi valori ca in `Tasks.svelte`:
      e acelasi obiect, deci nu-si alege singur nici marimea, nici pozitia. */
@@ -431,12 +469,19 @@
      iar asta comuta statusul. Chevronul o spune fara `title`. Culoarea vine din
      `--st` (STATUS_COLORS), deci fondul se deduce din ea — o singura regula
      pentru amandoua statusurile, nu doua tokenuri scrise de mana. */
+  /* CHIP CU COLTURI DE 8, NU CERC. Scara de raze e „8 chip · 10 control · 14
+     suprafata · 20 foaia · cerc doar bifa"; `--radius-full` facea din status
+     singurul obiect rotund de pe ecran care nu e o bifa.
+     Si cerneala: era `--st` PLIN peste propria tenta. Text pe tenta ia
+     intotdeauna adancul — cum `--st` vine din `STATUS_COLORS` si nu are treapta
+     `-deep`, adancul se DERIVA, aceeasi formula ca in `Badge.svelte`. */
   .status-pill { display: inline-flex; align-items: center; gap: 4px;
     margin-left: auto; font-size: var(--font-small); font-weight: var(--fw-semibold);
-    padding: 2px 10px; min-height: 22px; border-radius: var(--radius-full);
-    color: var(--st); background: color-mix(in oklab, var(--st) 13%, transparent);
+    padding: 0 10px; min-height: 24px; border-radius: var(--radius-xs);
+    color: color-mix(in oklab, var(--st) 72%, var(--text));
+    background: color-mix(in oklab, var(--st) 13%, transparent);
     border: 1px solid transparent; white-space: nowrap; }
-  .status-pill.act { padding-right: 8px; cursor: pointer;
+  .status-pill.act { padding: 0 8px 0 11px; cursor: pointer;
     transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
   .status-pill.act :global(svg) { opacity: .6; }
   @media (hover: hover) {
@@ -461,11 +506,18 @@
     /* Caseta are 44px, dar inputul dinauntru avea 25 — iar el e singurul care
        primeste focus (caseta e un <div>, nu un <label>), deci tinta reala era de
        25px. `align-self: stretch` il face sa umple caseta. */
-    /* Iconite patrate de 44px: eticheta e in `title`, forma o spune. */
+    /* Iconite patrate de 48px: eticheta e in `title`, forma o spune. NU 44:
+       `--tap-min` e minimul pentru un control asezat INTR-UN RAND CU ALTCEVA;
+       aici cele doua stau singure pe un rand sub titlu, deci sunt tinte
+       principale, nu accesorii. Amandoua poarta haina de suprafata (fond +
+       umbra, fara chenar) — pe telefon se vede mai tare decat pe desktop,
+       fiindca butoanele sunt izolate. */
     .sort-trigger, .a-ico {
-      width: var(--tap-min); height: var(--tap-min); min-height: var(--tap-min);
+      width: 48px; height: 48px; min-height: 48px;
       padding: 0; justify-content: center; flex-shrink: 0;
-      border-radius: var(--radius-md); }
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none;
+      color: var(--text-secondary); }
     /* Contorul arhivei ar dubla latimea iconitei; numarul se citeste oricum din
        lista cand o deschizi. */
     .a-n { display: none; }
@@ -478,5 +530,12 @@
 
   @media (max-width: 560px) {
     .cards-grid { grid-template-columns: 1fr; }
+    /* PE O COLOANA CARDUL SE STRANGE PE CONTINUT. `min-height: 142` si
+       `margin-top: auto` au rost cat timp cardurile stau umar la umar si trebuie
+       sa se termine la aceeasi linie; pe o coloana umflau fiecare card pana la
+       142 si lasau un gol intre client si picior. Piciorul primeste distanta lui
+       (14) ca MARJA, si atunci `padding-top` ar dubla-o. */
+    .pcard { min-height: 0; padding: 16px 18px; }
+    .card-foot { margin-top: 14px; padding-top: 0; }
   }
 </style>
