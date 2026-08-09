@@ -703,7 +703,14 @@
   .rte-editor :global(h2) { color: var(--text); font-size: var(--font-h3); margin: 14px 0 8px; font-weight: var(--fw-semibold); }
   .rte-editor :global(h3) { color: var(--text-secondary); font-size: var(--font-h3); margin: 12px 0 6px; font-weight: var(--fw-semibold); }
   .rte-editor :global(p) { margin: 6px 0; }
+  /* MARCATORII TREBUIE REAFIRMATI: `reset.css` sterge `list-style` de pe TOATE
+     ul/ol din aplicatie. `insertUnorderedList` chiar insera lista — dar fara
+     bulina/cifra si fara text pe rand, o `<li>` goala e invizibila, deci butonul
+     parea ca nu face nimic („nu se pune, ramane doar gol"). */
   .rte-editor :global(ul), .rte-editor :global(ol) { padding-left: 26px; margin: 6px 0; }
+  .rte-editor :global(ul) { list-style: disc outside; }
+  .rte-editor :global(ul ul) { list-style: circle outside; }
+  .rte-editor :global(ol) { list-style: decimal outside; }
   .rte-editor :global(li) { margin: 3px 0; }
   .rte-editor :global(a) { color: var(--accent); text-decoration: underline; }
   .rte-editor :global(hr) { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
@@ -781,5 +788,9 @@
     .math-bar { top: 8px; width: calc(100% - 12px); }
     /* Padding-ul de jos tine ultimul rand deasupra barei, care acum e acolo. */
     .rte-editor { padding: 16px 16px 96px; min-height: 100%; }
+    /* Cu tastatura ridicata, peste bara de unelte mai sta si bara de salvare a
+       shell-ului (`EditorLung`, `.ed-foot.ridicat`) — ultimul rand scris trebuie
+       sa poata urca deasupra AMBELOR, altfel scrii sub bara pe care o vezi. */
+    .rte-toolbar.cu-tastatura ~ .rte-editor { padding-bottom: 152px; }
   }
 </style>

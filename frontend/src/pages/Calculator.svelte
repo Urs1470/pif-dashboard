@@ -1,4 +1,4 @@
-﻿<script>
+<script>
   import { tick } from 'svelte'
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide, fade } from 'svelte/transition'
@@ -37,10 +37,10 @@
 
   // Normalizare insensibila la diacritice (1:1 pe caracter => pastreaza lungimea/indicii,
   // ca sa nu strice evidentierea din highlightParts). Foloseste-o pe AMBELE parti ale cautarii.
-  const _DIAC = { 'Äƒ':'a','Ã¢':'a','Ã®':'i','È™':'s','È›':'t','Ä‚':'a','Ã‚':'a','ÃŽ':'i','È˜':'s','Èš':'t','ÅŸ':'s','Å£':'t','Åž':'s','Å¢':'t' }
-  const fold = (s) => (s || '').replace(/[ÄƒÃ¢Ã®È™È›Ä‚Ã‚ÃŽÈ˜ÈšÅŸÅ£ÅžÅ¢]/g, (c) => _DIAC[c] || c).toLowerCase()
+  const _DIAC = { 'ă':'a','â':'a','î':'i','ș':'s','ț':'t','Ă':'a','Â':'a','Î':'i','Ș':'s','Ț':'t','ş':'s','ţ':'t','Ş':'s','Ţ':'t' }
+  const fold = (s) => (s || '').replace(/[ăâîșțĂÂÎȘȚşţŞŢ]/g, (c) => _DIAC[c] || c).toLowerCase()
 
-  // Cautare in titlu / subtitlu / etichete & chei (campuri si rezultate) â€” insensibila la diacritice.
+  // Cautare in titlu / subtitlu / etichete & chei (campuri si rezultate) — insensibila la diacritice.
   function matchQ(m, q) {
     if (fold(m.title).includes(q)) return true
     if (m.subtitle && fold(m.subtitle).includes(q)) return true
@@ -48,7 +48,7 @@
     for (const r of m.results) if (fold(r.label).includes(q) || fold(r.key).includes(q)) return true
     return false
   }
-  // Lista din tab-ul curent (cautarea NU mai inlocuieste lista â€” vezi autocomplete-ul acResults).
+  // Lista din tab-ul curent (cautarea NU mai inlocuieste lista — vezi autocomplete-ul acResults).
   const shown = $derived.by(() => {
     // Intrarea pe sarcina: lista e cea a intrebarii alese, in ORDINEA din tabel
     // (ordinea in care deschizi cardurile), nu in ordinea generala a modulelor.
@@ -119,7 +119,7 @@
   // ---- Acordeon (viewport ingust) + navigator V2 (desktop >=940px) ----
   let expanded = $state(new Set())
   // Ambele praguri vin din lib/ecran.svelte.js, citite deja la incarcarea modulului
-  // â€” deci si aici raman â€žeager": primul paint pe desktop nu mai arata o clipa
+  // — deci si aici raman „eager": primul paint pe desktop nu mai arata o clipa
   // acordeonul de telefon.
   const isMobile = $derived(ecran.telefon)
   const isDesktop = $derived(ecran.larg)
@@ -189,42 +189,42 @@
   let ghidOpen = $state(false)
   const ghid = $derived(ghidCalculator())
   const SURSE = [
-    { h: 'Standarde europene â€” IEC / EN / ISO (primare)', items: [
-      'IEC/EN 60034-1 â€” masini rotative: regimuri S, derating, demaraj, dezechilibru',
-      'IEC 60034-12 â€” caracteristici de pornire',
-      'IEC/EN 60034-18-41 / -25 â€” izolatie & masina pe convertizor (dv/dt, unda reflectata, encoder)',
-      'IEC/EN 60034-27-4 â€” rezistenta de izolatie & indice de polarizare (PI)',
-      'IEC 60034-30-1 / -30-2 â€” clase de randament IE1-IE5',
-      'IEC/EN 61800-2 / -3 / -5-1 / -5-2 â€” sisteme de actionare (nominale, EMC, siguranta STO/SS1)',
-      'IEC 60364 â€” instalatii JT: ampacitate (-5-52), IÂ²t (-5-54), legare la pamant TN/TT/IT',
-      'IEC 61000-2-4 / -3-12 / -4-30 â€” armonici & calitatea energiei',
-      'IEC 60909-0 â€” curenti de scurtcircuit',
-      'IEC 60204-1 â€” echipament electric masini (categorii de stop) Â· IEC 60079-7 â€” Ex (timp tE)',
-      'IEC 60076-1 Anexa E â€” factor K transformator',
-      'EN ISO 9906 â€” incercari pompe (NPSH3) Â· EN 50160 â€” calitatea tensiunii (THD_U)',
-      'EN 805 â€” regim tranzitoriu retele de apa (lovitura de berbec)',
+    { h: 'Standarde europene — IEC / EN / ISO (primare)', items: [
+      'IEC/EN 60034-1 — masini rotative: regimuri S, derating, demaraj, dezechilibru',
+      'IEC 60034-12 — caracteristici de pornire',
+      'IEC/EN 60034-18-41 / -25 — izolatie & masina pe convertizor (dv/dt, unda reflectata, encoder)',
+      'IEC/EN 60034-27-4 — rezistenta de izolatie & indice de polarizare (PI)',
+      'IEC 60034-30-1 / -30-2 — clase de randament IE1-IE5',
+      'IEC/EN 61800-2 / -3 / -5-1 / -5-2 — sisteme de actionare (nominale, EMC, siguranta STO/SS1)',
+      'IEC 60364 — instalatii JT: ampacitate (-5-52), I²t (-5-54), legare la pamant TN/TT/IT',
+      'IEC 61000-2-4 / -3-12 / -4-30 — armonici & calitatea energiei',
+      'IEC 60909-0 — curenti de scurtcircuit',
+      'IEC 60204-1 — echipament electric masini (categorii de stop) · IEC 60079-7 — Ex (timp tE)',
+      'IEC 60076-1 Anexa E — factor K transformator',
+      'EN ISO 9906 — incercari pompe (NPSH3) · EN 50160 — calitatea tensiunii (THD_U)',
+      'EN 805 — regim tranzitoriu retele de apa (lovitura de berbec)',
     ] },
     { h: 'Echivalent US (citate ca referinta)', items: [
-      'IEEE 43 (PI) Â· IEEE 112 (teste motor) Â· IEEE 141 (dip de pornire)',
-      'IEEE 519 (armonici / TDD) Â· IEEE C57.110 (derating trafo)',
+      'IEEE 43 (PI) · IEEE 112 (teste motor) · IEEE 141 (dip de pornire)',
+      'IEEE 519 (armonici / TDD) · IEEE C57.110 (derating trafo)',
       'NEMA MG-1 (derating PWM, izolatie, porniri/ora, dezechilibru)',
-      'CEMA Belt Book (transportoare) Â· Hydraulic Institute (pompe)',
+      'CEMA Belt Book (transportoare) · Hydraulic Institute (pompe)',
     ] },
     { h: 'Carti de referinta (extras la /docs, cu login)', items: [
-      'Chapman â€” Electric Machinery Fundamentals',
-      'Mohan â€” Power Electronics',
-      'Hughes â€” Electric Motors and Drives',
-      'Nise â€” Control Systems Engineering',
-      'Leonhard â€” Control of Electrical Drives Â· Fitzgerald â€” Electric Machinery (citate)',
+      'Chapman — Electric Machinery Fundamentals',
+      'Mohan — Power Electronics',
+      'Hughes — Electric Motors and Drives',
+      'Nise — Control Systems Engineering',
+      'Leonhard — Control of Electrical Drives · Fitzgerald — Electric Machinery (citate)',
     ] },
     { h: 'Ghiduri & producatori', items: [
       'ABB Technical Guide Book No.1-No.9 (gazduit public)',
-      'ABB ACS580/880 (catalog, PID intern) Â· Siemens SINAMICS S120 / G120 (parametri)',
-      'KSB Centrifugal Pump Lexicon Â· WEG (motoare pe PWM) Â· Danfoss / SEW (franare)',
+      'ABB ACS580/880 (catalog, PID intern) · Siemens SINAMICS S120 / G120 (parametri)',
+      'KSB Centrifugal Pump Lexicon · WEG (motoare pe PWM) · Danfoss / SEW (franare)',
     ] },
     { h: 'Resurse online', items: [
-      'Wikipedia EN (26 articole de baza) Â· MathWorks (PMSM / IPMSM)',
-      'EngineeringToolbox Â· Oriental Motor Â· Schneider EIG Â· NPTEL Â· Pumps & Systems',
+      'Wikipedia EN (26 articole de baza) · MathWorks (PMSM / IPMSM)',
+      'EngineeringToolbox · Oriental Motor · Schneider EIG · NPTEL · Pumps & Systems',
     ] },
   ]
 
@@ -243,7 +243,7 @@
     else if (e.key === 'Escape') { query = ''; acIndex = -1 }
   }
 
-  // ============ DATE ECHIPAMENT â€” pe tip de masina (contextual) ============
+  // ============ DATE ECHIPAMENT — pe tip de masina (contextual) ============
   // Introduci placuta o data; cardurile cu acelasi camp (cheie + unitate, in grupul masinii sau retea)
   // folosesc valoarea partajata. Override local per camp. Import din backup-uri (doar logat).
   const EQUIP_GROUPS = {
@@ -255,21 +255,21 @@
       { key: 'Pn', label: 'Putere motor', unit: 'kW', def: 15, fills: ['Pn', 'P'], sec: 'Placuta' },
       { key: 'In', label: 'Curent nominal', unit: 'A', def: 28, fills: ['In'], sec: 'Placuta' },
       { key: 'n', label: 'Turatie', unit: 'rpm', def: 1450, fills: ['n', 'nbaza', 'nn'], sec: 'Placuta' },
-      { key: 'cosphi', label: 'cos Ï†', unit: '', def: 0.85, fills: ['cosphi', 'cosphin'], sec: 'Placuta' },
+      { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi', 'cosphin'], sec: 'Placuta' },
       { key: 'eta', label: 'Randament', unit: '%', def: 90, fills: ['eta'], sec: 'Placuta' },
       { key: 'poli', label: 'Poli', unit: '', def: 4, fills: ['p'], sec: 'Placuta' },
       // date extinse importabile din backup-uri drive (unitatile trebuie IDENTICE cu cele din driveCalc.js)
       { key: 'nmax', label: 'Turatie maxima', unit: 'rpm', def: 3000, fills: ['nmax'], sec: 'Date drive' },
       { key: 'tdec', label: 'Timp decelerare', unit: 's', def: 5, fills: ['tdec'], sec: 'Date drive' },
       { key: 'fsw', label: 'Frecventa comutatie', unit: 'kHz', def: 4, fills: ['fsw'], sec: 'Date drive' },
-      { key: 'R1', label: 'Rezistenta stator', unit: 'Î©', def: 0.5, fills: ['R1'], sec: 'Date drive' },
-      { key: 'J', label: 'Inertie', unit: 'kgÂ·mÂ²', def: 2, fills: ['J', 'Jmot'], sec: 'Date drive' },
+      { key: 'R1', label: 'Rezistenta stator', unit: 'Ω', def: 0.5, fills: ['R1'], sec: 'Date drive' },
+      { key: 'J', label: 'Inertie', unit: 'kg·m²', def: 2, fills: ['J', 'Jmot'], sec: 'Date drive' },
     ],
     cc: [
       { key: 'Ua', label: 'Tensiune indus', unit: 'V', def: 440, fills: ['U'] },
       { key: 'Ia', label: 'Curent indus', unit: 'A', def: 80, fills: ['Ia'] },
-      { key: 'Ra', label: 'Rezistenta indus', unit: 'Î©', def: 0.15, fills: ['Ra'] },
-      { key: 'kPhi', label: 'Constanta masinii', unit: 'VÂ·s/rad', def: 2.6, fills: ['kPhi'] },
+      { key: 'Ra', label: 'Rezistenta indus', unit: 'Ω', def: 0.15, fills: ['Ra'] },
+      { key: 'kPhi', label: 'Constanta masinii', unit: 'V·s/rad', def: 2.6, fills: ['kPhi'] },
       { key: 'n', label: 'Turatie', unit: 'rpm', def: 1500, fills: ['nbaza', 'ndorit'] },
     ],
     servo: [
@@ -280,14 +280,14 @@
       { key: 'Lq', label: 'Inductanta', unit: 'mH', def: 8, fills: ['Lq', 'Ld'] },
     ],
     sincron: [
-      { key: 'Xs', label: 'Reactanta sincrona', unit: 'Î©', def: 2.5, fills: ['Xs'] },
+      { key: 'Xs', label: 'Reactanta sincrona', unit: 'Ω', def: 2.5, fills: ['Xs'] },
       { key: 'E', label: 'T.e.m. excitatie', unit: 'V', def: 420, fills: ['E'] },
       { key: 'ns', label: 'Turatie sincrona', unit: 'rpm', def: 1500, fills: ['ns'] },
     ],
     transformator: [
       { key: 'Strafo', label: 'Putere trafo', unit: 'kVA', def: 630, fills: ['Strafo'] },
       { key: 'uk', label: 'uk trafo', unit: '%', def: 6, fills: ['uk'] },
-      { key: 'cosphi', label: 'cos Ï†', unit: '', def: 0.85, fills: ['cosphi'] },
+      { key: 'cosphi', label: 'cos φ', unit: '', def: 0.85, fills: ['cosphi'] },
     ],
   }
   const MACHINE_GROUPS = ['asincron', 'cc', 'servo', 'sincron', 'transformator']
@@ -337,10 +337,10 @@
   const activeGroup = $derived(activeCat === 'motoare' ? activeMotorFam : activeCat === 'utilitare' ? null : 'asincron')
   const panelGroups = $derived(activeGroup ? ['retea', activeGroup] : ['retea'])
 
-  // rezumat compact pt navigatorul V2 (primele 3 marimi ale grupului activ, ex. "15 kW Â· 28 A Â· 1450 rpm")
+  // rezumat compact pt navigatorul V2 (primele 3 marimi ale grupului activ, ex. "15 kW · 28 A · 1450 rpm")
   const equipSummary = $derived.by(() => {
     const g = activeGroup || 'asincron'
-    return EQUIP_GROUPS[g].slice(0, 3).map((c) => `${equip[g][c.key]}${c.unit ? ' ' + c.unit : ''}`).join(' Â· ')
+    return EQUIP_GROUPS[g].slice(0, 3).map((c) => `${equip[g][c.key]}${c.unit ? ' ' + c.unit : ''}`).join(' · ')
   })
   // panoul "Date echipament" exista doar pe tabul Motoare -> de pe alt tab, click = du-te acolo si deschide-l
   function openEquipPanel() {
@@ -392,7 +392,7 @@
 
   // ---- Verdicte (vezi LIMITS din driveCalc.js) ----
   // Starea unui card = cel mai grav verdict al rezultatelor lui. Se calculeaza
-  // doar pentru modulele care AU praguri definite; restul raman fara bulina â€”
+  // doar pentru modulele care AU praguri definite; restul raman fara bulina —
   // "fara verdict" inseamna "pragul inca nu e scris", nu "totul e in regula",
   // si de aia nu punem verde pe ele.
   function verdictsFor(m) {
@@ -410,14 +410,14 @@
     }
     return out
   })
-  const VERDICT_TITLU = { ok: 'ÃŽn limite', atentie: 'De verificat', critic: 'ÃŽn afara limitelor' }
+  const VERDICT_TITLU = { ok: 'În limite', atentie: 'De verificat', critic: 'În afara limitelor' }
 
 
   // export rezultate (cardurile deschise) pentru raportul PIF
   function exportResults() {
     const work = shown.filter((m) => expanded.has(m.id))
     const list = work.length ? work : shown
-    const L = ['# Rezultate calculator acÈ›ionÄƒri electrice', '', '## Date echipament']
+    const L = ['# Rezultate calculator acționări electrice', '', '## Date echipament']
     for (const g of ['retea', ...MACHINE_GROUPS]) {
       L.push(`### ${groupLabel(g)}`)
       for (const c of EQUIP_GROUPS[g]) L.push(`- ${c.label}: ${equip[g][c.key]}${c.unit ? ' ' + c.unit : ''}`)
@@ -533,16 +533,16 @@
     const g = (code) => { const x = _num((params || {})[code]); return x != null && x > 0 ? x : null }
     const bits = []; const P = g(map.Pn), U = g(map.U), I = g(map.In)
     if (P) bits.push(P + ' kW'); if (U) bits.push(U + ' V'); if (I) bits.push(I + ' A')
-    return bits.join(' Â· ')
+    return bits.join(' · ')
   }
   function applyImport(producator, params, model) {
     // pe un tab de masina non-asincron: importul aduce date de motor asincron -> nu lasa
     if (activeCat === 'motoare' && activeMotorFam !== 'asincron') {
-      importMsg = `Esti pe tabul ${groupLabel(activeMotorFam)}. Importul aduce date de motor â€” comuta pe tabul Asincron.`; return
+      importMsg = `Esti pe tabul ${groupLabel(activeMotorFam)}. Importul aduce date de motor — comuta pe tabul Asincron.`; return
     }
     const t = backupType(producator, params, model)
     if (t !== 'asincron') {
-      importMsg = `Backup-ul pare un motor ${TYPE_LABEL[t] || t} â€” importul suporta deocamdata doar motoare asincrone.`; return
+      importMsg = `Backup-ul pare un motor ${TYPE_LABEL[t] || t} — importul suporta deocamdata doar motoare asincrone.`; return
     }
     const map = NAMEPLATE_CODES[producator] || NAMEPLATE_CODES.ABB
     let n = 0
@@ -569,19 +569,19 @@
     overrides = new Set()
     const jImported = !!(map.J && _num((params || {})[map.J]) > 0)
     importMsg = n
-      ? `Importat ${n} valori Ã®n Asincron + ReÈ›ea.${jImported ? ' InerÈ›ia importatÄƒ e a motorului â€” adaugÄƒ sarcina.' : ''} VerificÄƒ poli/cosphi.`
-      : 'Nu am gÄƒsit date de plÄƒcuÈ›Äƒ Ã®n acest backup.'
+      ? `Importat ${n} valori în Asincron + Rețea.${jImported ? ' Inerția importată e a motorului — adaugă sarcina.' : ''} Verifică poli/cosphi.`
+      : 'Nu am găsit date de plăcuță în acest backup.'
     if (n) { importDrives = []; setTimeout(() => (importOpen = false), 1500) }
   }
-  // v28: tabul â€žDin proiect" a disparut odata cu tabela `echipamente`. Importul
-  // se face direct din fisierul de backup â€” parserul citeste placuta din
+  // v28: tabul „Din proiect" a disparut odata cu tabela `echipamente`. Importul
+  // se face direct din fisierul de backup — parserul citeste placuta din
   // .dcparamsbak / STARTER .zip fara sa treaca prin DB.
   function openImport() {
     importOpen = true; importMsg = ''; importDrives = []
   }
   async function onBackupFile(e) {
     const files = e.target.files; if (!files || !files.length) return
-    importBusy = true; importMsg = 'Se Ã®ncarcÄƒ...'; importDrives = []
+    importBusy = true; importMsg = 'Se încarcă...'; importDrives = []
     const isZip = /\.zip$/i.test(files[0].name)
     const fd = new FormData()
     if (isZip) fd.append('file', files[0]); else for (const f of files) fd.append('files', f)
@@ -590,7 +590,7 @@
       const r = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: csrfHeader(), body: fd })
       if (!r.ok) { importMsg = r.status === 413 ? 'Fisier prea mare (max 30 MB).' : 'Eroare ' + r.status + ' la citirea backup-ului.'; importBusy = false; e.target.value = ''; return }
       const d = await r.json(); const drives = d.drives || []
-      if (!drives.length) importMsg = 'Backup fÄƒrÄƒ date de plÄƒcuÈ›Äƒ.'
+      if (!drives.length) importMsg = 'Backup fără date de plăcuță.'
       else if (drives.length === 1) applyImport(drives[0].producator, drives[0].params || {}, drives[0].model || '')
       else importDrives = drives
     } catch { importMsg = 'Nu am putut citi backup-ul.' }
@@ -600,9 +600,10 @@
 
 <div class="page">
   <div class="page-head">
+    <!-- Fara iconita in fata titlului — standardizarea titlurilor (Ion):
+         h1 la acelasi left/top pe toate rutele. -->
     <div class="head-row">
-      <SolidIcon name="calculator" size={26} />
-      <h1>Calculator acÈ›ionÄƒri electrice</h1>
+      <h1>Calculator acționări electrice</h1>
       <!-- Butoanele stau intr-un container cu `margin-left: auto`, nu fiecare cu al
            lui: doua elemente cu auto margin isi impart spatiul liber intre ele si
            raman despartite in mijlocul randului, nu lipite la dreapta. -->
@@ -611,19 +612,19 @@
         <button class="surse-btn" onclick={() => (surseOpen = true)}><BookOpen size={15} /> Surse &amp; standarde</button>
       </div>
     </div>
-    <p class="sub">MÄƒrimi inginereÈ™ti pentru motoare È™i convertizoare â€” valori orientative, verificÄƒ Ã®ntotdeauna catalogul/manualul.</p>
+    <p class="sub">Mărimi inginerești pentru motoare și convertizoare — valori orientative, verifică întotdeauna catalogul/manualul.</p>
   </div>
 
   {#if activeCat === 'motoare'}
   <div class="equip-panel">
     <div class="equip-head">
-      <button class="equip-toggle" onclick={() => (panelOpen = !panelOpen)} title="Introdu plÄƒcuÈ›a o datÄƒ â€” toate cardurile se completeazÄƒ">
+      <button class="equip-toggle" onclick={() => (panelOpen = !panelOpen)} title="Introdu plăcuța o dată — toate cardurile se completează">
         <span class="equip-chev" class:open={panelOpen}><ChevronRight size={15} /></span>
         <SolidIcon name="cpu" size={16} /> <b>Date echipament</b>
-        <span class="equip-sub">plÄƒcuÈ›a + date drive â€” completeazÄƒ automat cardurile</span>
+        <span class="equip-sub">plăcuța + date drive — completează automat cardurile</span>
       </button>
       <label class="equip-switch" title="Cardurile folosesc datele de mai jos">
-        <input type="checkbox" bind:checked={sharedOn} /> aplicÄƒ la carduri
+        <input type="checkbox" bind:checked={sharedOn} /> aplică la carduri
       </label>
     </div>
     {#if panelOpen}
@@ -650,7 +651,7 @@
         <div class="equip-foot-grp">
           <button class="ef-import" onclick={openImport} title="Import din backup-uri drive (ABB/Siemens)">Import backup</button>
           <input class="equip-name" placeholder="nume echipament" bind:value={equipName} />
-          <button onclick={saveEquip}>SalveazÄƒ</button>
+          <button onclick={saveEquip}>Salvează</button>
         </div>
         <div class="equip-foot-grp">
           <button class="exp-btn" onclick={exportResults} title="Copiaza rezultatele cardurilor deschise (pentru raport)"><Download size={13} /> Export</button>
@@ -661,7 +662,7 @@
         <div class="equip-chips">
           <span class="equip-chips-h">Salvate:</span>
           {#each equipments as e (e.name)}
-            <span class="equip-chip"><button onclick={() => loadEquip(e)}>{e.name}</button><button class="chip-x" title="Sterge" onclick={() => delEquip(e)}>Ã—</button></span>
+            <span class="equip-chip"><button onclick={() => loadEquip(e)}>{e.name}</button><button class="chip-x" title="Sterge" onclick={() => delEquip(e)}>×</button></span>
           {/each}
         </div>
       {/if}
@@ -675,7 +676,7 @@
     <div class="search-row">
       <span class="search-ic"><Search size={16} /></span>
       <input class="search-inp" type="search" autocomplete="off"
-        placeholder="CautÄƒ un calcul â€” titlu, simbol sau mÄƒrime (ex. NPSH, cuplu, U_dc)..."
+        placeholder="Caută un calcul — titlu, simbol sau mărime (ex. NPSH, cuplu, U_dc)..."
         bind:value={query} onkeydown={onSearchKey} />
       {#if query}<button class="search-clear" title="Sterge cautarea" onclick={() => { query = ''; acIndex = -1 }}><X size={15} /></button>{/if}
     </div>
@@ -685,7 +686,7 @@
           <li>
             <button class="ac-item" class:active={i === acIndex} role="option" aria-selected={i === acIndex}
               onmouseenter={() => (acIndex = i)} onclick={() => acSelect(i)}>
-              <span class="ac-title">{#each highlightParts(m.title, query) as p}{#if p.hit}<mark>{p.text}</mark>{:else}{p.text}{/if}{/each}{#if m.subtitle}<span class="ac-sub"> â€” <MathText text={m.subtitle} /></span>{/if}</span>
+              <span class="ac-title">{#each highlightParts(m.title, query) as p}{#if p.hit}<mark>{p.text}</mark>{:else}{p.text}{/if}{/each}{#if m.subtitle}<span class="ac-sub"> — <MathText text={m.subtitle} /></span>{/if}</span>
               <span class="cat-badge">{catLabel(catOf(m))}</span>
             </button>
           </li>
@@ -713,7 +714,7 @@
     </div>
   {:else if activeCat === 'intrebari' && intrebareSel}
     <div class="subfam-tabs">
-      <button class="subfam-tab" onclick={() => (intrebareSel = null)}>â† Toate Ã®ntrebÄƒrile</button>
+      <button class="subfam-tab" onclick={() => (intrebareSel = null)}>â† Toate întrebările</button>
       <span class="intreb-activa">{INTREBARI.find((x) => x.id === intrebareSel)?.q}</span>
     </div>
   {/if}
@@ -728,7 +729,7 @@
           <span class="intreb-mod">{q.module.length} carduri</span>
         </button>
       {/each}
-      <p class="intreb-foot">Fiecare Ã®ntrebare deschide cardurile care rÄƒspund la ea, Ã®n ordinea Ã®n care le parcurgi. Datele de echipament completate o datÄƒ se aplicÄƒ peste tot.</p>
+      <p class="intreb-foot">Fiecare întrebare deschide cardurile care răspund la ea, în ordinea în care le parcurgi. Datele de echipament completate o dată se aplică peste tot.</p>
     </div>
   {/if}
 
@@ -770,12 +771,12 @@
       {#each m.fields as f (f.key)}
         {@const linked = isLinked(m, f)}
         <div class="inp">
-          <button type="button" class="inp-label" title="DefiniÈ›ie / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
+          <button type="button" class="inp-label" title="Definiție / de unde se ia" onclick={() => openTerm(f, m, false)}><Formula tex={symTeX(f.key)} inline /> {f.unit ? `[${f.unit}] ` : ''}{descLabel(f.label, f.key)}</button>
           <div class="inp-row">
             <input class="inp-field" type="number" step={f.step ?? 'any'} min={f.min}
               value={fieldVal(m, f)} oninput={(e) => setFieldVal(m, f, e.target.value)} />
             {#if conceptFor(m, f)}
-              <button class="link-btn" class:on={linked} title={linked ? 'Legat de datele echipamentului â€” click pentru valoare locala' : 'Valoare locala â€” click pentru a lega'} onclick={() => toggleLink(m, f)}><Link2 size={12} /></button>
+              <button class="link-btn" class:on={linked} title={linked ? 'Legat de datele echipamentului — click pentru valoare locala' : 'Valoare locala — click pentru a lega'} onclick={() => toggleLink(m, f)}><Link2 size={12} /></button>
             {/if}
           </div>
         </div>
@@ -788,7 +789,7 @@
       {#each m.results as res (res.key)}
         <div class="res-row" class:has-vd={vd[res.key] && vd[res.key].st !== 'ok'}>
           <div class="res-head">
-            <button type="button" class="res-label" title="DefiniÈ›ie / cum se calculeazÄƒ" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
+            <button type="button" class="res-label" title="Definiție / cum se calculează" onclick={() => openTerm(res, m, true)}><MathText text={res.label} /></button>
             <span class="res-right">
               {#if vd[res.key]}{@render verdictDot(vd[res.key].st)}{/if}
               <span class="res-val">{fmtNum(r[res.key], res.dec)}</span>
@@ -825,14 +826,14 @@
     {#if SOURCES[m.id]}<p class="mod-source"><BookOpen size={11} /><span class="note-body"><MathText text={SOURCES[m.id]} /></span></p>{/if}
     {#if docsFor(m).length}
     <div class="mod-docs">
-      <span class="docs-h">DocumentaÈ›ie:</span>
+      <span class="docs-h">Documentație:</span>
       {#each docsFor(m) as d}<a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>{/each}
     </div>
     {/if}
 
     <div class="acc-nav">
-      <button class="nav-btn" disabled={shown[0]?.id === m.id} onclick={() => step(m, -1)}>â€¹ Anterior</button>
-      <button class="nav-btn" disabled={shown[shown.length - 1]?.id === m.id} onclick={() => step(m, 1)}>Urmator â€º</button>
+      <button class="nav-btn" disabled={shown[0]?.id === m.id} onclick={() => step(m, -1)}>‹ Anterior</button>
+      <button class="nav-btn" disabled={shown[shown.length - 1]?.id === m.id} onclick={() => step(m, 1)}>Urmator ›</button>
     </div>
   {/snippet}
 
@@ -840,7 +841,7 @@
     <!-- V2 desktop: navigator de module in stanga (sticky) + modulul activ in dreapta -->
     <div class="calc-grid">
       <aside class="calc-nav cell-in">
-        <button class="nav-equip" onclick={openEquipPanel} title="Date echipament â€” click pentru panoul complet">
+        <button class="nav-equip" onclick={openEquipPanel} title="Date echipament — click pentru panoul complet">
           <span class="nav-equip-h"><SolidIcon name="cpu" size={13} /> Date echipament</span>
           <span class="nav-equip-sum">{equipSummary}</span>
         </button>
@@ -911,16 +912,16 @@
       <div class="term">
         {#if term.unit}<div class="term-unit">Unitate: <b>{term.unit}</b></div>{/if}
         {#if term.tex}
-          <div class="term-sec"><span class="term-h">Cum se calculeazÄƒ</span><Formula tex={term.tex} display /></div>
+          <div class="term-sec"><span class="term-h">Cum se calculează</span><Formula tex={term.tex} display /></div>
         {/if}
-        {#if term.g?.def}<div class="term-sec"><span class="term-h">DefiniÈ›ie</span><p><MathText text={term.g.def} /></p></div>{/if}
+        {#if term.g?.def}<div class="term-sec"><span class="term-h">Definiție</span><p><MathText text={term.g.def} /></p></div>{/if}
         {#if term.g?.ia}<div class="term-sec"><span class="term-h">De unde se ia</span><p><MathText text={term.g.ia} /></p></div>{/if}
-        {#if term.g?.practic}<div class="term-sec"><span class="term-h">ÃŽn practicÄƒ</span><p><MathText text={term.g.practic} /></p></div>{/if}
+        {#if term.g?.practic}<div class="term-sec"><span class="term-h">În practică</span><p><MathText text={term.g.practic} /></p></div>{/if}
         {#if term.g?.teorie}<div class="term-sec"><span class="term-h">Principiu / teorie</span><p><MathText text={term.g.teorie} /></p></div>{/if}
-        {#if term.figLink}<div class="term-sec"><span class="term-h">DiagramÄƒ</span><a class="fig-link" href={term.figLink.href} target="_blank" rel="noopener"><BookOpen size={14} /> {term.figLink.label}</a></div>{/if}
-        {#if term.source}<div class="term-sec"><span class="term-h">SursÄƒ</span><p class="term-src"><MathText text={term.source} /></p></div>{/if}
+        {#if term.figLink}<div class="term-sec"><span class="term-h">Diagramă</span><a class="fig-link" href={term.figLink.href} target="_blank" rel="noopener"><BookOpen size={14} /> {term.figLink.label}</a></div>{/if}
+        {#if term.source}<div class="term-sec"><span class="term-h">Sursă</span><p class="term-src"><MathText text={term.source} /></p></div>{/if}
         {#if term.docs?.length}
-          <div class="term-sec"><span class="term-h">DocumentaÈ›ie</span>
+          <div class="term-sec"><span class="term-h">Documentație</span>
             <div class="term-docs">
               {#each term.docs as d}
                 <a class="doc-link" href={d.href} target="_blank" rel="noopener">{d.label}</a>
@@ -928,14 +929,14 @@
             </div>
           </div>
         {/if}
-        {#if !term.g && !term.tex}<p class="term-empty">MÄƒrime fÄƒrÄƒ definiÈ›ie detaliatÄƒ Ã®ncÄƒ. Vezi sursa modulului È™i formulele asociate.</p>{/if}
+        {#if !term.g && !term.tex}<p class="term-empty">Mărime fără definiție detaliată încă. Vezi sursa modulului și formulele asociate.</p>{/if}
       </div>
     {/if}
   </Modal>
 
   <Modal bind:open={ghidOpen} title="Ghidul calculatorului" size="lg">
     <div class="surse">
-      <p class="surse-intro">Cifrele de mai jos se citesc din calculator la deschiderea ghidului, nu sunt scrise de mÃ¢nÄƒ â€” dacÄƒ apare un modul sau un prag nou, ghidul Ã®l numÄƒrÄƒ singur.</p>
+      <p class="surse-intro">Cifrele de mai jos se citesc din calculator la deschiderea ghidului, nu sunt scrise de mână — dacă apare un modul sau un prag nou, ghidul îl numără singur.</p>
       {#each ghid as sec}
         <div class="surse-sec ghid-sec">
           <h3>{sec.h}</h3>
@@ -947,7 +948,7 @@
 
   <Modal bind:open={surseOpen} title="Surse & standarde" size="lg">
     <div class="surse">
-      <p class="surse-intro">NotaÈ›ie & standarde primare = <b>europene (IEC / EN / ISO)</b>; cele americane (IEEE / NEMA) doar ca echivalent. Fiecare card Ã®È™i afiÈ™eazÄƒ sursa proprie. Standardele sunt documente cu platÄƒ â€” citate ca text, nu gÄƒzduite. CÄƒrÈ›ile au extrase (doar paginile citate) la <b>/docs</b> cu login.</p>
+      <p class="surse-intro">Notație & standarde primare = <b>europene (IEC / EN / ISO)</b>; cele americane (IEEE / NEMA) doar ca echivalent. Fiecare card își afișează sursa proprie. Standardele sunt documente cu plată — citate ca text, nu găzduite. Cărțile au extrase (doar paginile citate) la <b>/docs</b> cu login.</p>
       {#each SURSE as g}
         <div class="surse-sec">
           <h3>{g.h}</h3>
@@ -960,25 +961,25 @@
   <!-- Ataseaza calculul la un proiect (doar logat) -->
   <Modal bind:open={importOpen} title="Import date echipament" size="md">
     <div class="imp">
-      <p class="imp-hint">ÃŽncarcÄƒ un backup de drive: ABB <code>.dcparamsbak</code> (poÈ›i selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge È™i fÄƒrÄƒ login.</p>
+      <p class="imp-hint">Încarcă un backup de drive: ABB <code>.dcparamsbak</code> (poți selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge și fără login.</p>
       <input type="file" accept=".dcparamsbak,.zip" multiple onchange={onBackupFile} disabled={importBusy} />
       {#if importDrives.length}
         <div class="imp-drives-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
-        <p class="imp-hint">Arhiva contine mai multe drive-uri â€” alege pe care il importi:</p>
+        <p class="imp-hint">Arhiva contine mai multe drive-uri — alege pe care il importi:</p>
         <div class="imp-equip">
           {#each importDrives as dr, i (i)}
             {@const tp = backupType(dr.producator, dr.params || {}, dr.model || '')}
             {@const pv = drivePreview(dr.producator, dr.params)}
             <button class="imp-eq" onclick={() => applyImport(dr.producator, dr.params || {}, dr.model || '')}>
               <span class="imp-eq-name">{dr.nume || 'Drive'} <em class="imp-eq-tag" class:warn={tp !== 'asincron'}>{TYPE_LABEL[tp] || tp}</em></span>
-              <span>{dr.producator || ''} {dr.model || ''}{#if pv} Â· {pv}{/if}</span>
+              <span>{dr.producator || ''} {dr.model || ''}{#if pv} · {pv}{/if}</span>
             </button>
           {/each}
         </div>
         </div>
       {/if}
       {#if importMsg}<p class="imp-msg" transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}>{importMsg}</p>{/if}
-      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>ReÈ›ea</b>: plÄƒcuÈ›a (P/U/I/n/cosÏ†/Î·/poli) + date drive cÃ¢nd existÄƒ (turaÈ›ie max, rampÄƒ decelerare, frecvenÈ›Äƒ comutaÈ›ie, R stator, inerÈ›ie). Coduri: ABB grup 99/30/23, Siemens p03xx/p11xx/p18xx, Danfoss 1-xx. Un backup de alt tip (c.c./servo) nu se importÄƒ pe tabul asincron.</p>
+      <p class="imp-note">Umple grupul <b>Asincron</b> + <b>Rețea</b>: plăcuța (P/U/I/n/cosφ/η/poli) + date drive când există (turație max, rampă decelerare, frecvență comutație, R stator, inerție). Coduri: ABB grup 99/30/23, Siemens p03xx/p11xx/p18xx, Danfoss 1-xx. Un backup de alt tip (c.c./servo) nu se importă pe tabul asincron.</p>
     </div>
   </Modal>
 </div>
@@ -1018,7 +1019,7 @@
   .surse-sec h3 { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); margin-bottom: 4px; }
   .surse-sec ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
   .surse-sec li { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); padding-left: 12px; position: relative; }
-  .surse-sec li::before { content: 'Â·'; position: absolute; left: 2px; color: var(--text-dim); }
+  .surse-sec li::before { content: '·'; position: absolute; left: 2px; color: var(--text-dim); }
   .ghid-sec { display: flex; flex-direction: column; gap: 5px; }
   .ghid-p { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); }
   .ghid-p :global(b) { color: var(--text); font-weight: var(--fw-semibold); }
@@ -1310,7 +1311,7 @@
     transition: color var(--dur-fast) var(--ease);
   }
   .inp-label:hover { color: var(--text); text-decoration: underline dotted; }
-  /* titlul = un singur link uniform: simbol, [u.m.], text â€” acelasi font si culoare */
+  /* titlul = un singur link uniform: simbol, [u.m.], text — acelasi font si culoare */
   .inp-field {
     margin-top: auto;
     padding: 8px 10px;
@@ -1381,18 +1382,18 @@
      propozitia apare doar cand NU e in regula, ca sa nu umple cardul cu
      confirmari inutile. Culoarea nu e singurul canal: fiecare bulina are
      title/aria-label, iar textul spune de ce. */
-  /* TREI TREPTE, DOUA CULORI â€” deci diferenta o face CANTITATEA DE CERNEALA:
+  /* TREI TREPTE, DOUA CULORI — deci diferenta o face CANTITATEA DE CERNEALA:
        plin verde   = in limite
        CONTUR rosu  = de verificat
        plin rosu    = in afara limitelor
      Mai multa cerneala = mai rau, pe o singura cheie de culoare. Inainte
-     â€žatentie" purta `--warning`, adica un al treilea ton semantic pe care
+     „atentie" purta `--warning`, adica un al treilea ton semantic pe care
      sistemul nu-l are: cu doua culori de stare, portocaliul era ori rosu (si
-     atunci â€žde verificat" arata ca â€žin afara limitelor"), ori amber (si atunci
+     atunci „de verificat" arata ca „in afara limitelor"), ori amber (si atunci
      imprumuta identitatea aplicatiei pentru o stare).
 
-     ABSENTA BULINEI RAMANE ABSENTA, nu verde: codul e explicit ca â€žfara
-     verdict" inseamna â€žpragul inca nu e scris" â€” vezi `verdictsFor`. */
+     ABSENTA BULINEI RAMANE ABSENTA, nu verde: codul e explicit ca „fara
+     verdict" inseamna „pragul inca nu e scris" — vezi `verdictsFor`. */
   .vd-dot {
     width: 9px; height: 9px;
     border-radius: 50%;
@@ -1540,23 +1541,23 @@
     .acc-head { padding: 10px 12px; gap: 8px; }
     /* Calculatorul se foloseste EXACT acolo unde e greu: langa un dulap, cu
        telefonul intr-o mana. Taburile de familie (30px) si cele de subfamilie
-       (26px) erau cele mai mici tinte de aici â€” si sunt primul lucru pe care il
+       (26px) erau cele mai mici tinte de aici — si sunt primul lucru pe care il
        atingi la fiecare intrare in pagina.
        Randurile de acordeon si campurile de calcul cresc si ele: `.acc-head` e ce
        deschizi ca sa ajungi la formula. */
     .fam-tab { min-height: var(--tap-min); padding: 4px 16px; }
     /* Subfamiliile raman vizual mai usoare (font mai mic), dar la fel de usor de
-       atins â€” ierarhia se citeste din greutate, nu din cat de greu nimeresti. */
+       atins — ierarhia se citeste din greutate, nu din cat de greu nimeresti. */
     .subfam-tab { min-height: var(--tap-min); padding: 3px 14px; }
     /* Antetul paginii, pe telefon: titlul se rupe pe doua randuri, iar
        `align-items: center` lasa iconita plutind la mijlocul lor, langa nimic.
        Se aliniaza la PRIMUL rand, ca un semn de titlu, nu ca un vecin.
-       â€žSurse & standarde" coboara pe randul lui: langa un titlu de doua randuri
+       „Surse & standarde" coboara pe randul lui: langa un titlu de doua randuri
        se ingusta pana isi rupea si el eticheta in doua. */
     .head-row { flex-wrap: wrap; align-items: flex-start; }
     .head-row :global(svg) { margin-top: 2px; flex-shrink: 0; }
     /* `flex-basis: 0`, nu `auto`: cu `auto` titlul isi cerea latimea intreaga
-       (~320px), nu incapea langa iconita si se ducea el pe randul urmator â€”
+       (~320px), nu incapea langa iconita si se ducea el pe randul urmator —
        ramanea iconita singura pe un rand, ca un cap de lista fara lista. Cu
        basis 0 titlul ia CE RAMANE si isi rupe textul inauntru, unde e normal
        sa se rupa. */
@@ -1577,10 +1578,10 @@
     /* Campurile de calcul: 43px, cu doua pe rand. Un pixel sub prag, dar tocmai
        aici tastezi cel mai des. */
     .inp-field, .search-inp { min-height: var(--tap-min); }
-    /* Scurtaturile catre modulele folosite des (â€žLegile afinitÄƒÈ›ii" etc.) â€” 25px. */
+    /* Scurtaturile catre modulele folosite des („Legile afinității" etc.) — 25px. */
     .chip { min-height: var(--tap-min); }
-    /* â€žProiect" si â€žReset" stau in acelasi rand, deasupra campurilor. Masurate pe
-       telefon: 25px inaltime. Umflate la 44 ar impinge randul in jos degeaba â€”
+    /* „Proiect" si „Reset" stau in acelasi rand, deasupra campurilor. Masurate pe
+       telefon: 25px inaltime. Umflate la 44 ar impinge randul in jos degeaba —
        primesc aceeasi solutie ca steaua: raman de 25px la vedere, 45 la atingere. */
     /* Intrarea pe sarcina: o intrebare pe rand, nu doua pe jumatate de latime. */
     .intreb-grid { grid-template-columns: 1fr; }

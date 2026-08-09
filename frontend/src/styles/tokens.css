@@ -231,6 +231,12 @@
   --content-max: 1400px;
   --dock-h: 68px;
 
+  /* Sensul ultimei navigari (1 inainte / -1 inapoi / 0 nimic), scris din App la
+     fiecare schimbare de ruta; il citesc regulile ::view-transition din
+     global.css. Definit aici ca implicit, ca variabila sa existe si inainte de
+     prima navigare. */
+  --nav-sens: 0;
+
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);

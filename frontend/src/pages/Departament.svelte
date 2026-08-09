@@ -8,10 +8,10 @@
   // Linkul contine cheia de acces in fragment (dupa #), deci NU ajunge la
   // serverul lor prin cererea HTTP si nu apare in logurile nimanui. Il tinem in
   // app_settings (baza de date e gitignored), niciodata in cod sau in wiki.
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount } from 'svelte'
   import { ExternalLink, Link2, Save, X, TriangleAlert } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
-  import { ui, toast } from '../stores/ui.svelte.js'
+  import { toast } from '../stores/ui.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
 
@@ -54,14 +54,19 @@
     }
   }
 
-  onMount(() => {
-    ui.pageHeader = { title: 'Departament', subtitle: 'Planul întregii echipe' }
-    load()
-  })
-  onDestroy(() => { ui.pageHeader = { title: '', subtitle: '' } })
+  onMount(load)
 </script>
 
 <div class="page">
+  <!-- Titlul sta IN PAGINA, ca pe toate rutele (standardizat la cererea lui
+       Ion) — `ui.pageHeader` scria in bara aplicatiei, la alta inaltime, si pe
+       telefon disparea cu totul. -->
+  <div class="page-header">
+    <div class="page-title-row">
+      <h1>Departament</h1>
+      <span class="page-sub">Planul întregii echipe</span>
+    </div>
+  </div>
   {#if loading}
     <Skeleton height="420px" />
   {:else if error}
@@ -129,10 +134,19 @@
      asta, si numai pe ea, dockul plutea PESTE continut in loc sa stea sub el.
      Un plan de departament nu e destul de important cat sa mute navigatia
      aplicatiei; dockul sta unde sta peste tot. */
-  .page { padding: var(--space-md) var(--space-lg);
+  /* Acelasi padding de sus ca restul rutelor (--space-lg): titlul sta acum in
+     pagina si trebuie sa cada pe aceeasi linie ca pe /projects, /tasks, /plan. */
+  .page { padding: var(--space-lg);
           display: flex; flex-direction: column;
           height: calc(100dvh - var(--header-height) - var(--dock-h) - var(--space-lg) - var(--safe-bottom));
           min-height: 380px; overflow: hidden; }
+  .page-header { display: flex; align-items: center; justify-content: space-between;
+    gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md); flex: none; }
+  .page-title-row { display: flex; align-items: baseline; gap: var(--space-sm);
+    color: var(--text); min-width: 0; }
+  .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); }
+  .page-sub { font-size: var(--font-small); font-weight: var(--fw-medium);
+    color: var(--text-secondary); white-space: nowrap; }
 
   .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: 38px; }
   .spatiu { flex: 1; }

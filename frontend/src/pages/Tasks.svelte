@@ -2,7 +2,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare, sosire, desfacere, DUR_FAST } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire, desfacere, alunecare, DUR_FAST } from '../lib/motion.svelte.js'
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink, CalendarSync, CircleAlert, RotateCw, Unplug, Link as LinkIcon } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
@@ -97,8 +97,21 @@
     return etichetaTermenScurt(t.data_scadenta)
   }
 
-  async function toggleStatus(task) {
+  // Randul care isi joaca STAMPILA chiar acum (contractul de miscare: bifare =
+  // stampila + taietura care matura + textul care se stinge, apoi randul pleaca).
+  // Regulile traiesc in global.css (`.bifare`); aici doar clipa.
+  let bifatAcum = $state('')
+
+  async function toggleStatus(task, dinGest = false) {
     const next = task.status === 'done' ? 'to_do' : 'done'
+    // STAMPILA INAINTE DE PLECARE — dar nu si pe gest: la glisare verdele
+    // pistei si zborul randului sunt deja raspunsul, iar a doua animatie peste
+    // aceiasi pixeli ar incalca „o singura animatie pe schimbare".
+    if (next === 'done' && !dinGest) {
+      bifatAcum = task.id
+      await new Promise(r => setTimeout(r, motionDuration(400)))
+      bifatAcum = ''
+    }
     // OPTIMIST, ca randul sa plece IN CLIPA in care il atingi.
     // Fara asta, intre atingere si disparitie sta un dus-intors cu serverul
     // (~200ms de nimic), iar animatia de iesire nu se mai citeste ca raspuns la
@@ -333,30 +346,31 @@
     return p
   }
 
-  // FOAIA DOAR PE TELEFON; pe desktop taskul se desface in lista (cerinta Ion).
-  // Am incercat foaia si pe desktop si a fost respinsa — iar motivul se sustine:
-  // pe desktop nu exista niciunul dintre cele trei argumente care o justifica pe
-  // telefon. Tastatura fizica nu acopera ecranul, e loc pe verticala fara sa
-  // pierzi lista din ochi, iar un modal peste o lista larga inseamna un clic in
-  // plus si contextul acoperit.
-  // DESIGNUL ramane insa acelasi in ambele: `taskDetail` e UN SINGUR snippet,
-  // randat ori in foaie, ori in rand. Cardurile de subtask, antetul de sectiune,
-  // bara de progres si butonul de adaugare arata identic — se schimba doar unde
-  // sunt asezate.
+  // ISTORIC, in doua randuri: intai foaia pe desktop a fost RESPINSA de Ion
+  // (modal centrat peste lista = context acoperit) si taskul se desfacea in
+  // rand; pe 2026-08-09, la verificarea pe capturi, Ion a cerut PANOUL LATERAL
+  // din desenul 3a — care nu acopera lista, sta langa ea. Deci: foaie pe
+  // telefon, panou pe desktop, expandarea in rand a ramas doar cod istoric.
+  // DESIGNUL ramane acelasi in ambele gazde: `taskDetail` e UN SINGUR snippet.
   //
   // ORDINEA CONTEAZA: intai datele, apoi deschiderea. Invers (cum era), panoul
   // se randa cu „Se încarcă…", `slide` masura ACEA inaltime si animeaza spre
   // ea — iar sectiunea de subtaskuri, sosita dupa aceea, aparea taiata peste
   // panoul deja terminat de animat. Un gest, doua evenimente vizuale.
   // Acum se deschide o singura data, cu ansamblul intreg si inaltimea finala.
+  // PE DESKTOP TASKUL SE DESCHIDE IN PANOU LATERAL (decizia lui Ion la
+  // verificarea finala din 2026-08-09, dupa desenul Taskuri 3a — RASTOARNA
+  // decizia veche „se desface in lista", pastrata mai sus doar ca istorie).
+  // Acelasi drum ca foaia de pe telefon: `deschideFoaia` incarca datele INAINTE
+  // sa deschida, deci panoul soseste cu ansamblul intreg; difera doar gazda —
+  // `Modal size="panou"` pe desktop, foaie jos pe telefon. Al doilea click pe
+  // acelasi rand inchide panoul, ca vechiul expand.
   async function toggleTaskExpand(taskId) {
-    if (ecran.telefon) { await deschideFoaia(taskId); return }
-    if (expandedTask === taskId) {
-      expandedTask = null
+    if (!ecran.telefon && showSheet && sheetTask?.id === taskId) {
+      showSheet = false
       return
     }
-    await incarcaSubtaskuri(taskId)
-    expandedTask = taskId
+    await deschideFoaia(taskId)
   }
 
   // Asteptarea de mai sus se plateste O DATA per task si, pe desktop, de obicei
@@ -924,7 +938,13 @@
        Ce ramane pe rand: SFERA — care nu e un filtru, ci in ce lume esti — si
        arhiva, o destinatie rara, in haina de actiune-fantoma. -->
   <div class="toolbar">
+    <!-- CURSORUL DE TAB — singurul elastic din aplicatie (contractul de miscare).
+         Fillul activ nu mai e fondul segmentului: e un CURSOR care ALUNECA de pe
+         un segment pe celalalt (220ms, --ease-spring). Raportat de Ion: „nu pare
+         sa fie o animatie de tranzitie nici la comutator". Segmentele sunt
+         jumatati egale, ca translatia de 100% sa cada exact pe vecin. -->
     <div class="sfere" role="tablist" aria-label="Sfera taskurilor">
+      <span class="seg-cursor" aria-hidden="true" style="--i:{sferaActiva === 'personal' ? 1 : 0}"></span>
       <button class="seg" role="tab" aria-selected={sferaActiva === 'munca'} class:on={sferaActiva === 'munca'} onclick={() => navigate('/tasks')}><Briefcase size={14} strokeWidth={1.5} />Muncă</button>
       <button class="seg" role="tab" aria-selected={sferaActiva === 'personal'} class:on={sferaActiva === 'personal'} onclick={() => navigate('/tasks?sfera=personal')}><User size={14} strokeWidth={1.5} />Personal</button>
     </div>
@@ -991,7 +1011,13 @@
          unde au plecat cele facute, altfel „Niciun task" se citeste ca o pierdere. -->
     <EmptyState icon={ListTodo} title={showArchive ? 'Arhiva e goală' : (sferaActiva === 'personal' ? 'Niciun task personal' : 'Nimic de făcut')} description={showArchive ? 'Aici ajung taskurile bifate.' : 'Scrie un task în câmpul de sus. Ce ai terminat e în „Arhivă".'} />
   {:else}
-    <div class="task-list">
+    <!-- COMUTAREA SFEREI E O NAVIGARE MICA, deci are sens (raportat de Ion: „nu
+         pare sa fie o animatie de tranzitie... nici la taskuri"). Lista noua
+         soseste dinspre tabul pe care l-ai ales: Personal e in dreapta -> vine
+         din dreapta; Munca din stanga. `{#key}` fiindca o clasa comutata nu
+         re-porneste o animatie (aceeasi lectie ca la schimbarea lunii). -->
+    {#key sferaActiva}
+    <div class="task-list" in:alunecare={{ sens: sferaActiva === 'personal' ? 1 : -1 }}>
       <!-- Se itereaza ORDINEA — siruri constante — nu lista de grupe.
            Vezi `lib/grupare.js`: un each imbricat peste obiecte NOI la fiecare
            recalcul face Svelte sa re-creeze blocul interior in loc sa-l
@@ -1013,13 +1039,13 @@
       {#each grupe[gid].items as t (t.id)}
 <!-- Iesirea randului bifat: se stinge si se strange, in loc sa sara.
                Vezi `plecare` in lib/motion.svelte.js. -->
-                    <div class="trow-wrap" class:deschis={expandedTask === t.id}
+                    <div class="trow-wrap" class:deschis={expandedTask === t.id || (showSheet && sheetTask?.id === t.id)}
              style="--ring: {dueRing(t.data_scadenta)}"
              animate:flip={{ duration: motionDuration(DUR_BASE) }}
              onpointerenter={() => preincarca(t.id)}
              in:sosire|local out:plecare>
-          <div class="trow" class:done={t.status === 'done'} use:focusOnLand={focusKey('global', t.id)}
-               use:glisare={{ activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t), onAmana: () => { deschideFoaia(t.id); termenDeschis = true } }}>
+          <div class="trow" class:done={t.status === 'done'} class:bifare={bifatAcum === t.id} use:focusOnLand={focusKey('global', t.id)}
+               use:glisare={{ activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t, true), onAmana: () => { deschideFoaia(t.id); termenDeschis = true } }}>
             <!-- Actiunile de intretinere (notita / editare / stergere) stau in
                  panoul de sub rand: sunt rare fata de „bifat" si „deschis", si
                  tocmai ele umflau randul cu o linie intreaga. -->
@@ -1086,6 +1112,7 @@
       {/each}
 
     </div>
+    {/key}
   {/if}
   </div>
   </div>
@@ -1102,9 +1129,9 @@
   {/if}
 </div>
 
-<!-- FOAIA TASKULUI (doar pe telefon — vezi `toggleTaskExpand`).
-     `Modal` e deja sertar lipit de marginea de jos pe telefon, deci foaia nu e o
-     componenta noua, e acelasi modal cu alt continut. -->
+<!-- TASKUL DESCHIS: foaie pe telefon, PANOU LATERAL pe desktop (desen 3a,
+     cerut de Ion la verificarea finala). Acelasi continut in ambele gazde —
+     `Modal size="panou"` e deja „panou pe desktop, foaie pe telefon". -->
 {#if sheetTask}
   <!-- Antetul modalului primeste CONTEXTUL taskului (categoria), ca „Inbox" la
        Todoist. Fara titlu, `Modal` randa oricum bara cu butonul de inchidere, deci
@@ -1113,7 +1140,7 @@
   <!-- Titlul foii e TITLUL TASKULUI. Era `categorie`, care e implicit „General"
        si nu se scrie niciodata in interfata — deci fiecare foaie deschisa pe
        telefon se numea „General". -->
-  <Modal bind:open={showSheet} size="md" title={sheetTask.titlu || 'Task'}>
+  <Modal bind:open={showSheet} size="panou" title={sheetTask.titlu || 'Task'}>
     <!-- Foaia poarta `--ring` pe cap: bifa mare e primul lucru din foaie, deci e
          chiar locul unde severitatea trebuie sa se vada. -->
     <div class="ts-cap" style="--ring: {dueRing(sheetTask.data_scadenta)}">
@@ -1514,13 +1541,24 @@
      Sferele se deosebesc in continuare prin SEMN (briefcase / user), nu prin
      culoare — punctul violet de pe „Personal" a plecat demult, si nu se intoarce
      acum pe alta usa. */
-  .sfere { display: flex; background: var(--bg-elevated); border: none;
+  /* Jumatati EGALE (grid), ca cursorul sa alunece exact 100% din propria latime
+     de pe un segment pe celalalt. */
+  .sfere { display: grid; grid-template-columns: 1fr 1fr; position: relative;
+    background: var(--bg-elevated); border: none;
            border-radius: var(--radius-sm); padding: 3px; flex-shrink: 0; margin-right: 4px; }
-  .seg { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; min-height: 30px; border: none; background: none; cursor: pointer;
+  .seg { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; min-height: 30px; border: none; background: none; cursor: pointer;
+         position: relative; z-index: 1;
          border-radius: calc(var(--radius-sm) - 3px); font-size: var(--font-small); font-weight: var(--fw-medium);
-         color: var(--text-secondary); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
+         color: var(--text-secondary); transition: color var(--dur-base) var(--ease); }
   .seg:hover { color: var(--text); }
-  .seg.on { background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
+  /* Fillul e al CURSORULUI de dedesubt, nu al segmentului: doar asa alegerea
+     ALUNECA de pe un tab pe celalalt in loc sa se teleporteze. */
+  .seg.on { color: var(--accent-text); font-weight: var(--fw-semibold); }
+  .seg-cursor { position: absolute; top: 3px; bottom: 3px; left: 3px;
+    width: calc(50% - 3px); border-radius: calc(var(--radius-sm) - 3px);
+    background: var(--accent);
+    transform: translateX(calc(var(--i, 0) * 100%));
+    transition: transform var(--dur-base) var(--ease-spring); }
   /* SFERA SE DEOSEBESTE PRIN SEMN, NU PRIN CULOARE.
      Aici era un punct violet lipit inaintea lui „Personal": o bulina decorativa
      care aducea a treia culoare pe o bara unde amberul insemna deja „activ", iar

@@ -1,7 +1,6 @@
 <script>
   import { Sun, Moon, Monitor, Check, Search } from '@lucide/svelte'
   import { fly } from 'svelte/transition'
-  import { ui } from '../../stores/ui.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   import { tema, setMod } from '../../lib/tema.svelte.js'
   import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
@@ -59,13 +58,10 @@
     <span class="brand-name">PIF Dashboard</span>
   </a>
 
-  {#if ui.pageHeader.title}
-    <div class="header-context">
-      <h1 class="hc-title">{ui.pageHeader.title}</h1>
-      {#if ui.pageHeader.subtitle}<span class="hc-sub">{ui.pageHeader.subtitle}</span>{/if}
-    </div>
-  {/if}
-
+  <!-- `.header-context` (titlul paginii in bara) A PLECAT: era singurul titlu
+       care nu statea in pagina — „sus pe mijloc", la alta inaltime decat restul,
+       si invizibil pe telefon. Acum FIECARE ruta isi scrie h1-ul in continut,
+       in aceeasi pozitie; bara tine doar marca si actiunile globale. -->
   <span class="h-spacer"></span>
 
   <div class="header-actions">
@@ -133,31 +129,6 @@
   }
   .brand-tile { flex: none; display: block; }
 
-  .header-context {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    max-width: 56%;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-  .hc-title {
-    font-weight: var(--fw-semibold);
-    font-size: var(--font-h3);
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .hc-sub {
-    font-size: var(--font-small);
-    color: var(--text-dim);
-    text-transform: capitalize;
-    flex-shrink: 0;
-  }
-
   .h-spacer { flex: 1; }
 
   .header-actions {
@@ -220,7 +191,6 @@
   .tema-rand :global(.tema-bifa) { margin-left: auto; }
 
   @media (max-width: 768px) {
-    .header-context { display: none; }
     .header {
       flex-wrap: wrap;
       height: auto;

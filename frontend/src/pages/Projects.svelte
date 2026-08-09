@@ -151,10 +151,12 @@
 
 <div class="page">
   <div class="page-header">
+    <!-- Titlu FARA iconita si cu SUBTITLU text, ca in desen (3a: „7 active ·
+         3 finalizate") — si la aceeasi pozitie ca pe toate rutele
+         (standardizarea titlurilor, cerinta lui Ion). -->
     <div class="page-title-row">
-      <FolderKanban size={22} />
       <h1>Proiecte</h1>
-      <span class="count">{projects.items.length}</span>
+      <span class="page-sub">{activeItems.length} active · {archivedItems.length} finalizate</span>
     </div>
     <!-- ANTETUL NU MAI ARE BUTON DE ADAUGARE. O singura cale per ecran: pe
          desktop cardul punctat din grila (e chiar in locul unde ar aparea
@@ -315,9 +317,10 @@
   .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md); }
   .page-title-row { min-width: 0; }
   .page-title-row h1 { overflow-wrap: anywhere; }
-  .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
+  .page-title-row { display: flex; align-items: baseline; gap: var(--space-sm); color: var(--text); }
   .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); }
-  /* `.count` a plecat in global.css — vezi nota din Tasks.svelte. */
+  .page-sub { font-size: var(--font-small); font-weight: var(--fw-medium);
+    color: var(--text-secondary); white-space: nowrap; }
 
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
 

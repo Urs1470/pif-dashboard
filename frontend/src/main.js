@@ -2,9 +2,10 @@ import { mount } from 'svelte'
 import './styles/global.css'
 import App from './App.svelte'
 import { apiJson } from './lib/api.js'
-import { navigate } from './lib/router.svelte.js'
+import { inapoi } from './lib/router.svelte.js'
 import { todayISO } from './lib/calendarDates.js'
 import { esteNativ, reprogrameaza } from './lib/notificari.js'
+import { App as CapApp } from '@capacitor/app'
 import { verifica as verificaActualizarea, descarcaSiInstaleaza } from './lib/actualizare.js'
 import { toastFix, actualizeazaToast } from './stores/ui.svelte.js'
 // Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
@@ -50,6 +51,44 @@ if (esteNativ()) {
   // La fiecare revenire in aplicatie: taskuri bifate de pe PC ies din programare.
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) reprogrameazaDinServer()
+  })
+}
+
+// GESTUL „INAPOI" PE ANDROID = UN PAS INAPOI IN APLICATIE, NU IN WEBVIEW.
+//
+// Fara ascultator pe `backButton`, Capacitor face `webView.goBack()` pe
+// istoricul BRUT al WebView-ului — care nu e istoricul aplicatiei: aterizarea
+// il rescrie cu `replaceState`, login-ul lasa un redirect in urma, iar
+// `focus.js` mai curata cate un query. Gestul cadea deci pe prima intrare
+// (pagina fara hash = Acasa), nu pe ultima miscare; iar cand WebView-ul nu mai
+// avea unde, nu facea nimic. Ordinea de aici:
+//   1. un strat deschis (modal/foaie, calendar, paleta) se inchide INTAI;
+//   2. altfel, ruta precedenta din istoricul ruterului (`inapoi()`);
+//   3. pe radacina, aplicatia trece IN FUNDAL (`minimizeApp`), nu se inchide
+//      brusc — starea ramane calda pentru urmatoarea deschidere.
+//
+// Stratul se inchide printr-un Escape SINTETIC, nu printr-o a doua logica de
+// inchidere: Escape inseamna deja „inchide UN strat" peste tot in aplicatie
+// (calendarul il prinde pe captura si opreste propagarea, ca modalul de sub el
+// sa ramana deschis — vezi `DatePicker.svelte`), deci gestul mosteneste gratis
+// exact ierarhia corecta. Se trimite pe elementul focalizat, fiindca modalul
+// isi asculta propriul backdrop, nu fereastra; cand focusul e in alta parte,
+// pe strat — pentru voalul modalului e totuna, pentru calendar oricum conteaza
+// doar captura pe fereastra.
+if (esteNativ()) {
+  const inchideStratulDeSus = () => {
+    // Selectorii sunt markup-ul real al straturilor care asculta Escape:
+    // `.backdrop` (Modal), `.dp-pop` (DatePicker), `.palette-backdrop` (paleta).
+    const strat = document.querySelector('.backdrop, .dp-pop, .palette-backdrop')
+    if (!strat) return false
+    const activ = document.activeElement
+    const tinta = activ && activ !== document.body ? activ : strat
+    tinta.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))
+    return true
+  }
+  CapApp.addListener('backButton', () => {
+    if (inchideStratulDeSus()) return
+    if (!inapoi()) CapApp.minimizeApp()
   })
 }
 

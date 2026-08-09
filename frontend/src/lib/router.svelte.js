@@ -34,6 +34,43 @@ if (_aterizare) {
 
 export const router = $state({ path: getPath(), query: getQuery(), params: {} })
 
+// ISTORICUL APLICATIEI, tinut de ruter — NU de WebView. Istoricul WebView-ului
+// amesteca rutele cu redirectul de dupa login si cu intrarile rescrise prin
+// `replaceState` (aterizarea de mai sus, curatarea `?focus` din `focus.js`),
+// deci „inapoi" pe el nu inseamna „ultima miscare" — pe Android gestul cadea
+// mereu pe prima intrare, adica pe Acasa. Aici se imping DOAR schimbarile de
+// ruta pe care le-a vazut aplicatia, iar `inapoi()` — chemat de gestul Android
+// din `main.js` — o scoate pe ultima. Plafonat: o sesiune care sta deschisa
+// zile intregi n-are nevoie de mii de intrari.
+const istoric = []
+const ISTORIC_MAX = 100
+let curenta = getRaw() || '/'   // dupa aterizare, deci ruta reala de start
+let _dinInapoi = false          // intoarcerea e un POP: nu se inregistreaza pe ea insasi
+
+function inregistreaza(path) {
+  const pop = _dinInapoi
+  // Steagul se consuma AICI, nu in ramura de push: daca tinta pop-ului ar
+  // coincide cu ruta curenta (nu se navigheaza nicaieri), un steag ramas ar
+  // inghiti in tacere urmatoarea inregistrare adevarata.
+  _dinInapoi = false
+  if (path === curenta) return
+  if (!pop) {
+    istoric.push(curenta)
+    if (istoric.length > ISTORIC_MAX) istoric.shift()
+  }
+  curenta = path
+}
+
+// Un pas inapoi in istoricul aplicatiei. Intoarce `false` cand nu mai e unde —
+// atunci apelantul decide ce inseamna „inapoi de pe radacina" (pe Android:
+// aplicatia trece in fundal, vezi `main.js`).
+export function inapoi() {
+  if (istoric.length === 0) return false
+  _dinInapoi = true
+  navigate(istoric.pop())
+  return true
+}
+
 const vtSupported = typeof document !== 'undefined' && typeof document.startViewTransition === 'function'
 export function viewTransitionsOn() { return vtSupported && !motion.reduced }
 
@@ -85,6 +122,7 @@ function parseQuery(path) {
 // syncs the URL hash. Used inside View-Transition callbacks (so the DOM swap happens
 // inside the transition) and as the no-VT fallback.
 export function applyPath(path) {
+  inregistreaza(path)
   router.path = (path.split('?')[0]) || '/'
   router.query = parseQuery(path)
   const target = '#' + path
@@ -152,6 +190,11 @@ export function resolveRoute(routes, caleAnume = null) {
 
 if (typeof window !== 'undefined') {
   window.addEventListener('hashchange', () => {
+    // Schimbarile venite din afara `applyPath` (service worker-ul, la atingerea
+    // unei notificari, scrie hash-ul direct — vezi `main.js`) intra si ele in
+    // istoric. Dupa un `applyPath`, `curenta` e deja ruta noua, deci apelul e
+    // un no-op — nu se dubleaza.
+    inregistreaza(getRaw() || '/')
     router.path = getPath()
     router.query = getQuery()
     const main = document.getElementById('main-content')

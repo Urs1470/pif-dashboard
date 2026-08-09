@@ -464,6 +464,24 @@ input:focus, select:focus, textarea:focus {
   animation-timing-function: var(--ease, ease);
 }
 
+/* SCHIMBAREA DE PAGINA E DIRECTIONALA si cand o detine browserul (contractul de
+   miscare: 240ms, inainte din dreapta, inapoi din stanga). `--nav-sens` (1/-1/0)
+   e scris pe <html> de App inainte de navigare, din ordinea dockului; pe 0
+   (prima incarcare, morph-ul de card in aceeasi sectiune) ramane cross-fade pur.
+   Pseudo-elementele traiesc pe <html>, deci variabila se mosteneste direct. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
+  animation-timing-function: var(--ease, ease);
+}
+::view-transition-new(root) {
+  animation-name: vt-pagina-noua;
+}
+@keyframes vt-pagina-noua {
+  from { opacity: 0; transform: translateX(calc(var(--nav-sens, 0) * 10px)); }
+  to { opacity: 1; transform: none; }
+}
+
 /* ===== Selectare data: aspect unificat peste tot (caseta + iconita calendar) =====
    Orice <input type="date"> arata identic indiferent de pagina/modal. Folosim
    !important pe proprietatile de layout pentru ca stilurile scoped Svelte
@@ -550,6 +568,40 @@ input[type="checkbox"].cbx:focus {
   .check-empty.small { --check-size: 16px; }
 }
 
+/* ===== BIFAREA: stampila + taietura care matura + textul care se stinge =====
+   (contractul de miscare: 220ms, toate pe acelasi ceas). Clasa `.bifare` e pusa
+   din JS pe RAND doar in clipa bifarii si scoasa dupa — fara garda asta, un rand
+   `done` randat mai tarziu (arhiva, „Finalizate") si-ar rejuca animatia la
+   montare, si o arhiva intreaga ar matura la deschidere.
+   Selectoarele numesc titlurile celor trei liste (.ttitle /tasks, .atitle
+   Astazi, .mrow-title Planificator) — clase reale din DOM, vizibile de aici
+   dincolo de hash-ul de scope al componentelor.
+   NU pe gestul de glisare: acolo verdele pistei si zborul randului sunt deja
+   raspunsul (o singura animatie pe schimbare), deci JS sare peste stampila. */
+@keyframes bifStamp {
+  from { transform: scale(1.5); }
+  to { transform: none; }
+}
+@keyframes bifTaie {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.bifare .check-empty {
+  background: var(--success);
+  border-color: var(--success);
+  animation: bifStamp var(--dur-base) var(--ease);
+}
+.bifare .ttitle, .bifare .atitle, .bifare .mrow-title {
+  position: relative;
+  color: var(--text-dim);
+  transition: color var(--dur-base) var(--ease);
+}
+.bifare .ttitle::after, .bifare .atitle::after, .bifare .mrow-title::after {
+  content: ''; position: absolute; left: 0; top: calc(50% - 1px); height: 1.5px;
+  background: var(--text-dim);
+  animation: bifTaie var(--dur-base) var(--ease) forwards;
+}
+
 /* HOVERUL NU RESCRIE CULOAREA REZERVATA. Exact greseala de la muchia din stanga,
    unde `:hover` stergea `--sev` si a trebuit reafirmat de mana in trei locuri.
    Aici hoverul adauga un halou din culoarea inelului — functioneaza si pe neutru,
@@ -567,6 +619,14 @@ input[type="checkbox"].cbx:focus {
 .rich-content h1, .rich-content h2 { color: var(--text); font-size: var(--font-h3); font-weight: var(--fw-semibold); margin: 12px 0 6px; }
 .rich-content h3, .rich-content h4 { color: var(--text-secondary); font-size: var(--font-h3); font-weight: var(--fw-semibold); margin: 10px 0 5px; }
 .rich-content ul, .rich-content ol { padding-left: 22px; margin: 6px 0; }
+/* Marcatorii trebuie REAFIRMATI: `reset.css` sterge `list-style` de pe toate
+   listele (corect pentru UI — meniuri, taburi), dar aici e continut scris de
+   utilizator, iar o lista fara buline/cifre arata ca paragrafe indentate.
+   Aceeasi reafirmare in editor (`.rte-editor`, RichTextEditor) si in
+   `.md-rendered` (MarkdownView) — afisarea si editarea trebuie sa arate la fel. */
+.rich-content ul { list-style: disc outside; }
+.rich-content ul ul { list-style: circle outside; }
+.rich-content ol { list-style: decimal outside; }
 .rich-content li { margin: 3px 0; }
 .rich-content a { color: var(--accent); text-decoration: underline; }
 .rich-content strong, .rich-content b { font-weight: var(--fw-semibold); }

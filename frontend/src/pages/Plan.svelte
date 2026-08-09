@@ -8,10 +8,13 @@
   import { loadSubtasks, updateSubtask } from '../stores/tasks.svelte.js'
   import { buildColumns, grupeazaColoane, numeLuna, ziLuna, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
   import { formatDate, formatDateShort, dueRing, RING_NEUTRU } from '../lib/formatters.js'
-  import { toast } from '../stores/ui.svelte.js'
+  import { toast, toastUndo } from '../stores/ui.svelte.js'
+  import { apiJson } from '../lib/api.js'
+  import { incepeTragere } from '../lib/tragere.js'
+  import { ecran } from '../lib/ecran.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
-  import { motion, panou } from '../lib/motion.svelte.js'
+  import { motion, panou, motionDuration } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -125,6 +128,70 @@
     const l2 = numeLuna(b)
     return l1 === l2 ? `${ziLuna(a)}–${ziLuna(b)} ${l2}`
       : `${formatDateShort(a)} – ${formatDateShort(b)}`
+  }
+
+  // ===== INTINDEREA PERIOADEI DIN PISTA (raportat de Ion: „nu apar barele
+  // verticale... la fel si pe planificator"). Desenul Planificatorului are
+  // intinderea in turele 4-6; pana acum banda doar naviga la Calendar.
+  // Aceeasi gramatica de gest ca in Calendar (lib/tragere.js), dar FARA
+  // impingerea vecinilor: aici randul e al unui singur proiect, deci capatul se
+  // OPRESTE la perioada vecina — coliziunile intre proiecte nu exista pe pista.
+  // O banda LIPITA din mai multe perioade (im.parti > 1) nu se intinde de aici:
+  // capatul ei apartine altei perioade din spate, si l-ar rescrie pe al primeia.
+  let intindere = $state(null) // { id, a, b } — previzualizarea cat timp tragi
+  function apucaCapatImpl(e, lane, im, capat) {
+    if (ecran.telefon || ecran.grosier) return
+    e.stopPropagation()
+    const pista = e.currentTarget.closest('.lane-track')
+    if (!pista) return
+    const ziDinX = (x) => {
+      const r = pista.getBoundingClientRect()
+      const p = Math.min(1, Math.max(0, (x - r.left) / r.width))
+      return addDays(plan.start, Math.min(plan.days - 1, Math.floor(p * plan.days)))
+    }
+    const s0 = im.a
+    const f0 = im.b
+    const vecinStanga = lane.impl.filter((x) => x.id !== im.id && x.b < s0).sort((a, b) => b.b.localeCompare(a.b))[0]
+    const vecinDreapta = lane.impl.filter((x) => x.id !== im.id && x.a > f0).sort((a, b) => a.a.localeCompare(b.a))[0]
+    incepeTragere(e, {
+      laInceput: () => { intindere = { id: im.id, a: s0, b: f0 } },
+      laMiscare: (x) => {
+        const zi = ziDinX(x)
+        let a = s0
+        let b = f0
+        if (capat === 'start') {
+          a = zi > f0 ? f0 : zi
+          if (vecinStanga && a <= vecinStanga.b) a = addDays(vecinStanga.b, 1)
+        } else {
+          b = zi < s0 ? s0 : zi
+          if (vecinDreapta && b >= vecinDreapta.a) b = addDays(vecinDreapta.a, -1)
+        }
+        intindere = { id: im.id, a, b }
+      },
+      laFinal: async () => {
+        const v = intindere
+        intindere = null
+        if (!v || (v.a === s0 && v.b === f0)) return
+        try {
+          await apiJson(`/api/implementari/${im.id}`, {
+            method: 'PUT', body: { data_start: v.a, data_sfarsit: v.b },
+          })
+          toastUndo(`Perioadă: ${intervalScurt(v.a, v.b)}`, {
+            onUndo: async () => {
+              await apiJson(`/api/implementari/${im.id}`, {
+                method: 'PUT', body: { data_start: s0, data_sfarsit: f0 },
+              })
+              await loadPlan()
+            },
+          })
+          await loadPlan()
+        } catch (e2) {
+          toast(`Eroare: ${e2.message}`, 'error')
+          await loadPlan()
+        }
+      },
+      laAnulare: () => { intindere = null },
+    })
   }
 
   // Propozitia de context din capul pistei „Perioade" (desen 4c): cand doua sau
@@ -520,7 +587,16 @@
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
     closePop()
   }
-  async function onDone(t) {
+  // Randul care isi joaca stampila chiar acum (`.bifare`, reguli in global.css).
+  let bifatAcum = $state('')
+  async function onDone(t, dinGest = false) {
+    // Stampila + taietura inainte ca randul sa plece — nu si pe gest, unde
+    // verdele pistei si zborul sunt deja raspunsul.
+    if (!isDone(t.status) && !dinGest) {
+      bifatAcum = t.tip + ':' + t.id
+      await new Promise(r => setTimeout(r, motionDuration(400)))
+      bifatAcum = ''
+    }
     try {
       const res = await toggleTaskDone(t.tip, t.id, t.status)
       if (res?.recurring_spawned) toast(`Finalizat ✓ — următoarea: ${formatDate(res.recurring_next)}`, 'success')
@@ -725,8 +801,9 @@
      coada. -->
 <div class="page ruta-in">
   <div class="page-header">
+    <!-- Fara iconita in fata titlului: desenele n-o au, iar cu ea h1-ul cadea
+         la alt `left` decat pe restul rutelor (standardizarea titlurilor). -->
     <div class="page-title-row">
-      <CalendarRange size={22} />
       <h1>Planificator</h1>
       <!-- Ce fereastra vezi, scris o data. Antetul de timp n-o mai spune: acolo
            luna ar fi un al treilea nivel peste saptamani si zile. -->
@@ -898,11 +975,18 @@
                        eticheta scoasa afara are nevoie de un RAND pe care sa stea,
                        si acela e primul (vezi `benzi` din `views`). -->
                   {#each lane.impl as im (im.id)}
-                    <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
+                    <!-- `div role="button"`, nu `<button>`: manerele de capat sunt
+                         ele insele butoane, iar buton in buton e markup invalid —
+                         aceeasi solutie ca la celula din Calendar. Previzualizarea
+                         intinderii se deseneaza LIVE, din `intindere`, nu din rect. -->
+                    {@const rct = intindere?.id === im.id ? (spanRect(intindere.a, intindere.b, plan.start, plan.days) || im.rect) : im.rect}
+                    <div class="impl-band loc-{im.locatie}" style="left:{rct.left}%; width:{rct.width}%"
                          class:pregatire={im.faza === 'pregatire'} class:doar-ico={!lung && im.rect.width < BANDA_TEXT_MIN}
-                         class:lung class:flip={im.flip}
+                         class:lung class:flip={im.flip} class:se-trage={intindere?.id === im.id}
                          class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
-                         onclick={() => navigate(`/calendar?zi=${im.a}`)}
+                         role="button" tabindex="0"
+                         onclick={() => { if (!intindere) navigate(`/calendar?zi=${im.a}`) }}
+                         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/calendar?zi=${im.a}`) } }}
                          title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {im.faza === 'pregatire' ? 'pregătire' : 'implementare'} · {formatDateShort(im.a)} → {formatDateShort(im.b)} · {im.zile} {im.zile === 1 ? 'zi' : 'zile'}{im.parti.length > 1 ? ` · ${im.parti.length} perioade lipite` : ''} · click pentru a o vedea în Calendar">
                       {#if im.locatie === 'sediu'}<Building2 size={12} class="ib-ico" />{:else}<MapPin size={12} class="ib-ico" />{/if}
                       {#if lung}
@@ -913,7 +997,22 @@
                         {/if}
                         {#if im.rect.width >= BANDA_ZILE_MIN}<span class="ib-zile">{im.zile} {im.zile === 1 ? 'zi' : 'zile'}</span>{/if}
                       {/if}
-                    </button>
+                      <!-- Manerele de intindere — la hover, ca in Calendar. Nu si pe
+                           benzile LIPITE (mai multe perioade): capatul lor apartine
+                           altei perioade. Nu si pe capetele taiate de fereastra. -->
+                      {#if im.parti.length === 1 && !ecran.telefon && !ecran.grosier}
+                        {#if !im.rect.clippedLeft}
+                          <button class="maner st" aria-label="Trage ca să schimbi începutul perioadei"
+                                  onpointerdown={(e) => apucaCapatImpl(e, lane, im, 'start')}
+                                  onclick={(e) => e.stopPropagation()}></button>
+                        {/if}
+                        {#if !im.rect.clippedRight}
+                          <button class="maner dr" aria-label="Trage ca să schimbi sfârșitul perioadei"
+                                  onpointerdown={(e) => apucaCapatImpl(e, lane, im, 'sfarsit')}
+                                  onclick={(e) => e.stopPropagation()}></button>
+                        {/if}
+                      {/if}
+                    </div>
                   {/each}
                   <div class="rows">
                     {#each lane.packed as row, ri (ri)}
@@ -1112,7 +1211,12 @@
            o a doua socoteala care sa se poata contrazice cu prima. -->
       <section class="mpiste">
         <div class="mp-cap"><span>Perioade</span>{#if mpContext}<span class="mp-ctx">{mpContext}</span>{/if}</div>
-        <div class="mp-grid">
+        <!-- ZILELE AU LATIME MINIMA, IAR PISTA DERULEAZA LA DREAPTA (cerinta lui
+             Ion, cu poza: cifrele erau inghesuite pana la necitibil la 14z pe
+             375px). Coloana numelor ramane lipita la stanga (sticky), deci stii
+             mereu al cui e randul. La 7z totul incape si nu deruleaza nimic. -->
+        <div class="mp-scroll">
+        <div class="mp-grid" style="--n-col:{columns.cols.length}; --col-min:{lung ? '44px' : '26px'}">
           <span class="mp-gol" aria-hidden="true"></span>
           <div class="mp-antet">
             <div class="mp-r-sapt">
@@ -1165,6 +1269,7 @@
               {/each}
             </div>
           {/each}
+        </div>
         </div>
       </section>
 
@@ -1245,7 +1350,8 @@
                  de doua ori. -->
             <div class="mrow" data-rand="{t.tip}:{t.id}" style="--ring: {dueRing(t.data_scadenta)}"
                  class:done={isDone(t.status)}
-                 use:glisare={{ latime: 118, activ: true, onBifa: isDone(t.status) ? null : () => onDone(t) }}>
+                 class:bifare={bifatAcum === t.tip + ':' + t.id}
+                 use:glisare={{ latime: 118, activ: true, onBifa: isDone(t.status) ? null : () => onDone(t, true) }}>
               <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
               <div class="gl-actiuni">
                 <button class="glb" onclick={() => onTomorrow(t)} title="Mută pe mâine"><ArrowRight size={17} /><span>Mâine</span></button>
@@ -1338,8 +1444,12 @@
 </Modal>
 
 <style>
-  .page { padding-bottom: 96px; }
-  .page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
+  /* Acelasi padding ca restul rutelor (standardizarea titlurilor): h1 la
+     aceeasi pozitie. 96 jos ramane — loc pentru dock peste sertar. */
+  .page { padding: var(--space-lg) var(--space-lg) 96px; }
+  /* `flex-start`, ca pe Calendar: cu controale de 38px alaturi, centrarea
+     cobora h1 fata de rutele fara controale (standardizarea titlurilor). */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
   /* Subtitlul sta pe LINIA DE BAZA a titlului, nu pe mijlocul lui: e continuarea
      propozitiei „Planificator", nu o eticheta pusa alaturi. Iconita se recentreaza
      singura — baza unui svg e muchia lui de jos, deci s-ar fi infipt in text. */
@@ -1673,6 +1783,28 @@
   .impl-band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
   .impl-band:hover { background: color-mix(in srgb, var(--accent) 16%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 48%, transparent); }
+  /* MANERELE DE INTINDERE — aceeasi gramatica ca in Calendar: doua bare subtiri,
+     la hover, pe toata inaltimea benzii. Aici banda e o TENTA (10%), deci linia
+     poate ramane pe accent — se vede. Cat timp tragi, banda nu mai naviga la
+     click si isi tine manerele aprinse. */
+  .impl-band .maner { position: absolute; top: 0; bottom: 0; width: 9px; padding: 0;
+    border: none; background: none; cursor: ew-resize; opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease); z-index: 2; }
+  .impl-band .maner.st { left: 0; }
+  .impl-band .maner.dr { right: 0; }
+  .impl-band .maner::before { content: ''; position: absolute; inset: 0 -2px; }
+  .impl-band .maner::after { content: ''; position: absolute; top: 3px; bottom: 3px;
+    left: 50%; width: 2px; transform: translateX(-50%); border-radius: 1px;
+    background: var(--accent); }
+  .impl-band:hover .maner, .impl-band.se-trage .maner { opacity: 1; }
+  /* La orizont lung banda are latime minima 11px — doua manere de 9 n-ar lasa
+     de unde s-o apuci; si o zi are ~6px, deci gestul ar fi oricum imprecis.
+     La fel pe banda ingusta doar-cu-icoana. Intinsul se face la 7z/14z/30z. */
+  .impl-band.lung .maner, .impl-band.doar-ico .maner { display: none; }
+  /* Cat timp tragi, geometria se rescrie la fiecare pixel: fara animatia de
+     sosire (ar reporni) si fara tranzitia de culoare peste ea. */
+  .impl-band.se-trage { animation: none; transition: none;
+    box-shadow: inset 0 0 0 1.5px var(--accent); }
   .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; margin-top: 2px; }
   /* LA ORIZONT LUNG, O BARA PE RANDUL INTAI.
      `50% - stiva/2` e chiar coordonata randului intai: stiva de repere e
@@ -1718,21 +1850,14 @@
      „aici e perioada pe axa timpului"; jos scrie ce e si unde duce.
      Locul se SCRIE (iconita + eticheta), nu se coloreaza — aceeasi gramatica ca
      in Calendar si in Ganttul de proiect. */
-  /* PULSUL SPUNE CA RANDUL E ATINGIBIL. Pe telefon nu exista hover, iar randul e o
-     suprafata a doua fara chenar si fara fill de accent — deci nimic din el nu
-     spunea ca duce undeva; chevronul singur e prea mic ca sa se vada ca afordanta.
-     Desenat (4c, `pfAprindere`): o aprindere lenta de accent 20% care se stinge
-     inapoi in suprafata, 3.4s, la infinit. Lenta si pe fond, nu pe text: nu cere
-     atentie, doar arata ca obiectul e viu. Se anuleaza la `reduced-motion` si la
-     print, ca toate celelalte animatii ale paginii. */
-  @keyframes pfAprindere {
-    0%, 12% { background: color-mix(in srgb, var(--accent) 20%, transparent); }
-    100% { background: var(--bg-elevated); }
-  }
+  /* FARA PULS (decizia lui Ion la verificarea finala, 2026-08-09). M7 din
+     handoff-ul Planificator cerea o aprindere de 3.4s la infinit; contractul de
+     miscare, mai nou, interzice pulsurile („fara glow, puls pe puncte, inele
+     care respira") si a castigat arbitrajul. Ca randul duce undeva o spun
+     chevronul si fondul de suprafata a doua — aceeasi afordanta ca `.mgol`. */
   .mimpl { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
     border: none; cursor: pointer; padding: 0 10px; border-radius: var(--radius-sm);
-    background: var(--bg-elevated); margin-bottom: 6px;
-    animation: pfAprindere 3.4s var(--ease) infinite; }
+    background: var(--bg-elevated); margin-bottom: 6px; }
   /* Pregatirea ramane mai palida decat implementarea — doar ca acum diferenta e
      de CERNEALA, nu de procent de accent: randul e acelasi obiect, cu alt ton. */
   .mimpl.pregatire .mimpl-loc { color: var(--text-secondary); font-weight: var(--fw-medium); }
@@ -1876,14 +2001,21 @@
   /* Propozitia de context: text obisnuit la 13, nu eticheta — spune un fapt. */
   .mp-ctx { font-size: var(--font-small); font-weight: var(--fw-normal);
     letter-spacing: var(--tracking-normal); text-transform: none; color: var(--text-secondary); }
-  .mp-grid { display: grid; grid-template-columns: 96px minmax(0, 1fr);
+  /* Invelisul de derulare: pista are latime minima pe coloana (26px/zi, 44/saptamana
+     la orizont lung), deci la 14z+ iese din ecran si DERULEAZA — cifrele nu se mai
+     strivesc una in alta (poza lui Ion). Numele raman lipite la stanga. */
+  .mp-scroll { overflow-x: auto; margin: 0 calc(-1 * var(--space-12)); padding: 0 var(--space-12);
+    -webkit-overflow-scrolling: touch; }
+  .mp-grid { display: grid;
+    grid-template-columns: 96px minmax(calc(var(--n-col, 14) * var(--col-min, 26px)), 1fr);
     column-gap: 8px; row-gap: 6px; align-items: center; }
-  /* Antetul ramane lipit sub bara aplicatiei cat derulezi lista de grupuri:
-     fara scara deasupra lor, benzile redevin decor. Fond OPAC, fara blur —
-     sticla a iesit din sistem. Celula goala din stanga se lipeste odata cu el,
-     altfel randul de antet s-ar rupe in doua la derulare. */
-  .mp-gol, .mp-antet { position: sticky; top: var(--header-height); z-index: 4;
+  /* Numele si celula goala a antetului stau LIPITE la stanga cat derulezi pista:
+     fond opac, altfel benzile ar trece pe sub text. Sticky pe TOP a plecat odata
+     cu invelisul de scroll (un sticky vertical nu mai functioneaza dintr-un
+     stramos cu overflow-x) — desenul oricum n-avea antet lipicios. */
+  .mp-gol, .mp-nume { position: sticky; left: 0; z-index: 4;
     background: var(--bg-surface); }
+  .mp-antet { z-index: 3; }
   .mp-antet { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; }
   .mp-r-sapt, .mp-r-zile { position: relative; height: 13px; }
   .mp-s, .mp-z { position: absolute; top: 0; bottom: 0; display: flex;
@@ -2287,10 +2419,6 @@
      ar fi fost anulat de `.band` / `.impl-band` / `.bar`. */
   @media (prefers-reduced-motion: reduce) {
     .band, .impl-band, .bar, .wk { animation: none; }
-    /* Pulsul randului de perioada e o animatie INFINITA, deci aici nu e vorba de
-       stagger: e chiar felul de miscare pe care cererea il interzice. Fara ea
-       randul ramane suprafata a doua, cu chevron — se pierde doar afordanta. */
-    .mimpl { animation: none; }
   }
 
   /* ===== print (browser print-to-PDF) ===== */

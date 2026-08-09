@@ -9,7 +9,7 @@
   import EmptyState from './components/ui/EmptyState.svelte'
   import ErrorState from './components/ui/ErrorState.svelte'
   import { router, resolveRoute, viewTransitionsOn, setPreincarcaRuta, link } from './lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, EASE } from './lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, EASE, alunecare } from './lib/motion.svelte.js'
 
   /* ICONITELE SUNT LA 1.5, NU LA 2.
      Regula („Lucide la stroke-width 1.5") era scrisa in handoff si in sistemul de
@@ -63,6 +63,36 @@
   // motionDuration() also zeroes this under reduced-motion regardless of VT support.
   const fadeDur = $derived(motionDuration(viewTransitionsOn() ? 0 : DUR_FAST))
 
+  // ===== SCHIMBAREA DE PAGINA E DIRECTIONALA (contractul de miscare: 240ms,
+  // „inainte din dreapta, inapoi din stanga"). Sensul vine din ORDINEA dockului:
+  // mergi spre dreapta in dock -> continutul soseste din dreapta, si invers.
+  // Doua drumuri, acelasi sens:
+  //  - fara View Transitions: `alunecare` (Svelte) pe blocul de ruta;
+  //  - cu View Transitions: browserul detine tranzitia, deci sensul i se da prin
+  //    variabila `--nav-sens` de pe <html>, citita de regulile
+  //    `::view-transition-*(root)` din global.css.
+  // `sensNav` e un $derived LENES, citit chiar de parametrii tranzitiei — asa
+  // valoarea e proaspata inainte sa porneasca intro-ul (un $effect ar fi rulat
+  // dupa). Navigarea in interiorul aceleiasi sectiuni (/projects -> /projects/:id,
+  // adica exact morph-ul de card) are sens 0 — morph-ul nu primeste si o alunecare.
+  const ORDINE_NAV = ['/', '/projects', '/tasks', '/plan', '/calendar', '/departament', '/calculator']
+  const bazaRutei = (p) => '/' + ((p || '/').split('/')[1] || '')
+  let bazaVeche = null
+  const sensNav = $derived.by(() => {
+    const b = bazaRutei(router.path)
+    let s = 0
+    if (bazaVeche !== null && b !== bazaVeche) {
+      const a = ORDINE_NAV.indexOf(bazaVeche)
+      const z = ORDINE_NAV.indexOf(b)
+      if (a >= 0 && z >= 0 && a !== z) s = z > a ? 1 : -1
+    }
+    bazaVeche = b
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.setProperty('--nav-sens', String(s))
+    }
+    return s
+  })
+
   let LoadedComponent = $state(null)
   let loadedParams = $state({})
   let loadError = $state(null)
@@ -111,7 +141,12 @@
     <Header deschideCautarea={() => paleta?.deschide()} />
     <main class="app-content" id="main-content">
       {#key routeKey}
-        <div class="content-width" in:fade={{ duration: fadeDur, easing: EASE }} out:fade={{ duration: fadeDur, easing: EASE }}>
+        <!-- `sensNav` se citeste NEconditionat (si pe ramura View Transitions):
+             cititul e cel care il recalculeaza si scrie `--nav-sens` pe <html>. -->
+        {@const sens = sensNav}
+        <div class="content-width"
+             in:alunecare={{ sens: viewTransitionsOn() ? 0 : sens, duration: 240 }}
+             out:fade={{ duration: fadeDur, easing: EASE }}>
           <!-- DOUA LUCRURI DIFERITE, DOUA FORME.
                O ADRESA GRESITA NU E O EROARE: patratul ramane neutru, ca la orice
                stare goala, si primesti drumul inapoi. O pagina care n-a putut fi

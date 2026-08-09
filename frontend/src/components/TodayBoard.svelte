@@ -98,8 +98,18 @@
     }
   }
 
-  async function onToggle(it) {
+  // Randul care isi joaca stampila chiar acum (`.bifare`, reguli in global.css).
+  let bifatAcum = $state('')
+
+  async function onToggle(it, dinGest = false) {
     const eraFacut = it.status === 'done'
+    // Stampila + taietura, inainte ca randul sa plece — dar nu pe gest, unde
+    // verdele pistei si zborul sunt deja raspunsul (o animatie pe schimbare).
+    if (!eraFacut && !dinGest) {
+      bifatAcum = it.tip + ':' + it.id
+      await new Promise(r => setTimeout(r, motionDuration(400)))
+      bifatAcum = ''
+    }
     try {
       // Scot randul din lista INAINTE de dus-intorsul cu serverul: boardul nu
       // tine taskuri bifate (`/api/agenda/today` filtreaza `status != 'done'`),
@@ -284,6 +294,7 @@
         <div
           class="arow"
           class:done={it.status === 'done'}
+          class:bifare={bifatAcum === it.tip + ':' + it.id}
           class:dragover={overIndex === i}
           class:dragging={dragIndex === i}
           style="--ring: {dueRing(it.data_scadenta)}"
@@ -293,7 +304,7 @@
           animate:flip={{ duration: flipDur }}
           in:sosire|local
           out:plecare
-          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it), onAmana: () => planificaDinGest(it) }}
+          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it, true), onAmana: () => planificaDinGest(it) }}
         >
           <!-- UN GEST = UN VERB, IN AMBELE SENSURI (vezi lib/glisare.js).
                Dreapta = „Făcut", stanga = „Mâine", amandoua cu pista care se
@@ -383,11 +394,12 @@
         <div
           class="arow"
           class:done={it.status === 'done'}
+          class:bifare={bifatAcum === it.tip + ':' + it.id}
           style="--ring: {dueRing(it.data_scadenta)}"
           role="listitem"
           in:sosire|local
           out:plecare
-          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it), onAmana: () => planificaDinGest(it) }}
+          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it, true), onAmana: () => planificaDinGest(it) }}
         >
           <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
           <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>

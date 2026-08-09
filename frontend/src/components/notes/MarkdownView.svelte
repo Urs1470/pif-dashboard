@@ -39,6 +39,12 @@
   .md-rendered :global(h3) { font-size: var(--font-h3); color: var(--text-secondary); }
   .md-rendered :global(p) { margin: 0.55em 0; }
   .md-rendered :global(ul), .md-rendered :global(ol) { margin: 0.5em 0; padding-left: 1.5em; }
+  /* Marcatorii trebuie REAFIRMATI: `reset.css` sterge `list-style` de pe toate
+     listele; fara asta, listele din notite apar ca paragrafe indentate.
+     Aceeasi reafirmare in `.rich-content` (global.css) si `.rte-editor`. */
+  .md-rendered :global(ul) { list-style: disc outside; }
+  .md-rendered :global(ul ul) { list-style: circle outside; }
+  .md-rendered :global(ol) { list-style: decimal outside; }
   .md-rendered :global(li) { margin: 0.2em 0; }
   .md-rendered :global(a) { color: var(--accent); text-decoration: none; }
   .md-rendered :global(a:hover) { text-decoration: underline; }

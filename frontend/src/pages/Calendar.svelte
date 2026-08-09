@@ -18,7 +18,6 @@
   import { apiJson } from '../lib/api.js'
   import { navigate, router } from '../lib/router.svelte.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
-  import { ui } from '../stores/ui.svelte.js'
   import { motion, motionDuration, alunecare, sosire, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   // `PROJECT_STATUS_LABELS` a plecat cu C14: sertarul „fara perioada" contine prin
   // definitie doar proiecte active, iar de la v31 activ inseamna un singur status
@@ -1057,7 +1056,6 @@
   }
 
   onMount(() => {
-    ui.pageHeader = { title: 'Calendar', subtitle: monthLabel(anchor) }
     // Planificatorul trimite aici cu #/calendar?zi=AAAA-LL-ZZ cand dai click pe o
     // banda de perioada: perioadele se editeaza intr-un singur loc, aici.
     const zi = router.query?.zi
@@ -1068,16 +1066,13 @@
     }
     load()
   })
-  /* LUNA STA IN SUBTITLUL PAGINII (C1), nu intre sageti — regula scrisa in
-     CLAUDE.md pentru Planificator, care e la fel de adevarata aici: capul paginii
-     spune UNDE esti in timp, bara spune cum te MUTI. Subtitlul era „Unde ești în
-     fiecare zi", o descriere care nu se schimba niciodata, deci nu purta nicio
-     informatie.
-     Se rescrie la fiecare schimbare de `anchor`, nu doar la montare: altfel ar fi
-     ramas luna cu care ai intrat si ar fi mintit dupa prima apasare pe „inainte".
-     Cea din `onMount` ramane ca sa nu existe un cadru cu subtitlul gol. */
-  $effect(() => { ui.pageHeader = { title: 'Calendar', subtitle: monthLabel(anchor) } })
-  onDestroy(() => { ui.pageHeader = { title: '', subtitle: '' } })
+  /* TITLUL STA IN PAGINA, ca pe /projects, /tasks si /plan — nu in bara
+     aplicatiei (raportat de Ion: „titlurile paginilor sunt neuniforme, undeva
+     mai sus, undeva mai jos, undeva sus pe mijloc"). `ui.pageHeader` era exact
+     acel „sus pe mijloc": traia in Header, la alta inaltime decat titlurile
+     scrise in pagina, si pe telefon disparea cu totul (`.header-context` e
+     `display: none` sub 768). Luna ramane SUBTITLU (C1), doar ca acum sta unde
+     stau toate subtitlurile — langa h1. */
 </script>
 
 <svelte:window onkeydown={(e) => {
@@ -1095,25 +1090,19 @@
     <ErrorState message={error} onretry={load} />
   {:else if data}
 
-    <!-- CAPUL PAGINII: SURSELE, APOI NAVIGATIA (C2).
-         Sursele stateau intr-un rand propriu sub bara — o a doua banda orizontala
-         pentru doua butoane, pe o pagina care are deja titlu, bara si grila. Acum
-         urca in acelasi rand, la dreapta, despartite de sageti printr-un separator
-         de 24px: sunt SURSE (de unde iei lucru), nu navigatie (cum te muti prin
-         timp), si separatorul e cel care spune ca sunt doua feluri de butoane.
-         In DOM stau INAINTEA navigatiei, nu mutate cu `order`: altfel tabularea ar
-         merge invers decat se citeste. -->
-    <div class="bar">
-      <!-- CAPUL BAREI EXISTA DOAR PE TELEFON (M8). Pe desktop titlul si luna stau
-           in antetul paginii (C1) — dar `.header-context` e `display: none` sub
-           768px, deci acolo luna ar disparea cu totul: ai naviga intre luni fara
-           sa scrie niciunde in care esti. Pragul e 768, nu 620 ca restul blocului
-           mobil, fiindca ala e pragul la care se ascunde antetul — doua praguri
-           diferite ar lasa o fasie intre 620 si 768 fara luna. -->
-      <div class="bar-cap" aria-hidden="true">
-        <span class="bar-marca">Calendar</span>
-        <span class="bar-luna">{monthLabel(anchor)}</span>
+    <!-- CAPUL PAGINII: titlul + luna la stanga (aceeasi pozitie ca pe /projects,
+         /tasks, /plan), apoi sursele si navigatia la dreapta (C2).
+         Sursele stau INAINTEA navigatiei in DOM, nu mutate cu `order`: altfel
+         tabularea ar merge invers decat se citeste. Separatorul de 24px spune ca
+         sunt doua feluri de butoane — surse (de unde iei lucru) vs navigatie
+         (cum te muti prin timp). `.bar-cap` de telefon a plecat: titlul din
+         pagina exista acum pe orice latime, deci nu mai are ce dubla. -->
+    <div class="page-header">
+      <div class="page-title-row">
+        <h1>Calendar</h1>
+        <span class="page-sub">{monthLabel(anchor)}</span>
       </div>
+    <div class="bar">
       <div class="surse cell-in" style="--celula: 0">
         {#if data.neplanificate?.length}
           <!-- Comuta DOAR sertarul. Golea si ziua selectata, ca sa nu stea doua
@@ -1164,6 +1153,7 @@
           <Download size={13} /> .ics
         </button>
       </div>
+    </div>
     </div>
 
     <!-- RANDUL DE KPI A PLECAT. „Zile pe teren", „deplasări", „zile la sediu"
@@ -1653,16 +1643,23 @@
 <style>
   .page { padding: var(--space-lg); }
 
-  /* Tot randul se strange la DREAPTA: luna — singurul lucru care statea in stanga
-     — s-a mutat in subtitlul paginii (C1), deci `space-between` ar fi impins
-     sursele intr-un capat si sagetile in celalalt, cu un gol intre ele. */
-  .bar { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm); }
+  /* ACEEASI POZITIE DE TITLU CA /projects, /tasks, /plan (raportat de Ion:
+     titlurile stateau la inaltimi diferite). Titlul la stanga, bara la dreapta,
+     pe acelasi rand; sub 768 randul se rupe si bara coboara sub titlu. */
+  /* `flex-start`, nu `center`: cu bara de 38px alaturi, centrarea cobora h1 cu
+     ~6px fata de paginile fara controale in cap — exact neuniformitatea
+     raportata de Ion. Titlul sta pe ACEEASI linie pe toate rutele. */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between;
+    gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md); }
+  .page-title-row { display: flex; align-items: baseline; gap: var(--space-sm);
+    color: var(--text); min-width: 0; }
+  .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); }
+  .page-sub { font-size: var(--font-small); font-weight: var(--fw-medium);
+    color: var(--text-secondary); white-space: nowrap; }
+  .bar { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-sm); flex-wrap: wrap; }
   /* Separatorul dintre surse si navigatie: 24px, cat inaltimea la care se citesc
      doua grupuri ca fiind despartite fara sa para doua bare. */
   .nav { display: flex; align-items: center; gap: 6px; }
-  /* Capul barei si initialele zilelor exista doar sub 768px — vezi marcajul.
-     Ascunse din start, aprinse in blocul mobil. */
-  .bar-cap { display: none; }
   .wd-scurt { display: none; }
   .wd-lung { font-style: normal; }
   /* Iconita locului de pe banda: doar pe telefon (M1). */
@@ -1958,8 +1955,17 @@
   .maner.st { left: 0; }
   .maner.dr { right: 0; }
   .maner::before { content: ''; position: absolute; inset: 0 -2px; }
+  /* CERNEALA DE PE FILL, NU ACCENTUL (raportat de Ion: „nu apar barele").
+     Linia era `--accent` — pe vremea cand banda era o spalatura de 26%. De la C8
+     banda e FILL PLIN de accent, deci linia era accent pe accent: exista, la
+     opacitate 1, si nu se vedea deloc. Pe fill scrie `--accent-text`, ca textul. */
   .maner::after { content: ''; position: absolute; top: 4px; bottom: 4px; left: 50%; width: 2px;
-                  transform: translateX(-50%); border-radius: 1px; background: var(--accent); }
+                  transform: translateX(-50%); border-radius: 1px; background: var(--accent-text); }
+  /* Starile care nu sunt fill de accent isi aleg cerneala potrivita: conturata
+     (fond de suprafata) — accent; facuta (tenta verde) — verdele adanc; decizia
+     (fill rosu) ramane pe cerneala de fill. */
+  .banda.pregatire .maner::after { background: var(--accent); }
+  .banda.facuta .maner::after { background: var(--success-deep); }
   .banda:hover .maner, .banda.se-trage .maner { opacity: 1; }
   /* PE TELEFON PISTA SE CITESTE, NU SE MANIPULEAZA.
      Manerele nu se ascund doar vizual — gestul insusi e oprit (vezi
@@ -2272,19 +2278,9 @@
        paginii. Din C2 sunt copil al `.bar`, deci acelasi `order: 2` le impingea
        DUPA sageti, adica exact invers decat le-am asezat in DOM. */
   }
-  /* PRAGUL E AL ANTETULUI, NU AL GRILEI. `.header-context` (titlul paginii si
-     luna) e `display: none` sub 768px, deci de la latimea asta in jos luna
-     trebuie sa reapara in bara — altfel navighezi intre luni fara sa scrie
-     niciunde in care esti. Restul blocului mobil e la 620; daca puneam si asta
-     acolo, ramanea o fasie de 148px fara luna. */
-  @media (max-width: 768px) {
-    .bar-cap { display: flex; align-items: baseline; gap: 7px; margin-right: auto; min-width: 0; }
-    .bar-marca { font-size: var(--font-h3); font-weight: var(--fw-semibold); color: var(--text); }
-    .bar-luna { font-size: var(--font-small); color: var(--text-dim); white-space: nowrap;
-                overflow: hidden; text-overflow: ellipsis; }
-    /* Bara are acum ceva in stanga, deci nu se mai strange la dreapta. */
-    .bar { justify-content: space-between; }
-  }
+  /* `.bar-cap` a plecat odata cu standardizarea titlurilor: titlul + luna stau
+     acum IN PAGINA pe orice latime, ca pe restul rutelor, deci bara de telefon
+     nu mai are ce dubla. */
   @media (max-width: 620px) {
     .page { padding: var(--space-md); }
     /* Benzile sunt mai subtiri pe telefon, deci si pasul lor — cele doua numere
@@ -2369,8 +2365,6 @@
        buton care ocupa un sfert din bara. */
     .ics { display: none; }
     .nav { gap: var(--space-xs); }
-    /* `.titlu` a plecat cu C1 si aici: luna se scrie in capul barei (`.bar-cap`),
-       fiindca antetul paginii e ascuns sub 768px. */
     .bar { gap: var(--space-xs); }
 
     /* Actiunile din panoul zilei — „Da", „Mută pe azi", „Mută", „Scoate". Erau

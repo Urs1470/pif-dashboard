@@ -7,11 +7,10 @@ export const toggleTheme = cicleazaTema
 /** Compatibilitate: fixeaza explicit o tema (deci iese din „auto"). */
 export function setTheme(theme) { setMod(theme === 'light' ? 'light' : 'dark') }
 
+// `pageHeader` a plecat (standardizarea titlurilor, 2026-08-09): titlul unei
+// pagini se scrie IN pagina, in `.page-title-row` — bara tine doar marca.
 export const ui = $state({
   toasts: [],
-  // Context de pagina afisat in bara de sus (ex. salutul de pe Home). Paginile
-  // il seteaza pe mount si il curata pe destroy; gol => header doar cu brand.
-  pageHeader: { title: '', subtitle: '' },
 })
 
 let toastId = 0

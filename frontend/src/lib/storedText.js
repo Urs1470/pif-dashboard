@@ -3,7 +3,10 @@
 
 const SAFE_TAGS = new Set([
   'P', 'BR', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI',
-  'STRONG', 'B', 'EM', 'I', 'U', 'A', 'HR', 'BLOCKQUOTE', 'SPAN',
+  // S/STRIKE/DEL: butonul „Tăiat" din editor (execCommand strikeThrough) produce
+  // <strike> (Chrome/Safari) sau <s>; fara ele aici, sanitizarea de la salvare
+  // dezbraca tagul si formatarea disparea in tacere la round-trip.
+  'STRONG', 'B', 'EM', 'I', 'U', 'S', 'STRIKE', 'DEL', 'A', 'HR', 'BLOCKQUOTE', 'SPAN',
   // tables — users paste finished tables from Word/Excel/web
   'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TD', 'TH', 'CAPTION', 'COLGROUP', 'COL',
 ])
