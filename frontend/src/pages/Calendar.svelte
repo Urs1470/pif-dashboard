@@ -1022,7 +1022,7 @@
   }
 
   onMount(() => {
-    ui.pageHeader = { title: 'Calendar', subtitle: 'Unde ești în fiecare zi' }
+    ui.pageHeader = { title: 'Calendar', subtitle: monthLabel(anchor) }
     // Planificatorul trimite aici cu #/calendar?zi=AAAA-LL-ZZ cand dai click pe o
     // banda de perioada: perioadele se editeaza intr-un singur loc, aici.
     const zi = router.query?.zi
@@ -1033,6 +1033,15 @@
     }
     load()
   })
+  /* LUNA STA IN SUBTITLUL PAGINII (C1), nu intre sageti — regula scrisa in
+     CLAUDE.md pentru Planificator, care e la fel de adevarata aici: capul paginii
+     spune UNDE esti in timp, bara spune cum te MUTI. Subtitlul era „Unde ești în
+     fiecare zi", o descriere care nu se schimba niciodata, deci nu purta nicio
+     informatie.
+     Se rescrie la fiecare schimbare de `anchor`, nu doar la montare: altfel ar fi
+     ramas luna cu care ai intrat si ar fi mintit dupa prima apasare pe „inainte".
+     Cea din `onMount` ramane ca sa nu existe un cadru cu subtitlul gol. */
+  $effect(() => { ui.pageHeader = { title: 'Calendar', subtitle: monthLabel(anchor) } })
   onDestroy(() => { ui.pageHeader = { title: '', subtitle: '' } })
 </script>
 
@@ -1051,10 +1060,47 @@
     <ErrorState message={error} onretry={load} />
   {:else if data}
 
+    <!-- CAPUL PAGINII: SURSELE, APOI NAVIGATIA (C2).
+         Sursele stateau intr-un rand propriu sub bara — o a doua banda orizontala
+         pentru doua butoane, pe o pagina care are deja titlu, bara si grila. Acum
+         urca in acelasi rand, la dreapta, despartite de sageti printr-un separator
+         de 24px: sunt SURSE (de unde iei lucru), nu navigatie (cum te muti prin
+         timp), si separatorul e cel care spune ca sunt doua feluri de butoane.
+         In DOM stau INAINTEA navigatiei, nu mutate cu `order`: altfel tabularea ar
+         merge invers decat se citeste. -->
     <div class="bar">
+      <div class="surse cell-in" style="--celula: 0">
+        {#if data.neplanificate?.length}
+          <button class="sursa" onclick={() => { selectata = ''; deschideNeplanificate = !deschideNeplanificate }}
+                  aria-expanded={deschideNeplanificate}
+                  title="Proiecte active fără nicio zi planificată">
+            <CalendarX2 size={14} strokeWidth={1.5} />
+            <span class="s-n">{data.neplanificate.length}</span> fără perioadă
+          </button>
+        {/if}
+        {#if rezumat.deDecis}
+          <!-- Contorul PARCURGE lista: fiecare apasare duce la urmatoarea zi de
+               clarificat, si arata unde esti. -->
+          <button class="sursa rau" onclick={urmatorulDeClarificat}
+                  title="Mergi la următoarea zi de clarificat">
+            <TriangleAlert size={14} strokeWidth={1.5} />
+            <span class="s-n">{rezumat.deDecis > 1 ? `${decisCurent + 1}/${rezumat.deDecis}` : rezumat.deDecis}</span> de clarificat
+          </button>
+        {/if}
+        {#if data.probleme?.length}
+          <!-- Nimic nu dispare in tacere: o data pe care aplicatia nu o poate citi
+               nu se aseaza pe nicio zi, deci randul lipseste din calendar fara
+               niciun semn. Mai bine un semnal suparator decat o absenta tacuta. -->
+          <button class="sursa rau" onclick={() => navigate(`/projects/${data.probleme[0].proiect_id}`)}
+                  title={data.probleme.map(p => `${p.nume} — ${p.unde}, ${p.camp}: „${p.valoare}”`).join('\n')}>
+            <TriangleAlert size={14} strokeWidth={1.5} />
+            <span class="s-n">{data.probleme.length}</span>
+            {data.probleme.length === 1 ? 'dată necitibilă' : 'date necitibile'}
+          </button>
+        {/if}
+      </div>
       <div class="nav">
         <button class="ico" onclick={() => pas(-1)} aria-label="Înapoi"><ChevronLeft size={16} /></button>
-        <span class="titlu">{monthLabel(anchor)}</span>
         <button class="ico" onclick={() => pas(1)} aria-label="Înainte"><ChevronRight size={16} /></button>
         <button class="b-azi" onclick={laAzi}>Azi</button>
         <!-- Exportul .ics a venit aici din Admin (sters): calendarul de abonat din
@@ -1075,41 +1121,8 @@
          sunt statistici: le citeai, dadeai din cap si mergeai mai departe —
          niciuna nu decidea o actiune, iar toate trei se pot NUMARA uitandu-te la
          grila de dedesubt, care le si arata UNDE sunt.
-
-         Raman cele doua care duc undeva si cer ceva de facut. Plus „Proiecte
-         fara perioada", urcat aici din coloana care dispare: e o SURSA (proiecte
-         care asteapta sa fie asezate pe zile), nu un detaliu al zilei selectate
-         — iar in panou nu se vedea tocmai cand n-aveai nicio zi deschisa. -->
-    <div class="surse cell-in" style="--celula: 0">
-      {#if data.neplanificate?.length}
-        <button class="sursa" onclick={() => { selectata = ''; deschideNeplanificate = !deschideNeplanificate }}
-                aria-expanded={deschideNeplanificate}
-                title="Proiecte active fără nicio zi planificată">
-          <CalendarX2 size={14} strokeWidth={1.5} />
-          <span class="s-n">{data.neplanificate.length}</span> fără perioadă
-        </button>
-      {/if}
-      {#if rezumat.deDecis}
-        <!-- Contorul PARCURGE lista: fiecare apasare duce la urmatoarea zi de
-             clarificat, si arata unde esti. -->
-        <button class="sursa rau" onclick={urmatorulDeClarificat}
-                title="Mergi la următoarea zi de clarificat">
-          <TriangleAlert size={14} strokeWidth={1.5} />
-          <span class="s-n">{rezumat.deDecis > 1 ? `${decisCurent + 1}/${rezumat.deDecis}` : rezumat.deDecis}</span> de clarificat
-        </button>
-      {/if}
-      {#if data.probleme?.length}
-        <!-- Nimic nu dispare in tacere: o data pe care aplicatia nu o poate citi
-             nu se aseaza pe nicio zi, deci randul lipseste din calendar fara
-             niciun semn. Mai bine un semnal suparator decat o absenta tacuta. -->
-        <button class="sursa rau" onclick={() => navigate(`/projects/${data.probleme[0].proiect_id}`)}
-                title={data.probleme.map(p => `${p.nume} — ${p.unde}, ${p.camp}: „${p.valoare}”`).join('\n')}>
-          <TriangleAlert size={14} strokeWidth={1.5} />
-          <span class="s-n">{data.probleme.length}</span>
-          {data.probleme.length === 1 ? 'dată necitibilă' : 'date necitibile'}
-        </button>
-      {/if}
-    </div>
+         Cele doua care raman — plus „Proiecte fara perioada" — au urcat in bara
+         (C2); vezi comentariul de acolo. -->
 
     <div class="wrap" class:cu-panou={panouDeschis}>
       <div class="cal cell-in" style="--celula: 1">
@@ -1485,9 +1498,22 @@
 <style>
   .page { padding: var(--space-lg); }
 
-  .bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm); }
+  /* Tot randul se strange la DREAPTA: luna — singurul lucru care statea in stanga
+     — s-a mutat in subtitlul paginii (C1), deci `space-between` ar fi impins
+     sursele intr-un capat si sagetile in celalalt, cu un gol intre ele. */
+  .bar { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm); }
+  /* Separatorul dintre surse si navigatie: 24px, cat inaltimea la care se citesc
+     doua grupuri ca fiind despartite fara sa para doua bare. */
   .nav { display: flex; align-items: center; gap: 6px; }
-  .titlu { font-size: var(--font-body); font-weight: var(--fw-semibold); min-width: 148px; text-align: center; }
+  /* Separatorul e un `::before` de 24px, nu un `border-left`: bordura ar fi cat
+     toata inaltimea randului (38px) si ar arata ca marginea unei bare, nu ca o
+     cusatura intre doua grupuri.
+     `:has(.surse > *)` il aprinde DOAR cand chiar exista surse — altfel, intr-o
+     luna fara nimic de clarificat, ar ramane o liniuta care nu desparte nimic. */
+  .bar:has(.surse > *) .nav::before {
+    content: ''; width: 1px; height: 24px; margin-right: 2px;
+    background: var(--border); flex: none; }
+  /* `.titlu` a plecat cu C1 — luna se scrie in subtitlul paginii. */
   /* `b-azi`, nu `azi`: clasa `azi` e si pe celula zilei de azi (`.zi.azi`), iar un
      selector neprefixat o prindea si pe ea — celula primea `display: inline-flex`
      cu centrare si `padding: 0 10px`, deci numarul zilei de azi sta centrat in
@@ -1513,9 +1539,11 @@
      Fiecare DUCE undeva si cere ceva de facut; aceeasi haina ca perechea de pe
      Acasa, ca sa se recunoasca de pe un ecran pe altul. Tonul e singura
      diferenta: neutru = ce lipseste, restant = ce e gresit acum. */
-  .surse { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
+  /* Fara `margin-bottom`: sursele stau ACUM in bara (C2), deci marja de sub ele ar
+     impinge grila cu inca un rand de gol. */
+  .surse { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
   .sursa { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
-    min-height: 38px; padding: 0 12px; border-radius: var(--radius-xs);
+    min-height: 38px; padding: 0 12px; border-radius: var(--radius-sm);
     background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none;
     color: var(--text-dim); font-family: inherit; font-size: var(--font-small);
     cursor: pointer; transition: var(--transition-pressable); }
@@ -1972,7 +2000,7 @@
     .ico { width: var(--tap-min); height: var(--tap-min); }
     .b-azi, .ics { height: var(--tap-min); padding: 0 14px; font-size: var(--font-small); }
     .nav { gap: var(--space-xs); flex: 1; }
-    .titlu { flex: 1; min-width: 0; font-size: var(--font-small); }
+    /* `.titlu` a plecat cu C1 si aici: luna se scrie in subtitlul paginii. */
     .bar { gap: var(--space-xs); }
 
     /* Actiunile din panoul zilei — „Da", „Mută pe azi", „Mută", „Scoate". Erau
