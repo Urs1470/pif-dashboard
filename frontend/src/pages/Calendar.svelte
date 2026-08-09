@@ -23,13 +23,13 @@
   import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
   import { incepeTragere } from '../lib/tragere.js'
   import { ecran } from '../lib/ecran.svelte.js'
-  import { cheieDeplasare, grupeazaDeplasari } from '../lib/deplasari.js'
+  import { cheieDeplasare, grupeazaDeplasari, seAting, rezolvaCiocniri } from '../lib/deplasari.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
   import {
     WEEKDAYS, buildGrid, monthStart, addMonths, addDays, weekStart,
-    diffDays, isWeekend, nextWorkday, monthLabel, dayLabel, shortDate, todayISO, parseISO,
+    diffDays, isWeekend, monthLabel, dayLabel, shortDate, todayISO, parseISO,
   } from '../lib/calendarDates.js'
 
   let data = $state(null)
@@ -703,50 +703,18 @@
     // ca sa stim ce scrie in toast, si NUMAI cand chiar s-a alipit ceva nou: doi
     // vecini care se atingeau si inainte erau deja o singura deplasare, deci
     // „s-au unit acum" ar fi o minciuna despre ce tocmai ai facut.
-    const atinge = (q, s, f) => {
-      const qf = q.data_sfarsit || q.data_start
-      return !(qf < addDays(s, -1) || q.data_start > addDays(f, 1))
-    }
     const alipite = toate.filter((q) => q.id !== p.id && cheieGrup(q) === cheie
-      && atinge(q, start, sfarsit) && !atinge(q, s0, f0))
+      && seAting(q, start, sfarsit) && !seAting(q, s0, f0))
 
-    // IMPINGEREA SE PROPAGA. Un singur pas ar putea aseza vecinul fix peste
-    // urmatorul — adica exact suprapunerea pe care regula o interzice, doar mutata
-    // cu o casuta mai incolo. Deci se rezolva pana nu mai ramane nicio ciocnire:
-    // fiecare perioada lovita se muta la prima zi LUCRATOARE de dupa ce a lovit-o,
-    // pastrandu-si durata. Cate s-au mutat scrie in toast, si toate se intorc din
-    // „Anulează" — o propagare tacuta ar fi fost singurul lucru inacceptabil aici.
-    const stare = [{ q: p, s: start, f: sfarsit, cheie, fix: true }]
-    for (const q of toate) {
-      if (q.id === p.id) continue
-      stare.push({ q, s: q.data_start, f: q.data_sfarsit || q.data_start, cheie: cheieGrup(q), fix: false })
-    }
-    const mutate = new Map()
-    for (let paza = 0; paza < 60; paza++) {
-      let schimbat = false
-      for (const r of stare) {
-        if (r.fix) continue
-        let pana = ''
-        for (const a of stare) {
-          if (a === r || a.cheie === r.cheie) continue
-          if (r.f < a.s || r.s > a.f) continue
-          // Cine se da la o parte: cel care incepe mai TARZIU. Perioada trasa e
-          // fixa — ea e ce ai cerut, restul se aseaza in jurul ei.
-          if (a.fix || a.s < r.s || (a.s === r.s && String(a.q.id) < String(r.q.id))) {
-            if (a.f > pana) pana = a.f
-          }
-        }
-        if (!pana) continue
-        const durata = Math.max(0, diffDays(r.s, r.f))
-        r.s = nextWorkday(addDays(pana, 1))     // creste mereu -> bucla se opreste
-        r.f = addDays(r.s, durata)
-        mutate.set(r.q.id, { q: r.q, start: r.s, sfarsit: r.f })
-        schimbat = true
-        break                                   // o mutare poate naste alta
-      }
-      if (!schimbat) break
-    }
-    const mutari = [...mutate.values()].sort((a, b) => a.start.localeCompare(b.start))
+    // IMPINGEREA E A DATELOR, NU A ECRANULUI — deci algoritmul sta in
+    // `lib/deplasari.js`, langa regula `loc|client` pe care o foloseste. A trait
+    // o vreme aici, scris de mana, si a doua oara in formularul de perioada; doua
+    // implementari ale aceleiasi reguli se despart tacut la prima corectie, iar
+    // atunci calendarul si formularul ti-ar promite mutari diferite.
+    const mutari = rezolvaCiocniri(
+      toate,
+      { id: p.id, data_start: start, data_sfarsit: sfarsit, locatie: p.locatie, client: p.client },
+    ).map((m) => ({ q: m.p, start: m.data_start, sfarsit: m.data_sfarsit }))
 
     const inapoi = [
       { id: p.id, data_start: s0, data_sfarsit: f0 },

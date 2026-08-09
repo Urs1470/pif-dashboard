@@ -181,7 +181,10 @@
   }
 </script>
 
-<Modal bind:open title={period ? 'Editează perioada' : 'Perioadă nouă'} size="sm">
+<!-- PANOU LATERAL pe desktop, foaie de jos pe telefon — perioada e un DETALIU al
+     listei din care ai deschis-o, iar o caseta centrata ar acoperi tocmai lista
+     fata de care decizi. Vezi `size="panou"` in Modal.svelte. -->
+<Modal bind:open title={period ? 'Editează perioada' : 'Perioadă nouă'} size="panou">
   <div class="ip">
     <div class="ip-cap">
       <span class="ip-titlu">Perioadă de implementare</span>
@@ -282,7 +285,6 @@
   :global(.modal:has(.ip) .modal-title) { display: none; }
   @media (min-width: 769px) {
     :global(.modal:has(.ip) .modal-header) { border-bottom: none; padding-bottom: 0; }
-    :global(.modal:has(.ip) .modal-body) { padding-top: var(--space-12); }
   }
 
   .ip { display: flex; flex-direction: column; gap: var(--space-md); }

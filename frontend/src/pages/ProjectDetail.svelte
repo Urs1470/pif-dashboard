@@ -69,6 +69,33 @@
 
   let showEditModal = $state(false)
   let showDeleteConfirm = $state(false)
+  // Cate perioade dispar odata cu proiectul. Nu vin cu `project` (nici lista, nici
+  // detaliul nu le numara), iar `ImplPeriods` si le incarca singur — deci se cer
+  // exact in clipa in care intrebarea se pune, nu la fiecare deschidere de pagina.
+  // `null` = inca nu stim; propozitia NU inventeaza atunci o cifra.
+  let nrPerioade = $state(null)
+
+  async function ceriStergereaProiectului() {
+    nrPerioade = null
+    showDeleteConfirm = true
+    try {
+      const p = await apiJson(`/api/proiecte/${params.id}/implementari`)
+      nrPerioade = Array.isArray(p) ? p.length : 0
+    } catch (_) { nrPerioade = null }
+  }
+
+  /** „7 taskuri și 2 perioade" — enumerare care sare peste ce e zero. Un „0
+   *  perioade" ar cere sa fie citit ca sa afli ca nu inseamna nimic. */
+  const ceDispare = $derived.by(() => {
+    const p = []
+    if (tasks.length) p.push(`${tasks.length} ${tasks.length === 1 ? 'task' : 'taskuri'}`)
+    if (nrPerioade) p.push(`${nrPerioade} ${nrPerioade === 1 ? 'perioadă' : 'perioade'}`)
+    if (!p.length) return 'Nu se poate anula.'
+    return `Dispar odată cu el ${p.join(' și ')}. Nu se poate anula.`
+  })
+
+  const subDeSters = $derived(taskDeleteId ? (subtasksCache[taskDeleteId] || null) : null)
+  const taskDeSters = $derived(tasks.find((t) => t.id === taskDeleteId) || null)
 
   // Subtask state
   let expandedTask = $state(null)
@@ -520,7 +547,7 @@
           <Button variant="secondary" size="sm" onclick={() => showEditModal = true}><SolidIcon name="pencil" size={14} /> Edit</Button>
           <Button variant="secondary" size="sm" onclick={exportPdf}><FileDown size={14} /> PDF</Button>
           <Button variant="secondary" size="sm" onclick={exportMd}><SolidIcon name="file" size={14} /> MD</Button>
-          <Button variant="ghost" size="sm" onclick={() => showDeleteConfirm = true}><SolidIcon name="trash" size={14} /></Button>
+          <Button variant="ghost" size="sm" onclick={ceriStergereaProiectului}><SolidIcon name="trash" size={14} /></Button>
         </div>
       </div>
       <div class="meta">
@@ -933,8 +960,20 @@
 
 <ProjectFormModal bind:open={showEditModal} {project} onsaved={() => load()} />
 
-<ConfirmDialog bind:open={showDeleteConfirm} title="Șterge proiect" message={`Ștergi proiectul "${project?.nume}"? Toate taskurile asociate vor fi șterse definitiv.`} confirmLabel="Șterge definitiv" onconfirm={handleDeleteProject} />
-<ConfirmDialog bind:open={showTaskDelete} title="Șterge task" message="Ștergi acest task? Toate subtaskurile asociate vor fi șterse." confirmLabel="Șterge" onconfirm={doDeleteTask} />
+<!-- BUTONUL POARTA VERBUL SI OBIECTUL, INTREBAREA SPUNE CE DISPARE.
+     „Șterge proiect" / „Șterge definitiv" erau o eticheta si un adverb: niciunul
+     nu spunea CE pleaca. Aici e cea mai ireversibila actiune din aplicatie, si e
+     citita in doua secunde. Vezi `ConfirmDialog`. -->
+<ConfirmDialog bind:open={showDeleteConfirm}
+               title={project ? `Ștergi proiectul „${project.nume}”?` : 'Ștergi proiectul?'}
+               message={ceDispare}
+               confirmLabel="Șterge proiectul" onconfirm={handleDeleteProject} />
+<ConfirmDialog bind:open={showTaskDelete}
+               title={taskDeSters ? `Ștergi „${taskDeSters.titlu}”?` : 'Ștergi taskul?'}
+               message={subDeSters?.length
+                 ? `Dispar odată cu el ${subDeSters.length} ${subDeSters.length === 1 ? 'subtask' : 'subtaskuri'}. Nu se poate anula.`
+                 : 'Nu se poate anula.'}
+               confirmLabel="Șterge taskul" onconfirm={doDeleteTask} />
 
 <EditorLung bind:open={showFieldEdit} titlu={editLabel} valoare={editValue} salveaza={editSalveaza} />
 

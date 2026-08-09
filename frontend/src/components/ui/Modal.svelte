@@ -28,6 +28,17 @@
   // spune „fereastra", nu „sertar".
   const sheet = $derived(ecran.telefon)
 
+  // UN DETALIU, O COMPONENTA: panou lateral pe desktop, foaie de jos pe telefon.
+  // Acelasi continut, aceeasi ordine — se schimba doar unde se asaza.
+  //
+  // Modul asta lipsea din sistem: `size` avea sm/md/lg/xl/wide/zoom/doc, toate
+  // casete centrate, deci regula din directie n-avea cu ce sa fie respectata si
+  // fiecare detaliu se deschidea ca fereastra. O caseta centrata iti pune
+  // continutul peste locul din care ai venit; un panou la margine il lasa la
+  // vedere, si tocmai asta face diferenta cand editezi o perioada uitandu-te la
+  // lista din care ai deschis-o.
+  const panou = $derived(size === 'panou' && !sheet)
+
   // Cat timp sheet-ul e deschis, pagina de dedesubt nu se mai misca. Fara asta,
   // derularea continua in pagina din spate cand ajungi la capatul continutului din
   // sheet — iesi din modal si ai pierdut si locul din lista.
@@ -85,6 +96,11 @@
   function intra(node) {
     const duration = motionDuration(DUR_BASE)
     if (sheet) return { duration, easing: EASE, css: (t, u) => `transform: translateY(${u * 100}%)` }
+    // PANOUL SOSESTE CU 8px, NU CU O SCALARE. Scalarea spune „fereastra care se
+    // deschide din centru"; panoul vine dinspre marginea de care se lipeste, deci
+    // o deplasare mica, pe axa lui. Distanta e mica cu bunastiinta: obiectul e
+    // deja la locul lui, miscarea doar spune din ce parte a venit.
+    if (panou) return { duration, easing: EASE, css: (t, u) => `opacity: ${t}; transform: translateX(${u * 8}px)` }
     return scale(node, { start: 0.96, duration, easing: EASE })
   }
 
@@ -255,6 +271,27 @@
   .modal-wide { max-width: 80%; }
   .modal-zoom { max-width: 70%; }
 
+  /* ===== Panou lateral (desktop) =====
+     Se lipeste de marginea din dreapta si ia inaltimea disponibila. Ramane o
+     SUPRAFATA, nu un perete: pastreaza raza de 14 si insetul voalului, deci se
+     citeste ca acelasi obiect ca foaia de pe telefon, doar asezat altfel.
+     `align-items: stretch` pe voal ii da inaltimea; de aceea `max-height` de la
+     `.modal` (85dvh) trebuie anulat, altfel panoul ar sta scurt si centrat. */
+  @media (min-width: 769px) {
+    .backdrop:has(.modal-panou) {
+      justify-content: flex-end;
+      align-items: stretch;
+    }
+    .modal-panou {
+      max-width: 340px;
+      max-height: none;
+    }
+    /* 20, nu 24: la 340px de latime cele patru pixeli in plus de fiecare parte se
+       iau din coloana de continut, care e deja jumatate cat a unei casete. */
+    .modal-panou .modal-body { padding: var(--space-20); }
+    .modal-panou .modal-header { padding-left: var(--space-20); padding-right: var(--space-20); }
+  }
+
   /* "doc" — document aproape fullscreen (editor observatii/notite).
      Body-ul nu deruleaza si nu are padding: pagina interioara (RichTextEditor
      variant="doc") isi gestioneaza singura scroll-ul si coloana de text. */
@@ -359,7 +396,11 @@
       /* Umbra urca, nu coboara: sheet-ul se ridica peste pagina. */
       box-shadow: 0 -14px 40px -12px rgba(0, 0, 0, 0.6);
     }
-    .modal-sm, .modal-md, .modal-lg, .modal-xl, .modal-wide, .modal-zoom { max-width: 100%; }
+    /* Pe telefon panoul REDEVINE foaie: acelasi continut, acelasi component, alt
+       loc. Fara `.modal-panou` in lista asta ar fi ramas o coloana de 340px lipita
+       de marginea de jos a unui ecran de 375. */
+    .modal-sm, .modal-md, .modal-lg, .modal-xl, .modal-wide, .modal-zoom, .modal-panou { max-width: 100%; }
+    .modal-panou { max-height: min(92dvh, 100dvh - var(--safe-top) - 24px); }
 
     /* Antetul e suprafata de tragere. `touch-action: none` doar aici: gestul e
        al nostru, dar restul sheet-ului trebuie sa se poata DERULA normal. */

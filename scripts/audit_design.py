@@ -43,7 +43,13 @@ INDEPENDENTE_DE_TEMA = {'--loc-site', '--loc-sediu', '--on-color',
 #   --gl-s  : oglinda lui --gl-p pentru gestul spre STANGA (verbul de pe pista
 #             de stanga: „Planifică" pe randul de task, „Șterge" pe subtask).
 #   --trasY : cat a coborat sheet-ul sub deget, in px, pus de Modal.svelte.
-DIN_JS = {'--gl-p', '--gl-s', '--trasY'}
+#   --kb    : cat din ecran acopera TASTATURA, in px, pus de RichTextEditor din
+#             `visualViewport` — singura sursa care stie asta (`innerHeight` si
+#             `dvh` urmaresc bara de adresa, nu tastatura). Bara de unelte se
+#             ridica deasupra ei; fara `visualViewport` ramane 0 si bara sta pe
+#             marginea de jos, deci valoarea de rezerva e chiar comportamentul
+#             vechi.
+DIN_JS = {'--gl-p', '--gl-s', '--trasY', '--kb'}
 
 # Fisiere in care valorile brute sunt legitime, cu motiv.
 SCUTITE_HEX = {

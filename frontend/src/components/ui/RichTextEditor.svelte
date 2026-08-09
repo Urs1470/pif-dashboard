@@ -55,14 +55,54 @@
   ]
   let styleOpen = $state(false)
   let styleEl = $state(null)
+  let styleMenuEl = $state(null)
+  let stylePos = $state('')
   const blockLabel = $derived(BLOCK_STYLES.find((s) => s.value === fmt.block)?.label || 'Paragraf')
+
+  // MENIUL DE STIL PLEACA IN `body`, si de-aia se poate deruleaza bara.
+  //
+  // Era `position: absolute` in interiorul barei, deci bara nu putea deveni un
+  // scroller: `overflow-x: auto` implica si `overflow-y`, iar meniul ar fi fost
+  // retezat exact la deschidere. Cat timp meniul statea inauntru, singura forma
+  // posibila pe telefon era o bara care se rupe pe doua randuri — adica taman
+  // ce desenul nu cerea. Mutat afara, constrangerea dispare de tot.
+  //
+  // Aceeasi tehnica pe care `DatePicker` o foloseste deja pentru popover.
+  function portal(node) {
+    document.body.appendChild(node)
+    return { destroy() { node.remove() } }
+  }
+
+  /** Coordonate de viewport, luate din declansator. `fixed` + `getBoundingClientRect`
+   *  raman corecte si daca bara e derulata lateral. */
+  function asazaMeniu() {
+    if (!styleEl) return
+    const r = styleEl.getBoundingClientRect()
+    const jos = window.innerHeight - r.bottom
+    const H = 200   // plafonul meniului; sub el se deschide in sus
+    const susit = jos < H && r.top > jos
+    stylePos = susit
+      ? `left:${Math.round(r.left)}px; bottom:${Math.round(window.innerHeight - r.top + 6)}px`
+      : `left:${Math.round(r.left)}px; top:${Math.round(r.bottom + 6)}px`
+  }
+
+  function comutaStil() {
+    if (!styleOpen) asazaMeniu()
+    styleOpen = !styleOpen
+  }
 
   function pickStyle(v) {
     styleOpen = false
     setBlock(v === 'p' ? 'p' : v)
   }
   function onDocClick(e) {
-    if (styleOpen && styleEl && !styleEl.contains(e.target)) styleOpen = false
+    // Meniul nu mai e copil al `styleEl` (a plecat in `body`), deci inchiderea
+    // trebuie sa-l intrebe si pe el — altfel primul clic pe o optiune ar inchide
+    // meniul inainte ca `onclick`-ul optiunii sa apuce sa se execute.
+    if (!styleOpen) return
+    if (styleEl?.contains(e.target)) return
+    if (styleMenuEl?.contains(e.target)) return
+    styleOpen = false
   }
 
   // Bara de formule (insert / editare chip existent)
@@ -278,12 +318,45 @@
 
   // butoanele nu fura selectia din editor
   function keepSel(e) { e.preventDefault() }
+
+  // ===== BARA STA DEASUPRA TASTATURII (telefon) =====
+  //
+  // In capul suprafetei, bara e la 44px de degetul tau si la 400 de locul in care
+  // scrii: cat timp tastatura e ridicata, ea e in cealalta jumatate a ecranului.
+  // Pe telefon uneltele trebuie sa fie langa cursor, nu langa titlu.
+  //
+  // `visualViewport` e singura sursa care stie CAT acopera tastatura: `innerHeight`
+  // si `dvh` urmaresc bara de adresa, nu tastatura. Diferenta dintre viewportul
+  // de layout si cel vizual e exact inaltimea acoperita.
+  //
+  // Unde lipseste (browsere vechi), `--kb` ramane 0 si bara sta lipita de marginea
+  // de jos — adica exact unde era si inainte de tastatura. Nu se strica nimic,
+  // doar nu se ridica.
+  let kb = $state(0)
+  $effect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const masoara = () => {
+      // Rotunjit si prins la 0: pe unele browsere valoarea oscileaza cu
+      // subpixeli cand se deruleaza, iar bara ar tremura.
+      const acoperit = window.innerHeight - vv.height - vv.offsetTop
+      kb = acoperit > 24 ? Math.round(acoperit) : 0
+    }
+    masoara()
+    vv.addEventListener('resize', masoara)
+    vv.addEventListener('scroll', masoara)
+    return () => {
+      vv.removeEventListener('resize', masoara)
+      vv.removeEventListener('scroll', masoara)
+    }
+  })
 </script>
 
 <svelte:document onclick={onDocClick} />
+<svelte:window onresize={() => styleOpen && asazaMeniu()} />
 
-<div class="rte">
-  <div class="rte-toolbar" role="toolbar" aria-label="Instrumente de formatare">
+<div class="rte" style:--kb="{kb}px">
+  <div class="rte-toolbar" class:cu-tastatura={kb > 0} role="toolbar" aria-label="Instrumente de formatare">
     {#if !compact}
     <button type="button" class="tbtn" title="Anulează (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
     <button type="button" class="tbtn" title="Refă (Ctrl+Y)" onmousedown={keepSel} onclick={() => cmd('redo')}><Redo2 size={15} /></button>
@@ -292,11 +365,21 @@
 
     <span class="tstyle-wrap" bind:this={styleEl} onkeydown={(e) => { if (e.key === 'Escape' && styleOpen) { e.stopPropagation(); styleOpen = false } }} role="presentation">
       <button type="button" class="tstyle" class:on={styleOpen} title="Stil paragraf"
-        onmousedown={keepSel} onclick={() => (styleOpen = !styleOpen)}>
+        onmousedown={keepSel} onclick={comutaStil}>
         {blockLabel} <ChevronDown size={12} />
       </button>
+      <!-- INTRAREA E O ANIMATIE CSS, NU O TRANZITIE SVELTE — si asta nu e o
+           preferinta, e o conditie ca meniul sa dispara.
+           Masurat: cu `transition:fly` pe un nod mutat in `body`, iesirea se joaca
+           pana la `opacity: 0` si nodul RAMANE acolo — Svelte il scoate relativ la
+           ancora blocului, iar ancora nu mai e parintele lui. Rezultatul erau
+           150x182px invizibili, cu `pointer-events: auto`, peste editor. Nu se
+           acumulau (unul singur), dar inghiteau clicuri.
+           Fara tranzitie de iesire, `{#if}` scoate nodul pe loc si `destroy`-ul
+           actiunii `portal` il sterge din `body`. Iesirea instantanee e oricum
+           corecta pentru un meniu: alegi o optiune, meniul nu mai are ce spune. -->
       {#if styleOpen}
-        <div class="tstyle-menu" transition:fly={{ y: -4, duration: motionDuration(DUR_FAST) }}>
+        <div class="tstyle-menu" use:portal bind:this={styleMenuEl} style={stylePos}>
           {#each BLOCK_STYLES as s (s.value)}
             <button type="button" class="topt" class:sel={fmt.block === s.value}
               onmousedown={keepSel} onclick={() => pickStyle(s.value)}>
@@ -462,17 +545,27 @@
   }
   .tstyle:hover { color: var(--text); }
   .tstyle.on { background: var(--bg-elevated); color: var(--text); }
-  /* Suprafata flotanta: umbra, nu chenar. */
+  /* Suprafata flotanta: umbra, nu chenar. `fixed`, fiindca traieste in `body` —
+     coordonatele vin din declansator (`asazaMeniu`). Stilurile raman SCOPATE:
+     `portal` muta nodul, nu-i sterge clasa de scope, iar elementul e in sablon,
+     deci Svelte nu taie nici regula. */
   .tstyle-menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    z-index: 6;
+    position: fixed;
+    z-index: var(--z-tooltip);
     min-width: 150px;
+    max-height: 200px;
+    overflow-y: auto;
     background: var(--bg-overlay);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
     padding: 4px;
+    animation: tstyle-intra var(--dur-fast) var(--ease);
+  }
+  @keyframes tstyle-intra {
+    from { opacity: 0; transform: translateY(-4px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tstyle-menu { animation: none; }
   }
   .topt {
     display: flex;
@@ -650,13 +743,43 @@
        vrei „bold". */
     .tbtn { width: var(--tap-min); height: var(--tap-min); }
     .tstyle { height: var(--tap-min); }
-    /* BARA RAMANE PE `flex-wrap: wrap`, NU DEVINE UN SCROLLER ORIZONTAL.
-       Desenul cere un rand care deruleaza, dar `overflow-x: auto` inseamna si
-       `overflow-y` care taie — iar meniul de stil e `position: absolute` sub
-       buton, deci ar fi retezat exact la deschidere. Cu butoane mai mari bara
-       trece pe doua randuri; atat. */
-    .rte-toolbar { gap: 3px; }
-    .math-bar { top: 56px; width: calc(100% - 12px); }
-    .rte-editor { padding: 16px 16px 80px; min-height: calc(100% - 58px); }
+
+    /* UN SINGUR RAND, CARE DERULEAZA, DEASUPRA TASTATURII.
+       `--kb` vine din `visualViewport` (vezi <script>): cat acopera tastatura.
+       Cand nu e ridicata, e 0 si bara sta pe marginea de jos.
+       `nowrap` + `overflow-x` se pot acum, fiindca meniul de stil s-a mutat in
+       `body` si nu mai e taiat de scroller. */
+    .rte-toolbar {
+      position: fixed;
+      top: auto;
+      left: 0;
+      right: 0;
+      bottom: var(--kb, 0px);
+      gap: 3px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      /* Bara pluteste peste text acum, deci se desprinde prin umbra — in sus,
+         fiindca ea e deasupra continutului. */
+      border-bottom: none;
+      box-shadow: 0 -8px 20px -14px rgba(0, 0, 0, .55);
+      /* Fara tastatura, insetul de siguranta tine butoanele deasupra barei de
+         gesturi. Cu tastatura ridicata, ea acopera oricum zona aia, iar insetul
+         ar fi 34px de bara moarta fix cand ai cel mai putin ecran. */
+      padding: 6px 10px calc(6px + var(--safe-bottom));
+    }
+    .rte-toolbar.cu-tastatura { padding-bottom: 6px; }
+    .rte-toolbar::-webkit-scrollbar { display: none; }
+    /* Randul e o pista: separatoarele si eticheta de stare n-au voie sa se
+       stranga sub degetul care deruleaza. */
+    .tsep, .tstare { flex: none; }
+    /* Spatiul care impingea starea la dreapta n-are ce cauta intr-un rand care
+       deruleaza: ar fi intins bara la infinit. Starea vine dupa ultimul buton. */
+    .tspatiu { display: none; }
+
+    .math-bar { top: 8px; width: calc(100% - 12px); }
+    /* Padding-ul de jos tine ultimul rand deasupra barei, care acum e acolo. */
+    .rte-editor { padding: 16px 16px 96px; min-height: 100%; }
   }
 </style>

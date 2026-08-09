@@ -26,7 +26,12 @@
     justify-content: center;
     gap: var(--space-xs);
     font-weight: var(--fw-semibold);
-    border-radius: var(--radius-md);
+    /* RAZA DE CONTROL (10), NU DE SUPRAFATA (14).
+       Scara are patru trepte cu roluri scrise: 8 chip · 10 control si rand ·
+       14 suprafata · 20 foaie. Butonul e un control, si asa il arata toate
+       desenele; la 14 avea aceeasi rotunjire ca un card, deci se citea ca o
+       suprafata mica in loc de o tinta. */
+    border-radius: var(--radius-sm);
     transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
     white-space: nowrap;
     cursor: pointer;

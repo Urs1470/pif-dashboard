@@ -58,6 +58,21 @@
     return t.length > n ? `${t.slice(0, n - 1)}…` : t
   }
 
+  // CE SCRIE IN COLTUL BAREI — si de ce NU scrie „salvat".
+  //
+  // Desenul cerea „salvat" la dreapta barei. Cuvantul ala presupune AUTOSALVARE:
+  // ceva a scris deja, si te anunta. Editorul asta comite la INCHIDERE (regula de
+  // sus), iar Ctrl+S / Ctrl+Enter salveaza SI inchid — deci n-ar exista nici macar
+  // o clipa in care sa vezi „salvat" pe un editor deschis. Ar fi un cuvant care nu
+  // se aprinde niciodata, sau — mai rau — unul care minte cat timp scrii.
+  //
+  // Ce e adevarat si folositor in coltul ala: daca inchiderea chiar are ce scrie.
+  // „modificat" raspunde exact la intrebarea pe care si-o pune cineva inainte sa
+  // traga foaia in jos, si se potriveste cu indiciul din bara de jos
+  // („Închiderea salvează"). Cand n-ai schimbat nimic, nu scrie nimic — o eticheta
+  // permanenta ar fi decor.
+  const stare = $derived(seSalveaza ? 'se salvează…' : (ciorna !== original ? 'modificat' : ''))
+
   async function comite() {
     if (seSalveaza) return
     const text = ciorna
@@ -94,7 +109,7 @@
 <Modal bind:open title={titlu} size="doc" onclose={comite}>
   <div class="ed-pagina">
     {#if open}
-      <RichTextEditor bind:value={ciorna} {tools} {placeholder} onsave={comite} />
+      <RichTextEditor bind:value={ciorna} {tools} {placeholder} {stare} onsave={comite} />
     {/if}
   </div>
   {#snippet footer()}
