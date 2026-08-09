@@ -29,6 +29,7 @@
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
+  import Modal from '../components/ui/Modal.svelte'
   import {
     WEEKDAYS, buildGrid, monthStart, addMonths, addDays, weekStart,
     diffDays, isWeekend, monthLabel, dayLabel, shortDate, todayISO, parseISO,
@@ -60,6 +61,14 @@
   // Sursa „Proiecte fara perioada", urcata din panou in capul paginii. Deschisa
   // din start, ca sa stea langa ziua de azi in coloana din dreapta.
   let deschideNeplanificate = $state(true)
+  // FOAIA ZILEI (telefon) E SEPARATA DE SELECTIE, si trebuie sa fie.
+  // Pe desktop „ziua selectata" si „panoul deschis" sunt acelasi lucru: panoul e o
+  // coloana care sta langa grila. Pe telefon panoul e o FOAIE cu voal, care acopera
+  // pagina — iar ziua de azi e selectata din start (cerinta lui Ion). Daca foaia
+  // s-ar lega direct de `selectata`, Calendarul s-ar deschide pe telefon cu o foaie
+  // peste grila, de fiecare data, fara s-o fi cerut nimeni. Deci: ziua ramane
+  // insemnata in grila, iar foaia se ridica doar cand chiar atingi o zi.
+  let foaieZi = $state(false)
   // Coloana panoului exista doar cand are ce arata. Cand nu, grila e pe toata
   // latimea — ceea ce inseamna 176px pe zi in loc de 127, adica exact pragul de
   // la care eticheta unei lucrari se poate citi in bara ei.
@@ -1015,6 +1024,9 @@
       return
     }
     selectata = iso
+    // Atingerea unei zile RIDICA foaia — pe telefon asta e panoul. La incarcare nu
+    // se ridica singura (vezi `foaieZi`), dar aici gestul e explicit.
+    if (ecran.telefon) foaieZi = true
     // Nu mai derulam la panou: agenda de sub grila raspunde deja la „ce e ziua
     // asta", iar randul ei se aprinde. Panoul ramane unde e, pentru actiuni.
     aratIesirea()
@@ -1364,9 +1376,7 @@
              si le-ar fi taiat colturile. -->
       </div>
 
-      {#if panouDeschis}
-      <aside class="side cell-in" style="--celula: 2">
-        <!-- PANOUL E UN OBIECT CARE SE SCHIMBA, NU O LISTA CARE CLIPESTE SUB UN
+      <!-- PANOUL E UN OBIECT CARE SE SCHIMBA, NU O LISTA CARE CLIPESTE SUB UN
              TITLU FIX.
              Lucrarile se estompau una cate una, dar `.pan-zi` — data zilei, adica
              exact partea care se schimba cel mai vizibil cand alegi alta zi —
@@ -1378,9 +1388,16 @@
              `.cell-in`. Fara `local`, cele doua ar juca peste aceiasi pixeli.
              `{#key}` pe ziua selectata — nu pe continut: doua zile pot avea
              aceleasi lucrari, si tot trebuie sa se vada ca ai schimbat ziua. -->
+        <!-- ACELASI CONTINUT, DOUA GAZDE (M9): coloana laterala pe desktop, foaie
+             de jos pe telefon. Declarat ca snippet ca sa NU existe doua copii care
+             se despart la a treia modificare — regula e deja in `Modal.svelte`
+             („un detaliu, o componenta"), aici e doar aplicata mai sus.
+             Titlul zilei ramane in snippet pe desktop; pe telefon il scrie foaia,
+             prin `title`, ca sa stea pe mânerul ei. -->
+        {#snippet panouZi(cuTitlu)}
         {#key selectata}
-        <div class="pan" in:sosire|local>
-          <div class="pan-zi">{dayLabel(selectata)}</div>
+        <div class="pan" class:in-foaie={!cuTitlu} in:sosire|local>
+          {#if cuTitlu}<div class="pan-zi">{dayLabel(selectata)}</div>{/if}
           {#if selectate.length}
             <div class="pan-sub">
               {#if grupuriSelectate.length > 1}
@@ -1484,6 +1501,18 @@
           {/if}
         </div>
         {/key}
+        {/snippet}
+
+        <!-- SNIPPET-UL SE DECLARA IN AFARA LUI `{#if panouDeschis}`, si asta nu e
+             stil: un snippet e vizibil DOAR in blocul in care e declarat. Cat timp
+             statea inauntrul lui `<aside>`, foaia de mai jos — care e frate cu
+             aside-ul — crapa cu `ReferenceError: panouZi is not defined`, iar
+             Modalul nu se mai randa deloc. -->
+      {#if panouDeschis}
+      <aside class="side cell-in" style="--celula: 2">
+        <!-- Pe desktop panoul zilei sta in coloana. Pe telefon il ia foaia de mai
+             jos, deci aici nu se randeaza — altfel ar fi si in pagina, si in foaie. -->
+        {#if !ecran.telefon}{@render panouZi(true)}{/if}
 
         {#if deschideNeplanificate && data.neplanificate?.length}
           <div class="pan">
@@ -1526,6 +1555,18 @@
           </div>
         {/if}
       </aside>
+      {/if}
+
+      <!-- FOAIA ZILEI, PE TELEFON (M9). `Modal` e deja „panou lateral pe desktop,
+           foaie de jos pe telefon" — voal, raza pe colturile de sus, mâner, blocarea
+           derularii si tragerea in jos. Scrisa de mana aici, ar fi fost a doua
+           implementare a aceluiasi lucru, cu alt comportament la Escape si la focus.
+           `title` duce data zilei pe mânerul foii, deci `panouZi(false)` n-o mai
+           scrie inca o data inauntru. -->
+      {#if ecran.telefon}
+        <Modal open={foaieZi} title={dayLabel(selectata)} onclose={() => foaieZi = false}>
+          {@render panouZi(false)}
+        </Modal>
       {/if}
 
       <!-- IESIRILE FERESTREI, SCRISE. Doar pe telefon: acolo grila e o harta de
@@ -1981,6 +2022,10 @@
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
   .pan { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-md); }
+  /* In foaie, cardul il deseneaza `Modal` — panoul isi scoate propriul fond, umbra
+     si padding, altfel ar iesi o suprafata in suprafata, cu doua raze si doua
+     umbre una peste alta. */
+  .pan.in-foaie { background: none; border-radius: 0; box-shadow: none; padding: 0; }
   /* Titlul zilei e treapta de PANOU (21/600), nu 13 ca metadatele de sub el (C12).
      La `--font-small` statea pe acelasi nivel cu „3 lucrări · Site" de dedesubt,
      deci panoul se deschidea fara sa spuna, dintr-o privire, CE zi ai deschis —
