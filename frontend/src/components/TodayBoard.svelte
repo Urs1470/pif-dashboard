@@ -498,9 +498,20 @@
      exact ce trebuie sa stea pe loc cat cauti actiunile. */
   .arow { position: relative; display: flex; align-items: center; gap: var(--space-12);
     min-height: 46px; padding: 0 var(--space-12); background: none; border: 0;
-    border-radius: var(--radius-sm);
+    border-radius: 0;
     transition: background-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  .arow + .arow { border-top: 1px solid var(--border); }
+  /* SEPARATORUL ARE MARJA LATERALA, iar randul in repaus n-are colturi.
+     Era `border-top` pe tot randul — linie dreapta de la un capat la altul —
+     peste un rand care purta raza de control (10) si cand statea pe loc. Cele
+     doua jumatati nu se potriveau: coltul rotunjit lasa un gol sub linia
+     dreapta. Acum linia isi tine marja singura (pseudo-element absolut, ca sa
+     nu intre ca element de flex intre bifa si titlu), iar raza apare doar cand
+     randul e ridicat — tras sau glisat — si are deja umbra.
+     `.sub-row` NU intra aici: subtaskurile sunt carduri prin desen.
+     `z-index: 2` fiindca pe telefon fata de glisare e OPACA si sta la 1: fara
+     el, linia ar fi desenata dedesubt si n-ar exista pe ecran. */
+  .arow + .arow::before { content: ''; position: absolute; top: 0; z-index: 2;
+    left: var(--space-12); right: var(--space-12); height: 1px; background: var(--border); }
   @media (hover: hover) {
     .arow:hover { background: var(--bg-elevated); }
   }
@@ -522,7 +533,7 @@
      crisp accent insertion line (no heavy fill); rows settle via animate:flip. */
   /* FARA OPACITATE PE RANDUL TRAS: identitatea lui e tocmai ce urmaresti cat il
      muti. Unde ajunge o spune deja linia de insertie de mai jos. */
-  .arow.dragging { cursor: grabbing; box-shadow: var(--shadow-md); }
+  .arow.dragging { cursor: grabbing; box-shadow: var(--shadow-md); border-radius: var(--radius-sm); }
   .arow.dragover { box-shadow: inset 0 2px 0 0 var(--accent); }
   @media (prefers-reduced-motion: reduce) {
     .arow { transition: none; }
@@ -619,11 +630,12 @@
             padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
     /* Fondul e al SUPRAFETEI, nu al unui panou propriu: randul nu mai e un card.
        Trebuie totusi OPAC — pista de bifare sta dedesubt si se descopera pe
-       masura ce tragi. */
+       masura ce tragi. In repaus fata e DREAPTA (vezi separatorul de mai sus):
+       raza vine pe gest, unde randul e ridicat si are deja umbra. */
     .gl-fata { display: flex; align-items: center; gap: 10px; width: 100%;
                min-height: var(--row-h-mobile); padding: 0 var(--space-12);
                background: var(--bg-surface);
-               border-radius: var(--radius-sm); position: relative; z-index: 1;
+               border-radius: 0; position: relative; z-index: 1;
                will-change: transform; }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
@@ -634,7 +646,8 @@
        exact semnalul fara de care gestul e o loterie.
        Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
        componente. */
-    .arow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .arow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55);
+                                      border-radius: var(--radius-sm); }
 
 
     /* Cursa de bifare: cat timp tragi spre dreapta destul, dedesubt se vede verde.

@@ -1715,10 +1715,19 @@
      altul. Cardul ramane unul singur: lista intreaga (`.list-cell`). */
   .trow-wrap { display: flex; flex-direction: column; background: none;
     border: 0; border-radius: var(--radius-sm); overflow: hidden; }
-  .trow-wrap + .trow-wrap { border-top: 1px solid var(--border); }
+  /* SEPARATORUL ARE MARJA LATERALA — si o are EL, nu o mosteneste.
+     Era `border-top` pe wrapper, adica o linie dreapta pe toata latimea lui;
+     singura marja reala erau cei 8px ai cardului (`.list-cell`), nu 20 —
+     paddingul de 12 e al CONTINUTULUI randului, borderul wrapperului nu-l
+     vede. Iar pe telefon linia dreapta se intalnea cu coltul rotunjit al fetei
+     de glisare, si nepotrivirea se vedea la fiecare gest. Ca pseudo-element cu
+     `margin` propriu, linia sta unde spune regula sistemului si nu mai depinde
+     de ce padding are altcineva. */
+  .trow-wrap + .trow-wrap::before { content: ''; display: block; flex: none;
+    height: 1px; margin: 0 var(--space-12); background: var(--border); }
   /* Separatorul se retrage cand un rand e deschis: acolo panoul de sub el ii tine
      deja locul, iar o linie peste el ar imparti un obiect care s-a facut mai mare. */
-  .trow-wrap.deschis, .trow-wrap.deschis + .trow-wrap { border-top-color: transparent; }
+  .trow-wrap.deschis::before, .trow-wrap.deschis + .trow-wrap::before { background: transparent; }
   .trow-wrap.deschis { background: var(--bg-elevated); }
   /* UN SINGUR obiect: rama, fundalul si colturile stau pe WRAPPER. Randul si
      extinderea sunt continutul lui, fara rame proprii — altfel se citeau ca doua
@@ -1910,9 +1919,10 @@
      doar ca acolo e loc sa nu se observe. Lista ia toata latimea. */
   .v3grid { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
   /* Suprafata se desprinde prin UMBRA, nu prin chenar (doua niveluri, vezi
-     tokens.css). Padding-ul lateral scade la 8: randul isi aduce propriii 12px,
-     deci separatorul iese la 20 de la marginea cardului — exact marja laterala
-     ceruta, fara sa fie scrisa a doua oara. */
+     tokens.css). Padding-ul lateral scade la 8: cei 12px ai randului sunt ai
+     CONTINUTULUI lui, deci textul incepe la 20 de la marginea cardului.
+     Separatorul insa nu mostenea nimic din asta — de aceea marja lui e scrisa
+     la el acasa, pe `.trow-wrap + .trow-wrap::before`. */
   .list-cell { min-width: 0; background: var(--bg-surface); border: 0;
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);
     padding: var(--space-md) var(--space-sm); }
@@ -1933,11 +1943,16 @@
        unui panou propriu — randul nu mai e un card, e o linie din lista, iar
        ce-l desparte de vecin e separatorul de pe wrapper. Fondul trebuie sa fie
        totusi OPAC, fiindca pista de bifare sta sub el si trebuie acoperita pana
-       cand degetul o descopera. */
+       cand degetul o descopera.
+       IN REPAUS FATA E DREAPTA. Purta raza de control (10) si cand statea pe
+       loc, deci colturile ei rotunjite lasau un gol sub separatorul drept de
+       deasupra; la glisare coltul aluneca pe sub linie si nepotrivirea se vedea
+       cu ochiul liber (raportat de Ion). O linie din lista n-are colturi — raza
+       apare doar pe gest, cand randul e „ridicat" si are deja umbra. */
     .gl-fata { display: flex; align-items: center; gap: var(--space-12); width: 100%;
                min-height: var(--row-h-mobile); padding: 0 var(--space-12);
                background: var(--bg-surface); position: relative;
-               z-index: 1; border-radius: var(--radius-sm); will-change: transform; }
+               z-index: 1; border-radius: 0; will-change: transform; }
     .trow-wrap.deschis .gl-fata { background: var(--bg-elevated); }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
@@ -1948,7 +1963,8 @@
        exact semnalul fara de care gestul e o loterie.
        Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
        componente. */
-    .trow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .trow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55);
+                                      border-radius: var(--radius-sm); }
     .task-actions { display: none; }
     /* BIFA: 44px de ATINS, dar nu 44px de LATIME.
        Cercul are 18px si statea centrat intr-o caseta de 44 — adica 13px de aer
