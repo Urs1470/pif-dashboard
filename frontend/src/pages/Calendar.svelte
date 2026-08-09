@@ -35,7 +35,9 @@
   let data = $state(null)
   let loading = $state(true)
   let error = $state(null)
-  let mod = $state('luna')            // 'luna' | 'saptamani'
+  // `mod` a plecat (V9): comutatorul „Lună / 2 săpt." a fost sters in turul 6,
+  // dar starea si toate ramurile lui au ramas — masinarie moarta, pe care o
+  // citeai ca specificatie si o copiai. Calendarul e LUNA, peste tot.
   let anchor = $state(monthStart(todayISO()))
   // PANOUL FACE LOC, NU ACOPERA — deci la incarcare NU e selectata nicio zi.
   // Grila are toata latimea (127 -> 176px pe zi, adica textul din bare se
@@ -64,8 +66,7 @@
   let mutaId = $state('')      // perioada pentru care e deschis selectorul de data
   let mutaVal = $state('')
   // Incotro ai mers ultima data: -1 inapoi, +1 inainte, 0 „n-a fost o navigare"
-  // (prima randare, sau comutarea luna/2 saptamani, care nu are sens pe axa
-  // timpului — ramai unde te uitai, doar cadrul se schimba).
+  // (prima randare, sau un salt care cade pe luna in care esti deja).
   let sensLuna = $state(0)
 
   const azi = todayISO()
@@ -90,9 +91,8 @@
     // Erorile raman raportate — `error` se pune in `catch` la fel ca inainte.
     if (!silent) { loading = data === null; error = null }
     try {
-      const start = mod === 'luna' ? weekStart(monthStart(anchor)) : weekStart(anchor)
-      const zile = mod === 'luna' ? 49 : 28
-      data = await apiJson(`/api/calendar?start=${start}&zile=${zile}`)
+      const start = weekStart(monthStart(anchor))
+      data = await apiJson(`/api/calendar?start=${start}&zile=49`)
     } catch (e) {
       if (!silent) error = e.message
     } finally {
@@ -100,7 +100,7 @@
     }
   }
 
-  const grila = $derived(buildGrid(anchor, mod, 2))
+  const grila = $derived(buildGrid(anchor, 'luna', 2))
 
   // zi ISO -> perioadele care o acopera
   const peZi = $derived.by(() => {
@@ -149,8 +149,10 @@
 
   function grupurile(iso) { return grupuriPeZi.get(iso) || [] }
 
-  /** Ziua e impartita intre locuri diferite? (doi clienti, sau sediu + teren) */
-  function impartita(iso) { return grupurile(iso).length > 1 }
+  /* `impartita()` a plecat: singurul ei consumator era `class:split`, iar regula
+     `.zi.split` (muchia de 3px) a fost scoasa la R4 — deci clasa se punea si nu
+     desena nimic. Ca o zi e impartita intre doua locuri se citeste oricum din
+     cele doua chenare de iesire de pe rand. */
 
   // O DEPLASARE = rulajul contiguu de zile cu aceeasi cheie de grup. O eticheta
   // cu identitatea IESIRII, nu cu numele unei lucrari: pe 28 era doar „Migrare
@@ -600,14 +602,14 @@
   // timp — doar ca lungimea pasului o da destinatia, nu butonul. Se calculeaza
   // INAINTE de a rescrie `anchor`, altfel s-ar compara cu el insusi.
   function ancoreazaPe(iso) {
-    const tinta = mod === 'luna' ? monthStart(iso) : weekStart(iso)
+    const tinta = monthStart(iso)
     sensLuna = tinta === anchor ? 0 : (tinta < anchor ? -1 : 1)
     anchor = tinta
   }
 
   function pas(n) {
     sensLuna = n < 0 ? -1 : 1
-    anchor = mod === 'luna' ? addMonths(anchor, n) : addDays(anchor, n * 14)
+    anchor = addMonths(anchor, n)
     load()
   }
   function laAzi() {
@@ -618,25 +620,8 @@
     selectata = azi
     load()
   }
-  // La schimbarea modului ramai unde te uitai. Ancorarea pe ziua selectata sare
-  // inapoi daca selectia era dintr-o luna pe care ai parasit-o intre timp, deci
-  // o folosim doar cand e chiar in fereastra vizibila.
-  function setMod(m) {
-    if (mod === m) return
-    // Ramai unde te uitai. Daca ziua selectata nu e in fereastra (ai navigat mai
-    // departe intre timp), ancoram pe MIJLOCUL ferestrei — capatul de stanga al
-    // unei ferestre de 2 saptamani cade des in luna anterioara si te-ar trimite
-    // inapoi la comutare.
-    const vizibile = grila.filter(g => !g.alta).map(g => g.iso)
-    const inVizor = vizibile.includes(selectata)
-    const baza = inVizor ? selectata : (vizibile[Math.floor(vizibile.length / 2)] || azi)
-    mod = m
-    // Comutarea nu e o deplasare in timp: te uiti la aceleasi zile, prin alt
-    // cadru. O alunecare laterala ar minti despre asta.
-    sensLuna = 0
-    anchor = m === 'luna' ? monthStart(baza) : weekStart(baza)
-    load()
-  }
+  // `setMod` a plecat odata cu `mod` (V9): nu-l mai chema nimeni de cand
+  // comutatorul „Lună / 2 săpt." a fost sters din bara, in turul 6.
 
   // ===== actiuni =====
   /** „S-a facut?" e o intrebare despre PERIOADA, deci raspunsul se scrie tot pe
@@ -1079,7 +1064,7 @@
     <div class="bar">
       <div class="nav">
         <button class="ico" onclick={() => pas(-1)} aria-label="Înapoi"><ChevronLeft size={16} /></button>
-        <span class="titlu">{mod === 'luna' ? monthLabel(anchor) : `${shortDate(weekStart(anchor))} – ${shortDate(addDays(weekStart(anchor), 13))}`}</span>
+        <span class="titlu">{monthLabel(anchor)}</span>
         <button class="ico" onclick={() => pas(1)} aria-label="Înainte"><ChevronRight size={16} /></button>
         <button class="b-azi" onclick={laAzi}>Azi</button>
         <!-- Exportul .ics a venit aici din Admin (sters): calendarul de abonat din
@@ -1152,11 +1137,9 @@
              aici: o clasa comutata nu re-porneste o animatie CSS cand ramane
              aceeasi (doua apasari „inainte" la rand = o singura alunecare, adica
              fix cazul pe care 13c il rezolva). Un bloc nou inseamna o tranzitie
-             noua, de fiecare data. Cheia e `anchor`, nu `mod`: fereastra e ce se
-             schimba, iar `setMod` o schimba si el — dar cu sens 0, deci trece
-             fara alunecare. -->
+             noua, de fiecare data. Cheia e `anchor`: fereastra e ce se schimba. -->
         {#key anchor}
-        <div class="grid" class:sapt={mod === 'saptamani'} class:trag={!!trag} role="grid" aria-label="Calendar"
+        <div class="grid" class:trag={!!trag} role="grid" aria-label="Calendar"
              in:alunecare={{ sens: sensLuna }}>
           {#each grila as g, i (g.iso)}
             {@const items = aleZilei(g.iso)}
@@ -1181,7 +1164,6 @@
               class:sel={g.iso === selectata}
               class:drop={dropZi === g.iso}
               class:decizie
-              class:split={impartita(g.iso)}
               class:tinta={!!asezare}
               onclick={() => atingeZi(g.iso)}
               onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); atingeZi(g.iso) } }}
@@ -1335,7 +1317,7 @@
         {#if agendaLunii.length}
           <div class="agenda">
             <div class="ag-cap">
-              <span>Ieșirile {mod === 'luna' ? 'lunii' : 'perioadei'}</span>
+              <span>Ieșirile lunii</span>
               <span class="ag-linie"></span>
               <span class="ag-n">{agendaLunii.length}</span>
             </div>
@@ -1901,17 +1883,17 @@
     .agenda { display: flex; }
     .ag-rand { min-height: var(--tap-min); }
 
-    /* BANDA E TOT DECOR LA ATINGERE, DAR SE POATE APUCA.
-       Pana la 2026-08-07 banda era `pointer-events: none` pe telefon, ca o dunga
-       de 12px sa nu fure atingerile destinate zilei de ~50×60. Intentia aia
-       ramane — dar acum e obtinuta din COMPORTAMENT, nu din a face banda
-       inexistenta: o atingere scurta pe banda cheama exact `atingeZi` cu ziua de
-       sub deget, adica fix ce ar fi facut celula. Ce se castiga: apasarea lunga
-       apuca lucrarea si o poti muta, ceea ce inainte nu se putea deloc de pe
-       telefon (`dragstart` nu exista la deget).
-       Manerele de capat raman doar pe benzile de mai multe zile: pe una de o
-       singura zi, doua manere de 9px ar manca o celula de 44px si n-ai mai avea
-       de unde s-o apuci ca s-o muti. */
+    /* BANDA E DECOR LA ATINGERE. PE TELEFON PISTA SE CITESTE, NU SE MANIPULEAZA.
+       Blocul asta se aplica de la 620px in jos — adica si pe fereastra INGUSTA
+       DE DESKTOP, cu mouse, nu doar pe telefon. Distinctia conteaza, fiindca
+       gesturile de manipulare (`apuca*`) ies din `seManipuleaza()`, care cere
+       `!telefon && !grosier`: pe un ecran fara hover ele nu exista deloc, si
+       nici nu trebuie sa existe (regula din CLAUDE.md).
+       Ce ramane pe telefon: o atingere pe banda cheama `atingeZi` cu ziua de sub
+       deget, adica exact ce ar fi facut celula. Banda nu e `pointer-events:
+       none` tocmai ca atingerea sa nu cada in gol intre doua dungi de 12px.
+       Manerele de capat se randeaza doar pe benzile de mai multe zile: pe una de
+       o singura zi, doua manere de 9px ar manca o celula de 44px. */
     .banda:not(.lat) .maner { display: none; }
 
     /* Navigarea si butoanele barei: erau de 28px inaltime. */

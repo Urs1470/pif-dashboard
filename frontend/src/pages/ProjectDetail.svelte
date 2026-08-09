@@ -1042,7 +1042,9 @@
      deci rubrica isi lua o culoare, desi culoarea e rezervata STARII. Un fond
      plat le face egale, cum au fost desenate. */
   .field-section { margin-bottom: var(--space-sm); background: var(--bg-surface); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow var(--dur-fast) var(--ease); cursor: pointer; text-align: left; }
-  .field-section:hover { border-color: var(--accent-ring); }
+  /* `:hover { border-color }` a plecat: sectiunea n-are chenar din B2, deci
+     declaratia nu putea colora nimic. Daca hoverul se vrea inapoi, e pe umbra
+     (`--shadow-md`) — tranzitia lui e deja scrisa mai sus. */
   .field-section:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .field-header { display: flex; align-items: center; gap: var(--space-sm); padding: 11px var(--space-md); font-size: var(--font-small); color: var(--text-secondary); border-bottom: 1px dashed var(--border); }
   /* Aceeasi familie cu `.ico-*` din global.css, deci aceeasi regula: cerneala pe

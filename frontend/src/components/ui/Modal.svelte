@@ -254,9 +254,11 @@
     z-index: var(--z-modal);
     padding: calc(var(--space-md) + var(--safe-top)) calc(var(--space-md) + var(--safe-right)) calc(var(--space-md) + var(--safe-bottom)) calc(var(--space-md) + var(--safe-left));
   }
+  /* SI LINIE, SI UMBRA PE ACEEASI SUPRAFATA PLUTITOARE — chenarul a plecat (A5).
+     Doua niveluri de suprafata se desprind prin UMBRA; linia de 1px e separator
+     intre randuri, cu marja laterala. Popupul din DatePicker era deja fara. */
   .modal {
     background: var(--bg-overlay);
-    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     width: 100%;
     max-height: 85dvh;
