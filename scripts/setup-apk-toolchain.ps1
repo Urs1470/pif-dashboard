@@ -106,18 +106,36 @@ $env:ANDROID_HOME = "$T\android-sdk"; $env:ANDROID_SDK_ROOT = "$T\android-sdk"
 $sdkman = "$T\android-sdk\cmdline-tools\latest\bin\sdkmanager.bat"
 
 # ---- licente + pachete -----------------------------------------------------
-# Licentele se accepta o data; fara ele `sdkmanager` refuza orice instalare.
+# `sdkmanager` intreaba la STDIN, si raspunsul se da dintr-un FISIER, nu printr-un
+# pipe din PowerShell. Motivul: cand scriptul ruleaza neinteractiv, procesul-copil
+# mosteneste un stdin legat la nimic, iar `"y" | & sdkmanager` nu ajunge sa fie
+# citit — intrebarea primeste EOF, raspunsul implicit e „N", si sdkmanager iese
+# LINISTIT cu zero pachete instalate. Prima versiune a scriptului asta a facut
+# exact aia: a raportat cinstit „[ ] platforms", dar fara sa spuna de ce.
+# Cu `cmd /c "... < fisier"` redirectarea e reala si merge in ambele cazuri.
+$da = "$T\caches\da.txt"
+Set-Content -Path $da -Value ((1..60 | ForEach-Object { 'y' }) -join "`r`n") -Encoding ascii
+
 "  accept licentele..."
-$y = ("y`n" * 40)
-$y | & $sdkman --licenses --sdk_root="$T\android-sdk" 2>&1 | Select-String -Pattern 'accepted|All SDK' | Select-Object -Last 1
+cmd /c "`"$sdkman`" --licenses --sdk_root=`"$T\android-sdk`" < `"$da`"" 2>&1 |
+    Select-String -Pattern 'accepted|already accepted' | Select-Object -Last 1
 
 "  instalez: $($PACHETE -join ', ')"
-& $sdkman --sdk_root="$T\android-sdk" @PACHETE 2>&1 | Select-String -Pattern 'done|Warning|Error' | Select-Object -Last 5
+$lista = ($PACHETE | ForEach-Object { "`"$_`"" }) -join ' '
+cmd /c "`"$sdkman`" --sdk_root=`"$T\android-sdk`" $lista < `"$da`"" 2>&1 |
+    Select-String -Pattern 'Error|Warning|100%' | Select-Object -Last 3
 
 ""
 "Stare:"
 $s = Stare
 Raport $s
+
+# Fara asta, un esec de instalare arata ca un simplu raport cu casute goale, si
+# afli abia peste zece minute de Gradle ca de fapt n-ai SDK.
+if (-not ($s.Jdk -and $s.Sdkman -and $s.Platf -and $s.Build)) {
+    ""
+    throw "Toolchain incomplet — vezi casutele goale de mai sus. Ruleaza din nou; daca descarcarea uneltelor da 404, ia numarul curent de build de la https://developer.android.com/studio#command-line-tools-only si paseaza-l cu -CmdlineTools."
+}
 
 if (-not $s.Chei) {
     ""

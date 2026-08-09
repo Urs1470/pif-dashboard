@@ -70,6 +70,31 @@ New-Item -ItemType Directory -Path "$T\caches\tmp" -Force | Out-Null
 $env:TMP  = "$T\caches\tmp"      # vezi (1) — fara asta, build-ul nici nu porneste
 $env:TEMP = "$T\caches\tmp"
 
+# SINCRONIZAREA CAPACITOR, INAINTE DE GRADLE.
+#
+# `frontend/android/capacitor-cordova-android-plugins/` e GENERAT si gitignorat,
+# iar `app/capacitor.build.gradle` (comis) il include neconditionat. Deci intr-o
+# clona proaspata Gradle pica cu „Could not read script … cordova.variables.gradle
+# as it does not exist" — dupa ce si-a descarcat cele ~700 MB si a compilat patru
+# minute. Pe masina veche nu se vedea, fiindca folderul era acolo dintr-un `sync`
+# de acum cateva luni.
+#
+# `sync` dureaza sub o secunda si e idempotent, deci se ruleaza mereu: pe langa
+# scheletul de plugin-uri, el duce si `static/dist` in asset-urile aplicatiei —
+# de unde vine `fara-retea.html`, singura pagina servita local (`server.errorPath`).
+# Fara sync dupa un build de web, ecranul „fara retea" din APK ar ramane cel vechi.
+#
+# Rescrie `capacitor.build.gradle` si `capacitor.settings.gradle` cu LF, deci
+# `git status` le arata modificate desi continutul e identic — `git diff` iese gol.
+# E zgomot de sfarsit de linie, nu o schimbare.
+Push-Location "$rad\frontend"
+try {
+    $cap = ".\node_modules\.bin\cap.cmd"
+    if (-not (Test-Path $cap)) { throw "Lipseste $cap — ruleaza `npm install` in frontend\." }
+    & $cap sync android
+    if ($LASTEXITCODE -ne 0) { throw "cap sync android a esuat (cod $LASTEXITCODE)" }
+} finally { Pop-Location }
+
 $sarcina = if ($Release) { 'assembleRelease' } else { 'assembleDebug' }
 Push-Location "$rad\frontend\android"
 try {
