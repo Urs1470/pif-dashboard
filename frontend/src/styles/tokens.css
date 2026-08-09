@@ -155,6 +155,10 @@
   --font-h2: 1.3125rem;     /* 21 — titlu de panou, numele lucrului deschis */
   --font-h3: 0.9375rem;     /* 15 — eticheta de pagina / titlu de lista (600) */
   --font-body: 0.9375rem;   /* 15 — tot ce citesti si randul de lista */
+  /* Randul de lista pe telefon NU urca la 16 odata cu corpul (vezi blocul de
+     768px de mai jos): el poarta densitate, deci ramane 15 pe orice latime.
+     Titlurile de rand il folosesc pe el, nu pe --font-body. */
+  --font-rand: 0.9375rem;   /* 15 — titlul randului de lista, fix pe orice ecran */
   --font-small: 0.8125rem;  /* 13 — metadate */
   --font-label: 0.75rem;    /* 12 — DOAR etichete majuscule, 600, ls .05em */
   /* Controlul din rand: aceeasi marime ca metadata, greutate mai mare, ca sa nu

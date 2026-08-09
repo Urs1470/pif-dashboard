@@ -20,7 +20,7 @@
 // telefon. De atunci `.githooks/pre-commit` refuza un commit care atinge
 // `static/dist/` fara sa atinga si linia de mai jos.
 
-const VERSION = 'v110';
+const VERSION = 'v111';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 

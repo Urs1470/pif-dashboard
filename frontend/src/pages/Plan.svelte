@@ -100,9 +100,13 @@
   // LUNA NU STA IN ANTET — o spune subtitlul paginii. In antet ar fi un al
   // treilea nivel peste saptamani si zile, si tot ar trebui scrisa de doua ori
   // cand fereastra trece dintr-o luna in alta.
+  // In bucati, nu un singur string: desenul (4c) cere CIFRELE in mono, restul in
+  // text — deci numarul si intervalul se randeaza in span-uri separate.
   const subtitlu = $derived.by(() => {
-    if (!plan.start) return ''
+    if (!plan.start) return null
     const h = HORIZONS.find(x => x.d === plan.days)
+    const cat = h ? h.cat : plan.days + ' zile'
+    const [catN, ...catRest] = cat.split(' ')
     const ultima = addDays(plan.start, plan.days - 1)
     const l1 = numeLuna(plan.start)
     const l2 = numeLuna(ultima)
@@ -110,7 +114,7 @@
       ? (l1 === l2 ? l1 : `${l1}–${l2}`)
       : (l1 === l2 ? `${ziLuna(plan.start)}–${ziLuna(ultima)} ${l2}`
                    : `${ziLuna(plan.start)} ${l1} – ${ziLuna(ultima)} ${l2}`)
-    return `de azi, ${h ? h.cat : plan.days + ' zile'} · ${interval}`
+    return { catN, catRest: catRest.join(' '), interval }
   })
 
   // CLIENTUL E SUFIXUL NUMELUI, SI E SINGURUL CARE SPUNE UNDE DUCE BANDA.
@@ -685,19 +689,19 @@
       <h1>Planificator</h1>
       <!-- Ce fereastra vezi, scris o data. Antetul de timp n-o mai spune: acolo
            luna ar fi un al treilea nivel peste saptamani si zile. -->
-      {#if subtitlu}<span class="page-sub">{subtitlu}</span>{/if}
+      {#if subtitlu}<span class="page-sub">de azi, <span class="ps-n">{subtitlu.catN}</span>&nbsp;{subtitlu.catRest} · <span class="ps-n">{subtitlu.interval}</span></span>{/if}
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Orizont">
         {#each HORIZONS as h}
-          <button class="seg-btn" class:active={plan.days === h.d} onclick={() => setHorizon(h.d)}>{h.l}</button>
+          <button class="seg-btn" class:active={plan.days === h.d} class:seg-6l={h.d === 180} onclick={() => setHorizon(h.d)}>{h.l}</button>
         {/each}
       </div>
       <button class="toggle" class:on={plan.showWeekends} disabled={unit !== 'day'} onclick={toggleWeekends} title={unit === 'day' ? 'Evidențiază weekendurile' : 'Weekendurile apar doar în vederea pe zile'}>
-        <span class="tk-box">{#if plan.showWeekends}<Check size={12} />{/if}</span> Weekend
+        <span class="tk-box">{#if plan.showWeekends}<Check size={11} strokeWidth={3} />{/if}</span> Weekend
       </button>
       <button class="toggle" class:on={plan.showDone} onclick={toggleShowDone} title="Arată taskurile finalizate">
-        <span class="tk-box">{#if plan.showDone}<Check size={12} />{/if}</span> Finalizate
+        <span class="tk-box">{#if plan.showDone}<Check size={11} strokeWidth={3} />{/if}</span> Finalizate
       </button>
       <button class="toggle export" onclick={openExport} disabled={plan.lanes.length === 0} title="Exportă ca PDF (print)">
         <FileDown size={14} /> <span class="tg-lung">Export </span>PDF
@@ -1101,7 +1105,8 @@
             <div class="mp-track" style="--rand:{li}">
               {#each columns.cols as c, i (c.key)}
                 {#if antet.granite.has(i - 1)}<div class="mp-linie" style="left:{c.leftPct}%"></div>{/if}
-                {#if unit === 'day' && plan.showWeekends && c.isWeekend}<div class="mp-we" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
+                <!-- Fara tenta de weekend in pista comuna: desenul (4c) tine pista
+                     curata — weekendul e treaba graficului de desktop. -->
                 {#if i === coloanaAzi}<div class="mp-azi" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
               {/each}
               {#each lane.pregatire as seg, i (i)}
@@ -1223,8 +1228,10 @@
                            din `esteAzi`/`esteRestant` (care se raporteaza la
                            `plan.today`, ziua serverului): altfel chipul se putea
                            colora cand inelul nu era colorat, si invers. -->
+                      <!-- Pe „azi" chipul scrie CUVANTUL, nu data (desen 4c): data
+                           de azi o stii; ce vrei sa vezi e ca a ajuns scadenta. -->
                       <span class="chip due" class:sev={dueRing(t.data_scadenta) !== 'var(--border)'}>
-                        <CalendarDays size={11} />{formatDateShort(t.data_scadenta)}
+                        <CalendarDays size={11} />{esteAzi(t.data_scadenta) ? 'azi' : formatDateShort(t.data_scadenta)}
                       </span>
                     {/if}
                     <!-- FRACTIA DE PASI NU STA PE RAND (aceeasi interdictie ca E1, in
@@ -1295,6 +1302,9 @@
   .page-title-row :global(svg) { align-self: center; }
   .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); font-family: var(--font-heading); letter-spacing: var(--tracking-tight); }
   .page-sub { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); white-space: nowrap; }
+  /* Cifrele subtitlului in mono (desen 4c): „14" si „8–21 aug" se compara de la
+     o vizita la alta; cuvintele raman in fontul paginii. */
+  .ps-n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .controls { display: flex; align-items: center; gap: var(--space-sm); }
   /* CAPUL PLANIFICATORULUI POARTA ACEEASI HAINA DE CONTROL CA RESTUL APLICATIEI.
      Avea chenar + fond, cu hoverul pe `border-color` — a doua haina, scoasa deja
@@ -1305,7 +1315,9 @@
      chenar. Treapta de text urca de la 13/500 la 15/600: sunt controale de cap
      de pagina, nu metadate. */
   .seg { display: inline-flex; background: var(--bg-elevated); border: none; border-radius: var(--radius-sm); padding: 3px; }
-  .seg-btn { height: 32px; padding: 0 11px; border-radius: var(--radius-xs); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
+  /* Raza segmentului = raza capsulei minus paddingul ei (10 − 3 = 7), aceeasi
+     formula ca la comutatorul de sfera din /tasks. */
+  .seg-btn { height: 32px; padding: 0 11px; border-radius: calc(var(--radius-sm) - 3px); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
   .seg-btn:hover { color: var(--text); }
   .seg-btn.active { background: var(--accent); color: var(--accent-text); }
   .toggle { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 12px; font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); }
@@ -1321,7 +1333,8 @@
   /* 4px nu e o treapta din scara (8 chip · 10 control · 14 suprafata · 20 foaie).
      Cercul e rezervat bifei de task; asta e o casuta de filtru, deci ramane
      patrata si ia treapta cea mai mica. */
-  .tk-box { width: 16px; height: 16px; border-radius: var(--radius-xs); border: 1.5px solid var(--border-strong); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  /* Raza 5, din desen: la 16px un colt de 8 ar face casuta aproape rotunda. */
+  .tk-box { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid var(--border-strong); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .toggle.on .tk-box { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
   .skel { display: flex; flex-direction: column; gap: var(--space-sm); }
 
@@ -1342,11 +1355,13 @@
   .lane-label.head { padding: 0 14px 8px; font-size: var(--font-label); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: flex-end; }
   /* Coloana restantelor: lipita la stanga pistei, latime fixa, nu costa zile.
      Antetul ei e singurul loc din grafic unde a mai ramas rosu. */
+  /* „Restante" e un cuvant, nu o cifra — fontul paginii, la 12/600, ca orice
+     eticheta majuscula. Mono era o abatere: DM Mono e doar pentru cifre. */
   .rest-head { width: var(--rest-w); flex: none; box-sizing: border-box;
     display: flex; align-items: flex-end; justify-content: center;
     padding: 0 6px 8px; border-left: 1px solid var(--border);
     background: var(--danger-subtle); color: var(--danger-deep);
-    font-family: var(--font-mono); font-size: var(--font-label);
+    font-size: var(--font-label); font-weight: var(--fw-semibold);
     letter-spacing: var(--tracking-label); text-transform: uppercase; }
   .days { flex: 1; position: relative; min-width: 0; height: 52px; display: flex; flex-direction: column; }
   /* Randul grosier. Nu-si calculeaza singur muchiile: le mosteneste din coloanele
@@ -1448,7 +1463,11 @@
      pur si simplu nu se citeste, iar prima incalca si regula cernelii pe tenta.
      Tipul e SCRIS in chip, deci cuvantul il spune; culoarea n-are ce adauga.
      (In Proiecte tipul e deja o iconita gri, fara fill — aceeasi solutie.) */
-  .tip-chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-secondary); flex-shrink: 0; }
+  /* Chipul de tip, ca in desen: 20px, 12/600, tracking usor — o eticheta, nu text. */
+  .tip-chip { display: inline-flex; align-items: center; height: 20px;
+    font-size: var(--font-label); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-label);
+    padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated);
+    color: var(--text-secondary); flex-shrink: 0; }
 
   /* Jgheabul restantelor. Reperele stau centrate si se inghesuie cand sunt multe:
      numarul exact e scris in coloana de nume, aici conteaza ca EXISTA. */
@@ -1525,9 +1544,13 @@
      deosebesc dintr-o privire, nu dintr-o masuratoare de procente.
      Raza urca la `--radius-sm`, ca sa se imbine fara decalaj cu `.impl-band`,
      care e pe aceeasi treapta. Animatiile raman: pregatirea NU creste din stanga
-     (n-are zi de start), doar se stinge in ecran. */
+     (n-are zi de start), doar se stinge in ecran.
+     Fondul e GRADIENTUL din desen, nu o spalatura plata: se stinge spre stanga
+     chiar si cand ambele capete sunt fixe — „de cand se pregateste" nu se stie
+     niciodata, iar desenul o spune prin insasi textura benzii. Mastile de capat
+     nesigur raman peste el, pe distanta fixa. */
   .band { position: absolute; top: 7px; bottom: 7px; border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--text-dim) 9%, transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 9%, transparent) 45%);
     border: none; z-index: 0;
     animation: pregatireIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
@@ -1661,7 +1684,7 @@
     0%, 12% { background: color-mix(in srgb, var(--accent) 20%, transparent); }
     100% { background: var(--bg-elevated); }
   }
-  .mimpl { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  .mimpl { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
     border: none; cursor: pointer; padding: 0 10px; border-radius: var(--radius-sm);
     background: var(--bg-elevated); margin-bottom: 6px;
     animation: pfAprindere 3.4s var(--ease) infinite; }
@@ -1675,7 +1698,7 @@
   /* Chevronul spune ca randul DUCE undeva (in Calendar) — inainte nu se vedea
      din nimic ca perioada e o tinta. */
   .mimpl :global(.mimpl-chev) { flex: none; color: var(--text-faint); }
-  .mimpl-range { display: inline-flex; align-items: center; gap: 6px; flex: none; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); }
+  .mimpl-range { display: inline-flex; align-items: center; gap: 6px; flex: none; font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-secondary); }
   /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
      44px fiecare, inaintea primului task. Duc toate in acelasi loc — Calendar. */
   .mimpl-plus { padding: 0 5px; border-radius: var(--radius-full);
@@ -1683,17 +1706,23 @@
 
   /* Capetele de grup din lista mobila. Aceeasi haina si acelasi limbaj de culoare
      ca `.grup-cap` din /tasks — o singura gramatica pentru „ce urmeaza". */
+  /* Eticheta („RESTANTE") e cuvant — fontul paginii; DOAR cifra de langa e mono.
+     Tonul scrie cu cerneala ADANCA, nu cu valoarea plina (regula -deep). */
   .mgrup-cap { display: flex; align-items: center; gap: var(--space-xs);
-    padding: 10px 4px 5px; font-family: var(--font-mono); font-size: var(--font-label);
+    padding: 10px 4px 5px; font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
     letter-spacing: var(--tracking-label); color: var(--text-faint); }
   .grup-n { display: inline-flex; align-items: center; justify-content: center;
-    min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
+    min-width: 19px; height: 19px; padding: 0 5px; border-radius: var(--radius-full);
     background: var(--bg-elevated); color: var(--text-dim);
-    font-size: var(--font-small); line-height: 1; font-variant-numeric: tabular-nums; }
-  .mgrup-cap.ton-danger { color: var(--danger); }
-  .mgrup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger-deep); }
-  .mgrup-cap.ton-accent { color: var(--accent); }
+    font-family: var(--font-mono); font-size: var(--font-label); line-height: 1;
+    font-variant-numeric: tabular-nums; letter-spacing: var(--tracking-normal); }
+  .mgrup-cap.ton-danger { color: var(--danger-deep); }
+  /* Inelul de 34% din desen: pastila de restante e singura cu ton, deci singura
+     cu muchie — o cifra care cere actiune, nu doar o numaratoare. */
+  .mgrup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger-deep);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 34%, transparent); }
+  .mgrup-cap.ton-accent { color: var(--accent-deep); }
   .mgrup-cap.ton-accent .grup-n { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   /* UN TASK E UN REPER, NU O CUTIE.
      Din v33 `rect.single` e mereu adevarat, deci regulile de cutie (`.bar.todo`,
@@ -1797,7 +1826,7 @@
      aceeasi zi. Restul geometriei vine din `columns` / `antet`, aceleasi obiecte
      ca pe desktop: o singura socoteala pentru amandoua ecranele. */
   .mpiste { background: var(--bg-surface); border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm); padding: var(--space-sm); display: flex;
+    box-shadow: var(--shadow-sm); padding: var(--space-12); display: flex;
     flex-direction: column; gap: 8px; }
   .mp-cap { font-size: var(--font-label); font-weight: var(--fw-semibold);
     letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-secondary); }
@@ -1815,18 +1844,25 @@
     align-items: center; justify-content: center; box-sizing: border-box;
     font-family: var(--font-mono); font-variant-numeric: tabular-nums;
     white-space: nowrap; overflow: hidden; }
-  .mp-s { font-size: var(--font-label); color: var(--text-faint); }
-  .mp-z { font-size: var(--font-small); color: var(--text-dim); }
+  /* Treptele din desen sunt 10/11; scara se opreste la 12, deci amandoua stau pe
+     `--font-label` — aceeasi abatere asumata ca la P9, si aceeasi cerneala
+     (`--text-dim`) pe ambele randuri. */
+  .mp-s { font-size: var(--font-label); color: var(--text-dim); }
+  .mp-z { font-size: var(--font-label); color: var(--text-dim); }
   /* Aceeasi muchie ca `.mp-linie` din pista: granita de saptamana coboara din
      antet prin toate pistele, altfel randul de saptamani ar fi o eticheta care
      nu imparte nimic. */
-  .mp-z.granita { border-left: 1px solid var(--border-subtle); }
+  /* Granita de saptamana e muchia GROASA (--border-strong), ca pe desktop:
+     subtila n-ar imparti nimic intr-o pista de 34px. */
+  .mp-z.granita { border-left: 1px solid var(--border-strong); }
   .mp-z.we { color: var(--text-faint); }
   /* AZI = CIFRA IN ACCENT, CU O SUBLINIERE DE 2px. Fara pastila plina: aceea e
-     ziua SELECTATA din Calendar, si un obiect nu poate avea doua intelesuri. */
-  .mp-z.today { color: var(--accent-deep); font-weight: var(--fw-semibold); }
+     ziua SELECTATA din Calendar, si un obiect nu poate avea doua intelesuri.
+     Sublinierea coboara 4px SUB rand (desen) — deci celula de azi isi ridica
+     `overflow`, altfel ar fi taiata de `overflow: hidden`-ul de trunchiere. */
+  .mp-z.today { color: var(--accent-deep); font-weight: var(--fw-semibold); overflow: visible; }
   .mp-z.today::after { content: ''; position: absolute; left: 2px; right: 2px;
-    bottom: 0; height: 2px; background: var(--accent); }
+    bottom: -4px; height: 2px; background: var(--accent); }
 
   .mp-nume { display: flex; align-items: center; gap: 7px; min-width: 0; }
   /* Punctul de identitate — 7px, PLAT. Singurul loc in care culoarea proiectului
@@ -1836,25 +1872,37 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mp-track { position: relative; height: 34px; border-radius: var(--radius-sm);
     background: var(--bg-elevated); overflow: hidden; }
-  .mp-linie { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -1px; background: var(--border-subtle); z-index: 1; }
-  .mp-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 4%, transparent); }
+  .mp-linie { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -1px; background: var(--border-strong); z-index: 1; }
   /* Azi e o COLOANA tentata, ca peste tot — nu o linie de 2px. */
   .mp-azi { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 8%, transparent); }
   /* Benzile refolosesc clasele de pe desktop, deci si gramatica: pregatirea e
      spalatura neutra, implementarea singura pe accent. Se schimba doar insetul,
      fiindca pista are 34px, nu 42. */
-  .mp-track .band { top: 5px; bottom: 5px; border-radius: var(--radius-xs); z-index: 2; }
+  /* Raza 6 si spalatura la 10% — valorile din desenul 4c pentru pista de 34px;
+     cand proiectul n-are nicio perioada in fereastra, stingerea e la ambele
+     capete pe PROCENTE (22/78), nu pe distanta fixa de desktop: pe o pista
+     ingusta 56px de fiecare parte ar inghiti aproape tot. */
+  .mp-track .band { top: 5px; bottom: 5px; border-radius: 6px; z-index: 2;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 10%, transparent) 45%); }
+  .mp-track .band.deschis.deschisL {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%); }
   /* DOAR ICONITA, CENTRATA: eticheta se scrie pe randul perioadei din card,
      unde are latimea intreaga. Aici perioada e DESEN, nu buton — cine vrea s-o
      deschida atinge randul (`.mimpl`), care are si chevron. */
   .mp-track .impl-band { top: 5px; bottom: 5px; padding: 0; gap: 0; z-index: 2;
-    align-items: center; justify-content: center; border-radius: var(--radius-xs);
+    align-items: center; justify-content: center; border-radius: 6px;
     background: color-mix(in srgb, var(--accent) 16%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent);
     pointer-events: none; cursor: default; }
   .mp-track .impl-band :global(.ib-ico) { margin-top: 0; opacity: 1; }
 
   .mgroup { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
+  /* Pastila de restante din capul cardului poarta inelul de 34% din desen (M6):
+     e o cifra care cere actiune, nu doar o numaratoare. Scoped aici, nu in
+     global.css — restul `.count.danger` din aplicatie raman fara muchie. */
+  .mgroup .mg-head :global(.count.danger) {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 34%, transparent); }
   /* Cardul strans: aceeasi suprafata si aceeasi raza ca `.mgroup`, ca sa se citeasca
      drept acelasi obiect in stare mica — nu un al doilea fel de card. Inaltimea o da
      continutul (un rand), deci lista nu mai are goluri intre proiectele active. */
@@ -1887,7 +1935,8 @@
   /* Randul de lista pe telefon: 52 inaltime, titlul 15 (regula din CLAUDE.md).
      Erau 44 si 13 — adica randul de ACTIUNE al unei bare de unelte, nu randul
      de CITIT al unei liste. */
-  .mrow-title { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* --font-rand: randul de lista ramane 15 si pe telefon (regula din sistem). */
+  .mrow-title { font-size: var(--font-rand); line-height: var(--lh-snug); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
   /* CHIPUL DE TERMEN E O CUTIE DE 22px CU CIFRE MONO (desen 4c).
      Avea `padding: 1px 6px` — deci inaltimea o dadea textul, si atat chipul cat si
@@ -1898,7 +1947,7 @@
     font-family: var(--font-mono); font-size: var(--font-label); font-weight: var(--fw-medium);
     font-variant-numeric: tabular-nums; background: var(--bg-elevated); color: var(--text-dim);
     display: inline-flex; align-items: center; gap: 4px; flex: none; white-space: nowrap; }
-  .chip.due { color: var(--text-dim); background: var(--bg-elevated); }
+  .chip.due { color: var(--text-secondary); background: var(--bg-elevated); }
   /* O SINGURA GRAMATICA PENTRU „AZI". Erau doua clase („azi", „restant") cu doua
      harti de culoare proprii, pe langa inca una pe muchia randului. Acum chipul
      citeste ACELASI `--ring` ca inelul bifei de langa el, deci cele doua canale
@@ -2086,16 +2135,19 @@
     .page { padding-left: var(--space-md); padding-right: var(--space-md); }
     .page-header { align-items: stretch; }
     .controls { flex-wrap: wrap; width: 100%; }
-    /* Orizontul e alegerea principala — ia randul lui, cu cele cinci trepte
-       impartite egal. */
+    /* Orizontul e alegerea principala — ia randul lui, cu treptele impartite egal. */
     /* `gap: 2px` (desen 4c): pe desktop treptele stau lipite, fiindca fillul
        activului e singurul lucru care le desparte si latimea o da textul. Aici sunt
        intinse egal pe toata latimea, deci doua trepte vecine ar fi un dreptunghi de
        340px taiat de o culoare — golul le face din nou butoane.
        Treapta ramane la `--tap-min` (deci cutia 50, nu 48 ca in desen): 44 e pragul
-       de atins al sistemului, iar 2px de inaltime nu-l cumpara. */
+       de atins al sistemului, iar 2px de inaltime nu-l cumpara.
+       PATRU trepte, nu cinci (desen 4c): 6L nu incape pe telefon — la 180 de zile
+       coloanele oricum n-ar mai avea latime de citit pe 390px. Fillul activ ia
+       raza 8 (desen), nu 7 ca pe desktop. */
     .seg { display: flex; width: 100%; gap: 2px; }
-    .seg-btn { flex: 1; min-height: var(--tap-min); font-size: var(--font-body); }
+    .seg-btn { flex: 1; min-height: var(--tap-min); font-size: var(--font-rand); border-radius: var(--radius-xs); }
+    .seg-btn.seg-6l { display: none; }
     /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
        butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
     .toggle { flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: 6px 8px; }

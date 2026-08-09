@@ -300,7 +300,7 @@
        Ascuns in arhiva: acolo te uiti la ce s-a terminat, nu adaugi. -->
   {#if ecran.telefon && !showArchive}
     <button class="fab" onclick={() => showNewModal = true} aria-label="Proiect nou">
-      <Plus size={26} strokeWidth={2} />
+      <Plus size={25} strokeWidth={1.5} />
     </button>
   {/if}
 </div>
@@ -349,7 +349,8 @@
   /* Meniul deschis: tenta poarta cerneala ADANCA (`--accent-on-subtle` e literal
      `--accent-deep`), iar umbra pleaca — o suprafata tentata nu mai e ridicata. */
   .sort-trigger.on { color: var(--accent-on-subtle); background: var(--accent-subtle); box-shadow: none; }
-  .sort-dir-ind { font-size: var(--font-small); opacity: .8; }
+  /* Sageata directiei e semn, nu cuvant — mono, ca in desen (R6). */
+  .sort-dir-ind { font-family: var(--font-mono); font-size: var(--font-small); opacity: .8; }
   .sort-menu { position: absolute; top: calc(100% + 5px); right: 0; z-index: var(--z-dropdown, 50); min-width: 150px; background: var(--bg-overlay); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 4px; }
   .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
   .sort-opt:hover { background: var(--bg-hover); color: var(--text); }
@@ -362,13 +363,12 @@
      terminat de urcat. Hoverul e raspunsul la o intentie care inca se formeaza —
      trebuie sa ajunga inaintea deciziei, nu dupa. Ridicarea ramane 4px; doar
      viteza se aliniaza. */
-  .pcard { position: relative; display: flex; flex-direction: column; min-height: 142px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease); }
+  .pcard { position: relative; display: flex; flex-direction: column; min-height: 142px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch, cardul atins ramanea ridicat cu 4px si cu
      umbra pana atingeai altceva — parea selectat, desi nu era. */
   @media (hover: hover) {
-    .pcard:hover { box-shadow: var(--shadow-md); }
+    .pcard:hover:not(.new-card) { transform: translateY(-4px); }
   }
-  .pcard:active { border-color: var(--border-strong); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* Conturul e SCRIS, nu mostenit: `.pcard` n-are bordura (suprafata se desprinde
      prin umbra), deci `border-style: dashed` singur cadea pe implicite — 3px in
@@ -416,8 +416,10 @@
   .archive { margin-top: var(--space-lg); }
   /* DM Mono e doar pentru cifre si coduri. „Arhivă · finalizate" e text — deci
      fontul paginii; cifra de langa el ramane mono. */
+  /* Cerneala din desen: eticheta pe `--text-secondary` (treapta a doua), nu pe
+     faint — e titlul sectiunii, nu o nota. */
   .arch-cap { display: flex; align-items: center; gap: var(--space-xs);
-    padding: 0 2px var(--space-sm); color: var(--text-faint);
+    padding: 0 2px var(--space-sm); color: var(--text-secondary);
     font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
     letter-spacing: var(--tracking-label); }
@@ -430,7 +432,7 @@
      ANTETUL sectiunii, sub care randul chiar sta — nu o stingere care se inmulteste
      peste tokenuri deja la limita si scoate randul sub AA. */
   .archived .arch-name { color: var(--text-secondary); }
-  .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .arch-list { display: flex; flex-direction: column; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-md); overflow: hidden; }
   /* COLOANE FIXE, NU FLEX CU GAP. Cu `gap` + `margin-left: auto` pe coada,
      clientul incepea imediat dupa nume — adica pe fiecare rand in alt loc — si
      lista se citea ca trei propozitii, nu ca un tabel. Latimile sunt cele din
@@ -455,12 +457,14 @@
   .arch-urm { width: 52px; flex: none; text-align: right; font-size: var(--font-small); font-family: var(--font-mono); }
   .arch-badge { width: 82px; flex: none; display: inline-flex; justify-content: center; }
 
-  /* Butonul mare cu plus (doar telefon). Aceleasi valori ca in `Tasks.svelte`:
-     e acelasi obiect, deci nu-si alege singur nici marimea, nici pozitia. */
+  /* Butonul mare cu plus (doar telefon). Valorile din desen (T4): 58×58, raza 18,
+     plusul 25/1.5, cu 24px deasupra dockului (dockul randat are 72 = 68 + 4).
+     Cel mai mare obiect plutitor din aplicatie — daca se schimba, se schimba si
+     perechea lui din `Tasks.svelte`. */
   .fab { position: fixed; right: calc(var(--space-md) + var(--safe-right));
-    bottom: calc(var(--dock-h) + 14px + var(--safe-bottom) + var(--space-md));
-    width: 56px; height: 56px; display: grid; place-items: center;
-    border-radius: var(--radius-md); border: none;
+    bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
+    width: 58px; height: 58px; display: grid; place-items: center;
+    border-radius: 18px; border: none;
     background: var(--accent); color: var(--accent-text);
     box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
     cursor: pointer; transition: var(--transition-pressable); }
@@ -537,5 +541,7 @@
        (14) ca MARJA, si atunci `padding-top` ar dubla-o. */
     .pcard { min-height: 0; padding: 16px 18px; }
     .card-foot { margin-top: 14px; padding-top: 0; }
+    /* Desenul 3c: capul cardului la 10 de nume pe telefon (12 pe desktop). */
+    .card-top { margin-bottom: 10px; }
   }
 </style>

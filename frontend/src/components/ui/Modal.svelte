@@ -414,7 +414,7 @@
     }
     .modal.sheet.trage .modal-header { cursor: grabbing; }
     .sheet-grip {
-      width: 36px;
+      width: 38px;
       height: 4px;
       margin: 8px auto 2px;
       border-radius: var(--radius-full);

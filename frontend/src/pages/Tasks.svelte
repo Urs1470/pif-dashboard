@@ -1097,7 +1097,7 @@
        termenul din prima. -->
   {#if ecran.telefon && !showArchive}
     <button class="fab" onclick={openNewModal} aria-label="Task nou">
-      <Plus size={26} strokeWidth={2} />
+      <Plus size={25} strokeWidth={1.5} />
     </button>
   {/if}
 </div>
@@ -1459,11 +1459,13 @@
     color: var(--danger); white-space: nowrap; }
   .ph-punct { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); }
 
-  /* Butonul mare cu plus (doar telefon). Peste dock, nu langa el. */
+  /* Butonul mare cu plus (doar telefon). Peste dock, nu langa el — valorile din
+     desen (T4): 58×58, raza 18, plusul 25/1.5, cu 24px deasupra dockului randat
+     (72 = 68 + 4). Acelasi obiect ca in `Projects.svelte`. */
   .fab { position: fixed; right: calc(var(--space-md) + var(--safe-right));
-    bottom: calc(var(--dock-h) + 14px + var(--safe-bottom) + var(--space-md));
-    width: 56px; height: 56px; display: grid; place-items: center;
-    border-radius: var(--radius-md); border: none;
+    bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
+    width: 58px; height: 58px; display: grid; place-items: center;
+    border-radius: 18px; border: none;
     background: var(--accent); color: var(--accent-text);
     box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
     cursor: pointer; transition: var(--transition-pressable); }
@@ -1782,7 +1784,8 @@
      data pentru toate listele — inclusiv haloul de hover, care ADAUGA in loc sa
      rescrie `--ring`. */
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; align-self: stretch; display: flex; align-items: center; }
-  .ttitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium);
+  /* --font-rand, nu --font-body: randul de lista ramane 15 si pe telefon. */
+  .ttitle { font-size: var(--font-rand); color: var(--text); font-weight: var(--fw-medium);
     min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ACTIUNILE: chipuri cu TEXT, nu iconite mute.
@@ -2010,8 +2013,11 @@
     .filters { gap: var(--space-xs); }
     .g-ico { width: var(--tap-min); min-height: var(--tap-min); }
     /* Capsula creste ODATA cu segmentele: tinta de 44 vine din segment, nu din
-       padding-ul capsulei, altfel jumatate din capsula n-ar face nimic la atins. */
-    .seg { min-height: calc(var(--tap-min) - 4px); padding: 2px 14px; font-size: var(--font-small); }
+       padding-ul capsulei, altfel jumatate din capsula n-ar face nimic la atins.
+       Pe telefon capsula sta pe suprafata cu umbra, iar segmentele urca la 15 —
+       haina din desenul 3c, unde comutatorul e o tinta principala, nu un accesoriu. */
+    .sfere { background: var(--bg-surface); box-shadow: var(--shadow-sm); }
+    .seg { min-height: calc(var(--tap-min) - 4px); padding: 2px 14px; font-size: var(--font-rand); }
     .tmain { min-height: var(--tap-min); }
     .page-header :global(.btn) { min-height: var(--tap-min); }
 

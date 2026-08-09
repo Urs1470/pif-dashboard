@@ -115,7 +115,7 @@
               onclick={() => navigate(`/calendar?zi=${acum.start}`)}
               title="Vezi în Calendar">
         <span class="ico">
-          {#if acum.sediu}<Building2 size={14} />{:else}<MapPin size={14} />{/if}
+          {#if acum.sediu}<Building2 size={15} />{:else}<MapPin size={15} />{/if}
         </span>
         <span class="cand">{cand(acum)}</span>
         <span class="unde">{acum.sediu ? 'Sediu' : scurt(acum.client)}</span>
@@ -183,30 +183,29 @@
   .spatiu { flex: 1; }
 
   /* Ieșirea următoare — singurul lucru cu greutate vizuală din linie. */
+  /* Haina din desen (3a): pastila de 36, padding 0 14, gap 9, iconita pe accent. */
   .pr {
-    display: inline-flex; align-items: baseline; gap: 8px; min-width: 0;
-    /* Dunga de locatie a plecat: `.ico` de langa ea e deja in aceeasi `--c`.
-       Cei 2px pierduti de la muchie se intorc in padding. */
-    padding: 5px 12px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; gap: 9px; min-width: 0;
+    min-height: 36px; padding: 0 14px; border-radius: var(--radius-sm);
     background: var(--bg-surface); box-shadow: var(--shadow-sm);
     cursor: pointer; text-align: left;
     transition: var(--transition-pressable);
   }
   .pr:hover { background: var(--bg-hover); }
   .pr:active { transform: scale(var(--press-scale)); }
-  .ico { color: var(--text-secondary); align-self: center; display: inline-flex; }
+  .ico { color: var(--accent); align-self: center; display: inline-flex; }
   /* Fara Space Grotesk: „În 3 zile" e o propozitie scurta, nu numele unui lucru,
      iar fontul de titlu nu coboara sub 17px — aici e la 13. */
   .cand { font-weight: var(--fw-semibold);
           font-size: var(--font-small); color: var(--accent-deep); white-space: nowrap; }
   .unde { font-size: var(--font-small); color: var(--text); white-space: nowrap; }
   .sep { color: var(--text-faint); }
-  .ce { font-size: var(--font-small); color: var(--text-dim); min-width: 0;
+  .ce { font-size: var(--font-small); color: var(--text-secondary); min-width: 0;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 34ch; }
   /* dim, nu faint: intervalul e raspunsul la „cand pleci" — informatie, nu
-     eticheta; masurat 3.18:1 la 10.4px, sub AA. */
-  .zile { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim);
-          white-space: nowrap; }
+     eticheta; masurat 3.18:1 la 10.4px, sub AA. Mono 12, ca in desen. */
+  .zile { font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-dim);
+          white-space: nowrap; letter-spacing: var(--tracking-normal); }
 
   /* Următoarele două — text simplu, fără cadru: context, nu obiect. */
   .apoi { font-size: var(--font-small); color: var(--text-faint); white-space: nowrap; }

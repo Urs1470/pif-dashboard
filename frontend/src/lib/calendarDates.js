@@ -95,16 +95,13 @@ export function weekStart(iso) {
 }
 
 /**
- * Zilele afișate în grilă, mereu multiplu de 7, începând de luni.
- * `mod`: 'luna' — luna lui `anchor`, completată cu zilele vecine până la
- *        săptămâni întregi (cele din afara lunii vin cu `alta = true`);
- *        'saptamani' — N săptămâni de la luni-ul curent.
+ * Zilele afișate în grilă, mereu multiplu de 7, începând de luni: luna lui
+ * `anchor`, completată cu zilele vecine până la săptămâni întregi (cele din
+ * afara lunii vin cu `alta = true`).
+ * Ramura „N săptămâni" a plecat odată cu modul „2 săpt." din Calendar (V9) —
+ * era mașinărie moartă mutată un fișier mai încolo, fără niciun apelant.
  */
-export function buildGrid(anchor, mod, saptamani = 2) {
-  if (mod === 'saptamani') {
-    const s = weekStart(anchor)
-    return Array.from({ length: saptamani * 7 }, (_, i) => ({ iso: addDays(s, i), alta: false }))
-  }
+export function buildGrid(anchor) {
   const ms = monthStart(anchor)
   const luna = parseISO(ms).getMonth()
   const s = weekStart(ms)

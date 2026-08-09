@@ -121,7 +121,7 @@
     }
   }
 
-  const grila = $derived(buildGrid(anchor, 'luna', 2))
+  const grila = $derived(buildGrid(anchor))
 
   // zi ISO -> perioadele care o acopera
   const peZi = $derived.by(() => {
@@ -523,11 +523,19 @@
    *  Ce ramane adevarat din vechea observatie: `scurt()` ia primul cuvant, deci doi
    *  clienti cu acelasi prim cuvant se scriu la fel. Numele complet e in `title` si
    *  in panoul zilei. */
-  function textCaptura(d) {
-    const z = Math.max(0, diffDays(d.start, d.end)) + 1
-    const durata = `${z} ${z === 1 ? 'zi' : 'zile'}`
+  /* In doua bucati, fiindca in eticheta vizibila se randeaza SEPARAT (C11):
+     locul la 12/600, durata in mono, greutate normala. `textCaptura` le lipeste
+     pentru title si aria-label, unde tipografia nu exista. */
+  function etLoc(d) {
     const c = (d.client || '').trim()
-    return `${c ? scurt(c) : 'Sediu'} · ${durata}`
+    return c ? scurt(c) : 'Sediu'
+  }
+  function etZile(d) {
+    const z = Math.max(0, diffDays(d.start, d.end)) + 1
+    return `${z} ${z === 1 ? 'zi' : 'zile'}`
+  }
+  function textCaptura(d) {
+    return `${etLoc(d)} · ${etZile(d)}`
   }
 
   // Ce urmeaza, cand ziua selectata e goala: pagina trebuie sa raspunda la
@@ -1281,7 +1289,7 @@
                         onclick={(e) => e.stopPropagation()}
                         title={etichetaDeplasare(c.d)}
                         aria-label="Deplasare {c.d.client || 'la sediu'} — {textCaptura(c.d)}. Trage ca să muți toată ieșirea.">
-                  {#if cDecizie}<TriangleAlert size={12} />{:else if c.d.sediu}<Building2 size={12} />{:else}<MapPin size={12} />{/if}{textCaptura(c.d)}
+                  {#if cDecizie}<TriangleAlert size={12} />{:else if c.d.sediu}<Building2 size={12} />{:else}<MapPin size={12} />{/if}{etLoc(c.d)}<span class="et-zile">&nbsp;· {etZile(c.d)}</span>
                 </button>
               {/if}
             </div>
@@ -1397,7 +1405,10 @@
         {#snippet panouZi(cuTitlu)}
         {#key selectata}
         <div class="pan" class:in-foaie={!cuTitlu} in:sosire|local>
-          {#if cuTitlu}<div class="pan-zi">{dayLabel(selectata)}</div>{/if}
+          <!-- Titlul zilei se scrie la 21/600 in AMBELE gazde (M9): in foaie,
+               linia mica de pe manerul Modalului se ascunde (vezi regula
+               `:has(.pan.in-foaie)` de mai jos) — acelasi tipar ca N2-N5. -->
+          <div class="pan-zi">{dayLabel(selectata)}</div>
           {#if selectate.length}
             <div class="pan-sub">
               {#if grupuriSelectate.length > 1}
@@ -1414,9 +1425,31 @@
               <!-- Fara stingere pe rand: panoul intreg a sosit deja, o data.
                    Doua sosiri peste aceiasi pixeli nu se aduna, se incurca. -->
               <div class="it" style="--c: {culoareLucrare(p)}">
-                <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
-                  {p.nume}<ExternalLink size={12} />
-                </button>
+                <!-- ACTIUNILE STAU PE LINIA TITLULUI, ca text cu iconita (C13) —
+                     nu ca butoane cu chenar dedesubt. Pe desktop apar la hover /
+                     focus (randul pe care lucrezi trece pe `--bg-elevated`); in
+                     foaie ele sunt randuri de 48px, mai jos. -->
+                <div class="it-cap">
+                  <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
+                    {p.nume}<ExternalLink size={12} />
+                  </button>
+                  {#if cuTitlu}
+                    <span class="it-act">
+                      {#if p.confirmata}
+                        <button class="ia" disabled={busy === p.id} onclick={() => confirma(p, 0)}
+                                title="Răspunsul opus la „S-a făcut?” — nu scoate perioada."><X size={13} /> Nu s-a făcut</button>
+                      {/if}
+                      <button class="ia" disabled={busy === p.id}
+                              onclick={() => { mutaId = mutaId === p.id ? '' : p.id; mutaVal = '' }}>
+                        <CalendarDays size={13} /> Mută
+                      </button>
+                      <button class="ia del" disabled={busy === p.id} onclick={() => scoate(p)}
+                              title="Scoate perioada din calendar — proiectul se întoarce în „Proiecte fără perioadă”">
+                        <Undo2 size={13} /> Scoate
+                      </button>
+                    </span>
+                  {/if}
+                </div>
                 <div class="it-m">
                   {#if p.eticheta}<span>{p.eticheta}</span>{/if}
                   <!-- Locatia si faza sunt amandoua despre PERIOADA, deci stau
@@ -1443,7 +1476,7 @@
                        doua raspunsuri de 48px: „Da, s-a facut" plin, fiindca e
                        raspunsul asteptat, si „Muta pe azi" pe suprafata. -->
                   <div class="dec intrebare">
-                    <span class="dec-q">A trecut. S-a făcut?</span>
+                    <span class="dec-q"><TriangleAlert size={13} /> A trecut. S-a făcut?</span>
                     <button class="b ok" disabled={busy === p.id} onclick={() => confirma(p, 1)}
                             title="Bifează perioada ca făcută. Proiectul NU se închide — asta se face din pagina proiectului.">
                       <Check size={14} /> Da, s-a făcut
@@ -1451,33 +1484,39 @@
                     <button class="b" disabled={busy === p.id} onclick={() => muta(p, azi)}><Undo2 size={14} /> Mută pe azi</button>
                   </div>
                 {/if}
-                <div class="dec">
-                  <!-- Calea de intoarcere pentru bifă. „Nu s-a făcut", nu „Scoate
-                       bifa": e răspunsul opus la aceeași întrebare, și nu se poate
-                       confunda cu „Scoate", care scoate perioada din calendar. -->
-                  {#if p.confirmata}
-                    <button class="b" disabled={busy === p.id} onclick={() => confirma(p, 0)}>
-                      <X size={12} /> Nu s-a făcut
+                {#if !cuTitlu}
+                  <!-- IN FOAIE actiunile rare sunt RANDURI de 48px cu chevron (M9)
+                       — pe deget, un sir de pastile de 22px era exact tinta pe
+                       care o ratezi. „Nu s-a făcut" ramane primul: e raspunsul
+                       opus la aceeasi intrebare (v39), nu o actiune de rand. -->
+                  <div class="f-act">
+                    {#if p.confirmata}
+                      <button class="fa-r" disabled={busy === p.id} onclick={() => confirma(p, 0)}>
+                        <X size={15} /> <span class="fa-c"><span>Nu s-a făcut</span></span> <ChevronRight size={15} class="fa-chev" />
+                      </button>
+                    {/if}
+                    <button class="fa-r" disabled={busy === p.id}
+                            onclick={() => { mutaId = mutaId === p.id ? '' : p.id; mutaVal = '' }}>
+                      <CalendarDays size={15} /> <span class="fa-c"><span>Mută pe altă zi</span></span> <ChevronRight size={15} class="fa-chev" />
                     </button>
-                  {/if}
-                  <button class="b" disabled={busy === p.id}
-                          onclick={() => { mutaId = mutaId === p.id ? '' : p.id; mutaVal = '' }}>
-                    <CalendarDays size={12} /> Mută
-                  </button>
-                  <!-- calea de intoarcere: fara ea, un proiect tras din „Fara
-                       data" ramanea blocat in calendar -->
-                  <button class="b del" disabled={busy === p.id} onclick={() => scoate(p)}
-                          title="Scoate perioada din calendar — proiectul se întoarce în „Proiecte fără perioadă”">
-                    <Undo2 size={12} /> Scoate
-                  </button>
-                  {#if mutaId === p.id}
-                    <div class="mut" in:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
-                      <DatePicker bind:value={mutaVal} />
-                      <button class="b ok" disabled={!mutaVal || busy === p.id}
-                              onclick={() => { muta(p, mutaVal); mutaId = ''; mutaVal = '' }}>Mută</button>
-                    </div>
-                  {/if}
-                </div>
+                    {#if mutaId === p.id}
+                      <div class="mut" in:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
+                        <DatePicker bind:value={mutaVal} />
+                        <button class="b ok" disabled={!mutaVal || busy === p.id}
+                                onclick={() => { muta(p, mutaVal); mutaId = ''; mutaVal = '' }}>Mută</button>
+                      </div>
+                    {/if}
+                    <button class="fa-r" disabled={busy === p.id} onclick={() => scoate(p)}>
+                      <Undo2 size={15} /> <span class="fa-c"><span>Scoate din calendar</span><span class="fa-hint">se întoarce în „fără perioadă”</span></span> <ChevronRight size={15} class="fa-chev" />
+                    </button>
+                  </div>
+                {:else if mutaId === p.id}
+                  <div class="mut" in:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
+                    <DatePicker bind:value={mutaVal} />
+                    <button class="b ok" disabled={!mutaVal || busy === p.id}
+                            onclick={() => { muta(p, mutaVal); mutaId = ''; mutaVal = '' }}>Mută</button>
+                  </div>
+                {/if}
               </div>
             {/each}
           {:else}
@@ -1692,7 +1731,7 @@
   .wd { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0;
         box-shadow: inset 0 -1px 0 var(--border-strong); }
   .wd span { height: 32px; display: inline-flex; align-items: center; justify-content: center;
-             font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-faint);
+             font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-dim);
              text-transform: uppercase; letter-spacing: var(--tracking-label);
              box-shadow: inset -1px 0 0 var(--border); }
   .wd span:last-child { box-shadow: none; }
@@ -1717,9 +1756,9 @@
      `calc(32px + benzi * 20px)` dadea 52px pe o luna cu o lucrare pe zi: luna se
      citea ca o listă indesata, nu ca o harta pe care vezi unde esti. Acum podeaua
      e 100px si randul CRESTE doar daca benzile chiar cer mai mult — `max()`, nu
-     invers. Cu MAX_BENZI = 5 plafonul urca la 132px; augustul real, cu 3 benzi pe
-     randul cel mai plin, sta la 124. */
-  .zi { position: relative; min-height: max(100px, calc(32px + var(--benzi, 1) * 27px)); padding: 5px 8px 0;
+     invers. 31px = fundul cutiei ieșirii (28 + n×27, vezi `.chenar`) plus 3px de
+     aer sub ea; cu 3 randuri de benzi randul face 112, cu 5 (MAX_BENZI) 166. */
+  .zi { position: relative; min-height: max(100px, calc(31px + var(--benzi, 1) * 27px)); padding: 5px 8px 0;
         border: 0; background: none; text-align: left; cursor: pointer;
         box-shadow: inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border-strong);
         display: flex; flex-direction: column; gap: 3px; overflow: hidden;
@@ -1788,8 +1827,10 @@
      nu centrat — doua marimi centrate una langa alta plutesc. */
   .zi.azi .n { color: var(--accent-deep); font-weight: var(--fw-semibold); }
   .zi.azi .zi-h { align-items: baseline; }
+  /* Fara tracking de eticheta: „azi" e mono, iar mono cu litere rarite se citeste
+     ca un cod. Desenul il are strans (11px; scara se opreste la 12). */
   .azi-et { font-family: var(--font-mono); font-size: var(--font-label); font-weight: var(--fw-semibold);
-            color: var(--accent-deep); letter-spacing: var(--tracking-label); }
+            color: var(--accent-deep); }
   /* `.flag` a plecat cu C10 — „de clarificat" e acum starea cutiei ieșirii, nu un
      colt al zilei. Motivul e scris in markup, langa cifra. */
 
@@ -1797,13 +1838,14 @@
      acopera si spatiile dintre ele, deci numele se scrie o data si are toata
      latimea lucrarii la dispozitie.
      `--i` e banda (randul) lucrarii. Decalajul de sus trebuie sa fie EXACT cel al
-     zonei de bare din celula, altfel benzile plutesc pe langa celule:
-       padding 5 + antet 15 + gap 3 = 23px
-     iar pasul unei benzi = inaltimea barei 24 + gap 3 = 27px. Cele doua numere
-     sunt aceleasi cu cele din `min-height` al celulei — se schimba impreuna.
-     Erau 24 cat timp celula avea bordura de 1px; R1 a scos-o, deci si pixelul ei.
-     Pasul a fost 20 cat timp bara avea 17px; C8 a dus-o la 24. */
-  .grid { --h-antet: 23px; --h-banda: 27px; }
+     zonei de bare din celula, altfel benzile plutesc pe langa celule.
+     Geometria vine din desen (C10): cutia ieșirii incepe la 28 de la marginea de
+     sus a celulei, are 5px de aer inauntru, eticheta 17, apoi 3 pana la prima
+     bara — deci randul etichetei (randul 0 al blocului) porneste la
+       28 − 2 = 26px  (cei 2px sunt aerul cutiei DEASUPRA randului 0)
+     iar pasul unei benzi = inaltimea barei 24 + gap 3 = 27px. Numerele astea,
+     cele din `.chenar` si cele din `min-height` al celulei se schimba IMPREUNA. */
+  .grid { --h-antet: 26px; --h-banda: 27px; }
 
   /* CHENARUL IESIRII. Sta SUB benzi (`z-index: 0`) si nu primeste evenimente:
      lucrarile raman obiectele pe care le apuci, el doar spune ca fac parte din
@@ -1814,15 +1856,19 @@
      cea de SUPRAFATA (`--dur-slow`): chenarul e o suprafata care se lungeste, nu
      un element care se muta. */
   /* CUTIA CARE LE CONTINE, nu un strat lipit sub ele (C10).
-     Se subtiase pana ajunsese o umbra in spatele barelor: incepea la −3px si se
-     termina la +3, adica exact pe muchia lor. Ultima bara atingea marginea de jos
-     — problema semnalata de Ion — si cutia nu se mai citea ca un obiect, ci ca un
-     contur desenat gresit. Acum are 5px de aer sus si jos (`−5px` la pornire,
-     `+7px` la inaltime: ultima bara se termina la `(n−1)×27 + 24`, deci fundul
-     cutiei cade fix la 5px sub ea) si o tenta mai apasata, cu inel de 1px. */
+     Se subtiase pana ajunsese o umbra in spatele barelor: incepea la 18 — adica
+     SUB randul cifrei, care se termina la 20 — si ultima bara ii atingea muchia
+     de jos (problema semnalata de Ion). Geometria din desen: cutia porneste la
+     28 (8px de aer sub cifra zilei), 5px de aer inauntru pe toate laturile —
+     eticheta la 33, prima bara la 53, gap 3 intre ele — si fundul la 5px sub
+     ultima bara. Cu randul blocului la `--h-antet` = 26, asta inseamna:
+       margin-top = 26 + i×27 + 2   (cutia incepe cu 2px sub randul 0)
+       height     = n×27            (27n+28 jos − 28 sus, fix pe formula)
+     `box-sizing: border-box`, ca cei 2px de bordura sa nu se adune la socoteala. */
   .chenar { position: relative; z-index: 0; align-self: start; pointer-events: none;
-            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) - 5px);
-            height: calc(var(--n) * var(--h-banda) + 7px);
+            box-sizing: border-box;
+            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) + 2px);
+            height: calc(var(--n) * var(--h-banda));
             border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
             border-left: none; border-right: none;
             background: color-mix(in srgb, var(--accent) 10%, transparent);
@@ -1850,7 +1896,7 @@
   .banda { position: relative; z-index: 1; align-self: start;
            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda));
            min-height: 24px; display: flex; align-items: center;
-           padding: 0 6px; border: none; text-align: left; border-radius: var(--radius-xs);
+           padding: 0 9px; border: none; text-align: left; border-radius: var(--radius-xs);
            cursor: grab; background: var(--c); }
   .banda:active { cursor: grabbing; }
   /* Capetele rotunjite spun unde INCEPE si unde se TERMINA lucrarea. La granita de
@@ -1862,9 +1908,11 @@
      cod de culoare. Cei 3px se intorc in padding. */
   /* Raza capetelor e `--radius-xs`, ca a barei: la 24px inaltime `--radius-sm` (10)
      o rotunjea pana aproape de pastila, iar bara e un chip, nu o pilula. */
-  .banda.inceput { margin-left: 6px; padding-left: 8px;
+  /* 8 = marginea cutiei (3) + aerul ei interior (5): capetele adevarate ale barei
+     stau la 5px de peretele cutiei, cum cere desenul. */
+  .banda.inceput { margin-left: 8px; padding-left: 8px;
                    border-top-left-radius: var(--radius-xs); border-bottom-left-radius: var(--radius-xs); }
-  .banda.sfarsit { margin-right: 6px;
+  .banda.sfarsit { margin-right: 8px;
                    border-top-right-radius: var(--radius-xs); border-bottom-right-radius: var(--radius-xs); }
   /* Capatul care CONTINUA se opreste fix pe muchia celulei. Cat timp grila avea
      gap de 4px, `-3px` il faceau sa treaca peste gol, ca sa nu para intrerupt;
@@ -1934,7 +1982,7 @@
      tot in sistem; nu se adauga o a treia culoare de identitate. Textul ia
      `--success-deep`, fiindca sta pe tenta, nu pe fill. */
   .banda.facuta { background: var(--success-subtle);
-                  box-shadow: inset 0 0 0 1.5px var(--success); }
+                  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--success) 45%, transparent); }
   .banda.facuta .banda-t { color: var(--success-deep); }
   .banda.facuta :global(.banda-bifa) { color: var(--success-deep); flex: none; margin-right: 4px; }
   /* DE CLARIFICAT — bara plina de restant. Aici culoarea e plina, nu tenta:
@@ -1953,15 +2001,20 @@
   /* Antet de inaltime fixa — vezi comentariul din template: orice variatie aici
      desincronizeaza benzile pe orizontala. nowrap + overflow hidden garanteaza
      ca ramane pe un rand oricat de lung ar fi numele clientului. */
-  .zi-h { display: flex; align-items: center; gap: 5px; min-height: 15px; max-width: 100%;
-          white-space: nowrap; overflow: hidden; padding-right: 14px; }
+  /* `padding-right: 14px` a plecat odata cu contorul de lucrari (C6) — era spatiul
+     rezervat lui, iar pe telefon strica centrarea cifrei (M2). */
+  .zi-h { display: flex; align-items: center; gap: 6px; min-height: 15px; max-width: 100%;
+          white-space: nowrap; overflow: hidden; }
   /* Eticheta iesirii: primul rand DIN chenar, nu un chip langa cifra zilei.
      Chenarul e `pointer-events: none` (lucrarile raman obiectele pe care le
      apuci), deci eticheta si-l reia pe al ei — ea E manerul cu care muti toata
      ieșirea. Inaltimea e exact un rand de banda fara gap (20 - 3), ca lucrarile
      de sub ea sa cada pe randurile lor. */
+  /* 5px de aer sub muchia cutiei si 8 de la marginea celulei (3 cutie + 5 aer);
+     bordura de 1px a cutiei e deja inauntru, deci marja scrisa e 4. Eticheta sta
+     in coltul cutiei, cu 3px deasupra primei bare — geometria C10. */
   .chenar-et { pointer-events: auto; display: inline-flex; align-items: center; gap: 4px;
-               max-width: calc(100% - 10px); height: 17px; margin: 3px 0 0 7px; padding: 0 4px;
+               max-width: calc(100% - 10px); height: 17px; margin: 4px 0 0 4px; padding: 0 4px;
                border: none; background: none; cursor: grab;
                font-size: var(--font-label); font-weight: var(--fw-semibold);
                letter-spacing: var(--tracking-label); color: var(--accent-deep);
@@ -1973,6 +2026,9 @@
   .chenar-et.sediu { color: var(--text-secondary); }
   /* Text pe tenta ia varianta adanca — cutia e deja in `--danger-subtle`. */
   .chenar-et.decizie { color: var(--danger-deep); }
+  /* Durata e cifra, nu nume: mono, greutate normala, fara tracking de eticheta. */
+  .et-zile { font-family: var(--font-mono); font-weight: var(--fw-normal);
+             letter-spacing: var(--tracking-normal); }
 
   /* `.nr-lucrari` a plecat cu C6 — motivul e scris in markup, langa cifra zilei. */
 
@@ -1994,14 +2050,17 @@
      singura care poarta o haina e cea care cere ceva: „de clarificat".
      Fara `--c`: identitatea nu se mai codeaza cromatic, deci fillul era aceeasi
      tenta de accent pe toate randurile. */
-  .ag-rand { display: flex; flex-direction: column; gap: 4px; width: 100%;
+  .ag-rand { position: relative; display: flex; flex-direction: column; gap: 4px; width: 100%;
+    min-height: var(--tap-sheet); justify-content: center;
     padding: 8px 10px; text-align: left; border-radius: var(--radius-sm);
     background: none; border: none;
     cursor: pointer;
     transition: var(--transition-colors); }
-  /* Linia dintre grupuri, cu marja laterala: separa fara sa inchida randul intr-o
-     cutie. Nu si dupa ultimul — acolo n-are ce despartii. */
-  .ag-rand + .ag-rand { box-shadow: inset 0 1px 0 var(--border); }
+  /* Linia dintre randuri e RETRASA 10px de fiecare parte (desen 6c) — separa fara
+     sa inchida randul intr-o cutie. `::before`, nu `box-shadow`: umbra interioara
+     mergea dintr-o muchie in cealalta. */
+  .ag-rand + .ag-rand::before { content: ''; position: absolute; top: 0;
+    left: 10px; right: 10px; height: 1px; background: var(--border); }
   /* Atingi o zi -> se aprinde iesirea ei, nu se schimba un panou. */
   .ag-rand.aprins { background: var(--accent-subtle); }
   /* Singura haina din lista: iesirea care asteapta un raspuns. */
@@ -2033,8 +2092,12 @@
   .pan-zi { font-size: var(--font-h2); font-weight: var(--fw-semibold); color: var(--text);
             letter-spacing: var(--tracking-tight); line-height: var(--lh-tight); }
   .pan-sub { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-dim); margin: 3px 0 10px; }
-  .pan-h { display: flex; align-items: center; gap: 8px; font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
-  .cnt { padding: 0 7px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); letter-spacing: 0; }
+  .pan-h { display: flex; align-items: center; gap: 8px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  /* Cifra e MONO simplu, nu o pastila (desen C14): antetul are deja greutatea lui. */
+  .cnt { font-family: var(--font-mono); color: var(--text-secondary); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+  /* Linia mica de pe manerul foii taca — titlul zilei se scrie in corp, la 21/600
+     (M9). `:has` pe clasa din corp, ca Modal sa nu invete despre Calendar. */
+  :global(.modal:has(.pan.in-foaie) .modal-title) { display: none; }
   .pan-hint { font-size: var(--font-small); color: var(--text-faint); margin: 4px 0 8px; }
   .gol { font-size: var(--font-small); color: var(--text-dim); }
 
@@ -2051,10 +2114,29 @@
      lucrare de cand identitatea nu se mai codeaza cromatic in Calendar, deci
      punctul era acelasi pe toate randurile: un semn care nu deosebea nimic.
      Numele urca la 15/500: e obiectul randului, nu o metadata. */
-  .it { padding: 2px 0; margin-bottom: 12px; border-radius: var(--radius-sm); }
+  .it { padding: 6px 8px; margin: 0 -8px 8px; border-radius: var(--radius-sm); }
+  /* RANDUL PE CARE LUCREZI se vede (C13): fondul urca la suprafata a doua, iar
+     actiunile lui apar pe linia titlului. `focus-within` tine parcursul de
+     tastatura — un buton cu opacity 0 ramane focalizabil. */
+  @media (hover: hover) {
+    .pan:not(.in-foaie) .it:hover, .pan:not(.in-foaie) .it:focus-within { background: var(--bg-elevated); }
+    .it-act { opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease); }
+    .it:hover .it-act, .it:focus-within .it-act { opacity: 1; pointer-events: auto; }
+  }
+  .it-cap { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .it-t { display: flex; align-items: center; gap: 5px; font-size: var(--font-body);
-          font-weight: var(--fw-medium); color: var(--text); text-align: left; cursor: pointer; }
+          font-weight: var(--fw-medium); color: var(--text); text-align: left; cursor: pointer;
+          min-width: 0; }
   .it-t:hover { color: var(--accent); }
+  /* Actiuni ca TEXT cu iconita, 13/600, fara chenar — cresc spre interior. */
+  .it-act { display: inline-flex; align-items: center; gap: 10px; flex: none; }
+  .ia { display: inline-flex; align-items: center; gap: 4px;
+        font-size: var(--font-control); font-weight: var(--fw-semibold);
+        color: var(--text-secondary); background: none; border: none; padding: 2px 0;
+        cursor: pointer; white-space: nowrap; }
+  .ia:hover:not(:disabled) { color: var(--accent); }
+  .ia.del:hover:not(:disabled) { color: var(--danger); }
+  .ia:disabled { opacity: 0.5; cursor: default; }
   .it-m { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 3px;
           font-size: var(--font-small); color: var(--text-dim); }
   /* Chipurile sunt suprafata a doua cu inel, nu pastile pe `--bg-hover`: la 20px
@@ -2077,22 +2159,37 @@
                color: var(--success); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
   .it-m .tk.warn { color: var(--danger); }
 
-  .dec { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 7px; }
   /* Blocul de intrebare (M10): tenta si inel de restant, ca sa se citeasca drept
      ceva ce asteapta un raspuns — nu ca o eticheta de stare. */
+  .dec { display: flex; flex-wrap: wrap; align-items: center; }
   .dec.intrebare { gap: 8px; margin-top: 10px; padding: 12px; border-radius: var(--radius-sm);
                    background: var(--danger-subtle);
                    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 30%, transparent); }
-  .dec-q { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--danger-deep); width: 100%; }
+  .dec-q { display: flex; align-items: center; gap: 6px;
+           font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--danger-deep); width: 100%; }
   /* Raspunsurile sunt de 48px si impart randul: la 22px erau exact tipul de tinta
-     pe care o ratezi, iar asta e o intrebare la care raspunzi o singura data. */
+     pe care o ratezi, iar asta e o intrebare la care raspunzi o singura data.
+     15/600 (desen); „Mută pe azi" sta pe SUPRAFATA cu inel, nu pe elevated. */
   .dec.intrebare .b { flex: 1; justify-content: center; min-height: var(--tap-sheet);
-                      font-size: var(--font-small); font-weight: var(--fw-semibold); }
+                      font-size: var(--font-rand); font-weight: var(--fw-semibold);
+                      background: var(--bg-surface); border-color: var(--border-strong); }
   /* „Da" e raspunsul asteptat, deci e plin. Verdele ar fi spus „succes"; aici
      spune „asta e actiunea", si actiunea poarta accentul. */
   .dec.intrebare .b.ok { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
   .dec.intrebare .b.ok:hover:not(:disabled) { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--accent-text); }
   .mut { display: flex; align-items: flex-end; gap: 6px; width: 100%; margin-top: 4px; }
+  /* Actiunile rare din FOAIE (M9): randuri de 48 cu chevron, nu pastile. */
+  .f-act { display: flex; flex-direction: column; margin-top: 8px; }
+  .fa-r { display: flex; align-items: center; gap: 10px; width: 100%;
+          min-height: var(--tap-sheet); padding: 4px 2px; text-align: left;
+          background: none; border: none; cursor: pointer;
+          border-top: 1px solid var(--border);
+          font-size: var(--font-rand); font-weight: var(--fw-medium); color: var(--text); }
+  .fa-r:disabled { opacity: 0.5; }
+  .fa-r > :global(svg:first-child) { color: var(--text-secondary); flex: none; }
+  .fa-r :global(.fa-chev) { margin-left: auto; color: var(--text-dim); flex: none; }
+  .fa-c { display: flex; flex-direction: column; min-width: 0; }
+  .fa-hint { font-size: var(--font-small); color: var(--text-dim); }
   .b { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); padding: 3px 8px; border-radius: var(--radius-sm);
        border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; }
   .b:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
@@ -2106,10 +2203,16 @@
      pe care il RIDICI si il pui pe o zi — adica exact tinta pe care trebuie s-o
      nimeresti cu degetul sau cu cursorul.
      Punctul de identitate a plecat: `--c` e accentul pe toate randurile. */
+  /* Randurile stau TRANSPARENTE pe card (desen C14); doar cel ales poarta tenta.
+     Hoverul aduce fondul, ca sa se vada ca e un obiect de ridicat. */
   .np { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 8px;
         border-radius: var(--radius-sm);
         width: 100%; text-align: left; border: none;
-        background: var(--bg-elevated); cursor: grab; }
+        background: transparent; cursor: grab;
+        transition: background var(--dur-fast) var(--ease); }
+  @media (hover: hover) {
+    .np:hover { background: var(--bg-hover); }
+  }
   .np-c { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
   .np:active { cursor: grabbing; }
   /* Ales, in asteptarea unei zile. Nu e „selectat" in sensul unei liste — e un
@@ -2219,7 +2322,6 @@
        stau in agenda de dedesubt. */
     /* Grila ramane harta (unde esti, cat de plin e); numele lucrarilor stau jos. */
     .agenda { display: flex; }
-    .ag-rand { min-height: var(--tap-min); }
 
     /* BANDA E DECOR LA ATINGERE. PE TELEFON PISTA SE CITESTE, NU SE MANIPULEAZA.
        Blocul asta se aplica de la 620px in jos — adica si pe fereastra INGUSTA

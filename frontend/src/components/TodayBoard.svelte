@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, CheckCircle2, ListPlus, Check, CalendarDays, User } from '@lucide/svelte'
+  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, CheckCircle2, ListPlus, Check, CalendarDays, User, Briefcase } from '@lucide/svelte'
   import {
     agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
@@ -272,6 +272,12 @@
   {:else if agenda.items.length === 0}
     <EmptyState icon={CalendarCheck} title="Nimic planificat azi" description="Adaugă un task rapid sau alege din taskurile existente." />
   {:else}
+    <!-- Capul grupei „Muncă" apare doar cand exista si sectiunea personala:
+         desenul (3a) arata cele doua grupuri cu aceeasi haina, dar o grupare cu
+         o singura grupa n-ar imparti nimic — antetul ar fi zgomot. -->
+    {#if agenda.personale.length}
+      <div class="pers-cap munca"><span class="pers-ico" aria-hidden="true"><Briefcase size={13} /></span>Muncă<span class="pers-n">{agenda.items.length}</span></div>
+    {/if}
     <div class="a-list" role="list"
          use:reordonare={{ activ: peTelefon, selectorRand: '.arow', selectorManer: '.gl-maner', onMutare: commitMove }}>
       {#each agenda.items as it, i (it.tip + ':' + it.id)}
@@ -496,7 +502,11 @@
      rang de al doilea board.
      Doar NUMARUL e mono: DM Mono e pentru cifre care se compara pe verticala, iar
      „PERSONAL" e un cuvant — se poate traduce, deci nu e mono. */
-  .pers-cap { display: flex; align-items: center; gap: 8px; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-top: var(--space-md); border-top: 1px solid var(--border); font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-secondary); }
+  /* Haina din desen (3a): padding 14px 12px 4px — 12 lateral, cat paddingul
+     randului, ca eticheta sa inceapa pe aceeasi verticala cu titlurile. */
+  .pers-cap { display: flex; align-items: center; gap: 8px; padding: 14px var(--space-12) 4px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-secondary); }
+  /* Doar grupa a doua poarta separatorul de sectiune; „Muncă" sta sub compozitor. */
+  .pers-cap:not(.munca) { margin-top: var(--space-sm); border-top: 1px solid var(--border); }
   /* Semn, nu bulina — acelasi desen ca pe comutatorul de sfera din /tasks, ca cele
      doua suprafete sa se refere in continuare una la alta fara sa aduca o a treia
      culoare pe ecran. */
@@ -616,8 +626,9 @@
   /* `.check-empty` traieste acum in global.css, o singura data pentru toate
      listele — inclusiv haloul de hover, care adauga in loc sa rescrie `--ring`. */
 
-  .amain { flex: 1; min-width: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px; }
-  .atitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .amain { flex: 1; min-width: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 1px; }
+  /* --font-rand, nu --font-body: randul de lista ramane 15 si pe telefon. */
+  .atitle { font-size: var(--font-rand); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .arow.done .atitle { text-decoration: line-through; color: var(--text-dim); }
   /* A doua linie: text gri, doua bucati, nicio pastila. Erau cinci chipuri
      (termen, pasi, recurenta, proiect, categorie) — trei au urcat in coloana
@@ -681,6 +692,12 @@
   /* ===== glisare (doar telefon) ===== */
   .gl-fata { display: contents; }
 
+  /* Invelisul calendarului de gest chiar trebuie sa fie 0×0, cum promite
+     comentariul din markup: fara regula asta, DatePicker-ul isi randa
+     declansatorul „Selectează data" pe toata latimea, sub board. Sheet-ul lui
+     iese in body prin use:portal, deci decuparea nu-l atinge. */
+  .dp-gest { display: block; width: 0; height: 0; overflow: hidden; }
+
   @media (max-width: 768px) {
     /* UN RAND = O LINIE, ca in orice aplicatie de to-do de pe telefon.
        Inainte: titlu pe o linie + sase butoane de 44px pe a doua = 127px pe task,
@@ -702,11 +719,14 @@
        Trebuie totusi OPAC — pista de bifare sta dedesubt si se descopera pe
        masura ce tragi. In repaus fata e DREAPTA (vezi separatorul de mai sus):
        raza vine pe gest, unde randul e ridicat si are deja umbra. */
-    .gl-fata { display: flex; align-items: center; gap: 10px; width: 100%;
-               min-height: var(--row-h-mobile); padding: 0 var(--space-12);
+    /* Desenul 3c: gap 12, padding lateral 10 — separatorul de mai jos coboara
+       si el la 10, ca linia sa se termine exact unde incepe textul. */
+    .gl-fata { display: flex; align-items: center; gap: var(--space-12); width: 100%;
+               min-height: var(--row-h-mobile); padding: 0 10px;
                background: var(--bg-surface);
                border-radius: 0; position: relative; z-index: 1;
                will-change: transform; }
+    .arow + .arow::before { left: 10px; right: 10px; }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
        build. Iar `gl-tras`/`gl-bifa` sunt puse la RULARE de `lib/glisare.js`, deci
@@ -735,8 +755,8 @@
        acum invelisul, fiindca el e cutia; inputul se intinde in ea. */
     .qa-camp { min-height: var(--tap-sheet); }
     /* „Adaugă task existent" ramane doar iconita pe telefon — deci iconita trebuie
-       sa aiba caseta unui buton, nu 40×28. */
-    .bh-add { min-width: var(--tap-min); min-height: var(--tap-min); justify-content: center; padding: 0 10px; }
+       sa aiba caseta unui buton. Desenul 3c o cere patrata, la 48. */
+    .bh-add { min-width: var(--tap-sheet); min-height: var(--tap-sheet); justify-content: center; padding: 0 10px; }
 
     /* Indexul pleaca: pe un rand de o linie, doua cifre in fata titlului nu spun
        nimic ce nu spune deja ordinea de sus in jos, si mananca 28px din titlu. */

@@ -529,13 +529,19 @@ input[type="checkbox"].cbx:focus {
 .check-empty {
   width: var(--check-size, 18px);
   height: var(--check-size, 18px);
-  border: 2px solid var(--ring, var(--border));
+  border: 1.5px solid var(--ring, var(--border));
   border-radius: 50%;
   flex: none;
   transition: box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
 .check-empty.small { --check-size: 14px; }
 .check-empty.big   { --check-size: 22px; }
+/* Pe telefon bifa creste la 20 (desenele 3c/4c): tinta e mai importanta decat
+   densitatea acolo unde nu exista cursor. Inelul ramane 1.5px pe orice latime. */
+@media (max-width: 768px) {
+  .check-empty { --check-size: 20px; }
+  .check-empty.small { --check-size: 16px; }
+}
 
 /* HOVERUL NU RESCRIE CULOAREA REZERVATA. Exact greseala de la muchia din stanga,
    unde `:hover` stergea `--sev` si a trebuit reafirmat de mana in trei locuri.
