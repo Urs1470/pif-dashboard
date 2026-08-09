@@ -8,8 +8,19 @@
 //
 // Single VERSION constant — bump it on every frontend deploy so old caches are
 // dropped on activate.
+//
+// DE CE E O REGULA, NU O IGIENA. Fisierul asta e singurul lucru pe care browserul
+// il compara ca sa afle ca exista o versiune noua. Daca ramane identic pe octeti,
+// `reg.update()` nu gaseste nimic, `updatefound` nu se declanseaza niciodata, iar
+// toastul „Versiune nouă a interfeței" nu apare — indiferent cate build-uri noi ai
+// pus pe server. Pe telefon, unde aplicatia nu se inchide niciodata complet, asta
+// inseamna ca ramai pe versiunea veche la nesfarsit.
+// S-a intamplat: tot redesignul din 8 august (8 commituri care au rescris
+// `static/dist/`) a plecat cu VERSION neschimbat, si nu i-a venit nimic lui Ion pe
+// telefon. De atunci `.githooks/pre-commit` refuza un commit care atinge
+// `static/dist/` fara sa atinga si linia de mai jos.
 
-const VERSION = 'v100';
+const VERSION = 'v101';
 const STATIC_CACHE = 'pif-static-' + VERSION;
 const API_CACHE = 'pif-api-' + VERSION;
 
