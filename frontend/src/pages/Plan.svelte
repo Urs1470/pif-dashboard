@@ -1340,7 +1340,16 @@
 
   .p-body { position: relative; }
   .overlay { position: absolute; top: 0; bottom: 0; left: calc(var(--lane-w) + var(--rest-w)); right: 0; pointer-events: none; z-index: 0; }
-  .col-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-subtle); }
+  /* O SINGURA CONVENTIE PENTRU MUCHIA DINTRE COLOANE.
+     Antetul deseneaza muchia cu `border-right` pe `.col-head` — cu `box-sizing:
+     border-box`, adica pixelul `x−1`, ULTIMUL din coloana. Linia care coboara
+     prin benzi sta la `left: x%`, adica pixelul `x`, PRIMUL din coloana
+     urmatoare. Doua conventii pentru aceeasi muchie: imbinarea antet–corp iesea
+     mereu decalata cu un pixel, iar cu procente fractionare rotunjirea o facea
+     cand dubla, cand rupta — exact la granita. `margin-left: -1px` aduce linia
+     din corp pe acelasi pixel ca separatorul din antet, la orice latime.
+     `granite.has(i - 1)` ramane cum e: el spune CARE muchie, nu unde cade. */
+  .col-line { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -1px; background: var(--border-subtle); }
   /* Granita de grupa coboara din antet prin toate benzile — altfel randul de
      saptamani ar fi o eticheta care nu imparte nimic. */
   .col-line.granita { background: var(--border-strong); }
@@ -1682,11 +1691,13 @@
      Trebuie sa rămână vizibil cat derulezi, altfel benzile de mai jos nu mai au
      scara si redevin decor. `--m-pad` e insetul lateral al benzii dintr-un grup
      (marginea grupului + paddingul lui), ca sa cada coloana peste coloana. */
-  /* `--m-pad` = rama grupului (1) + paddingul lui (8) + marginea benzii (3).
-     Cele trei numere trebuie sa rămână in acord cu `.mgroup` si `.m-track`:
-     daca antetul si banda nu incep exact in acelasi x, coloana „marti" cade
-     langa ziua de marti, si tot graficul minte cu o zi. */
-  .m-scale { --m-pad: 12px;
+  /* `--m-pad` = paddingul grupului (8) + marginea benzii (3) = 11.
+     Socoteala numara si rama grupului (1) — dar rama a PLECAT la A5 (`.mgroup`
+     poarta doar umbra), deci scara statea decalata cu un pixel fata de pistele
+     de sub ea. Cele doua numere trebuie sa rămână in acord cu `.mgroup` si
+     `.m-track`: daca antetul si banda nu incep exact in acelasi x, coloana
+     „marti" cade langa ziua de marti, si tot graficul minte cu o zi. */
+  .m-scale { --m-pad: 11px;
     position: sticky; top: var(--header-height); z-index: 4;
     padding: 6px var(--m-pad) 5px;
     /* Fond OPAC, fara blur: sticla a iesit din sistem. Semitransparentul cerea
