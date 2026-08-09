@@ -27,6 +27,25 @@ $T = "C:\Users\Ion Ursu\Repos\Tools"
 if (-not (Test-Path "$T\jdk-21")) { throw "JDK lipseste in $T\jdk-21 — vezi references/pc-config.md" }
 if (-not (Test-Path "$T\android-sdk\platforms")) { throw "Android SDK incomplet in $T\android-sdk" }
 
+# SEMNATURA SE VERIFICA INAINTE DE BUILD, nu dupa — si aici, langa celelalte doua
+# porti de masina, nu mai jos: toate trei raspund la „pot construi de pe PC-ul
+# asta?", iar raspunsul trebuie sa vina inainte de zece minute de Gradle.
+#
+# `app/build.gradle` aplica `signingConfig` DOAR daca gaseste fisierul, si trece
+# mai departe in TACERE daca lipseste. Deci pe o masina cu toolchain dar fara chei
+# iese un release nesemnat, care pe disc arata identic cu unul bun. Urcat pe
+# server, telefonul ori il refuza (alta semnatura decat a aplicatiei instalate),
+# ori — mai rau — rupe lantul pentru toate versiunile de dupa, si nu mai iesi din
+# asta decat cu o reinstalare de la zero. Acelasi motiv pentru care mai jos se
+# refuza urcarea unui build de debug; acolo era pazit, aici nu.
+#
+# Calea vine din `$T`, ca sa nu existe doua adevaruri: `build.gradle` o citeste ca
+# `${user.home}/Repos/Tools/keys/keystore.properties`.
+$CHEI = "$T\keys\keystore.properties"
+if ($Release -and -not (Test-Path $CHEI)) {
+    throw "Cheile de semnare lipsesc ($CHEI). Un release fara ele iese NESEMNAT si rupe actualizarea pe telefon — construieste pe masina care le are."
+}
+
 $env:JAVA_HOME        = "$T\jdk-21"
 $env:ANDROID_HOME     = "$T\android-sdk"
 $env:ANDROID_SDK_ROOT = "$T\android-sdk"
