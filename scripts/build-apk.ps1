@@ -118,14 +118,17 @@ if (-not $apk) {
 # refuza sa-l instaleze peste aplicatia existenta, si afli abia pe telefon, dupa ce
 # l-ai publicat pentru toate dispozitivele.
 #
-# Amprenta de mai jos e a APK-ului chiar acum publicat (`GET /api/app/apk`,
-# `versionCode 1367786`, 7 aug 2026). NU e un secret: e certificatul PUBLIC, prezent
-# in fiecare copie a aplicatiei. De aceea poate sta in git — secreta e cheia
-# PRIVATA din `.jks`, care nu intra niciodata aici.
+# Amprenta e a certificatului PUBLIC, prezent in fiecare copie a aplicatiei — de
+# aceea poate sta in git. Secreta e cheia PRIVATA din `.jks`, care nu intra
+# niciodata aici.
 #
-# Daca vreodata schimbi intentionat cheia de semnare, valoarea asta se schimba
-# odata cu ea — si abia dupa ce ai acceptat ca toti utilizatorii dezinstaleaza.
-$AMPRENTA = '753182ea0825c9766885c922092fb826b28d075a2815fde38e5f7efec38ecbf0'
+# SCHIMBATA PE 2026-08-09, deliberat. Cheia veche (`753182ea…c38ecbf0`) exista
+# doar pe PC-ul de dinainte, si acela nu mai e masina de dezvoltare. Cheia noua
+# s-a generat aici (RSA 4096, 30 de ani, acelasi DN) si de acum e singura sursa.
+# Pretul, platit o singura data: aplicatia deja instalata NU se poate actualiza
+# peste — se dezinstaleaza si se instaleaza la loc. De la urmatorul release
+# incolo, actualizarea merge normal.
+$AMPRENTA = '7ea6741536a706a90289c8b94b1fc918a83ad3131357691178414fe17ab11988'
 
 if ($Release) {
     $bt2 = (Get-ChildItem "$T\android-sdk\build-tools" -Directory | Sort-Object Name -Descending | Select-Object -First 1).FullName
@@ -145,7 +148,10 @@ copiat alt keystore, ori Gradle a folosit alt alias din el, ori build-ul a iesit
 nesemnat (debug). Verifica `~\Repos\Tools\keys\keystore.properties`.
 "@
     }
-    "Semnatura: se potriveste cu aplicatia publicata."
+    # „cu cheia asteptata", nu „cu aplicatia publicata": comparatia e cu valoarea
+    # pinuita mai sus, care dupa o schimbare de cheie NU mai e cea de pe server
+    # pana la prima urcare. Un mesaj care spune altceva ar linisti degeaba.
+    "Semnatura: se potriveste cu cheia asteptata ($($AMPRENTA.Substring(0,12))…)."
 }
 
 if (-not $Upload) { exit 0 }
