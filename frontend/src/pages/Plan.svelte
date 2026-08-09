@@ -1260,13 +1260,25 @@
   .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); font-family: var(--font-heading); letter-spacing: var(--tracking-tight); }
   .page-sub { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); white-space: nowrap; }
   .controls { display: flex; align-items: center; gap: var(--space-sm); }
-  .seg { display: inline-flex; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 2px; }
-  .seg-btn { padding: 5px 11px; border-radius: var(--radius-sm); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
+  /* CAPUL PLANIFICATORULUI POARTA ACEEASI HAINA DE CONTROL CA RESTUL APLICATIEI.
+     Avea chenar + fond, cu hoverul pe `border-color` — a doua haina, scoasa deja
+     din Calendar (M3) si din Departament (C2). Desenat (`Planificator.dc.html`,
+     capul din 4a/6a): segmentul de orizont e o PASTILA pe suprafata a doua, fara
+     chenar (activul ramane fill de accent, cum era), iar vecinii („Weekend",
+     „Finalizate", „Export PDF") sunt 38px pe `--bg-surface` cu umbra, fara
+     chenar. Treapta de text urca de la 13/500 la 15/600: sunt controale de cap
+     de pagina, nu metadate. */
+  .seg { display: inline-flex; background: var(--bg-elevated); border: none; border-radius: var(--radius-sm); padding: 3px; }
+  .seg-btn { height: 32px; padding: 0 11px; border-radius: var(--radius-xs); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
   .seg-btn:hover { color: var(--text); }
   .seg-btn.active { background: var(--accent); color: var(--accent-text); }
-  .toggle { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; font-size: var(--font-small); font-weight: var(--fw-medium); border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
-  .toggle:hover { border-color: var(--border-strong); color: var(--text); }
-  .toggle.on { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .toggle { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 12px; font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); }
+  .toggle:hover { background: var(--bg-hover); color: var(--text); }
+  .toggle:active { transform: scale(var(--press-scale)); }
+  /* Activul e TENTA CU CERNEALA ADANCA, ca `.mods button.on` din Calendar — nu
+     `--accent` plin scris ca text pe fondul panoului. Umbra pleaca: obiectul nu
+     mai e o suprafata care se ridica, ci o stare aprinsa. */
+  .toggle.on { background: var(--accent-subtle); color: var(--accent-on-subtle); box-shadow: none; }
   .toggle:disabled { opacity: 0.4; cursor: not-allowed; }
   /* 4px nu e o treapta din scara (8 chip · 10 control · 14 suprafata · 20 foaie).
      Cercul e rezervat bifei de task; asta e o casuta de filtru, deci ramane
@@ -1883,14 +1895,16 @@
   .pan-plan .pan-sec { margin-top: 0; }
   .pan-actiuni { display: flex; gap: var(--space-xs); padding: 10px 14px;
     border-top: 1px solid var(--border); background: var(--bg-elevated); }
+  /* Aceeasi haina ca in capul paginii: suprafata + umbra, fara chenar, hoverul
+     pe fond. `.prim` ramane fill de accent — el nu e o suprafata, e actiunea. */
   .pan-b { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     min-height: 38px; padding: 0 12px; border-radius: var(--radius-sm);
-    background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary);
-    font-size: var(--font-control); font-weight: var(--fw-semibold); cursor: pointer;
+    background: var(--bg-surface); border: none; box-shadow: var(--shadow-sm); color: var(--text-secondary);
+    font-size: var(--font-body); font-weight: var(--fw-semibold); cursor: pointer;
     transition: var(--transition-pressable); }
-  .pan-b:hover { border-color: var(--border-strong); color: var(--text); }
+  .pan-b:hover { background: var(--bg-hover); color: var(--text); }
   .pan-b:active { transform: scale(var(--press-scale)); }
-  .pan-b.prim { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+  .pan-b.prim { background: var(--accent); color: var(--accent-text); }
 
 
   /* ===== Telefon =====
@@ -1945,8 +1959,13 @@
   .exp-name { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .exp-opt { display: flex; align-items: center; gap: 9px; font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; padding-top: 6px; border-top: 1px solid var(--border); }
   .modal-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); }
-  .btn-ghost { padding: 8px 16px; border-radius: var(--radius-md); background: none; border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: var(--font-small); }
-  .btn-ghost:hover { border-color: var(--border-strong); color: var(--text); }
+  /* Aceeasi haina de control ca in capul paginii si in panou. */
+  .btn-ghost { display: inline-flex; align-items: center; justify-content: center; height: 38px; padding: 0 16px;
+    border-radius: var(--radius-sm); background: var(--bg-surface); border: none; box-shadow: var(--shadow-sm);
+    color: var(--text-secondary); cursor: pointer; font-size: var(--font-body); font-weight: var(--fw-semibold);
+    transition: var(--transition-pressable); }
+  .btn-ghost:hover { background: var(--bg-hover); color: var(--text); }
+  .btn-ghost:active { transform: scale(var(--press-scale)); }
   .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); cursor: pointer; font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 

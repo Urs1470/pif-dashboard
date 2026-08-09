@@ -312,12 +312,20 @@
 
   .g-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-sm); flex-wrap: wrap; }
   .g-tl { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
-  .exp-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--radius-md); background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-secondary); font-size: var(--font-small); font-weight: var(--fw-medium); cursor: pointer; text-decoration: none; }
-  .exp-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
-  .g-legend { flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
-  .lg-btn { font-size: var(--font-small); padding: 2px 9px; border-radius: var(--radius-full);
-    border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-secondary); cursor: pointer; }
-  .lg-btn:hover { border-color: var(--accent); color: var(--accent); }
+  /* O SINGURA HAINA DE CONTROL. Aveau chenar + fond, cu hoverul pe
+     `border-color` — exact „a doua haina" pe care M3 a scos-o din Calendar si C2
+     din Departament. Reteta din sistem: suprafata (`--bg-surface`) care se
+     desprinde prin UMBRA, fara chenar; 38px pe desktop, `--tap-min` pe telefon;
+     text `--font-body` semibold; hover pe fond, nu pe muchie; apasarea pe
+     tokenul de strangere, nu pe o valoare aleasa aici. */
+  .exp-btn, .lg-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 38px; padding: 0 12px; border: none; border-radius: var(--radius-sm);
+    background: var(--bg-surface); box-shadow: var(--shadow-sm); color: var(--text-secondary);
+    font-size: var(--font-body); font-weight: var(--fw-semibold); cursor: pointer;
+    text-decoration: none; transition: var(--transition-pressable); }
+  .exp-btn:hover, .lg-btn:hover { background: var(--bg-hover); color: var(--text); }
+  .exp-btn:active, .lg-btn:active { transform: scale(var(--press-scale)); }
+  .g-legend { flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; display: flex; gap: 12px; align-items: center; }
   .lg { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-dim); font-family: var(--font-mono); }
   .sw-ms { width: 10px; height: 10px; background: var(--accent); transform: rotate(45deg); }
 
@@ -429,7 +437,7 @@
     /* Bara de unelte a Ganttului: „Perioadă", „PDF", „Excel" erau de 36px.
        Ele deschid modalul de perioada si descarca exporturile — actiuni pe care
        le faci exact o data si trebuie sa nimeresti din prima. */
-    .exp-btn { min-height: var(--tap-min); padding: 7px 14px; }
+    .exp-btn, .lg-btn { height: var(--tap-min); padding: 0 14px; }
     /* Banda de perioada din timeline: e si buton (deschide editorul perioadei). */
     .impl-band { min-height: var(--tap-min); }
   }
