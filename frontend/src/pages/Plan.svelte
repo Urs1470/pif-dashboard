@@ -82,12 +82,12 @@
   // coloana; se calculeaza oricum, ca sa nu depinda de o presupunere.)
   const contineAzi = (c) => todayPct != null && todayPct >= c.leftPct - 1e-9 && todayPct < c.leftPct + c.widthPct - 1e-9
   const coloanaAzi = $derived(columns.cols.findIndex(contineAzi))
-  // Pe telefon scara arata unitatea care se poate CITI la 350px: zilele pana la
-  // 30z, iar la 3L/6L grupele — douazeci si sase de saptamani ar fi 13px fiecare,
-  // adica o dunga fara cifre. E acelasi rand de sus din antetul de pe desktop.
-  const mCols = $derived(lung
-    ? antet.grupe.map(g => ({ key: g.key, main: g.eticheta, sub: '', leftPct: g.leftPct, widthPct: g.widthPct, isWeekend: false }))
-    : columns.cols)
+  // `mCols` a plecat odata cu `.m-scale` (V11): aplatiza antetul mobil la UN
+  // singur rand, alegand intre zile si grupe dupa orizont. Pista comuna are acum
+  // aceeasi structura ca desktopul — `antet.grupe` peste `columns.cols` — iar
+  // randul fin se randeaza doar cand se poate CITI (pana la 30z). La 3L/6L
+  // douazeci si sase de saptamani ar fi 13px fiecare, adica o dunga fara cifre:
+  // acolo ramane doar randul grosier, exact cat arata si scara veche.
   // Per-column min width by granularity, so a 6-month (weekly) view doesn't force
   // a 26-cell scroll. Daily view stays readable down to ~34px/day; „S44" in mono
   // la 12px are ~22px, deci si saptamana suporta 34.
@@ -469,22 +469,11 @@
 
   function onKey(e) { if (e.key === 'Escape') closePop() }
 
-  /** Punct din banda -> randul lui din lista de dedesubt.
-   *  Pe desktop, clickul pe o bara deschide un popover cu actiuni. Pe telefon
-   *  actiunile sunt DEJA pe rand, iar un popover peste o banda de 22px ar fi al
-   *  treilea loc in care apare acelasi task. Deci punctul nu deschide nimic: te
-   *  duce la rand si il aprinde scurt, ca sa vezi care e (`focus-flash` e aceeasi
-   *  animatie folosita cand aterizezi pe un task venind din alta pagina). */
-  function arata(t) {
-    const el = document.querySelector(`.mrow[data-rand="${t.tip}:${t.id}"]`)
-    if (!el) return
-    el.style.scrollMarginTop = 'calc(var(--header-height) + 46px)'
-    el.scrollIntoView({ behavior: motion.reduced ? 'auto' : 'smooth', block: 'center' })
-    el.classList.remove('focus-flash')
-    void el.offsetWidth   // reporneste animatia daca atingi acelasi punct de doua ori
-    el.classList.add('focus-flash')
-    setTimeout(() => el.classList.remove('focus-flash'), 1700)
-  }
+  /* `arata()` a plecat odata cu reperele din pista mobila (V11): ducea de la un
+     punct din banda la randul lui din lista. Pista comuna de sus arata perioade,
+     nu taskuri — taskurile traiesc doar in listele din carduri, unde sunt deja
+     la latime intreaga. `data-rand` ramane pe rand: il foloseste `lib/focus.js`
+     cand aterizezi pe un task venind din alta pagina. */
 
   // --- drag / resize (desktop swimlane) ---
   let drag = null
@@ -1040,31 +1029,74 @@
 
     <!-- ===== Mobile grouped list ===== -->
     <div class="mlist cell-in" style="--celula: 2">
-      <!-- ANTETUL DE ZILE, COMUN SI LIPICIOS.
-           Fara el, benzile de mai jos ar fi N grafice fara legatura: fiecare
-           frumoasa in sine, niciuna comparabila cu vecina. Fiind acelasi interval
-           si aceeasi scara pentru toate, o coloana inseamna aceeasi zi peste tot,
-           iar derularea pe verticala devine exact ce facea ochiul pe desktop cand
-           coborai de la un lane la altul. -->
-      <!-- SCARA SPUNE SI CE ZI E, NU DOAR A CATA.
-           Erau paisprezece cifre la rand, fara nicio initiala: weekendul se vedea
-           doar daca „Weekend" era pornit — un comutator dintr-o bara care pe 390px
-           se rupe pe trei randuri. Initiala exista deja in `buildColumns` (`c.sub`),
-           deci nu e un calcul nou: douazeci si sase de pixeli in loc de paisprezece,
-           o singura data pe ecran. Doar la orizonturile pe ZILE — pe saptamani si
-           luni `sub` e „S32" / anul, care n-ar spune ce zi e. -->
-      <div class="m-scale" class:cu-wd={unit === 'day'}>
-        <div class="ms-cols">
-          {#each mCols as c (c.key)}
-            <span class="ms-c" class:we={unit === 'day' && plan.showWeekends && c.isWeekend}
-                  class:today={contineAzi(c)}
-                  style="left:{c.leftPct}%; width:{c.widthPct}%">
-              <span class="ms-n">{c.main}</span>
-              {#if unit === 'day'}<span class="ms-wd">{c.sub}</span>{/if}
+      <!-- ===== PISTA COMUNA „PERIOADE" (turul 4c) =====
+           O SINGURA PISTA, SUS. Erau doua obiecte care spuneau acelasi lucru: o
+           scara proprie de 26px (cifra + initiala, inghesuite) SI cate o pista de
+           26px in FIECARE card de proiect — adica aceeasi informatie desenata de N
+           ori, fiecare cu antetul ei implicit si niciuna cu randul de saptamani.
+           De aici venea si senzatia de „totul strans pe inaltime".
+           Desenat: numele proiectelor intr-o coloana la stanga, pistele lor la
+           dreapta, sub UN antet comun — saptamani peste cifre, aceeasi structura
+           grosier-peste-fin ca pe desktop. Cardurile de dedesubt raman ce sunt:
+           randul perioadei si taskurile.
+           Geometria vine din aceleasi `columns` / `antet` ca pe desktop, deci nu e
+           o a doua socoteala care sa se poata contrazice cu prima. -->
+      <section class="mpiste">
+        <div class="mp-cap"><span>Perioade</span></div>
+        <div class="mp-grid">
+          <span class="mp-gol" aria-hidden="true"></span>
+          <div class="mp-antet">
+            <div class="mp-r-sapt">
+              {#each antet.grupe as g (g.key)}
+                <span class="mp-s" style="left:{g.leftPct}%; width:{g.widthPct}%">{g.eticheta}</span>
+              {/each}
+            </div>
+            {#if !lung}
+              <div class="mp-r-zile">
+                {#each columns.cols as c, i (c.key)}
+                  <!-- Azi = cifra in accent, semibold, cu o subliniere de 2px
+                       dedesubt. Fara pastila: pastila plina e a zilei SELECTATE
+                       din Calendar, iar doua obiecte cu aceeasi forma pe doua
+                       pagini ar insemna doua intelesuri. -->
+                  <span class="mp-z" class:we={plan.showWeekends && c.isWeekend}
+                        class:today={i === coloanaAzi} class:granita={antet.granite.has(i - 1)}
+                        style="left:{c.leftPct}%; width:{c.widthPct}%">{c.main}</span>
+                {/each}
+              </div>
+            {/if}
+          </div>
+
+          {#each views as lane, li (lane.tip + ':' + lane.id)}
+            <span class="mp-nume">
+              <span class="mp-dot" style="--lane:{lane.color}"></span>
+              <span class="mp-n">{lane.nume}</span>
             </span>
+            <!-- Pista e DESEN, nu suprafata de lucru: perioada se deschide de pe
+                 randul ei din card (`.mimpl`), unde are latimea intreaga si un
+                 chevron care spune ca duce undeva. -->
+            <div class="mp-track" style="--rand:{li}">
+              {#each columns.cols as c, i (c.key)}
+                {#if antet.granite.has(i - 1)}<div class="mp-linie" style="left:{c.leftPct}%"></div>{/if}
+                {#if unit === 'day' && plan.showWeekends && c.isWeekend}<div class="mp-we" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
+                {#if i === coloanaAzi}<div class="mp-azi" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
+              {/each}
+              {#each lane.pregatire as seg, i (i)}
+                <div class="band" class:clipL={seg.rect.clippedLeft} class:clipR={seg.rect.clippedRight}
+                     class:deschis={seg.deschis} class:deschisL={seg.nesigurStart}
+                     style="left:{seg.rect.left}%; width:{seg.rect.width}%"></div>
+              {/each}
+              {#each lane.impl as im (im.id)}
+                <div class="impl-band doar-ico loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
+                     class:pregatire={im.faza === 'pregatire'}
+                     class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
+                     aria-hidden="true">
+                  {#if im.locatie === 'sediu'}<Building2 size={12} class="ib-ico" />{:else}<MapPin size={12} class="ib-ico" />{/if}
+                </div>
+              {/each}
+            </div>
           {/each}
         </div>
-      </div>
+      </section>
 
       <!-- `.band` si `.impl-band` sunt aceleasi clase ca pe desktop, deci pista
            mobila mosteneste sosirea din 13e fara nicio regula in plus — ii trebuie
@@ -1081,64 +1113,13 @@
             {#if lane.restante.length}<span class="count danger" title="{lane.restante.length} restante">{lane.restante.length}</span>{/if}
           </header>
 
-          <!-- BANDA = LANE-UL DE PE DESKTOP, INTORS LA LATIME PLINA.
-               Pe desktop numele sta la STANGA si timpul se intinde in dreapta lui;
-               pe un ecran de 375px coloana de nume ar manca doua treimi, de aceea
-               swimlane-ul era pur si simplu ascuns si ramanea o lista fara timp.
-               Numele urca deasupra, banda ia toata latimea, iar grupurile se
-               stivuiesc pe verticala — directia in care telefonul chiar are loc.
-               Geometria e aceeasi: `spanRect` da procente, deci merge la orice
-               latime, fara niciun calcul nou. -->
-          <div class="m-track">
-            {#each columns.cols as c (c.key)}
-              {#if unit === 'day' && plan.showWeekends && c.isWeekend}
-                <div class="mt-we" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>
-              {/if}
-            {/each}
-            {#each lane.pregatire as seg, i (i)}
-              <div class="band" class:clipL={seg.rect.clippedLeft} class:clipR={seg.rect.clippedRight}
-                   class:deschis={seg.deschis} class:deschisL={seg.nesigurStart}
-                   style="left:{seg.rect.left}%; width:{seg.rect.width}%"></div>
-            {/each}
-            {#each lane.impl as im (im.id)}
-              <button class="impl-band loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
-                      class:pregatire={im.faza === 'pregatire'}
-                      class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
-                      onclick={() => navigate(`/calendar?zi=${im.a}`)}
-                      title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {formatDateShort(im.a)} → {formatDateShort(im.b)}">
-                {#if im.locatie === 'sediu'}<Building2 size={11} class="ib-ico" />{:else}<MapPin size={11} class="ib-ico" />{/if}
-                {#if im.rect.width >= BANDA_TEXT_MIN}
-                  <span class="ib-txt">{im.eticheta || locLabel(im.locatie)}</span>
-                {/if}
-              </button>
-            {/each}
-            <!-- Un task e un REPER de o zi (v33), deci un punct — nu o bara pe
-                 care s-o intinzi. Atingerea nu deschide un al treilea meniu: te
-                 duce la randul lui din lista de dedesubt, unde stau deja toate
-                 actiunile. Punctul spune CAND, randul spune CE si CU CE butoane. -->
-            <!-- Aceeasi gramatica ca pe desktop: gol = de facut, plin = in lucru,
-                 bifa = facut. Aici „facut" era VERDE, deci acelasi task avea o
-                 stare pe telefon si alta pe ecranul mare. `urgent` a plecat: pe o
-                 banda care incepe azi nu poate exista reper restant — restantele
-                 sunt primul GRUP din lista de dedesubt. -->
-            {#each lane.tasks as t (t.tip + ':' + t.id)}
-              {#if t.rect}
-                <button class="mt-pin" class:done={isDone(t.status)} class:lucru={isActive(t.status)}
-                        style="left:{t.rect.left}%"
-                        onclick={() => arata(t)}
-                        title="{t.titlu}{t.data_scadenta ? ' · termen ' + formatDateShort(t.data_scadenta) : ''}"
-                        aria-label="{t.titlu} — vezi în listă">{#if isDone(t.status)}<Check size={11} strokeWidth={3.2} />{/if}</button>
-              {/if}
-            {/each}
-            {#if todayPct != null && todayPct >= 0 && todayPct < 100}
-              <div class="mt-azi" style="left:{todayPct}%"></div>
-            {/if}
-          </div>
-
-          <!-- Randul perioadei e si tinta ei: in banda de 26px un bloc de doua
-               zile are 23×20px, adica prea putin ca sa-l nimeresti. Aici are
-               latimea intreaga si duce in Calendar, unde perioadele se editeaza.
-               UN SINGUR RAND, nu cate unul per perioada — vezi `perioadaDeAratat`. -->
+          <!-- Pista proprie a plecat de aici (V11): era aceeasi informatie ca in
+               pista comuna de sus, desenata inca o data pentru fiecare proiect —
+               si a doua oara in 26px, adica prea strans ca sa se citeasca. Ce
+               ramane in card e ce se face cu proiectul: perioada si taskurile.
+               Randul perioadei e si tinta ei: are latimea intreaga si duce in
+               Calendar, unde perioadele se editeaza. UN SINGUR RAND, nu cate unul
+               per perioada — vezi `perioadaDeAratat`. -->
           {#if per}
             <button class="mimpl loc-{per.im.locatie}" class:pregatire={per.im.faza === 'pregatire'}
                     onclick={() => navigate(`/calendar?zi=${per.im.a}`)}
@@ -1148,6 +1129,7 @@
                 {formatDateShort(per.im.a)} – {formatDateShort(per.im.b)}
                 {#if per.rest > 0}<span class="mimpl-plus">+{per.rest}</span>{/if}
               </span>
+              <ChevronRight size={15} class="mimpl-chev" />
             </button>
           {/if}
 
@@ -1597,7 +1579,12 @@
   .mimpl { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border: none; cursor: pointer; padding: 6px 10px 6px 13px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--accent) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent); margin-bottom: 6px; }
   /* Aceeasi a doua axa ca pe desktop: pregatirea e conturata, nu plina. */
   .mimpl.pregatire { background: color-mix(in srgb, var(--accent) 5%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
-  .mimpl-loc { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent-deep); }
+  /* Numele ia randul, data si chevronul stau la dreapta — ca in desen. */
+  .mimpl-loc { flex: 1; min-width: 0; font-size: var(--font-small); font-weight: var(--fw-semibold);
+    color: var(--accent-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Chevronul spune ca randul DUCE undeva (in Calendar) — inainte nu se vedea
+     din nimic ca perioada e o tinta. */
+  .mimpl :global(.mimpl-chev) { flex: none; color: var(--text-faint); }
   .mimpl-range { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
   /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
      44px fiecare, inaintea primului task. Duc toate in acelasi loc — Calendar. */
@@ -1699,92 +1686,73 @@
   /* ===== mobile grouped list ===== */
   .mlist { display: none; flex-direction: column; gap: var(--space-md); }
 
-  /* ANTETUL DE ZILE — lipit sub bara aplicatiei.
-     Trebuie sa rămână vizibil cat derulezi, altfel benzile de mai jos nu mai au
-     scara si redevin decor. `--m-pad` e insetul lateral al benzii dintr-un grup
-     (marginea grupului + paddingul lui), ca sa cada coloana peste coloana. */
-  /* `--m-pad` = paddingul grupului (8) + marginea benzii (3) = 11.
-     Socoteala numara si rama grupului (1) — dar rama a PLECAT la A5 (`.mgroup`
-     poarta doar umbra), deci scara statea decalata cu un pixel fata de pistele
-     de sub ea. Cele doua numere trebuie sa rămână in acord cu `.mgroup` si
-     `.m-track`: daca antetul si banda nu incep exact in acelasi x, coloana
-     „marti" cade langa ziua de marti, si tot graficul minte cu o zi. */
-  .m-scale { --m-pad: 11px;
-    position: sticky; top: var(--header-height); z-index: 4;
-    padding: 6px var(--m-pad) 5px;
-    /* Fond OPAC, fara blur: sticla a iesit din sistem. Semitransparentul cerea
-       blurul ca sa nu se vada benzile trecand pe sub cifre. */
-    background: var(--bg);
-    border-bottom: 1px solid var(--border); border-radius: var(--radius-sm); }
-  .ms-cols { position: relative; height: 14px; }
-  .m-scale.cu-wd .ms-cols { height: 26px; }
-  .ms-c { position: absolute; top: 0; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 0;
-    height: 100%; font-family: var(--font-mono); font-size: var(--font-small);
-    color: var(--text-dim); font-variant-numeric: tabular-nums;
-    overflow: hidden; white-space: nowrap; border-left: 1px solid var(--border-subtle); }
-  .ms-wd { font-size: var(--font-label); line-height: var(--lh-tight); color: var(--text-faint); text-transform: uppercase; letter-spacing: var(--tracking-label); }
-  .ms-c.we { color: var(--text-dim); }
-  .ms-c.we .ms-wd { color: var(--text-dim); }
-  .ms-c.today { color: var(--accent); font-weight: var(--fw-semibold); }
-  .ms-c.today .ms-wd { color: var(--accent); }
+  /* ===== PISTA COMUNA „PERIOADE" (turul 4c) =====
+     UNA SINGURA, SUS, cu antetul deasupra ei. Inainte erau doua obiecte pentru
+     aceeasi informatie: o scara proprie de 26px (cifra + initiala) si cate o
+     pista de 26px in FIECARE card. Antetul de saptamani lipsea cu totul, desi
+     „o singura structura, grosier peste fin" e regula antetului de timp peste
+     tot in aplicatie.
+     Coloana de nume are 96px fixi, ca toate pistele sa inceapa la acelasi x —
+     asta e chiar conditia ca doua benzi de pe randuri diferite sa insemne
+     aceeasi zi. Restul geometriei vine din `columns` / `antet`, aceleasi obiecte
+     ca pe desktop: o singura socoteala pentru amandoua ecranele. */
+  .mpiste { background: var(--bg-surface); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm); padding: var(--space-sm); display: flex;
+    flex-direction: column; gap: 8px; }
+  .mp-cap { font-size: var(--font-label); font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-secondary); }
+  .mp-grid { display: grid; grid-template-columns: 96px minmax(0, 1fr);
+    column-gap: 8px; row-gap: 6px; align-items: center; }
+  /* Antetul ramane lipit sub bara aplicatiei cat derulezi lista de grupuri:
+     fara scara deasupra lor, benzile redevin decor. Fond OPAC, fara blur —
+     sticla a iesit din sistem. Celula goala din stanga se lipeste odata cu el,
+     altfel randul de antet s-ar rupe in doua la derulare. */
+  .mp-gol, .mp-antet { position: sticky; top: var(--header-height); z-index: 4;
+    background: var(--bg-surface); }
+  .mp-antet { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; }
+  .mp-r-sapt, .mp-r-zile { position: relative; height: 13px; }
+  .mp-s, .mp-z { position: absolute; top: 0; bottom: 0; display: flex;
+    align-items: center; justify-content: center; box-sizing: border-box;
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    white-space: nowrap; overflow: hidden; }
+  .mp-s { font-size: var(--font-label); color: var(--text-faint); }
+  .mp-z { font-size: var(--font-small); color: var(--text-dim); }
+  /* Aceeasi muchie ca `.mp-linie` din pista: granita de saptamana coboara din
+     antet prin toate pistele, altfel randul de saptamani ar fi o eticheta care
+     nu imparte nimic. */
+  .mp-z.granita { border-left: 1px solid var(--border-subtle); }
+  .mp-z.we { color: var(--text-faint); }
+  /* AZI = CIFRA IN ACCENT, CU O SUBLINIERE DE 2px. Fara pastila plina: aceea e
+     ziua SELECTATA din Calendar, si un obiect nu poate avea doua intelesuri. */
+  .mp-z.today { color: var(--accent-deep); font-weight: var(--fw-semibold); }
+  .mp-z.today::after { content: ''; position: absolute; left: 2px; right: 2px;
+    bottom: 0; height: 2px; background: var(--accent); }
 
-  /* BANDA PROIECTULUI — acelasi continut ca lane-ul de pe desktop.
-     Inaltimea e mica intentionat: e context, nu suprafata de lucru. Ce faci cu un
-     task faci pe randul lui, dedesubt. */
-  .m-track { position: relative; height: 26px; margin: 0 3px 8px; border-radius: var(--radius-sm);
-    background: var(--bg-panel); box-shadow: inset 0 0 0 1px var(--border-subtle); overflow: hidden; }
-  .mt-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 5%, transparent); }
-  /* Accent, ca pe desktop: rosul e „intarziat", nu „acum". */
-  .mt-azi { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: 0.85; z-index: 3; }
-  /* Reperele stau PESTE benzi si sunt singurul lucru din banda pe care il atingi
-     des, deci primesc o caseta transparenta de 26px in jurul punctului de 9px.
-     Fara ea ai avea de nimerit un punct cat gamalia acului.
-     26, NU 44, si ramane asa cu buna stiinta: pe un orizont de 14 zile o zi are
-     ~22px, deci doua repere in zile alaturate ar ajunge sa se acopere unul pe
-     altul — ai schimba o tinta mica pe una GRESITA, care deschide alt task. Iar
-     pretul unei ratari e zero: reperul nu face decat sa te duca la randul
-     taskului din lista de dedesubt, iar acel rand e cat toata latimea. */
-  /* Acelasi `reperIn` ca `.bar` de pe desktop — pista mobila foloseste aceleasi
-     benzi, deci trebuie sa aiba si aceleasi repere deasupra lor, altfel 13e ar fi
-     rezolvat pe un ecran si rupt pe celalalt.
-     Animatia sta pe BUTON, nu pe `::before`: rombul isi tine forma dintr-un
-     `rotate(45deg)`, iar `to { transform: none }` i-ar sterge rotatia si l-ar lasa
-     patrat. Butonul n-are transform propriu, deci nu are ce sa piarda. Creste din
-     centru fiindca punctul E centrul lui (`margin-left: -13px` peste 26px). */
-  .mt-pin { position: absolute; top: 0; bottom: 0; width: 26px; margin-left: -13px;
-    display: flex; align-items: center; justify-content: center;
-    background: none; border: none; padding: 0; cursor: pointer; z-index: 2;
-    color: var(--text-dim);
-    animation: reperIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
-  /* Aceeasi forma ca pe desktop: contur = de facut, plin = in lucru, bifa = facut.
-     `done` era VERDE aici si o nuanta palida a culorii de proiect dincolo — acelasi
-     task, doua limbaje, in functie de latimea ecranului. */
-  .mt-pin::before { content: ''; width: 9px; height: 9px; border-radius: 2px;
-    background: transparent; border: 1.5px solid var(--accent); transform: rotate(45deg);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-panel) 85%, transparent); }
-  .mt-pin.lucru::before { background: var(--accent); }
-  .mt-pin.done::before { display: none; }
-  /* APASAREA STRANGE, NU CRESTE. Era `scale(1.25)` — adica reperul se umfla cu un
-     sfert sub deget, exact invers fata de token (`--press-scale`, 0.965 in 90ms).
-     `rotate(45deg)` RAMANE scris: rombul isi tine forma din el, iar o valoare care
-     nu-l repeta l-ar lasa patrat fix in timpul apasarii. */
-  .mt-pin:active::before { transform: rotate(45deg) scale(var(--press-scale)); }
-
-  /* Benzile refolosesc reteta de pe desktop (aceleasi clase, aceeasi gramatica:
-     FORMA spune faza — palid = pregatire, plin = implementare — iar locul se
-     SCRIE, nu se coloreaza). Se schimba doar dimensiunile, fiindca aici randul
-     are 26px, nu 42. */
-  .m-track .band { top: 3px; bottom: 3px; border-radius: var(--radius-xs); }
-  .m-track .impl-band { top: 3px; bottom: 3px; gap: 4px; padding: 0 6px; border-radius: var(--radius-xs);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent); }
-  .m-track .impl-band.pregatire { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
-  .m-track .ib-txt { font-size: var(--font-small); }
-  /* In banda, perioada e DESEN, nu buton: un bloc de doua zile are ~23×20px.
-     Cine vrea s-o deschida o atinge pe randul ei, de sub banda (`.mimpl`), unde
-     are latimea intreaga. */
-  .m-track .impl-band { pointer-events: none; cursor: default; }
+  .mp-nume { display: flex; align-items: center; gap: 7px; min-width: 0; }
+  /* Punctul de identitate — 7px, PLAT. Singurul loc in care culoarea proiectului
+     mai are voie sa apara (vezi comentariul de la `culoareProiect`). */
+  .mp-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lane, var(--accent)); flex: none; }
+  .mp-n { font-size: var(--font-small); color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mp-track { position: relative; height: 34px; border-radius: var(--radius-sm);
+    background: var(--bg-elevated); overflow: hidden; }
+  .mp-linie { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -1px; background: var(--border-subtle); z-index: 1; }
+  .mp-we { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--text) 4%, transparent); }
+  /* Azi e o COLOANA tentata, ca peste tot — nu o linie de 2px. */
+  .mp-azi { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  /* Benzile refolosesc clasele de pe desktop, deci si gramatica: pregatirea e
+     spalatura neutra, implementarea singura pe accent. Se schimba doar insetul,
+     fiindca pista are 34px, nu 42. */
+  .mp-track .band { top: 5px; bottom: 5px; border-radius: var(--radius-xs); z-index: 2; }
+  /* DOAR ICONITA, CENTRATA: eticheta se scrie pe randul perioadei din card,
+     unde are latimea intreaga. Aici perioada e DESEN, nu buton — cine vrea s-o
+     deschida atinge randul (`.mimpl`), care are si chevron. */
+  .mp-track .impl-band { top: 5px; bottom: 5px; padding: 0; gap: 0; z-index: 2;
+    align-items: center; justify-content: center; border-radius: var(--radius-xs);
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent);
+    pointer-events: none; cursor: default; }
+  .mp-track .impl-band :global(.ib-ico) { margin-top: 0; opacity: 1; }
 
   .mgroup { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
   .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
@@ -1803,7 +1771,10 @@
      deja la limita de contrast si scoate randul sub AA. */
   .mrow.done .mrow-title { text-decoration: line-through; color: var(--text-dim); }
   .mrow-main { flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
-  .mrow-title { font-size: var(--font-small); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Randul de lista pe telefon: 52 inaltime, titlul 15 (regula din CLAUDE.md).
+     Erau 44 si 13 — adica randul de ACTIUNE al unei bare de unelte, nu randul
+     de CITIT al unei liste. */
+  .mrow-title { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
   .chip { font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); background: var(--bg-elevated); color: var(--text-dim); display: inline-flex; align-items: center; gap: 3px; }
   .chip.due { color: var(--text-dim); background: var(--bg-elevated); }
@@ -2013,7 +1984,8 @@
        noua proiecte asta inseamna sa derulezi mult ca sa vezi putin. */
     .mrow { padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
     .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
-               padding: 5px 8px; background: var(--bg-panel); position: relative; z-index: 1;
+               min-height: var(--row-h-mobile); padding: 5px 8px;
+               background: var(--bg-panel); position: relative; z-index: 1;
                border-radius: var(--radius-md); will-change: transform; }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
@@ -2025,7 +1997,9 @@
        Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
        componente. */
     .mrow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
-    .mrow-main { flex: 1 1 0; min-width: 0; padding: 0; min-height: var(--tap-min); justify-content: center; }
+    /* 52, nu 44: `--tap-min` e pragul de ATINS, iar aici bifa il asigura singura
+       (`.mcheck` ramane 44). Randul de lista se citeste, deci ia `--row-h-mobile`. */
+    .mrow-main { flex: 1 1 0; min-width: 0; padding: 0; min-height: var(--row-h-mobile); justify-content: center; }
     .mrow-title { white-space: nowrap; }
     .mimpl { min-height: var(--tap-min); }
     .mrow-meta { flex-wrap: nowrap; overflow: hidden; }
@@ -2079,7 +2053,7 @@
      Aici, la sfarsit: media query-ul nu adauga specificitate, deci scris mai sus
      ar fi fost anulat de `.band` / `.impl-band` / `.bar`. */
   @media (prefers-reduced-motion: reduce) {
-    .band, .impl-band, .bar, .wk, .mt-pin { animation: none; }
+    .band, .impl-band, .bar, .wk { animation: none; }
   }
 
   /* ===== print (browser print-to-PDF) ===== */
