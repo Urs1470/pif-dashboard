@@ -50,16 +50,21 @@ export function zilePanaLa(d) {
 /* TREI TREPTE, NU CINCI. dueColor() ramifica in cinci, dar --accent si --warning
    sunt acelasi hex (#ffb454) si ultimele doua ramuri cad pe --border-strong,
    adica pe culoarea bordurii pe care randul o are oricum: cinci ramuri, doua
-   lucruri deosebibile. Inelul bifei are 18px cu 2px grosime — nu incape mai mult
-   de trei trepte, si nici nu era nevoie de mai multe.
-   Neutrul e --border, NU --border-strong: inelul in repaus trebuie sa ramana
-   exact bifa de azi, altfel fiecare rand neurgent se schimba la vedere. */
+   lucruri deosebibile. Inelul bifei nu incape mai mult de trei trepte, si nici
+   nu era nevoie de mai multe.
+   NEUTRUL E --border-strong (desenul M3: „--ln2 mai tarziu"), nu --border:
+   pe tema intunecata --border e la un pas de fond, iar Ion a raportat exact
+   asta — „cercurile de bifat se vad greu". Inelul in repaus trebuie sa se vada
+   ca tinta, nu sa se ghiceasca.
+   RING_NEUTRU e exportat ca sa nu se compare nimeni cu un string scris de mana:
+   doua locuri din Plan intreaba „e sever?" chiar prin egalitatea cu neutrul. */
+export const RING_NEUTRU = 'var(--border-strong)'
 export function dueRing(d) {
   const k = zilePanaLa(d)
-  if (k === null) return 'var(--border)'
+  if (k === null) return RING_NEUTRU
   if (k < 0) return 'var(--danger)'
   if (k === 0) return 'var(--accent)'
-  return 'var(--border)'
+  return RING_NEUTRU
 }
 
 /* Starea termenului fata de azi — ACEEASI axa si ACELEASI praguri ca dueRing().

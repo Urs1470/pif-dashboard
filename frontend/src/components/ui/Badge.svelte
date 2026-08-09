@@ -3,21 +3,22 @@
 </script>
 
 <span class="badge" class:small style="--badge-color: {color}">
-  <span class="dot"></span>
   {label}
 </span>
 
 <style>
+  /* CHIP CU COLTURI DE 8, NU PASTILA ROTUNDA (desen Proiecte 3a + scara de raze:
+     „cerc doar bifa"). Punctul colorat a plecat: fondul tentat spune deja
+     culoarea, iar la 5px punctul era doar zgomot. Textul ramane cum e scris —
+     „Finalizat", nu „FINALIZAT": e o stare, nu o eticheta de sectiune. */
   .badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 2px 9px;
-    border-radius: var(--radius-full);
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: var(--radius-xs);
     font-size: var(--font-label);
     font-weight: var(--fw-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-label);
     /* CERNEALA PE TENTA SE INCHIDE. Fondul e 12% din culoarea primita, iar textul
        era scris cu culoarea PLINA peste el — exact cazul pentru care exista
        treapta `-deep`. `Badge` e generic si nu stie ce rol i s-a dat, deci isi
@@ -27,23 +28,9 @@
     white-space: nowrap;
     transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
   }
-  /* Fara `font-size`: scria exact aceeasi treapta ca `.badge`, deci nu micsora
-     niciodata nimic — „small" inseamna doar mai stramt (padding si gap). */
+  /* „small" inseamna doar mai stramt (padding si inaltime), nu alta treapta. */
   .badge.small {
-    padding: 2px 8px;
-    gap: 4px;
-  }
-  .dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--badge-color);
-    opacity: 0.9;
-    flex-shrink: 0;
-    transition: background-color var(--dur-fast) var(--ease);
-  }
-  .small .dot {
-    width: 4px;
-    height: 4px;
+    min-height: 22px;
+    padding: 0 8px;
   }
 </style>

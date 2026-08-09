@@ -37,18 +37,13 @@
 {/if}
 
 <style>
+  /* FARA DUNGA CARE MATURA (contract miscare, scris de doua ori): scheletul
+     doar respira din opacitate, 1 -> .45, pe 1600ms. O dunga in miscare promite
+     progres pe care nu-l masoara nimeni; pulsul spune doar „inca se incarca". */
   .skeleton {
     background: var(--bg-elevated);
     border-radius: var(--radius-sm);
-    position: relative;
-    overflow: hidden;
-  }
-  .skeleton::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent 0%, var(--bg-hover) 50%, transparent 100%);
-    animation: shimmer 1.4s var(--ease) infinite;
+    animation: skel-puls 1.6s ease-in-out infinite;
   }
   .rounded {
     border-radius: var(--radius-full);
@@ -66,10 +61,10 @@
   .sk-termen { width: 30px; height: 11px; margin-left: auto; flex: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .skeleton::after { animation: none; }
+    .skeleton { animation: none; }
   }
-  @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+  @keyframes skel-puls {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
   }
 </style>

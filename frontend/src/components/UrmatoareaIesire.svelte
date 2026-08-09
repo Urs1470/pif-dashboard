@@ -12,6 +12,7 @@
   import { MapPin, Building2, AlertTriangle, ChevronRight, CalendarX2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate } from '../lib/router.svelte.js'
+  import { ecran } from '../lib/ecran.svelte.js'
   import { todayISO, addDays, diffDays, shortDate } from '../lib/calendarDates.js'
 
   let data = $state(null)
@@ -151,9 +152,15 @@
     {/if}
 
     {#if deClarificat}
+      <!-- Textul din desen: spune CE s-a intamplat („perioade trecute, proiect
+           neinchis"), nu doar ca e ceva „de clarificat". Pe telefon, forma
+           scurta din 3c — „N perioade neînchise" — ca sa incapa pe un rand.
+           Clicul duce tot la cea mai veche. -->
       <button class="ct-nr rau" onclick={() => navigate(`/calendar?zi=${primaDeClarificat}`)}
-              title="Perioade trecute, cu proiectul neînchis — te duce la cea mai veche">
-        <AlertTriangle size={13} /> <span class="ct-n">1 / {deClarificat}</span> de clarificat <ChevronRight size={13} />
+              title="Te duce la cea mai veche">
+        <AlertTriangle size={13} /> <span class="ct-n">{deClarificat}</span>
+        {#if ecran.telefon}{deClarificat === 1 ? 'perioadă neînchisă' : 'perioade neînchise'}{:else}{deClarificat === 1 ? 'perioadă trecută, proiect neînchis' : 'perioade trecute, proiect neînchis'}{/if}
+        <ChevronRight size={13} />
       </button>
     {/if}
   </div>
@@ -289,8 +296,13 @@
       display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
     }
 
-    /* Amandoua contoarele la 44px, pe acelasi rand — sunt tinte, nu etichete. */
-    .ct-nr { min-height: var(--tap-min); padding: 4px 12px; }
+    /* Amandoua contoarele la 44px, pe acelasi rand — sunt tinte, nu etichete.
+       IMPART randul (desen 3c): fiecare isi ia jumatatea lui, centrat. Golul
+       flexibil dispare — cu un singur contor, pastila plutea singura in dreapta,
+       cu un gol mort la stanga (raportat de Ion, cu poza). */
+    .spatiu { display: none; }
+    .ct-nr { min-height: var(--tap-min); padding: 4px 12px; flex: 1 1 0;
+             justify-content: center; }
     .gol { min-height: var(--tap-min); }
     .pr.fantoma { min-height: var(--tap-min); width: 100%; }
   }

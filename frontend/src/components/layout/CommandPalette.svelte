@@ -1,11 +1,20 @@
 <script>
   import { Search, FolderKanban, FileText, CalendarCheck, Users, CheckSquare } from '@lucide/svelte'
-  import { fade, scale } from 'svelte/transition'
+  import { fade } from 'svelte/transition'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { navigate, router } from '../../lib/router.svelte.js'
   import { focusHref } from '../../lib/focus.js'
   import { apiJson } from '../../lib/api.js'
-  import { motionDuration, DUR_FAST, EASE } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
+
+  // 6px + scale(.985) intr-o singura tranzitie: `fly` si `scale` nu se pot pune
+  // pe acelasi nod (fiecare ar rescrie `transform`-ul celeilalte).
+  function paletaIn(node) {
+    return {
+      duration: motionDuration(DUR_BASE), easing: EASE,
+      css: (t, u) => `opacity: ${t}; transform: translateY(${u * 6}px) scale(${0.985 + t * 0.015});`,
+    }
+  }
 
   let open = $state(false)
   let query = $state('')
@@ -220,8 +229,11 @@
 </script>
 
 {#if open}
-  <div class="palette-backdrop" onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
-    <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1" transition:scale={{ start: 0.96, duration: motionDuration(DUR_FAST) }}>
+  <!-- Contractul de miscare: paleta soseste pe 220, cu 6px de coborare si o
+       scalare abia simtita (.985) — nu 120 cu .96, care o facea sa pocneasca. -->
+  <div class="palette-backdrop" onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
+    <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1"
+         transition:paletaIn>
       <!-- RANDUL DE SUS *ESTE* CAMPUL.
            Era o pastila cu chenar si fundal propriu, asezata INAUNTRUL panoului:
            doua cutii concentrice, si a doua nu adauga nimic — nu poti scrie

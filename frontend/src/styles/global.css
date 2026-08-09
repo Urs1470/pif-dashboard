@@ -443,12 +443,16 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Safety net: orice tranzitie/animatie CSS noua respecta automat reduced-motion,
-   chiar daca componenta nu verifica explicit lib/motion.svelte.js din JS. */
+   chiar daca componenta nu verifica explicit lib/motion.svelte.js din JS.
+   120ms, NU zero (contractul de miscare + decizia din redesign): o schimbare
+   instantanee e mai greu de urmarit decat una scurta, iar o tranzitie de durata
+   zero nu emite `transitionend` — pe el se sincronizeaza bifarea. Ramura JS
+   (DUR_REDUSA din motion.svelte.js) foloseste aceeasi valoare. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 120ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 120ms !important;
     scroll-behavior: auto !important;
   }
 }
@@ -529,7 +533,10 @@ input[type="checkbox"].cbx:focus {
 .check-empty {
   width: var(--check-size, 18px);
   height: var(--check-size, 18px);
-  border: 1.5px solid var(--ring, var(--border));
+  /* Fallback-ul (bife fara --ring: subtaskuri, formulare) pe --border-strong,
+     din acelasi motiv ca neutrul din dueRing(): pe tema intunecata --border
+     abia se desprinde de fond — Ion: „cercurile de bifat se vad greu". */
+  border: 1.5px solid var(--ring, var(--border-strong));
   border-radius: 50%;
   flex: none;
   transition: box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);

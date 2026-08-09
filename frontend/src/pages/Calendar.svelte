@@ -1465,7 +1465,7 @@
                   {#if p.confirmata}
                     <span class="loc fac" title="Perioada s-a făcut. Statusul proiectului nu s-a schimbat."><Check size={11} /> Făcut</span>
                   {/if}
-                  <span class="tk" class:warn={!p.taskuri_deschise}>{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}</span>
+                  <span class="tk" class:warn={!p.taskuri_deschise}>{#if !p.taskuri_deschise}<TriangleAlert size={11} />{/if}{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}</span>
                   <span class="it-data">{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ` – ${shortDate(p.data_sfarsit)}` : ''}</span>
                 </div>
                 {#if p.necesita_decizie}
@@ -1631,10 +1631,16 @@
                 <span class="ag-titlu">{d.titlu}</span>
                 <span class="ag-cand">{d.cand}</span>
               </span>
+              <!-- A doua linie SCRIE starea, nu doar o coloreaza (desen 6c):
+                   bifa verde pe ce s-a facut, „· pregătire" pe ce nu e inca in
+                   site, iar pe iesirea care asteapta raspuns — chiar intrebarea. -->
               <span class="ag-lucrari">
                 {#each d.lucrari as p (p.id)}
-                  <span class="ag-l" class:pregatire={p.faza === 'pregatire'}>{etichetaLucrare(p)}</span>
+                  <span class="ag-l" class:pregatire={p.faza === 'pregatire'} class:facuta={p.confirmata}>
+                    {#if p.confirmata}<Check size={11} strokeWidth={2.4} />{/if}{etichetaLucrare(p)}{#if p.faza === 'pregatire'}<span class="ag-faza">&nbsp;· pregătire</span>{/if}
+                  </span>
                 {/each}
+                {#if d.necesitaDecizie}<span class="ag-intrebare">· a trecut, s-a făcut?</span>{/if}
               </span>
             </button>
           {/each}
@@ -2075,9 +2081,12 @@
     color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ag-rand.rau .ag-titlu { font-weight: var(--fw-semibold); }
   .ag-cand { flex: none; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
-  .ag-lucrari { display: flex; flex-wrap: wrap; gap: 4px 8px; }
-  .ag-l { font-size: var(--font-small); color: var(--text-secondary); }
+  .ag-lucrari { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+  .ag-l { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); color: var(--text-secondary); }
   .ag-l.pregatire { color: var(--text-faint); }
+  .ag-l.facuta { color: var(--success-deep); }
+  .ag-faza { color: var(--text-faint); }
+  .ag-intrebare { font-size: var(--font-small); color: var(--danger-deep); }
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
   .pan { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-md); }
@@ -2157,7 +2166,13 @@
      culoarea nu tine de identitatea proiectului, si de aia e conturat, nu plin. */
   .it-m .fac { display: inline-flex; align-items: center; gap: 3px; background: none;
                color: var(--success); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
-  .it-m .tk.warn { color: var(--danger); }
+  /* „niciun task" e un chip de avertisment (desen): tenta + inel de restant, cu
+     triunghi — nu doar text rosu, care se pierdea intre chipurile neutre. */
+  .it-m .tk.warn { display: inline-flex; align-items: center; gap: 4px; height: 20px;
+    padding: 0 7px; border-radius: var(--radius-xs);
+    background: var(--danger-subtle); color: var(--danger-deep);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 30%, transparent);
+    font-size: var(--font-label); font-weight: var(--fw-semibold); }
 
   /* Blocul de intrebare (M10): tenta si inel de restant, ca sa se citeasca drept
      ceva ce asteapta un raspuns — nu ca o eticheta de stare. */
@@ -2278,7 +2293,12 @@
        text langa ea, iar M1 cere si iconita, si numele. Pasul e 19, nu 18: textul
        de 12px cu `--lh-snug` inalta banda la 16px reali, deci cu 18 golul dintre
        benzi ar fi iesit 2, nu 3. Masurat, nu presupus. */
-    .grid { --h-banda: 19px; }
+    /* SI decalajul de sus se rescrie, nu doar pasul: pe desktop --h-antet e 26
+       (geometria cutiei C10), dar aici cutia nu se deseneaza si antetul celulei
+       e mai scund — padding 4 + rand de cifra 15 + 2 aer = 21. Fara override,
+       benzile porneau cu 5px mai jos decat bugetul din `min-height` si ultima
+       banda incaleca randul urmator (raportat de Ion, cu poza). */
+    .grid { --h-antet: 21px; --h-banda: 19px; }
     /* Podeaua celulei e `--tap-min` (M2): ziua e o tinta pe care o atingi cu
        degetul, iar la 40px o ratai in favoarea vecinei. Creste doar cat cer
        benzile, ca pe desktop — aceeasi regula, alt prag. */

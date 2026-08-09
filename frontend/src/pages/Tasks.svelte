@@ -1767,9 +1767,11 @@
      46px minim, gap 12, raza de control. Nu se mai deplaseaza la hover
      (`translateX(4px)`): translatia muta si coloana de termen, iar termenul e
      tocmai lucrul care trebuie sa stea pe loc cat timp cauti actiunile. */
+  /* Fondul de hover pe 220 (contract miscare: „randul sub cursor — 220ms"),
+     acelasi ceas cu actiunile care intra. */
   .trow { position: relative; display: flex; align-items: center; gap: var(--space-12);
     min-height: 46px; padding: 0 var(--space-12); background: none; border: 0;
-    transition: background-color var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
+    transition: background-color var(--dur-base) var(--ease), opacity var(--dur-base) var(--ease); }
   @media (hover: hover) {
     .trow:hover { background: var(--bg-elevated); }
   }
@@ -1792,11 +1794,13 @@
      Se sting cand cursorul nu e pe rand — `opacity`, nu `display`, ca sa nu-si
      mute locul cand apar si ca titlul sa cedeze latimea o singura data. */
   .task-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  /* Actiunile INTRA 8px spre interior (dinspre dreapta, spre titlu), pe 220 —
+     contractul de miscare. Termenul, pironit la dreapta lor, nu se misca. */
   @media (hover: hover) {
-    .task-actions { opacity: 0; pointer-events: none;
-      transition: opacity var(--dur-fast) var(--ease); }
+    .task-actions { opacity: 0; pointer-events: none; transform: translateX(8px);
+      transition: opacity var(--dur-base) var(--ease), transform var(--dur-base) var(--ease); }
     .trow:hover .task-actions,
-    .task-actions:focus-within { opacity: 1; pointer-events: auto; }
+    .task-actions:focus-within { opacity: 1; pointer-events: auto; transform: none; }
   }
   .ta-chip, .ta-dp :global(.dp-trigger) {
     display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px;
@@ -1820,7 +1824,8 @@
     color: var(--text-dim); font-variant-numeric: tabular-nums;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ttermen.sev { color: var(--danger); }
-  .ttermen.acum { color: var(--accent-deep); font-weight: var(--fw-medium); }
+  /* „azi" gri, ca in desen — inelul bifei poarta accentul; textul doar rosul. */
+  .ttermen.acum { font-weight: var(--fw-medium); }
 
   /* Pe desktop invelisul de glisare nu exista pentru layout. */
   .gl-fata { display: contents; }

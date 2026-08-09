@@ -8,7 +8,7 @@
   import { tick } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
@@ -93,8 +93,13 @@
   // (`--ease` era respectata peste tot in CSS si de nicio tranzitie Svelte);
   // `scale` n-a fost pe lista atunci fiindca `fly` si `slide` — verificate —
   // aveau deja `cubicOut`, si a fost pus in aceeasi galeata fara sa fie deschis.
-  function intra(node) {
-    const duration = motionDuration(DUR_BASE)
+  // Perechea din contractul de miscare: foaia INTRA pe 280 (suprafata) si IESE
+  // pe 220 (element) — sosirea se vede, plecarea nu te tine. `transition:` da
+  // acelasi obiect ambelor sensuri, deci sensul se citeste din faza: la intrare
+  // Svelte cheama functia cu `direction: 'in'`.
+  function intra(node, _params, opts) {
+    const laIntrare = opts?.direction !== 'out'
+    const duration = motionDuration(sheet && laIntrare ? DUR_SLOW : DUR_BASE)
     if (sheet) return { duration, easing: EASE, css: (t, u) => `transform: translateY(${u * 100}%)` }
     // PANOUL SOSESTE CU 8px, NU CU O SCALARE. Scalarea spune „fereastra care se
     // deschide din centru"; panoul vine dinspre marginea de care se lipeste, deci
@@ -207,10 +212,15 @@
        (120ms), cand foaia mai avea inca ~170px de coborat: ultimele doua treimi
        ale inchiderii se jucau peste o pagina deja limpede si nedimuita, ca si cum
        foaia nu mai apartinea nimanui. Voalul TINE obiectul, deci pleaca odata cu
-       el sau dupa el — niciodata inainte. Acelasi ceas: --dur-base. -->
-  <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1" transition:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
+       el sau dupa el — niciodata inainte. ACELASI ceas cu obiectul, in ambele
+       sensuri: la foaie 280 la intrare / 220 la iesire (contractul de miscare),
+       la restul 220. `in:`/`out:`, nu `transition:` — doar asa functia de
+       tranzitie afla sensul (`direction`), ca sa aleaga durata. -->
+  <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
+       in:fade={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
+       out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:trage
-         bind:this={sheetEl} style:--trasY="{trasY}px" transition:intra>
+         bind:this={sheetEl} style:--trasY="{trasY}px" in:intra out:intra>
       {#if sheet}
         <span class="sheet-grip" aria-hidden="true"></span>
       {/if}

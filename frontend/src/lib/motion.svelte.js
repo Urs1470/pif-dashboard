@@ -166,10 +166,12 @@ export function panou(node, { duration = 200 } = {}) {
 //
 // E singura miscare din tura care ADAUGA informatie, nu doar politete: continutul
 // vine din partea in care ai apasat, iar mintea citeste „a venit de acolo".
-// `--dur-fast`, nu `--dur-base`: nu e o sosire, e consecinta imediata a apasarii.
-// Cu cat sta mai putin intre deget si rezultat, cu atat e mai clar ca TU ai
-// facut-o — la 240ms deja incepe sa para ca s-a intamplat singura.
-export function alunecare(node, { sens = 0, duration = DUR_FAST } = {}) {
+// 240ms — valoarea scrisa in contractul de miscare („schimbare de luna sau
+// pagina: 240ms directional"), una din exceptiile lui numite, nu o treapta din
+// scara. A stat o vreme pe --dur-fast (120), cu argumentul ca raspunsul imediat
+// se simte mai „al tau" — dar contractul o cere literal, iar directia e cea
+// care poarta informatia, nu viteza.
+export function alunecare(node, { sens = 0, duration = 240 } = {}) {
   // Prima randare nu e o navigare: nu vii de nicaieri. Fara asta, distanta ar fi
   // 0 dar stingerea ar ramane — o a doua sosire peste `.cell-in` care ruleaza
   // deja pe celula de deasupra, adica exact suprapunerea pe care o evitam.

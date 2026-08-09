@@ -150,7 +150,9 @@
     { path: '/', label: 'Acasă', icon: 'home' },
     { path: '/projects', label: 'Proiecte', icon: 'projects' },
     { path: '/tasks', label: 'Taskuri', icon: 'tasks' },
-    { path: '/plan', label: 'Planificator', icon: 'plan' },
+    /* `scurt` e eticheta de sub iconita pe telefon (desen: „Plan") — numele
+       intreg ramane in aria-label si in title. */
+    { path: '/plan', label: 'Planificator', scurt: 'Plan', icon: 'plan' },
     { path: '/calendar', label: 'Calendar', icon: 'calendar' },
     // Langa Calendar, nu la coada: dupa „unde sunt eu" urmeaza imediat „cine e unde".
     { path: '/departament', label: 'Departament', icon: 'departament' },
@@ -258,6 +260,7 @@
       title={item.label}
     >
       <SolidIcon name={item.icon} size={marimeIcon} />
+      <span class="dock-et">{item.scurt || item.label}</span>
     </a>
   {/each}
   <span class="sep" aria-hidden="true"></span>
@@ -266,6 +269,7 @@
             onclick={() => (foaieDeschisa = !foaieDeschisa)}
             aria-label="Mai mult" aria-expanded={foaieDeschisa} title="Mai mult">
       <MoreHorizontal size={marimeIcon} />
+      <span class="dock-et">Mai mult</span>
     </button>
 
     {#if foaieDeschisa}
@@ -338,6 +342,9 @@
     box-shadow: var(--shadow-md);
   }
 
+  /* Eticheta exista doar pe telefon (blocul de 768) — pe desktop iconita ajunge,
+     dock-ul tine opt lucruri si are tooltip. */
+  .dock-et { display: none; }
   .dock-item {
     width: 50px;
     height: 50px;
@@ -503,10 +510,32 @@
       padding: 8px 6px;
       max-width: calc(100vw - 12px);
     }
+    /* ETICHETA SUB ICONITA (desenele mobile, toate cadrele): cinci cuvinte
+       pentru cinci drumuri — iconita singura cere sa fi invatat deja harta.
+       Doar pe telefon: pe desktop dock-ul tine opt lucruri si eticheta le-ar
+       dubla latimea. Tinta creste la 56×~58, tot peste prag. */
     .dock-item {
-      width: 56px;
-      height: 56px;
+      width: 60px;
+      height: auto;
+      min-height: 56px;
       border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 2px;
+    }
+    .dock-et {
+      display: block;
+      font-size: var(--font-label);
+      font-weight: var(--fw-medium);
+      line-height: 1;
+      letter-spacing: var(--tracking-normal);
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     /* Ascuns pe telefon inseamna ASCUNS: manerul e `display: none` aici, deci nu
        are ce ramane la vedere. `100% + 6px` (valoarea de pe desktop, calibrata ca

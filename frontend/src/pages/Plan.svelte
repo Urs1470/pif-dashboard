@@ -7,7 +7,7 @@
   } from '../stores/plan.svelte.js'
   import { loadSubtasks, updateSubtask } from '../stores/tasks.svelte.js'
   import { buildColumns, grupeazaColoane, numeLuna, ziLuna, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
-  import { formatDate, formatDateShort, dueRing } from '../lib/formatters.js'
+  import { formatDate, formatDateShort, dueRing, RING_NEUTRU } from '../lib/formatters.js'
   import { toast } from '../stores/ui.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
@@ -115,6 +115,47 @@
       : (l1 === l2 ? `${ziLuna(plan.start)}–${ziLuna(ultima)} ${l2}`
                    : `${ziLuna(plan.start)} ${l1} – ${ziLuna(ultima)} ${l2}`)
     return { catN, catRest: catRest.join(' '), interval }
+  })
+
+  /** Interval compact: aceeasi luna se scrie O data — „17–18 aug", nu
+   *  „17 aug. – 18 aug." (raportat de Ion, cu poza). O zi = o zi. */
+  function intervalScurt(a, b) {
+    if (!b || b === a) return formatDateShort(a)
+    const l1 = numeLuna(a)
+    const l2 = numeLuna(b)
+    return l1 === l2 ? `${ziLuna(a)}–${ziLuna(b)} ${l2}`
+      : `${formatDateShort(a)} – ${formatDateShort(b)}`
+  }
+
+  // Propozitia de context din capul pistei „Perioade" (desen 4c): cand doua sau
+  // mai multe perioade se suprapun in fereastra, spune CAND — „14–15 aug: două în
+  // paralel". E singurul lucru pe care pista nu-l poate arata singura: doua benzi
+  // pe randuri diferite se citesc ca doua fapte separate, nu ca o coliziune.
+  const mpContext = $derived.by(() => {
+    if (!plan.start) return ''
+    const n = plan.days
+    const cnt = new Array(n).fill(0)
+    for (const lane of views) {
+      for (const im of lane.impl) {
+        const i0 = Math.max(0, dayDiff(plan.start, im.a))
+        const i1 = Math.min(n - 1, dayDiff(plan.start, im.b))
+        for (let i = i0; i <= i1; i++) cnt[i]++
+      }
+    }
+    let i0 = -1
+    for (let i = 0; i < n; i++) if (cnt[i] >= 2) { i0 = i; break }
+    if (i0 < 0) return ''
+    let i1 = i0
+    let max = cnt[i0]
+    while (i1 + 1 < n && cnt[i1 + 1] >= 2) { i1++; max = Math.max(max, cnt[i1]) }
+    const z1 = addDays(plan.start, i0)
+    const z2 = addDays(plan.start, i1)
+    const cate = max === 2 ? 'două' : max === 3 ? 'trei' : String(max)
+    const l1 = numeLuna(z1)
+    const l2 = numeLuna(z2)
+    const cand = i0 === i1 ? `${ziLuna(z1)} ${l1}`
+      : (l1 === l2 ? `${ziLuna(z1)}–${ziLuna(z2)} ${l2}` : `${ziLuna(z1)} ${l1} – ${ziLuna(z2)} ${l2}`)
+    return `${cand}: ${cate} în paralel`
   })
 
   // CLIENTUL E SUFIXUL NUMELUI, SI E SINGURUL CARE SPUNE UNDE DUCE BANDA.
@@ -958,7 +999,7 @@
           <div class="pan-fapte">
             <div class="fapt">
               <span class="fapt-et">Termen</span>
-              <span class="fapt-val" class:sev={dueRing(sel.data_scadenta) !== 'var(--border)'}
+              <span class="fapt-val" class:sev={dueRing(sel.data_scadenta) !== RING_NEUTRU}
                     style="--ring: {dueRing(sel.data_scadenta)}">
                 {sel.data_scadenta ? formatDate(sel.data_scadenta) : 'fără termen'}
               </span>
@@ -1042,7 +1083,7 @@
                      n-are alt canal aici: primeste punctul, ca in selectorul de
                      taskuri. Se randeaza DOAR cand spune ceva — pe neutru ar fi
                      un punct de culoarea bordurii, pe fiecare chip din sertar. -->
-                {#if dueRing(t.data_scadenta) !== 'var(--border)'}
+                {#if dueRing(t.data_scadenta) !== RING_NEUTRU}
                   <span class="bl-sev" style="background: {dueRing(t.data_scadenta)}"></span>
                 {/if}
                 <span class="bl-txt">{t.titlu}</span>
@@ -1070,7 +1111,7 @@
            Geometria vine din aceleasi `columns` / `antet` ca pe desktop, deci nu e
            o a doua socoteala care sa se poata contrazice cu prima. -->
       <section class="mpiste">
-        <div class="mp-cap"><span>Perioade</span></div>
+        <div class="mp-cap"><span>Perioade</span>{#if mpContext}<span class="mp-ctx">{mpContext}</span>{/if}</div>
         <div class="mp-grid">
           <span class="mp-gol" aria-hidden="true"></span>
           <div class="mp-antet">
@@ -1165,8 +1206,10 @@
             <span class="lane-dot"></span>
             <h2>{lane.nume}</h2>
             {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
-            <!-- Doua pastile, nu un sir „5 · 2": tonul spune care e care, ca peste tot. -->
-            <span class="count" title="{lane.tasks.length} taskuri">{lane.tasks.length}</span>
+            <!-- Doua pastile, nu un sir „5 · 2": tonul spune care e care, ca peste tot.
+                 Zero nu se scrie (raportat de Ion): un „0" langa nume nu decide nimic,
+                 iar langa pastila rosie de restante chiar deruteaza. -->
+            {#if lane.tasks.length}<span class="count" title="{lane.tasks.length} taskuri">{lane.tasks.length}</span>{/if}
             {#if lane.restante.length}<span class="count danger" title="{lane.restante.length} restante">{lane.restante.length}</span>{/if}
           </header>
 
@@ -1183,8 +1226,10 @@
                     title="{lane.impl.length > 1 ? `${lane.impl.length} perioade în fereastră — ` : ''}vezi în Calendar">
               {#if per.im.locatie === 'sediu'}<Building2 size={15} class="mimpl-ico" />{:else}<MapPin size={15} class="mimpl-ico" />{/if}
               <span class="mimpl-loc">{locLabel(per.im.locatie)}{per.im.eticheta ? ' · ' + per.im.eticheta : ''}</span>
+              <!-- Interval compact, ca in desen: „17–18 aug", nu luna scrisa de
+                   doua ori. O zi singura ramane o zi. -->
               <span class="mimpl-range">
-                {formatDateShort(per.im.a)} – {formatDateShort(per.im.b)}
+                {intervalScurt(per.im.a, per.im.b)}
                 {#if per.rest > 0}<span class="mimpl-plus">+{per.rest}</span>{/if}
               </span>
               <ChevronRight size={15} class="mimpl-chev" />
@@ -1230,7 +1275,7 @@
                            colora cand inelul nu era colorat, si invers. -->
                       <!-- Pe „azi" chipul scrie CUVANTUL, nu data (desen 4c): data
                            de azi o stii; ce vrei sa vezi e ca a ajuns scadenta. -->
-                      <span class="chip due" class:sev={dueRing(t.data_scadenta) !== 'var(--border)'}>
+                      <span class="chip due" class:sev={dueRing(t.data_scadenta) !== RING_NEUTRU}>
                         <CalendarDays size={11} />{esteAzi(t.data_scadenta) ? 'azi' : formatDateShort(t.data_scadenta)}
                       </span>
                     {/if}
@@ -1553,7 +1598,7 @@
     background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 9%, transparent) 45%);
     border: none; z-index: 0;
     animation: pregatireIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
+    animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
   .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; }
   .band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
   /* CAPATUL NESIGUR SE STINGE, CEL SIGUR RAMANE NET.
@@ -1614,7 +1659,7 @@
        de latime pe la mijlocul miscarii, iar o eticheta care se lateste inapoi la
        normal se citeste ca elastic, nu ca o perioada care incepe. */
     animation: benziIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
+    animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
   /* FORMA spune faza, o singura axa de culoare: implementarea e tenta plina de
      mai sus, pregatirea e mai palida, cu inelul ei. Amandoua pe accent. */
   .impl-band.pregatire { background: color-mix(in srgb, var(--accent) 5%, transparent);
@@ -1712,18 +1757,15 @@
     padding: 10px 4px 5px; font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
     letter-spacing: var(--tracking-label); color: var(--text-faint); }
-  .grup-n { display: inline-flex; align-items: center; justify-content: center;
-    min-width: 19px; height: 19px; padding: 0 5px; border-radius: var(--radius-full);
-    background: var(--bg-elevated); color: var(--text-dim);
+  /* Cifra e TEXT mono, nu pastila (desen 4c): pastila cu inel e a capului de
+     card (`.count.danger`), unde cifra cere actiune; aici doar numara. */
+  .grup-n { color: var(--text-dim);
     font-family: var(--font-mono); font-size: var(--font-label); line-height: 1;
     font-variant-numeric: tabular-nums; letter-spacing: var(--tracking-normal); }
   .mgrup-cap.ton-danger { color: var(--danger-deep); }
-  /* Inelul de 34% din desen: pastila de restante e singura cu ton, deci singura
-     cu muchie — o cifra care cere actiune, nu doar o numaratoare. */
-  .mgrup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger-deep);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 34%, transparent); }
+  .mgrup-cap.ton-danger .grup-n { color: var(--danger-deep); }
   .mgrup-cap.ton-accent { color: var(--accent-deep); }
-  .mgrup-cap.ton-accent .grup-n { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+  .mgrup-cap.ton-accent .grup-n { color: var(--accent-deep); }
   /* UN TASK E UN REPER, NU O CUTIE.
      Din v33 `rect.single` e mereu adevarat, deci regulile de cutie (`.bar.todo`,
      `.bar.active` cu fundal si rama, animatia `barIn` care scala o latime) erau
@@ -1744,7 +1786,7 @@
     white-space: nowrap; cursor: pointer; text-align: left; touch-action: none;
     pointer-events: auto; transform-origin: left center;
     animation: reperIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
+    animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
   /* Reperul din ultima treime isi scrie titlul spre STANGA, deci si desfacerea
      merge intr-acolo — altfel jumatate din randuri cresc dinspre ziua lor, iar
      cealalta jumatate spre ea. */
@@ -1802,7 +1844,7 @@
   .wk { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center;
     pointer-events: auto;
     animation: reperIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 280ms); }
+    animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
 
   /* dim, nu faint: indicatiile de gest sunt text de citit (masurat 3.18:1 la
      10.4px, sub AA) — faint e doar pentru etichete/large. */
@@ -1828,8 +1870,12 @@
   .mpiste { background: var(--bg-surface); border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm); padding: var(--space-12); display: flex;
     flex-direction: column; gap: 8px; }
-  .mp-cap { font-size: var(--font-label); font-weight: var(--fw-semibold);
+  .mp-cap { display: flex; align-items: baseline; gap: 8px;
+    font-size: var(--font-label); font-weight: var(--fw-semibold);
     letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-secondary); }
+  /* Propozitia de context: text obisnuit la 13, nu eticheta — spune un fapt. */
+  .mp-ctx { font-size: var(--font-small); font-weight: var(--fw-normal);
+    letter-spacing: var(--tracking-normal); text-transform: none; color: var(--text-secondary); }
   .mp-grid { display: grid; grid-template-columns: 96px minmax(0, 1fr);
     column-gap: 8px; row-gap: 6px; align-items: center; }
   /* Antetul ramane lipit sub bara aplicatiei cat derulezi lista de grupuri:
@@ -2129,6 +2175,14 @@
        micsorezi fereastra cu panoul deschis, el nu ramane atarnat singur. */
     .panou { display: none; }
     .lucru, .lucru.cu-panou { display: block; }
+    /* SERTARUL STA SUB AGENDA, NU DEASUPRA EI (raportat de Ion, cu poza).
+       In DOM sertarul vine inaintea listei mobile fiindca pe desktop locul lui e
+       sub grafic — dar pe telefon graficul dispare si sertarul urca primul lucru
+       pe ecran, inaintea pistei „Perioade". „Fara termen" e sertarul, nu agenda
+       (aceeasi regula ca in /tasks: ultima grupa) — deci coboara la coada. */
+    .page { display: flex; flex-direction: column; }
+    .mlist { order: 1; }
+    .backlog { order: 2; }
   }
 
   @media (max-width: 768px) {

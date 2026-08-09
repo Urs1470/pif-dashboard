@@ -548,7 +548,7 @@
   .arow { position: relative; display: flex; align-items: center; gap: var(--space-12);
     min-height: 46px; padding: 0 var(--space-12); background: none; border: 0;
     border-radius: var(--radius-sm);
-    transition: background-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+    transition: background-color var(--dur-base) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   /* SEPARATORUL ARE MARJA LATERALA, iar randul in repaus n-are colturi.
      Era `border-top` pe tot randul — linie dreapta de la un capat la altul —
      peste un rand care purta raza de control (10) si cand statea pe loc. Cele
@@ -648,7 +648,10 @@
     color: var(--text-dim); font-variant-numeric: tabular-nums;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .atermen.sev { color: var(--danger); font-weight: var(--fw-medium); }
-  .atermen.acum { color: var(--accent-deep); font-weight: var(--fw-medium); }
+  /* „azi" ramane GRI (desen 3a): severitatea de „azi" o spune inelul bifei, in
+     accent; textul se coloreaza doar cand e depasit. Doua canale colorate pentru
+     aceeasi treapta ar face boardul — unde totul e azi sau restant — sa strige. */
+  .atermen.acum { font-weight: var(--fw-medium); }
 
   /* Invelisul nu are geometrie proprie pe desktop: e doar ce cade pe linia a
      doua PE TELEFON, intreg. Fara `display: contents` aici, cele doua lucruri
@@ -670,11 +673,12 @@
      `focus-within` pe ACTIUNI, nu pe rand: la tastatura conteaza sa se vada ce
      ai focalizat, nu sa se aprinda randul cand ajungi pe titlu. */
   .arow-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  /* Intra 8px spre interior, pe 220 (contract miscare) — ca in /tasks. */
   @media (hover: hover) {
-    .arow-actions { opacity: 0; pointer-events: none;
-      transition: opacity var(--dur-fast) var(--ease); }
+    .arow-actions { opacity: 0; pointer-events: none; transform: translateX(8px);
+      transition: opacity var(--dur-base) var(--ease), transform var(--dur-base) var(--ease); }
     .arow:hover .arow-actions,
-    .arow-actions:focus-within { opacity: 1; pointer-events: auto; }
+    .arow-actions:focus-within { opacity: 1; pointer-events: auto; transform: none; }
   }
   .abtn, .row-date :global(.dp-trigger) {
     display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px;
