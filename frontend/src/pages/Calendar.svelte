@@ -20,7 +20,9 @@
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { ui } from '../stores/ui.svelte.js'
   import { motion, motionDuration, alunecare, sosire, DUR_BASE, EASE } from '../lib/motion.svelte.js'
-  import { PROJECT_STATUS_LABELS } from '../lib/formatters.js'
+  // `PROJECT_STATUS_LABELS` a plecat cu C14: sertarul „fara perioada" contine prin
+  // definitie doar proiecte active, iar de la v31 activ inseamna un singur status
+  // — deci eticheta scria acelasi cuvant pe fiecare rand. Acolo scrie clientul.
   import { incepeTragere } from '../lib/tragere.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { cheieDeplasare, grupeazaDeplasari, seAting, rezolvaCiocniri } from '../lib/deplasari.js'
@@ -1381,7 +1383,7 @@
                    Doua sosiri peste aceiasi pixeli nu se aduna, se incurca. -->
               <div class="it" style="--c: {culoareLucrare(p)}">
                 <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
-                  <span class="it-punct" aria-hidden="true"></span>{p.nume}<ExternalLink size={12} />
+                  {p.nume}<ExternalLink size={12} />
                 </button>
                 <div class="it-m">
                   {#if p.eticheta}<span>{p.eticheta}</span>{/if}
@@ -1399,6 +1401,7 @@
                     <span class="loc fac" title="Perioada s-a făcut. Statusul proiectului nu s-a schimbat."><Check size={11} /> Făcut</span>
                   {/if}
                   <span class="tk" class:warn={!p.taskuri_deschise}>{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}</span>
+                  <span class="it-data">{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ` – ${shortDate(p.data_sfarsit)}` : ''}</span>
                 </div>
                 {#if p.necesita_decizie}
                   <div class="dec">
@@ -1480,10 +1483,22 @@
                      onclick={() => { if (!tocmaiTras) comutaAsezare(pr) }}
                      aria-pressed={asezare?.proiect_id === pr.proiect_id}
                      title={asezare?.proiect_id === pr.proiect_id ? 'Atinge o zi din calendar — sau atinge din nou ca să renunți' : 'Alege-l, apoi atinge ziua de început (sau trage-l direct pe o zi)'}>
-                  <GripVertical size={12} />
-                  <span class="np-punct" aria-hidden="true"></span>
-                  <span class="np-t">{pr.nume}</span>
-                  <span class="np-s" class:lucru={pr.status === 'pregatire'}>{PROJECT_STATUS_LABELS[pr.status] || pr.status}</span>
+                  <GripVertical size={14} />
+                  <!-- CLIENTUL, NU STATUSUL (C14). Lista asta contine, prin
+                       definitie, doar proiecte ACTIVE (`status NOT IN
+                       ('finalizat','anulat')`) — iar de la v31 activ inseamna un
+                       singur status. Deci eticheta scria „În pregătire" pe fiecare
+                       rand: o coloana intreaga cu aceeasi valoare. Clientul spune
+                       de fapt care proiect e care.
+                       Punctul de identitate a plecat din acelasi motiv ca in lista
+                       zilei: `--c` e accentul pe toate randurile. -->
+                  <span class="np-c">
+                    <span class="np-t">{pr.nume}</span>
+                    {#if pr.client}<span class="np-s">{pr.client}</span>{/if}
+                  </span>
+                  {#if asezare?.proiect_id === pr.proiect_id}
+                    <span class="np-hint">Atinge ziua</span>
+                  {/if}
                 </button>
               {/each}
             </div>
@@ -1557,7 +1572,9 @@
 
   /* PANOUL FACE LOC, NU ACOPERA: coloana lui apare ODATA CU EL. */
   .wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-md); align-items: start; }
-  .wrap.cu-panou { grid-template-columns: minmax(0, 1fr) 300px; }
+  /* 330px, nu 300: la 300 randul „Continental — Retrofit FML3" se rupea in doua
+     sub titlul de 21px, iar chipurile de loc si faza treceau pe al treilea rand. */
+  .wrap.cu-panou { grid-template-columns: minmax(0, 1fr) 330px; }
 
   /* Cardul nu mai are padding (C7): grila ATINGE marginile lui, deci linia de sub
      antetul zilelor si separatoarele dintre coloane merg dintr-o muchie in alta.
@@ -1883,7 +1900,12 @@
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
   .pan { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-md); }
-  .pan-zi { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
+  /* Titlul zilei e treapta de PANOU (21/600), nu 13 ca metadatele de sub el (C12).
+     La `--font-small` statea pe acelasi nivel cu „3 lucrări · Site" de dedesubt,
+     deci panoul se deschidea fara sa spuna, dintr-o privire, CE zi ai deschis —
+     tocmai lucrul pe care l-ai schimbat cu clicul. */
+  .pan-zi { font-size: var(--font-h2); font-weight: var(--fw-semibold); color: var(--text);
+            letter-spacing: var(--tracking-tight); line-height: var(--lh-tight); }
   .pan-sub { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-dim); margin: 3px 0 10px; }
   .pan-h { display: flex; align-items: center; gap: 8px; font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
   .cnt { padding: 0 7px; border-radius: var(--radius-full); background: var(--bg-hover); color: var(--text-secondary); letter-spacing: 0; }
@@ -1898,18 +1920,31 @@
   .urm-d { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); }
   .urm-l { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); }
 
-  /* Lista zilei e MIXTA (mai multe lucrari, culori diferite) si randul n-are nici
-     fill, nici iconita colorata — deci identitatea primeste un punct inaintea
-     numelui, nu o dunga pe muchie. */
-  .it { padding: 2px 0; margin-bottom: 12px; }
-  .it-punct { width: 6px; height: 6px; border-radius: 50%; background: var(--c); flex: none; }
-  .it-t { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); text-align: left; cursor: pointer; }
+  /* PUNCTUL DE IDENTITATE A PLECAT (C13). Avea rost cat timp lista era „mixta, cu
+     culori diferite" — dar `culoareLucrare` intoarce accentul pentru ORICE
+     lucrare de cand identitatea nu se mai codeaza cromatic in Calendar, deci
+     punctul era acelasi pe toate randurile: un semn care nu deosebea nimic.
+     Numele urca la 15/500: e obiectul randului, nu o metadata. */
+  .it { padding: 2px 0; margin-bottom: 12px; border-radius: var(--radius-sm); }
+  .it-t { display: flex; align-items: center; gap: 5px; font-size: var(--font-body);
+          font-weight: var(--fw-medium); color: var(--text); text-align: left; cursor: pointer; }
   .it-t:hover { color: var(--accent); }
-  .it-m { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; font-size: var(--font-small); color: var(--text-dim); }
-  .it-m .loc { padding: 0 6px; border-radius: var(--radius-full); background: var(--bg-hover); }
+  .it-m { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 3px;
+          font-size: var(--font-small); color: var(--text-dim); }
+  /* Chipurile sunt suprafata a doua cu inel, nu pastile pe `--bg-hover`: la 20px
+     si cu raza `--radius-xs` se citesc ca etichete, iar `--radius-full` le facea
+     sa semene cu numaratorile de peste tot. */
+  .it-m .loc { display: inline-flex; align-items: center; height: 20px; padding: 0 7px;
+               border-radius: var(--radius-xs); background: var(--bg-elevated);
+               box-shadow: inset 0 0 0 1px var(--border);
+               font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-secondary); }
   /* Faza preia limbajul barelor: palid = pregatire, plin = implementare. */
-  .it-m .faza { background: color-mix(in srgb, var(--c) 26%, transparent); color: var(--text); }
-  .it-m .faza.pal { background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent); color: var(--text-secondary); }
+  .it-m .faza { background: var(--accent-subtle); box-shadow: none; color: var(--accent-deep); }
+  .it-m .faza.pal { background: var(--bg-elevated); box-shadow: inset 0 0 0 1px var(--border); color: var(--text-secondary); }
+  /* Data ieșirii, pironita la dreapta: pe un panou deschis pe o zi anume, ea spune
+     cat tine lucrarea din care ziua face parte. Mono, ca orice cifra comparabila. */
+  .it-data { margin-left: auto; font-family: var(--font-mono); font-size: var(--font-small);
+             color: var(--text-dim); white-space: nowrap; flex: none; }
   /* Verdele spune „s-a facut", nu „urgent" — e singurul loc din rand unde
      culoarea nu tine de identitatea proiectului, si de aia e conturat, nu plin. */
   .it-m .fac { display: inline-flex; align-items: center; gap: 3px; background: none;
@@ -1927,23 +1962,31 @@
   .b.del:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
 
   .rail { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
-  /* Sertarul e o lista MIXTA de proiecte, iar chipul n-are fill si n-are iconita
-     colorata (grip-ul e gri) — deci identitatea primeste un punct, ca in lista
-     zilei de deasupra. */
-  .np { display: flex; align-items: center; gap: 5px; padding: 5px 7px; border-radius: var(--radius-sm);
+  /* Randul are 44px si doua linii (C14): numele si, sub el, clientul. La ~28px si
+     o linie, sertarul arata ca o lista de etichete, desi fiecare rand e un obiect
+     pe care il RIDICI si il pui pe o zi — adica exact tinta pe care trebuie s-o
+     nimeresti cu degetul sau cu cursorul.
+     Punctul de identitate a plecat: `--c` e accentul pe toate randurile. */
+  .np { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 8px;
+        border-radius: var(--radius-sm);
         width: 100%; text-align: left; border: none;
         background: var(--bg-elevated); cursor: grab; }
-  .np-punct { width: 6px; height: 6px; border-radius: 50%; background: var(--c); flex: none; }
+  .np-c { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
   .np:active { cursor: grabbing; }
   /* Ales, in asteptarea unei zile. Nu e „selectat" in sensul unei liste — e un
      obiect ridicat, care asteapta sa fie pus jos. De aceea si calendarul se
      schimba in acelasi timp (vezi `.zi.tinta`): daca doar chipul s-ar aprinde,
      n-ai sti ca urmatoarea atingere pe o zi INSEAMNA ceva. */
   .np.ales { background: var(--accent-subtle); box-shadow: inset 0 0 0 1px var(--accent); }
-  .np.ales .np-t { color: var(--text); font-weight: var(--fw-semibold); }
-  .np-t { flex: 1; font-size: var(--font-small); color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .np-s { font-size: var(--font-small); color: var(--text-faint); }
-  .np-s.lucru { color: var(--accent); }
+  .np.ales .np-t, .np.ales .np-s { color: var(--accent-deep); }
+  .np-t { font-size: var(--font-body); font-weight: var(--fw-medium); color: var(--text);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .np-s { font-size: var(--font-small); color: var(--text-dim);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* „Atinge ziua" apare DOAR pe randul ales: e instructiunea pentru pasul
+     urmator, iar pe celelalte randuri ar fi un indemn care nu se aplica. */
+  .np-hint { flex: none; font-size: var(--font-label); font-weight: var(--fw-semibold);
+             letter-spacing: var(--tracking-label); color: var(--accent-deep); white-space: nowrap; }
 
   /* ===== O SINGURA COLOANA: ORDINEA SE SCHIMBA =====
      Pe desktop grila si panoul stau unul langa altul, deci ordinea nu conteaza:
