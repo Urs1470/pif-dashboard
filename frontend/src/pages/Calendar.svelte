@@ -485,32 +485,28 @@
      lucrarile, si el se poate citi. Nicio textura: ar fi a treia axa. */
   function culoareLucrare(_p) { return 'var(--accent)' }
 
-  /** Clientul obisnuit al ferestrei. Din 12 perioade ale anului, 11 sunt la
-   *  Continental — deci numele lui nu selecteaza nimic. */
-  const clientObisnuit = $derived.by(() => {
-    const n = new Map()
-    for (const p of (data?.perioade || [])) {
-      const c = (p.client || '').trim()
-      if (c) n.set(c, (n.get(c) || 0) + 1)
-    }
-    let best = '', bn = 0
-    for (const [c, k] of n) if (k > bn) { best = c; bn = k }
-    return best
-  })
-
-  /** CAPTURA SCRIE CE VARIAZA.
-   *  Comentariul de la benzi spune limpede ca nu codam prin culoare si grupare
-   *  dimensiunea care NU variaza — dar captura ramasese pe `scurt(client)`, deci
-   *  scria „Continental" pe patru din sapte iesiri ale lunii. Si `scurt()` ia
-   *  primul cuvant, deci doi clienti cu acelasi prim cuvant ajungeau aceeasi
-   *  eticheta. Acum scrie DURATA ieșirii — ce te intereseaza dupa ce ai planificat
-   *  — iar clientul apare doar cand nu e cel obisnuit al ferestrei. Numele complet
-   *  ramane in tooltip si in panoul zilei. */
+  /** ETICHETA SCRIE INTOTDEAUNA LOCUL (C11) — si asta RASTOARNA regula de dinainte.
+   *
+   *  Varianta veche arunca clientul „cand e cel obisnuit al ferestrei": din 12
+   *  perioade ale anului 11 sunt la Continental, deci numele lui nu selecta nimic
+   *  si captura scria doar durata. Rationamentul era bun cat timp eticheta era un
+   *  chip mic lipit de cifra zilei, intr-o grila unde culoarea inca purta
+   *  identitatea proiectului.
+   *
+   *  Doua lucruri s-au schimbat de atunci si il anuleaza. Culoarea nu mai codeaza
+   *  identitatea nicaieri in Calendar (`culoareLucrare` intoarce accentul pentru
+   *  orice lucrare), iar eticheta a intrat INAUNTRUL cutiei ieșirii, pe primul ei
+   *  rand — deci e singurul loc care mai poate spune UNDE te duci. Fara client,
+   *  cutia scria „3 zile" si atat: o iesire fara destinatie.
+   *
+   *  Ce ramane adevarat din vechea observatie: `scurt()` ia primul cuvant, deci doi
+   *  clienti cu acelasi prim cuvant se scriu la fel. Numele complet e in `title` si
+   *  in panoul zilei. */
   function textCaptura(d) {
     const z = Math.max(0, diffDays(d.start, d.end)) + 1
     const durata = `${z} ${z === 1 ? 'zi' : 'zile'}`
     const c = (d.client || '').trim()
-    return c && c !== clientObisnuit ? `${scurt(c)} · ${durata}` : durata
+    return `${c ? scurt(c) : 'Sediu'} · ${durata}`
   }
 
   // Ce urmeaza, cand ziua selectata e goala: pagina trebuie sa raspunda la
@@ -1137,7 +1133,6 @@
              in:alunecare={{ sens: sensLuna }}>
           {#each grila as g, i (g.iso)}
             {@const items = aleZilei(g.iso)}
-            {@const decizie = items.some(p => p.necesita_decizie)}
             <!-- Celulele se asaza EXPLICIT in grila. Fara asta, benzile (care au
                  poziție explicită) ar impinge celulele auto-plasate din loc.
                  `div role="gridcell"`, nu `<button>`: captura din antet e ea insasi
@@ -1156,7 +1151,6 @@
               class:azi={g.iso === azi}
               class:sel={g.iso === selectata}
               class:drop={dropZi === g.iso}
-              class:decizie
               class:tinta={!!asezare}
               onclick={() => atingeZi(g.iso)}
               onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); atingeZi(g.iso) } }}
@@ -1187,7 +1181,12 @@
                      pe baza reala, maximul e 3 lucrari suprapuse intr-o zi si ZERO
                      zile peste plafon, deci ramura aia nu s-a randat niciodata. -->
               </div>
-              {#if decizie}<span class="flag" title="Perioadă trecută, proiect nemutat"><TriangleAlert size={11} /></span>{/if}
+              <!-- TRIUNGHIUL DIN COLT A PLECAT (C10). „De clarificat" e o stare a
+                   IESIRII, nu a zilei: un semn de 11px in coltul celulei o punea
+                   pe zi, desi ce trebuie clarificat e deplasarea intreaga. Acum o
+                   poarta cutia ei — tenta si inelul in restant, triunghiul in
+                   eticheta, barele pline `--danger` — deci se vede pe toate zilele
+                   ei deodata si nu mai concureaza cu cifra zilei pentru acelasi colt. -->
 
               <!-- Barele NU mai stau in celula: o lucrare de mai multe zile e un
                    singur element, desenat peste coloane mai jos. Celula pastreaza
@@ -1202,10 +1201,12 @@
                peretele dintre ele se stinge si colturile se indreapta, fiindca
                raza sta doar pe capetele adevarate ale iesirii. -->
           {#each chenare as c (c.cheie)}
+            {@const cDecizie = [...c.d.items.values()].some(p => p.necesita_decizie)}
             <div class="chenar"
                  class:inceput={c.inceput}
                  class:sfarsit={c.sfarsit}
                  class:sediu={c.d.sediu}
+                 class:decizie={cDecizie}
                  style="grid-row: {c.rand}; grid-column: {c.col} / span {c.span}; --i: {c.banda}; --n: {c.inalt}">
               <!-- ETICHETA STA IN CHENARUL EI, pe primul lui rand. Era un chip
                    lipit de cifra zilei, in antet — deci numele iesirii statea in
@@ -1215,13 +1216,13 @@
                    taie, iar a doua bucata nu incepe nimic — ar scrie a doua oara
                    durata intregii iesiri, ca si cum ar reincepe. -->
               {#if c.inceput && c.areEticheta}
-                <button class="chenar-et" class:sediu={c.d.sediu}
+                <button class="chenar-et" class:sediu={c.d.sediu} class:decizie={cDecizie}
                         class:se-trage={trag?.tip === 'deplasare' && trag.cheie === c.d.cheie}
                         onpointerdown={(e) => apucaDeplasare(e, c.d)}
                         onclick={(e) => e.stopPropagation()}
                         title={etichetaDeplasare(c.d)}
                         aria-label="Deplasare {c.d.client || 'la sediu'} — {textCaptura(c.d)}. Trage ca să muți toată ieșirea.">
-                  {#if c.d.sediu}<Building2 size={12} />{:else}<MapPin size={12} />{/if}{textCaptura(c.d)}
+                  {#if cDecizie}<TriangleAlert size={12} />{:else if c.d.sediu}<Building2 size={12} />{:else}<MapPin size={12} />{/if}{textCaptura(c.d)}
                 </button>
               {/if}
             </div>
@@ -1240,6 +1241,8 @@
               class:lat={b.span > 1}
               class:sediu={b.p.locatie === 'sediu'}
               class:pregatire={b.p.faza === 'pregatire'}
+              class:facuta={!!b.p.confirmata}
+              class:decizie={!!b.p.necesita_decizie}
               class:se-trage={trag?.id === b.p.id}
               class:tastata={perioadaSel === b.p.id}
               style="grid-row: {b.rand}; grid-column: {b.col} / span {b.span}; --c: {culoareLucrare(b.p)}; --i: {b.banda}"
@@ -1266,6 +1269,9 @@
                    `etichetaBara` il taia doar pentru ca inainte fiecare bara avea
                    latimea unei singure celule. Acum se taie doar cand chiar nu
                    incape. -->
+              <!-- Bifa sta INAINTEA numelui, ca pe randul de task: „s-a facut" e o
+                   stare a lucrarii, deci se citeste odata cu ea, nu dupa. -->
+              {#if b.p.confirmata}<Check size={12} class="banda-bifa" />{/if}
               <span class="banda-t">{b.inceput ? '' : '… '}{b.span > 1 ? etichetaLucrare(b.p) : etichetaBara(b.p)}</span>
               {#if b.sfarsit}
                 <button class="maner dr" onpointerdown={(e) => apucaCapat(e, b, 'sfarsit')}
@@ -1566,7 +1572,7 @@
      e 100px si randul CRESTE doar daca benzile chiar cer mai mult — `max()`, nu
      invers. Cu MAX_BENZI = 5 plafonul urca la 132px; augustul real, cu 3 benzi pe
      randul cel mai plin, sta la 124. */
-  .zi { position: relative; min-height: max(100px, calc(32px + var(--benzi, 1) * 20px)); padding: 5px 8px 0;
+  .zi { position: relative; min-height: max(100px, calc(32px + var(--benzi, 1) * 27px)); padding: 5px 8px 0;
         border: 0; background: none; text-align: left; cursor: pointer;
         box-shadow: inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border-strong);
         display: flex; flex-direction: column; gap: 3px; overflow: hidden;
@@ -1637,7 +1643,8 @@
   .zi.azi .zi-h { align-items: baseline; }
   .azi-et { font-family: var(--font-mono); font-size: var(--font-label); font-weight: var(--fw-semibold);
             color: var(--accent-deep); letter-spacing: var(--tracking-label); }
-  .flag { position: absolute; top: 4px; right: 4px; color: var(--danger); display: inline-flex; }
+  /* `.flag` a plecat cu C10 — „de clarificat" e acum starea cutiei ieșirii, nu un
+     colt al zilei. Motivul e scris in markup, langa cifra. */
 
   /* O LUCRARE = O BANDA, oricat de multe zile ar tine. Se intinde peste coloane,
      acopera si spatiile dintre ele, deci numele se scrie o data si are toata
@@ -1645,10 +1652,11 @@
      `--i` e banda (randul) lucrarii. Decalajul de sus trebuie sa fie EXACT cel al
      zonei de bare din celula, altfel benzile plutesc pe langa celule:
        padding 5 + antet 15 + gap 3 = 23px
-     iar pasul unei benzi = inaltimea barei 17 + gap 3 = 20px. Cele doua numere
+     iar pasul unei benzi = inaltimea barei 24 + gap 3 = 27px. Cele doua numere
      sunt aceleasi cu cele din `min-height` al celulei — se schimba impreuna.
-     Erau 24 cat timp celula avea bordura de 1px; R1 a scos-o, deci si pixelul ei. */
-  .grid { --h-antet: 23px; --h-banda: 20px; }
+     Erau 24 cat timp celula avea bordura de 1px; R1 a scos-o, deci si pixelul ei.
+     Pasul a fost 20 cat timp bara avea 17px; C8 a dus-o la 24. */
+  .grid { --h-antet: 23px; --h-banda: 27px; }
 
   /* CHENARUL IESIRII. Sta SUB benzi (`z-index: 0`) si nu primeste evenimente:
      lucrarile raman obiectele pe care le apuci, el doar spune ca fac parte din
@@ -1658,25 +1666,45 @@
      mijloc dispar de la sine — asta E „peretele se stinge". Tranzitia de 280ms e
      cea de SUPRAFATA (`--dur-slow`): chenarul e o suprafata care se lungeste, nu
      un element care se muta. */
+  /* CUTIA CARE LE CONTINE, nu un strat lipit sub ele (C10).
+     Se subtiase pana ajunsese o umbra in spatele barelor: incepea la −3px si se
+     termina la +3, adica exact pe muchia lor. Ultima bara atingea marginea de jos
+     — problema semnalata de Ion — si cutia nu se mai citea ca un obiect, ci ca un
+     contur desenat gresit. Acum are 5px de aer sus si jos (`−5px` la pornire,
+     `+7px` la inaltime: ultima bara se termina la `(n−1)×27 + 24`, deci fundul
+     cutiei cade fix la 5px sub ea) si o tenta mai apasata, cu inel de 1px. */
   .chenar { position: relative; z-index: 0; align-self: start; pointer-events: none;
-            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) - 3px);
-            height: calc(var(--n) * var(--h-banda) + 3px);
-            border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) - 5px);
+            height: calc(var(--n) * var(--h-banda) + 7px);
+            border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
             border-left: none; border-right: none;
-            background: color-mix(in srgb, var(--accent) 5%, transparent);
+            background: color-mix(in srgb, var(--accent) 10%, transparent);
             transition: height var(--dur-slow) var(--ease), margin-top var(--dur-slow) var(--ease); }
-  .chenar.inceput { margin-left: 3px; border-left: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  .chenar.inceput { margin-left: 3px; border-left: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
                     border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
-  .chenar.sfarsit { margin-right: 3px; border-right: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  .chenar.sfarsit { margin-right: 3px; border-right: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
                     border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
   /* Sediul nu e deplasare: chenarul lui e doar o linie punctata, ca sa nu para ca
      ai plecat undeva. Locul RAMANE SCRIS (captura din antet) — asta e doar forma. */
   .chenar.sediu { border-style: dashed; background: none; }
+  /* Cutia intreaga trece in restant cand ceva din ea asteapta un raspuns (C10). */
+  .chenar.decizie { background: var(--danger-subtle);
+                    border-color: color-mix(in srgb, var(--danger) 30%, transparent); }
+  .chenar.decizie.inceput { border-left-color: color-mix(in srgb, var(--danger) 30%, transparent); }
+  .chenar.decizie.sfarsit { border-right-color: color-mix(in srgb, var(--danger) 30%, transparent); }
 
+  /* BARA E OBIECTUL CEL MAI CITIBIL DIN CELULA, NU UN FUNDAL (C8).
+     Era o spalatura `color-mix(--c 26%)` de 17px cu text `--text` la 13: la
+     latimea unei zile se citea ca o umbra sub cifra, iar numele lucrarii — singurul
+     lucru care spune CE faci acolo — statea pe o tenta care il inghitea. Acum e
+     plina cu accentul, la 24px, cu cerneala de pe fill (`--accent-text`) la 12/600.
+     Raza `--radius-xs`, nu `--radius-sm`: bara e un chip, iar la 24px inaltime raza
+     de 10 ar rotunji-o pana la pastila. */
   .banda { position: relative; z-index: 1; align-self: start;
            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda));
-           min-height: 17px; padding: 1px 6px; border: none; text-align: left;
-           cursor: grab; background: color-mix(in srgb, var(--c) 26%, transparent); }
+           min-height: 24px; display: flex; align-items: center;
+           padding: 0 6px; border: none; text-align: left; border-radius: var(--radius-xs);
+           cursor: grab; background: var(--c); }
   .banda:active { cursor: grabbing; }
   /* Capetele rotunjite spun unde INCEPE si unde se TERMINA lucrarea. La granita de
      saptamana capatul rămâne drept si iese peste marginea celulei: asa se citeste
@@ -1685,10 +1713,12 @@
      `var(--c)`, deci dunga era aceeasi culoare peste ea insasi, doar mai tare.
      Raza de pe colturile din stanga spune acelasi lucru si nu adauga un al doilea
      cod de culoare. Cei 3px se intorc in padding. */
+  /* Raza capetelor e `--radius-xs`, ca a barei: la 24px inaltime `--radius-sm` (10)
+     o rotunjea pana aproape de pastila, iar bara e un chip, nu o pilula. */
   .banda.inceput { margin-left: 6px; padding-left: 8px;
-                   border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
+                   border-top-left-radius: var(--radius-xs); border-bottom-left-radius: var(--radius-xs); }
   .banda.sfarsit { margin-right: 6px;
-                   border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
+                   border-top-right-radius: var(--radius-xs); border-bottom-right-radius: var(--radius-xs); }
   /* Capatul care CONTINUA se opreste fix pe muchia celulei. Cat timp grila avea
      gap de 4px, `-3px` il faceau sa treaca peste gol, ca sa nu para intrerupt;
      acum golul nu mai exista (R1), deci aceiasi 3px ar intra peste ziua vecina. */
@@ -1741,10 +1771,29 @@
      il spun iconita (`building-2` / `map-pin`) si eticheta ieșirii („Sediu EGB ·
      3 zile"), adica un canal care se poate CITI. Ramane o singura diferenta de
      desen: plin = implementare, contur palid = pregatire. */
-  .banda.pregatire { background: color-mix(in srgb, var(--c) 9%, transparent);
-                     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent); }
-  .banda.pregatire .banda-t { color: var(--text-secondary); }
-  .banda-t { display: block; font-size: var(--font-small); line-height: var(--lh-snug); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Pregatirea ramane CONTURATA, dar pe suprafata (C9): fond `--bg-surface`, nu o
+     tenta transparenta. Peste chenarul ieșirii — care e el insusi o tenta — o
+     bara translucida se aduna cu fondul de dedesubt si iese o a treia culoare care
+     nu e in sistem. Inelul de 1.5px o tine vizibila pe fond deschis fara sa para
+     o bara plina stinsa. */
+  .banda.pregatire { background: var(--bg-surface);
+                     box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .banda.pregatire .banda-t { color: var(--accent-deep); }
+  /* FACUTA — tenta de „facut" cu inel si bifa (C9). Verdele e o STARE, ca peste
+     tot in sistem; nu se adauga o a treia culoare de identitate. Textul ia
+     `--success-deep`, fiindca sta pe tenta, nu pe fill. */
+  .banda.facuta { background: var(--success-subtle);
+                  box-shadow: inset 0 0 0 1.5px var(--success); }
+  .banda.facuta .banda-t { color: var(--success-deep); }
+  .banda.facuta :global(.banda-bifa) { color: var(--success-deep); flex: none; margin-right: 4px; }
+  /* DE CLARIFICAT — bara plina de restant. Aici culoarea e plina, nu tenta:
+     lucrarea asta e chiar lucrul pe care trebuie sa-l rezolvi, iar cutia din
+     jurul ei poarta deja tenta. */
+  .banda.decizie { background: var(--danger); }
+  .banda.decizie .banda-t { color: var(--accent-text); }
+  .banda-t { display: block; font-size: var(--font-label); font-weight: var(--fw-semibold);
+             line-height: var(--lh-snug); color: var(--accent-text);
+             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Numele nu intra sub maner: linia lui de prindere ar cadea peste prima si
      ultima litera, si n-ai sti daca textul e taiat sau desenat gresit. */
   .banda.inceput .banda-t { padding-left: 6px; }
@@ -1771,6 +1820,8 @@
   /* Sediul nu e o deplasare, deci nici eticheta lui nu striga: chenarul lui e
      punctat, iar numele trece pe cerneala neutra. */
   .chenar-et.sediu { color: var(--text-secondary); }
+  /* Text pe tenta ia varianta adanca — cutia e deja in `--danger-subtle`. */
+  .chenar-et.decizie { color: var(--danger-deep); }
 
   /* `.nr-lucrari` a plecat cu C6 — motivul e scris in markup, langa cifra zilei. */
 
