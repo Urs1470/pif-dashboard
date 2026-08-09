@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte'
-  import { CalendarRange, ChevronRight, CalendarDays, ListChecks, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2, Calendar } from '@lucide/svelte'
+  import { CalendarRange, ChevronRight, CalendarDays, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2, Calendar } from '@lucide/svelte'
   import {
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
     setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
@@ -1192,12 +1192,10 @@
                         <CalendarDays size={10} />{formatDateShort(t.data_scadenta)}
                       </span>
                     {/if}
-                    {#if t.subtask_total}
-                      <span class="tsub-chip" class:gata={t.subtask_done === t.subtask_total}
-                            title="{t.subtask_done || 0} din {t.subtask_total} subtaskuri făcute">
-                        <ListChecks size={10} />{t.subtask_done || 0}/{t.subtask_total}
-                      </span>
-                    {/if}
+                    <!-- FRACTIA DE PASI NU STA PE RAND (aceeasi interdictie ca E1, in
+                         ProjectDetail). Randul poarta DOUA lucruri: ce e de facut si
+                         cand. Cati pasi sunt gata se citeste in foaia taskului, ca titlu
+                         de sectiune („Pasi · 1/3", desenat in turul 4e). -->
                     {#if t.recurenta}<span class="chip"><Repeat size={10} /> {t.recurenta}</span>{/if}
                   </span>
                 </button>
