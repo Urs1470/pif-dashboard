@@ -1003,8 +1003,12 @@
       {#if grupe[gid]}
       {#if grupe[gid].titlu && grupe[gid].items.length}
         <!-- Capul de grupa e reperul dupa care citesti lista fara sa citesti
-             fiecare rand: vezi „Restante 2" si stii ca ai doua de recuperat. -->
-        <div class="grup-cap ton-{grupe[gid].ton}"><span class="grup-t">{grupe[gid].titlu}</span><span class="grup-n">{grupe[gid].items.length}</span></div>
+             fiecare rand: vezi „Restante 2" si stii ca ai doua de recuperat.
+             UN NUMAR APARE DOAR DACA DECIDE O ACTIUNE, deci doar la Restante.
+             La „Azi", „Mâine" sau „Fără termen" cifra nu schimba nimic — grupa e
+             deschisa sub ea si o numeri din ochi — iar patru numere pe patru
+             capete se citesc ca un antet de tabel, adica nu se mai citesc. -->
+        <div class="grup-cap ton-{grupe[gid].ton}"><span class="grup-t">{grupe[gid].titlu}</span>{#if grupe[gid].ton === 'danger'}<span class="grup-n">{grupe[gid].items.length}</span>{/if}</div>
       {/if}
       {#each grupe[gid].items as t (t.id)}
 <!-- Iesirea randului bifat: se stinge si se strange, in loc sa sara.
@@ -1493,18 +1497,28 @@
   .a-ico:hover { color: var(--text); background: var(--bg-hover); }
   .a-ico.on { color: var(--accent-on-subtle); background: var(--accent-subtle); }
   .a-ico:active { transform: scale(var(--press-scale)); }
-  /* Comutatorul de sfera — capsula unita cu segment activ RIDICAT pe suprafata
-     neutra (nu amber: amber la activ e limbajul FILTRELOR de langa el). Punctul
-     violet de pe Personal (--purple, huea „libera") e acelasi cu cel din antetul
-     sectiunii „Personal" de pe Acasa — cele doua suprafete se refera una la alta.
-     Randurile raman identice — severitatea e singura culoare pe rand. */
-  .sfere { display: flex; background: var(--bg-input); border: 1px solid var(--border);
-           border-radius: var(--radius-full); padding: 2px; flex-shrink: 0; margin-right: 4px; }
-  .seg { display: inline-flex; align-items: center; gap: 6px; padding: 2px 12px; min-height: 24px; border: none; background: none; cursor: pointer;
-         border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-medium);
-         color: var(--text-dim); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
+  /* Comutatorul de sfera — capsula de 36 cu segmentul activ pe FILL DE ACCENT.
+     Trei lucruri erau pe langa sistem:
+     - `--radius-full` pe capsula SI pe segmente, adica pastile rotunde, cand
+       scara spune „cerc doar bifa". Acum 10 afara si 7 inauntru — nu o a sasea
+       raza, ci regula razei imbricate: raza interioara = cea exterioara minus
+       paddingul, altfel curbele nu sunt concentrice si segmentul activ pare
+       lipit strambin capsula.
+     - activul era `--bg-elevated` + umbra, adica o treapta de SUPRAFATA. Dar
+       sfera nu e o suprafata ridicata, e o ALEGERE — si alegerea se scrie cu
+       accent. (Vechiul comentariu spunea „nu amber, amber e limbajul filtrelor";
+       amberul nu mai exista in sistem, deci nici motivul.)
+     - 24px inaltime: sub pragul de atingere pe ferestre inguste.
+     Sferele se deosebesc in continuare prin SEMN (briefcase / user), nu prin
+     culoare — punctul violet de pe „Personal" a plecat demult, si nu se intoarce
+     acum pe alta usa. */
+  .sfere { display: flex; background: var(--bg-elevated); border: none;
+           border-radius: var(--radius-sm); padding: 3px; flex-shrink: 0; margin-right: 4px; }
+  .seg { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; min-height: 30px; border: none; background: none; cursor: pointer;
+         border-radius: calc(var(--radius-sm) - 3px); font-size: var(--font-small); font-weight: var(--fw-medium);
+         color: var(--text-secondary); transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .seg:hover { color: var(--text); }
-  .seg.on { background: var(--bg-elevated); color: var(--text); box-shadow: var(--shadow-sm); }
+  .seg.on { background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
   /* SFERA SE DEOSEBESTE PRIN SEMN, NU PRIN CULOARE.
      Aici era un punct violet lipit inaintea lui „Personal": o bulina decorativa
      care aducea a treia culoare pe o bara unde amberul insemna deja „activ", iar
@@ -1661,13 +1675,20 @@
   .grup-cap::before { content: ''; width: 7px; height: 7px; border-radius: 50%;
     background: var(--border-strong); flex: none; }
   .grup-cap:first-child { padding-top: 4px; }
+  /* Numarul se randeaza doar la „Restante" (vezi markup), deci si culoarea lui e
+     una singura. Regula pentru `ton-accent` a plecat cu el: fara rand care s-o
+     poarte, era vopsea pentru un element care nu mai exista. */
   .grup-n { font-family: var(--font-mono); font-size: var(--font-label);
-    color: var(--text-dim); font-variant-numeric: tabular-nums;
+    color: var(--danger); font-variant-numeric: tabular-nums;
     text-transform: none; letter-spacing: 0; }
   .grup-cap.ton-danger::before { background: var(--danger); }
-  .grup-cap.ton-danger .grup-n { color: var(--danger); }
   .grup-cap.ton-accent::before { background: var(--accent); }
-  .grup-cap.ton-accent .grup-n { color: var(--accent-deep); }
+  /* „Fără termen" e INEL, nu punct plin: absenta termenului se spune prin absenta
+     fillului. Altfel ea si „Mâine"/„Zilele astea" au exact acelasi semn — patru
+     grupe, trei semne. `box-shadow: inset`, nu `border`: pastreaza punctul la 7px
+     ca celelalte trei, deci eticheta de langa nu se decaleaza cu 3px. */
+  .grup-cap.ton-sters::before { background: none;
+    box-shadow: inset 0 0 0 1.5px var(--border-strong); }
 
   /* ===== compozitorul ===== */
   .qa-rand { display: flex; gap: var(--space-sm); }

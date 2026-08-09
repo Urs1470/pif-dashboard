@@ -243,16 +243,22 @@
       {/if}
     </div>
     <button class="bh-add" onclick={() => showPicker = true}>
-      <ListPlus size={14} /> <span class="bh-add-txt">Adaugă task existent</span>
+      <ListPlus size={15} /> <span class="bh-add-txt">Adaugă task existent</span>
     </button>
   </div>
 
   <form class="quick-add" onsubmit={(e) => { e.preventDefault(); doQuickAdd() }}>
-    <!-- Pe telefon indicatia despre Enter se taia la jumatate („...Enter pe") si
-         oricum nu spune nimic acolo: tastatura are butonul ei si langa camp e
-         butonul „+". Ramane doar ce se citeste intreg. -->
-    <input type="text" placeholder={peTelefon ? 'Task rapid pentru azi…' : 'Task rapid pentru azi... Enter pentru a adăuga'} bind:value={quickTitle} disabled={quickAdding} />
-    <button type="submit" class="quick-add-btn" disabled={!quickTitle.trim() || quickAdding} title="Adaugă task"><Plus size={16} /></button>
+    <!-- O SINGURA CALE DE ADAUGARE PE ECRAN (A3). Langa camp statea un buton „+"
+         care facea exact ce face Enter — a doua cale catre aceeasi actiune, in
+         acelasi loc. Plusul ramane, dar ca SEMN in interiorul campului: spune ce
+         e linia asta fara sa mai fie o tinta de apasat.
+         Pe telefon nu ramane nimic de apasat fiindca nu e nevoie: formularul are
+         un singur camp de text, deci tasta Go a tastaturii il trimite nativ.
+         Placeholderul o scrie pe desktop, unde Enter e singurul drum. -->
+    <div class="qa-camp">
+      <span class="qa-ico" aria-hidden="true"><Plus size={17} /></span>
+      <input type="text" placeholder={peTelefon ? 'Task rapid pentru azi' : 'Task rapid pentru azi, apoi Enter'} bind:value={quickTitle} disabled={quickAdding} />
+    </div>
   </form>
 
   {#if agenda.loading && agenda.items.length === 0}
@@ -354,15 +360,18 @@
   <!-- SECTIUNEA PERSONALA — o anexa tacuta, nu un al doilea board.
        Apare DOAR cand exista taskuri personale scadente azi/restante (cerinta
        Ion: taskurile personale nu se amesteca cu munca, dar un termen personal
-       pe azi nu are voie sa fie invizibil). Antetul e micro/mono cu un punct
-       violet — acelasi punct de pe chip-ul „Personal" din /tasks, ca cele doua
-       suprafete sa se refere una la alta. NU foloseste .grup-cap/.grup-t (clase
-       citite de audit_mobil pe /tasks) si nici <h2> pereche cu „Astăzi".
+       pe azi nu are voie sa fie invizibil). Antetul e haina desenata pentru un
+       cap de grupa: SEMN (iconita 13), eticheta majuscula si numarul — nicio
+       culoare, niciun punct. Semnul e acelasi `user` de pe comutatorul de sfera
+       din /tasks, deci cele doua suprafete se refera in continuare una la alta,
+       fara sa aduca o a treia culoare pe ecran (punctul violet de dinainte).
+       NU foloseste .grup-cap/.grup-t (clase citite de audit_mobil pe /tasks) si
+       nici <h2> pereche cu „Astăzi".
        Randurile sunt ACELEASI .arow (severitatea = singura culoare), fara insa
        index, grip si reordonare: lista e scurta, ordinea o da serverul
        (restante-first, apoi alfabetic). -->
   {#if agenda.personale.length}
-    <div class="pers-cap"><span class="pers-ico" aria-hidden="true"><User size={12} /></span>Personal<span class="pers-n">{agenda.personale.length}</span></div>
+    <div class="pers-cap"><span class="pers-ico" aria-hidden="true"><User size={13} /></span>Personal<span class="pers-n">{agenda.personale.length}</span></div>
     <div class="a-list" role="list">
       {#each agenda.personale as it (it.id)}
         <div
@@ -451,30 +460,49 @@
   .bh-punct { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); }
   /* `.bh-count` / `.bh-restante` au plecat: sunt `.count` si `.count danger` din
      global.css — aceeasi pastila ca peste tot (vezi comentariul de acolo). */
+  /* Controlul e in haina neutra a sistemului: tenta si cerneala de accent sunt
+     limbajul lui „activ / ales", iar butonul asta nu e nici una, nici alta — e
+     un drum secundar catre acelasi board. Hoverul ridica fondul, atat. (Aceeasi
+     reteta ca la Calendar M3 si Departament C2.) `border-color` de la hover a
+     plecat odata cu ea: butonul n-are chenar din care sa se schimbe ceva. */
   .bh-add { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-elevated); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); flex-shrink: 0; }
-  .bh-add:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
+  .bh-add:hover { background: var(--bg-hover); color: var(--text); }
 
-  .quick-add { display: flex; gap: var(--space-sm); margin: 0 var(--space-sm) 18px; }
-  .quick-add input { flex: 1; min-height: 44px; padding: 0 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-body); }
-  .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
+  /* Campul e UN obiect, iar plusul e semnul lui dinauntru — nu un al doilea
+     buton langa el (vezi comentariul din markup). Chenarul, fondul si raza trec
+     de pe `input` pe invelis, ca iconita sa stea in interiorul lor; inputul
+     ramane text gol pe fondul invelisului. Focusul se muta odata cu ele:
+     `:focus-within`, fiindca ce primeste focusul e copilul. */
+  .quick-add { display: flex; margin: 0 var(--space-sm) 18px; }
+  .qa-camp { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
+    min-height: 44px; padding: 0 14px; background: var(--bg-elevated);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .qa-camp:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
+  .qa-ico { display: inline-flex; align-items: center; color: var(--text-dim); flex: none; }
+  .quick-add input { flex: 1; min-width: 0; background: none; border: 0; padding: 0;
+    align-self: stretch; color: var(--text); font-size: var(--font-body); }
+  .quick-add input:focus { outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
-  .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* `.a-skel` a plecat: invelisul de schelet al boardului nu mai exista in
      markup (scheletul vine acum din `Skeleton.svelte`, cu forma randului real).
      Clasa nu se mai randeaza nicaieri, deci Svelte taia regula din build. */
 
-  /* Antetul sectiunii personale: micro/mono/uppercase ca .cell-label, cu punctul
-     violet (--purple — huea „libera"; amber e severitate/identitate). Bordura de
-     sus il desparte de board fara sa-l ridice la rang de al doilea board. */
-  .pers-cap { display: flex; align-items: center; gap: 6px; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-top: var(--space-md); border-top: 1px solid var(--border); font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  /* Antetul sectiunii personale — haina de cap de grupa din desen: eticheta
+     majuscula 12/600 in `--text-secondary`, semnul si numarul o treapta mai jos,
+     in `--text-dim`. Eticheta e cea care se citeste, deci ea sta mai sus; semnul
+     si cifra o insotesc. Bordura de sus il desparte de board fara sa-l ridice la
+     rang de al doilea board.
+     Doar NUMARUL e mono: DM Mono e pentru cifre care se compara pe verticala, iar
+     „PERSONAL" e un cuvant — se poate traduce, deci nu e mono. */
+  .pers-cap { display: flex; align-items: center; gap: 8px; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-top: var(--space-md); border-top: 1px solid var(--border); font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-secondary); }
   /* Semn, nu bulina — acelasi desen ca pe comutatorul de sfera din /tasks, ca cele
      doua suprafete sa se refere in continuare una la alta fara sa aduca o a treia
      culoare pe ecran. */
-  .pers-ico { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
-  .pers-n { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .pers-ico { display: inline-flex; align-items: center; color: var(--text-dim); flex-shrink: 0; }
+  .pers-n { font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums;
+    text-transform: none; letter-spacing: 0; }
 
   .a-list { display: flex; flex-direction: column; }
   /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia
@@ -498,9 +526,18 @@
      pe verticala, iar ce desparte doua randuri e o linie cu marja laterala.
      Fara `translateX(4px)` la hover: deplasarea muta si coloana de termen, adica
      exact ce trebuie sa stea pe loc cat cauti actiunile. */
+  /* RAZA RANDULUI, pe desktop. V13 a scos-o de aici din reflex, desi cerea raza
+     0 pe FATA DE GLISARE (`.gl-fata`, obiect de telefon) — iar fara ea fondul de
+     hover se intindea dintr-o muchie a listei in cealalta, cu colturi drepte,
+     sub un card cu raza 14. In /tasks acelasi rand ramanea rotunjit, fiindca
+     acolo raza sta pe `.trow-wrap` care si decupeaza; aici randul e copil direct
+     al listei, deci si-o poarta singur. Nu se bate cu separatorul: linia are
+     acum marja de 12, iar curba ocupa primii 10px — nu se mai intalnesc.
+     Pe telefon revine la 0 (vezi blocul de jos): acolo `overflow: hidden` ar
+     decupa fata de glisare intr-un card, exact ce a scos V13. */
   .arow { position: relative; display: flex; align-items: center; gap: var(--space-12);
     min-height: 46px; padding: 0 var(--space-12); background: none; border: 0;
-    border-radius: 0;
+    border-radius: var(--radius-sm);
     transition: background-color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   /* SEPARATORUL ARE MARJA LATERALA, iar randul in repaus n-are colturi.
      Era `border-top` pe tot randul — linie dreapta de la un capat la altul —
@@ -536,7 +573,17 @@
   /* FARA OPACITATE PE RANDUL TRAS: identitatea lui e tocmai ce urmaresti cat il
      muti. Unde ajunge o spune deja linia de insertie de mai jos. */
   .arow.dragging { cursor: grabbing; box-shadow: var(--shadow-md); border-radius: var(--radius-sm); }
-  .arow.dragover { box-shadow: inset 0 2px 0 0 var(--accent); }
+  /* LINIA DE INSERTIE STA INTRE RANDURI, nu in interiorul celui de dedesubt.
+     Era `inset 0 2px 0 0` — o umbra INTERIOARA, deci 2px desenati sub muchia
+     randului tinta: se citea ca o subliniere a lui, nu ca locul unde aterizeaza
+     ce tragi. Acum e un pseudo-element asezat pe cusatura, cu aceeasi marja
+     laterala ca separatorul pe care il inlocuieste vizual — altfel linia care
+     spune „aici" ar fi mai lata decat linia care desparte.
+     `top: -1px` o pune peste separator, nu sub el; `::after` fiindca `::before`
+     e chiar separatorul. */
+  .arow.dragover::after { content: ''; position: absolute; top: -1px; z-index: 4;
+    left: var(--space-12); right: var(--space-12); height: 2px; border-radius: 1px;
+    background: var(--accent); }
   @media (prefers-reduced-motion: reduce) {
     .arow { transition: none; }
   }
@@ -601,7 +648,23 @@
   /* Manerul de DEGET (lib/reordonare.js) e al telefonului. Pe desktop se
      reordoneaza din `.grip`, cu drag nativ. */
   .gl-maner { display: none; }
+  /* ACTIUNILE SE STING CAND CURSORUL NU E PE RAND (A1, raportat de Ion).
+     Statele permanent, deci fiecare rand purta trei butoane si lista se citea ca
+     un panou de comenzi, nu ca o lista. Manerul de alaturi avea deja regula;
+     actiunile n-o primisera niciodata. Reteta e copiata din `Tasks.svelte`
+     (`.task-actions`), ca cele doua liste sa raspunda identic la acelasi gest.
+     `opacity`, NU `display`: coloana ramane rezervata, altfel aparitia lor ar
+     imbrancit titlul chiar sub cursor. `pointer-events` merge cu ea — un buton
+     invizibil dar apasabil e mai rau decat unul vizibil.
+     `focus-within` pe ACTIUNI, nu pe rand: la tastatura conteaza sa se vada ce
+     ai focalizat, nu sa se aprinda randul cand ajungi pe titlu. */
   .arow-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  @media (hover: hover) {
+    .arow-actions { opacity: 0; pointer-events: none;
+      transition: opacity var(--dur-fast) var(--ease); }
+    .arow:hover .arow-actions,
+    .arow-actions:focus-within { opacity: 1; pointer-events: auto; }
+  }
   .abtn, .row-date :global(.dp-trigger) {
     display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px;
     border-radius: var(--radius-xs); background: var(--bg-surface); box-shadow: var(--shadow-sm);
@@ -628,8 +691,13 @@
          atingere pe titlu    -> deschide taskul
        Reordonarea (sagetile) ramane, dar numai cat timp ai ceva de reordonat —
        vezi `.arow-arrows` mai jos. */
+    /* `border-radius: 0` INAPOI pe telefon: aici randul decupeaza (`overflow:
+       hidden`) fata de glisare, deci raza de pe desktop i-ar rotunji colturile
+       in repaus — adica exact cardul pe care V13 l-a scos. Pe telefon obiectul
+       vizibil e `.gl-fata`, si ea isi ia raza doar pe gest. */
     .arow { flex-wrap: nowrap; row-gap: 0; min-height: var(--row-h-mobile);
-            padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
+            padding: 0; overflow: hidden; position: relative; touch-action: pan-y;
+            border-radius: 0; }
     /* Fondul e al SUPRAFETEI, nu al unui panou propriu: randul nu mai e un card.
        Trebuie totusi OPAC — pista de bifare sta dedesubt si se descopera pe
        masura ce tragi. In repaus fata e DREAPTA (vezi separatorul de mai sus):
@@ -663,9 +731,9 @@
     .gl-maner { display: flex; }
     /* Compozitorul e desenat la 48 (`Acasă.dc.html` 3c): e panoul de scris al
        boardului, stă jos, si se atinge cu degetul mare intins — de aceea
-       `--tap-sheet`, nu podeaua de 44 a tintelor obisnuite. */
-    .quick-add input, .quick-add-btn { min-height: var(--tap-sheet); }
-    .quick-add-btn { width: var(--tap-sheet); }
+       `--tap-sheet`, nu podeaua de 44 a tintelor obisnuite. Inaltimea o tine
+       acum invelisul, fiindca el e cutia; inputul se intinde in ea. */
+    .qa-camp { min-height: var(--tap-sheet); }
     /* „Adaugă task existent" ramane doar iconita pe telefon — deci iconita trebuie
        sa aiba caseta unui buton, nu 40×28. */
     .bh-add { min-width: var(--tap-min); min-height: var(--tap-min); justify-content: center; padding: 0 10px; }
