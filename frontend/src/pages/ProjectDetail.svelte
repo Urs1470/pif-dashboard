@@ -643,7 +643,9 @@
 
     <div class="tab-content">
       {#key activeTab}
-      <div class="tab-pane" in:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
+      <!-- 220 (element), nu 120 (vopsea): schimbarea tabului aduce CONTINUT
+           nou, e o sosire — aceeasi treapta ca lista si ca foaia de ruta. -->
+      <div class="tab-pane" in:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
       {#if activeTab === 'tasks'}
         <!-- „N/M finalizate" a plecat: railul din dreapta arata bara de progres SI
              cifra mare, in acelasi ecran, la 300px distanta. Aceeasi informatie,

@@ -13,7 +13,7 @@
   // Deplasarea (zile consecutive la acelasi loc si client) e un chenar, cu
   // eticheta pe primul lui rand si lucrarile inauntru.
   import { onMount, onDestroy } from 'svelte'
-  import { fade } from 'svelte/transition'
+  import { fade, slide } from 'svelte/transition'
   import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router } from '../lib/router.svelte.js'
@@ -1544,7 +1544,10 @@
         {#if !ecran.telefon}{@render panouZi(true)}{/if}
 
         {#if deschideNeplanificate && data.neplanificate?.length}
-          <div class="pan">
+          <!-- Sertarul se DESFACE, nu apare (fluenta comutarilor, Ion
+               2026-08-10): slide pe --dur-base, ca orice panou care isi face
+               loc. `|local`, ca la navigarea intre rute sa nu se mai joace. -->
+          <div class="pan" transition:slide|local={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
             <!-- „fara perioada", nu „fara data": perioada e un interval (unde
                  esti), termenul e un punct (pana cand). Sertarul din Planificator
                  tine ALTCEVA — taskuri fara termen — si numele trebuie sa spuna

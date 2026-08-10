@@ -1016,8 +1016,11 @@
          soseste dinspre tabul pe care l-ai ales: Personal e in dreapta -> vine
          din dreapta; Munca din stanga. `{#key}` fiindca o clasa comutata nu
          re-porneste o animatie (aceeasi lectie ca la schimbarea lunii). -->
-    {#key sferaActiva}
-    <div class="task-list" in:alunecare={{ sens: sferaActiva === 'personal' ? 1 : -1 }}>
+    <!-- Cheia include si arhiva: intrarea in arhiva aluneca dinspre dreapta
+         (un loc „mai adanc"), iesirea dinspre stanga — aceeasi gramatica
+         directionala ca sfera si ca luna din Calendar. -->
+    {#key sferaActiva + ':' + showArchive}
+    <div class="task-list" in:alunecare={{ sens: showArchive ? 1 : (sferaActiva === 'personal' ? 1 : -1) }}>
       <!-- Se itereaza ORDINEA — siruri constante — nu lista de grupe.
            Vezi `lib/grupare.js`: un each imbricat peste obiecte NOI la fiecare
            recalcul face Svelte sa re-creeze blocul interior in loc sa-l
