@@ -3,7 +3,7 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, alunecare, DUR_FAST } from '../lib/motion.svelte.js'
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, CalendarPlus, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink, CalendarSync, CircleAlert, RotateCw, Unplug, Link as LinkIcon } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
@@ -551,91 +551,22 @@
   // care oricum e sortata cu urgentele sus si are aceleasi actiuni.
 
 
-  // Abonarea in Google Calendar: feed-ul .ics personal se serveste cu o cheie
-  // secreta in URL (Google il descarca de pe serverele lui, fara sesiune).
-  // Butonul copiaza linkul gata format — in Google Calendar: „Adaugă din URL".
-  // Din varianta cu API, asta e FALLBACK-ul din modalul Google (sincronizare
-  // automata dar lenta — Google reciteste feedul la cateva ore).
-  async function copiazaLinkIcs() {
-    try {
-      const { key } = await apiJson('/api/export/ics-key')
-      const url = `${location.origin}/api/export/ics?sfera=personal&key=${key}`
-      await navigator.clipboard.writeText(url)
-      toast('Link copiat — în Google Calendar: „Alte calendare” → „Din URL”.', 'success')
-    } catch (e) {
-      toast(`Eroare: ${e.message}`, 'error')
-    }
-  }
+  // GOOGLE CALENDAR A PLECAT DIN INTERFATA (Ion, 2026-08-10: „scoate google
+  // calendar, nu mai folosim, si butonul lui"). Aici traiau butonul cu punct
+  // rosu, modalul de stare/credentiale/OAuth si fallback-ul cu link .ics.
+  // Serverul ramane neatins (blueprints/google_calendar.py, /api/google/*,
+  // /api/export/ics-key): cine e deja conectat ramane sincronizat; doar drumul
+  // din interfata a disparut. Daca se reia vreodata, se reconstruieste de aici
+  // din istoricul git (a plecat intreg, intr-un singur commit).
 
-  // Sincronizarea directa prin Google Calendar API (push instant, doar
-  // personale). Chip-ul deschide un modal de stare; conectarea e o navigare
-  // full-page catre fluxul OAuth de pe server — client id-ul nu traieste in
-  // bundle, iar CSP ramane neatins.
-  let showGoogleModal = $state(false)
-  let googleStatus = $state(null)     // null = se incarca
-  let googleBusy = $state(false)
-  let showGoogleDisconnect = $state(false)
-
-  async function deschideGoogle() {
-    // Nu golim starea deja incarcata: modalul se deschide pe ce stim si se
-    // improspateaza; scheletul apare doar la prima incarcare.
-    showGoogleModal = true
-    try { googleStatus = await apiJson('/api/google/status') }
-    catch (e) { showGoogleModal = false; toast(`Eroare: ${e.message}`, 'error') }
-  }
-
-  // Starea se ia o data la intrarea in vederea Personal, ca punctul rosu de pe
-  // iconita sa poata semnala o sincronizare stricata FARA sa deschizi modalul —
-  // o stare care decide ce vezi in calendar nu are voie sa fie invizibila.
-  $effect(() => {
-    if (sferaActiva === 'personal' && googleStatus === null) {
-      apiJson('/api/google/status').then(s => { googleStatus = s }).catch(() => {})
-    }
-  })
-
-  // Acelasi motiv ca la Google: punctul rosu de pe clopotel trebuie sa poata
-  // semnala o trimitere esuata FARA sa deschizi modalul.
+  // Punctul rosu de pe clopotel trebuie sa poata semnala o trimitere esuata
+  // FARA sa deschizi modalul — o stare care decide ce primesti dimineata nu
+  // are voie sa fie invizibila.
   $effect(() => {
     if (sferaActiva === 'personal' && pushStatus === null) {
       apiJson('/api/push/status').then(s => { pushStatus = s }).catch(() => {})
     }
   })
-
-  async function resyncGoogle() {
-    if (googleBusy) return
-    googleBusy = true
-    try {
-      await apiJson('/api/google/resync', { method: 'POST', body: {} })
-      toast('Resincronizare pornită.', 'success')
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-    finally { googleBusy = false }
-  }
-
-  async function disconnectGoogle() {
-    try {
-      await apiJson('/api/google/disconnect', { method: 'POST', body: {} })
-      toast('Deconectat de la Google Calendar.', 'success')
-      googleStatus = await apiJson('/api/google/status')
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-  }
-
-  // Configurare fara SSH: JSON-ul OAuth descarcat din consola se lipeste aici
-  // si intra in app_settings pe server (validat acolo; exclus din backup).
-  let credText = $state('')
-  let credSaving = $state(false)
-  let schimbCred = $state(false)   // redeschide campul cand esti deja configurat
-
-  async function salveazaCred() {
-    if (credSaving || !credText.trim()) return
-    credSaving = true
-    try {
-      googleStatus = await apiJson('/api/google/credentials', { method: 'PUT', body: { json: credText.trim() } })
-      credText = ''
-      schimbCred = false
-      toast('Credențiale salvate — acum conectează contul.', 'success')
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-    finally { credSaving = false }
-  }
 
   // Notificarile zilnice: o notificare PER task personal care sta fara termen
   // de peste doua zile, cu „Facut"/„Azi" direct pe notificare.
@@ -781,16 +712,6 @@
       setariEroare = e.message
     } finally { pushBusy = false }
   }
-
-  // Aterizarea din fluxul OAuth: serverul redirectioneaza cu ?google=conectat|
-  // eroare. Toast + consumarea parametrului, ca un refresh sa nu re-toasteze.
-  $effect(() => {
-    const g = router.query.google
-    if (!g) return
-    if (g === 'conectat') toast('Google Calendar conectat — sincronizarea a pornit.', 'success')
-    else toast('Conectarea la Google a eșuat. Verifică logurile serverului.', 'error')
-    navigate('/tasks?sfera=personal')
-  })
 
   // Un singur $effect in loc de onMount + load-uri explicite pe chip-uri: ruleaza
   // la montare SI ori de cate ori se schimba sfera (din URL) sau arhiva — trei
@@ -989,12 +910,8 @@
       <Archive size={15} strokeWidth={1.5} /><span class="a-et">Arhivă</span>
     </button>
     {#if sferaActiva === 'personal'}
-      <!-- NU chipuri: sunt setari, nu filtre. Aceeasi haina pentru lucruri
-           diferite ar minti. -->
-      <button class="g-ico" onclick={deschideGoogle} title="Google Calendar — stare sincronizare" aria-label="Google Calendar">
-        <CalendarPlus size={15} strokeWidth={1.5} />
-        {#if googleStatus?.last_error}<span class="g-punct" aria-hidden="true"></span>{/if}
-      </button>
+      <!-- NU chip: e o setare, nu un filtru. Sta LANGA „Arhivă" (cerinta Ion)
+           — butonul Google Calendar care statea intre ele a plecat. -->
       <button class="g-ico" onclick={deschidePush} title="Notificări zilnice" aria-label="Notificări">
         <Bell size={15} strokeWidth={1.5} />
         {#if pushStatus?.last_error}<span class="g-punct" aria-hidden="true"></span>{/if}
@@ -1292,86 +1209,11 @@
      ultima sincronizare · (eroarea) · actiunea principala · (linie) · .ics si
      Deconectează. Zona de lipit JSON apare DOAR cand nu exista credentiale — nu e
      un camp permanent intr-un ecran deschis zilnic. -->
-<Modal bind:open={showGoogleModal} title="Google Calendar" size="sm">
-  {#if googleStatus === null}
-    <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
-  {:else}
-    {@const cerCred = !googleStatus.configurat || schimbCred}
-    <div class="g-card">
-      <div class="g-cap">
-        <span class="g-emblema"><CalendarSync size={19} strokeWidth={1.5} /></span>
-        <div class="g-nume">
-          <span class="g-t">Google Calendar</span>
-          <span class="g-sub">
-            {#if !googleStatus.configurat}Fără credențiale
-            {:else if googleStatus.sursa === 'env'}Credențiale din serverul tău
-            {:else}Credențiale salvate pe server{/if}
-          </span>
-        </div>
-        <span class="g-pastila" class:on={googleStatus.conectat}>
-          {#if googleStatus.conectat}<Check size={13} strokeWidth={2} />Conectat{:else}Neconectat{/if}
-        </span>
-      </div>
+<!-- Modalul Google Calendar a plecat cu tot cu buton (Ion, 2026-08-10) —
+     vezi comentariul din script. -->
 
-      {#if googleStatus.conectat}
-        <div class="g-stare">
-          <div class="g-rand"><span class="g-et">Se scrie în</span><span class="g-val">{googleStatus.calendar || 'PIF Personal'}</span></div>
-          <span class="g-linie"></span>
-          <div class="g-rand"><span class="g-et">Ultima sincronizare</span><span class="g-val g-mono">{googleStatus.last_sync ? formatDate(googleStatus.last_sync) : '—'}</span></div>
-        </div>
-      {:else if !cerCred}
-        <p class="g-text">Taskurile personale cu termen apar în calendarul „PIF Personal” în
-          momentul în care le setezi.</p>
-      {/if}
-
-      <!-- Mesajul serverului se scrie EXACT cum vine, in mono: e singurul indiciu
-           despre ce s-a stricat, iar rescris de noi ar deveni o presupunere. -->
-      {#if googleStatus.last_error}
-        <div class="g-eroare"><CircleAlert size={15} strokeWidth={1.5} /><span>{googleStatus.last_error}</span></div>
-      {/if}
-
-      {#if cerCred}
-        <p class="g-text">Lipește conținutul fișierului JSON descărcat din Google Cloud
-          Console (clientul OAuth de tip „Web application”). Se salvează pe server și nu intră
-          în backup-uri.</p>
-        <Textarea label="JSON-ul descărcat de la Google" bind:value={credText} rows={4}
-                  placeholder={'{"web": {"client_id": "...", "client_secret": "..."}}'} />
-        <button class="g-main" disabled={credSaving || !credText.trim()} onclick={salveazaCred}>Salvează credențialele</button>
-      {:else if !googleStatus.conectat}
-        <button class="g-main" onclick={() => { window.location.href = '/oauth/google/start' }}>Conectează cu Google</button>
-      {:else}
-        <button class="g-main" disabled={googleBusy} onclick={resyncGoogle}>
-          <RotateCw size={16} strokeWidth={1.5} />Resincronizează
-        </button>
-      {/if}
-
-      <!-- Sub linie stau actiunile rare: linkul .ics (drumul de rezerva, cand
-           OAuth-ul nu merge) si deconectarea. -->
-      <div class="g-rar">
-        <span class="g-linie"></span>
-        <div class="g-rar-rand">
-          <button class="g-actiune" onclick={copiazaLinkIcs}><LinkIcon size={15} strokeWidth={1.5} />Copiază link .ics</button>
-          <span class="g-sp"></span>
-          {#if googleStatus.conectat}
-            <button class="g-actiune g-per" onclick={() => showGoogleDisconnect = true}><Unplug size={15} strokeWidth={1.5} />Deconectează</button>
-          {:else if schimbCred}
-            <button class="g-actiune" onclick={() => { schimbCred = false; credText = '' }}>Renunță la schimbare</button>
-          {:else if googleStatus.sursa === 'setari'}
-            <button class="g-actiune" onclick={() => { schimbCred = true }}>Schimbă credențialele</button>
-          {/if}
-        </div>
-      </div>
-    </div>
-  {/if}
-</Modal>
-
-<ConfirmDialog bind:open={showGoogleDisconnect} title="Deconectezi Google Calendar?"
-               message="Taskurile personale nu se mai scriu în calendar. Evenimentele deja create rămân acolo."
-               confirmLabel="Deconectează contul" onconfirm={disconnectGoogle} />
-
-<!-- Notificările zilnice. Aceeași scară în trepte ca modalul Google:
-     indisponibil pe server → browser nesuportat → permisiune refuzată →
-     neabonat → abonat. -->
+<!-- Notificările zilnice, în trepte: indisponibil pe server → browser
+     nesuportat → permisiune refuzată → neabonat → abonat. -->
 <Modal bind:open={showPushModal} title="Notificări zilnice" size="sm">
   <!-- IN APLICATIA DE PE TELEFON, NIMIC DIN ASTA NU MAI TRECE PRIN SERVER.
        Alarma o pune Android, din timp, deci starea de abonament push de mai jos

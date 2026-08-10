@@ -26,7 +26,35 @@ export function tomorrowISO() {
   return d.toLocaleDateString('en-CA')
 }
 
+// ACASA SE DESCHIDE INSTANT, din ultimul raspuns bun (cerinta Ion: „fa ca acasa
+// tot sa se incarce instant precum ai facut la taskuri generale"). Cache-ul e
+// pe ZIUA lui: un raspuns de ieri ar arata boardul de ieri ca si cum ar fi al
+// tau de azi — iar restantele si „azi" sunt chiar ce se schimba peste noapte.
+// `sessionStorage`, nu `localStorage`: e un accelerator pentru sesiunea curenta,
+// nu o a doua sursa de adevar care supravietuieste zile.
+const CHEIE_AGENDA = 'pif-agenda'
+
+function dinCache() {
+  try {
+    const brut = sessionStorage.getItem(CHEIE_AGENDA)
+    if (!brut) return null
+    const c = JSON.parse(brut)
+    return c && c.today === localToday() ? c : null
+  } catch (_) { return null }
+}
+
 export async function loadAgendaToday() {
+  // Scheletul apare doar cand chiar n-avem ce arata (regula din sistem:
+  // `loading && items.length === 0`). Cu cache, `items` e deja plin la primul
+  // cadru, deci nu se mai vede nicio dunga gri intre intrare si date.
+  if (!agenda.items.length && !agenda.personale.length) {
+    const c = dinCache()
+    if (c) {
+      agenda.items = c.items
+      agenda.personale = c.personale
+      agenda.today = c.today
+    }
+  }
   agenda.loading = true
   agenda.error = null
   try {
@@ -34,8 +62,16 @@ export async function loadAgendaToday() {
     agenda.items = Array.isArray(data.items) ? data.items : []
     agenda.personale = Array.isArray(data.personale) ? data.personale : []
     agenda.today = data.today || localToday()
+    try {
+      sessionStorage.setItem(CHEIE_AGENDA, JSON.stringify({
+        items: agenda.items, personale: agenda.personale, today: agenda.today,
+      }))
+    } catch (_) { /* cota plina / mod privat — cache-ul e optional */ }
   } catch (e) {
-    agenda.error = e.message
+    // Cu date vechi pe ecran, un esec de retea NU trebuie sa le stearga si sa
+    // puna o stare de eroare peste ele: ramane ce se vede, iar reincercarea
+    // urmatoare le improspateaza.
+    if (!agenda.items.length && !agenda.personale.length) agenda.error = e.message
   } finally {
     agenda.loading = false
   }

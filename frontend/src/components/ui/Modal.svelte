@@ -500,13 +500,21 @@
     .modal.sheet.intins {
       max-height: calc(100dvh - var(--safe-top));
     }
-    /* `inalt` FIXEAZA inaltimea, nu doar plafonul: foaia sta „aproape pe toata
-       pagina" si cand ziua are putin continut (cerinta Ion — panoul zilei).
+    /* `inalt` FIXEAZA inaltimea, nu doar plafonul: foaia sta pe toata pagina
+       si cand ziua are putin continut (cerinta Ion — panoul zilei; apoi a
+       cerut-o si mai sus: „fa modalul ala mai inalt, nu vreau sa dau scroll" —
+       deci inaltimea MAXIMA a unei foi, cat `.intins`).
        Nota „doar max-height, niciodata height" de mai sus ramane adevarata
        pentru INTINDEREA DIN GEST (acolo saltul de reasezare strica tranzitia);
        aici foaia se DESCHIDE gata intinsa, nu creste sub deget. */
     .modal.sheet.inalt {
-      height: calc(100dvh - var(--safe-top) - 24px);
+      height: calc(100dvh - var(--safe-top));
+      /* SI plafonul, nu doar inaltimea: regula de baza a foii are
+         `max-height: min(92dvh, …)`, iar `height` singur nu bate un plafon —
+         masurat, foaia se oprea la 92% (747 din 812) si tot trebuia derulata.
+         Aceeasi valoare ca la `.intins`, ca sa nu existe doua „pe tot ecranul"
+         cu doua inaltimi. */
+      max-height: calc(100dvh - var(--safe-top));
     }
     /* Antetul sheet-ului e o LINIE DE CONTEXT, nu un titlu de fereastra — ca
        „📥 Inbox >" la Todoist. Inainte lua ~90px pe verticala pentru un singur
