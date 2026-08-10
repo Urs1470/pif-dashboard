@@ -91,6 +91,11 @@
 
   const azi = todayISO()
 
+  /** Perioada s-a incheiat inainte de azi. Se uita la ULTIMA zi (`data_sfarsit`,
+   *  cu `data_start` ca rezerva pentru perioadele de o zi) — o perioada in curs
+   *  nu se bifeaza, fiindca inca nu se stie daca s-a facut. */
+  const aTrecut = (p) => (p.data_sfarsit || p.data_start) < azi
+
   function scurt(client) {
     const c = (client || '').trim()
     if (!c) return '—'
@@ -1111,9 +1116,9 @@
                ramana. Coloana le tine pe amandoua, una sub alta. -->
           <button class="sursa" onclick={() => { deschideNeplanificate = !deschideNeplanificate }}
                   aria-expanded={deschideNeplanificate}
-                  title="Proiecte active fără nicio zi planificată">
+                  title="Proiecte active fără nicio zi planificată de azi înainte (pot avea perioade trecute)">
             <CalendarX2 size={14} strokeWidth={1.5} />
-            <span class="s-n">{data.neplanificate.length}</span> fără perioadă
+            <span class="s-n">{data.neplanificate.length}</span> de planificat
           </button>
         {/if}
         {#if rezumat.deDecis}
@@ -1428,6 +1433,11 @@
                       {#if p.confirmata}
                         <button class="ia" disabled={busy === p.id} onclick={() => confirma(p, 0)}
                                 title="Răspunsul opus la „S-a făcut?” — nu scoate perioada."><X size={13} /> Nu s-a făcut</button>
+                      {:else if aTrecut(p)}
+                        <!-- Vezi nota din foaie: bifa ramane la indemana si cand
+                             intrebarea tace (proiect inchis). -->
+                        <button class="ia" disabled={busy === p.id} onclick={() => confirma(p, 1)}
+                                title="Bifează perioada ca făcută. Statusul proiectului nu se schimbă."><Check size={13} /> Făcut</button>
                       {/if}
                       <button class="ia" disabled={busy === p.id}
                               onclick={() => { mutaId = mutaId === p.id ? '' : p.id; mutaVal = '' }}>
@@ -1483,6 +1493,16 @@
                     {#if p.confirmata}
                       <button class="fa-r" disabled={busy === p.id} onclick={() => confirma(p, 0)}>
                         <X size={15} /> <span class="fa-c"><span>Nu s-a făcut</span></span> <ChevronRight size={15} class="fa-chev" />
+                      </button>
+                    {:else if aTrecut(p)}
+                      <!-- BIFA EXISTA SI CAND NIMENI NU MAI INTREABA (Ion, pentru
+                           perioadele TDE din 29-30 iulie). `necesita_decizie` tace
+                           pe un proiect INCHIS — corect, ca sa nu bata la usa
+                           pentru o lucrare terminata — dar pana acum tacerea lua
+                           si singurul drum de a bifa perioada. Deci: intrebarea
+                           ramane doar unde e cazul, bifa e mereu la indemana. -->
+                      <button class="fa-r" disabled={busy === p.id} onclick={() => confirma(p, 1)}>
+                        <Check size={15} /> <span class="fa-c"><span>Marchează ca făcut</span><span class="fa-hint">statusul proiectului nu se schimbă</span></span> <ChevronRight size={15} class="fa-chev" />
                       </button>
                     {/if}
                     <button class="fa-r" disabled={busy === p.id}
@@ -1548,11 +1568,20 @@
                2026-08-10): slide pe --dur-base, ca orice panou care isi face
                loc. `|local`, ca la navigarea intre rute sa nu se mai joace. -->
           <div class="pan" transition:slide|local={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
-            <!-- „fara perioada", nu „fara data": perioada e un interval (unde
-                 esti), termenul e un punct (pana cand). Sertarul din Planificator
-                 tine ALTCEVA — taskuri fara termen — si numele trebuie sa spuna
-                 asta, nu sa le faca sa para acelasi lucru. -->
-            <div class="pan-h">Proiecte fără perioadă <span class="cnt">{data.neplanificate.length}</span></div>
+            <!-- „DE PLANIFICAT", nu „fara perioada" (Ion, 2026-08-10: „de ce la
+                 apex imi apare ca proiect fara perioada daca acolo a fost
+                 implementat deja si e aratat pe calendar?").
+                 Lista era corecta, NUMELE mintea: interogarea intoarce proiectele
+                 active fara nicio zi DE AZI INAINTE (`neplanificate` in
+                 admin.py) — un proiect caruia i s-a facut deplasarea, dar care
+                 ramane deschis pentru PV-uri sau o vizita nedatata, chiar n-are
+                 nimic planificat inainte si TREBUIE sa stea aici (e chiar
+                 scenariul v39). Dar el ARE perioade, in trecut, si se vad in
+                 grila — de unde contradictia.
+                 Numele spune acum ce face sertarul: sursa din care iei lucru si
+                 il pui pe o zi. Sertarul din Planificator tine ALTCEVA (taskuri
+                 fara termen), deci numele raman diferite. -->
+            <div class="pan-h">De planificat <span class="cnt">{data.neplanificate.length}</span></div>
             <div class="pan-hint">
               {#if asezare}Atinge ziua în care începe.{:else}Alege un proiect, apoi ziua. (Sau trage-l pe o zi.){/if}
             </div>

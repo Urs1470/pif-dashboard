@@ -193,11 +193,18 @@ code, pre {
    Regula nu opreste animatia de sosire a rutei (aia s-a terminat demult cand
    deschizi un modal) — doar garanteaza ca in clipa in care exista un modal,
    ancora lui e ecranul. Aceeasi clasa care coboara dock-ul, acelasi motiv:
-   un strat peste pagina nu are voie sa depinda de geometria paginii. */
+   un strat peste pagina nu are voie sa depinda de geometria paginii.
+
+   `transform: none !important` — si NIMIC altceva. Prima varianta punea
+   `animation-name: none`, iar asta se platea la INCHIDERE: cand clasa dispare,
+   `animation-name` se schimba inapoi la `rutaIn`, deci animatia rutei REPORNEA
+   de la zero — pagina isi rejuca sosirea de 10px fix peste foaia care cobora,
+   iar coborarea se citea taiata (raportat de Ion). Cu `!important` nu atingem
+   animatia deloc: ea curge mai departe, doar transformul ei e ignorat cat timp
+   exista un modal. (`!important` din foaia autorului bate o animatie CSS — e
+   singurul mod de a invinge un keyframe fara sa-l opresti.) */
 html.are-modal .ruta-in {
-  animation-name: none;
-  transform: none;
-  opacity: 1;
+  transform: none !important;
 }
 
 /* ===== Focus ring global pe inputs ===== */

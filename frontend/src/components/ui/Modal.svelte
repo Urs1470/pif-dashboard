@@ -516,20 +516,13 @@
        de sus se indreapta: la marginea ecranului o raza n-ar avea ce rotunji,
        si ar arata ca o scapare de 20px. */
     .modal.sheet.inalt {
-      /* PIRONITA DE ECRAN, nu asezata in flux. `height: 100dvh` singur depinde
-         de trei lucruri care se pot strica pe dispozitiv (voalul sa fie cat
-         viewportul, flexul sa nu strang la continut, `dvh` sa insemne ce
-         credem) — si exact asa a esuat de doua ori: pe emulator iesea 812 din
-         812, la Ion foaia sta la ~37% din ecran, cu ACEEASI inaltime pe doua
-         zile cu continut diferit (deci n-o dimensiona continutul, ci o regula
-         pe care n-o vedeam). `position: fixed; inset: 0` nu lasa loc de
-         interpretare: sus la 0, jos la 0, indiferent de parinte. */
-      position: fixed;
-      inset: 0;
-      height: auto;
-      max-height: none;
-      width: 100%;
-      max-width: none;
+      /* `100dvh` e VIEWPORT, indiferent de parinte — de aceea inaltimea se
+         cere asa, si nu prin `position: fixed; inset: 0`. Varianta cu `inset`
+         pare mai ferma, dar se raporteaza la primul stramos cu transform, iar
+         cat tine animatia de sosire a rutei acela e `.page`: masurat, foaia
+         iesea 1596px in loc de 812. `100dvh` nu poate gresi marimea. */
+      height: 100dvh;
+      max-height: 100dvh;
       padding-top: var(--safe-top);
       border-radius: 0;
     }
