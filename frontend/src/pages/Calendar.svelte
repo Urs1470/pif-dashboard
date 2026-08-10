@@ -1420,35 +1420,19 @@
               <!-- Fara stingere pe rand: panoul intreg a sosit deja, o data.
                    Doua sosiri peste aceiasi pixeli nu se aduna, se incurca. -->
               <div class="it" style="--c: {culoareLucrare(p)}">
-                <!-- ACTIUNILE STAU PE LINIA TITLULUI, ca text cu iconita (C13) —
-                     nu ca butoane cu chenar dedesubt. Pe desktop apar la hover /
-                     focus (randul pe care lucrezi trece pe `--bg-elevated`); in
-                     foaie ele sunt randuri de 48px, mai jos. -->
+                <!-- TITLUL IA RANDUL INTREG; actiunile coboara pe randul lor
+                     (Ion, 2026-08-10: „muta butoanele pe un rand nou ca sa
+                     incapa titlul cum trebuie"). Desenul (C13) le punea pe linia
+                     titlului, dar acolo trei actiuni-text luau ~180px dintr-o
+                     coloana de 330, iar numele proiectelor („Upgrade Motoare
+                     Extruder TDE FML + PIF — Continental") se taia dupa trei
+                     cuvinte. Numele e lucrul dupa care recunosti randul; el
+                     castiga latimea.
+                     In foaie (telefon) actiunile raman randuri de 48px, mai jos. -->
                 <div class="it-cap">
                   <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
                     {p.nume}<ExternalLink size={12} />
                   </button>
-                  {#if cuTitlu}
-                    <span class="it-act">
-                      {#if p.confirmata}
-                        <button class="ia" disabled={busy === p.id} onclick={() => confirma(p, 0)}
-                                title="Răspunsul opus la „S-a făcut?” — nu scoate perioada."><X size={13} /> Nu s-a făcut</button>
-                      {:else if aTrecut(p)}
-                        <!-- Vezi nota din foaie: bifa ramane la indemana si cand
-                             intrebarea tace (proiect inchis). -->
-                        <button class="ia" disabled={busy === p.id} onclick={() => confirma(p, 1)}
-                                title="Bifează perioada ca făcută. Statusul proiectului nu se schimbă."><Check size={13} /> Făcut</button>
-                      {/if}
-                      <button class="ia" disabled={busy === p.id}
-                              onclick={() => { mutaId = mutaId === p.id ? '' : p.id; mutaVal = '' }}>
-                        <CalendarDays size={13} /> Mută
-                      </button>
-                      <button class="ia del" disabled={busy === p.id} onclick={() => scoate(p)}
-                              title="Scoate perioada din calendar — proiectul se întoarce în „Proiecte fără perioadă”">
-                        <Undo2 size={13} /> Scoate
-                      </button>
-                    </span>
-                  {/if}
                 </div>
                 <div class="it-m">
                   {#if p.eticheta}<span>{p.eticheta}</span>{/if}
@@ -1468,6 +1452,31 @@
                   <span class="tk" class:warn={!p.taskuri_deschise}>{#if !p.taskuri_deschise}<TriangleAlert size={11} />{/if}{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}</span>
                   <span class="it-data">{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ` – ${shortDate(p.data_sfarsit)}` : ''}</span>
                 </div>
+                {#if cuTitlu}
+                  <!-- Randul de actiuni, sub meta. Apar la hover/focus pe rand,
+                       dar LOCUL LOR E MEREU REZERVAT (`opacity`, nu `display`):
+                       altfel randul ar creste sub cursor si ar impinge lucrarea
+                       urmatoare exact cand vrei s-o atingi. -->
+                  <div class="it-act">
+                    {#if p.confirmata}
+                      <button class="ia" disabled={busy === p.id} onclick={() => confirma(p, 0)}
+                              title="Răspunsul opus la „S-a făcut?” — nu scoate perioada."><X size={13} /> Nu s-a făcut</button>
+                    {:else if aTrecut(p)}
+                      <!-- Vezi nota din foaie: bifa ramane la indemana si cand
+                           intrebarea tace (proiect inchis). -->
+                      <button class="ia" disabled={busy === p.id} onclick={() => confirma(p, 1)}
+                              title="Bifează perioada ca făcută. Statusul proiectului nu se schimbă."><Check size={13} /> Făcut</button>
+                    {/if}
+                    <button class="ia" disabled={busy === p.id}
+                            onclick={() => { mutaId = mutaId === p.id ? '' : p.id; mutaVal = '' }}>
+                      <CalendarDays size={13} /> Mută
+                    </button>
+                    <button class="ia del" disabled={busy === p.id} onclick={() => scoate(p)}
+                            title="Scoate perioada din calendar — proiectul se întoarce în „De planificat”">
+                      <Undo2 size={13} /> Scoate
+                    </button>
+                  </div>
+                {/if}
                 {#if p.necesita_decizie}
                   <!-- E O INTREBARE, NU O NOTA (M10). Statea ca o linie rosie cu
                        doua pastile de 22px langa ea — se citea ca un avertisment
@@ -2167,20 +2176,23 @@
      Numele urca la 15/500: e obiectul randului, nu o metadata. */
   .it { padding: 6px 8px; margin: 0 -8px 8px; border-radius: var(--radius-sm); }
   /* RANDUL PE CARE LUCREZI se vede (C13): fondul urca la suprafata a doua, iar
-     actiunile lui apar pe linia titlului. `focus-within` tine parcursul de
-     tastatura — un buton cu opacity 0 ramane focalizabil. */
+     actiunile lui se aprind. `focus-within` tine parcursul de tastatura — un
+     buton cu opacity 0 ramane focalizabil. */
   @media (hover: hover) {
     .pan:not(.in-foaie) .it:hover, .pan:not(.in-foaie) .it:focus-within { background: var(--bg-elevated); }
     .it-act { opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease); }
     .it:hover .it-act, .it:focus-within .it-act { opacity: 1; pointer-events: auto; }
   }
-  .it-cap { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  /* Titlul are randul lui, pe toata latimea: nu mai imparte linia cu actiunile. */
+  .it-cap { display: flex; align-items: center; gap: 8px; }
   .it-t { display: flex; align-items: center; gap: 5px; font-size: var(--font-body);
           font-weight: var(--fw-medium); color: var(--text); text-align: left; cursor: pointer;
           min-width: 0; }
   .it-t:hover { color: var(--accent); }
-  /* Actiuni ca TEXT cu iconita, 13/600, fara chenar — cresc spre interior. */
-  .it-act { display: inline-flex; align-items: center; gap: 10px; flex: none; }
+  /* Actiuni ca TEXT cu iconita, 13/600, fara chenar — pe RANDUL LOR, sub meta,
+     aliniate la stanga ca sa porneasca de sub titlu (nu impinse la dreapta:
+     acolo ar parea ale datei de langa ele). */
+  .it-act { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
   .ia { display: inline-flex; align-items: center; gap: 4px;
         font-size: var(--font-control); font-weight: var(--fw-semibold);
         color: var(--text-secondary); background: none; border: none; padding: 2px 0;
