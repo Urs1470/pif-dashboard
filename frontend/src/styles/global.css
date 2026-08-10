@@ -183,6 +183,23 @@ code, pre {
   html.are-modal .dock { --dock-shift: calc(100% + var(--safe-bottom) + 6px); }
 }
 
+/* SI INVELISUL RUTEI ISI LASA TRANSFORMUL cat timp e un modal deschis.
+   Un element `position: fixed` se raporteaza la ecran DOAR daca niciun stramos
+   n-are transform/filter/will-change; altfel ancora devine acel stramos. `.page`
+   e inalta cat toata pagina, deci o foaie „pe tot ecranul" ajunge sa masoare
+   pagina si sa fie impinsa jos — vizibila pe sfert, taiata de marginea de jos.
+   Exact simptomul raportat de Ion la foaia zilei din Calendar, si exact ce se
+   masoara cand animatia `rutaIn` e inca activa: foaia iese 1596px in loc de 812.
+   Regula nu opreste animatia de sosire a rutei (aia s-a terminat demult cand
+   deschizi un modal) — doar garanteaza ca in clipa in care exista un modal,
+   ancora lui e ecranul. Aceeasi clasa care coboara dock-ul, acelasi motiv:
+   un strat peste pagina nu are voie sa depinda de geometria paginii. */
+html.are-modal .ruta-in {
+  animation-name: none;
+  transform: none;
+  opacity: 1;
+}
+
 /* ===== Focus ring global pe inputs ===== */
 input:focus, select:focus, textarea:focus {
   outline: none;
