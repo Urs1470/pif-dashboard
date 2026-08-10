@@ -1452,10 +1452,9 @@
                     {#if !p.taskuri_deschise}<TriangleAlert size={11} />{/if}{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}
                   </span>
                 </div>
-                <!-- RANDUL 4: cele trei ACTIUNI. Apar la hover/focus, dar locul
-                     lor ramane rezervat (`opacity`, nu `display`), ca randul sa
-                     nu creasca sub cursor si sa impinga lucrarea urmatoare
-                     exact cand vrei s-o atingi. -->
+                <!-- RANDUL 4: cele trei ACTIUNI, mereu la vedere (vezi nota din
+                     CSS). Doar pe desktop: in foaia de telefon ele sunt randuri
+                     de 48px, mai jos. -->
                 {#if cuTitlu}
                   <div class="it-act">
                     {#if p.confirmata}
@@ -2186,13 +2185,16 @@
      punctul era acelasi pe toate randurile: un semn care nu deosebea nimic.
      Numele urca la 15/500: e obiectul randului, nu o metadata. */
   .it { padding: 6px 8px; margin: 0 -8px 8px; border-radius: var(--radius-sm); }
-  /* RANDUL PE CARE LUCREZI se vede (C13): fondul urca la suprafata a doua, iar
-     actiunile lui se aprind. `focus-within` tine parcursul de tastatura — un
-     buton cu opacity 0 ramane focalizabil. */
+  /* ACTIUNILE SUNT PERMANENTE (Ion, 2026-08-10: „nu are sens sa fie cu hover
+     cele trei butoane, fa-le permanente deja"). Desenul (C13) le aprindea la
+     hover, si asta avea sens cat timp stateau pe LINIA TITLULUI: acolo aparitia
+     lor fura latime de la nume. De cand au randul lor (si locul rezervat),
+     ascunderea nu mai cumpara nimic — doar cere o descoperire in plus pentru
+     trei actiuni pe care le folosesti tot timpul.
+     Randul de sub cursor ramane evidentiat: el spune PE CARE lucrare apesi,
+     ceea ce conteaza cu atat mai mult cand butoanele se vad pe toate. */
   @media (hover: hover) {
     .pan:not(.in-foaie) .it:hover, .pan:not(.in-foaie) .it:focus-within { background: var(--bg-elevated); }
-    .it-act { opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease); }
-    .it:hover .it-act, .it:focus-within .it-act { opacity: 1; pointer-events: auto; }
   }
   /* Titlul are randul lui, pe toata latimea: nu mai imparte linia cu actiunile. */
   .it-cap { display: flex; align-items: center; gap: 8px; }
