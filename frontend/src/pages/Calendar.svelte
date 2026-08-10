@@ -1434,29 +1434,29 @@
                     {p.nume}<ExternalLink size={12} />
                   </button>
                 </div>
-                <div class="it-m">
-                  {#if p.eticheta}<span>{p.eticheta}</span>{/if}
-                  <!-- Locatia si faza sunt amandoua despre PERIOADA, deci stau
-                       lipite. Statusul e despre PROIECT si sta separat — altfel
-                       „Pregătire" (faza) si „Pregătire" (status de proiect, il au
-                       10 din 20) ar aparea ca doua chipuri identice cu intelesuri
-                       diferite. -->
+                <!-- Eticheta lucrarii („Contrapanou A12 (montaj)") pe randul ei:
+                     e text, nu chip, si e singurul lucru care spune CE faci. -->
+                {#if p.eticheta}<div class="it-et">{p.eticheta}</div>{/if}
+                <!-- CELE TREI CHIPURI PE UN RAND, TOATE LA FEL (Ion, 2026-08-10).
+                     „niciun task" purta pana acum alta haina (fond de restant,
+                     inaltime proprie) si statea lipit de data — deci trei fapte
+                     despre aceeasi perioada aratau ca trei feluri de lucruri.
+                     Acum au aceeasi cutie; ce le deosebeste ramane doar TONUL:
+                     locul si faza sunt neutre/accent, lipsa taskurilor e rosie.
+                     Bifa „Făcut" intra in acelasi rand — e tot despre perioada. -->
+                <div class="it-chips">
                   <span class="loc" title="Unde ești în ziua asta">{p.locatie === 'sediu' ? 'Sediu' : 'Site'}</span>
                   <span class="loc faza" class:pal={p.faza === 'pregatire'} title="Faza acestei perioade">{p.faza === 'pregatire' ? 'Pregătire' : 'Implementare'}</span>
-                  <!-- Bifa e tot despre perioadă, deci stă lipită de loc și fază.
-                       Rămâne etichetă, nu buton: pe deget un chip de 15px e exact
-                       ținta pe care o ratezi. Anularea stă jos, între acțiuni. -->
-                  {#if p.confirmata}
-                    <span class="loc fac" title="Perioada s-a făcut. Statusul proiectului nu s-a schimbat."><Check size={11} /> Făcut</span>
-                  {/if}
-                  <span class="tk" class:warn={!p.taskuri_deschise}>{#if !p.taskuri_deschise}<TriangleAlert size={11} />{/if}{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}</span>
-                  <span class="it-data">{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ` – ${shortDate(p.data_sfarsit)}` : ''}</span>
+                  <span class="loc tk" class:warn={!p.taskuri_deschise}
+                        title={p.taskuri_deschise ? 'Taskuri deschise pe proiect' : 'Perioada n-are niciun task deschis'}>
+                    {#if !p.taskuri_deschise}<TriangleAlert size={11} />{/if}{p.taskuri_deschise ? `${p.taskuri_deschise} ${p.taskuri_deschise === 1 ? 'task' : 'taskuri'}` : 'niciun task'}
+                  </span>
                 </div>
+                <!-- RANDUL 4: cele trei ACTIUNI. Apar la hover/focus, dar locul
+                     lor ramane rezervat (`opacity`, nu `display`), ca randul sa
+                     nu creasca sub cursor si sa impinga lucrarea urmatoare
+                     exact cand vrei s-o atingi. -->
                 {#if cuTitlu}
-                  <!-- Randul de actiuni, sub meta. Apar la hover/focus pe rand,
-                       dar LOCUL LOR E MEREU REZERVAT (`opacity`, nu `display`):
-                       altfel randul ar creste sub cursor si ar impinge lucrarea
-                       urmatoare exact cand vrei s-o atingi. -->
                   <div class="it-act">
                     {#if p.confirmata}
                       <button class="ia" disabled={busy === p.id} onclick={() => confirma(p, 0)}
@@ -1477,6 +1477,17 @@
                     </button>
                   </div>
                 {/if}
+                <!-- RANDUL 5: STAREA la stanga, DATA la dreapta (Ion).
+                     „Făcut" de aici e o STARE, nu butonul de deasupra: unul spune
+                     ce s-a intamplat, celalalt il schimba. De aceea nu mai stau
+                     in acelasi rand — doua obiecte cu acelasi cuvant, lipite, se
+                     citeau ca unul singur. -->
+                <div class="it-jos">
+                  {#if p.confirmata}
+                    <span class="loc fac" title="Perioada s-a făcut. Statusul proiectului nu s-a schimbat."><Check size={11} /> Făcut</span>
+                  {/if}
+                  <span class="it-data">{shortDate(p.data_start)}{p.data_sfarsit && p.data_sfarsit !== p.data_start ? ` – ${shortDate(p.data_sfarsit)}` : ''}</span>
+                </div>
                 {#if p.necesita_decizie}
                   <!-- E O INTREBARE, NU O NOTA (M10). Statea ca o linie rosie cu
                        doua pastile de 22px langa ea — se citea ca un avertisment
@@ -2189,10 +2200,15 @@
           font-weight: var(--fw-medium); color: var(--text); text-align: left; cursor: pointer;
           min-width: 0; }
   .it-t:hover { color: var(--accent); }
-  /* Actiuni ca TEXT cu iconita, 13/600, fara chenar — pe RANDUL LOR, sub meta,
-     aliniate la stanga ca sa porneasca de sub titlu (nu impinse la dreapta:
-     acolo ar parea ale datei de langa ele). */
-  .it-act { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+  /* CINCI RANDURI, IN ORDINEA CERUTA DE ION (2026-08-10):
+       1 titlu · 2 descriere · 3 chipuri · 4 actiuni · 5 stare + data.
+     Fiecare rand raspunde la o singura intrebare, si de aceea nu se mai
+     imbulzesc doua pe aceeasi linie. */
+  /* Actiuni ca TEXT cu iconita, 13/600, fara chenar — randul lor. */
+  .it-act { display: flex; align-items: center; gap: 14px; min-width: 0; margin-top: 6px; }
+  /* Piciorul: starea la stanga, data impinsa la dreapta (`.it-data` are
+     `margin-left: auto`, deci data sta la dreapta si cand nu exista bifa). */
+  .it-jos { display: flex; align-items: center; gap: 8px; margin-top: 6px; min-height: 20px; }
   .ia { display: inline-flex; align-items: center; gap: 4px;
         font-size: var(--font-control); font-weight: var(--fw-semibold);
         color: var(--text-secondary); background: none; border: none; padding: 2px 0;
@@ -2200,33 +2216,35 @@
   .ia:hover:not(:disabled) { color: var(--accent); }
   .ia.del:hover:not(:disabled) { color: var(--danger); }
   .ia:disabled { opacity: 0.5; cursor: default; }
-  .it-m { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 3px;
-          font-size: var(--font-small); color: var(--text-dim); }
+  /* RANDUL 2 — descrierea lucrarii. Text, nu chip: ea spune CE faci acolo, si e
+     singurul rand care se poate rupe pe doua linii. */
+  .it-et { margin-top: 3px; font-size: var(--font-small); color: var(--text-dim);
+           line-height: var(--lh-snug); }
+  /* RANDUL 3 — cele trei chipuri, toate in aceeasi cutie. */
+  .it-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 5px; }
   /* Chipurile sunt suprafata a doua cu inel, nu pastile pe `--bg-hover`: la 20px
      si cu raza `--radius-xs` se citesc ca etichete, iar `--radius-full` le facea
      sa semene cu numaratorile de peste tot. */
-  .it-m .loc { display: inline-flex; align-items: center; height: 20px; padding: 0 7px;
-               border-radius: var(--radius-xs); background: var(--bg-elevated);
-               box-shadow: inset 0 0 0 1px var(--border);
-               font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-secondary); }
+  .loc { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px;
+         border-radius: var(--radius-xs); background: var(--bg-elevated);
+         box-shadow: inset 0 0 0 1px var(--border); white-space: nowrap;
+         font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-secondary); }
   /* Faza preia limbajul barelor: palid = pregatire, plin = implementare. */
-  .it-m .faza { background: var(--accent-subtle); box-shadow: none; color: var(--accent-deep); }
-  .it-m .faza.pal { background: var(--bg-elevated); box-shadow: inset 0 0 0 1px var(--border); color: var(--text-secondary); }
+  .it-chips .faza { background: var(--accent-subtle); box-shadow: none; color: var(--accent-deep); }
+  .it-chips .faza.pal { background: var(--bg-elevated); box-shadow: inset 0 0 0 1px var(--border); color: var(--text-secondary); }
   /* Data ieșirii, pironita la dreapta: pe un panou deschis pe o zi anume, ea spune
      cat tine lucrarea din care ziua face parte. Mono, ca orice cifra comparabila. */
   .it-data { margin-left: auto; font-family: var(--font-mono); font-size: var(--font-small);
              color: var(--text-dim); white-space: nowrap; flex: none; }
   /* Verdele spune „s-a facut", nu „urgent" — e singurul loc din rand unde
      culoarea nu tine de identitatea proiectului, si de aia e conturat, nu plin. */
-  .it-m .fac { display: inline-flex; align-items: center; gap: 3px; background: none;
-               color: var(--success); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
-  /* „niciun task" e un chip de avertisment (desen): tenta + inel de restant, cu
-     triunghi — nu doar text rosu, care se pierdea intre chipurile neutre. */
-  .it-m .tk.warn { display: inline-flex; align-items: center; gap: 4px; height: 20px;
-    padding: 0 7px; border-radius: var(--radius-xs);
-    background: var(--danger-subtle); color: var(--danger-deep);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 30%, transparent);
-    font-size: var(--font-label); font-weight: var(--fw-semibold); }
+  .it-jos .fac { background: none; color: var(--success);
+                 box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 40%, transparent); }
+  /* „niciun task" ia ACEEASI cutie ca vecinii lui (Ion: „toate 3 la fel") — se
+     deosebeste doar prin TON: tenta si inel de restant, cu triunghi. Inainte isi
+     scria singur inaltimea si raza, deci arata ca alt fel de obiect. */
+  .it-chips .tk.warn { background: var(--danger-subtle); color: var(--danger-deep);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 30%, transparent); }
 
   /* Blocul de intrebare (M10): tenta si inel de restant, ca sa se citeasca drept
      ceva ce asteapta un raspuns — nu ca o eticheta de stare. */
