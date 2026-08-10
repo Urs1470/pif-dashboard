@@ -2056,12 +2056,12 @@
   /* Benzile refolosesc clasele de pe desktop, deci si gramatica: pregatirea e
      spalatura neutra, implementarea singura pe accent. Se schimba doar insetul,
      fiindca pista are 34px, nu 42. */
-  /* Raza 6 si spalatura la 10% — valorile din desenul 4c pentru pista de 34px;
-     cand proiectul n-are nicio perioada in fereastra, stingerea e la ambele
-     capete pe PROCENTE (22/78), nu pe distanta fixa de desktop: pe o pista
-     ingusta 56px de fiecare parte ar inghiti aproape tot. */
+  /* Raza 6; spalatura la 14% (mocheta A, aleasa de Ion — la 10% abia se vedea
+     pe tema intunecata). Cand proiectul n-are nicio perioada in fereastra,
+     stingerea e la ambele capete pe PROCENTE (22/78), nu pe distanta fixa de
+     desktop: pe o pista ingusta 56px de fiecare parte ar inghiti aproape tot. */
   .mp-track .band { top: 5px; bottom: 5px; border-radius: 6px; z-index: 2;
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 10%, transparent) 45%); }
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 14%, transparent) 45%); }
   .mp-track .band.deschis.deschisL {
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%);
     mask-image: linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%); }
@@ -2070,9 +2070,15 @@
      deschida atinge randul (`.mimpl`), care are si chevron. */
   .mp-track .impl-band { top: 5px; bottom: 5px; padding: 0; gap: 0; z-index: 2;
     align-items: center; justify-content: center; border-radius: 6px;
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent);
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 36%, transparent);
     pointer-events: none; cursor: default; }
+  /* Perioada inca in PREGATIRE, in pista: mai palida si cu iconita neutra
+     (mocheta A) — „plin vs palid" se citeste si aici, nu doar pe desktop. */
+  .mp-track .impl-band.pregatire {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
+    color: var(--text-secondary); }
   .mp-track .impl-band :global(.ib-ico) { margin-top: 0; opacity: 1; }
 
   .mgroup { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
@@ -2091,11 +2097,13 @@
   .mgol:active { transform: scale(var(--press-scale)); }
   .mgol.static { cursor: default; }
   .mgol.static:active { transform: none; }
-  .mgol-n { flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-semibold);
+  .mgol-n { flex: 1; min-width: 0; font-size: var(--font-rand); font-weight: var(--fw-semibold);
     color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mgol :global(.mgol-chev) { flex: none; color: var(--text-faint); }
   .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
-  .mg-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* --font-rand (15 fix): capul cardului e un titlu de RAND, nu corp — pe
+     telefon corpul urca la 16, capul nu (mocheta A / desen 4c: nume 15/600). */
+  .mg-head h2 { font-size: var(--font-rand); font-weight: var(--fw-semibold); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* `.mg-count` a plecat — sunt doua `.count` din global.css (vezi markup).
      Prima impinge perechea in capatul din dreapta al antetului. */
   .mg-head :global(.count:first-of-type) { margin-left: auto; }

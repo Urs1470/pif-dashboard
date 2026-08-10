@@ -223,6 +223,24 @@ def update_proiect(project_id):
         cursor.execute('UPDATE proiecte SET data_finalizare = ? WHERE id = ?',
                        (now[:10], project_id))
 
+    # LA INCHIDERE, PERIOADELE TRECUTE SE BIFEAZA SINGURE (cerut de Ion,
+    # 2026-08-10). Motivul practic care a scos regula la iveala: doua proiecte
+    # inchise pe 5 august aveau perioade din 29-30 iulie nebifate, iar v39
+    # stinge intrebarea „s-a facut?" la inchidere — deci perioadele ramaneau
+    # pentru totdeauna fara eticheta „Făcut", fara niciun drum de a o pune.
+    # Semantica e onesta: inchizi un proiect DUPA ce lucrul s-a facut, deci o
+    # perioada deja trecuta la inchidere s-a intamplat. Doar cele TRECUTE:
+    # o perioada viitoare ramasa in calendar e o planificare gresita, nu un
+    # fapt — aia se sterge sau se muta, nu se bifeaza din oficiu.
+    if status_efectiv == 'finalizat' and old_status != 'finalizat':
+        cursor.execute(
+            """UPDATE implementari
+               SET confirmata = 1
+               WHERE proiect_id = ?
+                 AND COALESCE(confirmata, 0) = 0
+                 AND date(COALESCE(NULLIF(data_sfarsit, ''), data_start)) < date(?)""",
+            (project_id, now[:10]))
+
     conn.commit()
 
     # Dashboard -> wiki: oglindește statusul în frontmatter-ul README-ului de

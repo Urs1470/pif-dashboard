@@ -13,12 +13,14 @@
   //  - DESKTOP (autohide v4): ascuns by default; apare DOAR cat timp cursorul e
   //    impins in marginea de jos (unde sta dock-ul) si se ascunde cand iesi.
   //    Manerul "peek" ramane vizibil ca linie de prezenta.
-  //  - MOBIL: urmareste DERULAREA, ca bara de adresa a browserului (cerinta Ion,
-  //    2026-07-31). Cobori prin lista -> pleaca si iti da ecranul intreg; urci ->
-  //    revine imediat. Sus de tot si la capatul paginii sta mereu afara.
-  //    ATENTIE, asta INLOCUIESTE regula veche „pe mobil dock FIX, fara autohide":
-  //    daca gasesti pe undeva comentariul acela, e fosila — nu-l restaura.
-  //    Se ascunde in continuare cat timp tastatura e deschisa.
+  //  - MOBIL: FIX, jos de tot, mereu la vedere (cerinta Ion, 2026-08-10 —
+  //    RASTOARNA cerinta lui din 2026-07-31, „urmareste derularea ca bara de
+  //    adresa": cu etichetele sub iconite dockul e acum harta aplicatiei, iar o
+  //    harta care fuge de sub deget cand derulezi e mai scumpa decat cei ~72px
+  //    de ecran pe care ii elibera). Singura ascundere ramasa pe telefon e
+  //    tastatura: peste ea navigatia nu ajuta si spatiul chiar lipseste.
+  //    `onScroll` de mai jos ramane scris dar nu mai are efect pe mobil —
+  //    `hidden` nu mai citeste `scrollHidden` acolo.
   // `hidden` e DERIVAT, nu setat de mana dintr-un `apply()`.
   // Varianta imperativa a produs un bug greu de vazut: efectul care readuce
   // dock-ul la schimbarea rutei chema `apply()`, iar `apply()` CITEA `scrollHidden`
@@ -46,7 +48,7 @@
     foaieDeschisa
       ? false
       : isMobile
-        ? kbLocked || scrollHidden
+        ? kbLocked
         : kbLocked || !(inZone || peekReveal)
   )
 
@@ -505,10 +507,21 @@
      praguri diferite, ar exista o latime la care ai opt iconite marite si dock-ul
      ar iesi din ecran. */
   @media (max-width: 768px) {
+    /* FIX, JOS DE TOT (Ion, 2026-08-10): bara plina de la margine la margine,
+       lipita de fundul ecranului — ca in desenele mobile — nu pastila plutitoare
+       de pe desktop. Safe-area intra in padding, nu in `bottom`, ca fundalul sa
+       curga pana sub gestul de sistem. */
     .dock {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: translateY(var(--dock-shift, 0px));
+      width: 100%;
+      max-width: 100%;
       gap: 4px;
-      padding: 8px 6px;
-      max-width: calc(100vw - 12px);
+      padding: 8px 6px calc(8px + var(--safe-bottom));
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      justify-content: space-around;
     }
     /* ETICHETA SUB ICONITA (desenele mobile, toate cadrele): cinci cuvinte
        pentru cinci drumuri — iconita singura cere sa fi invatat deja harta.

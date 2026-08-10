@@ -679,20 +679,25 @@ def dockul_pe_telefon(ctx, baza):
             page.wait_for_timeout(55)
         page.wait_for_timeout(420)
 
+    # CONTRACT INTORS PE 2026-08-10 (Ion): dock-ul pe telefon e FIX, jos de tot,
+    # mereu la vedere — a rasturnat propria cerinta din 2026-07-31 („urmareste
+    # derularea ca bara de adresa"). Cu etichetele sub iconite dockul e harta
+    # aplicatiei, iar o harta care fuge de sub deget e mai scumpa decat ecranul
+    # castigat. Testul verifica acum CONTRARIUL celui vechi: derularea NU-l
+    # misca, si sta lipit de marginea de jos. (Singura ascundere ramasa e
+    # tastatura — netestabila credibil headless.)
     deruleaza(500)
     jos = page.evaluate(STARE)
-    zi(jos['ascuns'], 'coborand prin pagina, dock-ul pleaca')
-    # Nu e de ajuns sa primeasca clasa: pe telefon manerul e ascuns, deci daca
-    # deplasarea e cea de desktop ramane o dunga de dock peste continut.
-    zi(jos['subEcran'], 'plecat inseamna COMPLET sub ecran, nu o dunga')
-
-    deruleaza(340)
-    sus = page.evaluate(STARE)
-    zi(not sus['ascuns'], 'urcand, revine imediat')
+    zi(not jos['ascuns'], 'coborand prin pagina, dock-ul RAMANE (contract 2026-08-10)')
+    zi(not jos['subEcran'], 'sta pe ecran, nu sub el')
+    lipit = page.evaluate("""() => {
+      const r = document.querySelector('.dock').getBoundingClientRect();
+      return Math.round(window.innerHeight - r.bottom); }""")
+    zi(abs(lipit) <= 1, 'lipit de marginea de jos (bottom: 0)', 'gol de %dpx' % lipit)
 
     deruleaza(0)
     varf = page.evaluate(STARE)
-    zi(not varf['ascuns'], 'in varful paginii sta afara')
+    zi(not varf['ascuns'], 'si in varful paginii sta afara')
 
     page.close()
     return probleme

@@ -170,6 +170,24 @@
   // lasat-o pe cea dinainte.
   $effect(() => { if (open) { intins = false; trasY = 0 } })
 
+  // INTINDEREA VINE SI DIN CONTINUT, nu doar din antet (Ion, 2026-08-10, pe
+  // foaia zilei din Calendar: „nu pot ridica de tot ca sa vad toate detaliile").
+  // Gestul natural e sa tragi de CE VEZI — adica de continut — dar acolo
+  // ascultatorul de tragere nu exista, fiindca degetul trebuie sa poata DERULA.
+  // Compromisul: o glisare in sus pe corp INTINDE foaia (o singura data, fara
+  // preventDefault — derularea continua nestingherita sub acelasi deget; foaia
+  // doar creste in timp ce derulezi). Inchiderea ramane pe antet, unde gestul
+  // in jos nu se bate cu nimic.
+  let corpY0 = 0
+  function corpAtinge(e) {
+    if (!sheet || intins) return
+    corpY0 = e.touches[0].clientY
+  }
+  function corpTrage(e) {
+    if (!sheet || intins || !corpY0) return
+    if (corpY0 - e.touches[0].clientY > 24) { intins = true; corpY0 = 0 }
+  }
+
   /** Singurul drum de inchidere pornit de utilizator. */
   function inchide() {
     open = false
@@ -236,7 +254,7 @@
         <h2 class="modal-title">{title}</h2>
         <button class="modal-close" onpointerdown={(e) => e.stopPropagation()} onclick={inchide} aria-label="Închide"><X size={18} /></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" ontouchstart={corpAtinge} ontouchmove={corpTrage}>
         {@render children()}
       </div>
       {#if footer}
