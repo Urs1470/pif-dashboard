@@ -2283,29 +2283,19 @@
      nu mai are ce dubla. */
   @media (max-width: 620px) {
     .page { padding: var(--space-md); }
-    /* Benzile sunt mai subtiri pe telefon, deci si pasul lor — cele doua numere
-       trebuie sa rămână in acord cu `--h-banda`, altfel benzile ies din celule.
-       Banda urca de la 12 la 15px (M1): sub 15 nu incape o iconita de 10px cu
-       text langa ea, iar M1 cere si iconita, si numele. Pasul e 19, nu 18: textul
-       de 12px cu `--lh-snug` inalta banda la 16px reali, deci cu 18 golul dintre
-       benzi ar fi iesit 2, nu 3. Masurat, nu presupus. */
-    /* SI decalajul de sus se rescrie, nu doar pasul: pe desktop --h-antet e 26
-       (geometria cutiei C10), dar aici cutia nu se deseneaza si antetul celulei
-       e mai scund — padding 4 + rand de cifra 15 + 2 aer = 21. Fara override,
-       benzile porneau cu 5px mai jos decat bugetul din `min-height` si ultima
-       banda incaleca randul urmator (raportat de Ion, cu poza). */
-    .grid { --h-antet: 21px; --h-banda: 19px; }
-    /* Podeaua celulei e `--tap-min` (M2): ziua e o tinta pe care o atingi cu
-       degetul, iar la 40px o ratai in favoarea vecinei. Creste doar cat cer
-       benzile, ca pe desktop — aceeasi regula, alt prag. */
-    /* ABATERE CONSTIENTA DE LA DESEN: M2 scrie „randuri fixe de 44px", aici e 44
-       ca PODEA, cu crestere. Fix ar insemna ca intr-o celula intra o singura
-       banda, iar restul se taie — si de la C6 nu mai exista contorul care sa
-       spuna ca s-au taiat. Adica lucrari invizibile fara niciun semn, exact ce
-       C6 a putut fi scos pentru ca NU se intampla. Pe datele reale randul cel mai
-       plin iese ~93px; daca vrei totusi 44 strict, se schimba `max(...)` in `44px`
-       si atunci trebuie sa se intoarca un semn pentru ce nu incape. */
-    .zi { min-height: max(var(--tap-min), calc(21px + var(--benzi, 1) * 19px));
+    /* ===== VARIANTA B, ALEASA DE ION DIN MOCHETE (2026-08-10): „dunga +
+       agenda". Banda de telefon NU mai e o pastila cu iconita si nume (M1 din
+       handoff — incercata, iesea inghesuita pe datele reale, vezi poza lui) —
+       e o DUNGA de 4px care spune doar STAREA prin culoare. Grila redevine
+       harta pura: unde esti si cat de plin e; CE faci acolo scrie in agenda
+       „Iesirile lunii" de sub grila, care exista exact pentru asta.
+       Pasul 6 = dunga 4 + gol 2. Antetul celulei ramane 21 (padding 4 + cifra
+       15 + 2 aer). */
+    .grid { --h-antet: 21px; --h-banda: 6px; }
+    /* Celula ramane practic FIXA la 44 (mocheta B): cu pasul de 6, chiar si
+       cinci dungi (plafonul MAX_BENZI) cer doar 54px — deci `max()` ramane ca
+       plasa pentru cazul rar, fara sa mai schimbe ritmul grilei. */
+    .zi { min-height: max(var(--tap-min), calc(21px + var(--benzi, 1) * 6px + 3px));
           padding: 4px 2px 0; }
     /* Cifra sta CENTRATA (M2): la 50px latime, aliniata la stanga cadea peste
        capatul benzii de dedesubt si se citeau ca un singur bloc. */
@@ -2316,11 +2306,23 @@
        citesti cu adevarat pe telefon. */
     .zi, .zi.col-ultima { box-shadow: inset 0 -1px 0 var(--border-strong); }
     .zi.rand-ultim, .zi.col-ultima.rand-ultim { box-shadow: none; }
-    /* Banda isi poarta numele si locul (M1): pe telefon ea E lucrarea, fiindca
-       chenarul nu se deseneaza. */
-    .banda { min-height: 15px; padding: 0 4px; gap: 3px; }
-    .banda-t { display: block; font-size: var(--font-label); font-weight: var(--fw-semibold); }
-    .banda-ico { display: inline-flex; align-items: center; flex: none; }
+    /* DUNGA DE STARE (mocheta B): 4px, fara text si fara iconita — la latimea
+       asta o litera oricum nu incapea intreaga, iar numele trunchiat („Config…")
+       era zgomot, nu informatie. Culoarea spune tot ce poate spune o dunga:
+       plin = implementare, palid = pregatire, verde = facuta, rosu = de
+       clarificat. Raza 2: la 4px inaltime orice raza mai mare o face pastila. */
+    .banda { min-height: 4px; padding: 0; gap: 0; border-radius: 2px; }
+    .banda-t { display: none; }
+    .banda-ico { display: none; }
+    .banda :global(.banda-bifa) { display: none; }
+    .banda.inceput { margin-left: 4px; padding-left: 0; border-top-left-radius: 2px; border-bottom-left-radius: 2px; }
+    .banda.sfarsit { margin-right: 4px; border-top-right-radius: 2px; border-bottom-right-radius: 2px; }
+    /* „Palid" la 4px inseamna FILL stins, nu contur: un inel de 1.5px pe o dunga
+       de 4 ar fi doua linii lipite. Aceeasi logica la facuta — fill verde plin,
+       bifa n-are unde sta. */
+    .banda.pregatire { background: color-mix(in srgb, var(--accent) 38%, transparent);
+                       box-shadow: none; }
+    .banda.facuta { background: var(--success); box-shadow: none; }
     /* CHENARUL NU SE DESENEAZA PE TELEFON (M6). El spune „zilele astea sunt o
        singura iesire" — un fapt care, pe o celula de 50px, ar fi o rama in plus
        peste benzi deja inghesuite. Pe telefon iesirile se citesc SCRISE, in agenda
