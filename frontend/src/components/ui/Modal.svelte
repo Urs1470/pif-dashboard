@@ -500,21 +500,26 @@
     .modal.sheet.intins {
       max-height: calc(100dvh - var(--safe-top));
     }
-    /* `inalt` FIXEAZA inaltimea, nu doar plafonul: foaia sta pe toata pagina
-       si cand ziua are putin continut (cerinta Ion — panoul zilei; apoi a
-       cerut-o si mai sus: „fa modalul ala mai inalt, nu vreau sa dau scroll" —
-       deci inaltimea MAXIMA a unei foi, cat `.intins`).
-       Nota „doar max-height, niciodata height" de mai sus ramane adevarata
-       pentru INTINDEREA DIN GEST (acolo saltul de reasezare strica tranzitia);
-       aici foaia se DESCHIDE gata intinsa, nu creste sub deget. */
+    /* `inalt` = FOAIA E O PAGINA. Nu „aproape tot ecranul", ci TOT: `100dvh`,
+       pana sub bara de stare. A luat trei runde, si de fiecare data valoarea a
+       fost aproape — de aici lectia:
+         - `max-height: min(92dvh, …)` din regula de baza taia la 92% (masurat:
+           747 din 812) — `height` singur nu bate un plafon, deci se scriu
+           amandoua;
+         - `calc(100dvh - var(--safe-top))` parea „tot ecranul" pe emulator,
+           unde safe-area e 0. Pe telefonul lui Ion, cu edge-to-edge pornit
+           (`decorFitsSystemWindows(false)` + `viewport-fit=cover`), `--safe-top`
+           e REAL (~50px) — iar foaia fiind ancorata JOS, cei 50px ramaneau o
+           fasie de pagina vizibila sus. Exact „nu se urca pana sus".
+       Deci inaltimea nu mai scade safe-area: o INCLUDE si o compenseaza cu
+       padding, ca manerul si titlul sa nu intre sub bara de stare. Colturile
+       de sus se indreapta: la marginea ecranului o raza n-ar avea ce rotunji,
+       si ar arata ca o scapare de 20px. */
     .modal.sheet.inalt {
-      height: calc(100dvh - var(--safe-top));
-      /* SI plafonul, nu doar inaltimea: regula de baza a foii are
-         `max-height: min(92dvh, …)`, iar `height` singur nu bate un plafon —
-         masurat, foaia se oprea la 92% (747 din 812) si tot trebuia derulata.
-         Aceeasi valoare ca la `.intins`, ca sa nu existe doua „pe tot ecranul"
-         cu doua inaltimi. */
-      max-height: calc(100dvh - var(--safe-top));
+      height: 100dvh;
+      max-height: 100dvh;
+      padding-top: var(--safe-top);
+      border-radius: 0;
     }
     /* Antetul sheet-ului e o LINIE DE CONTEXT, nu un titlu de fereastra — ca
        „📥 Inbox >" la Todoist. Inainte lua ~90px pe verticala pentru un singur
