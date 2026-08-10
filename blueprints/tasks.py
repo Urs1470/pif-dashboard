@@ -1077,9 +1077,14 @@ def _sfera_or_none(value):
 @tasks_bp.route('/api/global-tasks', methods=['GET'])
 @login_required
 def get_global_tasks():
+    # `toate` intoarce AMBELE sfere intr-un singur raspuns (fiecare rand isi
+    # poarta `sfera`), ca /tasks sa comute Munca/Personal instant, din memorie —
+    # inainte fiecare comutare astepta un dus-intors cu serverul, iar Ion o
+    # simtea ca „deficienta" pe telefon. Implicitul ramane 'munca', pentru
+    # consumatorii vechi (Cowork, scripturi).
     sfera = request.args.get('sfera') or 'munca'
-    if _sfera_or_none(sfera) is None:
-        return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
+    if sfera != 'toate' and _sfera_or_none(sfera) is None:
+        return jsonify({'error': "sfera invalidă (acceptat: 'munca', 'personal' sau 'toate')"}), 400
 
     conn = get_db()
     cursor = conn.cursor()
@@ -1090,8 +1095,12 @@ def get_global_tasks():
     arhiva = request.args.get('arhiva')
 
     # 1) Fetch the global tasks (single query, no correlated subqueries).
-    query = 'SELECT g.* FROM global_tasks g WHERE g.sfera = ?'
-    params = [sfera]
+    if sfera == 'toate':
+        query = 'SELECT g.* FROM global_tasks g WHERE 1=1'
+        params = []
+    else:
+        query = 'SELECT g.* FROM global_tasks g WHERE g.sfera = ?'
+        params = [sfera]
 
     if arhiva == 'true':
         query += " AND status = 'done'"

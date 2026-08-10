@@ -2171,8 +2171,20 @@
      deschide. `minmax(0, 1fr)` pe prima coloana: cu `1fr` (adica `minmax(auto,
      1fr)`) pista, care are latime minima proprie (`contentMin`), ar refuza sa se
      micsoreze si ar impinge panoul in afara ecranului. */
-  .lucru { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-md); align-items: start; }
-  .lucru.cu-panou { grid-template-columns: minmax(0, 1fr) 320px; }
+  /* COLOANA PANOULUI EXISTA MEREU, la 0 cand e inchis (raportat de Ion: la
+     inchidere „bara de jos cu taskuri fara perioade se strica si reapare").
+     Mecanica bug-ului: clasa pica in clipa inchiderii, grila devenea o singura
+     coloana, iar panoul — tinut in viata de tranzitia de iesire — era re-asezat
+     ca AL DOILEA RAND al grilei: cadea sub grafic, peste sertar, 200ms.
+     Cu doua piste mereu (0px <-> 320px, valori interpolabile), latimea se
+     ANIMEAZA — graficul se strange si se destinde lin — iar panoul in iesire
+     trece pe absolute, in coltul lui, fara loc in flux. */
+  .lucru { position: relative; display: grid;
+    grid-template-columns: minmax(0, 1fr) 0px; column-gap: 0; align-items: start;
+    transition: grid-template-columns var(--dur-base) var(--ease),
+                column-gap var(--dur-base) var(--ease); }
+  .lucru.cu-panou { grid-template-columns: minmax(0, 1fr) 320px; column-gap: var(--space-md); }
+  .lucru:not(.cu-panou) .panou { position: absolute; top: 0; right: 0; width: 320px; }
 
   .panou { background: var(--bg-surface);
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);

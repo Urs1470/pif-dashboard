@@ -2,6 +2,20 @@
   // Comune tuturor instantelor de Modal (vezi blocarea derularii mai jos).
   let blocari = 0
   let yBlocat = 0
+
+  // CAT TIMP EXISTA UN MODAL DESCHIS, DOCK-UL DE TELEFON COBOARA (Ion:
+  // „modalul de detalii zi se ascunde o parte sub dock... vezi daca vreun modal
+  // se ascunde sub dock"). Sub un voal dock-ul oricum nu face nimic, iar
+  // z-indexul singur nu e o garantie: orice stramos cu transform tranzitoriu
+  // (`.ruta-in`, alunecarea de ruta) face din pagina blocul de referinta al
+  // voalului `fixed`, si atunci dock-ul — frate cu pagina, nu copil — picteaza
+  // deasupra. Clasa de pe <html> taie problema din radacina, pentru TOATE
+  // modalele deodata (toate trec pe aici); regula CSS e in global.css.
+  let modaleDeschise = 0
+  function marcheazaModal(deschis) {
+    modaleDeschise = Math.max(0, modaleDeschise + (deschis ? 1 : -1))
+    document.documentElement.classList.toggle('are-modal', modaleDeschise > 0)
+  }
 </script>
 
 <script>
@@ -174,6 +188,14 @@
   // zeroeaza aici: foaia urmatoare porneste din pozitia ei, nu din cea in care ai
   // lasat-o pe cea dinainte.
   $effect(() => { if (open) { intins = inalt; trasY = 0 } })
+
+  // Semnalul pentru dock — cu curatare, deci si inchiderea, si distrugerea
+  // componentei cu modalul deschis il scad corect.
+  $effect(() => {
+    if (!open) return
+    marcheazaModal(true)
+    return () => marcheazaModal(false)
+  })
 
   // INTINDEREA VINE SI DIN CONTINUT, nu doar din antet (Ion, 2026-08-10, pe
   // foaia zilei din Calendar: „nu pot ridica de tot ca sa vad toate detaliile").

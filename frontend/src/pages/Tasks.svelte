@@ -67,11 +67,18 @@
   /** Reincarcarea listei, mereu cu AMBELE filtre ale vederii curente. Un singur
    *  drum: fara el, un call-site uitat cu `loadGlobalTasks()` gol ar repicta
    *  vederea Personal cu lista de munca. */
-  const reload = () => loadGlobalTasks({ arhiva: showArchive, sfera: sferaActiva })
+  // `sfera: 'toate'` — AMBELE sfere vin intr-un singur raspuns, iar comutarea
+  // Munca/Personal e filtrare in memorie, instanta (Ion: comutarea „este
+  // deficienta" — fiecare atingere astepta un dus-intors cu serverul).
+  const reload = () => loadGlobalTasks({ arhiva: showArchive, sfera: 'toate' })
 
   // Hide a recurring task's next occurrence until its scadenta arrives, so finalizing
   // today's instance doesn't look like an identical unchecked copy reappearing.
-  const activeTasks = $derived(globalTasks.items.filter(t => t.status !== 'done' && !isFutureRecurrence(t)))
+  // Sfera se filtreaza AICI, nu pe server: `items` tine ambele sfere (un singur
+  // fetch cu `sfera=toate`), deci comutarea e o filtrare in memorie. `sfera`
+  // NULL pe randuri vechi inseamna 'munca' — aceeasi conventie ca in DB.
+  const activeTasks = $derived(globalTasks.items.filter(t =>
+    t.status !== 'done' && !isFutureRecurrence(t) && (t.sfera || 'munca') === sferaAfisata))
   // NU exista `doneTasks` in vederea activa: `/api/global-tasks` adauga
   // `AND status != 'done'` cand nu ceri arhiva, deci lista nu contine niciodata
   // taskuri bifate. Aici traia o sectiune „N finalizate" pliabila, cu randuri
@@ -82,13 +89,14 @@
   // Lista se citeste de sus in jos ca o zi de lucru: restante, azi, mâine, restul.
   // In arhiva gruparea n-ar spune nimic (toate sunt facute), deci ramane o grupa
   // fara cap — acelasi drum de randare, zero markup duplicat.
-  // `arhivaAfisata`, nu `showArchive`: cat timp cererea pentru noua stare e pe
-  // drum, lista VECHE ramane pe ecran (vezi `listaCheie`) — si trebuie grupata
-  // dupa regula EI, altfel taskurile active s-ar regrupa o clipa ca arhiva
-  // (fara capete) inainte sa soseasca arhiva adevarata.
+  // STAREA AFISATA, nu comutatoarele vii: cat timp cererea de arhiva e pe drum,
+  // lista VECHE ramane pe ecran (vezi `listaCheie`) — si trebuie filtrata si
+  // grupata dupa regula EI, altfel continutul ar sari inainte de alunecare.
+  // Sfera comuta instant (nu cere retea), deci pentru ea cele doua coincid.
   const arhivaAfisata = $derived(listaCheie.endsWith(':true'))
+  const sferaAfisata = $derived(listaCheie ? listaCheie.split(':')[0] : sferaActiva)
   const grupe = $derived(arhivaAfisata
-    ? { arhiva: { id: 'arhiva', titlu: null, ton: 'sters', items: globalTasks.items, start: 0 } }
+    ? { arhiva: { id: 'arhiva', titlu: null, ton: 'sters', items: globalTasks.items.filter(t => (t.sfera || 'munca') === sferaAfisata), start: 0 } }
     : grupeazaDupaTermen(activeTasks))
   // Arhiva e o grupa fara cap, pusa la coada ordinii — acelasi drum de randare.
   const ordine = [...ORDINE_GRUPE, 'arhiva']
@@ -220,7 +228,7 @@
         data_scadenta: formDeadline || undefined,
         recurenta: formRecurenta || undefined,
         status: 'to_do',
-      }, { arhiva: showArchive, sfera: sferaActiva })
+      }, { arhiva: showArchive, sfera: 'toate' })
       resetForm()
       showNewModal = false
     } finally { creating = false }
@@ -246,7 +254,7 @@
       await createGlobalTask({
         titlu: quickTitle.trim(), status: 'to_do', sfera: sferaActiva,
         data_scadenta: termen || undefined,
-      }, { arhiva: showArchive, sfera: sferaActiva })
+      }, { arhiva: showArchive, sfera: 'toate' })
       quickTitle = ''
       quickData = ''
       // Focusul RAMANE in camp: intr-o lista de facut adaugi trei lucruri la rand,
@@ -787,7 +795,9 @@
   // Un singur $effect in loc de onMount + load-uri explicite pe chip-uri: ruleaza
   // la montare SI ori de cate ori se schimba sfera (din URL) sau arhiva — trei
   // declansatoare, un singur drum, fara dublu-load.
-  $effect(() => { loadGlobalTasks({ arhiva: showArchive, sfera: sferaActiva }) })
+  // FARA sferaActiva printre dependinte: sfera nu mai cere retea (vine „toate"
+  // dintr-un foc), deci comutarea ei nu redeclanseaza fetch-ul.
+  $effect(() => { loadGlobalTasks({ arhiva: showArchive, sfera: 'toate' }) })
 
   // CHEIA LISTEI SE SCHIMBA ABIA DUPA CE AU SOSIT DATELE (raportat de Ion:
   // „se incarca aiurea, parca se rupe pagina"). Cheiat direct pe sferaActiva,
@@ -1029,11 +1039,14 @@
     <Skeleton varianta="rand" randuri={4} />
   {:else if globalTasks.error}
     <ErrorState message={globalTasks.error} onretry={() => reload()} />
-  {:else if globalTasks.items.length === 0}
-    <!-- Aceeasi stare acopera „n-ai avut niciodata taskuri" si „tocmai le-ai
-         terminat pe toate" — pagina nu le poate deosebi, fiindca API-ul nu-i da
-         cele bifate. Deci textul trebuie sa fie adevarat in amandoua si sa spuna
-         unde au plecat cele facute, altfel „Niciun task" se citeste ca o pierdere. -->
+  {:else if (arhivaAfisata ? grupe.arhiva.items.length : activeTasks.length) === 0}
+    <!-- Golul se judeca pe SFERA AFISATA, nu pe tot raspunsul: `items` tine
+         acum ambele sfere, deci „Personal gol" trebuie sa se vada si cand
+         Munca e plina.
+         Aceeasi stare acopera „n-ai avut niciodata taskuri" si „tocmai le-ai
+         terminat pe toate" — pagina nu le poate deosebi, fiindca vederea activa
+         nu contine cele bifate. Deci textul trebuie sa fie adevarat in amandoua
+         si sa spuna unde au plecat cele facute. -->
     <EmptyState icon={ListTodo} title={showArchive ? 'Arhiva e goală' : (sferaActiva === 'personal' ? 'Niciun task personal' : 'Nimic de făcut')} description={showArchive ? 'Aici ajung taskurile bifate.' : 'Scrie un task în câmpul de sus. Ce ai terminat e în „Arhivă".'} />
   {:else}
     <!-- COMUTAREA SFEREI E O NAVIGARE MICA, deci are sens (raportat de Ion: „nu

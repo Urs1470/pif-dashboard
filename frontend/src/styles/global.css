@@ -175,6 +175,14 @@ code, pre {
   overscroll-behavior: contain;
 }
 
+/* CAT TIMP UN MODAL E DESCHIS, DOCK-UL DE TELEFON COBOARA. Clasa o pune
+   Modal.svelte (contor partajat intre instante); doar pe telefon — pe desktop
+   dock-ul se ascunde singur cand cursorul pleaca de jos. Distanta acopera si
+   safe-area, ca sa nu ramana o dunga sub gestul de sistem. */
+@media (max-width: 768px) {
+  html.are-modal .dock { --dock-shift: calc(100% + var(--safe-bottom) + 6px); }
+}
+
 /* ===== Focus ring global pe inputs ===== */
 input:focus, select:focus, textarea:focus {
   outline: none;
