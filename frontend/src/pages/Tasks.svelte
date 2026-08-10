@@ -82,7 +82,12 @@
   // Lista se citeste de sus in jos ca o zi de lucru: restante, azi, mâine, restul.
   // In arhiva gruparea n-ar spune nimic (toate sunt facute), deci ramane o grupa
   // fara cap — acelasi drum de randare, zero markup duplicat.
-  const grupe = $derived(showArchive
+  // `arhivaAfisata`, nu `showArchive`: cat timp cererea pentru noua stare e pe
+  // drum, lista VECHE ramane pe ecran (vezi `listaCheie`) — si trebuie grupata
+  // dupa regula EI, altfel taskurile active s-ar regrupa o clipa ca arhiva
+  // (fara capete) inainte sa soseasca arhiva adevarata.
+  const arhivaAfisata = $derived(listaCheie.endsWith(':true'))
+  const grupe = $derived(arhivaAfisata
     ? { arhiva: { id: 'arhiva', titlu: null, ton: 'sters', items: globalTasks.items, start: 0 } }
     : grupeazaDupaTermen(activeTasks))
   // Arhiva e o grupa fara cap, pusa la coada ordinii — acelasi drum de randare.
@@ -783,6 +788,26 @@
   // la montare SI ori de cate ori se schimba sfera (din URL) sau arhiva — trei
   // declansatoare, un singur drum, fara dublu-load.
   $effect(() => { loadGlobalTasks({ arhiva: showArchive, sfera: sferaActiva }) })
+
+  // CHEIA LISTEI SE SCHIMBA ABIA DUPA CE AU SOSIT DATELE (raportat de Ion:
+  // „se incarca aiurea, parca se rupe pagina"). Cheiat direct pe sferaActiva,
+  // lista se DEMOLA in clipa atingerii, aluneca inauntru cu taskurile sferei
+  // VECHI (fetch-ul inca pe drum), si era demolata a doua oara cand soseau
+  // cele noi — doua reconstructii intr-o suta de milisecunde. Acum lista veche
+  // sta pe loc cat tine cererea, iar cea noua aluneca O DATA, gata umpluta —
+  // aceeasi regula ca la deschiderea modalului („un panou se deschide numai cu
+  // continutul masurabil").
+  let listaCheie = $state('')
+  let listaSens = $state(0)
+  $effect(() => {
+    const tinta = sferaActiva + ':' + showArchive
+    if (!globalTasks.loading && listaCheie !== tinta) {
+      // Prima asezare nu e o comutare: pagina soseste prin `.ruta-in`, nu
+      // aluneca dintr-o parte (sens 0 = `alunecare` nu face nimic).
+      listaSens = listaCheie === '' ? 0 : (showArchive ? 1 : (sferaActiva === 'personal' ? 1 : -1))
+      listaCheie = tinta
+    }
+  })
 </script>
 
 {#snippet taskDetail(t)}
@@ -1018,9 +1043,11 @@
          re-porneste o animatie (aceeasi lectie ca la schimbarea lunii). -->
     <!-- Cheia include si arhiva: intrarea in arhiva aluneca dinspre dreapta
          (un loc „mai adanc"), iesirea dinspre stanga — aceeasi gramatica
-         directionala ca sfera si ca luna din Calendar. -->
-    {#key sferaActiva + ':' + showArchive}
-    <div class="task-list" in:alunecare={{ sens: showArchive ? 1 : (sferaActiva === 'personal' ? 1 : -1) }}>
+         directionala ca sfera si ca luna din Calendar. `listaCheie`, nu
+         sferaActiva direct: se schimba abia cand datele au sosit (vezi
+         comentariul din script). -->
+    {#key listaCheie}
+    <div class="task-list" in:alunecare={{ sens: listaSens }}>
       <!-- Se itereaza ORDINEA — siruri constante — nu lista de grupe.
            Vezi `lib/grupare.js`: un each imbricat peste obiecte NOI la fiecare
            recalcul face Svelte sa re-creeze blocul interior in loc sa-l

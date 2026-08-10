@@ -1596,7 +1596,11 @@
            `title` duce data zilei pe mânerul foii, deci `panouZi(false)` n-o mai
            scrie inca o data inauntru. -->
       {#if ecran.telefon}
-        <Modal open={foaieZi} title={dayLabel(selectata)} onclose={() => foaieZi = false}>
+        <!-- `inalt`: foaia zilei se deschide direct aproape pe tot ecranul
+             (Ion, 2026-08-10) — detaliile unei zile nu incap intr-o jumatate
+             de foaie, iar intinderea manuala era un gest in plus de fiecare
+             data. -->
+        <Modal open={foaieZi} inalt title={dayLabel(selectata)} onclose={() => foaieZi = false}>
           {@render panouZi(false)}
         </Modal>
       {/if}

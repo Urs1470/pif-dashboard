@@ -24,11 +24,24 @@
   let eroare = $state(false)
   const azi = todayISO()
 
+  // INSTANT DIN CACHE, PROASPAT DIN RETEA (raportat de Ion: banda „Acum" venea
+  // dupa taskurile din „Astazi"). /api/calendar pe 120 de zile e cea mai grea
+  // cerere de pe ecran, iar prima linie a paginii era ultima sosita. Ultimul
+  // raspuns bun sta in sessionStorage: la montare se arata ACELA imediat, iar
+  // reteaua doar il improspateaza — perioadele se schimba rar in cele cateva
+  // minute dintre doua vizite, deci „vechiul" e aproape mereu si „adevaratul".
+  const CHEIE_CACHE = 'pif-iesiri'
   async function incarca() {
     eroare = false
     try {
-      data = await apiJson(`/api/calendar?start=${azi}&zile=120`)
-    } catch (_) { data = null; eroare = true }
+      const c = sessionStorage.getItem(CHEIE_CACHE)
+      if (c && !data) data = JSON.parse(c)
+    } catch (_) { /* cache corupt sau indisponibil — reteaua decide */ }
+    try {
+      const proaspat = await apiJson(`/api/calendar?start=${azi}&zile=120`)
+      data = proaspat
+      try { sessionStorage.setItem(CHEIE_CACHE, JSON.stringify(proaspat)) } catch (_) {}
+    } catch (_) { if (!data) { data = null; eroare = true } }
   }
   onMount(incarca)
 
@@ -296,10 +309,12 @@
       display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
     }
 
-    /* Amandoua contoarele la 44px, pe acelasi rand — sunt tinte, nu etichete.
-       IMPART randul (desen 3c): fiecare isi ia jumatatea lui, centrat. Golul
-       flexibil dispare — cu un singur contor, pastila plutea singura in dreapta,
-       cu un gol mort la stanga (raportat de Ion, cu poza). */
+    /* Pe telefon ramane UN singur contor — cel rosu, care cere actiune.
+       „Fara perioada" a plecat de aici la cererea lui Ion (2026-08-10:
+       „nu-mi trebuie pe mobil"): planificarea perioadelor e treaba de
+       Calendar, pe ecran mare; pe telefon randul era doar zgomot deasupra
+       boardului. Contorul ramas isi ia randul intreg, centrat. */
+    .ct-nr:not(.rau) { display: none; }
     .spatiu { display: none; }
     .ct-nr { min-height: var(--tap-min); padding: 4px 12px; flex: 1 1 0;
              justify-content: center; }

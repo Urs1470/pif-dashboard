@@ -18,7 +18,12 @@
   // editor decide ce inseamna „am inchis" (la notite: salveaza, cu „Anulează" in
   // toast); cine deschide un formular poate sa nu dea nimic si sa se comporte ca
   // pana acum.
-  let { open = $bindable(false), title = '', size = 'md', children, footer, onclose } = $props()
+  // `inalt`: foaia se deschide DIRECT intinsa (aproape tot ecranul). Pentru
+  // continut care nu incape niciodata intr-o jumatate de foaie — panoul zilei
+  // din Calendar (Ion: „fa-l sa se deschida tot timpul aproape pe toata
+  // pagina, ca sa incapa deodata toate detaliile"). Gestul de tras in jos
+  // inchide, ca oricand.
+  let { open = $bindable(false), title = '', size = 'md', inalt = false, children, footer, onclose } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
 
@@ -168,7 +173,7 @@
   // `trasY` nu se mai zeroeaza la ridicarea degetului (vezi `trageSus`), deci se
   // zeroeaza aici: foaia urmatoare porneste din pozitia ei, nu din cea in care ai
   // lasat-o pe cea dinainte.
-  $effect(() => { if (open) { intins = false; trasY = 0 } })
+  $effect(() => { if (open) { intins = inalt; trasY = 0 } })
 
   // INTINDEREA VINE SI DIN CONTINUT, nu doar din antet (Ion, 2026-08-10, pe
   // foaia zilei din Calendar: „nu pot ridica de tot ca sa vad toate detaliile").
@@ -237,7 +242,7 @@
   <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
        in:fade={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
        out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
-    <div class="modal modal-{size}" class:sheet class:intins class:trage
+    <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage
          bind:this={sheetEl} style:--trasY="{trasY}px" in:intra out:intra>
       {#if sheet}
         <span class="sheet-grip" aria-hidden="true"></span>
@@ -472,6 +477,14 @@
        instantaneu, apoi tranzitia pornea de la o geometrie deja schimbata. */
     .modal.sheet.intins {
       max-height: calc(100dvh - var(--safe-top));
+    }
+    /* `inalt` FIXEAZA inaltimea, nu doar plafonul: foaia sta „aproape pe toata
+       pagina" si cand ziua are putin continut (cerinta Ion — panoul zilei).
+       Nota „doar max-height, niciodata height" de mai sus ramane adevarata
+       pentru INTINDEREA DIN GEST (acolo saltul de reasezare strica tranzitia);
+       aici foaia se DESCHIDE gata intinsa, nu creste sub deget. */
+    .modal.sheet.inalt {
+      height: calc(100dvh - var(--safe-top) - 24px);
     }
     /* Antetul sheet-ului e o LINIE DE CONTEXT, nu un titlu de fereastra — ca
        „📥 Inbox >" la Todoist. Inainte lua ~90px pe verticala pentru un singur

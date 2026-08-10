@@ -1213,11 +1213,23 @@
         <div class="mp-cap"><span>Perioade</span>{#if mpContext}<span class="mp-ctx">{mpContext}</span>{/if}</div>
         <!-- ZILELE AU LATIME MINIMA, IAR PISTA DERULEAZA LA DREAPTA (cerinta lui
              Ion, cu poza: cifrele erau inghesuite pana la necitibil la 14z pe
-             375px). Coloana numelor ramane lipita la stanga (sticky), deci stii
-             mereu al cui e randul. La 7z totul incape si nu deruleaza nimic. -->
-        <div class="mp-scroll">
-        <div class="mp-grid" style="--n-col:{columns.cols.length}; --col-min:{lung ? '44px' : '26px'}">
-          <span class="mp-gol" aria-hidden="true"></span>
+             375px). Numele proiectelor stau intr-o COLOANA-FRATE, in afara
+             derulatorului — nu sticky peste piste: Ion a vazut cum benzile
+             treceau pe sub textul decupat („ramane fixa decupata, este urat").
+             Doua coloane cu inaltimi FIXE pe rand (antet 32, pista 34, gap 6),
+             deci randurile raman aliniate fara nicio socoteala comuna. -->
+        <div class="mp-corp">
+          <div class="mp-nume-col">
+            <span class="mp-gol" aria-hidden="true"></span>
+            {#each views as lane (lane.tip + ':' + lane.id)}
+              <span class="mp-nume">
+                <span class="mp-dot" style="--lane:{lane.color}"></span>
+                <span class="mp-n">{lane.nume}</span>
+              </span>
+            {/each}
+          </div>
+          <div class="mp-scroll">
+          <div class="mp-piste" style="--n-col:{columns.cols.length}; --col-min:{lung ? '44px' : '26px'}">
           <div class="mp-antet">
             <div class="mp-r-sapt">
               {#each antet.grupe as g (g.key)}
@@ -1240,10 +1252,6 @@
           </div>
 
           {#each views as lane, li (lane.tip + ':' + lane.id)}
-            <span class="mp-nume">
-              <span class="mp-dot" style="--lane:{lane.color}"></span>
-              <span class="mp-n">{lane.nume}</span>
-            </span>
             <!-- Pista e DESEN, nu suprafata de lucru: perioada se deschide de pe
                  randul ei din card (`.mimpl`), unde are latimea intreaga si un
                  chevron care spune ca duce undeva. -->
@@ -1269,7 +1277,8 @@
               {/each}
             </div>
           {/each}
-        </div>
+          </div>
+          </div>
         </div>
       </section>
 
@@ -2001,22 +2010,22 @@
   /* Propozitia de context: text obisnuit la 13, nu eticheta — spune un fapt. */
   .mp-ctx { font-size: var(--font-small); font-weight: var(--fw-normal);
     letter-spacing: var(--tracking-normal); text-transform: none; color: var(--text-secondary); }
-  /* Invelisul de derulare: pista are latime minima pe coloana (26px/zi, 44/saptamana
-     la orizont lung), deci la 14z+ iese din ecran si DERULEAZA — cifrele nu se mai
-     strivesc una in alta (poza lui Ion). Numele raman lipite la stanga. */
-  .mp-scroll { overflow-x: auto; margin: 0 calc(-1 * var(--space-12)); padding: 0 var(--space-12);
+  /* DOUA COLOANE-FRATE, NU STICKY (Ion, cu poza: numele „ramane fixa decupata,
+     este urat" — benzile treceau pe sub textul lipit). Numele stau in coloana
+     lor, IN AFARA derulatorului; deruleaza doar pistele. Alinierea vine din
+     inaltimi FIXE pe rand (antet 32, pista 34), acelasi row-gap pe ambele
+     coloane — nu dintr-o grila comuna. */
+  .mp-corp { display: flex; gap: 8px; align-items: flex-start; }
+  .mp-nume-col { flex: none; width: 96px; display: flex; flex-direction: column; row-gap: 6px; }
+  .mp-gol { height: 32px; flex: none; }
+  .mp-scroll { flex: 1; min-width: 0; overflow-x: auto;
     -webkit-overflow-scrolling: touch; }
-  .mp-grid { display: grid;
-    grid-template-columns: 96px minmax(calc(var(--n-col, 14) * var(--col-min, 26px)), 1fr);
-    column-gap: 8px; row-gap: 6px; align-items: center; }
-  /* Numele si celula goala a antetului stau LIPITE la stanga cat derulezi pista:
-     fond opac, altfel benzile ar trece pe sub text. Sticky pe TOP a plecat odata
-     cu invelisul de scroll (un sticky vertical nu mai functioneaza dintr-un
-     stramos cu overflow-x) — desenul oricum n-avea antet lipicios. */
-  .mp-gol, .mp-nume { position: sticky; left: 0; z-index: 4;
-    background: var(--bg-surface); }
-  .mp-antet { z-index: 3; }
-  .mp-antet { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; }
+  .mp-piste { display: flex; flex-direction: column; row-gap: 6px;
+    min-width: calc(var(--n-col, 14) * var(--col-min, 26px)); }
+  /* 32 = 13 + 2 gap + 13 + 4 sub — aceeasi cifra ca `.mp-gol` din coloana de
+     nume; cele doua se schimba IMPREUNA, altfel randurile se dezaliniaza. */
+  .mp-antet { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px;
+    height: 32px; box-sizing: border-box; flex: none; }
   .mp-r-sapt, .mp-r-zile { position: relative; height: 13px; }
   .mp-s, .mp-z { position: absolute; top: 0; bottom: 0; display: flex;
     align-items: center; justify-content: center; box-sizing: border-box;
@@ -2042,7 +2051,10 @@
   .mp-z.today::after { content: ''; position: absolute; left: 2px; right: 2px;
     bottom: -4px; height: 2px; background: var(--accent); }
 
-  .mp-nume { display: flex; align-items: center; gap: 7px; min-width: 0; }
+  /* 34 = inaltimea pistei de vizavi. Numele se TRUNCHIAZA, randul nu creste:
+     alinierea intre cele doua coloane e contractul intregii asezari. */
+  .mp-nume { display: flex; align-items: center; gap: 7px; min-width: 0;
+    height: 34px; flex: none; }
   /* Punctul de identitate — 7px, PLAT. Singurul loc in care culoarea proiectului
      mai are voie sa apara (vezi comentariul de la `culoareProiect`). */
   .mp-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lane, var(--accent)); flex: none; }
