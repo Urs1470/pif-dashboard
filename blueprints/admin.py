@@ -39,13 +39,14 @@ logger = logging.getLogger(__name__)
 admin_bp = Blueprint('admin', __name__)
 
 # Chei `app_settings` care NU parasesc masina si NU se sterg la restore:
-#   google_* — tokenurile OAuth (acces la calendarul lui Ion)
-#   push_*   — cheia VAPID privata + abonamentele telefoanelor
+#   push_* — cheia VAPID privata + abonamentele telefoanelor
 # Backup-ul se descarca in browser si se plimba pe discuri; astea sunt stare
 # per-masina, nu date de proiect. (db-dump ramane baza bruta — asumat.)
-CHEI_PROTEJATE = ('google_', 'push_')
-CHEI_PROTEJATE_SQL = ("key LIKE 'google!_%' ESCAPE '!' "
-                      "OR key LIKE 'push!_%' ESCAPE '!'")
+# `google_*` a plecat odata cu integrarea (2026-08-10); migrarea v40 sterge
+# randurile ramase, tocmai ca sa nu inceapa sa curga in backup dupa relaxarea
+# filtrului de aici.
+CHEI_PROTEJATE = ('push_',)
+CHEI_PROTEJATE_SQL = "key LIKE 'push!_%' ESCAPE '!'"
 
 # ---------------------------------------------------------------------------
 # Stats
@@ -476,10 +477,9 @@ def restore_database():
         # Run the whole clear + restore inside ONE transaction, so a bad payload
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
-        # Conexiunea Google si abonamentele push traiesc DOAR pe masina asta
-        # (chei `google_*`/`push_*`, excluse din backup). Le citim inainte de
-        # stergere si le reinseram la final — altfel orice restore ar rupe in
-        # tacere sincronizarea cu Google Calendar si notificarile de pe telefon.
+        # Abonamentele push traiesc DOAR pe masina asta (chei `push_*`, excluse
+        # din backup). Le citim inainte de stergere si le reinseram la final —
+        # altfel orice restore ar rupe in tacere notificarile de pe telefon.
         cursor.execute("SELECT key, value, updated_at FROM app_settings "
                        "WHERE " + CHEI_PROTEJATE_SQL)
         protejate_pastrate = [tuple(r) for r in cursor.fetchall()]
@@ -599,16 +599,16 @@ def restore_database():
         # Restore app_settings (vault Obsidian, cheile de idempotenta debrief).
         # assistant_memory din backup-uri vechi se ignora (v23 a sters Hermes).
         # Cheile protejate din FISIER se ignora si ele: backup-ul nu le contine
-        # niciodata (filtrate la export), deci un rand `google_*`/`push_*` intr-un
-        # fisier de restore e editat de mana — nu acceptam un secret injectat.
+        # niciodata (filtrate la export), deci un rand `push_*` intr-un fisier
+        # de restore e editat de mana — nu acceptam un secret injectat.
         for s in data.get('app_settings', []):
             if str(s.get('key', '')).startswith(CHEI_PROTEJATE):
                 continue
             cursor.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)',
                            (s.get('key'), s.get('value'), s.get('updated_at')))
 
-        # Starea per-masina (Google + push) se pastreaza peste restore (vezi
-        # citirea de dinainte de DELETE).
+        # Starea per-masina (push) se pastreaza peste restore (vezi citirea de
+        # dinainte de DELETE).
         for key, value, updated_at in protejate_pastrate:
             cursor.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)',
                            (key, value, updated_at))

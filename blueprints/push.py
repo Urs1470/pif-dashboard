@@ -52,8 +52,9 @@ PUSH_SUB = 'mailto:ursuion1470@gmail.com'
 ORA_TRIMITERE = 8           # ora locala a serverului
 ZILE_VECHIME = 2            # „sta fara termen de mai mult de N zile"
 TOKEN_VALABIL_ORE = 48      # pana cand vine notificarea de maine
-# Cat asteptam serviciul push (FCM/APNs) per dispozitiv. Aceeasi valoare ca in
-# google_calendar.py, dar constanta traieste AICI: `send_to_all` o folosea fara
+# Cat asteptam serviciul push (FCM/APNs) per dispozitiv. Constanta traieste
+# AICI, si asta e chiar lectia: `send_to_all` o folosea imprumutata din
+# `google_calendar.py` (modul sters intre timp, odata cu integrarea) fara
 # s-o defineasca in modul, iar `timeout=` se evalueaza inainte de apel — deci
 # fiecare trimitere murea cu NameError, era prinsa de `except Exception` de mai
 # jos si numarata ca esec. Zero notificari plecate, si la „Trimite test", si
@@ -602,7 +603,6 @@ def push_action():
         return jsonify({'error': 'Task inexistent.'}), 404
     existing = row_to_dict(r)
 
-    spawned_id = None
     if actiune == 'done':
         # Acelasi guard atomic ca in PUT /api/global-tasks/<id>: doua atingeri
         # pe aceeasi notificare nu au voie sa nasca doua ocurente recurente.
@@ -613,8 +613,11 @@ def push_action():
         # Recurenta fara data e degenerata (n-ar avea de unde calcula urmatoarea),
         # iar notificarile astea merg exact la taskurile FARA data.
         if trecut and recurenta and (existing.get('data_scadenta') or '').strip():
+            # Id-ul ocurentei noi nu se mai retine: singurul lui consumator era
+            # sincronizarea Google (scoasa 2026-08-10). Efectul cerut e chiar
+            # crearea randului, si el se intampla in apel.
             from blueprints.tasks import _spawn_recurring_global_task
-            spawned_id = _spawn_recurring_global_task(cursor, r, recurenta)
+            _spawn_recurring_global_task(cursor, r, recurenta)
     else:
         # `azi` si `maine` sunt aceeasi operatie cu alt numar de zile, dar vin din
         # notificari diferite si inseamna lucruri diferite:
@@ -630,10 +633,5 @@ def push_action():
                         now.isoformat(), task_id))
     conn.commit()
     conn.close()
-
-    # Oglindeste in Google Calendar (✓ la bifare, eveniment nou la „Azi").
-    from blueprints.google_calendar import sync_enabled, spawn_sync
-    if sync_enabled():
-        spawn_sync(*([task_id, spawned_id] if spawned_id else [task_id]))
 
     return jsonify({'ok': True, 'action': actiune})

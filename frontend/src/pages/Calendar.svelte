@@ -2223,7 +2223,8 @@
   .b:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
   .b:disabled { opacity: 0.5; cursor: default; }
   .b.ok { color: var(--success); border-color: color-mix(in srgb, var(--success) 45%, transparent); }
-  .b.del:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
+  /* `.b.del` a plecat: „Scoate" nu mai e o pastila in randul lucrarii — pe
+     desktop e actiune-text (`.ia.del`), in foaie e rand de 48px (`.fa-r`). */
 
   .rail { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
   /* Randul are 44px si doua linii (C14): numele si, sub el, clientul. La ~28px si

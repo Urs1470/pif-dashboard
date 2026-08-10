@@ -97,7 +97,7 @@ def close_db(exc=None):
 #      (ar fi dublat recurenta, subtaskurile si CRUD-ul). Orice interogare pe
 #      global_tasks isi declara sfera explicit; lipsa parametrului = 'munca'
 #      (fail-closed: personalul nu se poate scurge in suprafetele de munca).
-SCHEMA_VERSION = 39
+SCHEMA_VERSION = 40
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1380,6 +1380,35 @@ def migrate_v38_to_v39():
     logger.info("Migration v38->v39 completed (implementari.confirmata)")
 
 
+def migrate_v39_to_v40():
+    """v39 -> v40: integrarea Google Calendar a plecat — se sterg cheile ei.
+
+    Ion, 2026-08-10: „sterge integrarea google calendar." Taskurile personale se
+    sincronizau direct in Google prin OAuth; a ramas fara consumator dupa ce
+    butonul a plecat din bara de Taskuri, iar Ion a cerut scoaterea intregii
+    integrari.
+
+    DE CE O MIGRARE, si nu doar stergerea codului: `app_settings` tine
+    `google_refresh_token` (+ access token, client id/secret). Filtrul din
+    `admin.py` care le excludea din backup se relaxeaza odata cu integrarea —
+    deci daca randurile ar ramane, ele ar INCEPE sa apara in JSON-ul de backup,
+    cu tot cu tokenul de refresh. Se sterg aici, o data, inainte.
+
+    Bonus de igiena: un token care nu mai are cine sa-l foloseasca nu are de ce
+    sa stea in baza. Revocarea din contul Google ramane treaba lui Ion — noi nu
+    mai avem cu ce s-o cerem, tocmai fiindca stergem creditul.
+
+    Idempotenta: `DELETE ... LIKE` pe o baza fara chei google nu face nimic.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM app_settings WHERE key LIKE 'google!_%' ESCAPE '!'")
+    sterse = cursor.rowcount
+    conn.commit()
+    conn.close()
+    logger.info("Migration v39->v40 completed (Google Calendar scos; %s chei sterse)", sterse)
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1573,6 +1602,11 @@ def run_migrations():
         migrate_v38_to_v39()
         set_schema_version(39)
         current_version = 39
+
+    if current_version < 40:
+        migrate_v39_to_v40()
+        set_schema_version(40)
+        current_version = 40
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations

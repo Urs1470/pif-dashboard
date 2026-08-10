@@ -21,47 +21,14 @@ def static_analysis():
     api_route_check()
     db_table_check()
     undefined_names_check()
-    gcal_reminders_check()
-
-
-def gcal_reminders_check():
-    """Calendarul TACE, si o spune explicit.
-
-    DE CE EXISTA. Notificarile au un singur proprietar — aplicatia de pe telefon,
-    care pune alarma local. Daca ar suna si Google Calendar, acelasi task ar bate
-    de doua ori; `blueprints/push.py` scrie de ce e asta cel mai scump mod de a
-    pierde un canal („erodeaza increderea definitiv").
-
-    Proba pazeste tacerea DELIBERATA, nu absenta campului: fara `reminders`,
-    `useDefault` e implicit adevarat, iar implicitele calendarului le poate
-    schimba oricine din aplicatia Google, fara sa treaca prin codul asta — si
-    dublura ar aparea intr-o dimineata, fara ca nimic sa se fi schimbat aici.
-    """
-    print("--- Google Calendar: oglinda, nu clopot ---")
-    sys.path.insert(0, str(PROJECT_ROOT))
-    try:
-        from blueprints.google_calendar import _event_body
-    except Exception as e:
-        log("fail", f"gcal: import _event_body a esuat: {e}"); return
-    body = _event_body({'titlu': 'proba', 'data_scadenta': '2026-08-08', 'status': 'to_do'})
-    if not body:
-        log("fail", "gcal: _event_body n-a produs nimic pentru un task cu data"); return
-    rem = body.get('reminders')
-    if not isinstance(rem, dict):
-        log("fail", "gcal: `reminders` LIPSESTE — evenimentul ar mosteni implicitele "
-                    "calendarului, iar acelea se pot schimba din afara codului"); return
-    ovr = rem.get('overrides')
-    log("pass" if rem.get('useDefault') is False else "fail",
-        f"gcal: nu se bazeaza pe implicitele calendarului (useDefault={rem.get('useDefault')})")
-    log("pass" if ovr == [] else "fail",
-        f"gcal: niciun memento propriu — notificarile sunt ale aplicatiei (overrides={ovr})")
 
 
 def undefined_names_check():
     """Nume folosite dar nedefinite in codul de server.
 
     DE CE EXISTA. Pe 2026-08-07 `send_to_all` chema `webpush(..., timeout=HTTP_TIMEOUT)`
-    cu constanta definita doar in `google_calendar.py`. Argumentul se evalueaza
+    cu constanta definita doar in `google_calendar.py` (modul sters intre timp,
+    odata cu integrarea Google). Argumentul se evalueaza
     inaintea apelului, deci FIECARE dispozitiv pica cu NameError; eroarea era
     prinsa de `except Exception` si raportata ca „trimitere esuata". Notificarile
     n-au plecat deloc — nici cele de dimineata, nici „Trimite test" — iar suita
@@ -419,98 +386,41 @@ def sfera_leak_test():
             try: s.delete(f"{BASE_URL}/api/global-tasks/{tid}", headers=hdr(), timeout=5)
             except Exception: pass
 
-def google_sync_test():
-    """Integrarea Google Calendar, FARA cont Google: starea neconfigurata e
-    curata, fluxul OAuth respinge ce trebuie, iar backup-ul nu scurge chei
-    `google_*` (refresh token-ul da acces la calendarul lui Ion)."""
-    print("\n=== GOOGLE CALENDAR (neconfigurat) ===\n")
+def backup_secrete_test():
+    """Backup-ul nu scurge chei `push_*` (cheia VAPID privata + abonamentele).
+
+    A fost pasul 7 din proba integrarii Google, stearsa odata cu ea (2026-08-10);
+    filtrul anti-scurgere din `admin.py` a ramas insa — si merita pazit singur.
+    """
+    print("\n=== BACKUP: secretele nu pleaca de pe masina ===\n")
     pin = os.environ.get('PIF_DASHBOARD_PIN', '')
     if not pin:
-        log("fail", "PIF_DASHBOARD_PIN required for google test"); return
-    if os.environ.get('GOOGLE_CLIENT_ID'):
-        log("warn", "GOOGLE_CLIENT_ID set in test env — skipping unconfigured-state checks"); return
+        log("fail", "PIF_DASHBOARD_PIN required for backup test"); return
     s = requests.Session()
     r = s.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
     if r.status_code != 200:
-        log("fail", f"google: login -> {r.status_code}"); return
+        log("fail", f"backup: login -> {r.status_code}"); return
 
-    def hdr():
-        return {"X-CSRF-Token": s.cookies.get('csrf_token', '')}
-
-    # 1) Status: neconfigurat, fara tokens in raspuns
-    st = s.get(f"{BASE_URL}/api/google/status", timeout=5)
-    if st.status_code != 200:
-        log("fail", f"google: status -> {st.status_code}")
-    else:
-        j = st.json()
-        log("pass" if j.get('configurat') is False and j.get('conectat') is False else "fail",
-            f"status: configurat={j.get('configurat')}, conectat={j.get('conectat')}")
-        if any('token' in k for k in j):
-            log("fail", "google: status expune campuri de token")
-
-    # 2) /oauth/google/start fara sesiune -> redirect la /login
-    anon = requests.get(f"{BASE_URL}/oauth/google/start", allow_redirects=False, timeout=5)
-    log("pass" if anon.status_code in (301, 302) and '/login' in anon.headers.get('Location', '')
-        else "fail", f"oauth/start fara sesiune -> {anon.status_code} {anon.headers.get('Location', '')}")
-
-    # 3) Cu sesiune dar neconfigurat -> inapoi in SPA cu google=eroare
-    r = s.get(f"{BASE_URL}/oauth/google/start", allow_redirects=False, timeout=5)
-    log("pass" if r.status_code in (301, 302) and 'google=eroare' in r.headers.get('Location', '')
-        else "fail", f"oauth/start neconfigurat -> {r.headers.get('Location', '')}")
-
-    # 4) Callback cu state fals -> eroare (nu atinge schimbul de token)
-    r = s.get(f"{BASE_URL}/oauth/google/callback?state=fals&code=x", allow_redirects=False, timeout=5)
-    log("pass" if r.status_code in (301, 302) and 'google=eroare' in r.headers.get('Location', '')
-        else "fail", f"oauth/callback state fals -> {r.headers.get('Location', '')}")
-
-    # 5) Resync neconectat -> 400
-    r = s.post(f"{BASE_URL}/api/google/resync", headers=hdr(), json={}, timeout=5)
-    log("pass" if r.status_code == 400 else "fail", f"resync neconectat -> {r.status_code} (expected 400)")
-
-    # 6) Configurare din UI: PUT /api/google/credentials
-    r = s.put(f"{BASE_URL}/api/google/credentials", headers=hdr(), json={"json": "nu-e-json"}, timeout=5)
-    log("pass" if r.status_code == 400 else "fail", f"credentials JSON invalid -> {r.status_code} (expected 400)")
-    r = s.put(f"{BASE_URL}/api/google/credentials", headers=hdr(),
-              json={"json": json.dumps({"installed": {"client_id": "x", "client_secret": "y"}})}, timeout=5)
-    log("pass" if r.status_code == 400 else "fail", f"credentials tip Desktop -> {r.status_code} (expected 400)")
-    r = s.put(f"{BASE_URL}/api/google/credentials", headers=hdr(),
-              json={"json": json.dumps({"web": {"client_id": "fals.apps.test", "client_secret": "SECRET-FALS"}})}, timeout=5)
-    if r.status_code != 200:
-        log("fail", f"credentials valide -> {r.status_code} (expected 200)")
-    else:
-        j = r.json()
-        log("pass" if j.get('configurat') is True and j.get('sursa') == 'setari' else "fail",
-            f"credentials salvate: configurat={j.get('configurat')}, sursa={j.get('sursa')}")
-        if 'SECRET-FALS' in r.text:
-            log("fail", "credentials: raspunsul ecoua secretul")
-        # oauth/start e acum configurat -> 302 catre Google, nu google=eroare
-        r2 = s.get(f"{BASE_URL}/oauth/google/start", allow_redirects=False, timeout=5)
-        log("pass" if r2.status_code in (301, 302) and 'accounts.google.com' in r2.headers.get('Location', '')
-            else "fail", f"oauth/start configurat -> {r2.headers.get('Location', '')[:60]}")
-
-    # 7) Backup-ul nu contine chei google_* (pinneaza filtrul anti-scurgere);
-    #    credentialele false de la pasul 6 sunt inca in app_settings — perfect
-    #    ca proba, se curata la final.
     import sqlite3 as _sq
     db = os.environ.get('PIF_DB_PATH') or str(DB_PATH)
+    c = None
     try:
         c = _sq.connect(db)
-        c.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('google_refresh_token', 'FALS-PENTRU-TEST', '')")
-        c.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('push_vapid_private', 'FALS-PUSH-TEST', '')")
+        c.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) "
+                  "VALUES ('push_vapid_private', 'FALS-PUSH-TEST', '')")
         c.commit()
         bk = s.get(f"{BASE_URL}/api/backup", timeout=15).json()
         chei = {r0.get('key') for r0 in bk.get('app_settings', [])}
-        scurse = {k for k in chei if str(k).startswith(('google_', 'push_'))}
+        scurse = {k for k in chei if str(k).startswith('push_')}
         log("pass" if not scurse else "fail",
-            "backup exclude cheile google_* si push_*" if not scurse else f"backup SCURGE {scurse}")
-        dump = json.dumps(bk)
-        if 'FALS-PENTRU-TEST' in dump or 'SECRET-FALS' in dump or 'FALS-PUSH-TEST' in dump:
+            "backup exclude cheile push_*" if not scurse else f"backup SCURGE {scurse}")
+        if 'FALS-PUSH-TEST' in json.dumps(bk):
             log("fail", "backup contine valori de secrete")
     finally:
         try:
-            c.execute("DELETE FROM app_settings WHERE key LIKE 'google!_%' ESCAPE '!'")
-            c.execute("DELETE FROM app_settings WHERE key LIKE 'push!_%' ESCAPE '!'")
-            c.commit(); c.close()
+            if c is not None:
+                c.execute("DELETE FROM app_settings WHERE key LIKE 'push!_%' ESCAPE '!'")
+                c.commit(); c.close()
         except Exception:
             pass
 
@@ -672,7 +582,8 @@ def push_notifications_test():
             # Proba de mai sus apeleaza `webpush` DIRECT, deci ocoleste tocmai
             # functia asta; acolo statea al doilea bug, ramas dupa fixul cheii
             # VAPID: `timeout=HTTP_TIMEOUT`, cu constanta nedefinita in modul
-            # (exista doar in google_calendar.py). Argumentul se evalueaza inainte
+            # (exista doar in `google_calendar.py`, modul sters intre timp).
+            # Argumentul se evalueaza inainte
             # de apel, deci fiecare dispozitiv pica cu NameError, prins de
             # `except Exception` si numarat ca esec — zero notificari trimise, si
             # la „Trimite test", si dimineata. Aici `webpush` e un dublu, deci
@@ -783,7 +694,7 @@ if __name__ == "__main__":
     if '--static' not in sys.argv:
         api_smoke_test()
         sfera_leak_test()
-        google_sync_test()
+        backup_secrete_test()
         push_notifications_test()
     data_integrity()
     

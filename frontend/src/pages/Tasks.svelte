@@ -551,13 +551,15 @@
   // care oricum e sortata cu urgentele sus si are aceleasi actiuni.
 
 
-  // GOOGLE CALENDAR A PLECAT DIN INTERFATA (Ion, 2026-08-10: „scoate google
-  // calendar, nu mai folosim, si butonul lui"). Aici traiau butonul cu punct
-  // rosu, modalul de stare/credentiale/OAuth si fallback-ul cu link .ics.
-  // Serverul ramane neatins (blueprints/google_calendar.py, /api/google/*,
-  // /api/export/ics-key): cine e deja conectat ramane sincronizat; doar drumul
-  // din interfata a disparut. Daca se reia vreodata, se reconstruieste de aici
-  // din istoricul git (a plecat intreg, intr-un singur commit).
+  // INTEGRAREA GOOGLE CALENDAR A PLECAT DE TOT (Ion, 2026-08-10: „sterge
+  // integrarea google calendar"). Intai butonul si modalul din interfata, apoi
+  // serverul: `blueprints/google_calendar.py`, rutele `/api/google/*` si
+  // `/oauth/google/*`, apelurile de sincronizare din tasks.py/push.py, si
+  // cheile `google_*` din `app_settings` (migrarea v40 le sterge — tokenul de
+  // refresh n-avea ce cauta intr-un backup de la care filtrul tocmai plecase).
+  // Ce NU s-a atins: feedul `.ics` (`/api/export/ics`), care e o abonare prin
+  // URL, fara OAuth, si merge in orice calendar. Daca integrarea se reia
+  // vreodata, se reia din istoricul git, cu ambele capete.
 
   // Punctul rosu de pe clopotel trebuie sa poata semnala o trimitere esuata
   // FARA sa deschizi modalul — o stare care decide ce primesti dimineata nu
@@ -1244,7 +1246,11 @@
       dimineața, la {pushStatus.ora}, o notificare proprie — cu titlul lui și cu butoanele
       „Făcut” și „Azi” direct pe notificare (pe Android; pe iPhone atingerea deschide taskul).</p>
     {#if pushStatus.last_error}<p class="g-eroare">{pushStatus.last_error}</p>{/if}
-    <div class="g-actiuni">
+    <!-- `.modal-actions`, nu `.g-actiuni`: aceea era o clasa fara nicio regula
+         CSS (bug preexistent — perechea ei se numea `.g-actiune`, singular, si
+         era a cardului Google). Butoanele modalului au deja o asezare in
+         sistem, si asta e ea. -->
+    <div class="modal-actions">
       <Button loading={pushBusy} onclick={activeazaPush}>Activează pe telefonul ăsta</Button>
     </div>
   {:else}
@@ -1451,9 +1457,11 @@
      CAT TIMP nu e activ segmentul (bulina se citea greu pe segmentul stins) si e
      acelasi semn cu cel din antetul „Personal" de pe Acasa — cele doua suprafete
      se refera in continuare una la alta, doar c-o fac cu un desen, nu cu o culoare. */
-  /* Iconita Google — fantoma, nu chip: chip-urile din toolbar sunt filtre, iar
-     asta e o intrare de setari. Punctul rosu apare doar cand sync-ul are o
-     problema — singurul moment in care merita atentie. */
+  /* Clopotelul de notificari — fantoma, nu chip: chipurile din toolbar sunt
+     filtre, iar asta e o intrare de setari. Punctul rosu apare doar cand o
+     trimitere a esuat — singurul moment in care merita atentie.
+     Prefixul `g-` e mostenit de la modalul Google (sters 2026-08-10); clasele
+     au ramas ale ferestrei de notificari, care le folosea deja pe toate. */
   .g-ico { position: relative; display: flex; align-items: center; justify-content: center;
            width: 30px; min-height: 30px; background: none; border: none; cursor: pointer;
            color: var(--text-faint); border-radius: var(--radius-sm);
@@ -1462,33 +1470,21 @@
   .g-punct { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px;
              border-radius: 50%; background: var(--danger); }
 
-  /* Modalul Google Calendar — text de stare, nu formular. */
+  /* Fereastra de notificari — text de stare, nu formular. */
   .g-skel { display: flex; flex-direction: column; gap: var(--space-sm); }
   .g-text { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); text-wrap: pretty; }
   .g-mono { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text); }
 
-  /* ===== Legatura cu Google, ca STARE (N8) ===== */
-  .g-card { display: flex; flex-direction: column; gap: var(--space-md); }
-  .g-cap { display: flex; align-items: center; gap: 11px; }
-  .g-emblema { flex: none; display: grid; place-items: center; width: 38px; height: 38px;
-    border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text-secondary); }
-  .g-nume { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .g-t { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text); }
-  .g-sub { font-size: var(--font-small); color: var(--text-dim); }
-  /* Pastila spune UN lucru: e pornita sau nu. Verde in tenta cu cerneala adanca
-     cand e; neutra cand nu — „neconectat" nu e o eroare, e o stare de repaus. */
-  .g-pastila { flex: none; display: inline-flex; align-items: center; gap: 6px;
-    height: 26px; padding: 0 10px; border-radius: var(--radius-xs);
-    background: var(--bg-elevated); color: var(--text-dim);
-    font-size: var(--font-small); font-weight: var(--fw-semibold); }
-  .g-pastila.on { background: var(--success-subtle); color: var(--success-deep); }
-
+  /* Blocul de aici (`.g-card`, `.g-cap`, `.g-emblema`, `.g-nume`, `.g-t`,
+     `.g-sub`, `.g-pastila`, `.g-linie`, `.g-main`, `.g-rar`, `.g-rar-rand`,
+     `.g-sp`, `.g-actiune`, `.g-per`) descria cardul „Legatura cu Google" si a
+     plecat odata cu integrarea (2026-08-10). Ce ramane mai jos e al ferestrei
+     de notificari, care folosea deja aceleasi clase de stare. */
   .g-stare { display: flex; flex-direction: column; }
   .g-rand { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
     min-height: 38px; font-size: var(--font-body); color: var(--text-secondary); }
   .g-et { color: var(--text-secondary); }
   .g-val { color: var(--text); text-align: right; }
-  .g-linie { height: 1px; background: var(--border); }
 
   .g-eroare { display: flex; gap: 9px; padding: 11px 13px; border-radius: var(--radius-sm);
     background: var(--danger-subtle); color: var(--danger-deep);
@@ -1496,27 +1492,6 @@
     overflow-wrap: anywhere; }
   .g-eroare :global(svg) { flex: none; margin-top: 2px; }
 
-  /* O SINGURA actiune principala pe ecran, pe toata latimea: care e ea depinde de
-     starea de deasupra, si tocmai de aceea nu poate sta langa alta la fel de tare. */
-  .g-main { display: flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: var(--tap-min); border-radius: var(--radius-sm);
-    background: var(--accent); color: var(--accent-text);
-    font-size: var(--font-body); font-weight: var(--fw-semibold);
-    cursor: pointer; transition: var(--transition-pressable); }
-  .g-main:hover:not(:disabled) { background: var(--accent-deep); }
-  .g-main:active:not(:disabled) { transform: scale(var(--press-scale)); }
-  .g-main:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .g-rar { display: flex; flex-direction: column; gap: 10px; }
-  .g-rar-rand { display: flex; align-items: center; gap: var(--space-md); }
-  .g-sp { flex: 1; }
-  .g-actiune { display: inline-flex; align-items: center; gap: 7px; height: 38px;
-    background: none; border: none; color: var(--text-dim);
-    font-family: inherit; font-size: var(--font-control); font-weight: var(--fw-semibold);
-    cursor: pointer; transition: var(--transition-colors); }
-  .g-actiune:hover { color: var(--text); }
-  .g-per { color: var(--danger-deep); }
-  .g-per:hover { color: var(--danger); }
   .g-link { font-size: var(--font-small); color: var(--text-dim); background: none; border: none;
             cursor: pointer; text-decoration: underline; padding: 0; align-self: center; }
   .g-link:hover { color: var(--text); }
