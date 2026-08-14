@@ -101,7 +101,7 @@
     </div>
   </div>
   {#if loading}
-    <Skeleton height="420px" />
+    <div class="asteptare"><Skeleton height="420px" /></div>
   {:else if error}
     <ErrorState message={error} onretry={load} />
   {:else}

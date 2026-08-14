@@ -930,6 +930,27 @@ html.prima-incarcare .cell-in {
    reporneste animatia, deci o clasa pusa doar in timpul tranzitiei ar fi jucat,
    la scoatere, exact miscarea pe care o suprima. */
 html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-base) var(--ease) backwards; }
+
+/* ===== ASTEPTAREA SOSESTE, NU APARE =====
+   Ion: „se poate adauga cate o animatie, ceva gen cum e la planificator pentru
+   incarcarea paginii la comutare si la porniri."
+   De cand memoria supravietuieste repornirii, o stare de asteptare apare doar
+   la PRIMA intalnire cu o pagina — deci e rara, si tocmai de aceea are voie sa
+   fie o sosire in toata regula in loc de o taietura.
+   `.asteptare` se pune pe INVELISUL starii de asteptare (blocul de schelete),
+   nu pe fiecare dungă: altfel patru dungi ar sosi separat peste aceiasi pixeli,
+   adica exact greseala reparata la schimbarea de tab.
+   Aceeasi curba si aceeasi distanta ca `rutaIn` — asteptarea si pagina care o
+   inlocuieste vin din acelasi loc, deci nu se citesc ca doua obiecte. */
+@keyframes asteptareIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.asteptare { animation: asteptareIn var(--dur-base) var(--ease) backwards; }
+@media (prefers-reduced-motion: reduce) {
+  .asteptare { opacity: 1; animation: none; }
+}
+@media print { .asteptare { opacity: 1 !important; animation: none !important; } }
 @media (prefers-reduced-motion: reduce) {
   html.prima-incarcare .ruta-in { opacity: 1; animation: none; }
 }

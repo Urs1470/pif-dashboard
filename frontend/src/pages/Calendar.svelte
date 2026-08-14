@@ -156,7 +156,12 @@
     if (primaCitire) {
       primaCitire = false
       const gata = _dinCache(url)
-      if (gata !== undefined) { data = gata; dinMemorie = true }
+      // `loading` PORNESTE `true` (vezi declaratia), deci nu e destul sa punem
+      // datele — trebuie si stins, altfel scheletul ramane pe ecran cat tine
+      // cererea, cu grila deja desenata sub el. Exact asta facea ca memoria de
+      // pe disc sa para ca nu functioneaza: datele erau acolo, scheletul le
+      // acoperea.
+      if (gata !== undefined) { data = gata; dinMemorie = true; loading = false }
     } else {
       // Orice reincarcare de dupa montare vine ori dintr-o scriere, ori dintr-o
       // schimbare de luna. In primul caz lunile VECINE pot fi deja gresite — o
@@ -1212,7 +1217,7 @@
      cu el. Celulele sunt cele trei lucruri care se schimba (KPI, grila, panoul). -->
 <div class="page ruta-in">
   {#if loading}
-    <Skeleton height="360px" />
+    <div class="asteptare"><Skeleton height="360px" /></div>
   {:else if error}
     <ErrorState message={error} onretry={load} />
   {:else if data}

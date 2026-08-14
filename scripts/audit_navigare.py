@@ -166,7 +166,8 @@ def mergi_la(page, tab, astepta=700):
 # cea noua. Contractul e doua: ce era, si ce e. Orice a treia stare e o ramasita,
 # indiferent cum o cheama clasa ei.
 CADRE = """
-window.__cadre = 0; window.__cand = []; window.__t = 0; window.__stari = [];
+window.__cadre = 0; window.__cand = []; window.__t = performance.now(); window.__stari = [];
+window.__continut = 0;
 (function bucla() {
   if (document.querySelector('.page-loading, .page .skeleton, .page .sk-lista')) {
     window.__cadre++;
@@ -174,6 +175,8 @@ window.__cadre = 0; window.__cand = []; window.__t = 0; window.__stari = [];
   }
   try {
     const q = (s) => document.querySelectorAll(s).length;
+    if (!window.__continut && q('.page .trow, .page .pcard, .page .zi, .page .lane, .page .arow'))
+      window.__continut = Math.round(performance.now() - window.__t);
     const cheie = [location.hash,
       ((document.querySelector('.page h1') || {}).textContent || '').trim(),
       q('.page-loading, .skeleton, .sk-lista'),
@@ -228,6 +231,51 @@ def ruleaza_taburi(page, baza):
         cdp.send('Network.emulateNetworkConditions', {
             'offline': False, 'latency': 0,
             'downloadThroughput': -1, 'uploadThroughput': -1})
+
+
+# ============ A DOUA DESCHIDERE A APLICATIEI NU ASTEAPTA NIMIC ============
+#
+# Ion: „la pornirea paginilor, mai ales se vede la calendar" si „daca am o
+# trimitere catre calendar si dau click de pe acasa sau din planificator".
+#
+# Toate probele de mai sus masoara navigarea IN sesiune. Patru drumuri o
+# ocolesc, si el le nimerise pe toate: deschiderea aplicatiei (pe Android se
+# deschide pe ultima ruta), un F5, un `navigate()` chemat de mana, si o
+# trimitere cu parametru. In toate patru memoria filei e goala.
+#
+# De cand `lib/cache.js` se hidrateaza din `localStorage`, pagina se deseneaza
+# din primul cadru. Masurat: Proiecte de la 984ms la 25, Planificator de la 791
+# la 37.
+#
+# DOUA CAPCANE DE SCRIS TESTUL, amandoua m-au pacalit:
+#  1. `goto` catre acelasi URL cu acelasi hash NU creeaza document nou, deci
+#     modulele nu se re-evalueaza si a doua masuratoare o repeta pe prima —
+#     cu timpi identici la milisecunda, care arata exact ca „n-a mers nimic".
+#     Reincarcarea se face cu `reload()`.
+#  2. Scrierea pe disc e amanata pe rand liber, deci intre prima incarcare si
+#     reload trebuie lasat timp; altfel testezi un disc gol.
+RUTE_REPORNIRE = [('#/plan', 'Planificator'), ('#/projects', 'Proiecte'),
+                  ('#/calendar', 'Calendar')]
+
+
+def ruleaza_repornire(page, baza):
+    for ruta, nume in RUTE_REPORNIRE:
+        page.goto(baza + '/' + ruta, wait_until='load')
+        page.wait_for_timeout(2600)          # si pentru scrierea amanata pe disc
+        page.reload(wait_until='load')
+        page.wait_for_timeout(1500)
+        # Nu se reseteaza nimic dupa `reload`: scriptul de init se re-executa si
+        # porneste ceasul la inceputul DOCUMENTULUI — exact reperul potrivit
+        # pentru „cat dureaza pana vezi pagina la o repornire".
+        r = page.evaluate("({ n: window.__cadre, c: window.__continut })")
+        # Nu „zero cadre de asteptare": la o reincarcare adevarata chunkul paginii
+        # trebuie adus, deci un cadru-doua de rama sunt inevitabile fara sa
+        # inglobam pagina in HTML. Ce se poate cere — si ce chiar conteaza — e ca
+        # PAGINA sa fie pe ecran inainte ca ochiul sa apuce sa citeasca o
+        # asteptare. Pragul e generos fata de masuratoare (25-40ms), ca proba sa
+        # nu pice pe o masina incarcata.
+        nota(r['c'] and r['c'] < 300, '%s: continutul apare in <300ms' % nume,
+             'la %sms, %d cadre de asteptare' % (r['c'], r['n']))
 
 
 # ----------------------------------------------------------------------- probe
@@ -365,8 +413,11 @@ def ruleaza(page, baza, pid):
     out('\n--- 8. fiecare tab, cu LATENTA si masurat pe CADRE ---')
     ruleaza_taburi(page, baza)
 
+    out('\n--- 9. a DOUA deschidere a aplicatiei nu asteapta nimic ---')
+    ruleaza_repornire(page, baza)
+
     if pid:
-        out('\n--- 9. pagina de proiect se deschide cu ce stie ---')
+        out('\n--- 10. pagina de proiect se deschide cu ce stie ---')
         page.goto(baza + '/#/projects', wait_until='networkidle')
         page.wait_for_timeout(600)
         # Cardul e un `role="button"`, nu un link — de aceea are nevoie de

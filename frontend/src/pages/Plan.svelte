@@ -857,7 +857,7 @@
   </div>
 
   {#if plan.loading && plan.lanes.length === 0}
-    <div class="skel">{#each Array(4) as _}<Skeleton height="72px" />{/each}</div>
+    <div class="skel asteptare">{#each Array(4) as _}<Skeleton height="72px" />{/each}</div>
   {:else if plan.error}
     <ErrorState message={plan.error} onretry={loadPlan} />
   {:else if views.length === 0}

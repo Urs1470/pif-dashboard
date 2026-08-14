@@ -29,6 +29,7 @@
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
+  import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
 
   // CHIPURILE DE FILTRU AU PLECAT. Grila separa deja finalizatele in „Arhivă"
@@ -81,16 +82,34 @@
     }
   }
 
-  // Cu doua statusuri, clickul pe status e un comutator, nu un ciclu.
-  const STATUS_CYCLE = ['pregatire', 'finalizat']
+  // PASTILA ARATA O STARE, DAR APASAREA PRODUCE O ACTIUNE — si actiunea aia
+  // scoate cardul din grila. Scria „pregătire" (unde esti) si facea „finalizat"
+  // (ce urmeaza), fara ca nimic sa spuna care e a doua. `toastUndo` era un
+  // plasture peste un design care invita greseala; acum greseala nu se mai
+  // intampla, iar undo-ul ramane pentru razgandire — sunt lucruri diferite.
+  // (Observat de Ion, 2026-08-14.)
+  //
+  // ASIMETRIC CU INTENTIE: doar INCHIDEREA cere confirmare. Redeschiderea aduce
+  // cardul inapoi in grila, deci se vede imediat ca s-a intamplat si n-are
+  // nevoie de poarta. O confirmare pusa si acolo ar fi ceremonie fara miza.
+  // Doua stari, nu una: `open` al lui ConfirmDialog e `$bindable` si se stinge
+  // singur la Renunta, deci trebuie legat. Proiectul se tine separat, ca titlul
+  // sa nu clipeasca in „proiectul" cat timp dialogul se inchide cu animatie.
+  let deInchis = $state(null)
+  let confirmDeschis = $state(false)
 
-  // O atingere gresita marcheaza un proiect viu „Finalizat" — si cardul DISPARE
-  // din grila, in arhiva pliata. Deci schimbarea are plasa, ca la bifat si la
-  // mutat termen: `toastUndo` cu drumul inapoi in mana.
   async function cycleProjectStatus(e, p) {
     e.stopPropagation()
+    if ((p.status || 'pregatire') !== 'finalizat') {
+      deInchis = p
+      confirmDeschis = true
+      return
+    }
+    await schimbaStatus(p, 'pregatire')
+  }
+
+  async function schimbaStatus(p, next) {
     const cur = p.status || 'pregatire'
-    const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(cur) + 1) % STATUS_CYCLE.length]
     try {
       await updateProject(p.id, { status: next })
       toastUndo(`Status: ${PROJECT_STATUS_LABELS[next] || next}`, {
@@ -228,7 +247,7 @@
        card, dupa stergere si la fiecare filtru, iar fara garda toata grila era
        inlocuita cu sase schelete si reconstruita la fiecare atingere. -->
   {#if projects.loading && projects.items.length === 0}
-    <div class="cards-grid">
+    <div class="cards-grid asteptare">
       {#each Array(6) as _}
         <div class="pcard skeleton-card"><Skeleton width="40%" height="14px" /><Skeleton width="70%" height="18px" /><Skeleton width="50%" height="12px" /></div>
       {/each}
@@ -282,7 +301,10 @@
             {#if ecran.telefon}
               <span class="status-pill" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</span>
             {:else}
-              <button class="status-pill act" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Schimbă statusul">
+              <!-- Tooltipul spune CE URMEAZA, nu ce e. „Schimbă statusul" era
+                   adevarat si inutil: nu te ajuta sa decizi daca apesi. -->
+              <button class="status-pill act" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)}
+                      title={p.status === 'finalizat' ? 'Redeschide proiectul' : 'Finalizează proiectul'}>
                 {PROJECT_STATUS_LABELS[p.status] || p.status || '—'}<ArrowRightLeft size={11} strokeWidth={2.2} />
               </button>
             {/if}
@@ -348,6 +370,18 @@
 </div>
 
 <ProjectFormModal bind:open={showNewModal} onsaved={() => loadProjects()} />
+
+<!-- `danger={false}`: finalizarea nu distruge nimic, e un pas normal din viata
+     proiectului — proiectul ramane in arhiva si se poate redeschide. Rosul
+     ramane pentru stergere, altfel isi pierde intelesul. -->
+<ConfirmDialog
+  bind:open={confirmDeschis}
+  title={`Finalizezi „${deInchis?.nume || 'proiectul'}”?`}
+  message="Trece în arhivă și dispare din grilă. Îl poți redeschide de acolo oricând."
+  confirmLabel="Finalizează proiectul"
+  danger={false}
+  onconfirm={async () => { if (deInchis) await schimbaStatus(deInchis, 'finalizat') }}
+/>
 
 <style>
   .page { padding: var(--space-lg); }

@@ -219,6 +219,19 @@ const pauza = (ms) => new Promise((r) => setTimeout(r, ms))
 const PLAFON_INCARCARE = 250
 
 export function navigate(path) {
+  // PREINCARCAREA STA SI AICI, nu doar in actiunea `link`.
+  //
+  // Jumatate din navigarile aplicatiei cheama `navigate()` de mana: cardul de
+  // proiect, banda de perioada din Planificator care duce la `#/calendar?zi=…`,
+  // saritura din paleta, drumul inapoi din pagina de proiect. Toate ocoleau
+  // `link`, deci si preincarcarea — si tocmai una dintre ele a fost raportata:
+  // „daca am o trimitere catre calendar si dau click de pe acasa sau din
+  // planificator".
+  //
+  // Chemat AICI castiga doar cateva zeci de milisecunde (suntem deja in click),
+  // dar are un efect care conteaza: pana la `applyPath` cererea e in zbor, deci
+  // montarea paginii cade pe ea in loc sa porneasca a doua.
+  preincarca(path)
   if (!viewTransitionsOn()) { applyPath(path); return }
   try {
     document.startViewTransition(async () => {

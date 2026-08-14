@@ -202,9 +202,9 @@
                  Doua forme, nu sapte: o harta ruta -> schelet ar fi a doua sursa
                  de adevar despre cum arata fiecare pagina. -->
             {#if RUTE_LISTA.has(bazaRutei(router.path))}
-              <div class="page-loading rand"><Skeleton varianta="rand" randuri={6} /></div>
+              <div class="page-loading rand asteptare"><Skeleton varianta="rand" randuri={6} /></div>
             {:else}
-              <div class="page-loading"><Skeleton width="60%" height="24px" /><Skeleton width="100%" height="200px" /></div>
+              <div class="page-loading asteptare"><Skeleton width="60%" height="24px" /><Skeleton width="100%" height="200px" /></div>
             {/if}
           {:else}
             <EmptyState icon={Compass} title="Aici nu e nimic"
