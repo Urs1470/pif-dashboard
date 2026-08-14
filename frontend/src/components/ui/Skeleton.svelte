@@ -17,23 +17,50 @@
     /** Cate randuri, la `varianta="rand"`. Maxim patru: peste atat, asteptarea
      *  se vede mai lunga decat e, iar lista reala e oricum mai scurta uneori. */
     randuri = 4,
+    /** Cat asteapta pana se arata. Vezi mai jos; 0 il face imediat, pentru
+     *  locurile unde scheletul E continutul (o demonstratie, un exemplu). */
+    intarziere = 110,
   } = $props()
 
   const LATIMI = ['62%', '78%', '48%', '70%']
+
+  // UN SCHELET CARE CLIPESTE E MAI RAU DECAT NICIUNUL.
+  //
+  // Masurat pe desktop cu 150ms dus-intors, la un click rapid pe un tab: pe
+  // Taskuri si pe Calendar scheletul prindea EXACT UN CADRU — apărea si dispărea
+  // in 16ms. Ochiul nu apucă sa citească o forma, dar prinde schimbarea, si
+  // atunci pagina se citeste ca si cum s-ar fi rupt. Asta e chiar reprosul:
+  // „vad un schelet apoi apare pagina".
+  //
+  // Deci asteptarea se arata doar daca CHIAR e o asteptare. Pragul e sub cel de
+  // la care omul observa o intarziere (~100ms), deci un schelet care trebuie sa
+  // apara apare la timp; unul care n-avea ce cauta acolo nu mai apare deloc.
+  //
+  // Nu se poate face din CSS (o animatie de opacitate ar picta oricum spatiul si
+  // ar tine locul), si nu se poate face la fiecare apelant: sunt douazeci si
+  // ceva, iar regula e a scheletului, nu a paginii.
+  let vizibil = $state(intarziere === 0)
+  $effect(() => {
+    if (vizibil) return
+    const t = setTimeout(() => { vizibil = true }, intarziere)
+    return () => clearTimeout(t)
+  })
 </script>
 
-{#if varianta === 'rand'}
-  <div class="sk-lista" aria-hidden="true">
-    {#each Array(Math.min(randuri, 4)) as _, i}
-      <div class="sk-rand">
-        <span class="skeleton sk-bifa"></span>
-        <span class="skeleton sk-titlu" style="width: {LATIMI[i % LATIMI.length]}"></span>
-        <span class="skeleton sk-termen"></span>
-      </div>
-    {/each}
-  </div>
-{:else}
-  <div class="skeleton" class:rounded style="width: {width}; height: {height}"></div>
+{#if vizibil}
+  {#if varianta === 'rand'}
+    <div class="sk-lista" aria-hidden="true">
+      {#each Array(Math.min(randuri, 4)) as _, i}
+        <div class="sk-rand">
+          <span class="skeleton sk-bifa"></span>
+          <span class="skeleton sk-titlu" style="width: {LATIMI[i % LATIMI.length]}"></span>
+          <span class="skeleton sk-termen"></span>
+        </div>
+      {/each}
+    </div>
+  {:else}
+    <div class="skeleton" class:rounded style="width: {width}; height: {height}"></div>
+  {/if}
 {/if}
 
 <style>

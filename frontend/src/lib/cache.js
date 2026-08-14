@@ -22,6 +22,9 @@ import { apiJson } from './api.js'
 
 const intrari = new Map()   // url -> { date, cand }
 const inZbor = new Map()    // url -> Promise, ca doua cereri simultane sa fie una
+// Creste la fiecare `uita`. Un raspuns venit dintr-o generatie trecuta se
+// intoarce apelantului, dar nu se mai scrie in memorie — vezi `preia`.
+let generatie = 0
 
 // Cat tinem. O sesiune deschisa toata ziua trece prin zeci de luni de calendar
 // si de proiecte; fara plafon, harta creste cat tine sesiunea. `Map` pastreaza
@@ -63,19 +66,42 @@ export function preia(url, { proaspat = 0 } = {}) {
   const z = inZbor.get(url)
   if (z) return z
 
+  const gen = generatie
   const p = apiJson(url)
-    .then((date) => { inZbor.delete(url); scrie(url, date); return date })
+    .then((date) => {
+      inZbor.delete(url)
+      // O cerere pornita INAINTE de o scriere nu mai are voie sa umple memoria:
+      // raspunsul ei e starea de dinaintea scrierii, si ar pune-o inapoi peste
+      // cea corecta. Se intoarce apelantului (el o astepta oricum), dar nu se
+      // tine minte. Fara asta, „bifez un task cat timp lista se reincarca" ar
+      // lasa in cache lista cu taskul nebifat, iar urmatoarea intrare pe pagina
+      // s-ar deschide cu el la loc.
+      if (gen === generatie) scrie(url, date)
+      return date
+    })
     .catch((e) => { inZbor.delete(url); throw e })
   inZbor.set(url, p)
   return p
 }
 
-/** Uita ce stim despre URL-urile care incep cu prefixul dat.
- *  Se cheama dupa o scriere care schimba un raspuns pe care nu-l reincarca
- *  nimeni imediat. Cererile in zbor NU se anuleaza: ele sunt deja pe drum si
- *  aduc starea de dupa scriere. */
+/** Uita ce stim despre URL-urile care incep cu prefixul dat. Se cheama dupa
+ *  fiecare scriere.
+ *
+ *  Sterge SI cererile in zbor din tabelul de impartire — nu le anuleaza (nu se
+ *  poate, si nici n-ar trebui: cine le asteapta primeste un raspuns valid
+ *  pentru clipa in care l-a cerut), doar face ca urmatorul `preia` sa porneasca
+ *  una noua in loc sa se agate de una pornita inaintea scrierii.
+ *
+ *  Generatia e globala cu buna stiinta: o scriere pe un capat poate schimba
+ *  raspunsul altuia (o perioada mutata schimba si proiectul, si calendarul), iar
+ *  o aruncare in plus costa o cerere, pe cand una ratata lasa pe ecran o stare
+ *  care nu mai exista. */
 export function uita(prefix) {
+  generatie++
   for (const url of [...intrari.keys()]) {
     if (url.startsWith(prefix)) intrari.delete(url)
+  }
+  for (const url of [...inZbor.keys()]) {
+    if (url.startsWith(prefix)) inZbor.delete(url)
   }
 }

@@ -101,6 +101,8 @@
   // adica exact morph-ul de card) are sens 0 — morph-ul nu primeste si o alunecare.
   const ORDINE_NAV = ['/', '/projects', '/tasks', '/plan', '/calendar', '/departament', '/calculator']
   const bazaRutei = (p) => '/' + ((p || '/').split('/')[1] || '')
+  // Rutele al caror continut e o LISTA de randuri. Vezi scheletul de mai jos.
+  const RUTE_LISTA = new Set(['/tasks', '/projects'])
   let bazaVeche = null
   const sensNav = $derived.by(() => {
     const b = bazaRutei(router.path)
@@ -189,7 +191,21 @@
           {:else if LoadedComponent}
             <LoadedComponent params={loadedParams}></LoadedComponent>
           {:else if rawMatch}
-            <div class="page-loading"><Skeleton width="60%" height="24px" /><Skeleton width="100%" height="200px" /></div>
+            <!-- SCHELETUL DE RUTA ARE FORMA PAGINII CATRE CARE MERGI.
+                 Masurat la prima deschidere pe telefon (4G, CPU 4x): blocul
+                 generic „bara de 60% + caseta de 200px" statea pe ecran 731ms,
+                 iar dupa el venea lista — deci vedeai DOUA forme diferite, si
+                 niciuna nu semana cu pagina. Aterizarea pe telefon e chiar o
+                 lista (`/tasks?sfera=personal`), la fel /projects si pagina de
+                 proiect: pe ele scheletul de RANDURI e exact ce urmeaza, deci
+                 umplerea de dupa e o inlocuire, nu o schimbare de forma.
+                 Doua forme, nu sapte: o harta ruta -> schelet ar fi a doua sursa
+                 de adevar despre cum arata fiecare pagina. -->
+            {#if RUTE_LISTA.has(bazaRutei(router.path))}
+              <div class="page-loading rand"><Skeleton varianta="rand" randuri={6} /></div>
+            {:else}
+              <div class="page-loading"><Skeleton width="60%" height="24px" /><Skeleton width="100%" height="200px" /></div>
+            {/if}
           {:else}
             <EmptyState icon={Compass} title="Aici nu e nimic"
                         description="Adresa asta nu duce nicăieri în aplicație.">
@@ -302,6 +318,14 @@
     flex-direction: column;
     gap: var(--space-md);
     max-width: 600px;
+  }
+  /* Varianta „randuri" isi tine singura distantele (`Skeleton varianta="rand"`),
+     iar latimea nu se plafoneaza: listele curg pe toata coloana, deci un maxim
+     de 600px ar face scheletul mai ingust decat continutul care il inlocuieste. */
+  .page-loading.rand {
+    max-width: none;
+    gap: 0;
+    padding: var(--space-lg) var(--space-md);
   }
 
   .skip-link {

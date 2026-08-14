@@ -2,7 +2,8 @@ import { mount } from 'svelte'
 import './styles/global.css'
 import App from './App.svelte'
 import { apiJson } from './lib/api.js'
-import { inapoi } from './lib/router.svelte.js'
+import { inapoi, router } from './lib/router.svelte.js'
+import { loadGlobalTasks } from './stores/tasks.svelte.js'
 import { todayISO } from './lib/calendarDates.js'
 import { esteNativ, reprogrameaza } from './lib/notificari.js'
 import { App as CapApp } from '@capacitor/app'
@@ -10,6 +11,29 @@ import { verifica as verificaActualizarea, descarcaSiInstaleaza } from './lib/ac
 import { toastFix, actualizeazaToast } from './stores/ui.svelte.js'
 // Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
 // deci extrasele de carti se vad. Pe /calc public, calc-main.js le gateaza dupa autentificare.
+
+// DATELE ATERIZARII PLEACA ODATA CU CODUL EI, NU DUPA.
+//
+// Masurat la prima deschidere pe telefon (4G, procesor incetinit de patru ori):
+// `main.js` termina la 813ms, chunkul paginii de taskuri la 1123ms, si abia
+// ATUNCI pornea `/api/global-tasks` — care se intorcea la 1542ms. Trei etape
+// puse cap la cap, desi ultima nu depinde de a doua: cererea are nevoie doar de
+// URL, iar URL-ul e aici, in bundle-ul principal.
+//
+// Se cheama INAINTE de `mount`, deci pleaca in aceeasi rafala cu chunkul rutei.
+// Cand pagina se monteaza, `loadGlobalTasks` din ea cade pe aceeasi cerere prin
+// impartirea celor in zbor din `cache.js` — deci raman una singura, pornita cu
+// vreo 900ms mai devreme.
+//
+// Doar pe ruta de aterizare, si doar daca ea CHIAR e lista: pe desktop se
+// deschide Acasa, iar o notificare atinsa deschide alta ruta. Ce nu se
+// potriveste nu se incalzeste — o cerere degeaba ar fura banda exact de la
+// chunkul care se astepta.
+if (router.path === '/tasks') {
+  // `sfera: 'toate'` — aceleasi optiuni cu care o cere pagina (vezi Tasks.svelte).
+  // Alte optiuni ar da alt URL, deci alta cerere, deci doua in loc de una.
+  loadGlobalTasks({ sfera: 'toate' })
+}
 
 const app = mount(App, {
   target: document.getElementById('app'),

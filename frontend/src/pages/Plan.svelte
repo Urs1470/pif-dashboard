@@ -1,3 +1,19 @@
+<script module>
+  import { urlPlan as _url } from '../stores/plan.svelte.js'
+  import { preia as _preia } from '../lib/cache.js'
+
+  /** Chemata de router la hover pe tabul din Doc, INAINTE de schimbarea rutei.
+   *  Fara ea, hoverul aducea doar chunkul paginii, iar cererea de date pornea
+   *  abia la montare — deci prima intrare pe tab in fiecare sesiune trecea
+   *  printr-un schelet, oricat de repede venea codul.
+   *  URL-ul vine din store, unde il construieste si `loadPlan`: doua sabloane
+   *  ale aceluiasi raspuns n-ar mai nimeri aceeasi intrare in cache, si atunci
+   *  preincarcarea ar face o cerere in plus fara sa scoata scheletul. */
+  export function pregateste() {
+    return _preia(_url(), { proaspat: 5000 })
+  }
+</script>
+
 <script>
   import { onMount, tick } from 'svelte'
   import { CalendarRange, ChevronRight, CalendarDays, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2, Calendar } from '@lucide/svelte'

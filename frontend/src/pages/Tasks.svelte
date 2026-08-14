@@ -1,3 +1,19 @@
+<script module>
+  import { urlGlobalTasks as _url } from '../stores/tasks.svelte.js'
+  import { preia as _preia } from '../lib/cache.js'
+
+  /** Chemata de router la hover pe tabul din Doc, INAINTE de schimbarea rutei.
+   *  Fara ea, hoverul aducea doar chunkul paginii, iar cererea de date pornea
+   *  abia la montare — deci prima intrare pe tab in fiecare sesiune trecea
+   *  printr-un schelet, oricat de repede venea codul.
+   *  URL-ul vine din store, unde il construieste si `loadGlobalTasks`: doua sabloane
+   *  ale aceluiasi raspuns n-ar mai nimeri aceeasi intrare in cache, si atunci
+   *  preincarcarea ar face o cerere in plus fara sa scoata scheletul. */
+  export function pregateste() {
+    return _preia(_url({ sfera: 'toate' }), { proaspat: 5000 })
+  }
+</script>
+
 <script>
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
@@ -23,7 +39,29 @@
   import SelectorZi from '../components/ui/SelectorZi.svelte'
   import Select from '../components/ui/Select.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
-  import EditorLung from '../components/ui/EditorLung.svelte'
+  // EDITORUL LUNG NU E PE DRUMUL CRITIC AL LISTEI.
+  //
+  // Masurat pe 4G cu procesorul incetinit de patru ori, la prima deschidere pe
+  // telefon: `EditorLung` -> `RichTextEditor` -> `katex` inseamna **257 KB de
+  // KaTeX plus 58 KB de editor**, descarcate ca sa se afiseze o lista de
+  // to-do-uri. Pe telefon aterizarea implicita E lista asta (`/tasks?sfera=
+  // personal`), deci fix ecranul cu care se deschide aplicatia platea tipografia
+  // matematica pe care n-o foloseste. In cascada, KaTeX termina la 1447ms si
+  // tinea banda ocupata cat timp chunkul paginii inca venea.
+  //
+  // Acum vine cand ai nevoie de el, si e adus din vreme in liniste (vezi
+  // `aduEditorul` + `onMount`). Deschiderea ASTEAPTA modulul — aceeasi regula ca
+  // peste tot: un panou se deschide cu continutul in mana, nu inainte.
+  let EditorLung = $state(null)
+  let cerereEditor = null
+  function aduEditorul() {
+    if (!cerereEditor) {
+      cerereEditor = import('../components/ui/EditorLung.svelte')
+        .then((m) => { EditorLung = m.default })
+        .catch((e) => { cerereEditor = null; throw e })
+    }
+    return cerereEditor
+  }
   import RichText from '../components/ui/RichText.svelte'
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
@@ -275,13 +313,18 @@
    *  un toast cu „Anulează" (vezi bifarea unui task, mutarea unui termen).
    *  Ritualul asta traieste acum intr-un singur loc — `EditorLung` — si e acelasi
    *  pentru toate cele patru campuri lungi din aplicatie. */
-  function openNoteModal(t) {
+  async function openNoteModal(t) {
     noteTask = t
     noteDraft = t.descriere || ''
     noteSalveaza = async (text) => {
       await updateGlobalTask(t.id, { descriere: text })
       await reload()
     }
+    // Modulul se cere INAINTE de `open`: altfel `{#if EditorLung}` ar fi fals in
+    // clipa in care steagul devine adevarat, iar modalul s-ar deschide gol si ar
+    // primi continutul dupa — exact saritura reparata la modalul de pe Acasa.
+    // De obicei e deja adus (`onMount` il cere in liniste), deci nu se asteapta.
+    await aduEditorul()
     showNoteModal = true
   }
 
@@ -726,6 +769,22 @@
   // FARA sferaActiva printre dependinte: sfera nu mai cere retea (vine „toate"
   // dintr-un foc), deci comutarea ei nu redeclanseaza fetch-ul.
   $effect(() => { loadGlobalTasks({ arhiva: showArchive, sfera: 'toate' }) })
+
+  // Editorul lung se aduce IN LINISTE, dupa ce pagina e gata de folosit — nu la
+  // import, unde ar sta pe drumul critic al primei deschideri (vezi
+  // `aduEditorul`), si nu abia la prima atingere, unde s-ar simti.
+  // `requestIdleCallback` cu plafon: pe un telefon care nu sta niciodata degeaba
+  // n-are voie sa amane la nesfarsit. Rezerva pentru Safari, care abia in 2025
+  // l-a primit si tot poate lipsi in WebView-uri mai vechi.
+  $effect(() => {
+    const cere = () => { aduEditorul().catch(() => {}) }
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(cere, { timeout: 2500 })
+      return () => cancelIdleCallback(id)
+    }
+    const t = setTimeout(cere, 1200)
+    return () => clearTimeout(t)
+  })
 
   // CHEIA LISTEI SE SCHIMBA ABIA DUPA CE AU SOSIT DATELE (raportat de Ion:
   // „se incarca aiurea, parca se rupe pagina"). Cheiat direct pe sferaActiva,
@@ -1206,9 +1265,11 @@
      spunea ce se vede oricum, si tocmai el facea randul sa se taie. Antetul e o
      linie de context (vezi `.modal-doc .modal-title` in Modal.svelte).
      `tools="nota"`: sapte unelte, nu treisprezece — vezi RichTextEditor. -->
-<EditorLung bind:open={showNoteModal} titlu={noteTask ? noteTask.titlu : 'Notiță'}
-            valoare={noteDraft} tools="nota" salveaza={noteSalveaza}
-            placeholder="Scrie notițe pentru acest task…" />
+{#if EditorLung}
+  <EditorLung bind:open={showNoteModal} titlu={noteTask ? noteTask.titlu : 'Notiță'}
+              valoare={noteDraft} tools="nota" salveaza={noteSalveaza}
+              placeholder="Scrie notițe pentru acest task…" />
+{/if}
 
 <!-- O LEGATURA CU UN SERVICIU DIN AFARA SE CITESTE CA O STARE, NU CA UN FORMULAR.
      E pornita sau nu, iar cand e pornita trebuie sa stii ce se sincronizeaza si

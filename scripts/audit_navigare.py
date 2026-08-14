@@ -137,6 +137,73 @@ def mergi_la(page, tab, astepta=700):
     page.wait_for_timeout(astepta)
 
 
+# ===================== FIECARE TAB, CU LATENTA, PE CADRE =====================
+#
+# DOUA LUCRURI PE CARE MASURATOAREA DE MAI SUS NU LE PRINDE, si amandoua au
+# ascuns cate un defect adevarat pana pe 2026-08-14:
+#
+#  1. LOCALHOST MINTE. O cerere se intoarce in 5ms, deci plafonul de 250ms al
+#     preincarcarii nu se atinge niciodata si totul pare curat. Aplicatia
+#     traieste in spatele unui tunel Cloudflare, unde un dus-intors e ~150ms.
+#  2. `MutationObserver` RATEAZA CLIPIRILE. El vede modificarea, dar pana ruleaza
+#     callbackul scheletul poate fi deja scos — iar unul care prinde UN cadru
+#     tot se vede. rAF e granita corecta: daca a fost pe ecran macar un cadru,
+#     ochiul a prins schimbarea.
+#
+# Cu amandoua puse la punct au iesit doua cazuri reale (Taskuri si Calendar,
+# click rapid, prima vizita: exact un cadru de schelet). Ion le descrisese fara
+# sa le poata numi: „la schimbul pe un alt tab aproape tot timpul vad un schelet
+# apoi apare pagina".
+CADRE = """
+window.__cadre = 0; window.__cand = []; window.__t = 0;
+(function bucla() {
+  if (document.querySelector('.page-loading, .page .skeleton, .page .sk-lista')) {
+    window.__cadre++;
+    if (window.__t) window.__cand.push(Math.round(performance.now() - window.__t));
+  }
+  requestAnimationFrame(bucla);
+})();
+"""
+
+RUTE_TAB = [('/', 'Acasă'), ('/tasks', 'Taskuri'), ('/plan', 'Planificator'),
+            ('/calendar', 'Calendar')]
+
+
+def ruleaza_taburi(page, baza):
+    """Doua treceri prin dock: prima vizita (memoria goala) si a doua.
+
+    Hoverul e SCURT cu buna stiinta — 60ms, cat ii ia unei maini sigure de la
+    intrarea pe tab pana la click. Cu 250ms trecea tot; defectul aparea abia la
+    clicul rapid, adica exact la cel al omului care stie unde apasa."""
+    cdp = page.context.new_cdp_session(page)
+    cdp.send('Network.enable')
+    cdp.send('Network.emulateNetworkConditions', {
+        'offline': False, 'latency': 150,
+        'downloadThroughput': int(20 * 1024 * 1024 / 8),
+        'uploadThroughput': int(6 * 1024 * 1024 / 8)})
+    page.add_init_script(CADRE)
+    page.goto(baza + '/#/', wait_until='load')
+    page.wait_for_timeout(1800)
+    try:
+        for tur in ('prima vizita', 'a doua vizita'):
+            for cale, nume in RUTE_TAB:
+                el = tab_din_doc(page, cale)
+                page.evaluate("window.__cadre = 0; window.__cand = []; window.__t = performance.now()")
+                el.hover()
+                page.wait_for_timeout(60)
+                el.click()
+                page.wait_for_timeout(1400)
+                r = page.evaluate("({ n: window.__cadre, t: window.__cand[0] })")
+                nota(r['n'] == 0, '%s (%s): fara schelet' % (nume, tur),
+                     '%d cadre, primul la %sms' % (r['n'], r['t']) if r['n'] else '')
+    finally:
+        # Reteaua se lasa asa cum a fost gasita: probele de dupa nu trebuie sa
+        # mosteneasca 150ms de latenta fara sa stie.
+        cdp.send('Network.emulateNetworkConditions', {
+            'offline': False, 'latency': 0,
+            'downloadThroughput': -1, 'uploadThroughput': -1})
+
+
 # ----------------------------------------------------------------------- probe
 def ruleaza(page, baza, pid):
     out('\n--- 1. prima incarcare: pagina SOSESTE ---')
@@ -269,8 +336,11 @@ def ruleaza(page, baza, pid):
              'la 90ms e INTRE cele doua sloturi (aluneca, nu sare)',
              'plecat %d -> la 90ms %d -> ajuns %d' % (p0['x'], la_mijloc, la_final['x']))
 
+    out('\n--- 8. fiecare tab, cu LATENTA si masurat pe CADRE ---')
+    ruleaza_taburi(page, baza)
+
     if pid:
-        out('\n--- 8. pagina de proiect se deschide cu ce stie ---')
+        out('\n--- 9. pagina de proiect se deschide cu ce stie ---')
         page.goto(baza + '/#/projects', wait_until='networkidle')
         page.wait_for_timeout(600)
         # Cardul e un `role="button"`, nu un link — de aceea are nevoie de

@@ -1,6 +1,7 @@
 import { apiJson } from '../lib/api.js'
 import { updateTask, updateGlobalTask } from './tasks.svelte.js'
 import { localToday, tomorrowISO } from '../lib/planDates.js'
+import { preia, uita } from '../lib/cache.js'
 
 // "Planificator" — 14-day operational swimlane. Lanes = projects (each carrying
 // its overall interval) with their tasks, plus a "Globale" lane. Read-model comes
@@ -27,13 +28,21 @@ export function toggleWeekends() {
   try { localStorage.setItem(LS_WEEKENDS, plan.showWeekends ? '1' : '0') } catch {}
 }
 
+// URL-ul ferestrei, scris o singura data: il cer si `loadPlan`, si preincarcarea
+// de la hover din Doc (`pregateste` in Plan.svelte). Doua sabloane pentru acelasi
+// raspuns s-ar desparti tacut, iar cererea pornita la hover n-ar mai fi cea pe
+// care o asteapta pagina — deci s-ar face doua, si scheletul ar reveni.
+export function urlPlan() {
+  const t = localToday()
+  return `/api/plan?start=${t}&days=${plan.days}&today=${t}${plan.showDone ? '&done=1' : ''}`
+}
+
 export async function loadPlan() {
   plan.loading = true
   plan.error = null
   try {
     const t = localToday()
-    const done = plan.showDone ? '&done=1' : ''
-    const data = await apiJson(`/api/plan?start=${t}&days=${plan.days}&today=${t}${done}`)
+    const data = await preia(urlPlan())
     plan.lanes = Array.isArray(data.lanes) ? data.lanes : []
     plan.backlog = Array.isArray(data.backlog) ? data.backlog : []
     plan.start = data.start || t

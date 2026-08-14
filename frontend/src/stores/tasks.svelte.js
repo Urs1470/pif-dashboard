@@ -1,4 +1,13 @@
 import { apiJson } from '../lib/api.js'
+import { preia, uita } from '../lib/cache.js'
+
+// ORICE SCRIERE INVALIDEAZA LISTA, INTR-UN SINGUR LOC.
+// De cand citirea trece prin `preia`, o lista tinuta minte din greseala se
+// vede: revii pe tab si taskul bifat e la loc, pentru cateva cadre sau pana la
+// urmatoarea reincarcare. Pus in mutatii, nu la apelanti — jumatate din ele
+// (bifarea, mutarea termenului) isi scriu starea local si NU mai reincarca.
+const CAP_LISTA = '/api/global-tasks'
+function uitaLista() { uita(CAP_LISTA) }
 
 export const tasks = $state({
   items: [],
@@ -13,17 +22,29 @@ export const globalTasks = $state({
   error: null,
 })
 
+// URL-ul listei, scris o singura data: il cere si pagina (la montare), si
+// incalzirea de la pornire din `main.js`. Doua sabloane pentru acelasi raspuns
+// s-ar desparti tacut, iar cererea pornita devreme n-ar mai fi cea pe care o
+// asteapta pagina — deci s-ar face doua.
+export function urlGlobalTasks(opts = {}) {
+  const params = new URLSearchParams()
+  if (opts.status) params.set('status', opts.status)
+  if (opts.categorie) params.set('categorie', opts.categorie)
+  if (opts.arhiva) params.set('arhiva', 'true')
+  if (opts.sfera) params.set('sfera', opts.sfera)
+  const qs = params.toString()
+  return `/api/global-tasks${qs ? '?' + qs : ''}`
+}
+
 export async function loadGlobalTasks(opts = {}) {
   globalTasks.loading = true
   globalTasks.error = null
   try {
-    const params = new URLSearchParams()
-    if (opts.status) params.set('status', opts.status)
-    if (opts.categorie) params.set('categorie', opts.categorie)
-    if (opts.arhiva) params.set('arhiva', 'true')
-    if (opts.sfera) params.set('sfera', opts.sfera)
-    const qs = params.toString()
-    const data = await apiJson(`/api/global-tasks${qs ? '?' + qs : ''}`)
+    // Prin `preia`, nu direct: la pornirea pe telefon cererea se da o data din
+    // `main.js` (imediat, in paralel cu chunkul paginii) si a doua oara de aici,
+    // cand pagina se monteaza. Cererile in zbor se impart, deci raman una
+    // singura — si e cea care a pornit cu ~900ms mai devreme.
+    const data = await preia(urlGlobalTasks(opts))
     globalTasks.items = Array.isArray(data) ? data : data.tasks || []
   } catch (e) {
     globalTasks.error = e.message
@@ -60,6 +81,7 @@ export async function createGlobalTask(data, reloadOpts = {}) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
+  uitaLista()
   // Reload-ul pastreaza vederea apelantului (sfera/arhiva) — altfel un task
   // adaugat din vederea Personal ar repicta lista cu cea de munca.
   await loadGlobalTasks(reloadOpts)
@@ -72,11 +94,13 @@ export async function updateGlobalTask(id, data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
+  uitaLista()
   return result
 }
 
 export async function deleteGlobalTask(taskId) {
   await apiJson(`/api/global-tasks/${taskId}`, { method: 'DELETE' })
+  uitaLista()
 }
 
 export async function loadSubtasks(taskId) {

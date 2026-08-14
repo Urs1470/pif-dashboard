@@ -8,15 +8,21 @@ export const projects = $state({
   filters: { status: '', tip: '', search: '' },
 })
 
+// Vezi nota de la `urlProiect`: URL-ul listei il cer si pagina, si
+// preincarcarea de la hover.
+export function urlProiecte() {
+  const params = new URLSearchParams()
+  if (projects.filters.status) params.set('status', projects.filters.status)
+  if (projects.filters.tip) params.set('tip', projects.filters.tip)
+  const qs = params.toString()
+  return `/api/proiecte${qs ? '?' + qs : ''}`
+}
+
 export async function loadProjects() {
   projects.loading = true
   projects.error = null
   try {
-    const params = new URLSearchParams()
-    if (projects.filters.status) params.set('status', projects.filters.status)
-    if (projects.filters.tip) params.set('tip', projects.filters.tip)
-    const qs = params.toString()
-    const data = await apiJson(`/api/proiecte${qs ? '?' + qs : ''}`)
+    const data = await preia(urlProiecte())
     let items = Array.isArray(data) ? data : data.projects || []
     if (projects.filters.search) {
       const q = projects.filters.search.toLowerCase()
@@ -41,6 +47,7 @@ export async function createProject(data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
+  uitaProiectele()
   await loadProjects()
   return result
 }
@@ -57,8 +64,10 @@ export async function createProject(data) {
 // Prefixul acopera si `/tasks` de sub proiect: sunt aceeasi entitate, iar o
 // scriere pe proiect poate schimba ce se vede in lista lui (statusul, de pilda,
 // muta proiectul intre sectiuni).
-function uitaProiectul(id) {
-  uita(urlProiect(id))
+// Un singur prefix ajunge: `/api/proiecte` acopera si lista (cu sau fara
+// filtre in interogare), si `/api/proiecte/<id>`, si `/tasks`-ul de sub el.
+function uitaProiectele() {
+  uita('/api/proiecte')
 }
 
 export async function updateProject(id, data) {
@@ -67,14 +76,14 @@ export async function updateProject(id, data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  uitaProiectul(id)
+  uitaProiectele()
   await loadProjects()
   return result
 }
 
 export async function deleteProject(id) {
   await apiJson(`/api/proiecte/${id}`, { method: 'DELETE' })
-  uitaProiectul(id)
+  uitaProiectele()
   await loadProjects()
 }
 
