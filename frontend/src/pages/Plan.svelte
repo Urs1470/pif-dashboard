@@ -682,19 +682,21 @@
         // pista se reconstruia de DOUA ori dupa fiecare mutare — exact ce
         // raporteaza Ion: „se pare ca se reincarca pagina, apoi se pune".
         // Pe eroare se reincarca, fiindca atunci starea locala e cea gresita.
-        const dinainte = barEl.getBoundingClientRect()
+        //
+        // `await tick()` la final NU e decor: `tragePeZile` tine reperul pe ziua
+        // aleasa (prin `--dx`) pana cand functia asta se intoarce, si abia apoi
+        // scoate offsetul. Daca ne-am intoarce inainte ca DOM-ul sa aiba noul
+        // `left`, offsetul ar fi scos peste pozitia veche si reperul ar clipi
+        // inapoi. Aterizarea (FLIP) a plecat de aici tocmai fiindca nu mai are
+        // ce ateriza: obiectul nu pleaca niciodata de pe ziua pe care l-ai lasat.
         try {
           await setTaskDates(t.tip, t.id, { data_scadenta: zi })
           toast('Reprogramat', 'success')
-          // ATERIZARE (T9): pozitia vine din `left: %`, care nu se poate anima,
-          // deci fara asta reperul apare direct pe ziua noua.
-          await tick()
-          const nou = document.querySelector(`.bar[data-task="${t.id}"]`) || barEl
-          aterizare(nou, dinainte)
         } catch (err) {
           toast(`Eroare: ${err.message}`, 'error')
           await loadPlan()
         }
+        await tick()
       },
     })
   }

@@ -116,10 +116,25 @@ export function tragePeZile(ev, cfg) {
       obiect.style.setProperty('--dx', (delta * ziW).toFixed(1) + 'px')
       const zi = plusZile(ziObiect, delta)
       const d = delta
-      setTimeout(() => {
+      setTimeout(async () => {
         obiect.style.transition = ''
-        obiect.style.removeProperty('--dx')
-        laCommit?.(zi, d)
+        // `--dx` SE SCOATE ABIA DUPA CE ZIUA NOUA E IN DOM.
+        //
+        // Scos inainte de commit (cum era), obiectul sarea INAPOI pe ziua veche
+        // — fiindca pozitia lui reala vine din `left: %`, iar aceea se schimba
+        // abia cand raspunde serverul. Deci vedeai: se aseaza pe ziua noua, se
+        // intoarce pe cea veche, sta acolo cat tine cererea, apoi apare brusc pe
+        // cea noua (raportat de Ion). Trei miscari pentru o mutare.
+        //
+        // Acum obiectul RAMANE unde l-ai lasat cat timp datele il ajung din
+        // urma. `laCommit` se asteapta, si el isi asteapta propriul `tick()`,
+        // deci cand ne intoarcem aici `left` e deja ziua noua: scoaterea lui
+        // `--dx` nu mai misca nimic. Nici salt inapoi, nici dublu-offset.
+        try {
+          await laCommit?.(zi, d)
+        } finally {
+          obiect.style.removeProperty('--dx')
+        }
       }, 90)
     },
     laAnulare() {

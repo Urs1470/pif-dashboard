@@ -122,13 +122,27 @@ if (-not $apk) {
 # aceea poate sta in git. Secreta e cheia PRIVATA din `.jks`, care nu intra
 # niciodata aici.
 #
-# SCHIMBATA PE 2026-08-09, deliberat. Cheia veche (`753182ea…c38ecbf0`) exista
-# doar pe PC-ul de dinainte, si acela nu mai e masina de dezvoltare. Cheia noua
-# s-a generat aici (RSA 4096, 30 de ani, acelasi DN) si de acum e singura sursa.
-# Pretul, platit o singura data: aplicatia deja instalata NU se poate actualiza
-# peste — se dezinstaleaza si se instaleaza la loc. De la urmatorul release
-# incolo, actualizarea merge normal.
-$AMPRENTA = '7ea6741536a706a90289c8b94b1fc918a83ad3131357691178414fe17ab11988'
+# ISTORIC, ca sa nu se mai roteasca din reflex:
+#
+# 2026-08-09 — pinul a fost mutat pe o cheie NOUA (`7ea67415…7ab11988`), cu nota
+#   ca cea veche ar exista doar pe PC-ul de dinainte. Rotirea costa o
+#   dezinstalare pe telefon, platita o singura data.
+# 2026-08-14 — INTORS INAPOI pe cheia veche (`753182ea…c38ecbf0`), decizia lui
+#   Ion: „hai sa folosim aceasta semnatura veche, ca sa nu mai reinstalez
+#   aplicatia". Doua fapte au dus la ea:
+#     1. Keystore-ul de pe masina asta (`Tools/keys/pif-release.jks`, alias
+#        `pif`, valabil din 2026-08-07) contine cheia VECHE. Cheia noua nu e
+#        nicaieri in `keys/` — deci ori s-a pierdut, ori n-a fost salvata.
+#     2. Telefonul ruleaza aplicatia semnata cu cea veche, deci ea e singura cu
+#        care actualizarea intra fara dezinstalare (si fara sa piarda datele
+#        locale ale carcasei: notificarile programate).
+#   Cheia asta e acum SINGURA sursa, si are backup (vezi `references/` si
+#   copia de pe Drive). Daca vreodata se roteste din nou, se roteste cand
+#   e o reinstalare acceptata, nu ca sa treaca un build.
+#
+# Amprenta e a certificatului PUBLIC, prezent in fiecare copie a aplicatiei — de
+# aceea poate sta in git.
+$AMPRENTA = '753182ea0825c9766885c922092fb826b28d075a2815fde38e5f7efec38ecbf0'
 
 if ($Release) {
     $bt2 = (Get-ChildItem "$T\android-sdk\build-tools" -Directory | Sort-Object Name -Descending | Select-Object -First 1).FullName
