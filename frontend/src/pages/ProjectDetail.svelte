@@ -22,7 +22,6 @@
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { ArrowLeft, Plus, CheckCircle2, CalendarDays, ListChecks, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, Check, Text } from '@lucide/svelte'
-  import ProjectGantt from '../components/gantt/ProjectGantt.svelte'
   import ImplPeriods from '../components/projects/ImplPeriods.svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
@@ -64,12 +63,6 @@
   let loading = $state(true)
   let error = $state(null)
   let activeTab = $state('tasks')
-
-  // Jump from the read-only Gantt to a task in the Tasks tab (scroll + flash).
-  function openTaskFromGantt(taskId) {
-    router.query = { ...router.query, focus: focusKey('task', taskId) }
-    activeTab = 'tasks'
-  }
 
   let newTaskTitle = $state('')
   let newTaskData = $state('')   // termenul ales din „Alege data", la compozitor
@@ -119,6 +112,18 @@
   // Subtask state
   let expandedTask = $state(null)
   let subtasksCache = $state({})
+
+  /** Contorul de pasi de pe rand („2/5"), sau `null` cand taskul n-are subtaskuri.
+   *  Aceeasi regula ca in /tasks: cea mai proaspata sursa castiga. Aici lista se
+   *  reincarca dupa fiecare scriere de subtask (`reloadTasks`), dar reincarcarea
+   *  are un dus-intors — cache-ul e deja corect in clipa atingerii. Un `[]` in
+   *  cache inseamna „am intrebat, n-are niciunul", deci scoate contorul. */
+  function pasi(t) {
+    const subs = subtasksCache[t.id]
+    const total = subs ? subs.length : (t.subtask_total || 0)
+    if (!total) return null
+    return { total, gata: subs ? subs.filter(s => s.done).length : (t.subtask_done || 0) }
+  }
   let newSubtaskTitle = $state('')
   let adaugSubLa = $state('')   // id-ul taskului al carui compozitor de subtask e deschis
 
@@ -151,7 +156,7 @@
 
   const tabs = [
     { key: 'tasks', label: 'Taskuri', icon: ListTodo },
-    { key: 'gantt', label: 'Gantt', icon: CalendarRange },
+    { key: 'perioade', label: 'Perioade', icon: CalendarRange },
     { key: 'wiki', label: 'Wiki', icon: BookOpen },
   ]
 
@@ -162,14 +167,32 @@
   let wikiListLoading = $state(false)
   let wikiNoteLoading = $state(false)
 
+  // TABURILE DIN PAGINA DE PROIECT TREC SI ELE PRIN MEMORIE.
+  //
+  // Ion: „taburile din proiecte nu prea le-ai atins, se incarca tot cu schelete
+  // de fiecare data." Corect: reparasem intrarea PE pagina, nu si taburile din
+  // ea. `wikiInfo` si `wikiContent` sunt stare de componenta, iar componenta
+  // moare la fiecare navigare — deci fiecare revenire pe tabul Wiki cerea din
+  // nou lista de note SI continutul primei note, cu doua schelete unul dupa
+  // altul.
+  //
+  // Notele din vault sunt cel mai bun candidat din aplicatie: se schimba de
+  // cateva ori pe luna, iar cand le schimbi TU, o face `saveWikiEdit`, care
+  // uita ce stia memoria.
+  const urlWiki = (id) => `/api/proiecte/${id}/wiki`
+  const urlNota = (cale) => `/api/obsidian/note?path=${encodeURIComponent(cale)}`
+
   async function loadWiki() {
-    wikiListLoading = true
+    const url = urlWiki(params.id)
+    const gata = _dinCache(url)
+    if (gata !== undefined) wikiInfo = gata
+    else wikiListLoading = true
     try {
-      wikiInfo = await apiJson(`/api/proiecte/${params.id}/wiki`)
-      if (wikiInfo.notes?.length && !wikiNote) openWikiNote(wikiInfo.notes[0])
+      wikiInfo = await _preia(url)
     } catch (e) {
-      wikiInfo = { error: e.message, notes: [] }
+      if (gata === undefined) wikiInfo = { error: e.message, notes: [] }
     } finally { wikiListLoading = false }
+    if (wikiInfo?.notes?.length && !wikiNote) openWikiNote(wikiInfo.notes[0])
   }
 
   let wikiEditing = $state(false)
@@ -185,6 +208,10 @@
     wikiSaving = true
     try {
       await apiJson('/api/obsidian/note', { method: 'PUT', body: { path: wikiNote.path, content: wikiDraft } })
+      // Ce stia memoria despre nota asta e acum vechi, iar `openWikiNote` nu se
+      // mai cheama — starea locala e deja corecta. Fara asta, urmatoarea intrare
+      // pe tab ar deschide nota cu TEXTUL DE DINAINTE de salvare.
+      _uita(urlNota(wikiNote.path))
       wikiContent = wikiDraft
       wikiEditing = false
       toast('Notă salvată și împinsă în repo (git push)', 'success')
@@ -196,13 +223,20 @@
   async function openWikiNote(note) {
     wikiEditing = false
     wikiNote = note
-    wikiNoteLoading = true
+    const url = urlNota(note.path)
+    const gata = _dinCache(url)
+    // Si aici seedul e sincron: trecerea de la o nota la alta e o apasare, iar
+    // o nota deja citita trebuie sa se intoarca fara sa clipeasca.
+    if (gata !== undefined) { wikiContent = gata.content || ''; wikiNoteLoading = false }
+    else { wikiContent = ''; wikiNoteLoading = true }
     try {
-      const data = await apiJson(`/api/obsidian/note?path=${encodeURIComponent(note.path)}`)
+      const data = await _preia(url)
       wikiContent = data.content || ''
     } catch (e) {
-      wikiContent = ''
-      toast(`Eroare la încărcarea notei: ${e.message}`, 'error')
+      if (gata === undefined) {
+        wikiContent = ''
+        toast(`Eroare la încărcarea notei: ${e.message}`, 'error')
+      }
     } finally { wikiNoteLoading = false }
   }
 
@@ -770,10 +804,19 @@
                        apoi cati pasi (doar daca are), actiunile cu text la hover,
                        si termenul pironit intr-o coloana de 46px. -->
                   <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
-                    <!-- Fara fractia de pasi: randul poarta doua lucruri, ce e de
-                         facut si cand. Progresul se citeste din railul din dreapta
-                         si din randul desfacut. -->
                     <span class="ttitle">{t.titlu}</span>
+                    <!-- CONTORUL DE PASI, la fel ca in /tasks si pe „Astăzi"
+                         (cerinta Ion, 2026-08-15). Randul purta pana acum doua
+                         lucruri — ce e de facut si cand — iar progresul se citea
+                         doar din randul desfacut; interdictia s-a ridicat, dar tot
+                         intr-un singur fel pe toate suprafetele: text mono si gri
+                         langa titlu, nicio culoare. -->
+                    {#if pasi(t)}
+                      {@const p = pasi(t)}
+                      <span class="tpasi" role="img"
+                            aria-label="{p.gata} din {p.total} subtaskuri făcute"
+                            title="{p.gata} din {p.total} subtaskuri făcute">{p.gata}/{p.total}</span>
+                    {/if}
                   </button>
                   <div class="task-actions">
                     <span class="ta-dp" title="Planifică — alege ziua">
@@ -910,13 +953,22 @@
           </div>
         {/if}
 
-      {:else if activeTab === 'gantt'}
-        <ProjectGantt projectId={params.id} onOpenTask={openTaskFromGantt} />
-        <!-- Perioadele de implementare stateau in fostul tab „Info", langa datele
-             de identificare — n-aveau ce cauta acolo. Locul lor e aici: sunt
-             unitatea reala de planificare a proiectului, iar Ganttul e vederea
-             lui in timp. -->
-        <div style="margin-top: var(--space-md)"><ImplPeriods projectId={params.id} /></div>
+      {:else if activeTab === 'perioade'}
+        <!-- GANTTUL DIN PAGINA DE PROIECT A PLECAT (cerut de Ion, 2026-08-15):
+             „vom sterge gantt in interiorul proiectului, trebuie sa ramana doar
+             optiunea de adaugare perioade de implementare."
+             Perioadele sunt oricum unitatea reala de planificare — Ganttul era
+             doar o a doua vedere peste ele, iar planificarea pe zile traieste in
+             Calendar si in Planificator, unde o si editezi.
+
+             EXPORTURILE AU PLECAT SI ELE (Ion, in aceeasi trecere: „sterge si
+             alea"). Erau butoane INAUNTRUL Ganttului si tipareau exact vederea
+             lui in timp; fara Gantt n-aveau ce reprezenta. Odata cu ele au plecat
+             de pe server si cele trei rute care le serveau — `/gantt`,
+             `/gantt.pdf` si `/gantt.xlsx` — plus cele 705 linii de asamblare a
+             lor din `blueprints/tasks.py`, care n-ar mai fi avut niciun cititor.
+             Perioadele raman singurul lucru din tab, adica exact ce s-a cerut. -->
+        <ImplPeriods projectId={params.id} />
 
       {:else if activeTab === 'wiki'}
         {#if wikiListLoading}
@@ -1233,8 +1285,12 @@
   .check:hover { color: var(--accent); }
   .trow.done .check { color: var(--success); }
   /* `.check-empty` traieste in global.css, o singura data pentru toate listele. */
+  /* O LINIE, ca in `Tasks.svelte` — randul e UN SINGUR obiect in toate listele.
+     Era o COLOANA, ramasa de pe vremea celei de-a doua linii (`.tinfo`), care nu
+     mai are niciun consumator in markup de la E1 incoace: cu ea, contorul de pasi
+     ar fi aterizat SUB titlu aici si langa el in celelalte trei liste. */
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; align-self: stretch;
-    display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+    display: flex; align-items: center; gap: var(--space-sm); }
   /* --font-rand, nu --font-body: randul de lista ramane 15 si pe telefon.
      Era singurul din cele patru liste ramas pe `--font-body`, care pe telefon
      urca la 16 — deci acelasi rand avea 56px aici si 52 in /tasks si pe
@@ -1245,10 +1301,11 @@
   /* Fara `opacity` pe randul bifat: se inmulteste peste tokenuri deja la limita
      de contrast. Ce e facut o spun taietura si culoarea bifei. */
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
-  .tinfo { display: flex; align-items: center; gap: 10px; font-size: var(--font-small); color: var(--text-dim); }
-  /* `.t-pasi` (fractia de pasi) a plecat din rand odata cu E1 — pe rand sunt doua
-     lucruri: ce e de facut si cand. Progresul se citeste din railul din dreapta
-     („Progres taskuri 7/12") si din panoul deschis. Regula ramasese fara marcaj. */
+  /* `.tinfo` (a doua linie a randului) a plecat: n-avea niciun consumator in
+     markup de la E1 incoace, iar `.tmain` ramasese coloana degeaba din cauza ei.
+     Fractia de pasi s-a intors pe rand — `.tpasi`, langa titlu, reteta unica din
+     global.css (cerinta Ion, 2026-08-15). Railul din dreapta („Progres taskuri
+     7/12") ramane: acela numara TASKURI din proiect, nu pasii unui task. */
 
   .task-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   /* ACEEASI RETETA CA IN `Tasks.svelte` — copiata literal, nu reinterpretata.
@@ -1427,8 +1484,6 @@
     .ttitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2;
       line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
       text-overflow: initial; line-height: var(--lh-snug); }
-    .tinfo { flex-wrap: nowrap; overflow: hidden; }
-    .tinfo > * { flex-shrink: 0; }
 
     .trow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     .back { min-height: 44px; }

@@ -435,28 +435,35 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-/* ===== CHIPUL DE SUBTASKURI, PE ORICE PAGINA =====
+/* ===== CONTORUL DE PASI, PE ORICE RAND DE TASK =====
    Acelasi task apare in /tasks, pe boardul „Astăzi", in Planificator si in pagina
    proiectului. Reteta sta AICI, o singura data: cand traia scopata in fiecare
    componenta, aceeasi informatie avea patru definitii care se puteau desincroniza
    fara ca nimic sa semnaleze — exact felul de incoerenta care se randeaza perfect
-   (vezi scripts/audit_design.py). */
-.tsub-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  background: var(--bg-input);
-  color: var(--text-dim);
-  font-weight: var(--fw-medium);
+   (vezi scripts/audit_design.py).
+
+   Randul purta pana acum DOUA lucruri, ce e de facut si cand; fractia de pasi
+   fusese scoasa din toate cele patru liste (redesign 2026-08-08, interdictia E1).
+   Ion, 2026-08-15: „cand are subtaskuri ar fi bine sa arate un counter subtil
+   undeva, cate din cate sunt indeplinite." Deci se intoarce — dar ca TEXT, in
+   randul titlului, nu ca pastila.
+
+   FARA CULOARE, nici macar la „toate bifate". Pe randul de task culoarea e
+   rezervata severitatii (inelul bifei + textul termenului, amandoua din `--ring`);
+   un al treilea canal cromatic ar reface exact ce a demontat tura 9. Ca e gata pe
+   dinauntru o spune cifra — „5/5" — si tot ea spune si cat mai e, ceea ce o tenta
+   verde nu poate.
+   13, nu 12, din acelasi motiv ca la coloana de termen: pe rand asta e METADATA,
+   iar 12 e treapta etichetelor majuscule, alta clasa de text cu alt tracking.
+   `flex: none` — titlul cedeaza latimea, contorul niciodata: un „2/" retezat de
+   ellipsis ar fi mai rau decat niciun contor. */
+.tpasi {
+  flex: none;
+  font-family: var(--font-mono);
   font-size: var(--font-small);
   font-variant-numeric: tabular-nums;
-  flex: none;
+  color: var(--text-dim);
 }
-/* Toate bifate: se vede din lista ca taskul e gata pe dinauntru si mai ramane
-   doar sa-l inchizi. */
-.tsub-chip.gata { background: var(--success-subtle); color: var(--success); }
 
 /* Bara de progres a subtaskurilor. „1/4" spune cifra, dar nu si CAT de departe
    esti — doua treimi si o treime arata la fel intr-un chip. */

@@ -374,18 +374,27 @@
           </button>
 
           <button class="amain" onclick={(e) => openItem(e, it)}>
-            <span class="atitle">{it.titlu}</span>
+            <!-- CONTORUL DE PASI STA LANGA TITLU, ca in /tasks si in pagina de
+                 proiect — un singur loc pentru aceeasi informatie. Statea pe
+                 linia a doua, si acolo avea un bug tacut: intreaga linie era
+                 gardata pe `contextRand(it)`, deci un task cu pasi dar fara
+                 proiect si fara categorie nu-si arata contorul deloc. -->
+            <span class="atitlu">
+              <span class="atitle">{it.titlu}</span>
+              {#if it.subtask_total}
+                <span class="tpasi" role="img"
+                      aria-label="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute"
+                      title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">{it.subtask_done || 0}/{it.subtask_total}</span>
+              {/if}
+            </span>
             <!-- A DOUA LINIE, doar cand are ce spune: unde e taskul (proiectul
-                 sau categoria) si cat s-a facut din el. Erau cinci chipuri pe un
-                 rand — termen, pasi, recurenta, proiect, categorie — dintre care
-                 termenul si recurenta au urcat in coloana pironita din dreapta,
-                 iar restul erau pastile colorate mai tari decat titlul.
+                 sau categoria). Erau cinci chipuri pe un rand — termen, pasi,
+                 recurenta, proiect, categorie — dintre care termenul si recurenta
+                 au urcat in coloana pironita din dreapta, iar restul erau pastile
+                 colorate mai tari decat titlul.
                  Aici raman ca TEXT, la 13px, gri: se citesc cand le cauti. -->
             {#if contextRand(it)}
-              <span class="ainfo">
-                {#if contextRand(it)}<span class="a-unde">{contextRand(it)}</span>{/if}
-                {#if it.subtask_total}<span class="a-pasi">{it.subtask_done || 0}/{it.subtask_total}</span>{/if}
-              </span>
+              <span class="ainfo"><span class="a-unde">{contextRand(it)}</span></span>
             {/if}
           </button>
 
@@ -458,10 +467,14 @@
           </button>
 
           <button class="amain" onclick={(e) => openItem(e, it)}>
-            <span class="atitle">{it.titlu}</span>
-            {#if it.subtask_total}
-              <span class="ainfo"><span class="a-pasi">{it.subtask_done || 0}/{it.subtask_total}</span></span>
-            {/if}
+            <span class="atitlu">
+              <span class="atitle">{it.titlu}</span>
+              {#if it.subtask_total}
+                <span class="tpasi" role="img"
+                      aria-label="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute"
+                      title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">{it.subtask_done || 0}/{it.subtask_total}</span>
+              {/if}
+            </span>
           </button>
 
           <div class="arow-tools">
@@ -686,9 +699,15 @@
      intind pe toata latimea. Cu titlul intins, si `text-decoration:
      line-through` din starea finala traversa tot randul, nu doar cuvantul
      (T3). Stranse la text, si taietura statica, si cea animata din `global.css`
-     se opresc la ultima litera. `max-width: 100%` pastreaza trunchierea. */
+     se opresc la ultima litera. `max-width: 100%` pastreaza trunchierea.
+     Regula sta acum pe INVELISUL primei linii, nu pe titlu: titlul e copil de
+     flex-rand langa contorul de pasi, unde `align-self` ar insemna aliniere pe
+     verticala. Se strange la text oricum — `flex: 0 1 auto` cu baza pe continut —
+     deci taietura se opreste in continuare la ultima litera. */
+  .atitlu { display: flex; align-items: center; gap: var(--space-sm);
+    min-width: 0; align-self: flex-start; max-width: 100%; }
   .atitle { font-size: var(--font-rand); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    align-self: flex-start; max-width: 100%; }
+    min-width: 0; }
   .arow.done .atitle { text-decoration: line-through; color: var(--text-dim); }
   /* A doua linie: text gri, doua bucati, nicio pastila. Erau cinci chipuri
      (termen, pasi, recurenta, proiect, categorie) — trei au urcat in coloana
@@ -700,7 +719,8 @@
      dupa continut si IESE din parinte in loc sa se taie — deci `text-overflow`
      n-avea pe ce sa se aplice si numele proiectului era retezat fara puncte. */
   .a-unde { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .a-pasi { font-family: var(--font-mono); flex: none; font-variant-numeric: tabular-nums; }
+  /* `.a-pasi` a urcat pe linia titlului si se numeste `.tpasi` (global.css):
+     acelasi fapt purta doua haine, una aici si niciuna in celelalte trei liste. */
 
   /* COLOANA DE TERMEN — aceeasi ca in /tasks, pana la pixel. */
   .atermen { flex: none; width: 46px; text-align: right;

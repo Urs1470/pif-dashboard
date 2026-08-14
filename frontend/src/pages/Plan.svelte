@@ -593,8 +593,18 @@
   async function comutaPas(p) {
     // Optimist, ca in /tasks: fractia din antet se recalculeaza din lista.
     pasi = pasi.map(x => x.id === p.id ? { ...x, done: p.done ? 0 : 1 } : x)
-    try { await updateSubtask(p.id, { done: p.done ? 0 : 1 }) }
-    catch (e) { pasi = pasi.map(x => x.id === p.id ? { ...x, done: p.done } : x); toast(`Eroare: ${e.message}`, 'error') }
+    try {
+      await updateSubtask(p.id, { done: p.done ? 0 : 1 })
+      // SI RANDUL DE DEDESUBT ISI SCRIE FRACTIA de la 2026-08-15 incoace, dar el
+      // o ia din `t.subtask_done`, adica din raspunsul /api/plan. Fara
+      // reincarcare, panoul ar arata „3/5" si randul din spatele lui „2/5" —
+      // aceeasi intrebare cu doua raspunsuri, pe acelasi ecran. `updateSubtask`
+      // a invalidat deja cache-ul, deci asta chiar ajunge la server.
+      loadPlan()
+    } catch (e) {
+      pasi = pasi.map(x => x.id === p.id ? { ...x, done: p.done } : x)
+      toast(`Eroare: ${e.message}`, 'error')
+    }
   }
 
   /** Perioada peste care cade termenul taskului — randul „Perioadă" din panou.
@@ -1408,7 +1418,18 @@
                   {#if isDone(t.status)}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
                 </button>
                 <button class="mrow-main" onclick={(e) => openTask(t, e.currentTarget)}>
-                  <span class="mrow-title">{t.titlu}</span>
+                  <!-- Contorul de pasi sta LANGA TITLU, ca in celelalte trei
+                       liste — nu ca un al treilea chip in `.mrow-meta`, unde ar
+                       fi purtat alta haina decat acelasi numar de pe „Astăzi".
+                       Titlul spune ce si cat; chipurile de dedesubt spun cand. -->
+                  <span class="mrow-titlu">
+                    <span class="mrow-title">{t.titlu}</span>
+                    {#if t.subtask_total}
+                      <span class="tpasi" role="img"
+                            aria-label="{t.subtask_done || 0} din {t.subtask_total} subtaskuri făcute"
+                            title="{t.subtask_done || 0} din {t.subtask_total} subtaskuri făcute">{t.subtask_done || 0}/{t.subtask_total}</span>
+                    {/if}
+                  </span>
                   <!-- ADAPTAT, nu copiat. Ordinea si semnele sunt cele din /tasks
                        si de pe „Astăzi" — intai CAND, apoi CAT — dar data ramane
                        ABSOLUTA („27.07"), nu relativa („acum 4 zile"): randul sta
@@ -1428,10 +1449,11 @@
                         <CalendarDays size={11} />{esteAzi(t.data_scadenta) ? 'azi' : formatDateShort(t.data_scadenta)}
                       </span>
                     {/if}
-                    <!-- FRACTIA DE PASI NU STA PE RAND (aceeasi interdictie ca E1, in
-                         ProjectDetail). Randul poarta DOUA lucruri: ce e de facut si
-                         cand. Cati pasi sunt gata se citeste in foaia taskului, ca titlu
-                         de sectiune („Pasi · 1/3", desenat in turul 4e). -->
+                    <!-- Interdictia E1 („fractia de pasi nu sta pe rand") s-a
+                         ridicat pe 2026-08-15, la cererea lui Ion, si s-a ridicat
+                         in toate cele patru liste deodata — vezi `.tpasi` in
+                         global.css. Aici a urcat pe linia titlului, nu aici jos:
+                         un chip in plus langa termen ar fi spus „cand", nu „cat". -->
                     {#if t.recurenta}<span class="chip"><Repeat size={11} /> {t.recurenta}</span>{/if}
                   </span>
                 </button>
@@ -2193,7 +2215,11 @@
      Erau 44 si 13 — adica randul de ACTIUNE al unei bare de unelte, nu randul
      de CITIT al unei liste. */
   /* --font-rand: randul de lista ramane 15 si pe telefon (regula din sistem). */
-  .mrow-title { font-size: var(--font-rand); line-height: var(--lh-snug); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Prima linie: titlul plus contorul de pasi. `min-width: 0` pe amandoua, ca
+     titlul sa fie cel care cedeaza latimea si sa se taie CU semn — `.tpasi` e
+     `flex: none` (global.css). */
+  .mrow-titlu { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; }
+  .mrow-title { font-size: var(--font-rand); line-height: var(--lh-snug); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
   /* CHIPUL DE TERMEN E O CUTIE DE 22px CU CIFRE MONO (desen 4c).
      Avea `padding: 1px 6px` — deci inaltimea o dadea textul, si atat chipul cat si

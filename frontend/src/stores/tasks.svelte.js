@@ -23,6 +23,19 @@ function uitaTaskuriProiect() {
   uita('/api/plan')
   uita('/api/proiecte')
 }
+// SUBTASKURILE SUNT DATE DE RAND, nu doar continut al panoului desfacut.
+// De cand randul isi scrie „2/5" (contorul de pasi), o bifa pe un pas schimba ce
+// scrie in TOATE listele — deci trebuie sa invalideze ca orice alta scriere. Cat
+// timp fractia traia doar in panoul deschis, lipsa asta nu se putea vedea: bifai
+// un pas, plecai de pe pagina, te intorceai si contorul revenea la valoarea
+// veche, din cache, pana la urmatoarea cerere reala.
+// Toate trei, fiindca `updateSubtask`/`deleteSubtask` primesc doar id-ul
+// subtaskului: de aici nu se poate sti daca parintele e task de proiect sau
+// global, deci nu se poate alege lista.
+function uitaSubtaskuri() {
+  uitaLista()
+  uita('/api/proiecte')
+}
 
 export const tasks = $state({
   items: [],
@@ -141,21 +154,26 @@ export async function loadSubtasks(taskId) {
 }
 
 export async function createSubtask(taskId, titlu) {
-  return apiJson(`/api/tasks/${taskId}/subtasks`, {
+  const result = await apiJson(`/api/tasks/${taskId}/subtasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ titlu }),
   })
+  uitaSubtaskuri()
+  return result
 }
 
 export async function updateSubtask(id, data) {
-  return apiJson(`/api/subtasks/${id}`, {
+  const result = await apiJson(`/api/subtasks/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
+  uitaSubtaskuri()
+  return result
 }
 
 export async function deleteSubtask(id) {
-  return apiJson(`/api/subtasks/${id}`, { method: 'DELETE' })
+  await apiJson(`/api/subtasks/${id}`, { method: 'DELETE' })
+  uitaSubtaskuri()
 }

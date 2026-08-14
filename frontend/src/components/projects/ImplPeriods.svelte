@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { MapPin, Building2, Plus, CalendarRange, Pencil, Check } from '@lucide/svelte'
   import { apiJson } from '../../lib/api.js'
+  import { preia, dinCache, uita } from '../../lib/cache.js'
   import { shortDate } from '../../lib/calendarDates.js'
   import Skeleton from '../ui/Skeleton.svelte'
   import ImplPeriodModal from './ImplPeriodModal.svelte'
@@ -13,10 +14,28 @@
   let open = $state(false)
   let editing = $state(null)
 
+  // TABUL SE DESCHIDE CU CE STIE. Era ultimul schelet din taburile paginii de
+  // proiect: `periods` e stare de componenta, deci fiecare intrare pe tab
+  // pornea de la zero. Ion: „taburile din proiecte se incarca tot cu schelete
+  // de fiecare data."
+  const url = () => `/api/proiecte/${projectId}/implementari`
+
   async function load() {
-    loading = true
-    try { periods = await apiJson(`/api/proiecte/${projectId}/implementari`) }
-    catch { periods = [] } finally { loading = false }
+    const u = url()
+    const gata = dinCache(u)
+    if (gata !== undefined) { periods = gata; loading = false }
+    else loading = true
+    try { periods = await preia(u) }
+    catch { if (gata === undefined) periods = [] }
+    finally { loading = false }
+  }
+
+  /** Dupa orice scriere pe perioade: ce stia memoria e vechi, iar perioadele se
+   *  vad si in Calendar si in Planificator. Prefixul larg le acopera pe toate. */
+  function uitaPerioadele() {
+    uita(`/api/proiecte/${projectId}`)
+    uita('/api/calendar')
+    uita('/api/plan')
   }
   onMount(load)
 
@@ -77,7 +96,7 @@
   {/if}
 </section>
 
-<ImplPeriodModal bind:open {projectId} period={editing} onsaved={load} />
+<ImplPeriodModal bind:open {projectId} period={editing} onsaved={() => { uitaPerioadele(); load() }} />
 
 <style>
   .ip-sec { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--card-pad, 16px); }

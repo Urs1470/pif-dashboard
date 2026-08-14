@@ -148,6 +148,22 @@
     return etichetaTermenScurt(t.data_scadenta)
   }
 
+  /** Contorul de pasi de pe rand („2/5"), sau `null` cand taskul n-are subtaskuri.
+   *
+   *  CEA MAI PROASPATA SURSA CASTIGA. Serverul trimite `subtask_total`/`_done` cu
+   *  lista, dar cat timp randul e desfacut adevarul e in `subtasksCache`: bifarea
+   *  unui pas o scrie ACOLO si nu reincarca lista (vezi `toggleSubtaskDone`), deci
+   *  citit doar de la server contorul ar sta nemiscat exact in clipa in care il
+   *  privesti si il schimbi.
+   *  Un `[]` in cache inseamna „am intrebat, n-are niciunul" — nu „nu stiu" — deci
+   *  are prioritate si el, si scoate contorul de pe rand. */
+  function pasi(t) {
+    const subs = subtasksCache[t.id]
+    const total = subs ? subs.length : (t.subtask_total || 0)
+    if (!total) return null
+    return { total, gata: subs ? subs.filter(s => s.done).length : (t.subtask_done || 0) }
+  }
+
   // Randul care isi joaca STAMPILA chiar acum (contractul de miscare: bifare =
   // stampila + taietura care matura + textul care se stinge, apoi randul pleaca).
   // Regulile traiesc in global.css (`.bifare`); aici doar clipa.
@@ -1103,6 +1119,17 @@
             </button>
             <button class="tmain" onclick={() => toggleTaskExpand(t.id)}>
               <span class="ttitle">{t.titlu}</span>
+              <!-- CONTORUL DE PASI — langa titlu, nu intr-o coloana proprie.
+                   O coloana ar fi goala pe majoritatea randurilor, iar o coloana
+                   cu goluri nu se mai citeste pe verticala — adica pierde exact
+                   singurul motiv pentru care ar fi coloana (vezi termenul).
+                   Aici e legat de titlu: e „cat din lucrul asta", nu „cand". -->
+              {#if pasi(t)}
+                {@const p = pasi(t)}
+                <span class="tpasi" role="img"
+                      aria-label="{p.gata} din {p.total} subtaskuri făcute"
+                      title="{p.gata} din {p.total} subtaskuri făcute">{p.gata}/{p.total}</span>
+              {/if}
             </button>
             <!-- ACTIUNILE APAR LA HOVER, CU TEXT, SPRE INTERIOR.
                  Erau patru iconite mute pironite in dreapta, adica exact acolo
@@ -1799,7 +1826,9 @@
   /* `.check-empty` (toate cele trei marimi) traieste in global.css, o singura
      data pentru toate listele — inclusiv haloul de hover, care ADAUGA in loc sa
      rescrie `--ring`. */
-  .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; align-self: stretch; display: flex; align-items: center; }
+  /* `gap` pentru contorul de pasi, care sta lipit de titlu. Titlul e singurul
+     copil care cedeaza latimea (`.tpasi` e `flex: none` in global.css). */
+  .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; align-self: stretch; display: flex; align-items: center; gap: var(--space-sm); }
   /* --font-rand, nu --font-body: randul de lista ramane 15 si pe telefon. */
   .ttitle { font-size: var(--font-rand); color: var(--text); font-weight: var(--fw-medium);
     min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
