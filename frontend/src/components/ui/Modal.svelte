@@ -726,7 +726,7 @@
       margin: 8px auto 2px;
       border-radius: var(--radius-full);
       background: var(--border-strong);
-      transition: background var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
+      transition: background-color var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
     }
     .modal.trage .sheet-grip { background: var(--accent); width: 52px; }
 

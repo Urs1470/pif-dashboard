@@ -418,7 +418,7 @@
     font-size: var(--font-body);
     text-align: left;
     cursor: pointer;
-    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
   .pi-eticheta { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 

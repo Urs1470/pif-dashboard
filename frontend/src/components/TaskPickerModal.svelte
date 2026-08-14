@@ -251,7 +251,7 @@
     border-radius: var(--radius-sm);
     text-align: left;
     cursor: pointer;
-    transition: background var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease);
   }
   .pk-rand:hover { background: var(--bg-hover); }
   .pk-titlu {

@@ -32,7 +32,7 @@
        desenele; la 14 avea aceeasi rotunjire ca un card, deci se citea ca o
        suprafata mica in loc de o tinta. */
     border-radius: var(--radius-sm);
-    transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
     white-space: nowrap;
     cursor: pointer;
     position: relative;

@@ -493,7 +493,7 @@
   .arch-row { position: relative; display: flex; align-items: center; gap: var(--space-md);
     width: 100%; min-height: 44px; padding: 0 18px; font-size: var(--font-small);
     color: var(--text); text-align: left; cursor: pointer; background: transparent;
-    border: none; transition: background var(--dur-fast) var(--ease); }
+    border: none; transition: background-color var(--dur-fast) var(--ease); }
   /* Separatorul e RETRAS 18px de fiecare parte, exact cat paddingul randului —
      nu merge dintr-o muchie a suprafetei in cealalta. Din `::before` pe randurile
      2..n (aceeasi reteta ca `.arow` din TodayBoard), nu din `border-bottom` pe

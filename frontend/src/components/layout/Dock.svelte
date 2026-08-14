@@ -499,7 +499,7 @@
     cursor: pointer;
     background: transparent;
     border: none;
-    transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
+    transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease),
       transform var(--dur-fast) var(--ease);
   }
   /* Ridicarea e un raspuns la cursor. Pe touch ramanea ridicata tableta atinsa
@@ -623,7 +623,7 @@
     height: 3px;
     border-radius: var(--radius-full);
     background: var(--border-strong);
-    transition: background var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
   }
   .dock-grip:hover::before,
   .dock-grip:focus-visible::before {

@@ -125,6 +125,29 @@ class Audit:
         for m in re.finditer(r'transition:\s*all\b', curat):
             self.abatere('R1 transition:all', p, curat, m.start(), m.group(0))
 
+    # -- R10 ----------------------------------------------------------------
+    def r10_prescurtare_in_tranzitie(self, p, text, curat):
+        """Prescurtarile in `transition:` animeaza TOATE sub-proprietatile.
+
+        `transition: background` nu inseamna „culoarea de fond": inseamna si
+        `background-image`, si `background-position`, si `background-size`. Pe
+        un element cu gradient asta e paint pe fiecare cadru — masurat pe
+        telefon, celulele Calendarului (42 deodata, cu liniile de grila desenate
+        dintr-un `linear-gradient`) animau `background-position-x` si `-y` la
+        FIECARE hover si la fiecare schimbare de tab. Se randeaza perfect, deci
+        nu se vede decat masurand.
+
+        Sistemul are deja raspunsul scris: `--transition-colors` enumera
+        `background-color`, nu `background`. Erau 21 de locuri care il ocoleau.
+
+        `border` si `font` sunt in aceeasi familie: `border` trage dupa el
+        `border-width`, care reaseaza."""
+        for m in re.finditer(r'transition:[^;{}]*', curat):
+            for pres in ('background', 'border', 'font', 'flex', 'mask'):
+                if re.search(r'\b%s\s+(?:var\(|\d)' % pres, m.group(0)):
+                    self.abatere('R10 prescurtare in transition (%s)' % pres,
+                                 p, curat, m.start(), m.group(0)[:70])
+
     # -- R2 -----------------------------------------------------------------
     def r2_hex_brut(self, p, text, curat):
         """Culoare scrisa de mana in loc de token. Asa au aparut TREI ambere
@@ -313,6 +336,7 @@ def main():
         texte[p] = text
         curat = fara_comentarii(text)
         a.r1_transition_all(p, text, curat)
+        a.r10_prescurtare_in_tranzitie(p, text, curat)
         a.r2_hex_brut(p, text, curat)
         a.r3_durata_bruta(p, text, curat)
         a.r4_easing_brut(p, text, curat)

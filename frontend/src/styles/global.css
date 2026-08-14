@@ -525,15 +525,14 @@ input:focus, select:focus, textarea:focus {
    componentele lor), deci ies din instantaneul `root` si nu mai iau alunecarea.
    Implicitul browserului ar fi 0,25s cu `ease` — aproape de al nostru, dar nu
    al nostru; scara are trei durate si o curba, si asta e tot. */
+/* GRUPUL NU SE ANIMEAZA DELOC. Implicitul browserului interpoleaza `width`,
+   `height`, `transform` SI `backdrop-filter` intre geometria veche si cea noua —
+   masurat pe telefon, trei astfel de animatii la fiecare schimbare de tab. Aici
+   geometria nu se schimba (antetul si docul stau pe loc), deci sunt trei
+   interpolari de la o valoare la ea insasi, cu layout pe fiecare cadru.
+   Cu `animation: none` grupul ia direct starea NOUA, adica exact unde era. */
 ::view-transition-group(cadru-antet),
-::view-transition-group(cadru-doc),
-::view-transition-old(cadru-antet),
-::view-transition-new(cadru-antet),
-::view-transition-old(cadru-doc),
-::view-transition-new(cadru-doc) {
-  animation-duration: 240ms;
-  animation-timing-function: var(--ease, ease);
-}
+::view-transition-group(cadru-doc) { animation: none; }
 /* NICIUNUL DIN CELE DOUA NU FACE CROSS-FADE, si din doua motive diferite.
    Antetul e IDENTIC de-o parte si de alta a navigarii — titlul lui sta in
    pagina, nu aici (vezi nota din Calendar despre `ui.pageHeader`) — deci un
@@ -588,7 +587,7 @@ input[type="checkbox"].cbx {
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
 input[type="checkbox"].cbx:checked {
   background: var(--accent);
@@ -1001,7 +1000,7 @@ html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-base) var(--ease) ba
   padding: 11px 10px;
   border-bottom: 1px dashed var(--border);
   border-radius: var(--radius-md);
-  transition: background var(--dur-fast) var(--ease);
+  transition: background-color var(--dur-fast) var(--ease);
 }
 .rowlist .row:last-child { border-bottom: none; }
 .rowlist .row:hover { background: var(--bg-panel); }

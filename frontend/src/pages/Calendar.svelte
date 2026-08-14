@@ -1942,7 +1942,7 @@
         border: 0; background: none; text-align: left; cursor: pointer;
         box-shadow: inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border-strong);
         display: flex; flex-direction: column; gap: 3px; overflow: hidden;
-        transition: background var(--dur-fast) var(--ease); }
+        transition: background-color var(--dur-fast) var(--ease); }
   .zi:hover { background: var(--bg-hover); }
   .zi:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   /* Ziua din alta luna: cifra trece pe `--text-dim`, nu toata celula pe 42%.
@@ -2428,7 +2428,7 @@
         border-radius: var(--radius-sm);
         width: 100%; text-align: left; border: none;
         background: transparent; cursor: grab;
-        transition: background var(--dur-fast) var(--ease); }
+        transition: background-color var(--dur-fast) var(--ease); }
   @media (hover: hover) {
     .np:hover { background: var(--bg-hover); }
   }

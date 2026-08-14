@@ -1182,7 +1182,7 @@
   .acc-head {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 14px; cursor: pointer; user-select: none;
-    transition: background var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease);
   }
   .acc-head:hover { background: var(--bg-hover); }
   .acc-chev { display: flex; flex-shrink: 0; color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); }
@@ -1241,7 +1241,7 @@
     background: var(--accent-subtle); border: 1px solid var(--accent-ring); flex-shrink: 0;
   }
   .nav-sec:first-of-type { padding-top: 4px; margin-top: 4px; }
-  .nav-item { display: flex; align-items: center; gap: 2px; border-radius: var(--radius-md); transition: background var(--dur-fast) var(--ease); }
+  .nav-item { display: flex; align-items: center; gap: 2px; border-radius: var(--radius-md); transition: background-color var(--dur-fast) var(--ease); }
   .nav-item:hover { background: var(--bg-hover); }
   .nav-item.on { background: var(--accent-subtle); }
   .nav-item.on .nav-item-btn { color: var(--accent); font-weight: var(--fw-semibold); }
@@ -1513,7 +1513,7 @@
     position: relative;
     cursor: zoom-in;
     border-radius: var(--radius-sm);
-    transition: background var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease);
     flex: 1 1 360px;     /* 2 grafice stau alaturat; unul singur nu se intinde peste */
     max-width: 560px;
   }

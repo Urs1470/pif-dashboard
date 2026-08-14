@@ -345,7 +345,7 @@
   .lhead { padding: 0 14px; }
 
   /* read-only task rows (island look, aligned to timeline) */
-  .tk-row { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 0 12px; border: none; border-bottom: 1px solid var(--border); background: none; text-align: left; cursor: pointer; color: var(--text-secondary); position: relative; transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+  .tk-row { height: var(--row-h); width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 0 12px; border: none; border-bottom: 1px solid var(--border); background: none; text-align: left; cursor: pointer; color: var(--text-secondary); position: relative; transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
   .tk-row:hover { background: var(--bg-hover); }
   .tk-row:last-child { border-bottom: 0; }
   .tk-row .tk-stare { min-width: 24px; flex-shrink: 0; display: inline-flex; align-items: center; }

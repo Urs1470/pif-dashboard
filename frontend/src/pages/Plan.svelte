@@ -1513,7 +1513,7 @@
   .seg { display: inline-flex; background: var(--bg-elevated); border: none; border-radius: var(--radius-sm); padding: 3px; }
   /* Raza segmentului = raza capsulei minus paddingul ei (10 − 3 = 7), aceeasi
      formula ca la comutatorul de sfera din /tasks. */
-  .seg-btn { height: 32px; padding: 0 11px; border-radius: calc(var(--radius-sm) - 3px); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease); }
+  .seg-btn { height: 32px; padding: 0 11px; border-radius: calc(var(--radius-sm) - 3px); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .seg-btn:hover { color: var(--text); }
   .seg-btn.active { background: var(--accent); color: var(--accent-text); }
   .toggle { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 12px; font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); }

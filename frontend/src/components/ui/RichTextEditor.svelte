@@ -508,7 +508,7 @@
     color: var(--text-dim);
     cursor: pointer;
     flex-shrink: 0;
-    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
   .tbtn:hover { background: var(--bg-hover); color: var(--text); }
   .tbtn.on { background: var(--bg-elevated); color: var(--text-secondary); }
@@ -541,7 +541,7 @@
     border-radius: var(--radius-xs);
     color: var(--text-secondary);
     cursor: pointer;
-    transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
   }
   .tstyle:hover { color: var(--text); }
   .tstyle.on { background: var(--bg-elevated); color: var(--text); }
@@ -734,7 +734,7 @@
     padding: 0 4px;
     border-radius: var(--radius-xs);
     cursor: pointer;
-    transition: background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   }
   .rte-editor :global(.mchip:hover) { background: var(--accent-subtle); box-shadow: 0 0 0 1px var(--accent-ring); }
   .rte-editor :global(.mchip[data-display="1"]) {

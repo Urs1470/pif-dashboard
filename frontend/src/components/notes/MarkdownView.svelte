@@ -91,7 +91,7 @@
 
   .md-rendered :global(.md-wikilink) {
     color: var(--accent-deep); cursor: pointer; border-bottom: 1px dashed var(--accent);
-    border-radius: 2px; padding: 0 1px; transition: background var(--dur-fast) var(--ease);
+    border-radius: 2px; padding: 0 1px; transition: background-color var(--dur-fast) var(--ease);
   }
   .md-rendered :global(.md-wikilink:hover) { background: var(--accent-subtle); }
   .md-rendered :global(.md-tag) {
