@@ -47,13 +47,62 @@ const ISTORIC_MAX = 100
 let curenta = getRaw() || '/'   // dupa aterizare, deci ruta reala de start
 let _dinInapoi = false          // intoarcerea e un POP: nu se inregistreaza pe ea insasi
 
+// PRIMA INCARCARE E ALTCEVA DECAT O NAVIGARE.
+//
+// `.ruta-in` (invelisul urca 10px) si `.cell-in` (celulele sosesc in scara) se
+// jucau la FIECARE montare de pagina — deci si la fiecare schimbare de tab,
+// peste tranzitia pe care browserul o joaca deja pe radacina. Trei animatii de
+// intrare pe aceiasi pixeli, doua axe, si opacitati care se INMULTESC: la
+// mijlocul drumului o celula ajungea pe la 0,13 in loc de 0,5. Pagina nu sosea
+// o data, aparea de trei ori.
+//
+// Cand tranzitia o detine browserul, ea e singura care are voie sa se joace.
+// Ce ramane pentru cele doua e exact cazul pentru care au fost scrise: prima
+// deschidere a aplicatiei, cand nu exista nicio pagina veche de la care sa vii.
+//
+// STEAGUL SE STINGE, NU SE APRINDE. Gardat invers (o clasa pusa doar in timpul
+// tranzitiei) ar fi fost o capcana: `animation-name` care revine de la `none`
+// la un nume REPORNESTE animatia, deci scoaterea clasei dupa tranzitie ar fi
+// jucat exact miscarea pe care o suprima. Aici clasa doar dispare, iar
+// animatia primei pagini s-a terminat de mult.
+//
+// SI E PUSA IN `index.html`, nu aici: asa exista inainte de primul cadru, si
+// asa o primeste si `calc.html` — pagina publica a Calculatorului, care
+// randeaza aceeasi componenta fara sa incarce vreodata routerul. Pusa din
+// modulul asta, /calc ar fi ramas fara sosire si nimic n-ar fi aratat de ce.
+// Aici e doar stingerea.
+const STEAG_PRIMA = 'prima-incarcare'
+
+// Calea goala dintr-o ruta bruta („/tasks?sfera=personal" -> „/tasks").
+const cale = (brut) => ((brut || '/').split('?')[0]) || '/'
+
 function inregistreaza(path) {
+  if (typeof document !== 'undefined') {
+    document.documentElement.classList.remove(STEAG_PRIMA)
+  }
   const pop = _dinInapoi
   // Steagul se consuma AICI, nu in ramura de push: daca tinta pop-ului ar
   // coincide cu ruta curenta (nu se navigheaza nicaieri), un steag ramas ar
   // inghiti in tacere urmatoarea inregistrare adevarata.
   _dinInapoi = false
   if (path === curenta) return
+  // O PAGINA NOUA INCEPE DE SUS.
+  //
+  // `.app-content` NU e container de derulare (intentionat — vezi App.svelte),
+  // deci `main.scrollTop = 0`, scris in ascultatorul de `hashchange`, era un
+  // no-op de la bun inceput: fereastra e cea care deruleaza. Rezultatul era ca
+  // treceai de la o lista lunga, derulata jos, la Calendar — si aterizai in
+  // mijlocul lui, fara sa fi derulat nimic.
+  //
+  // Doar la schimbarea CAII: `?sfera=`, `?zi=` si rescrierile lui `focus.js`
+  // schimba interogarea pe aceeasi pagina, iar acolo pozitia e a ta.
+  // Sarit fara animatie, fiindca in ramura cu View Transitions apelul e
+  // INAUNTRUL callbackului: instantaneul vechi e deja luat, deci saltul cade
+  // sub cross-fade si nu se vede. Un `smooth` ar dura peste tranzitie si s-ar
+  // vedea pagina noua alunecand singura in sus.
+  if (typeof window !== 'undefined' && cale(path) !== cale(curenta)) {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
   if (!pop) {
     istoric.push(curenta)
     if (istoric.length > ISTORIC_MAX) istoric.shift()
@@ -148,8 +197,26 @@ export function applyPath(path) {
 let preincarcaRuta = null
 export function setPreincarcaRuta(fn) { preincarcaRuta = fn }
 
+/** Incalzeste o ruta fara sa navigheze la ea: modulul ei si, daca pagina si-a
+ *  exportat `pregateste()`, si datele. Tacuta prin definitie — nimic din ce
+ *  face nu se vede pe ecran, deci nici un esec n-are unde sa fie raportat.
+ *
+ *  Exportata pentru cele cateva drumuri care NU trec prin `use:link`: cardul de
+ *  proiect din /projects e un `role="button"` care cheama `navigate()` de mana
+ *  (ca sa poata scrie si lista de „recente" inainte). Fara asta, singurul drum
+ *  din aplicatie catre o pagina care chiar are ce incarca ar fi ramas fara
+ *  preincarcare — adica exact cel mai scump. */
+export function preincarca(path) {
+  if (!preincarcaRuta) return
+  try { Promise.resolve(preincarcaRuta(path)).catch(() => {}) } catch (_) {}
+}
+
 const pauza = (ms) => new Promise((r) => setTimeout(r, ms))
-const PLAFON_INCARCARE = 180
+// 250, nu 180: de cand `preincarcaRuta` aduce si DATELE, nu doar chunkul,
+// plafonul trebuie sa incapa un dus-intors in reteaua locala. Peste el nu se
+// asteapta — o retea moarta n-are voie sa blocheze navigarea; atunci ramane
+// scheletul paginii, care e exact ce era inainte peste tot.
+const PLAFON_INCARCARE = 250
 
 export function navigate(path) {
   if (!viewTransitionsOn()) { applyPath(path); return }
@@ -175,8 +242,36 @@ export function link(node) {
     const href = node.getAttribute('href')
     if (href) navigate(href)
   }
+  // MUNCA INCEPE LA INTENTIE, NU LA CONFIRMARE.
+  //
+  // Intre clipa in care cursorul intra pe un tab si click trec 100-150ms; intre
+  // apasare si ridicarea degetului, inca 80-120. In tot intervalul asta nu se
+  // intampla nimic — desi e cam cat dureaza un chunk local plus un dus-intors
+  // in reteaua din casa. Preincarcarea muta asteptarea INAINTEA apasarii, unde
+  // nu se simte, fiindca inca nu te-ai hotarat.
+  //
+  // Sta in `link`, nu in Doc: aceeasi actiune e pe fiecare navigare din
+  // aplicatie (dock, marca din antet, foaia „Mai mult", drumul inapoi din
+  // pagina de proiect), deci toate o primesc dintr-un singur loc.
+  //
+  // Fara paza proprie: `pointerenter` si `pointerdown` cad amandoua pe aceeasi
+  // atingere de deget, iar plimbarea cursorului peste dock trece peste cinci
+  // taburi. Cele doua guri le inchide `cache.js` — cererile in zbor se impart,
+  // iar fereastra de prospetime taie repetarile.
+  function intentie() {
+    const href = node.getAttribute('href')
+    if (href) preincarca(href)
+  }
   node.addEventListener('click', handleClick)
-  return { destroy() { node.removeEventListener('click', handleClick) } }
+  node.addEventListener('pointerenter', intentie)
+  node.addEventListener('pointerdown', intentie)
+  return {
+    destroy() {
+      node.removeEventListener('click', handleClick)
+      node.removeEventListener('pointerenter', intentie)
+      node.removeEventListener('pointerdown', intentie)
+    },
+  }
 }
 
 export function resolveRoute(routes, caleAnume = null) {
@@ -197,7 +292,9 @@ if (typeof window !== 'undefined') {
     inregistreaza(getRaw() || '/')
     router.path = getPath()
     router.query = getQuery()
-    const main = document.getElementById('main-content')
-    if (main) { main.scrollTop = 0; main.focus({ preventScroll: true }) }
+    // Derularea o duce `inregistreaza` (pe fereastra, care e scrollerul real).
+    // Aici ramane doar mutarea focusului, pentru cititoarele de ecran si pentru
+    // ca tastatura sa continue din pagina noua, nu din dockul apasat.
+    document.getElementById('main-content')?.focus({ preventScroll: true })
   })
 }

@@ -100,6 +100,15 @@
 
 <style>
   .header {
+    /* CADRUL NU CLIPESTE CAND SE SCHIMBA CONTINUTUL.
+       Fara nume propriu, bara intra in instantaneul `root` al tranzitiei de
+       ruta — deci se stingea si se reaprindea la fiecare schimbare de tab, si
+       lua si cei ±10px de alunecare, desi e identica inainte si dupa. Cu nume,
+       browserul o trateaza ca element persistent: ramane pe loc, iar
+       cross-fadeul e doar pe ce se schimba efectiv, adica pagina.
+       Pe iOS bara de navigatie nu se misca niciodata cand schimbi tabul; asta
+       e perechea ei pe web. */
+    view-transition-name: cadru-antet;
     height: var(--header-height);
     /* FARA BLUR. Bara statea pe `backdrop-filter: blur(14px)` peste un fond
        semi-transparent, deci continutul care trecea pe sub ea se vedea ca o pata

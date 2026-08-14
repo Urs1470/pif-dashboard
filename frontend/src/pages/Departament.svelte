@@ -1,3 +1,17 @@
+<script module>
+  import { preia as _preia, dinCache as _dinCache, uita as _uita } from '../lib/cache.js'
+
+  const URL_SETARE = '/api/settings/plan-departament'
+
+  /** Chemata de router inainte de a intra pe ruta (vezi App). Linkul se schimba
+   *  o data la cateva luni, deci pagina asta e cea mai buna candidata la cache:
+   *  fara el, un `<iframe>` de 420px era precedat de fiecare data de un schelet
+   *  de 420px, pentru o cerere care intoarce un singur camp. */
+  export function pregateste() {
+    return _preia(URL_SETARE, { proaspat: 5000 })
+  }
+</script>
+
 <script>
   // Planul intregului departament SRP — o aplicatie externa, incorporata aici.
   //
@@ -23,16 +37,24 @@
   let ciorna = $state('')
   let salvez = $state(false)
 
+  function aseaza(d) {
+    url = d.url || ''
+    host = d.host || ''
+    editeaza = !url
+    ciorna = url
+  }
+
   async function load() {
-    loading = true; error = null
+    // Ce stim deja se pune INAINTE de primul cadru, ca revenirea pe tab sa nu
+    // mai treaca printr-un schelet de 420px. Cererea se face oricum dupa.
+    const gata = _dinCache(URL_SETARE)
+    const dinMemorie = gata !== undefined
+    if (dinMemorie) { aseaza(gata); loading = false; error = null }
+    else { loading = true; error = null }
     try {
-      const d = await apiJson('/api/settings/plan-departament')
-      url = d.url || ''
-      host = d.host || ''
-      editeaza = !url
-      ciorna = url
+      aseaza(await _preia(URL_SETARE))
     } catch (e) {
-      error = e.message
+      if (!dinMemorie) error = e.message
     } finally {
       loading = false
     }
@@ -46,6 +68,12 @@
       })
       url = d.url || ''
       editeaza = !url
+      // Ce stia cache-ul e acum gresit, iar `load()` nu se mai cheama — starea
+      // locala e deja corecta. Fara asta, urmatoarea intrare pe tab s-ar deschide
+      // cu LINKUL VECHI pentru cateva cadre, adica exact ce tocmai ai schimbat.
+      // Nu scriem noua valoare in cache: raspunsul lui PUT n-are `host`, deci
+      // ar intra o intrare incompleta.
+      _uita(URL_SETARE)
       toast(url ? 'Link salvat' : 'Link șters', 'success')
     } catch (e) {
       toast(e.message, 'error')

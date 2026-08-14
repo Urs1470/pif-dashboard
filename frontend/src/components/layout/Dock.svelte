@@ -30,10 +30,69 @@
       const h = e?.borderBoxSize?.[0]?.blockSize ?? dockEl.getBoundingClientRect().height
       document.documentElement.style.setProperty('--dock-h', Math.round(h) + 'px')
     }
-    const ro = new ResizeObserver(([e]) => scrie(e))
+    const ro = new ResizeObserver(([e]) => { scrie(e); masoaraPilula() })
     ro.observe(dockEl)
     scrie(null)
     return () => ro.disconnect()
+  })
+
+  // ===== TENTA SLOTULUI ACTIV ALUNECA, NU SE APRINDE IN ALT LOC =====
+  //
+  // Era un `background` pe `.dock-item.active`: la schimbarea de tab se stingea
+  // intr-un loc si se aprindea in altul, deci nu spunea nimic despre DRUMUL
+  // dintre ele. Acum tenta e un singur obiect care se muta.
+  //
+  // NU prin `view-transition-name` pe slotul activ, desi ar fi fost mai putin
+  // cod, si din doua motive independente:
+  //  1. „Mai mult" poate fi activ IN ACELASI TIMP cu un tab de ruta (cat timp
+  //     foaia e deschisa peste o pagina care are slot propriu), iar doua
+  //     elemente cu acelasi `view-transition-name` fac browserul sa RENUNTE la
+  //     toata tranzitia — un bug care apare doar cateodata.
+  //  2. Ar fi mers doar cand tranzitia o detine browserul. Sub `reduced-motion`
+  //     View Transitions sunt oprite (vezi `viewTransitionsOn`), deci tocmai
+  //     acolo tenta ar fi sarit — iar preferinta cere mai putina miscare, nu
+  //     taieturi.
+  //
+  // Slotul care poarta pastila e MARCAT in markup (`data-pilula`), nu cautat
+  // dupa `.active`: cu doua sloturi active `querySelector` l-ar alege tacut pe
+  // primul din DOM, iar asta ar muta tenta cand deschizi foaia, adica pe un
+  // gest care nu te duce nicaieri.
+  let pilula = $state({ x: 0, y: 0, w: 0, h: 0, r: '', gata: false })
+  let pilulaAsezata = $state(false)
+  let amMasurat = false   // NEreactiv: citit in efectul care scrie `pilula`
+
+  const rutaActiva = $derived(itemsVizibile.find((i) => isActive(i.path))?.path ?? null)
+
+  function masoaraPilula() {
+    const slot = dockEl?.querySelector('[data-pilula]')
+    if (!slot) { pilula.gata = false; return false }
+    // `offsetLeft/Top` se masoara fata de cutia de PADDING a lui `offsetParent`
+    // — exact reperul fata de care se aseaza si un copil absolut cu `left: 0`,
+    // deci cele doua sisteme coincid si dockul isi poate pastra paddingul.
+    pilula.x = slot.offsetLeft
+    pilula.y = slot.offsetTop
+    pilula.w = slot.offsetWidth
+    pilula.h = slot.offsetHeight
+    // Raza se CITESTE din slot: pe telefon e `--radius-md`, pe desktop
+    // `--radius-sm`, iar o a doua copie a regulii s-ar desincroniza.
+    pilula.r = getComputedStyle(slot).borderRadius
+    pilula.gata = true
+    return true
+  }
+
+  $effect(() => {
+    // Dependinte scrise explicit: ruta (alt slot), lista vizibila (telefon vs
+    // desktop), si foaia — care poate muta pastila pe „Mai mult" cand nu exista
+    // niciun tab de ruta activ.
+    router.path; itemsVizibile; foaieDeschisa; inFoaie; ecran.telefon
+    if (!dockEl) return
+    const are = masoaraPilula()
+    if (are && !amMasurat) {
+      amMasurat = true
+      // Un cadru fara tranzitie, ca PRIMA asezare sa nu alunece din coltul din
+      // stanga-sus — ar arata ca o navigare care n-a avut loc.
+      requestAnimationFrame(() => { pilulaAsezata = true })
+    }
   })
 
   // Vizibilitate dock:
@@ -276,6 +335,11 @@
 </script>
 
 <nav class="dock" class:hidden bind:this={dockEl} aria-label="Navigație principală">
+  <!-- Tenta slotului activ. Primul copil, ca sa fie clar ca sta DEDESUBT; e
+       absoluta, deci nu intra in flexul barei si nu conteaza la `space-around`. -->
+  <span class="dock-pilula" class:gata={pilula.gata} class:asezata={pilulaAsezata}
+        style="--px:{pilula.x}px; --py:{pilula.y}px; --pw:{pilula.w}px; --ph:{pilula.h}px; --pr:{pilula.r}"
+        aria-hidden="true"></span>
   <button class="dock-grip" aria-label="Arată navigația" title="Navigație" onclick={revealFromPeek}></button>
   {#each itemsVizibile as item (item.path)}
     <a
@@ -284,6 +348,7 @@
       onclick={(e) => e.currentTarget.blur()}
       class="dock-item"
       class:active={isActive(item.path)}
+      data-pilula={rutaActiva === item.path ? '' : undefined}
       aria-current={isActive(item.path) ? 'page' : undefined}
       aria-label={item.label}
       title={item.label}
@@ -294,7 +359,11 @@
   {/each}
   <span class="sep" aria-hidden="true"></span>
   {#if ecran.telefon}
+    <!-- Pastila vine aici DOAR cand niciun tab de ruta nu e activ, adica atunci
+         cand chiar esti pe o pagina din foaie. Deschiderea foii peste o ruta cu
+         slot propriu nu muta tenta: e un panou, nu o destinatie. -->
     <button class="dock-item" class:active={foaieDeschisa || inFoaie}
+            data-pilula={rutaActiva === null && (foaieDeschisa || inFoaie) ? '' : undefined}
             onclick={() => (foaieDeschisa = !foaieDeschisa)}
             aria-label="Mai mult" aria-expanded={foaieDeschisa} title="Mai mult">
       <MoreHorizontal size={marimeIcon} />
@@ -353,6 +422,17 @@
 
 <style>
   .dock {
+    /* Perechea lui `cadru-antet` din Header: bara de navigatie e cadru, nu
+       continut, deci nu intra in instantaneul `root` si nu mai ia alunecarea
+       de ±10px la fiecare schimbare de tab. Ce ramane sa se schimbe in ea e
+       tenta slotului activ, iar aceea trece dintr-un tab in altul pe durata
+       tranzitiei, nu printr-o taietura.
+       Nu punem un al doilea nume pe `.dock-item.active`: „Mai mult" poate fi
+       activ IN ACELASI TIMP cu un tab de ruta (cat timp foaia e deschisa), iar
+       doua elemente cu acelasi `view-transition-name` fac browserul sa RENUNTE
+       la toata tranzitia — un bug care ar aparea doar cateodata, deci exact
+       felul pe care nu-l gasesti. */
+    view-transition-name: cadru-doc;
     position: fixed;
     left: 50%;
     bottom: calc(14px + var(--safe-bottom));
@@ -374,9 +454,41 @@
   /* Eticheta exista doar pe telefon (blocul de 768) — pe desktop iconita ajunge,
      dock-ul tine opt lucruri si are tooltip. */
   .dock-et { display: none; }
+  /* TENTA SLOTULUI ACTIV E UN SINGUR OBIECT CARE ALUNECA, NU UN FUNDAL CARE SE
+     APRINDE PE ALT ELEMENT.
+     Sta SUB iconite, deci fiecare slot are nevoie de un context propriu ca sa
+     picteze deasupra: `.dock-item` e static, iar un frate absolut ar picta peste
+     continutul static din acelasi context de stivuire. */
+  .dock-pilula {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--pw, 50px);
+    height: var(--ph, 50px);
+    border-radius: var(--pr, var(--radius-sm));
+    background: var(--accent-subtle);
+    transform: translate(var(--px, 0px), var(--py, 0px));
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Vizibila abia dupa prima masuratoare — pana atunci ar fi in coltul din
+     stanga-sus, adica exact de unde n-are voie sa alunece. */
+  .dock-pilula.gata { opacity: 1; }
+  /* Si tranzitia se aprinde abia dupa ce a fost ASEZATA o data: altfel prima
+     randare ar aluneca din colt spre slotul curent, ca si cum ai fi navigat.
+     Doar `transform` — toate sloturile au aceeasi latime, deci pastila nu-si
+     schimba marimea decat la trecerea de prag, unde un salt e corect. */
+  .dock-pilula.asezata {
+    transition: transform var(--dur-base) var(--ease), opacity var(--dur-fast) var(--ease);
+  }
+
   .dock-item {
     width: 50px;
     height: 50px;
+    /* Peste pastila. Vezi nota de la `.dock-pilula`. */
+    position: relative;
+    z-index: 1;
     border-radius: var(--radius-sm);
     /* `--text-secondary`, nu `--text-faint`: o iconita de navigatie inactiva
        trebuie sa se poata CITI, nu doar sa se ghiceasca — e singura harta a
@@ -406,11 +518,16 @@
      Fillul plin facea din slotul curent lucrul cel mai tare colorat de pe ecran
      — mai tare decat orice buton de actiune — desi el nu e o actiune, e o
      informatie despre unde esti. */
+  /* FARA fundal: tenta o poarta `.dock-pilula`, care aluneca dintr-un slot in
+     altul. Ramane doar cerneala — si ea trebuie sa ramana, fiindca pastila e
+     una singura, iar cand foaia „Mai mult" e deschisa peste o ruta cu tab
+     propriu doua sloturi sunt `active` in acelasi timp. */
   .dock-item.active {
     color: var(--accent-deep);
-    background: var(--accent-subtle);
   }
-  .dock-item.active:active { background: var(--accent-subtle); }
+  /* Hoverul si apasarea nu mai pot picta peste tenta: fondul lor ar sta DEASUPRA
+     pastilei (slotul e z-index 1) si s-ar citi ca un gri peste accent. */
+  .dock-item.active:hover, .dock-item.active:active { background: transparent; }
   .dock-item.active:hover {
     transform: none;
   }

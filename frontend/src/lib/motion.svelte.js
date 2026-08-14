@@ -60,7 +60,31 @@ function bezier(x1, y1, x2, y2) {
 }
 
 // Perechea exacta a lui `--ease` din tokens.css. O schimbi acolo, o schimbi aici.
-export const EASE = bezier(0.32, 0.72, 0.28, 1)
+// Punctele stau intr-un singur loc IN JS: din ele iese si functia de easing
+// pentru tranzitiile Svelte, si sirul pe care il cere WAAPI (vezi `easeCss`).
+// Erau trei copii ale acelorasi patru numere — a treia scrisa de mana in
+// `aterizare`, deci o schimbare de curba ar fi lasat exact o animatie in urma,
+// tacut.
+const PUNCTE_EASE = [0.32, 0.72, 0.28, 1]
+export const EASE = bezier(...PUNCTE_EASE)
+
+/** Curba standard ca SIR, pentru `Element.animate()` — care nu primeste o
+ *  functie, ci sintaxa CSS.
+ *
+ *  Se citeste din TOKEN, la prima chemare, nu la incarcarea modulului: in
+ *  build-ul de productie foaia de stil e un `<link>`, deci la momentul in care
+ *  modulul se evalueaza `--ease` poate sa nu fie inca rezolvabil. `aterizare`
+ *  se cheama oricum dupa un gest, adica mult mai tarziu. Rezerva sunt aceleasi
+ *  puncte de mai sus, deci nu exista o a doua valoare de tinut sincronizata. */
+let _easeCss = ''
+export function easeCss() {
+  if (_easeCss) return _easeCss
+  const dinToken = typeof document !== 'undefined'
+    ? getComputedStyle(document.documentElement).getPropertyValue('--ease').trim()
+    : ''
+  _easeCss = dinToken || `cubic-bezier(${PUNCTE_EASE.join(',')})`
+  return _easeCss
+}
 
 // Perechea exacta a lui `--ease-spring`. O SINGURA curba cu depasire in tot
 // sistemul (era esantionata dintr-un `linear()` cu opt opriri; acum e aceeasi
@@ -289,6 +313,6 @@ export function aterizare(el, dinainte) {
   if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return
   el.animate(
     [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }],
-    { duration: d, easing: 'cubic-bezier(.32,.72,.28,1)' },
+    { duration: d, easing: easeCss() },
   )
 }

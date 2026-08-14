@@ -1,0 +1,353 @@
+# -*- coding: utf-8 -*-
+"""Audit de navigare: ce se intampla, masurat, cand schimbi tabul.
+
+DE CE EXISTA
+Ion, 2026-08-14: „nu sunt omogene, nu sunt peste tot, cel mai mult ma deranjeaza
+la schimbul dintre taburi cand se incarca pagina."
+
+Nimic din ce se masoara aici nu arunca vreo eroare. Build-ul e verde, `smoke_ui`
+e verde, `audit_design` e curat — si totusi la fiecare apasare de tab se jucau
+TREI animatii de intrare peste aceiasi pixeli (`::view-transition-*(root)` 240ms
+pe X, `.ruta-in` 220ms pe Y, `.cell-in` in scara pana la 460ms), iar Calendarul
+punea un schelet de 360px la FIECARE intrare, nu doar la prima — fiindca starea
+lui traia in componenta, pe care `{#key routeKey}` o distruge.
+
+Cele patru contracte verificate aici sunt exact cele care nu se pot vedea intr-o
+captura de ecran:
+
+  1. PRIMA INCARCARE are `rutaIn` si `cellIn`. Ele n-au fost sterse, au fost
+     mutate acolo unde au sens: deschiderea aplicatiei.
+  2. SCHIMBAREA DE TAB nu le mai are pe niciuna — tranzitia o detine browserul.
+  3. REVENIREA PE UN TAB nu mai trece prin schelet.
+  4. HOVERUL incepe treaba: modulul si datele rutei sunt cerute inainte de click.
+  5. O PAGINA NOUA incepe de sus (fereastra deruleaza, nu `.app-content`).
+
+RULARE
+    python scripts/audit_navigare.py
+    python scripts/audit_navigare.py --vizibil     # cu browserul pe ecran
+
+Porneste singur aplicatia pe un port liber si pe o COPIE a bazei, ca `smoke_ui`.
+Iese cu 0 daca totul e curat, 1 daca a gasit ceva.
+"""
+
+import argparse
+import json
+import os
+import shutil
+import sys
+import tempfile
+import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from smoke_ui import (  # noqa: E402  — reutilizam bootstrapul, nu-l rescriem
+    FUS_TEST, PIN_TEST, RADACINA, out, port_liber, porneste_serverul,
+)
+
+PROBLEME = []
+
+
+def nota(ok, eticheta, detaliu=''):
+    out('  %-5s %s%s' % ('OK' if ok else 'PICA', eticheta, ('  — ' + detaliu) if detaliu else ''))
+    if not ok:
+        PROBLEME.append(eticheta + (('  — ' + detaliu) if detaliu else ''))
+
+
+# ---------------------------------------------------------------- seed de date
+def seed(ctx, baza):
+    """Un proiect cu o perioada, ca sa existe ceva de desenat in Calendar.
+
+    Fara el, calendarul e gol si testul ar trece pe o pagina care n-are ce
+    incarca — adica exact pe cazul care nu doare.
+
+    Merge prin `context.request`, care imparte cookie-urile cu browserul deja
+    autentificat; tokenul CSRF se citeste din cookie si se trimite in antet,
+    exact ca in aplicatie (`lib/api.js`).
+    """
+    csrf = ''
+    for c in ctx.cookies():
+        if c['name'] == 'csrf_token':
+            csrf = c['value']
+    antete = {'Content-Type': 'application/json', 'X-CSRF-Token': csrf}
+
+    r = ctx.request.get(baza + '/api/proiecte')
+    lista = r.json() if r.ok else []
+    if isinstance(lista, dict):
+        lista = lista.get('projects') or lista.get('proiecte') or []
+    if lista:
+        return lista[0]['id']
+
+    r = ctx.request.post(baza + '/api/proiecte', headers=antete, data=json.dumps(
+        {'nume': 'Audit navigare', 'client': 'Continental', 'tip': 'PIF'}))
+    if not r.ok:
+        out('  (nu s-a putut crea proiectul de test: HTTP %d)' % r.status)
+        return None
+    corp = r.json()
+    pid = corp.get('id') or (corp.get('proiect') or {}).get('id')
+    if pid:
+        import datetime
+        azi = datetime.date.today()
+        ctx.request.post(baza + '/api/proiecte/%s/implementari' % pid, headers=antete, data=json.dumps({
+            'data_start': azi.isoformat(),
+            'data_sfarsit': (azi + datetime.timedelta(days=3)).isoformat(),
+            'eticheta': 'Perioada de audit', 'locatie': 'Site', 'faza': 'implementare',
+        }))
+    return pid
+
+
+# ------------------------------------------------------------------ instrumente
+SPION = """
+window.__anim = [];
+window.__schelet = 0;
+document.addEventListener('animationstart', (e) => window.__anim.push(e.animationName), true);
+new MutationObserver(() => {
+  if (document.querySelector('.skeleton, .sk-lista')) window.__schelet++;
+}).observe(document.body, { childList: true, subtree: true });
+"""
+
+
+def curata(page):
+    page.evaluate("window.__anim = []; window.__schelet = 0;")
+
+
+def animatii(page):
+    return page.evaluate("window.__anim.slice()")
+
+
+def arata_docul(page):
+    """Pe desktop docul sta ascuns si apare cand cursorul intra in banda de jos
+    (48px, vezi `REVEAL_EDGE` din Dock). Fara pasul asta orice `hover` pe un tab
+    expira: elementul e randat, dar tradus SUB fereastra."""
+    vp = page.viewport_size
+    page.mouse.move(vp['width'] / 2, vp['height'] - 8)
+    page.wait_for_timeout(260)      # cat tine tranzitia dockului (--dur-base)
+
+
+def tab_din_doc(page, cale):
+    arata_docul(page)
+    return page.locator('.dock a[href="%s"]' % cale).first
+
+
+def mergi_la(page, tab, astepta=700):
+    """Apasa un tab din dock exact ca utilizatorul: hover, apoi click."""
+    el = tab_din_doc(page, tab)
+    el.hover()
+    page.wait_for_timeout(160)      # cat dureaza drumul de la hover la click
+    el.click()
+    page.wait_for_timeout(astepta)
+
+
+# ----------------------------------------------------------------------- probe
+def ruleaza(page, baza, pid):
+    out('\n--- 1. prima incarcare: pagina SOSESTE ---')
+    page.goto(baza + '/#/', wait_until='networkidle')
+    page.add_init_script(SPION)
+    page.reload(wait_until='networkidle')
+    page.wait_for_timeout(800)
+    a = animatii(page)
+    nota('rutaIn' in a, 'prima incarcare joaca rutaIn', 'vazute: %s' % sorted(set(a)))
+    nota('cellIn' in a, 'prima incarcare joaca cellIn', 'vazute: %s' % sorted(set(a)))
+    nota(page.evaluate("document.documentElement.classList.contains('prima-incarcare')"),
+         'steagul prima-incarcare e pus la deschidere')
+
+    out('\n--- 2. schimbarea de tab: O SINGURA miscare ---')
+    curata(page)
+    mergi_la(page, '/calendar')
+    a = animatii(page)
+    intrari = [n for n in a if n in ('rutaIn', 'cellIn')]
+    nota(not intrari, 'la schimbarea de tab nu se mai joaca rutaIn/cellIn',
+         'gasite: %s' % sorted(set(intrari)) if intrari else '')
+    nota(not page.evaluate("document.documentElement.classList.contains('prima-incarcare')"),
+         'steagul s-a stins la prima navigare')
+    nota(page.locator('.cal').count() > 0 or page.locator('.page').count() > 0,
+         'Calendarul chiar s-a randat')
+
+    out('\n--- 3. revenirea pe tab: fara schelet ---')
+    mergi_la(page, '/tasks')
+    curata(page)
+    mergi_la(page, '/calendar')
+    nota(page.evaluate("window.__schelet") == 0, 'revenirea pe Calendar nu trece prin schelet',
+         '%d aparitii' % page.evaluate("window.__schelet"))
+
+    out('\n--- 4. hoverul incepe treaba ---')
+    cereri = []
+    page.on('request', lambda r: cereri.append(r.url))
+    # Ruta trebuie sa fie una NEVIZITATA in sesiunea asta: pe una proaspata,
+    # `preia` intoarce din memorie fara sa atinga reteaua, si atunci „zero
+    # cereri la hover" ar fi raspunsul CORECT — dar testul l-ar citi ca esec.
+    # Departamentul n-a fost deschis pana aici.
+    URL_DEPT = '/api/settings/plan-departament'
+    mergi_la(page, '/tasks')
+    cereri.clear()
+    el = tab_din_doc(page, '/departament')
+    el.hover()
+    page.wait_for_timeout(500)
+    inainte = [u for u in cereri if URL_DEPT in u]
+    nota(len(inainte) > 0, 'hoverul cere datele rutei INAINTE de click',
+         '%d cereri la hover' % len(inainte))
+    cereri.clear()
+    el.click()
+    page.wait_for_timeout(800)
+    dupa = [u for u in cereri if URL_DEPT in u]
+    nota(len(dupa) <= 1, 'clicul nu dubleaza cererea deja pornita',
+         '%d cereri dupa click' % len(dupa))
+    nota(page.evaluate("window.__schelet") == 0, 'ruta preincarcata se deschide fara schelet',
+         '%d aparitii' % page.evaluate("window.__schelet"))
+    # Reversul aceluiasi contract: pe date proaspete, hoverul NU trage nimic.
+    # Fara proba asta, plimbarea cursorului peste doc ar putea deveni un torent
+    # de cereri fara ca nimic sa arate altfel pe ecran.
+    mergi_la(page, '/tasks')
+    cereri.clear()
+    tab_din_doc(page, '/departament').hover()
+    page.wait_for_timeout(500)
+    nota(len([u for u in cereri if URL_DEPT in u]) == 0,
+         'hoverul pe date proaspete nu mai cere nimic',
+         '%d cereri' % len([u for u in cereri if URL_DEPT in u]))
+
+    out('\n--- 5. o pagina noua incepe de sus ---')
+    # Calculatorul e singura pagina sigur mai inalta decat fereastra chiar si pe
+    # o baza goala. Pe /tasks fara taskuri nu exista derulare, deci proba ar fi
+    # trecut fara sa masoare nimic.
+    mergi_la(page, '/calculator', astepta=1200)
+    page.evaluate("window.scrollTo(0, 1200)")
+    page.wait_for_timeout(150)
+    inaltat = page.evaluate("window.scrollY")
+    if inaltat == 0:
+        out('  SARI  nicio pagina derulabila in baza asta')
+    else:
+        mergi_la(page, '/calendar')
+        nota(page.evaluate("window.scrollY") == 0, 'derularea se reseteaza la schimbarea rutei',
+             'pornit de la %dpx, ajuns la %dpx' % (inaltat, page.evaluate("window.scrollY")))
+
+    out('\n--- 6. cadrul nu intra in instantaneul paginii ---')
+    nume = page.evaluate("""(() => {
+      const h = document.querySelector('.header'), d = document.querySelector('.dock');
+      return {
+        antet: h ? getComputedStyle(h).viewTransitionName : 'lipsa',
+        doc: d ? getComputedStyle(d).viewTransitionName : 'lipsa',
+      };
+    })()""")
+    nota(nume['antet'] == 'cadru-antet', 'antetul are nume propriu de tranzitie', str(nume['antet']))
+    nota(nume['doc'] == 'cadru-doc', 'docul are nume propriu de tranzitie', str(nume['doc']))
+
+    out('\n--- 7. tenta slotului activ ALUNECA ---')
+    mergi_la(page, '/')
+    arata_docul(page)
+    p0 = page.evaluate("""(() => {
+      const p = document.querySelector('.dock-pilula');
+      const s = document.querySelector('.dock [data-pilula]');
+      if (!p || !s) return null;
+      const cp = p.getBoundingClientRect(), cs = s.getBoundingClientRect();
+      return { x: Math.round(cp.left), w: Math.round(cp.width),
+               sx: Math.round(cs.left), sw: Math.round(cs.width),
+               marcate: document.querySelectorAll('.dock [data-pilula]').length };
+    })()""")
+    nota(p0 is not None, 'pastila exista si un singur slot o poarta')
+    if p0:
+        nota(p0['marcate'] == 1, 'exact UN slot marcat', '%d marcate' % p0['marcate'])
+        nota(abs(p0['x'] - p0['sx']) <= 1 and abs(p0['w'] - p0['sw']) <= 1,
+             'pastila e fix peste slotul activ',
+             'pastila x=%d w=%d / slot x=%d w=%d' % (p0['x'], p0['w'], p0['sx'], p0['sw']))
+        # Alunecarea se masoara IN TIMPUL ei: dupa ce se termina, o pastila care
+        # sare si una care aluneca arata identic.
+        el = tab_din_doc(page, '/calendar')
+        el.click()
+        page.wait_for_timeout(90)
+        la_mijloc = page.evaluate(
+            "Math.round(document.querySelector('.dock-pilula').getBoundingClientRect().left)")
+        page.wait_for_timeout(600)
+        la_final = page.evaluate("""(() => {
+          const p = document.querySelector('.dock-pilula');
+          const s = document.querySelector('.dock [data-pilula]');
+          return { x: Math.round(p.getBoundingClientRect().left),
+                   sx: Math.round(s.getBoundingClientRect().left) };
+        })()""")
+        nota(abs(la_final['x'] - la_final['sx']) <= 1, 'ajunge pe slotul nou',
+             'pastila %d / slot %d' % (la_final['x'], la_final['sx']))
+        intre = min(p0['x'], la_final['x']) - 2 < la_mijloc < max(p0['x'], la_final['x']) + 2
+        nota(intre and la_mijloc not in (p0['x'], la_final['x']),
+             'la 90ms e INTRE cele doua sloturi (aluneca, nu sare)',
+             'plecat %d -> la 90ms %d -> ajuns %d' % (p0['x'], la_mijloc, la_final['x']))
+
+    if pid:
+        out('\n--- 8. pagina de proiect se deschide cu ce stie ---')
+        page.goto(baza + '/#/projects', wait_until='networkidle')
+        page.wait_for_timeout(600)
+        # Cardul e un `role="button"`, nu un link — de aceea are nevoie de
+        # preincarcare scrisa pe el, si de aceea se cauta asa.
+        card = page.locator('.pcard[role="button"]').first
+        if card.count():
+            card.hover()
+            page.wait_for_timeout(450)
+            curata(page)
+            card.click()
+            page.wait_for_timeout(900)
+            nota(page.evaluate("window.__schelet") == 0,
+                 'intrarea pe proiect dupa hover nu trece prin schelet',
+                 '%d aparitii' % page.evaluate("window.__schelet"))
+            nota(page.locator('h1').count() > 0, 'pagina de proiect s-a randat')
+        else:
+            out('  SARI  nu exista card de proiect in lista')
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--vizibil', action='store_true', help='cu browser pe ecran')
+    arg = ap.parse_args()
+
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        raise SystemExit('Lipseste playwright. Ruleaza:\n  pip install playwright\n'
+                         '  python -m playwright install chromium')
+
+    lucru = tempfile.mkdtemp(prefix='pif-nav-')
+    db_temp = os.path.join(lucru, 'audit.db')
+    sursa = os.path.join(RADACINA, 'pif_dashboard.db')
+    if os.path.exists(sursa):
+        shutil.copy2(sursa, db_temp)
+    port = port_liber()
+    proc, baza = porneste_serverul(port, db_temp, os.path.join(lucru, 'server.log'))
+
+    try:
+        with sync_playwright() as pw:
+            br = pw.chromium.launch(headless=not arg.vizibil)
+            ctx = br.new_context(viewport={'width': 1280, 'height': 800},
+                                 timezone_id=FUS_TEST)
+            page = ctx.new_page()
+            page.goto(baza + '/login', wait_until='load')
+            page.fill('#pin', PIN_TEST)
+            page.click('button[type="submit"]')
+            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
+            out('Autentificat.')
+
+            pid = seed(ctx, baza)
+            out('Proiect de test: %s' % (pid or 'niciunul'))
+
+            page.add_init_script(SPION)
+            ruleaza(page, baza, pid)
+            br.close()
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except Exception:
+            proc.kill()
+        try:
+            proc._log.close()
+        except Exception:
+            pass
+        shutil.rmtree(lucru, ignore_errors=True)
+
+    out('')
+    if PROBLEME:
+        out('%d contracte incalcate:' % len(PROBLEME))
+        for p in PROBLEME:
+            out('  - ' + p)
+        return 1
+    out('OK — navigarea respecta toate contractele.')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

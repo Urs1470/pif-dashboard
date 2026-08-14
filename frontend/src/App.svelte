@@ -49,11 +49,35 @@
   // pe care s-o astepte inainte sa schimbe ruta, ca tranzitia sa se termine pe
   // pagina adevarata si nu pe schelet (vezi `navigate`). Cand ruta e deja in
   // cache, promisiunea e deja rezolvata si nu costa nimic.
+  //
+  // MODULUL ERA DOAR JUMATATE. Tranzitia se termina pe codul paginii, dar
+  // cererea de date pornea abia dupa montare — adica dupa ce tranzitia se
+  // incheiase — deci ateriza pe scheletul paginii. Acum fiecare pagina care are
+  // ceva de adus isi exporta propriul `pregateste()` din `<script module>`:
+  // acolo, langa codul care oricum construieste URL-ul, nu intr-o harta
+  // ruta -> URL tinuta aici, care s-ar desparti tacut de pagini.
+  //
+  // Se pastreaza MODULUL intreg, nu doar `default`: `pregateste` e un export
+  // frate cu componenta.
+  const modCache = {}
   setPreincarcaRuta(async (cale) => {
-    const m = resolveRoute(routes, (cale || '/').split('?')[0] || '/')
-    if (!m || !m.component._lazy || lazyCache[m.pattern]) return
-    const mod = await m.component.loader()
-    lazyCache[m.pattern] = mod.default
+    const brut = cale || '/'
+    const m = resolveRoute(routes, brut.split('?')[0] || '/')
+    if (!m || !m.component._lazy) return
+    if (!modCache[m.pattern]) {
+      const mod = await m.component.loader()
+      modCache[m.pattern] = mod
+      lazyCache[m.pattern] = mod.default
+    }
+    // Query-ul se parseaza din calea CERUTA, nu din `router.query`: la
+    // preincarcare ruta inca nu s-a aplicat, deci starea routerului e a paginii
+    // pe care esti acum.
+    const qi = brut.indexOf('?')
+    const query = {}
+    if (qi !== -1) new URLSearchParams(brut.slice(qi + 1)).forEach((v, k) => { query[k] = v })
+    // Esecul preincarcarii nu opreste navigarea: pagina isi cere singura datele
+    // la montare si stie sa arate eroarea acolo, in contextul ei.
+    try { await modCache[m.pattern].pregateste?.(m.params, query) } catch (_) {}
   })
 
   const rawMatch = $derived(resolveRoute(routes))
@@ -117,6 +141,10 @@
         LoadedComponent = null
         loadError = null
         m.component.loader().then(mod => {
+          // Si aici, nu doar in preincarcare: pe drumul direct (link extern,
+          // notificare, reincarcare de pagina) preincarcarea nu ruleaza, iar
+          // fara asta `modCache` ar ramane gol si urmatorul hover ar reimporta.
+          modCache[key] = mod
           lazyCache[key] = mod.default
           LoadedComponent = mod.default
           loadedParams = m.params

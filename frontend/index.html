@@ -1,5 +1,12 @@
 <!doctype html>
-<html lang="ro">
+<!-- `prima-incarcare`: cat timp clasa e pe <html>, `.ruta-in` si `.cell-in` au
+     voie sa se joace (vezi global.css). O scoate `router.svelte.js` la prima
+     schimbare de ruta, fiindca de acolo incolo tranzitia o detine browserul si
+     a treia animatie de intrare peste aceiasi pixeli n-ar face decat sa inmulteasca
+     opacitatile. Scrisa AICI, nu din JS, din doua motive: e pusa inainte de
+     primul cadru, si `calc.html` — pagina publica a Calculatorului, care n-are
+     router — o primeste din acelasi loc, deci nu ramane fara sosire. -->
+<html lang="ro" class="prima-incarcare">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />

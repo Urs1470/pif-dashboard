@@ -520,6 +520,35 @@ input:focus, select:focus, textarea:focus {
   to { opacity: 1; transform: none; }
 }
 
+/* CADRUL: acelasi ceas ca pagina, ca sa nu existe doua durate pe ecran.
+   Antetul si docul si-au luat nume propriu (`view-transition-name` in
+   componentele lor), deci ies din instantaneul `root` si nu mai iau alunecarea.
+   Implicitul browserului ar fi 0,25s cu `ease` — aproape de al nostru, dar nu
+   al nostru; scara are trei durate si o curba, si asta e tot. */
+::view-transition-group(cadru-antet),
+::view-transition-group(cadru-doc),
+::view-transition-old(cadru-antet),
+::view-transition-new(cadru-antet),
+::view-transition-old(cadru-doc),
+::view-transition-new(cadru-doc) {
+  animation-duration: 240ms;
+  animation-timing-function: var(--ease, ease);
+}
+/* NICIUNUL DIN CELE DOUA NU FACE CROSS-FADE, si din doua motive diferite.
+   Antetul e IDENTIC de-o parte si de alta a navigarii — titlul lui sta in
+   pagina, nu aici (vezi nota din Calendar despre `ui.pageHeader`) — deci un
+   cross-fade intre doua imagini identice nu se vede, dar costa doua straturi
+   compuse cu `plus-lighter` la fiecare schimbare de tab.
+   Docul, in schimb, CHIAR se schimba: tenta trece dintr-un slot in altul. Dar
+   ea are propria miscare (`.dock-pilula` aluneca 220ms), iar `-new` e o
+   reprezentare VIE, deci alunecarea se joaca inauntru. Amestecata cu
+   instantaneul vechi, s-ar vedea prin ea tenta veche, in vechiul loc — adica
+   fix contrariul a ce spune miscarea. Deci: vechiul pleaca, noul ramane. */
+::view-transition-old(cadru-antet),
+::view-transition-old(cadru-doc) { animation: none; opacity: 0; }
+::view-transition-new(cadru-antet),
+::view-transition-new(cadru-doc) { animation: none; opacity: 1; }
+
 /* ===== Selectare data: aspect unificat peste tot (caseta + iconita calendar) =====
    Orice <input type="date"> arata identic indiferent de pagina/modal. Folosim
    !important pe proprietatile de layout pentru ca stilurile scoped Svelte
@@ -844,10 +873,16 @@ input[type="checkbox"].cbx:focus {
    termina elementul revine la stilul lui normal — adica `opacity: 1` fara sa fie
    nevoie de fill. `opacity: 0` din regula de baza a plecat odata cu `forwards`:
    cu el ar fi ramas invizibila pe veci. */
-.cell-in { animation: cellIn var(--dur-base) var(--ease) backwards;
-  animation-delay: min(var(--celula, 0) * 40ms, 240ms); }
+/* GARDATA PE `html.prima-incarcare` — vezi blocul lung de la `.ruta-in`.
+   Pe scurt: la schimbarea de tab tranzitia o detine browserul, iar scara asta
+   se juca PESTE ea. Aici ramane cazul pentru care a fost scrisa: deschiderea
+   aplicatiei, unde nu exista pagina veche de la care sa vii. */
+html.prima-incarcare .cell-in {
+  animation: cellIn var(--dur-base) var(--ease) backwards;
+  animation-delay: min(var(--celula, 0) * 40ms, 240ms);
+}
 @media (prefers-reduced-motion: reduce) {
-  .cell-in { opacity: 1; animation: none; }
+  html.prima-incarcare .cell-in { opacity: 1; animation: none; }
 }
 
 /* DESCHIDEREA UNEI RUTE (tura 13).
@@ -883,9 +918,21 @@ input[type="checkbox"].cbx:focus {
    de baza pleaca odata cu `forwards` (altfel pagina ar ramane invizibila).
    Nu prin `animation-name: none` la deschiderea modalului: acela repornea
    animatia rutei la INCHIDERE, si coborarea foii se vedea taiata. */
-.ruta-in { animation: rutaIn var(--dur-base) var(--ease) backwards; }
+/* SI ACUM, GARDA PE `html.prima-incarcare`.
+   Miscarea era buna; locul in care se juca nu. La fiecare schimbare de tab
+   `{#key routeKey}` reface blocul de continut, deci `rutaIn` (220ms, 10px pe Y)
+   pornea PESTE `::view-transition-*(root)` (240ms, 10px pe X) si peste scara de
+   celule. Trei intrari, doua axe, iar opacitatile se INMULTESC: la jumatatea
+   drumului o celula ajungea pe la 0,13 in loc de 0,5. Pagina nu sosea, aparea
+   de trei ori.
+   Steagul e scris in `index.html` (si in `calc.html`, unde nu exista router) si
+   scos de `router.svelte.js` la prima navigare — se STINGE, nu se aprinde, si
+   asta conteaza: `animation-name` care revine de la `none` la un nume
+   reporneste animatia, deci o clasa pusa doar in timpul tranzitiei ar fi jucat,
+   la scoatere, exact miscarea pe care o suprima. */
+html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-base) var(--ease) backwards; }
 @media (prefers-reduced-motion: reduce) {
-  .ruta-in { opacity: 1; animation: none; }
+  html.prima-incarcare .ruta-in { opacity: 1; animation: none; }
 }
 /* HARTIA NU ASTEAPTA O ANIMATIE.
    Amandoua pornesc de la `opacity: 0` si se ridica prin animatie — iar la print

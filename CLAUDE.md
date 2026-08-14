@@ -824,6 +824,21 @@ sageti de 40×22px, un tooltip aparea PESTE lucrul atins, iar blocul mobil din
 Planificator era anulat in intregime de reguli scrise mai jos in acelasi fisier —
 build verde, `smoke_ui` verde, `test_suite` 12/12.
 
+- `audit_navigare.py` — **ce se intampla, masurat, cand schimbi tabul.** Cinci
+  contracte pe care nicio captura de ecran nu le arata: prima incarcare ARE
+  `rutaIn`/`cellIn`; schimbarea de tab nu mai are niciuna (tranzitia o detine
+  browserul); revenirea pe un tab nu trece prin schelet; hoverul cere modulul si
+  datele inainte de click, iar pe date proaspete nu mai cere nimic; o pagina noua
+  incepe de sus. Porneste singur aplicatia pe o copie a bazei, ca `smoke_ui`.
+
+```bash
+python scripts/audit_navigare.py
+```
+
+  De ce exista: pe 2026-08-14, la fiecare apasare de tab se jucau TREI animatii
+  de intrare peste aceiasi pixeli, iar Calendarul punea schelet la FIECARE
+  intrare — cu build verde, `smoke_ui` verde si `audit_design` curat.
+
 - `audit_design.py` — **coerenta sistemului de design.** Ce nu prinde niciunul
   dintre celelalte: `transition: all`, culori scrise de mana, durate/easing in
   afara scarii, o a doua paleta copiata in alta pagina, tokenuri folosite dar

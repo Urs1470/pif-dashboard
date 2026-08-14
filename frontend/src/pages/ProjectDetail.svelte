@@ -1,3 +1,22 @@
+<script module>
+  import { urlProiect as _urlP, urlTaskuriProiect as _urlT } from '../stores/projects.svelte.js'
+  import { preia as _preia, dinCache as _dinCache, uita as _uita } from '../lib/cache.js'
+
+  /** Preincarcarea rutei: cardul de proiect din /projects cheama asta la hover,
+   *  deci pana apesi, pagina are si proiectul, si taskurile lui.
+   *  Taskurile au `catch`: daca pica doar ele, pagina TOT trebuie sa se
+   *  deschida — aceeasi regula ca in `load`, unde esecul lor da o lista goala,
+   *  nu o pagina de eroare. */
+  export function pregateste(params) {
+    const id = params?.id
+    if (!id) return
+    return Promise.all([
+      _preia(_urlP(id), { proaspat: 5000 }),
+      _preia(_urlT(id), { proaspat: 5000 }).catch(() => null),
+    ])
+  }
+</script>
+
 <script>
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
@@ -201,14 +220,50 @@
     if (activeTab === 'wiki' && !wikiInfo && !wikiListLoading) loadWiki()
   })
 
+  // Doar prima citire ia din cache; vezi comentariul din `load`.
+  let primaCitire = true
+
   async function load() {
-    loading = true
+    // SE DESCHIDE CU CE STIM, SE CORECTEAZA CU CE VINE.
+    //
+    // Pagina isi tinea starea in componenta, iar routerul o distruge la fiecare
+    // navigare: reveneai pe acelasi proiect si primeai iar schelet, desi nimic
+    // nu se schimbase. Cache-ul e cheiat pe URL, deci merge si aici, unde
+    // raspunsul depinde de id.
+    //
+    // Seedul e DOAR la montare. `load()` se cheama si dupa fiecare scriere, iar
+    // acolo cache-ul e starea de dinainte: ar clipi inapoi la vechi exact in
+    // clipa in care astepti confirmarea.
+    const uP = _urlP(params.id)
+    const uT = _urlT(params.id)
+    let dinMemorie = false
+    if (primaCitire) {
+      primaCitire = false
+      const p = _dinCache(uP)
+      if (p !== undefined) {
+        project = p
+        const t = _dinCache(uT)
+        if (t !== undefined) tasks = Array.isArray(t) ? t : t.tasks || []
+        loading = false
+        dinMemorie = true
+      }
+    } else {
+      _uita(uP)   // prefix: acopera si `/tasks` de sub el
+    }
+    if (!dinMemorie) loading = true
     try {
-      project = await loadProjectDetail(params.id)
-      const t = await loadProjectTasks(params.id).catch(() => [])
+      // IN PARALEL, nu unul dupa altul. Erau doua dus-intors inlantuite pentru
+      // doua cereri care nu depind una de alta, deci pagina astepta suma lor.
+      const [p, t] = await Promise.all([
+        loadProjectDetail(params.id),
+        loadProjectTasks(params.id).catch(() => []),
+      ])
+      project = p
       tasks = Array.isArray(t) ? t : t.tasks || []
     } catch (err) {
-      error = err.message
+      // Cu ecranul deja plin din cache, o improspatare picata nu-l inlocuieste
+      // cu o eroare: ai in fata date bune, doar putin vechi.
+      if (!dinMemorie) error = err.message
     } finally { loading = false }
   }
 

@@ -5,8 +5,8 @@
   import { FolderKanban, Plus, ChevronDown, Archive, ArrowUpDown, Zap, Wrench, ArrowRightLeft } from '@lucide/svelte'
   import { projects, loadProjects, updateProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
-  import { navigate } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../lib/motion.svelte.js'
+  import { navigate, preincarca } from '../lib/router.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, EASE, sosire } from '../lib/motion.svelte.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
@@ -225,7 +225,22 @@
     <div class="cards-grid">
       {#each activeItems as p, i (p.id)}
         {@const urm = urmatoarea(p)}
-        <div class="pcard cell-in" style="--celula: {i}" role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)} onkeydown={(e) => cardKeydown(e, p)}>
+        <!-- `onpointerenter`/`onpointerdown`: cardul nu e `use:link` (cheama
+             `navigate` de mana, ca sa scrie intai lista de recente), deci nu
+             primeste preincarcarea de acolo. Pagina de proiect e cea mai scumpa
+             din aplicatie — doua cereri si un modul de 63 KB — deci tocmai ea
+             are cel mai mult de castigat din cele ~150ms dintre hover si click.
+
+             `in:sosire|local` in loc de scara de celule pentru cardul NOU.
+             `.cell-in` se joaca doar la prima incarcare de acum (vezi
+             global.css), iar aici asta ar fi insemnat ca un proiect tocmai
+             creat APARE intre doua cadre. `sosire` e primitiva scrisa exact
+             pentru „un rand pe care l-ai nascut tu", si e si mai corecta decat
+             ce era: intarzierea lui `.cell-in` venea din INDEXUL in lista, deci
+             un card aparut pe pozitia a zecea astepta 240ms degeaba.
+             `|local` — la deschiderea paginii blocul `{#each}` se creeaza
+             intreg, iar acolo sosirea o face tranzitia de ruta. -->
+        <div class="pcard cell-in" style="--celula: {i}" role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} in:sosire|local onclick={() => openProject(p)} onkeydown={(e) => cardKeydown(e, p)} onpointerenter={() => preincarca(`/projects/${p.id}`)} onpointerdown={() => preincarca(`/projects/${p.id}`)}>
           <div class="card-top">
             <!-- TIPUL, SPUS O SINGURA DATA. Era un fulger amber intr-un chip
                  patrat PLUS cuvantul „PIF" — doua obiecte pentru un fapt care nu

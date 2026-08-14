@@ -1,3 +1,27 @@
+<script module>
+  import { monthStart as _monthStart, weekStart as _weekStart, todayISO as _todayISO } from '../lib/calendarDates.js'
+  import { preia as _preia, dinCache as _dinCache, uita as _uita } from '../lib/cache.js'
+
+  // FEREASTRA CERUTA DE LA SERVER, SCRISA O SINGURA DATA.
+  //
+  // O cer doua locuri: `load()`, cand esti deja pe pagina, si `pregateste()`,
+  // cand routerul incalzeste ruta inainte s-o deschizi. Doua sabloane de URL
+  // pentru acelasi raspuns s-ar desparti tacut la prima schimbare de fereastra
+  // — preincarcarea ar aduce alte 49 de zile decat cere pagina, deci cache-ul
+  // n-ar fi niciodata lovit si scheletul ar reveni fara ca nimic sa para stricat.
+  const urlPentru = (ancora) => `/api/calendar?start=${_weekStart(_monthStart(ancora))}&zile=49`
+
+  /** Adus de router INAINTE de schimbarea rutei (vezi `setPreincarcaRuta` din
+   *  App): pana termini de apasat, raspunsul e in cache, iar pagina se monteaza
+   *  cu grila plina. Ancora e aceeasi regula ca la montare — `?zi=` daca vine
+   *  din Planificator, altfel luna curenta. */
+  export function pregateste(_params, query) {
+    const zi = query?.zi
+    const ancora = zi && /^\d{4}-\d{2}-\d{2}$/.test(zi) ? zi : _todayISO()
+    return _preia(urlPentru(ancora), { proaspat: 5000 })
+  }
+</script>
+
 <script>
   // Calendar — „unde sunt".
   //
@@ -38,6 +62,8 @@
   let data = $state(null)
   let loading = $state(true)
   let error = $state(null)
+  // Doar prima citire are voie sa ia ce stie cache-ul (vezi `load`).
+  let primaCitire = true
   // `mod` a plecat (V9): comutatorul „Lună / 2 săpt." a fost sters in turul 6,
   // dar starea si toate ramurile lui au ramas — masinarie moarta, pe care o
   // citeai ca specificatie si o copiai. Calendarul e LUNA, peste tot.
@@ -115,12 +141,38 @@
     // pe care ea o joaca era distrus si refacut inainte s-o apuce cineva sa vada.
     //
     // Erorile raman raportate — `error` se pune in `catch` la fel ca inainte.
-    if (!silent) { loading = data === null; error = null }
+    //
+    // SI NICI LA REVENIREA PE TAB. Pana acum `data` traia in componenta, iar
+    // routerul o distruge la fiecare navigare — deci reveneai pe Calendar si
+    // primeai iar scheletul de 360px, desi vazusesi grila acum treizeci de
+    // secunde. `dinCache` o intoarce SINCRON, inainte de primul cadru.
+    //
+    // Se seedeaza doar LA MONTARE (`primaCitire`). Dupa o scriere — muti o
+    // perioada, o stergi, bifezi „s-a facut" — `load()` se cheama din nou, iar
+    // acolo cache-ul e starea DINAINTE de scriere: ar clipi inapoi la vechi
+    // pentru cateva cadre, adica exact opusul confirmarii pe care o astepti.
+    const url = urlPentru(anchor)
+    let dinMemorie = false
+    if (primaCitire) {
+      primaCitire = false
+      const gata = _dinCache(url)
+      if (gata !== undefined) { data = gata; dinMemorie = true }
+    } else {
+      // Orice reincarcare de dupa montare vine ori dintr-o scriere, ori dintr-o
+      // schimbare de luna. In primul caz lunile VECINE pot fi deja gresite — o
+      // perioada mutata peste granita de luna nu apare in raspunsul lunii pe
+      // care o ceri acum — si nimic nu le-ar corecta pana la o reincarcare de
+      // pagina. In al doilea caz stergerea nu costa nimic.
+      _uita('/api/calendar')
+    }
+    if (!silent && !dinMemorie) { loading = data === null; error = null }
     try {
-      const start = weekStart(monthStart(anchor))
-      data = await apiJson(`/api/calendar?start=${start}&zile=49`)
+      data = await _preia(url)
     } catch (e) {
-      if (!silent) error = e.message
+      // Cand ecranul e deja plin din cache, o improspatare picata NU are voie
+      // sa-l inlocuiasca cu o stare de eroare: ai in fata date bune, doar putin
+      // vechi. Eroarea se arata cand n-avem ce arata.
+      if (!silent && !dinMemorie) error = e.message
     } finally {
       if (!silent) loading = false
     }
@@ -1898,7 +1950,7 @@
      nu doar cifra, desi lucrarile din ele sunt la fel de reale. */
   .zi.alta .n { color: var(--text-dim); }
   /* Liniile sunt SEPARATOARE, deci nu au ce cauta pe marginea de afara: acolo n-au
-     ce despartii, si impreuna ar desena inapoi chiar chenarul scos de R1 — doar cu
+     ce desparti, si impreuna ar desena inapoi chiar chenarul scos de R1 — doar cu
      un pas mai incolo, pe cardul intreg. */
   .zi.col-ultima { box-shadow: inset 0 -1px 0 var(--border-strong); }
   .zi.rand-ultim { box-shadow: inset -1px 0 0 var(--border); }
