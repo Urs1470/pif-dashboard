@@ -305,8 +305,16 @@
     </div>
   </form>
 
-  {#if agenda.loading && agenda.items.length === 0}
-    <Skeleton varianta="rand" randuri={4} />
+  <!-- `!agenda.incarcat`, NU `items.length === 0`: a doua forma confunda „inca
+       n-am primit nimic" cu „raspunsul e gol", deci pe un board fara niciun task
+       se vedea intai scheletul si abia apoi starea goala — de fiecare data, chiar
+       si cu raspunsul deja in memorie. Vezi nota de la `incarcat` din store. -->
+  <!-- `!incarcat`, fara `loading`: daca n-avem inca un raspuns, ASTEPTAM — prin
+       definitie. Cu `loading &&` in fata, primul cadru (inainte ca incarcarea sa
+       apuce sa porneasca) cadea pe ramura urmatoare si arata STAREA GOALA, apoi
+       scheletul, apoi raspunsul: trei forme pentru un board gol. -->
+  {#if !agenda.incarcat && !agenda.error}
+    <div class="asteptare"><Skeleton varianta="rand" randuri={4} /></div>
   {:else if agenda.error}
     <!-- ErrorState cu retry, ca in restul aplicatiei (regula de design: „erori:
          <ErrorState> (cu retry)"). Aici era un paragraf rosu fara niciun drum

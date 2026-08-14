@@ -11,6 +11,17 @@ export const agenda = $state({
   today: '',
   loading: false,
   error: null,
+  // AVEM UN RASPUNS? — diferit de „avem randuri".
+  //
+  // Ion: „au ramas niste ramasite acasa in cazul cand nu este niciun task."
+  // Garda scrisa peste tot in aplicatie e `loading && items.length === 0`, si
+  // ea CONFUNDA doua lucruri: „inca n-am primit nimic" si „raspunsul e gol".
+  // Cat timp ai taskuri, confuzia nu se vede — lista nevida iese din prima
+  // ramura. Cand n-ai niciunul, fiecare incarcare da schelet, apoi starea
+  // goala: doua forme pentru un raspuns pe care il stiam din memorie.
+  // Nici cache-ul nu putea ajuta, fiindca o lista goala restaurata arata exact
+  // ca una neincarcata. De aceea raspunsul are nevoie de un steag propriu.
+  incarcat: false,
 })
 
 // Local YYYY-MM-DD (NOT UTC) — SQLite date('now') is UTC and can disagree near
@@ -30,13 +41,20 @@ export function tomorrowISO() {
 // tot sa se incarce instant precum ai facut la taskuri generale"). Cache-ul e
 // pe ZIUA lui: un raspuns de ieri ar arata boardul de ieri ca si cum ar fi al
 // tau de azi — iar restantele si „azi" sunt chiar ce se schimba peste noapte.
-// `sessionStorage`, nu `localStorage`: e un accelerator pentru sesiunea curenta,
-// nu o a doua sursa de adevar care supravietuieste zile.
+// `localStorage`, nu `sessionStorage` — RASTOARNA alegerea de dinainte, si
+// merita spus de ce. Argumentul pentru sessionStorage era „un accelerator
+// pentru sesiunea curenta, nu o a doua sursa de adevar care supravietuieste
+// zile". Numai ca `sessionStorage` moare cand se inchide fila — iar pe Android
+// exact asta INSEAMNA „pornirea aplicatiei", adica fix momentul in care Ion
+// vedea asteptarea. Acceleratorul lipsea tocmai unde era nevoie de el.
+// Grija din argumentul vechi ramane acoperita, si nu de tipul de stocare, ci de
+// CHEIA PE ZI de mai jos: un board de ieri e respins, oricat de bine ar fi
+// pastrat. Un raspuns de azi, restaurat maine, nu poate ajunge pe ecran.
 const CHEIE_AGENDA = 'pif-agenda'
 
 function dinCache() {
   try {
-    const brut = sessionStorage.getItem(CHEIE_AGENDA)
+    const brut = localStorage.getItem(CHEIE_AGENDA)
     if (!brut) return null
     const c = JSON.parse(brut)
     return c && c.today === localToday() ? c : null
@@ -53,6 +71,8 @@ export async function loadAgendaToday() {
       agenda.items = c.items
       agenda.personale = c.personale
       agenda.today = c.today
+      // Si cand ce am restaurat e GOL: stim raspunsul, deci nu se mai asteapta.
+      agenda.incarcat = true
     }
   }
   agenda.loading = true
@@ -62,8 +82,9 @@ export async function loadAgendaToday() {
     agenda.items = Array.isArray(data.items) ? data.items : []
     agenda.personale = Array.isArray(data.personale) ? data.personale : []
     agenda.today = data.today || localToday()
+    agenda.incarcat = true
     try {
-      sessionStorage.setItem(CHEIE_AGENDA, JSON.stringify({
+      localStorage.setItem(CHEIE_AGENDA, JSON.stringify({
         items: agenda.items, personale: agenda.personale, today: agenda.today,
       }))
     } catch (_) { /* cota plina / mod privat — cache-ul e optional */ }

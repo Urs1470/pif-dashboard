@@ -246,7 +246,11 @@
        Planificatorul. `loadProjects()` se cheama dupa comutarea statusului de pe
        card, dupa stergere si la fiecare filtru, iar fara garda toata grila era
        inlocuita cu sase schelete si reconstruita la fiecare atingere. -->
-  {#if projects.loading && projects.items.length === 0}
+  <!-- `!incarcat`, fara `loading`: daca n-avem inca un raspuns, ASTEPTAM — prin
+       definitie. Cu `loading &&` in fata, primul cadru (inainte ca incarcarea sa
+       apuce sa porneasca) cadea pe ramura urmatoare si arata STAREA GOALA, apoi
+       scheletul, apoi raspunsul: trei forme pentru un board gol. -->
+  {#if !projects.incarcat && !projects.error}
     <div class="cards-grid asteptare">
       {#each Array(6) as _}
         <div class="pcard skeleton-card"><Skeleton width="40%" height="14px" /><Skeleton width="70%" height="18px" /><Skeleton width="50%" height="12px" /></div>

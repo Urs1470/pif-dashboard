@@ -21,6 +21,11 @@ export const plan = $state({
   showWeekends: readWeekends(), // evidentiaza weekendurile (doar in modul pe zile)
   loading: false,
   error: null,
+  // Vezi nota de la `incarcat` din `agenda.svelte.js`: „avem un raspuns" nu e
+  // acelasi lucru cu „avem randuri", iar garda `loading && items.length === 0`
+  // le confunda. Se vede doar cand lista e chiar goala — atunci fiecare
+  // incarcare da schelet, apoi starea goala.
+  incarcat: false,
 })
 
 export function toggleWeekends() {
@@ -38,6 +43,7 @@ export function urlPlan() {
 }
 
 function aseaza(data, t) {
+  plan.incarcat = true
   plan.lanes = Array.isArray(data.lanes) ? data.lanes : []
   plan.backlog = Array.isArray(data.backlog) ? data.backlog : []
   plan.start = data.start || t

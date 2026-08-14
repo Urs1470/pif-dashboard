@@ -6,6 +6,11 @@ export const projects = $state({
   loading: false,
   error: null,
   filters: { status: '', tip: '', search: '' },
+  // Vezi nota de la `incarcat` din `agenda.svelte.js`: „avem un raspuns" nu e
+  // acelasi lucru cu „avem randuri", iar garda `loading && items.length === 0`
+  // le confunda. Se vede doar cand lista e chiar goala — atunci fiecare
+  // incarcare da schelet, apoi starea goala.
+  incarcat: false,
 })
 
 // Vezi nota de la `urlProiect`: URL-ul listei il cer si pagina, si
@@ -19,6 +24,7 @@ export function urlProiecte() {
 }
 
 function aseazaProiecte(data) {
+  projects.incarcat = true
   let items = Array.isArray(data) ? data : data.projects || []
   if (projects.filters.search) {
     const q = projects.filters.search.toLowerCase()

@@ -856,7 +856,11 @@
     </div>
   </div>
 
-  {#if plan.loading && plan.lanes.length === 0}
+  <!-- `!incarcat`, fara `loading`: daca n-avem inca un raspuns, ASTEPTAM — prin
+       definitie. Cu `loading &&` in fata, primul cadru (inainte ca incarcarea sa
+       apuce sa porneasca) cadea pe ramura urmatoare si arata STAREA GOALA, apoi
+       scheletul, apoi raspunsul: trei forme pentru un board gol. -->
+  {#if !plan.incarcat && !plan.error}
     <div class="skel asteptare">{#each Array(4) as _}<Skeleton height="72px" />{/each}</div>
   {:else if plan.error}
     <ErrorState message={plan.error} onretry={loadPlan} />

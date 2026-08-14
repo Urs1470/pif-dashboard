@@ -181,6 +181,11 @@ td.bun { color: var(--success-deep); }
   font-variant-numeric: tabular-nums; color: var(--accent-deep); white-space: nowrap; }
 .impl-band.doar-ico { padding: 0 2px; justify-content: center; align-items: center; }
 .impl-band.doar-ico .ib-ico { margin-top: 0; }
+/* V5 — iconița + cuvântul locului, centrate. */
+.impl-band.doar-loc { padding: 0 4px; gap: 4px; justify-content: center; align-items: center; }
+.impl-band.doar-loc .ib-ico { margin-top: 0; opacity: .8; }
+/* V6 — doar cuvântul. Iconița pleacă fiindcă spune același lucru ca el. */
+.impl-band.loc-gol { padding: 0 3px; gap: 0; justify-content: center; align-items: center; }
 
 /* eticheta scoasă afară — exact `.ib-out` din Plan.svelte (azi doar la 3L/6L) */
 .ib-out { position: absolute; left: 100%; top: 0; height: var(--row-h);
@@ -191,8 +196,11 @@ td.bun { color: var(--success-deep); }
 /* banda îngustă cu etichetă afară: overflow vizibil, altfel eticheta e tăiată de propria bandă */
 .impl-band.stramta { overflow: visible; padding: 0 2px; justify-content: center; align-items: center; }
 .impl-band.stramta .ib-ico { margin-top: 0; }
-/* eticheta stă pe rândul întâi al stivei, ca la orizont lung */
-.impl-band.stramta .ib-out { top: calc(7px + var(--et-sus, 0px)); }
+/* Eticheta se OPREȘTE înainte de banda următoare, nu trece peste ea: `--et-max`
+   e distanța liberă până la vecin. Fără el, două perioade de o zi apropiate își
+   suprapun numele — degradarea trebuie să fie o trunchiere, nu o încălecare. */
+.impl-band.stramta .ib-out { max-width: var(--et-max, none); overflow: hidden; text-overflow: ellipsis; display: block;
+  line-height: var(--row-h); }
 
 /* V2 — cerneala compensată pe suprafață mică. Valorile sunt cele deja folosite
    pe pista mobilă (`.mp-track .impl-band` din Plan.svelte): 18/36 și 8/20. */
@@ -332,6 +340,33 @@ const VARIANTE = [
            'Desktopul și telefonul ajung să spună același lucru din același motiv.'],
     minus: ['Cerneala e axa care poartă <i>faza</i> (plin = implementare, palid = pregătire). Ambele trepte urcă odată, deci raportul se păstrează — dar o bandă de o zi în pregătire va fi la fel de tare ca una de patru zile în implementare.',
             'Pragul „îngust" trebuie ales o dată și respectat, altfel apare a treia treaptă de intensitate.'] },
+  { id: 'v2plus', nr: 'V2+ ✓', titlu: 'V2, dar eticheta iese doar dacă are unde',
+    dece: 'V2 curat are un defect <b>măsurat</b>: eticheta iese fără să se uite dacă vecina e la două zile. Pe „Linie ambalare" (două perioade de o zi, la două zile) primul nume are <b>73px la 14z și 30px la 30z</b> pentru un text de 142 — adică trunchierea se întoarce, doar că afară din bandă. V2+ pune o singură condiție: eticheta iese <i>dacă golul până la vecină o ține întreagă</i>; altfel se retrage în bandă și scrie ce încape acolo — scara lui V5 („⚲ Birou" → „Birou" → iconița). Cele două variante pe care le-ai ales, una ca regulă și cealaltă ca plasă.',
+    plus: ['<b>Nimic nu se taie, niciodată</b> — nici în bandă, nici afară. Fiecare bandă are un mod în care textul ei încape întreg.',
+           'Cazul obișnuit — o perioadă de o zi cu spațiu liber după ea — își scrie numele COMPLET: „Sediu EGB · Verificare parametri · 1 zi", exact ce se citește azi „Sediu E…".',
+           'Cazul dens nu mai minte: dacă n-ai loc de nume, primești locul, care e informația după care planifici.',
+           'Degradarea rămâne monotonă: lărgești fereastra, apare mai mult text. Fără praguri care sar.'],
+    minus: ['Cea mai multă logică din toate variantele: o măsurătoare de gol între benzi, plus scara de trei trepte.',
+            'Aceeași perioadă poate scrie „Sediu EGB · Verificare parametri · 1 zi" pe un rând și „Birou" pe altul, în același ecran — corect, dar trebuie acceptat că modul depinde de VECINI, nu doar de lățime.',
+            'Golul se măsoară față de banda următoare, nu față de reperele de pe rând: un titlu de task poate în continuare să treacă pe sub etichetă.'] },
+  { id: 'v5', nr: 'V5', titlu: 'Doar locul, scris în bandă (iconiță + „Site" / „Birou")',
+    dece: 'Banda nu mai încearcă să scrie titlul lucrării. Scrie <b>cel mai mult din ce încape</b>, pe o scară aleasă prin măsurare: <code>Site · PIF pompe · 4 zile</code> (220px) → <code>⚲ Birou</code> (55px) → <code>Birou</code> (36px) → iconița singură. Nu e un caz special pentru „o zi", e o regulă care se aplică oricărei benzi, deci trunchierea nu mai poate apărea nicăieri. <b>A treia treaptă contează:</b> sub 55px pleacă iconița, nu cuvântul — iconița e al doilea semn pentru același fapt, cuvântul e singurul. Fără ea, 14z strâmt (48px) și 30z (34–37px) ar cădea tot pe pinul mut.',
+    plus: ['Nimic nu se mai taie — treapta se alege măsurând, nu ghicind.',
+           'Rămâne pe ecran exact informația după care planifici: <b>ies sau nu ies din birou</b>.',
+           'Nu iese nimic din bandă, deci împachetarea rămâne neatinsă și nimic nu trece peste zilele următoare.',
+           'Degradarea e monotonă: cu cât fereastra e mai largă, cu atât scrie mai mult. Aceeași bandă nu mai are trei purtări fără regulă.',
+           'Pragul se ia pe cuvântul cel mai <i>lung</i> („Birou", 36px), nu pe cel de față — altfel la 30z o bandă ar scrie „Site" și vecina ei ar tăcea.'],
+    minus: ['Două perioade ale aceluiași proiect, amândouă pe teren, se citesc identic — vezi „Linie ambalare": „Probe la rece" și „Probe la cald" devin amândouă „Site".',
+            '<b>Măsurat: iconița + „Birou" cere 55px.</b> La 14z fereastră strâmtă ziua are 48px, la 30z are 34–37 — deci exact orizonturile care dor cad tot pe iconița mută.',
+            '„Birou" e o schimbare de vocabular: azi `locLabel` scrie „Sediu EGB" în trei fișiere (Plan, ProjectGantt, ImplPeriods) — se schimbă în toate, altfel aceeași perioadă are două nume în două pagini.'] },
+  { id: 'v6', nr: 'V6', titlu: 'Doar cuvântul, fără iconiță',
+    dece: 'A treia treaptă a lui V5, promovată peste tot: iconița nu mai apare deloc în bandă. <b>Măsurat: iconița + „Birou" cere 55px, cuvântul singur 36.</b> Iconița costă 19px ca să repete cuvântul de lângă ea. Diferența decide dacă 14z strâmt (48px) și 30z (34–37px) au un cuvânt pe ecran sau un pin mut.',
+    plus: ['Cuvântul supraviețuiește pe benzi cu 19px mai înguste decât la V5.',
+           'Se scapă de singura redundanță din bandă: două semne pentru același fapt.',
+           'O singură treaptă mai puțin de întreținut.'],
+    minus: ['Pierzi scanarea rapidă: pe un ecran plin, iconița se prinde din colțul ochiului, cuvântul cere citit.',
+            'Se rupe de restul aplicației, unde locul e mereu <i>iconiță + cuvânt</i> (Calendar, Gantt de proiect, rândul mobil).',
+            'Pe benzile largi, unde iconița <i>încape</i>, ai plătit un preț fără să iei nimic în schimb — de aceea V5 e mai bun ca regulă generală.'] },
   { id: 'v3', nr: 'V3', titlu: 'Pragul în pixeli, fără etichetă',
     dece: 'Minimul absolut: `BANDA_TEXT_MIN` se mută din procente în pixeli, și atât. Nicio trunchiere nu mai apare nicăieri, pentru că textul se randează doar când chiar încape. Numele rămâne în tooltip și în panoul zilei din Calendar.',
     plus: ['O constantă și o unitate de măsură — cea mai mică schimbare care rezolvă plângerea.',
@@ -352,6 +387,12 @@ const VARIANTE = [
 /* ================= geometrie ================= */
 const ETICHETA_MAX = 220, ETICHETA_PAD = 7;
 const latimeTitlu = s => Math.min(ETICHETA_MAX, (s || '').length * 5.8);
+/* Măsurătoare REALĂ, cu fontul paginii — aproximarea de 5,8px/caracter e bună
+   pentru un titlu de 30 de caractere, dar pe „Site" greșește cu ~25%, adică fix
+   pe cuvintele scurte de care depind V5/V6. */
+const _cv = document.createElement('canvas').getContext('2d');
+const F_LOC = '600 13px Gabarito, system-ui, sans-serif';
+function masoara(s) { _cv.font = F_LOC; return _cv.measureText(s).width; }
 const PAD_BANDA = 20;   // padding 11 + 9
 const ICO_BANDA = 17;   // iconiță 12 + gap 5
 const MIN_V4 = 92;
@@ -413,6 +454,33 @@ function planBanda(im, c, varianta) {
     return { mod: incape ? 'in' : 'ico', arataZile: incape && latPx > 190,
              left: wPct, widthPct: latPct, scurt, lunga, zile, span: { de: wPct, la: wPct + latPct } };
   }
+  /* V5 / V6 — SCARA DE DEGRADARE. Nu un caz special pentru „o zi": banda scrie
+     mereu cel mai mult din ce încape, în ordinea asta, iar treapta se alege
+     măsurând, deci nimic nu se taie niciodată.
+       1. loc · lucrare · durată   2. doar locul   3. doar iconița          */
+  if (varianta === 'v2plus') varianta = 'v2';   // aceeași plecare; diferă post-pasul din randLane
+  if (varianta === 'v5' || varianta === 'v6') {
+    const cuvant = im.loc === 'sediu' ? 'Birou' : 'Site';
+    const faraIco = varianta === 'v6';
+    /* PRAGUL SE IA PE CUVÂNTUL CEL MAI LUNG, nu pe cel de față: „Site" are 28px
+       și „Birou" 36, deci cu praguri separate, la 30z una din benzi ar scrie și
+       cealaltă ar tăcea — două benzi de aceeași natură, cu două purtări, pe
+       același ecran. Se arată amândouă sau niciuna. */
+    const celMaiLung = Math.max(masoara('Site'), masoara('Birou'));
+    const cuIco = celMaiLung + 8 + 17;   // 55px măsurat
+    const golIco = celMaiLung + 6;       // 36px măsurat
+    /* V5 are PATRU trepte, nu trei: când nu mai încap amândouă, pleacă ICONIȚA,
+       nu cuvântul. Iconița e al doilea semn pentru același fapt; cuvântul e
+       singurul. V6 e aceeași scară fără treapta cu iconiță — a treia treaptă a
+       lui V5, promovată peste tot. */
+    const mod = incape ? 'in'
+      : (!faraIco && latPx >= cuIco) ? 'loc'
+      : latPx >= golIco ? 'locgol'
+      : 'ico';
+    return { mod, arataZile: incape && latPx > 190, cuvant,
+             left: wPct, widthPct: latPct, scurt, lunga, zile,
+             span: { de: wPct, la: wPct + latPct } };
+  }
   if (varianta === 'v4') {
     const w = Math.max(latPx, MIN_V4);
     const wp = pct(w, c.trackPx);
@@ -430,8 +498,30 @@ function planBanda(im, c, varianta) {
   };
 }
 
+/* V2+ — post-pas: eticheta iese DOAR dacă are unde. Altfel banda coboară pe
+   scara lui V5, înăuntru. Se rulează ÎNAINTE de împachetare, fiindcă o etichetă
+   retrasă în bandă nu mai ocupă zilele de la dreapta ei. */
+function ajusteazaDupaVecin(benzi, impl, c) {
+  const celMaiLung = Math.max(masoara('Site'), masoara('Birou'));
+  benzi.forEach((b, i) => {
+    if (b.mod !== 'afara') return;
+    const dupa = benzi.filter(x => x.left > b.left).sort((x, y) => x.left - y.left)[0];
+    const inainte = benzi.filter(x => x.left < b.left).sort((x, y) => y.left - x.left)[0];
+    const golPct = b.flip
+      ? b.left - (inainte ? inainte.left + inainte.widthPct : 0)
+      : (dupa ? dupa.left : 100) - (b.left + b.widthPct);
+    const golPx = (golPct / 100) * c.trackPx - ETICHETA_PAD;
+    if (masoara(b.lunga) <= golPx) return;          // are loc afară — rămâne V2 curat
+    const latPx = (b.widthPct / 100) * c.trackPx;   // n-are: se retrage în bandă
+    b.cuvant = impl[i].loc === 'sediu' ? 'Birou' : 'Site';
+    b.mod = latPx >= celMaiLung + 8 + 17 ? 'loc' : latPx >= celMaiLung + 6 ? 'locgol' : 'ico';
+    b.span = { de: b.left, la: b.left + b.widthPct };
+  });
+}
+
 function randLane(lane, c, varianta) {
   const benzi = lane.impl.map(im => planBanda(im, c, varianta));
+  if (varianta === 'v2plus') ajusteazaDupaVecin(benzi, lane.impl, c);
   const repere = lane.repere.filter(t => t.zi < c.d).map(t => {
     const left = (t.zi / c.d) * 100;
     const w = pct(Math.max(12, c.pxZi), c.trackPx);
@@ -453,6 +543,8 @@ function randLane(lane, c, varianta) {
     const cls = ['impl-band'];
     if (im.faza === 'pregatire') cls.push('pregatire');
     if (b.mod === 'ico') cls.push('doar-ico');
+    if (b.mod === 'loc') cls.push('doar-loc');
+    if (b.mod === 'locgol') cls.push('loc-gol');
     if (b.mod === 'afara') cls.push('stramta');
     if (b.mod === 'intinsa') cls.push('intinsa');
     if (b.tare) cls.push('tare');
@@ -462,7 +554,18 @@ function randLane(lane, c, varianta) {
       inner += `<span class="ib-txt">${b.scurt}</span>`;
       if (b.arataZile) inner += `<span class="ib-zile">${b.zile} ${b.zile === 1 ? 'zi' : 'zile'}</span>`;
     } else if (b.mod === 'afara') {
-      inner += `<span class="ib-out">${b.lunga}</span>`;
+      // câtă latitudine are eticheta până la banda vecină, în px
+      const dupa = benzi.filter(x => x.left > b.left).sort((x, y) => x.left - y.left)[0];
+      const inainte = benzi.filter(x => x.left < b.left).sort((x, y) => y.left - x.left)[0];
+      const golPct = b.flip
+        ? b.left - (inainte ? inainte.left + inainte.widthPct : 0)
+        : (dupa ? dupa.left : 100) - (b.left + b.widthPct);
+      const golPx = Math.max(24, (golPct / 100) * c.trackPx - ETICHETA_PAD);
+      inner += `<span class="ib-out" style="--et-max:${Math.round(golPx)}px">${b.lunga}</span>`;
+    } else if (b.mod === 'loc') {
+      inner += `<span class="ib-txt">${b.cuvant}</span>`;
+    } else if (b.mod === 'locgol') {
+      inner = `<span class="ib-txt">${b.cuvant}</span>`;
     } else if (b.mod === 'intinsa') {
       inner = `<span class="zi-reala" style="width:${b.ziRealaPct}%"></span>` + inner +
               `<span class="ib-txt">${b.scurt}</span>`;
@@ -605,6 +708,19 @@ document.getElementById('seg-tema').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return; state.tema = b.dataset.t; randTot();
 });
 randTot();
+/* Măsurătoarea cu `canvas` e corectă doar după ce Gabarito chiar s-a încărcat;
+   până atunci cade pe system-ui și dă alte praguri. Deci se re-randează. */
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+  randTot();
+  const ico = 17;
+  window.MASURAT = {
+    'V5 — ico + „Site"':  Math.round(masoara('Site')  + 8 + ico),
+    'V5 — ico + „Birou"': Math.round(masoara('Birou') + 8 + ico),
+    'V6 — doar „Site"':   Math.round(masoara('Site')  + 6),
+    'V6 — doar „Birou"':  Math.round(masoara('Birou') + 6),
+    'titlul întreg':      Math.round(masoara('Sediu EGB · Verificare parametri') + 20 + ico),
+  };
+});
 </script>
 </body>
 </html>

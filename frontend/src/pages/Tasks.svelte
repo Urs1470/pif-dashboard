@@ -1021,7 +1021,11 @@
        sa plece elegant dintr-o lista care tocmai a fost stearsa toata.
        `&& items.length === 0`: schelete doar cand chiar n-ai ce arata. Aceeasi
        regula o avea deja TodayBoard. -->
-  {#if globalTasks.loading && globalTasks.items.length === 0}
+  <!-- `!incarcat`, fara `loading`: daca n-avem inca un raspuns, ASTEPTAM — prin
+       definitie. Cu `loading &&` in fata, primul cadru (inainte ca incarcarea sa
+       apuce sa porneasca) cadea pe ramura urmatoare si arata STAREA GOALA, apoi
+       scheletul, apoi raspunsul: trei forme pentru un board gol. -->
+  {#if !globalTasks.incarcat && !globalTasks.error}
     <div class="asteptare"><Skeleton varianta="rand" randuri={4} /></div>
   {:else if globalTasks.error}
     <ErrorState message={globalTasks.error} onretry={() => reload()} />

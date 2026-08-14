@@ -35,6 +35,11 @@ export const globalTasks = $state({
   items: [],
   loading: false,
   error: null,
+  // Vezi nota de la `incarcat` din `agenda.svelte.js`: „avem un raspuns" nu e
+  // acelasi lucru cu „avem randuri", iar garda `loading && items.length === 0`
+  // le confunda. Se vede doar cand lista e chiar goala — atunci fiecare
+  // incarcare da schelet, apoi starea goala.
+  incarcat: false,
 })
 
 // URL-ul listei, scris o singura data: il cere si pagina (la montare), si
@@ -58,6 +63,7 @@ export async function loadGlobalTasks(opts = {}) {
   if (gata !== undefined) {
     globalTasks.items = Array.isArray(gata) ? gata : gata.tasks || []
     globalTasks.error = null
+    globalTasks.incarcat = true
   } else {
     globalTasks.loading = true
     globalTasks.error = null
@@ -69,6 +75,7 @@ export async function loadGlobalTasks(opts = {}) {
     // singura — si e cea care a pornit cu ~900ms mai devreme.
     const data = await preia(url)
     globalTasks.items = Array.isArray(data) ? data : data.tasks || []
+    globalTasks.incarcat = true
   } catch (e) {
     if (gata === undefined) globalTasks.error = e.message
   } finally {
@@ -98,6 +105,7 @@ export async function updateTask(taskId, data) {
 
 export async function deleteTask(taskId) {
   await apiJson(`/api/tasks/${taskId}`, { method: 'DELETE' })
+  uitaTaskuriProiect()
 }
 
 export async function createGlobalTask(data, reloadOpts = {}) {
