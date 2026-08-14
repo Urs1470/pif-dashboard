@@ -1,6 +1,6 @@
 {
   "appId": "org.iupif.pif",
-  "appName": "PIF",
+  "appName": "Torqa",
   "webDir": "../static/dist",
   "server": {
     "url": "https://pif.iupif.org",
@@ -12,7 +12,7 @@
   },
   "plugins": {
     "LocalNotifications": {
-      "iconColor": "#5980a6"
+      "iconColor": "#8ab2d9"
     }
   }
 }

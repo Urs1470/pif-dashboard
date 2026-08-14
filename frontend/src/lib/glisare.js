@@ -34,9 +34,9 @@
 //     ajunge la butonul de dedesubt (sau ar deschide taskul). Il inghitim o
 //     singura data, in faza de capturare.
 
-const PRAG_DIRECTIE = 8      // px pana la care decidem daca e gest orizontal
+import { PRAG_DIRECTIE, PRAG_ACTIUNE, DUR_ZBOR, puls } from './gesturi.js'
+
 const PRAG_DESCHIDE = 0.4    // fractiune din latimea panoului
-const PRAG_BIFA = 0.42       // fractiune din latimea randului
 
 let deschisAcum = null       // {node, inchide} — randul deschis, oriunde in pagina
 
@@ -67,7 +67,7 @@ export function glisare(node, opt = {}) {
   let trecutDePrag = false
   let trecutDePragS = false
 
-  const pragBifa = () => latimeRand * PRAG_BIFA
+  const pragBifa = () => latimeRand * PRAG_ACTIUNE
 
   // Cat din drumul pana la prag s-a facut, 0..1. Il publicam ca variabila CSS ca
   // sa poata pista din global.css sa creasca odata cu degetul, fara ca JS-ul sa
@@ -120,7 +120,6 @@ export function glisare(node, opt = {}) {
   // Cronometrul de rezerva nu e paza contra intarzierii, ci contra lui
   // `transitionend` care NU vine deloc: cu `prefers-reduced-motion` durata cade
   // la 0, iar o tranzitie de durata zero nu emite eveniment in toate browserele.
-  const DUR_ZBOR = 130
   function zboaraApoi(pana, cb) {
     let gata = false
     const comite = () => {
@@ -199,17 +198,14 @@ export function glisare(node, opt = {}) {
     if (trecutS !== trecutDePragS) {
       trecutDePragS = trecutS
       node.classList.toggle('gl-amana', trecutS)
-      if (trecutS) { try { navigator.vibrate?.(12) } catch (_) {} }
+      if (trecutS) puls()
     }
     const trecut = !!onBifa && v > pragBifa()
     if (trecut !== trecutDePrag) {
       trecutDePrag = trecut
       node.classList.toggle('gl-bifa', trecut)
-      // Un scurt puls la trecerea pragului: pe telefon degetul acopera exact zona
-      // in care se schimba lucrurile, deci confirmarea care nu se vede se simte.
-      // Safari pe iOS nu implementeaza `vibrate` — de aceea e optionala, nu o
-      // conditie a gestului.
-      if (trecut) { try { navigator.vibrate?.(12) } catch (_) {} }
+      // Un scurt puls la trecerea pragului (vezi `puls` in lib/gesturi.js).
+      if (trecut) puls()
     }
   }
 

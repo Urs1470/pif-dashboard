@@ -6,7 +6,7 @@
   import { projects, loadProjects, updateProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
@@ -156,7 +156,7 @@
          (standardizarea titlurilor, cerinta lui Ion). -->
     <div class="page-title-row">
       <h1>Proiecte</h1>
-      <span class="page-sub">{activeItems.length} active · {archivedItems.length} finalizate</span>
+      <span class="page-sub">{activeItems.length} {activeItems.length === 1 ? 'activ' : 'active'} · {archivedItems.length} {archivedItems.length === 1 ? 'finalizat' : 'finalizate'}</span>
     </div>
     <!-- ANTETUL NU MAI ARE BUTON DE ADAUGARE. O singura cale per ecran: pe
          desktop cardul punctat din grila (e chiar in locul unde ar aparea
@@ -179,7 +179,7 @@
         {/if}
       </button>
       {#if sortOpen}
-        <div class="sort-menu" role="listbox" transition:fly={{ y: -4, duration: motionDuration(DUR_FAST) }}>
+        <div class="sort-menu" role="listbox" transition:fly={{ y: -4, duration: motionDuration(DUR_BASE), easing: EASE }}>
           {#each sortOptions as opt (opt.value)}
             <button class="sort-opt" class:sel={sort.key === opt.value} role="option" aria-selected={sort.key === opt.value} onclick={() => pickSort(opt.value)}>
               <span>{opt.label}</span>
@@ -273,7 +273,7 @@
     <!-- Arhiva se deschide din bara de sus; aici ramane doar continutul, cu un
          cap de sectiune care spune unde esti. -->
     {#if archivedItems.length > 0 && showArchive}
-      <div class="archive" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+      <div class="archive" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
         <div class="arch-cap"><Archive size={13} /><span>Arhivă · finalizate</span><span class="grup-n">{archivedItems.length}</span></div>
         <div class="arch-list">
           {#each archivedItems as p (p.id)}
@@ -354,23 +354,31 @@
   .sort-trigger.on { color: var(--accent-on-subtle); background: var(--accent-subtle); box-shadow: none; }
   /* Sageata directiei e semn, nu cuvant — mono, ca in desen (R6). */
   .sort-dir-ind { font-family: var(--font-mono); font-size: var(--font-small); opacity: .8; }
-  .sort-menu { position: absolute; top: calc(100% + 5px); right: 0; z-index: var(--z-dropdown, 50); min-width: 150px; background: var(--bg-overlay); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 4px; }
+  /* SUPRAFATA PLUTITOARE SE DESPRINDE PRIN UMBRA, NU PRIN CHENAR (nota A5 din
+     Modal.svelte): chenarul a iesit din sistem odata cu redesignul, iar aici
+     statea peste `--shadow-lg` — doua semnale pentru acelasi lucru.
+     `var(--z-dropdown)` fara rezerva: un `, 50` scris de mana mascheaza exact
+     cazul in care tokenul lipseste, adica singurul in care ai vrea sa afli. */
+  .sort-menu { position: absolute; top: calc(100% + 5px); right: 0; z-index: var(--z-dropdown); min-width: 150px; background: var(--bg-overlay); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 4px; }
   .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
   .sort-opt:hover { background: var(--bg-hover); color: var(--text); }
   .sort-opt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
-  /* HOVERUL RASPUNDE IN `--dur-fast`, CA RESTUL APLICATIEI. Cardul urca 4px pe
-     `--dur-base` (240ms), in timp ce orice alta suprafata raspunde la cursor in
-     120ms: la 240ms cursorul apucase deja sa plece de pe card inainte ca el sa fi
-     terminat de urcat. Hoverul e raspunsul la o intentie care inca se formeaza —
-     trebuie sa ajunga inaintea deciziei, nu dupa. Ridicarea ramane 4px; doar
-     viteza se aliniaza. */
+  /* HOVERUL RIDICA UMBRA, NU CARDUL (T13).
+     `.pcard` era singurul obiect din aplicatie care se MUTA la hover (4px in
+     sus). Dockul scosese exact asta, cu motivul scris in cod: o suprafata care
+     isi schimba locul cand treci cursorul peste ea muta si tot ce citeai langa
+     ea, iar intr-o grila de carduri asta inseamna ca randul respira sub mouse.
+     Elevatia se citeste din UMBRA — deci hoverul o adanceste, si atat.
+     Raspunsul ramane pe `--dur-fast`: hoverul ajunge inaintea deciziei. */
   .pcard { position: relative; display: flex; flex-direction: column; min-height: 142px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
   /* Doar unde exista cursor. Pe touch, cardul atins ramanea ridicat cu 4px si cu
      umbra pana atingeai altceva — parea selectat, desi nu era. */
   @media (hover: hover) {
-    .pcard:hover:not(.new-card) { transform: translateY(-4px); }
+    .pcard:hover:not(.new-card) {
+      box-shadow: var(--shadow-md), 0 0 0 1px var(--border-strong);
+    }
   }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* Conturul e SCRIS, nu mostenit: `.pcard` n-are bordura (suprafata se desprinde
@@ -464,9 +472,12 @@
      plusul 25/1.5, cu 24px deasupra dockului (dockul randat are 72 = 68 + 4).
      Cel mai mare obiect plutitor din aplicatie — daca se schimba, se schimba si
      perechea lui din `Tasks.svelte`. */
-  .fab { position: fixed; right: calc(var(--space-md) + var(--safe-right));
+  /* Geometria butonului plutitor, o singura data: o citesc si butonul, si
+     rezerva de sub lista (`--fab-loc` mai jos). */
+  .fab { --fab-size: 58px;
+    position: fixed; right: calc(var(--space-md) + var(--safe-right));
     bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
-    width: 58px; height: 58px; display: grid; place-items: center;
+    width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
     border-radius: 18px; border: none;
     background: var(--accent); color: var(--accent-text);
     box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
@@ -497,7 +508,12 @@
   .status-pill.act:active { transform: scale(var(--press-scale-sm)); }
 
   @media (max-width: 768px) {
-    .page { padding: var(--space-md); }
+    .page { padding: var(--space-md);
+      /* BUTONUL PLUTITOR ISI FACE LOC. `.app-content` rezerva doar cat dockul
+         (`--dock-h + 24`), dar butonul sta cu 28px peste dock si e inalt de 58 —
+         deci ultimul rand al listei ajungea sub el, cu tot cu coloana termenului,
+         si nici nu se mai putea atinge. 58 + 16 acopera banda cu 12px de scapare. */
+      padding-bottom: calc(58px + var(--space-md)); }
     /* ACELASI RITM CA /tasks (decizia din 2026-07-30: „aceleasi elemente, ~30px
        mai sus"). Masurat aici inainte: primul card incepea la y=314 pe 390×844 —
        37% din ecran, exact procentul pentru care /tasks a fost strans; pagina

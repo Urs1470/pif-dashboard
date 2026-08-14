@@ -103,7 +103,7 @@ ACCEPTATE = {
     # events — deci exceptia n-a prins niciodata, iar pagina trecea doar cand
     # masuratoarea apuca sa se faca inainte ca benzile sa se randeze. O exceptie
     # care nu se potriveste e mai rea decat una lipsa: pare acoperita si nu e.
-    'div.banda': 'banda de perioada, 12px pe telefon; atingerea face exact ce face ziua de sub ea, si nimic altceva',
+    'div.banda': 'banda de perioada, 12px pe telefon; o atingere scurta face exact ce face ziua de sub ea, iar gestul de mutare cere apasare lunga (T8) — deci o ratare nu produce nimic diferit',
     # `button.maner` A PLECAT DIN LISTA. Manerele de capat nu mai exista pe
     # telefon (`@media (hover: none) { .maner { display: none } }`), deci
     # masuratoarea nici nu le vede — o exceptie pentru un element care nu se
@@ -810,36 +810,115 @@ def perioadele_se_trag(browser, baza):
                 ' return [z.dataset.zi, r.left + r.width / 2, r.top + r.height / 2] })')
             harta = {z[0]: (z[1], z[2]) for z in zile}
 
-            # --- 0. PE DEGET: pista se citeste, nu se manipuleaza ---
-            # O apasare lunga urmata de o tragere lunga nu are voie sa schimbe
-            # nimic, iar manerele de capat nu au voie sa fie desenate. Se verifica
-            # amandoua: un maner vizibil fara gest in spate promite ceva ce nu se
-            # intampla — exact greseala versiunii cu drag-and-drop HTML5.
+            # --- 0. PE DEGET: gestul EXISTA, dupa apasare lunga (T8) ---
+            # Contractul s-a intors pe 2026-08-14: pana atunci pista se citea si
+            # atat, fiindca pe un ecran fara hover manerele n-aveau cum sa fie
+            # anuntate. Ce tine acum locul afordantei e apasarea lunga: 300ms
+            # fara miscare pornesc gestul, 10px il anuleaza. Trei promisiuni, si
+            # se verifica toate trei — a treia le tine pe primele doua.
             if tactil:
+                # (a) IN REPAUS manerele nu se vad. Doua dungi permanente pe
+                #     fiecare banda ar fi zgomot, si n-ar avea ce apuca degetul
+                #     intr-o celula de ~48px.
                 vizibile = page.eval_on_selector_all(
                     '.maner',
                     'e => e.filter(m => { const s = getComputedStyle(m);'
-                    ' return s.display !== "none" && s.visibility !== "hidden" }).length')
+                    ' return s.display !== "none" && s.visibility !== "hidden"'
+                    ' && parseFloat(s.opacity) > 0.05 }).length')
                 if vizibile:
-                    out('  PICA  deget: %d manere de capat desenate (pista nu se manipuleaza)' % vizibile)
+                    out('  PICA  deget: %d manere vizibile IN REPAUS' % vizibile)
                     probleme += 1
                 else:
-                    out('  OK    deget: niciun maner de capat')
+                    out('  OK    deget: manerele stau ascunse pana ceri gestul')
 
-                b0 = page.eval_on_selector(
-                    '.banda[data-perioada]',
-                    'e => { const r = e.getBoundingClientRect();'
-                    ' return [e.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2] }')
+                # Ca la mutarea cu mouse-ul: NU prima banda din DOM. Daca
+                # proiectul ei e inchis, `/api/calendar` o taie la
+                # `data_finalizare` (v35), deci un gest REUSIT o face sa dispara
+                # din raspuns si proba ar citi „nu s-a mutat". Sectiunea de
+                # mouse ruleaza prima si schimba datele, deci care banda e
+                # „prima" varia de la o rulare la alta — exact felul de proba
+                # care da alt raspuns de fiecare data.
+                deschise0 = page.evaluate(
+                    """async () => {
+                         const prima = document.querySelector('.zi').dataset.zi;
+                         const d = await fetch('/api/calendar?start=' + prima + '&zile=49').then(r => r.json());
+                         return d.perioade.filter(p => p.status !== 'finalizat').map(p => String(p.id));
+                       }""")
+                b0 = page.evaluate(
+                    """(ids) => {
+                         const el = [...document.querySelectorAll('.banda[data-perioada]')]
+                           .find(x => ids.includes(String(x.dataset.perioada)));
+                         if (!el) return null;
+                         const r = el.getBoundingClientRect();
+                         return [el.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2];
+                       }""", deschise0)
+                if not b0:
+                    out('  SARI  deget: nicio perioada pe un proiect deschis')
+                    ctx.close()
+                    continue
                 ord0 = [z[0] for z in zile]
                 in0 = stare(page, b0[0])
-                k0 = ord0.index(in0[0]) if in0[0] in ord0 else 0
-                t0 = ord0[min(k0 + 9, len(ord0) - 1)]
-                trage(page, cdp, b0[1], b0[2], harta[t0][0], harta[t0][1], pauza)
+
+                # (b) O GLISARE SCURTA, FARA APASARE, RAMANE DERULARE. Proba
+                #     asta e cea care face gestul acceptabil: daca ea pica,
+                #     lista nu se mai poate derula cu degetul peste benzi.
+                cdp.send('Input.dispatchTouchEvent', dict(
+                    type='touchStart',
+                    touchPoints=[dict(x=b0[1], y=b0[2], radiusX=6, radiusY=6, force=1)]))
+                for k in range(1, 5):
+                    cdp.send('Input.dispatchTouchEvent', dict(
+                        type='touchMove',
+                        touchPoints=[dict(x=b0[1], y=b0[2] + k * 12, radiusX=6, radiusY=6, force=1)]))
+                cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
+                page.wait_for_timeout(400)
                 if stare(page, b0[0]) == in0:
-                    out('  OK    deget: apasarea lunga + tragerea nu muta nimic')
+                    out('  OK    deget: glisarea fara apasare lunga nu muta nimic')
                 else:
-                    out('  PICA  deget: perioada s-a mutat la atingere (%s -> %s)'
-                        % (in0, stare(page, b0[0])))
+                    out('  PICA  deget: o glisare simpla a mutat perioada')
+                    probleme += 1
+
+                # (c) APASAREA LUNGA + TRAGEREA MUTA. Si banda se ridica, si
+                #     manerele devin tinte de deget — semnalul care spune ca
+                #     gestul a prins, pe un ecran care n-are cursor.
+                t0 = ord0[min((ord0.index(in0[0]) if in0[0] in ord0 else 0) + 9, len(ord0) - 1)]
+                cdp.send('Input.dispatchTouchEvent', dict(
+                    type='touchStart',
+                    touchPoints=[dict(x=b0[1], y=b0[2], radiusX=6, radiusY=6, force=1)]))
+                page.wait_for_timeout(450)          # peste APASARE_LUNGA (300ms)
+                ridicata = page.evaluate(
+                    '''() => { const b = document.querySelector('.banda.se-trage');
+                         if (!b) return null;
+                         const m = b.querySelector('.maner');
+                         return { umbra: getComputedStyle(b).boxShadow !== 'none',
+                                  maner: m ? Math.round(parseFloat(getComputedStyle(m).width)) : 0 }; }''')
+                if not ridicata:
+                    out('  PICA  deget: apasarea lunga nu a pornit gestul')
+                    probleme += 1
+                else:
+                    if ridicata['umbra']:
+                        out('  OK    deget: banda se ridica la apucare')
+                    else:
+                        out('  PICA  deget: banda apucata nu se ridica (niciun semnal)')
+                        probleme += 1
+                    if ridicata['maner'] >= 44:
+                        out('  OK    deget: manerele devin tinte de deget (%dpx)' % ridicata['maner'])
+                    else:
+                        out('  PICA  deget: manerele au %dpx dupa apucare' % ridicata['maner'])
+                        probleme += 1
+                for k in range(1, 9):
+                    cdp.send('Input.dispatchTouchEvent', dict(
+                        type='touchMove',
+                        touchPoints=[dict(x=b0[1] + (harta[t0][0] - b0[1]) * k / 8,
+                                          y=b0[2] + (harta[t0][1] - b0[2]) * k / 8,
+                                          radiusX=6, radiusY=6, force=1)]))
+                    page.wait_for_timeout(16)
+                cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
+                page.wait_for_timeout(1200)
+                dupa0 = stare(page, b0[0])
+                if dupa0 and dupa0[0] != in0[0]:
+                    out('  OK    deget: apasare lunga + tragere MUTA (%s -> %s)' % (in0[0], dupa0[0]))
+                else:
+                    out('  PICA  deget: gestul nu a mutat perioada (a ramas %s)' % in0)
                     probleme += 1
 
                 if erori:
@@ -848,10 +927,29 @@ def perioadele_se_trag(browser, baza):
                 continue          # `finally` inchide pagina si contextul
 
             # --- 1. mutarea ---
-            b = page.eval_on_selector(
-                '.banda[data-perioada]',
-                'e => { const r = e.getBoundingClientRect();'
-                ' return [e.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2] }')
+            # NU prima banda din DOM: daca proiectul ei e inchis, `/api/calendar`
+            # o taie la `data_finalizare` (v35), deci o mutare REUSITA dincolo de
+            # acea zi o face sa dispara din raspuns si proba ar citi „nu s-a
+            # mutat". Se cere serverului lista si se alege una a carei perioada
+            # apartine unui proiect deschis.
+            deschise = page.evaluate(
+                """async () => {
+                     const prima = document.querySelector('.zi').dataset.zi;
+                     const d = await fetch('/api/calendar?start=' + prima + '&zile=49').then(r => r.json());
+                     return d.perioade.filter(p => p.status !== 'finalizat').map(p => String(p.id));
+                   }""")
+            b = page.evaluate(
+                """(ids) => {
+                     const el = [...document.querySelectorAll('.banda[data-perioada]')]
+                       .find(x => ids.includes(String(x.dataset.perioada)));
+                     if (!el) return null;
+                     const r = el.getBoundingClientRect();
+                     return [el.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2];
+                   }""", deschise)
+            if not b:
+                out('  SARI  %s: nicio perioada pe un proiect deschis' % eticheta)
+                ctx.close()
+                continue
             pid, bx, by = b[0], b[1], b[2]
             inainte = stare(page, pid)
             # O zi din aceeasi fereastra, indeajuns de departe cat sa nu fie ea

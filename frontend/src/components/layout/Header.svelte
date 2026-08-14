@@ -44,18 +44,19 @@
 </script>
 
 <header class="header">
-  <a href="/" class="brand" title="PIF Dashboard">
-    <!-- Marca: aceleasi coordonate ca `frontend/public/favicon.svg`. Tila ia
-         accentul, cerneala ia `--accent-text` — deci urmeaza tema, spre deosebire
-         de fisierul .svg, care e un asset si nu stie de ea. -->
+  <a href="/" class="brand" title="TORQA">
+    <!-- Marca „Unda" — semnal dreptunghiular (PWM). Aceleasi coordonate ca
+         `frontend/public/favicon.svg`, dar aici tila ia `--accent` si cerneala
+         `--accent-text`, deci marca URMEAZA TEMA; fisierul .svg e un asset si
+         nu stie de tokenuri, deci acolo hexul e scris. Grosimea e 6.4 la 26px
+         randati (fata de 5.6 pe tile-ul de asset si 7 pe favicon): traseul se
+         ingroasa pe masura ce marca se micsoreaza, altfel se stinge. -->
     <svg class="brand-tile" width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
       <rect width="64" height="64" rx="14" fill="var(--accent)" />
-      <path d="M14 48 C27 48 30 40 33 30 S42 16 50 16 L50 48 Z" fill="var(--accent-text)" opacity="0.3" />
-      <path d="M14 48 C27 48 30 40 33 30 S42 16 50 16" fill="none" stroke="var(--accent-text)"
-            stroke-width="5.5" stroke-linecap="round" />
-      <circle cx="50" cy="16" r="5" fill="var(--accent-text)" />
+      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="var(--accent-text)"
+            stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
-    <span class="brand-name">PIF Dashboard</span>
+    <span class="brand-name">TORQA</span>
   </a>
 
   <!-- `.header-context` (titlul paginii in bara) A PLECAT: era singurul titlu

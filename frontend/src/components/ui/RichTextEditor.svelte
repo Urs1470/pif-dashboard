@@ -17,7 +17,7 @@
   import katex from 'katex'
   import 'katex/dist/katex.min.css'
   import { renderStoredText, sanitizeHtml } from '../../lib/storedText.js'
-  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, EASE } from '../../lib/motion.svelte.js'
 
   // O SINGURA FORMA: pagina de document — bara de unelte in capul suprafetei,
   // coloana de text la stanga plafonata la latime de citit, scroll pe toata pagina.
@@ -422,7 +422,7 @@
   </div>
 
   {#if mathOpen}
-    <div class="math-bar" transition:slide={{ duration: motionDuration(DUR_FAST) }}>
+    <div class="math-bar" transition:slide={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
       <div class="math-row">
         <input
           class="math-inp"

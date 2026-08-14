@@ -9,6 +9,33 @@
 
   let { deschideCautarea = () => {} } = $props()
 
+  // ===== `--dock-h` SE MASOARA, NU SE PRESUPUNE (T5) =====
+  // Tokenul spunea 68px — inaltimea pastilei de pe DESKTOP. Pe telefon dockul e
+  // o bara lipita jos: 8 + 56 + 8 + safe ≈ 72+. Din cei 68 isi socoteau distanta
+  // butonul plutitor din /tasks si /projects, toastul, si rezerva de jos a
+  // continutului — deci fiecare dintre ele statea cu cativa pixeli mai jos decat
+  // credea, si ultimul rand din lista ajungea sub butonul „+".
+  // `ResizeObserver`, nu o citire la montare: bara isi schimba inaltimea cand
+  // roteste telefonul si cand apare/dispare safe-area.
+  // CUTIA DE BORDURA, NU CEA DE CONTINUT. `contentRect` scade paddingul, iar
+  // bara are 8px sus si 8 jos: masurat, dadea 56 pentru o bara de 72 — adica
+  // exact genul de eroare pe care task-ul o repara, doar cu alt numar. Cu 56,
+  // butonul plutitor ramanea la 12px de dock in loc de 28.
+  // `borderBoxSize` e drumul corect; `getBoundingClientRect` e rezerva pentru
+  // browserele care nu-l raporteaza.
+  let dockEl = $state(null)
+  $effect(() => {
+    if (!dockEl) return
+    const scrie = (e) => {
+      const h = e?.borderBoxSize?.[0]?.blockSize ?? dockEl.getBoundingClientRect().height
+      document.documentElement.style.setProperty('--dock-h', Math.round(h) + 'px')
+    }
+    const ro = new ResizeObserver(([e]) => scrie(e))
+    ro.observe(dockEl)
+    scrie(null)
+    return () => ro.disconnect()
+  })
+
   // Vizibilitate dock:
   //  - DESKTOP (autohide v4): ascuns by default; apare DOAR cat timp cursorul e
   //    impins in marginea de jos (unde sta dock-ul) si se ascunde cand iesi.
@@ -248,7 +275,7 @@
   }
 </script>
 
-<nav class="dock" class:hidden aria-label="Navigație principală">
+<nav class="dock" class:hidden bind:this={dockEl} aria-label="Navigație principală">
   <button class="dock-grip" aria-label="Arată navigația" title="Navigație" onclick={revealFromPeek}></button>
   {#each itemsVizibile as item (item.path)}
     <a
@@ -290,7 +317,7 @@
            pus pentru centrare, si foaia ar fi plecat lateral cat tine animatia. -->
       <div class="mm-ancora">
         <div class="mm-foaie" role="menu" aria-label="Mai mult"
-             transition:fly={{ y: 12, duration: motionDuration(DUR_BASE) }}>
+             transition:fly={{ y: 12, duration: motionDuration(DUR_BASE), easing: EASE }}>
           <button class="mm-cauta" onclick={openSearch} role="menuitem">
             <Search size={17} /> Caută în tot dashboardul
           </button>

@@ -229,6 +229,10 @@
   /* ---- Layout ---- */
   --header-height: 56px;
   --content-max: 1400px;
+  /* DOAR VALOAREA IMPLICITA — se rescrie la rulare din `Dock.svelte`, care
+     masoara bara cu un `ResizeObserver`. 68 e inaltimea pastilei de pe desktop;
+     pe telefon bara are 72+ si difera cu safe-area, deci nimeni nu mai scrie
+     inaltimea dockului de mana. */
   --dock-h: 68px;
 
   /* Sensul ultimei navigari (1 inainte / -1 inapoi / 0 nimic), scris din App la
@@ -236,6 +240,32 @@
      global.css. Definit aici ca implicit, ca variabila sa existe si inainte de
      prima navigare. */
   --nav-sens: 0;
+
+  /* Nivelul din stiva de modale. Il scrie `Modal.svelte` inline pe fiecare voal
+     (`style:--nivel`), de unde iese `z-index: calc(var(--z-modal) + (nivel-1)*10)`.
+     Definit aici din acelasi motiv ca `--nav-sens`: variabila trebuie sa existe
+     si inainte sa fie scrisa, altfel `calc()` cade pe invalid si voalul ajunge
+     sub pagina. 1 = primul strat, adica exact `--z-modal`. */
+  --nivel: 1;
+
+  /* Latimea panoului lateral. Implicitul e AICI, o singura data — il citesc si
+     panoul, si rezerva de pe `.app-content` cand lista ii face loc. Cand tragi
+     de maner, `Modal.svelte` scrie o valoare fixa peste el, pe <html>, si o
+     tine in localStorage. Plafonul real ramane `max-width: min(720px, 46vw)`. */
+  --panou-w: clamp(420px, 32vw, 560px);
+
+  /* Deplasarea CONTINUA a obiectului tras pe o pista de zile. O scrie
+     `lib/tragereTimeline.js` pe elementul apucat, la fiecare cadru; 0 e starea
+     in repaus, adica exact ce trebuie sa fie cand nu trage nimeni. Perechea ei,
+     `--zi-tinta`, sta pe pista si spune ce zi se aprinde. */
+  --dx: 0px;
+
+  /* Inaltimea tastaturii de pe ecran. Valoarea REALA o scrie `Modal.svelte` pe
+     <html> din `visualViewport` (stil inline, deci bate definitia de aici);
+     asta e doar implicitul, ca sa nu existe niciun cadru in care `calc()`-urile
+     care o scad sa cada pe invalid. `100dvh` NU se micsoreaza sub tastatura in
+     WebView-ul Capacitor, de aceea nu ne putem baza pe el. */
+  --kb: 0px;
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -269,7 +299,19 @@
   --text-secondary: #5a6270;
   --text-dim: #656c78;
 
-  --accent: #5980a6;
+  /* ACCENTUL DE TEMA DESCHISA E MAI INCHIS DECAT PARE, SI ARE UN MOTIV MASURAT.
+     Era `#5980a6`, si cadea sub AA in AMBELE roluri ale lui — singurul rol din
+     sistem care cadea, si numai pe tema pe care Ion o foloseste in hala:
+       ca text pe suprafata  4,15   ca text pe fond 3,80   alb pe fillul lui 4,15
+     Regula scrisa („text pe o tenta ia varianta -deep") acopera exact cazul care
+     NU cadea; cele doua care cadeau — accent ca text pe o SUPRAFATA, si cerneala
+     pe un FILL — nu erau numite de nicio regula, iar `audit_design.py` verifica
+     paritatea tokenurilor intre teme, niciodata contrastul.
+     `#4e7192` e cea mai DESCHISA valoare de aceeasi nuanta care trece toate trei
+     cu marja (4,71 pe cea mai stransa): orice pas in plus s-ar lua din diferenta
+     fata de `--accent-deep`, iar accentul ar incepe sa arate ca el.
+     Tema intunecata nu se atinge — acolo perechile sunt deja 7,63 si 8,52. */
+  --accent: #4e7192;
   --accent-deep: #3d5f83;
   --accent-subtle: #ebf1f7;
   --accent-text: #ffffff;

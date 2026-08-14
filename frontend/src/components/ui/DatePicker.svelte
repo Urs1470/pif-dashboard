@@ -3,6 +3,7 @@
   import { ecran } from '../../lib/ecran.svelte.js'
   import { scale, fly, fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
+  import { nivelNou, nivelInchis } from './Modal.svelte'
 
   let {
     value = $bindable(''),
@@ -112,6 +113,24 @@
     if (open && popupEl) positionPopup()
   })
 
+  // CALENDARUL INTRA IN ACEEASI STIVA CA MODALELE (regula din T1a) — DAR NUMAI
+  // CA FOAIE, adica doar pe telefon.
+  //
+  // Ca foaie el ARE voal (`.dp-voal`, 0,5) si sta peste tot: fara sa se anunte,
+  // foaia de sub el ramanea „varf" si isi picta voalul de 0,65, iar cele doua se
+  // inmulteau (~0,83) — exact fondul negru pe care regula il interzice.
+  //
+  // Ca popover (desktop) NU are voal: se agata de declansator si nu intuneca
+  // nimic. Daca s-ar anunta si acolo, ar lua varful de la panoul de sub el si
+  // acela si-ar stinge voalul — deci un calendar deschis peste panou ar lasa
+  // pagina complet nedimuita. „Voalul se picteaza doar pe varf" presupune ca
+  // varful CHIAR are voal; un strat fara voal nu are ce sa preia.
+  $effect(() => {
+    if (!open || !sheet) return
+    nivelNou()
+    return () => nivelInchis()
+  })
+
   function close() { open = false }
 
   // Sheet-ul urca de sub margine; popup-ul de desktop creste din punctul lui.
@@ -210,7 +229,7 @@
         {#each WEEKDAYS as w}<span class="dp-wdname">{w}</span>{/each}
       </div>
       {#key `${viewY}-${viewM}`}
-        <div class="dp-grid" in:fly={{ x: direction * 12, duration: motionDuration(DUR_FAST) }}>
+        <div class="dp-grid" in:fly={{ x: direction * 12, duration: motionDuration(DUR_FAST), easing: EASE }}>
           {#each days as d}
             {#if d === null}
               <span class="dp-empty"></span>

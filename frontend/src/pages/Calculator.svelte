@@ -628,7 +628,7 @@
       </label>
     </div>
     {#if panelOpen}
-      <div class="equip-collapse" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+      <div class="equip-collapse" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
       <div class="equip-body">
         {#each panelGroups as g (g)}
           <div class="equip-group">
@@ -893,7 +893,7 @@
           </div>
 
           {#if open}
-            <div class="acc-body" transition:slide={{ duration: motionDuration(DUR_BASE) }}>{@render modBody(m)}</div>
+            <div class="acc-body" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>{@render modBody(m)}</div>
           {/if}
         </div>
         {/if}
@@ -964,7 +964,7 @@
       <p class="imp-hint">Încarcă un backup de drive: ABB <code>.dcparamsbak</code> (poți selecta mai multe) sau Siemens STARTER <code>.zip</code>. Merge și fără login.</p>
       <input type="file" accept=".dcparamsbak,.zip" multiple onchange={onBackupFile} disabled={importBusy} />
       {#if importDrives.length}
-        <div class="imp-drives-wrap" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+        <div class="imp-drives-wrap" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
         <p class="imp-hint">Arhiva contine mai multe drive-uri — alege pe care il importi:</p>
         <div class="imp-equip">
           {#each importDrives as dr, i (i)}
@@ -1247,6 +1247,14 @@
   }
   .nav-star { opacity: 0; margin-right: 4px; }
   .nav-item:hover .nav-star, .nav-star.on { opacity: 1; }
+  /* PE TELEFON STEAUA SE VEDE MEREU (regula R11 din `audit_design.py`).
+     Ascunsa pana la `:hover`, ea era vizibila doar cand modulul era DEJA
+     favorit — adica pe un ecran fara cursor puteai doar sa scoti din favorite,
+     niciodata sa adaugi. Singura schimbare din Calculator in tura asta, si e un
+     control facut accesibil, nu un desen schimbat: pe desktop nu se misca nimic. */
+  @media (hover: none) {
+    .nav-star { opacity: 1; }
+  }
   .mod-cell { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; min-width: 0; }
   .mod-cell-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
   .mod-cell-empty { padding: var(--space-lg); }

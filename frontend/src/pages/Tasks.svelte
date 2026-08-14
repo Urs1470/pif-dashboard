@@ -2,7 +2,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare, sosire, desfacere, alunecare, DUR_FAST } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire, desfacere, alunecare, DUR_FAST, EASE } from '../lib/motion.svelte.js'
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
@@ -564,8 +564,13 @@
   // Punctul rosu de pe clopotel trebuie sa poata semnala o trimitere esuata
   // FARA sa deschizi modalul — o stare care decide ce primesti dimineata nu
   // are voie sa fie invizibila.
+  // O DATA PER SESIUNE, NU DOAR IN SFERA PERSONAL (T15).
+  // Starea se cerea numai cand intrai in „Personal", iar punctul rosu se randa
+  // tot numai acolo — deci o trimitere esuata ramanea invizibila cat timp
+  // lucrai in „Muncă", adica exact in sfera in care esti toata ziua. O stare
+  // stricata trebuie sa se vada de unde te afli, nu de unde ai fi putut fi.
   $effect(() => {
-    if (sferaActiva === 'personal' && pushStatus === null) {
+    if (pushStatus === null) {
       apiJson('/api/push/status').then(s => { pushStatus = s }).catch(() => {})
     }
   })
@@ -797,7 +802,7 @@
            apare la hover. Gestul e o solutie pentru absenta hover-ului, nu o
            imbunatatire universala. -->
       <div class="sub-row" class:sub-done={sub.done} class:gl-sub={ecran.telefon}
-           animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE) }}
+           animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE), easing: EASE }}
            use:glisare={{ activ: ecran.telefon && editSubId !== sub.id, onAmana: () => removeSubtask(sub) }}>
         <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Șterge</span><span class="gl-ico-s"><SolidIcon name="trash" size={15} /></span></div>
         <div class="gl-fata">
@@ -879,9 +884,9 @@
   <div class="page-header">
     <div class="page-title-row">
       <h1>Taskuri</h1>
-      <span class="ph-sub">{activeTasks.length} deschise</span>
+      <span class="ph-sub">{activeTasks.length} {activeTasks.length === 1 ? 'deschis' : 'deschise'}</span>
       {#if nrRestante}
-        <span class="ph-restante"><span class="ph-punct"></span>{nrRestante} restante</span>
+        <span class="ph-restante"><span class="ph-punct"></span>{nrRestante} {nrRestante === 1 ? 'restant' : 'restante'}</span>
       {/if}
     </div>
   </div>
@@ -904,7 +909,10 @@
     <div class="sfere" role="tablist" aria-label="Sfera taskurilor">
       <span class="seg-cursor" aria-hidden="true" style="--i:{sferaActiva === 'personal' ? 1 : 0}"></span>
       <button class="seg" role="tab" aria-selected={sferaActiva === 'munca'} class:on={sferaActiva === 'munca'} onclick={() => navigate('/tasks')}><Briefcase size={14} strokeWidth={1.5} />Muncă</button>
-      <button class="seg" role="tab" aria-selected={sferaActiva === 'personal'} class:on={sferaActiva === 'personal'} onclick={() => navigate('/tasks?sfera=personal')}><User size={14} strokeWidth={1.5} />Personal</button>
+      <!-- Punctul de eroare sta pe SEGMENT, nu doar pe clopotel: clopotelul se
+           randeaza doar in sfera Personal, deci o trimitere esuata nu avea unde
+           sa se arate cat timp erai in „Muncă". -->
+      <button class="seg" role="tab" aria-selected={sferaActiva === 'personal'} class:on={sferaActiva === 'personal'} onclick={() => navigate('/tasks?sfera=personal')}><User size={14} strokeWidth={1.5} />Personal{#if pushStatus?.last_error}<span class="seg-punct" title="O notificare nu a putut fi trimisă" aria-hidden="true"></span>{/if}</button>
     </div>
     <button class="a-ico" class:on={showArchive} aria-pressed={showArchive}
             onclick={() => { showArchive = !showArchive }}
@@ -932,7 +940,7 @@
         <button type="submit" class="quick-add-btn" disabled={!quickTitle.trim() || quickAdding} title="Adaugă task"><Plus size={16} /></button>
       </div>
       {#if quickTitle.trim()}
-        <div class="qa-cand" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+        <div class="qa-cand" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
           <button type="button" class="qa-chip" onclick={() => quickAdd(0)}>Azi</button>
           <button type="button" class="qa-chip" onclick={() => quickAdd(1)}>Mâine</button>
           <span class="qa-dp" class:pus={!!quickData}>
@@ -1133,7 +1141,7 @@
            (`components/ui/SelectorZi.svelte`). Aici erau patru butoane scrise
            local; pe „Astăzi" erau patru iconite; in pagina de proiect doar un
            calendar. Aceeasi intrebare, trei raspunsuri de invatat. -->
-      <div class="ts-zile" transition:slide|local={{ duration: motionDuration(DUR_FAST) }}>
+      <div class="ts-zile" transition:slide|local={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
         <SelectorZi value={sheetTask.data_scadenta}
                     onalege={(v) => { setTermenData(sheetTask, v || ''); termenDeschis = false }} />
       </div>
@@ -1380,9 +1388,12 @@
   /* Butonul mare cu plus (doar telefon). Peste dock, nu langa el — valorile din
      desen (T4): 58×58, raza 18, plusul 25/1.5, cu 24px deasupra dockului randat
      (72 = 68 + 4). Acelasi obiect ca in `Projects.svelte`. */
-  .fab { position: fixed; right: calc(var(--space-md) + var(--safe-right));
+  /* Geometria butonului plutitor, o singura data: o citesc si butonul, si
+     rezerva de sub lista (`--fab-loc` mai jos). */
+  .fab { --fab-size: 58px;
+    position: fixed; right: calc(var(--space-md) + var(--safe-right));
     bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
-    width: 58px; height: 58px; display: grid; place-items: center;
+    width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
     border-radius: 18px; border: none;
     background: var(--accent); color: var(--accent-text);
     box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
@@ -1394,7 +1405,14 @@
      titlul paginii spune cate SUNT, iar accentul e rezervat pentru „cate sunt de
      facut aici" (backlog, tabul de taskuri al proiectului). */
 
-  .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; }
+  /* FARA `flex-wrap` (constatarea E2 din auditul de UI).
+     Pe 390px cele trei controale nu incapeau pe un rand, deci clopotelul trecea
+     pe al doilea — singur, aliniat la stanga, cu 314px de gol langa el, iar bara
+     crestea de la 46 la 98px. Se citea ca o scapare de randare, nu ca o decizie.
+     Acum comutatorul cedeaza latimea (`min-width: 0`), iar cele trei raman pe
+     un rand pe orice telefon. */
+  .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: nowrap; }
+  .toolbar .sfere { min-width: 0; }
   /* Compozitorul are DOUA randuri acum (camp + chipuri de zi), deci coloana.
      Cat timp era `flex-direction: row`, chipurile se asezau LANGA camp, ieseau
      din ecran, iar campul se intindea pe inaltimea lor. */
@@ -1467,6 +1485,9 @@
            color: var(--text-faint); border-radius: var(--radius-sm);
            transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .g-ico:hover { color: var(--text); background: var(--bg-hover); }
+  /* Acelasi punct ca pe clopotel, pe segmentul de sfera. */
+  .seg-punct { width: 6px; height: 6px; border-radius: 50%; background: var(--danger);
+    flex: none; margin-left: 2px; }
   .g-punct { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px;
              border-radius: 50%; background: var(--danger); }
 
@@ -1549,6 +1570,16 @@
   .n-foot { display: flex; align-items: center; justify-content: space-between;
             gap: var(--space-sm); flex-wrap: wrap; }
   .n-foot > :global(.modal-actions) { flex: 1; }
+  /* PE TELEFON ACTIUNEA PRINCIPALA E PRIMA SI LATA (T15).
+     `space-between` + `flex-wrap` + `.modal-actions > * { flex: 1 }` trimiteau
+     „Salvează" pe randul al doilea, SUB „Notificare de probă" — adica actiunea
+     care schimba ce se intampla maine ajungea desenata ca secundara, sub cea
+     care doar verifica lantul acum. `column-reverse` schimba doar ce vezi:
+     markupul ramane proba -> salveaza, deci si ordinea de Tab. */
+  @media (max-width: 768px) {
+    .n-foot { flex-direction: column-reverse; align-items: stretch; flex-wrap: nowrap; }
+    .n-foot > :global(.btn-secondary) { background: none; border: none; min-height: var(--tap-min); }
+  }
   @media (max-width: 620px) {
     .n-setari { grid-template-columns: 1fr; }
   }
@@ -1565,7 +1596,12 @@
      spune PUNCTUL si numarul, iar un rand intreg de text rosu peste o lista de
      randuri rosii nu mai selecteaza nimic. Numarul e singurul care poarta rolul.
      `--font-sans`, nu mono: e un cuvant, nu o cifra care se compara. */
-  .grup-cap { position: sticky; top: 0; z-index: 2;
+  /* UN SINGUR REPER, PE TOATE LATIMILE (T10).
+     `top: 0` insemna marginea FERESTREI, dar bara de sus e `sticky` cu
+     `--z-sticky` (200) — deci „RESTANTE" aluneca sub ea si disparea exact cand
+     derulai, adica exact cand aveai nevoie de el ca sa stii in ce grupa esti.
+     Regula de telefon o avea deja corect; acum o are si desktopul. */
+  .grup-cap { position: sticky; top: var(--header-height); z-index: 2;
     display: flex; align-items: center; gap: var(--space-sm);
     padding: 20px 12px 8px; margin-top: 0;
     background: linear-gradient(var(--bg-surface) 72%, transparent);
@@ -1610,6 +1646,21 @@
   .td-jos { display: flex; align-items: center; gap: var(--space-md);
     margin-top: var(--space-sm); padding-top: var(--space-sm);
     border-top: 1px dashed var(--border-subtle); }
+  /* IN FOAIE, ACTIUNILE NU SE DERULEAZA (T1c).
+     `taskDetail` e acelasi snippet si in randul desfasurat de pe desktop, si in
+     foaia de pe telefon — dar numai in foaie corpul deruleaza, deci numai acolo
+     „Adaugă notă" si „Schimbă termenul" plecau de sub deget cand aveai zece
+     subtaskuri. `:global(.modal-body) >` tinteste exact gazda care deruleaza;
+     randul desfasurat nu are asa ceva, deci ramane cum era.
+     Fondul e obligatoriu: fara el subtaskurile s-ar citi prin bara lipita. */
+  :global(.modal-body) > .td-jos {
+    position: sticky;
+    bottom: calc(-1 * var(--space-md));
+    z-index: 1;
+    margin-top: var(--space-12);
+    padding-bottom: var(--space-md);
+    background: var(--bg-overlay);
+  }
   .td-link { display: inline-flex; align-items: center; gap: 6px; padding: 0;
     background: none; border: none; color: var(--text-faint);
     font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }
@@ -1855,7 +1906,12 @@
     padding: var(--space-md) var(--space-sm); }
 
   @media (max-width: 768px) {
-    .page { padding: var(--space-md); }
+    .page { padding: var(--space-md);
+      /* BUTONUL PLUTITOR ISI FACE LOC. `.app-content` rezerva doar cat dockul
+         (`--dock-h + 24`), dar butonul sta cu 28px peste dock si e inalt de 58 —
+         deci ultimul rand al listei ajungea sub el, cu tot cu coloana termenului,
+         si nici nu se mai putea atinge. 58 + 16 acopera banda cu 12px de scapare. */
+      padding-bottom: calc(58px + var(--space-md)); }
     .toolbar { flex-direction: column; align-items: stretch; }
       .quick-add input, .quick-add-btn { min-height: 44px; }
     .quick-add-btn { width: 44px; }

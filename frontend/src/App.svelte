@@ -220,6 +220,15 @@
     flex: 1;
     /* Dock-ul pluteste peste continut la toate latimile — lasa loc dedesubt. */
     padding-bottom: calc(var(--dock-h) + var(--space-lg) + var(--safe-bottom));
+    transition: padding-right var(--dur-base) var(--ease);
+  }
+  /* PANOUL DESCHIS IMPINGE LISTA, NU O ACOPERA (T6).
+     Clasa o pune `Modal.svelte`, ca `are-modal`, si doar pentru `size="panou"`
+     peste 1100px — sub atat coloana n-are ce ceda. Perechea vizuala e voalul
+     slab (0,18) de pe panou: amandoua spun acelasi lucru, ca ce e dedesubt
+     ramane context de citit, nu fundal. */
+  :global(html.are-panou) .app-content {
+    padding-right: var(--panou-w);
   }
 
   /* Adresa e un COD, nu o propozitie — deci mono, si sub explicatia care o

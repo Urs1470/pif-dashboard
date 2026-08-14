@@ -258,3 +258,37 @@ export function plecare(node, { duration = DUR_BASE } = {}) {
     `,
   }
 }
+
+/**
+ * ATERIZARE (FLIP) — obiectul mutat ALUNECA spre locul nou, nu se teleporteaza.
+ *
+ * De ce e nevoie de el: pozitia benzilor vine din `grid-column` (Calendar) sau
+ * din `left: %` (Planificator, Gantt), iar niciuna nu se poate anima. Dupa
+ * commit + reincarcare obiectul aparea direct pe ziua noua — in timp ce chenarul
+ * deplasarii, care ARE `transition: height/margin-top`, se misca animat. Doua
+ * ceasuri pe acelasi gest: unul sarea, celalalt aluneca.
+ *
+ * Se cheama in doi timpi: masori INAINTE de schimbarea datelor, apoi chemi
+ * `aterizare(el, masuratoarea)` dupa ce Svelte a re-randat.
+ *
+ * Sub `prefers-reduced-motion` durata e 0, deci obiectul doar apare — exact ce
+ * spune regula din `motionDuration`.
+ *
+ *   const dinainte = el.getBoundingClientRect()
+ *   await salveaza(); await tick()
+ *   aterizare(el, dinainte)
+ */
+export function aterizare(el, dinainte) {
+  if (!el || !dinainte) return
+  const d = motionDuration(DUR_BASE)
+  if (!d) return
+  const acum = el.getBoundingClientRect()
+  const dx = dinainte.left - acum.left
+  const dy = dinainte.top - acum.top
+  // Sub o jumatate de pixel nu e o mutare, e zgomot de rotunjire.
+  if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return
+  el.animate(
+    [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }],
+    { duration: d, easing: 'cubic-bezier(.32,.72,.28,1)' },
+  )
+}

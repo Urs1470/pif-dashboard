@@ -1,4 +1,4 @@
-// PIF Dashboard Service Worker
+// TORQA Service Worker
 // Cache-first for the app shell, network-first for API calls.
 //
 // Update model: a newly installed worker STAYS in the "waiting" state until the
@@ -20,9 +20,9 @@
 // telefon. De atunci `.githooks/pre-commit` refuza un commit care atinge
 // `static/dist/` fara sa atinga si linia de mai jos.
 
-const VERSION = 'v126';
-const STATIC_CACHE = 'pif-static-' + VERSION;
-const API_CACHE = 'pif-api-' + VERSION;
+const VERSION = 'v127';
+const STATIC_CACHE = 'torqa-static-' + VERSION;
+const API_CACHE = 'torqa-api-' + VERSION;
 
 // App shell to cache on install. The legacy vanilla-JS app and the /m mobile
 // twin were removed; the Svelte SPA shell is served at '/'.
@@ -350,7 +350,7 @@ self.addEventListener('push', (event) => {
   const actiuni = data.actions
     ? [{ action: 'done', title: 'Făcut' }, { action: a2.id, title: a2.text }]
     : [];
-  event.waitUntil(self.registration.showNotification(data.title || 'PIF Dashboard', {
+  event.waitUntil(self.registration.showNotification(data.title || 'TORQA', {
     body: data.body || '',
     icon: '/icon-192.png',
     badge: '/icon-192.png',

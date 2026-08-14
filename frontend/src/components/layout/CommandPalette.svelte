@@ -6,6 +6,7 @@
   import { focusHref } from '../../lib/focus.js'
   import { apiJson } from '../../lib/api.js'
   import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
+  import { nivelNou, nivelInchis } from '../ui/Modal.svelte'
 
   // 6px + scale(.985) intr-o singura tranzitie: `fly` si `scale` nu se pot pune
   // pe acelasi nod (fiecare ar rescrie `transform`-ul celeilalte).
@@ -226,12 +227,26 @@
     window.addEventListener('keydown', onGlobalKey)
     return () => window.removeEventListener('keydown', onGlobalKey)
   })
+
+  // PALETA INTRA IN STIVA DE MODALE (T14).
+  // Statea pe `--z-modal` fix, deci Ctrl+K peste o foaie deschisa punea doua
+  // voaluri la ACELASI nivel: ordinea de pictare venea din ordinea din DOM, iar
+  // cele doua opacitati se inmulteau. Anuntandu-se, foaia de dedesubt isi stinge
+  // voalul si paleta se aseaza deasupra, cu z-index calculat din nivel.
+  let nivel = $state(0)
+  $effect(() => {
+    if (!open) return
+    nivel = nivelNou()
+    return () => { nivelInchis(); nivel = 0 }
+  })
 </script>
 
 {#if open}
   <!-- Contractul de miscare: paleta soseste pe 220, cu 6px de coborare si o
        scalare abia simtita (.985) — nu 120 cu .96, care o facea sa pocneasca. -->
-  <div class="palette-backdrop" onclick={close} role="presentation" transition:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
+  <div class="palette-backdrop" onclick={close} role="presentation"
+       style:--nivel={nivel} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
+       transition:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
     <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1"
          transition:paletaIn>
       <!-- RANDUL DE SUS *ESTE* CAMPUL.
@@ -508,7 +523,10 @@
     .palette-search { height: 56px; padding: 0 var(--space-md); }
     /* Sugestia de scurtatura n-are ce cauta pe un ecran fara tastatura fizica. */
     .palette-search kbd { display: none; }
-    .palette-list { max-height: min(400px, 52dvh); overscroll-behavior: contain; }
+    /* `--kb`: cu tastatura sus, `52dvh` ramanea inaltimea ecranului INTREG in
+       WebView-ul Capacitor, deci lista se intindea pe sub tastatura si vedeai
+       un singur rezultat. Variabila o scrie `Modal.svelte` din `visualViewport`. */
+    .palette-list { max-height: min(400px, calc(52dvh - var(--kb, 0px))); overscroll-behavior: contain; }
     .palette-item { min-height: var(--tap-min); }
     /* `⏎` presupune o tasta Enter. Pe telefon randul se atinge. */
     .enter { display: none; }

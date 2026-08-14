@@ -1,7 +1,7 @@
 {
-  "name": "PIF Dashboard",
-  "short_name": "PIF",
-  "description": "Dashboard pentru management proiecte și task-uri",
+  "name": "TORQA",
+  "short_name": "Torqa",
+  "description": "Punere în funcțiune: proiecte, taskuri, planificare",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,13 +10,13 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235980a6'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16 L50 48 Z' fill='%23ffffff' opacity='0.3'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16' fill='none' stroke='%23ffffff' stroke-width='5.5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='16' r='5' fill='%23ffffff'/%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235980a6'/%3E%3Cpath d='M10 42 H21.5 V22 H32 V42 H42.5 V22 H54' fill='none' stroke='%23ffffff' stroke-width='5.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235980a6'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16 L50 48 Z' fill='%23ffffff' opacity='0.3'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16' fill='none' stroke='%23ffffff' stroke-width='5.5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='16' r='5' fill='%23ffffff'/%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235980a6'/%3E%3Cpath d='M10 42 H21.5 V22 H32 V42 H42.5 V22 H54' fill='none' stroke='%23ffffff' stroke-width='5.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

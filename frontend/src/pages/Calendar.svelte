@@ -12,7 +12,7 @@
   // selecta nimic (vezi `culoareLucrare`, care intoarce accentul pentru toate).
   // Deplasarea (zile consecutive la acelasi loc si client) e un chenar, cu
   // eticheta pe primul lui rand si lucrarile inauntru.
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount, onDestroy, tick } from 'svelte'
   import { fade, slide } from 'svelte/transition'
   import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
@@ -23,6 +23,7 @@
   // definitie doar proiecte active, iar de la v31 activ inseamna un singur status
   // — deci eticheta scria acelasi cuvant pe fiecare rand. Acolo scrie clientul.
   import { incepeTragere } from '../lib/tragere.js'
+  import { aterizare } from '../lib/motion.svelte.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { cheieDeplasare, grupeazaDeplasari, seAting, rezolvaCiocniri } from '../lib/deplasari.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -130,7 +131,7 @@
   // zi ISO -> perioadele care o acopera
   const peZi = $derived.by(() => {
     const m = new Map()
-    for (const p of (data?.perioade || [])) {
+    for (const p of perioade) {
       const a = p.data_start
       const b = p.data_sfarsit || p.data_start
       const n = Math.max(0, diffDays(a, b))
@@ -183,7 +184,14 @@
   // cu identitatea IESIRII, nu cu numele unei lucrari: pe 28 era doar „Migrare
   // CU240S", dar blocul tine pana pe 30, asa ca eticheta aia facea sa para ca
   // migrarea dureaza trei zile.
-  const deplasari = $derived(grupeazaDeplasari(data?.perioade || []))
+  // PERIOADELE SCOASE, DAR INCA NECOMISE (vezi `scoate`). Cat timp toastul de
+  // „Anulează" e pe ecran, perioada e deja plecata din interfata si inca
+  // intreaga in baza — deci se filtreaza AICI, o singura data, si nu la fiecare
+  // dintre cele sase locuri care citesc lista.
+  let scoaseTemporar = $state(new Set())
+  const perioade = $derived((data?.perioade || []).filter(p => !scoaseTemporar.has(p.id)))
+
+  const deplasari = $derived(grupeazaDeplasari(perioade))
 
   const deplasareaZilei = $derived.by(() => {
     const m = new Map()
@@ -366,7 +374,7 @@
 
   const bare = $derived.by(() => {
     const out = []
-    for (const p of (data?.perioade || [])) {
+    for (const p of perioade) {
       const banda = benzi.get(p.id) ?? 0
       for (const f of feliaza(p.data_start, p.data_sfarsit || p.data_start, banda, p)) {
         // Plafonul e al SAPTAMANII feliei, nu al ferestrei: o lucrare poate incapea
@@ -388,7 +396,7 @@
   const fantome = $derived.by(() => {
     if (!previz) return []
     const out = []
-    for (const p of (data?.perioade || [])) {
+    for (const p of perioade) {
       const v = previz.get(p.id)
       if (!v) continue
       const banda = benzi.get(p.id) ?? 0
@@ -669,19 +677,54 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
 
+  /** A DISPARUT DIN CALENDAR? Spune de ce, si cum se intoarce.
+   *
+   *  Un proiect inchis se opreste in ziua inchiderii (v35), deci `/api/calendar`
+   *  nu mai intoarce deloc o perioada mutata dincolo de `data_finalizare`.
+   *  Mutarea a reusit — banda doar nu mai are unde sa fie desenata. Fara
+   *  atentionarea asta, singurul lucru pe care il vezi e ca lucrarea s-a
+   *  evaporat sub deget.
+   *
+   *  Se cheama DUPA `load(true)`; `perioade` e deja lista proaspata. */
+  function avertizeazaDacaADisparut(p, undo) {
+    if (perioade.some(x => String(x.id) === String(p.id))) return false
+    toastUndo(`„${scurt(p.nume)}" nu se mai vede: proiectul e închis mai devreme de ziua asta`,
+              { onUndo: undo })
+    return true
+  }
+
   /** Muta perioada pastrand durata. Folosit si de drop, si de butoane. */
   async function muta(p, ziNoua) {
     if (!ziNoua) return
     const durata = Math.max(0, diffDays(p.data_start, p.data_sfarsit || p.data_start))
     busy = p.id
+    // ATERIZARE (T9): pozitia benzii vine din `grid-column`, care nu se poate
+    // anima — deci dupa commit banda aparea DIRECT pe ziua noua, in timp ce
+    // chenarul deplasarii (care are `transition`) aluneca. Se masoara inainte,
+    // se animeaza diferenta dupa re-randare.
+    const el = document.querySelector(`.banda[data-perioada="${p.id}"]`)
+    const dinainte = el?.getBoundingClientRect()
     try {
       await apiJson(`/api/implementari/${p.id}`, {
         method: 'PUT',
         body: { data_start: ziNoua, data_sfarsit: addDays(ziNoua, durata) },
       })
-      toast(`Mutat pe ${shortDate(ziNoua)}`, 'success')
+      const inapoi = { start: p.data_start, sfarsit: p.data_sfarsit || p.data_start }
       selectata = ziNoua
       await load(true)
+      const revino = async () => {
+        await apiJson(`/api/implementari/${p.id}`, {
+          method: 'PUT',
+          body: { data_start: inapoi.start, data_sfarsit: inapoi.sfarsit },
+        })
+        selectata = inapoi.start
+        await load(true)
+      }
+      if (!avertizeazaDacaADisparut(p, revino)) {
+        toast(`Mutat pe ${shortDate(ziNoua)}`, 'success')
+      }
+      await tick()
+      aterizare(document.querySelector(`.banda[data-perioada="${p.id}"]`), dinainte)
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
 
@@ -780,15 +823,35 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
   }
 
-  /** Scoate perioada din calendar. Daca era ultima, proiectul reapare in
-   *  „Fara data" — asta e calea de intoarcere pentru o planificare gresita. */
+  /** Scoate perioada din calendar, CU DRUM INAPOI.
+   *
+   *  Comentariul de dinainte spunea ca proiectul reapare in „Proiecte fara
+   *  perioada", deci exista cale de intoarcere. Se intoarce insa PROIECTUL, nu
+   *  perioada: eticheta lucrarii, locatia, faza, bifa „Făcut" si intervalul
+   *  exact se pierdeau si trebuiau retastate din memorie. Iar tragerea aceleiasi
+   *  benzi — o schimbare mult mai mica — avea de mult „Anulează".
+   *
+   *  Stergerea e AMANATA (semantica lui `toastUndo`): perioada pleaca din
+   *  interfata acum, din baza abia cand expira toastul. Nu prin re-creare:
+   *  `POST /implementari` nu primeste `confirmata`, deci un undo care
+   *  re-creeaza ar pierde bifa in tacere. */
   async function scoate(p) {
-    busy = p.id
-    try {
-      await apiJson(`/api/implementari/${p.id}`, { method: 'DELETE' })
-      toast(`„${p.nume}" — scos din calendar`, 'success')
-      await load(true)
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') } finally { busy = '' }
+    scoaseTemporar = new Set([...scoaseTemporar, p.id])
+    toastUndo(`„${p.nume}" — scos din calendar`, {
+      onUndo: () => {
+        const s = new Set(scoaseTemporar); s.delete(p.id); scoaseTemporar = s
+      },
+      onCommit: async () => {
+        try {
+          await apiJson(`/api/implementari/${p.id}`, { method: 'DELETE' })
+          await load(true)
+        } catch (e) {
+          toast(`Eroare: ${e.message}`, 'error')
+        } finally {
+          const s = new Set(scoaseTemporar); s.delete(p.id); scoaseTemporar = s
+        }
+      },
+    })
   }
 
   async function planifica(proj, zi) {
@@ -852,7 +915,14 @@
    *  cursorului, deci gestul n-ar fi anuntat de nimic. Aceeasi conditie ca in CSS,
    *  ca desenul si comportamentul sa nu se poata desincroniza. */
   function seManipuleaza() {
-    return !ecran.telefon && !ecran.grosier
+    // GARDA DE LATIME A PLECAT (T8). Ea oprea gestul pe orice ecran fara hover —
+    // deci pe telefon perioadele nu se puteau muta deloc, si nici pe un laptop
+    // cu ecran tactil. Ce tine locul afordantei de hover e apasarea lunga din
+    // `incepeTragere`: 300ms fara miscare pornesc gestul, 10px il anuleaza (deci
+    // derularea castiga), iar cand chiar a inceput banda se RIDICA si isi arata
+    // manerele de 44px. Semnalul vine dupa intentie, nu inaintea ei — singurul
+    // fel in care poate veni pe un ecran fara cursor.
+    return true
   }
 
   /** Ziua de sub un punct de pe ecran. Cat timp se trage, benzile si capturile
@@ -991,7 +1061,7 @@
   let perioadaSel = $state('')   // id-ul perioadei pe care sta focusul
 
   function perioadaDupaId(id) {
-    return (data?.perioade || []).find(p => p.id === id) || null
+    return perioade.find(p => p.id === id) || null
   }
 
   function tastaPerioada(e) {
@@ -2027,8 +2097,15 @@
      `incepeTragere` din `apuca*`). Un maner desenat fara gest in spate ar promite
      ceva ce nu se intampla, exact greseala pe care a facut-o versiunea cu
      drag-and-drop HTML5. */
+  /* PE TELEFON MANERELE APAR DUPA CE GESTUL A INCEPUT (T8).
+     Nu „in repaus": doua dungi permanente pe fiecare banda ar fi zgomot, si nici
+     n-ar avea ce apuca degetul intr-o celula de ~48px. Dar odata ce apasarea
+     lunga a prins — deci utilizatorul a CERUT gestul — manerele se arata la
+     latime de deget, fiindca de acolo incolo intinderea e o actiune reala. */
   @media (hover: none) {
-    .maner { display: none; }
+    .maner { opacity: 0; }
+    .banda.se-trage .maner { opacity: 1; width: var(--tap-min); }
+    .banda.se-trage .maner::after { width: 3px; }
   }
   /* FORMA SPUNE FAZA, LOCUL SE SCRIE.
      Hasura de „sediu" (`repeating-linear-gradient`) era a TREIA axa de citit pe
@@ -2458,4 +2535,12 @@
     .sursa { min-height: var(--tap-min); }
     .it-t { min-height: var(--tap-min); }
   }
+
+  /* BANDA APUCATA SE RIDICA — confirmarea vizuala a apasarii lungi, perechea
+     lui `puls()` din gest. Fara ea, pe telefon nu se vede ca gestul a inceput.
+     STA LA FINALUL FOII cu bunastiinta: `.banda.pregatire` si `.banda.facuta`
+     din blocul de telefon pun `box-shadow: none` la ACEEASI specificitate
+     (0,2,0), deci scrisa mai sus era anulata exact pe starile pe care le muti
+     cel mai des. Un `@media` n-ar fi ajutat — nu adauga specificitate. */
+  .banda.se-trage { box-shadow: var(--shadow-md); transform: scale(1.02); z-index: 6; }
 </style>

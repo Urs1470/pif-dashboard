@@ -20,6 +20,23 @@
     children,
   } = $props()
 
+  // CE SCRIE BROWSERUL NU E CE CITESTE OMUL.
+  // Cand pica reteaua, `fetch` respinge cu un mesaj propriu, in engleza si
+  // diferit de la un browser la altul: „Failed to fetch" (Chrome), „Load failed"
+  // (Safari), „NetworkError when attempting to fetch resource." (Firefox). El
+  // ajungea ca atare sub „Ceva n-a mers" — singurul sir netradus ramas la vedere
+  // in aplicatie, si tocmai in ecranul in care omul e deja contrariat.
+  // Se traduce AICI, nu la fiecare apelant: toate cele cinci pagini trec pe aici.
+  const RETEA = /failed to fetch|load failed|networkerror|network request failed|err_internet_disconnected/i
+  const mesajRo = (m) => {
+    const s = (m || '').toString().trim()
+    if (!s) return ''
+    if (RETEA.test(s)) return 'Pare că nu e rețea. Verifică semnalul și încearcă din nou.'
+    if (/^unauthorized$/i.test(s)) return 'Sesiunea a expirat. Intră din nou cu PIN-ul.'
+    return s
+  }
+  const mesaj = $derived(mesajRo(message))
+
   function ora(v) {
     if (!v) return ''
     const d = v instanceof Date ? v : new Date(v)
@@ -32,7 +49,7 @@
   <div class="er-linie" role="alert">
     <span class="er-ico-mic"><TriangleAlert size={16} strokeWidth={1.5} /></span>
     <span class="er-text">
-      {message || title}
+      {mesaj || title}
       {#if ultima}<span class="er-vechi">informația de mai jos e de la {ora(ultima)}</span>{/if}
     </span>
     {#if onretry}
@@ -46,7 +63,7 @@
          obiect ca patratul neutru al starii goale, doar cu alt rol. -->
     <span class="er-patrat"><TriangleAlert size={22} strokeWidth={1.5} /></span>
     <h3>{title}</h3>
-    {#if message}<p>{message}</p>{/if}
+    {#if mesaj}<p>{mesaj}</p>{/if}
     {#if onretry || children}
       <div class="er-actiuni">
         {#if onretry}

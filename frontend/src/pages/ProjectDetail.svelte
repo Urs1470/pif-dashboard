@@ -544,10 +544,16 @@
           <Badge label={PROJECT_STATUS_LABELS[project.status] || project.status || '—'} color={STATUS_COLORS[project.status] || 'var(--text-dim)'} />
         </div>
         <div class="header-actions">
-          <Button variant="secondary" size="sm" onclick={() => showEditModal = true}><SolidIcon name="pencil" size={14} /> Edit</Button>
+          <!-- „Edit" era singurul cuvant englezesc din interfata, si statea la doi
+               centimetri de „Editează" de pe randurile de task de dedesubt. PDF si
+               MD raman: sunt NUMELE unor formate, nu verbe traductibile.
+               Pubela era singurul buton din toata aplicatia fara nume accesibil —
+               fara text, fara `title`, fara `aria-label` — si e chiar cel care
+               sterge proiectul cu tot cu taskurile lui. -->
+          <Button variant="secondary" size="sm" onclick={() => showEditModal = true}><SolidIcon name="pencil" size={14} /> Editează</Button>
           <Button variant="secondary" size="sm" onclick={exportPdf}><FileDown size={14} /> PDF</Button>
           <Button variant="secondary" size="sm" onclick={exportMd}><SolidIcon name="file" size={14} /> MD</Button>
-          <Button variant="ghost" size="sm" onclick={ceriStergereaProiectului}><SolidIcon name="trash" size={14} /></Button>
+          <Button variant="ghost" size="sm" title="Șterge proiectul" aria-label="Șterge proiectul" onclick={ceriStergereaProiectului}><SolidIcon name="trash" size={14} /></Button>
         </div>
       </div>
       <div class="meta">
@@ -660,7 +666,7 @@
             <button type="submit" class="quick-add-btn" disabled={!newTaskTitle.trim() || creatingTask} title="Adaugă task"><Plus size={16} /></button>
           </div>
           {#if newTaskTitle.trim()}
-            <div class="qa-cand" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+            <div class="qa-cand" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
               <button type="button" class="qa-chip" onclick={() => handleCreateTask(0)}>Azi</button>
               <button type="button" class="qa-chip" onclick={() => handleCreateTask(1)}>Mâine</button>
               <span class="qa-dp">
@@ -829,7 +835,7 @@
                 <span>Finalizate</span><span class="grup-n">{doneTasks.length}</span>
               </button>
               {#if showDoneTasks}
-                <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE) }}>
+                <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
                 {#each doneTasks as t (t.id)}
                   <div class="trow-wrap" style="--ring: {dueRing(t.data_scadenta)}"
                        animate:flip={{ duration: motionDuration(DUR_BASE) }}
@@ -979,7 +985,10 @@
 
 <EditorLung bind:open={showFieldEdit} titlu={editLabel} valoare={editValue} salveaza={editSalveaza} />
 
-<Modal bind:open={showTaskEditModal} title="Editează Task" size="md">
+<!-- `panou`, nu `md`: acelasi obiect (un task) trebuie sa se deschida in
+     aceeasi gazda ca in /tasks. O caseta centrata iti pune editorul peste
+     lista din care ai venit; panoul lateral o lasa la vedere. -->
+<Modal bind:open={showTaskEditModal} title="Editează Task" size="panou">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
     <Input label="Titlu" bind:value={taskFormTitle} placeholder="Titlu task" />
     <!-- Componentele librariei, ca in modalul din /tasks — acelasi formular,
@@ -1153,7 +1162,7 @@
      trebuie sa nu se abata. */
   .trow { position: relative; display: flex; align-items: center; gap: var(--space-12);
     min-height: 46px; padding: 0 var(--space-12); background: none; border: 0;
-    transition: background-color var(--dur-fast) var(--ease), opacity var(--dur-base) var(--ease); }
+    transition: background-color var(--dur-base) var(--ease), opacity var(--dur-base) var(--ease); }
   @media (hover: hover) {
     .trow:hover { background: var(--bg-elevated); }
   }
@@ -1166,7 +1175,12 @@
   /* `.check-empty` traieste in global.css, o singura data pentru toate listele. */
   .tmain { flex: 1; min-width: 0; cursor: pointer; text-align: left; align-self: stretch;
     display: flex; flex-direction: column; justify-content: center; gap: 1px; }
-  .ttitle { font-size: var(--font-body); color: var(--text); font-weight: var(--fw-medium);
+  /* --font-rand, nu --font-body: randul de lista ramane 15 si pe telefon.
+     Era singurul din cele patru liste ramas pe `--font-body`, care pe telefon
+     urca la 16 — deci acelasi rand avea 56px aici si 52 in /tasks si pe
+     „Astăzi”, desi contractul spune ca e UN SINGUR obiect. Pe desktop
+     amandoua sunt 15, deci diferenta se vedea doar pe telefon. */
+  .ttitle { font-size: var(--font-rand); color: var(--text); font-weight: var(--fw-medium);
     min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Fara `opacity` pe randul bifat: se inmulteste peste tokenuri deja la limita
      de contrast. Ce e facut o spun taietura si culoarea bifei. */
@@ -1177,10 +1191,15 @@
      („Progres taskuri 7/12") si din panoul deschis. Regula ramasese fara marcaj. */
 
   .task-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  /* ACEEASI RETETA CA IN `Tasks.svelte` — copiata literal, nu reinterpretata.
+     Aici actiunile doar se stingeau, pe 120ms; acolo INTRA 8px dinspre dreapta,
+     pe 220. Puse una langa alta la aceeasi latime, cele doua liste raspundeau
+     diferit la acelasi gest. */
   @media (hover: hover) {
-    .task-actions { opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease); }
+    .task-actions { opacity: 0; pointer-events: none; transform: translateX(8px);
+      transition: opacity var(--dur-base) var(--ease), transform var(--dur-base) var(--ease); }
     .trow:hover .task-actions,
-    .task-actions:focus-within { opacity: 1; pointer-events: auto; }
+    .task-actions:focus-within { opacity: 1; pointer-events: auto; transform: none; }
   }
   .ta-chip, .ta-dp :global(.dp-trigger) {
     display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px;
@@ -1315,11 +1334,21 @@
     .header-top { flex-direction: column; }
     /* O LINIE, cu actiunile in panoul de sub rand (vezi Taskuri / „Astazi").
        Randul avea titlul sus si actiunile pe o linie proprie dedesubt. */
-    .trow { padding: 0; flex-wrap: nowrap; align-items: center; overflow: hidden;
-            position: relative; touch-action: pan-y; }
-    .gl-fata { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
-               padding: 6px var(--space-sm); background: var(--bg-panel); position: relative;
-               z-index: 1; border-radius: var(--radius-md); will-change: transform; }
+    /* ACEEASI GEOMETRIE CA IN /tasks SI PE „Astăzi" — pana la pixel.
+       Randul de aici ramasese CARD: `padding: 6px`, gap 8, fond de panou si
+       raza de control. Din cele 6px de padding iesea un rand de 56px, in timp
+       ce celelalte doua liste au 52 — iar contractul spune ca e UN SINGUR
+       obiect in trei liste. Un rand nu mai e un card: e o linie din lista, iar
+       ce-l desparte de vecin e separatorul de pe wrapper.
+       Fondul ramane OPAC: pista de bifare sta sub el si trebuie acoperita pana
+       cand degetul o descopera. */
+    .trow { flex-wrap: nowrap; align-items: center; min-height: var(--row-h-mobile);
+            padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
+    .gl-fata { display: flex; align-items: center; gap: var(--space-12); width: 100%;
+               min-height: var(--row-h-mobile); padding: 0 var(--space-12);
+               background: var(--bg-surface); position: relative;
+               z-index: 1; border-radius: 0; will-change: transform; }
+    .trow-wrap.deschis .gl-fata { background: var(--bg-elevated); }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
        build. Iar `gl-tras`/`gl-bifa` sunt puse la RULARE de `lib/glisare.js`, deci
@@ -1331,7 +1360,13 @@
        componente. */
     .trow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
     .task-actions { display: none; }
-    .ttitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* Ca in /tasks: pe telefon titlul se rupe pe doua randuri in loc sa fie
+       taiat cu „…”. Un titlu de task trunchiat la 30 de caractere pe un
+       ecran de 390px ascunde tocmai ce s-a schimbat intre doua taskuri
+       care incep la fel („Verifica schema de forta…” / „Verifica stocul…”). */
+    .ttitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2;
+      line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      text-overflow: initial; line-height: var(--lh-snug); }
     .tinfo { flex-wrap: nowrap; overflow: hidden; }
     .tinfo > * { flex-shrink: 0; }
 

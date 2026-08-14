@@ -7,6 +7,7 @@
   import { formatDateShort } from '../../lib/formatters.js'
   import Skeleton from '../ui/Skeleton.svelte'
   import EmptyState from '../ui/EmptyState.svelte'
+  import ErrorState from '../ui/ErrorState.svelte'
 
   // Read-only Gantt: tasks are inherited from the Tasks tab (no editing here).
   // The only editable thing is the implementation period (Site / Sediu EGB).
@@ -176,7 +177,10 @@
 {#if loading}
   <div class="gk">{#each Array(5) as _}<Skeleton height="46px" />{/each}</div>
 {:else if error}
-  <p class="g-err">Eroare: {error}</p>
+  <!-- Un paragraf rosu spune CE s-a stricat si te lasa acolo. `ErrorState`
+       are si drumul inapoi — acelasi obiect ca pe celelalte pagini, care il
+       aveau deja. `marime="sectiune"`: a cazut Ganttul, nu pagina. -->
+  <ErrorState message={error} onretry={load} marime="sectiune" />
 {:else if data.tasks.length === 0 && (data.implementari || []).length === 0}
   <EmptyState icon={Milestone} title="Nimic de arătat" description="Taskurile apar aici automat din tabul „Taskuri”. Adaugă o perioadă de implementare (Site / Sediu EGB) ca să apară pe diagramă.">
     <div class="es-actions">
@@ -268,10 +272,14 @@
               <div class="today-line" style="left:{(todayIdx / win.days) * 100}%"></div>
             {/if}
           </div>
-          {#each displayRows as row (row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
+          {#each displayRows as row, i (row.kind === 'impl' ? 'i:' + row.im.id : row.t.id)}
             {#if row.kind === 'impl'}
               {@const ir = implRect(row.im)}
-              <div class="gb-row impl-track">
+              <!-- `cell-in` + `--celula`: aceeasi sosire esalonata ca peste tot.
+                   Randurile apareau intre doua cadre, desi aceeasi `.impl-band`
+                   soseste animat in Planificator. Regula traieste in global.css,
+                   deci aici nu se adauga niciun CSS. -->
+              <div class="gb-row impl-track cell-in" style="--celula: {i}">
                 {#if ir}
                   <button class="impl-band loc-{row.im.locatie}" class:pregatire={(row.im.faza || 'implementare') === 'pregatire'}
                           style="left:{ir.left}%; width:{ir.width}%" onclick={() => editImpl(row.im)}
@@ -285,7 +293,7 @@
               {@const t = row.t}
               {@const mk = taskMark(t)}
               {@const mp = t.is_milestone ? msPct(t) : (mk ? mk.end : null)}
-              <div class="gb-row">
+              <div class="gb-row cell-in" style="--celula: {i}">
                 {#if mp != null}
                   {#if !t.is_milestone && mk.start != null}<div class="tk-line {statusClass(t)}" style="left:{mk.start}%; width:{mk.end - mk.start}%"></div>{/if}
                   {#if t.is_milestone}
@@ -423,7 +431,10 @@
   .dot { position: absolute; top: 50%; width: 13px; height: 13px; border-radius: 50%; transform: translate(-50%, -50%); z-index: 2; box-shadow: 0 0 0 3px color-mix(in srgb, var(--bg-panel) 70%, transparent); }
   .dot.done { background: var(--success); }
   .dot.prog { background: var(--accent); }
-  .dot.todo { background: var(--bg-panel); border: 2px solid var(--border-strong); box-shadow: none; }
+  /* Decupat din grila, ca `.done` si `.prog`: fara inelul de fond, punctul gol
+     se citea lipit de linia zilei peste care cadea. */
+  .dot.todo { background: var(--bg-panel); border: 2px solid var(--border-strong);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bg-panel) 70%, transparent); }
   .dot.leg { position: static; transform: none; width: 11px; height: 11px; box-shadow: none; }
   .tk-line { position: absolute; top: 50%; height: 4px; border-radius: 2px; transform: translateY(-50%); z-index: 1; opacity: 0.55; }
   .tk-line.done { background: var(--success); }
@@ -433,7 +444,14 @@
   /* label next to the marker so a task is readable without hovering */
 
   @media (max-width: 720px) {
-    .g-table { width: 210px; }
+    /* 210 din 390 lasau ~180px de timeline — adica diagrama ocupa mai putin
+       decat legenda ei. Ramane doar titlul; meta si chipul de termen sunt
+       oricum scrise in lista de taskuri, la un tab distanta.
+       Masca de la capete spune ca pista CONTINUA: fara ea, o coloana taiata net
+       arata ca sfarsitul datelor, nu ca marginea ferestrei. */
+    .g-table { width: 140px; }
+    .row-meta, .due-chip { display: none; }
+    .g-time { mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%); }
     /* Bara de unelte a Ganttului: „Perioadă", „PDF", „Excel" erau de 36px.
        Ele deschid modalul de perioada si descarca exporturile — actiuni pe care
        le faci exact o data si trebuie sa nimeresti din prima. */

@@ -11,6 +11,7 @@
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { apiJson } from '../lib/api.js'
   import { incepeTragere } from '../lib/tragere.js'
+  import { tragePeZile } from '../lib/tragereTimeline.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
@@ -140,7 +141,10 @@
   // capatul ei apartine altei perioade din spate, si l-ar rescrie pe al primeia.
   let intindere = $state(null) // { id, a, b } — previzualizarea cat timp tragi
   function apucaCapatImpl(e, lane, im, capat) {
-    if (ecran.telefon || ecran.grosier) return
+    // GARDA A PLECAT (T8). `ecran.grosier` e `(hover: none)`, deci oprea gestul
+    // si pe un laptop cu ecran tactil. Ce tine locul e apasarea lunga din
+    // `incepeTragere`: la deget gestul incepe dupa 300ms fara miscare si se
+    // anuleaza la 10px — deci o glisare verticala ramane derulare.
     e.stopPropagation()
     const pista = e.currentTarget.closest('.lane-track')
     if (!pista) return
@@ -616,80 +620,53 @@
   // --- drag / resize (desktop swimlane) ---
   let drag = null
   let dragLabel = $state(null)
+  // Pozitia cursorului pentru eticheta de tragere. Se tine SEPARAT de gest:
+  // `tragePeZile` raporteaza deplasarea in zile, nu coordonate de ecran, iar
+  // eticheta trebuie sa stea langa deget.
+  let pozLabel = $state({ x: 0, y: 0 })
+  function urmarestePointer(e) { if (dragLabel) pozLabel = { x: e.clientX, y: e.clientY } }
 
+  // REPERUL URMARESTE DEGETUL, NU SARE DIN ZI IN ZI (T7).
+  // Vechea varianta scria `style.left` in procente, cuantizat cu
+  // `Math.round(dx / dayW)`: pana treceai jumatate de zi (~32px la 14z) nu se
+  // misca NIMIC pe ecran, apoi sarea o zi intreaga. Acum `--dx` e continuu, iar
+  // rotunjirea se face doar pentru ziua care se aprinde si la commit.
   function startDrag(e, t, mode, lane) {
-    if (e.button != null && e.button !== 0) return
     if (isDone(t.status)) return // finished tasks are read-only on the timeline
     const barEl = e.currentTarget.closest('.bar')
     const trackEl = barEl?.closest('.lane-track')
     if (!barEl || !trackEl) return
-    const w = trackEl.getBoundingClientRect().width
-    drag = {
-      t, mode, barEl, lane,
-      startX: e.clientX,
-      dayW: w / plan.days,
-      unit: 100 / plan.days,
-      origLeft: parseFloat(barEl.style.left) || 0,
-      origWidth: parseFloat(barEl.style.width) || 0,
-      effDelta: 0, moved: false,
-    }
-    barEl.setPointerCapture?.(e.pointerId)
-    document.body.classList.add('plan-dragging')
-    window.addEventListener('pointermove', onDragMove)
-    window.addEventListener('pointerup', onDragUp)
-    e.preventDefault(); e.stopPropagation()
+    const baza = (t.data_scadenta || '').slice(0, 10)
+    if (!baza) return
+    e.stopPropagation()
+    tragePeZile(e, {
+      pista: trackEl, obiect: barEl,
+      zile: plan.days, ziStart: plan.start, ziObiect: baza,
+      laInceput: () => document.body.classList.add('plan-dragging'),
+      laPreview: ({ zi, dx }) => { dragLabel = { dx, text: `termen ${formatDateShort(zi)}` } },
+      laAtingere: () => {
+        document.body.classList.remove('plan-dragging')
+        dragLabel = null
+        deschideTask(t, lane, barEl)
+      },
+      laAnulare: () => {
+        document.body.classList.remove('plan-dragging')
+        dragLabel = null
+      },
+      laCommit: async (zi) => {
+        document.body.classList.remove('plan-dragging')
+        dragLabel = null
+        try {
+          await setTaskDates(t.tip, t.id, { data_scadenta: zi })
+          toast('Reprogramat', 'success')
+        } catch (err) {
+          toast(`Eroare: ${err.message}`, 'error')
+        }
+        await loadPlan()
+      },
+    })
   }
 
-  // Un task e o ZI, nu un interval (v33): la tragere se muta termenul.
-  function previewText(d) {
-    const base = (d.t.data_scadenta || '').slice(0, 10)
-    return base ? `termen ${formatDateShort(addDays(base, d.effDelta))}` : ''
-  }
-
-  function onDragMove(e) {
-    if (!drag) return
-    const dx = e.clientX - drag.startX
-    if (Math.abs(dx) > 3) drag.moved = true
-    const dd = Math.round(dx / drag.dayW)
-    const u = drag.unit
-    const el = drag.barEl
-    if (drag.mode === 'move') {
-      const want = clampNum(drag.origLeft + dd * u, 0, 100 - drag.origWidth)
-      el.style.left = want + '%'
-      drag.effDelta = Math.round((want - drag.origLeft) / u)
-    }
-    dragLabel = { x: e.clientX, y: e.clientY, text: previewText(drag) }
-  }
-
-  function commitBody(d) {
-    const base = (d.t.data_scadenta || '').slice(0, 10)
-    const body = {}
-    if (base) body.data_scadenta = addDays(base, d.effDelta)
-    return body
-  }
-
-  async function onDragUp() {
-    window.removeEventListener('pointermove', onDragMove)
-    window.removeEventListener('pointerup', onDragUp)
-    document.body.classList.remove('plan-dragging')
-    const d = drag
-    drag = null
-    dragLabel = null
-    if (!d) return
-    if (!d.moved || d.effDelta === 0) {
-      d.barEl.style.left = d.origLeft + '%'
-      d.barEl.style.width = d.origWidth + '%'
-      deschideTask(d.t, d.lane, d.barEl)
-      return
-    }
-    try {
-      await setTaskDates(d.t.tip, d.t.id, commitBody(d))
-      toast('Reprogramat', 'success')
-    } catch (err) {
-      toast(`Eroare: ${err.message}`, 'error')
-      await loadPlan()
-    }
-  }
 
   // --- backlog rail + drag-to-schedule (HTML5 DnD onto the timeline) ---
   let backlogOpen = $state(true)
@@ -793,6 +770,8 @@
     }
   })
 </script>
+
+<svelte:window onpointermove={urmarestePointer} />
 
 <!-- Ca in Calendar: invelisul urca, apoi celulele. Antetul paginii nu e celula,
      e cadrul — urca odata cu invelisul. `.chart` si `.mlist` nu se vad niciodata
@@ -1417,8 +1396,10 @@
   {/if}
 </div>
 
+<!-- Eticheta sta langa POINTER, pe pozitia raportata de gest. `pointer-events:
+     none` in CSS, deci nu fura niciodata evenimentul de sub ea. -->
 {#if dragLabel}
-  <div class="drag-label" style="left:{dragLabel.x + 14}px; top:{dragLabel.y - 34}px">{dragLabel.text}</div>
+  <div class="drag-label" style="left:{pozLabel.x + 14}px; top:{pozLabel.y - 34}px">{dragLabel.text}</div>
 {/if}
 
 <Modal bind:open={showExport} title="Export PDF" size="sm">
@@ -1806,6 +1787,22 @@
     left: 50%; width: 2px; transform: translateX(-50%); border-radius: 1px;
     background: var(--accent); }
   .impl-band:hover .maner, .impl-band.se-trage .maner { opacity: 1; }
+  /* OBIECTUL APUCAT SE RIDICA. Pe telefon nu exista cursor care sa confirme ca
+     apasarea lunga a „prins", deci confirmarea trebuie sa fie a obiectului:
+     umbra plus o crestere abia simtita. Cu `puls()` din gest, sunt doua
+     semnale — unul care se vede, unul care se simte. */
+  .impl-band.se-trage, .bar.se-trage {
+    box-shadow: var(--shadow-md); transform: scale(1.02); z-index: 5;
+  }
+  /* MANERE DE DEGET, dupa ce gestul a inceput (T8, punctul 3).
+     La hover raman subtiri: acolo cursorul e precis. Pe touch nu se arata
+     niciodata „in repaus" — ar fi doua dungi permanente pe fiecare banda —
+     ci doar cat tine tragerea, cand chiar ai ce apuca. */
+  @media (hover: none) {
+    .impl-band .maner { opacity: 0; }
+    .impl-band.se-trage .maner { opacity: 1; width: var(--tap-min); }
+    .impl-band.se-trage .maner::after { width: 3px; }
+  }
   /* La orizont lung banda are latime minima 11px — doua manere de 9 n-ar lasa
      de unde s-o apuci; si o zi are ~6px, deci gestul ar fi oricum imprecis.
      La fel pe banda ingusta doar-cu-icoana. Intinsul se face la 7z/14z/30z. */
@@ -1915,9 +1912,16 @@
      left` = ziua lui: eticheta se desface spre dreapta, de la reper incolo,
      adica in aceeasi directie ca banda de sub ea. Scalare uniforma, nu pe X:
      `scaleX` ar turti si rombul, si scrisul. */
+  /* `--dx` vine din `lib/tragereTimeline.js` si e CONTINUU: reperul urmareste
+     degetul pixel cu pixel, pe compozitor, fara sa reaseze pagina.
+     `touch-action: pan-y`, NU `none`: gestul incepe la apasare lunga si isi
+     blocheaza singur derularea (`touchmove` non-passive din `tragere.js`), deci
+     o glisare verticala pornita din greseala pe reper deruleaza normal. Regula
+     veche mananca derularea fara sa ofere nimic in schimb (T8). */
   .bar { position: absolute; top: 0; bottom: 0; background: none; border: none; box-shadow: none; padding: 0;
     font-size: var(--font-small); font-weight: var(--fw-semibold);
-    white-space: nowrap; cursor: pointer; text-align: left; touch-action: none;
+    white-space: nowrap; cursor: pointer; text-align: left; touch-action: pan-y;
+    translate: var(--dx, 0px) 0;
     pointer-events: auto; transform-origin: left center;
     animation: reperIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 240ms); }

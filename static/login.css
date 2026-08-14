@@ -75,7 +75,10 @@
   --text: #1b1e23;
   --text-secondary: #5a6270;
   --text-dim: #656c78;
-  --accent: #5980a6;
+  /* Aceeasi valoare ca in `frontend/src/styles/tokens.css` — pagina de login e
+     server-rendered si nu poate importa tokenurile, deci le copiaza. Vezi acolo
+     de ce accentul de tema deschisa e `#4e7192` si nu `#5980a6`. */
+  --accent: #4e7192;
   --accent-deep: #3d5f83;
   --accent-subtle: #ebf1f7;
   --accent-text: #ffffff;

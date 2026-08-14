@@ -140,14 +140,42 @@
     }
   }
 
+  // ACELASI VERB, ACEEASI PLASA CA IN /tasks (constatarea B2 din auditul de UI).
+  // `onRemove` scotea termenul si chema `onchange()` — atat. Randul disparea de
+  // pe board FARA NICIUN mesaj, in timp ce exact aceeasi actiune din /tasks
+  // scrie „Termen scos" si ofera „Anulează". Boardul „Astăzi" e primul ecran al
+  // zilei, deci suprafata cea mai expusa era cea fara plasa — acelasi defect de
+  // paritate care a fost reparat o data la `removeSubtask`.
+  //
+  // Undo-ul repune EXACT data dinainte, nu „azi": un task restant scos din
+  // greseala trebuie sa se intoarca restant, nu replanificat in tacere.
   async function onTomorrow(it) {
-    try { await moveToTomorrow(it.tip, it.id); toast('Mutat pe mâine', 'success'); onchange() }
-    catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    const inainte = it.data_scadenta || ''
+    try {
+      await moveToTomorrow(it.tip, it.id)
+      onchange()
+      toastUndo('Mutat pe mâine', {
+        onUndo: async () => { await setTermen(it, inainte); onchange() },
+      })
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
   async function onRemove(it) {
-    try { await removeFromToday(it.tip, it.id); onchange() }
-    catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    const inainte = it.data_scadenta || ''
+    try {
+      await removeFromToday(it.tip, it.id)
+      onchange()
+      toastUndo('Termen scos', {
+        onUndo: async () => { await setTermen(it, inainte); onchange() },
+      })
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  /** Repune un termen (sau il scoate, daca e gol) — drumul de intoarcere al
+   *  celor doua actiuni de mai sus. */
+  async function setTermen(it, zi) {
+    if (zi) await moveToDate(it.tip, it.id, zi)
+    else await removeFromToday(it.tip, it.id)
   }
 
   // GESTUL DUCE LA ALEGEREA ZILEI, NU LA O ZI ALEASA DE APLICATIE.
@@ -171,10 +199,16 @@
   // Reschedule via the shared DatePicker (inline, same calendar as global/project
   // tasks). Picking a day moves the task; clearing ("Sterge") removes it from today.
   async function onMoveDate(it, v) {
+    const inainte = it.data_scadenta || ''
     try {
-      if (v) { await moveToDate(it.tip, it.id, v); toast(`Mutat pe ${formatDate(v)}`, 'success') }
-      else { await removeFromToday(it.tip, it.id) }
+      if (v) await moveToDate(it.tip, it.id, v)
+      else await removeFromToday(it.tip, it.id)
       onchange()
+      // Si ramura de golire (`×` din calendar) anunta si se poate anula: era
+      // singura din cele patru care nu scotea niciun sunet.
+      toastUndo(v ? `Mutat pe ${formatDate(v)}` : 'Termen scos', {
+        onUndo: async () => { await setTermen(it, inainte); onchange() },
+      })
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
@@ -249,7 +283,7 @@
       <h2>Astăzi</h2>
       <span class="bh-zi">{ziua}</span>
       {#if restanteCount > 0}
-        <span class="bh-restante"><span class="bh-punct"></span>{restanteCount} restante</span>
+        <span class="bh-restante"><span class="bh-punct"></span>{restanteCount} {restanteCount === 1 ? 'restant' : 'restante'}</span>
       {/if}
     </div>
     <button class="bh-add" onclick={() => showPicker = true}>
@@ -640,7 +674,13 @@
 
   .amain { flex: 1; min-width: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 1px; }
   /* --font-rand, nu --font-body: randul de lista ramane 15 si pe telefon. */
-  .atitle { font-size: var(--font-rand); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* `align-self: flex-start` — `.amain` e o COLOANA de flex, deci copiii ei se
+     intind pe toata latimea. Cu titlul intins, si `text-decoration:
+     line-through` din starea finala traversa tot randul, nu doar cuvantul
+     (T3). Stranse la text, si taietura statica, si cea animata din `global.css`
+     se opresc la ultima litera. `max-width: 100%` pastreaza trunchierea. */
+  .atitle { font-size: var(--font-rand); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    align-self: flex-start; max-width: 100%; }
   .arow.done .atitle { text-decoration: line-through; color: var(--text-dim); }
   /* A doua linie: text gri, doua bucati, nicio pastila. Erau cinci chipuri
      (termen, pasi, recurenta, proiect, categorie) — trei au urcat in coloana

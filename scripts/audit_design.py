@@ -174,6 +174,107 @@ class Audit:
             return
         for m in re.finditer(r'\[\s*(?:\'#[0-9a-fA-F]{3,8}\'\s*,\s*){2,}', curat):
             self.abatere('R5 paleta duplicata', p, curat, m.start(), m.group(0))
+    # -- R8 -----------------------------------------------------------------
+    def r8_tranzitie_fara_easing(self, p, text, curat):
+        """O tranzitie Svelte fara `easing` cade pe implicitul bibliotecii —
+        `linear` la `fade`, `cubicOut` la `scale`. Adica a DOUA curba pe acelasi
+        ecran, langa `--ease` pe care o respecta tot CSS-ul. Capcana e
+        documentata in `motion.svelte.js` si a fost reintrodusa de sase ori."""
+        tip = r'(?:transition|in|out):(?:slide|fly|fade|scale|blur|draw)(?:\|\w+)?='
+        for m in re.finditer(tip + r'\{\{([^}]*)\}\}', curat):
+            if 'easing' not in m.group(1):
+                self.abatere('R8 tranzitie fara easing', p, curat, m.start(),
+                             m.group(0))
+
+    # -- R9 -----------------------------------------------------------------
+    def r9_touch_action_fara_gest(self, p, text, curat):
+        """`touch-action: none` ii ia browserului derularea pe acel element.
+        Se plateste doar daca exista un gest care s-o inlocuiasca. Pe `.bar` din
+        Planificator statea fara niciun gest tactil in spate (acela era oprit din
+        cod), deci mancarea derularea si nu dadea nimic in schimb."""
+        if 'touch-action' not in curat:
+            return
+        # Un gest exista daca se foloseste o actiune de gest, daca se cheama
+        # direct pornirea unei trageri, SAU daca elementul isi trateaza singur
+        # pointerul (asa e scris gestul foii din `Modal.svelte`).
+        are_gest = re.search(r'use:(glisare|tragere|reordonare)|incepeTragere|'
+                             r'tragePeZile|onpointerdown', curat)
+        if are_gest:
+            return
+        for m in re.finditer(r'touch-action:\s*none', curat):
+            self.abatere('R9 touch-action: none fara gest', p, curat, m.start(),
+                         m.group(0))
+
+    # -- R10 ----------------------------------------------------------------
+    def r10_zindex_literal(self, p, text, curat):
+        """Un `z-index` scris de mana nu se poate compara cu scara din tokens,
+        deci stivele se ciocnesc in tacere: paleta si modalul stateau amandoua pe
+        1000 si ordinea de pictare venea din ordinea din DOM."""
+        # Sub 100 sunt ordonari LOCALE intr-un singur component (un maner peste
+        # banda lui, o eticheta peste o bara). Ele NU se pot ciocni de scara
+        # aplicatiei, care incepe la `--z-dropdown: 100` — deci nu sunt clasa de
+        # bug pe care o cauta regula. Se raporteaza doar valorile care intra in
+        # banda tokenurilor, adica exact cele care se pot suprapune tacut peste
+        # dropdown / sticky / modal / toast / tooltip.
+        for m in re.finditer(r'z-index:\s*(-?\d+)\s*;', curat):
+            if abs(int(m.group(1))) < 100:
+                continue
+            self.abatere('R10 z-index in banda tokenurilor, scris de mana',
+                         p, curat, m.start(), m.group(0))
+
+    # -- R11 ----------------------------------------------------------------
+    def r11_hover_only(self, p, text, curat):
+        """Un control ascuns cu `opacity: 0` care se aprinde DOAR la `:hover` e
+        invizibil pe telefon — acolo nu exista hover. Perechea obligatorie e ori
+        `:focus-within` (tastatura), ori un bloc `(hover: none)` care il arata
+        altfel. Asa a stat pubela de subtask permanent pe rand, si asa ar fi
+        ramas manerele de intindere invizibile la deget."""
+        for m in re.finditer(r'\.([\w-]+)\s*\{[^}]*opacity:\s*0[^}]*\}', curat):
+            cls = m.group(1)
+            # (1) Doar CONTROALE. Un decor ascuns (o umbra, un indiciu) n-are ce
+            #     sa piarda pe telefon; regula e despre lucruri pe care le APESI.
+            if not re.search(r'class="[^"]*\b' + re.escape(cls) + r'\b[^"]*"[^>]*on(click|pointerdown)',
+                             curat) and not re.search(
+                             r'on(click|pointerdown)[^>]*class="[^"]*\b' + re.escape(cls) + r'\b',
+                             curat):
+                continue
+            # (2) `:hover` chiar il APRINDE? `.modal-close` are `opacity: 0`
+            #     cand nu e varful stivei, si un `:hover` care schimba doar
+            #     fondul — nu e un control ascuns pana treci cursorul, e unul
+            #     scos din uz cu bunastiinta. Discriminantul: regula de hover
+            #     trebuie sa atinga chiar `opacity`.
+            aprins = False
+            for h in re.finditer(r'([^{}]*:hover[^{}]*)\{([^}]*)\}', curat):
+                if re.search(r'\.' + re.escape(cls) + r'\b', h.group(1)) \
+                        and re.search(r'opacity:\s*[^0]', h.group(2)):
+                    aprins = True
+                    break
+            if not aprins:
+                continue
+            # (3) Perechea se cauta PE ACEEASI CLASA, nu oriunde in fisier: un
+            #     `(hover: none)` care vorbeste despre alt element nu salveaza
+            #     controlul asta. Prima varianta cauta `hover: none` in tot
+            #     fisierul si de aceea nu raporta aproape nimic.
+            are_focus = re.search(r'\.' + re.escape(cls) + r'\b[^{;]*:focus(-within|-visible)?',
+                                  curat)
+            are_touch = False
+            # Garda de touch e scrisa in sistem si ca `(hover: none)`, si ca
+            # `(max-width: …)` — amandoua inseamna „aici nu exista cursor".
+            for b in re.finditer(r'@media[^{]*(?:hover:\s*none|max-width)[^{]*\{', curat):
+                # corpul blocului media, pana la acolada perechea lui
+                i, adanc = b.end(), 1
+                while i < len(curat) and adanc:
+                    if curat[i] == '{': adanc += 1
+                    elif curat[i] == '}': adanc -= 1
+                    i += 1
+                if re.search(r'\.' + re.escape(cls) + r'\b', curat[b.end():i]):
+                    are_touch = True
+                    break
+            if not are_focus and not are_touch:
+                self.abatere('R11 control aprins doar la hover', p, curat, m.start(),
+                             '.' + cls)
+
+
 
 
 def tokenuri_definite(text):
@@ -216,6 +317,10 @@ def main():
         a.r3_durata_bruta(p, text, curat)
         a.r4_easing_brut(p, text, curat)
         a.r5_paleta_duplicata(p, text, curat)
+        a.r8_tranzitie_fara_easing(p, text, curat)
+        a.r9_touch_action_fara_gest(p, text, curat)
+        a.r10_zindex_literal(p, text, curat)
+        a.r11_hover_only(p, text, curat)
 
     # -- R6: tokenuri folosite dar nedefinite -------------------------------
     tk = TOKENS.read_text(encoding='utf-8')

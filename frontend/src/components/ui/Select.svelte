@@ -5,7 +5,7 @@
   // onchange (primeste { target: { value } } ca un select nativ).
   import { fly } from 'svelte/transition'
   import { ChevronDown, Check } from '@lucide/svelte'
-  import { motionDuration, DUR_FAST } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, EASE } from '../../lib/motion.svelte.js'
 
   let {
     label = '', value = $bindable(''), options = [], placeholder = '',
@@ -78,7 +78,7 @@
   </button>
 
   {#if open}
-    <div class="menu" role="listbox" transition:fly={{ y: -4, duration: motionDuration(DUR_FAST) }}>
+    <div class="menu" role="listbox" transition:fly={{ y: -4, duration: motionDuration(DUR_FAST), easing: EASE }}>
       {#if placeholder}
         <button type="button" class="opt" class:sel={!selected} role="option" aria-selected={!selected}
           onclick={() => pick('')}>

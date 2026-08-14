@@ -1,8 +1,20 @@
 <script module>
+  import { untrack as _untrack } from 'svelte'
+
   // Comune tuturor instantelor de Modal (vezi blocarea derularii mai jos).
   let blocari = 0
   let yBlocat = 0
 
+  // ===== STIVA DE MODALE =====
+  // Un modal poate deschide alt modal (foaia taskului -> „Alege ziua",
+  // ImplPeriodModal -> ConfirmDialog, paleta peste o foaie). Pana acum toate
+  // stateau pe acelasi `--z-modal`, deci ordinea de pictare venea din ordinea
+  // din DOM — adica din intamplare — si nu se stia CE inchizi cu Escape.
+  //
+  // `varf` e nivelul celui de deasupra. Fiecare instanta isi retine nivelul
+  // primit la deschidere si se compara cu el; asta e tot ce trebuie ca sa
+  // stie daca ea e cea care raspunde la Escape.
+  //
   // CAT TIMP EXISTA UN MODAL DESCHIS, DOCK-UL DE TELEFON COBOARA (Ion:
   // „modalul de detalii zi se ascunde o parte sub dock... vezi daca vreun modal
   // se ascunde sub dock"). Sub un voal dock-ul oricum nu face nimic, iar
@@ -11,10 +23,52 @@
   // voalului `fixed`, si atunci dock-ul — frate cu pagina, nu copil — picteaza
   // deasupra. Clasa de pe <html> taie problema din radacina, pentru TOATE
   // modalele deodata (toate trec pe aici); regula CSS e in global.css.
-  let modaleDeschise = 0
-  function marcheazaModal(deschis) {
-    modaleDeschise = Math.max(0, modaleDeschise + (deschis ? 1 : -1))
-    document.documentElement.classList.toggle('are-modal', modaleDeschise > 0)
+  const stiva = $state({ varf: 0 })
+
+  // AMANDOUA SE APELEAZA DINTR-UN `$effect`, DECI SE PAZESC SINGURE.
+  // `stiva.varf++` CITESTE si scrie aceeasi stare reactiva. Chemat dintr-un
+  // efect, citirea devine dependenta lui, iar scrierea il re-porneste — la
+  // Modal a iesit `effect_update_depth_exceeded` (si odata cu el a murit
+  // Escape), la DatePicker o oscilatie tacuta nivelNou/nivelInchis care lasa
+  // varful pe o valoare gresita. Garda sta AICI, in functie, nu la fiecare
+  // apelant: altfel al treilea consumator o va uita din nou, si simptomul lui
+  // va arata cu totul altfel decat al primilor doi.
+  export function nivelNou() {
+    return _untrack(() => {
+      stiva.varf++
+      document.documentElement.classList.add('are-modal')
+      return stiva.varf
+    })
+  }
+  export function nivelInchis() {
+    return _untrack(() => {
+      stiva.varf = Math.max(0, stiva.varf - 1)
+      document.documentElement.classList.toggle('are-modal', stiva.varf > 0)
+      return stiva.varf
+    })
+  }
+  /** Nivelul de deasupra, reactiv — il citesc si consumatorii din afara
+   *  (CommandPalette intra in aceeasi stiva). */
+  export function varfulStivei() { return stiva.varf }
+
+  // ===== INALTIMEA TASTATURII, O SINGURA DATA PENTRU TOATA APLICATIA =====
+  // `100dvh` NU se micsoreaza sub tastatura in WebView-ul Capacitor (aplicatia
+  // ruleaza cu `server.url` remote), deci o foaie „pe tot ecranul" isi tine
+  // butoanele sub tastatura. Sursa de adevar e `visualViewport`.
+  // Se scrie pe <html>, deci o pot citi si paleta, si orice alt strat.
+  if (typeof window !== 'undefined' && window.visualViewport) {
+    const vv = window.visualViewport
+    const scrie = () => {
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+      document.documentElement.style.setProperty('--kb', kb + 'px')
+    }
+    vv.addEventListener('resize', scrie)
+    vv.addEventListener('scroll', scrie)
+    scrie()
+  } else if (typeof document !== 'undefined') {
+    // Fara `visualViewport` variabila trebuie sa EXISTE, altfel `calc()`-urile
+    // care o scad cad pe invalid si inaltimea foii dispare cu totul.
+    document.documentElement.style.setProperty('--kb', '0px')
   }
 </script>
 
@@ -24,6 +78,7 @@
   import { fade, scale } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
+  import { PRAG_INCHIDE, PRAG_INTINDE, puls } from '../../lib/gesturi.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
   // jos) — nu cand parintele pune `open = false` singur. Exista fiindca un modal de
@@ -40,6 +95,12 @@
   let { open = $bindable(false), title = '', size = 'md', inalt = false, children, footer, onclose } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
+  let corpEl = $state(null)
+
+  // Nivelul din stiva, primit la deschidere. `varf` spune daca ASTA e cea de
+  // deasupra — deci cea care raspunde la Escape si la clicul pe fundal.
+  let nivel = $state(0)
+  const varf = $derived(nivel > 0 && nivel === stiva.varf)
 
   // Pe telefon modalul e un SHEET lipit de marginea de jos, nu o caseta centrata:
   // acolo ajunge degetul mare fara sa muti mana, si acolo se asteapta gestul de
@@ -144,15 +205,21 @@
   let sheetEl = $state(null)
   let y0 = 0
   let idPointer = null
+  let pragTrecut = false
 
-  const PRAG_INCHIDE = 110   // px in jos de la care ridicarea degetului inchide
-  const PRAG_INTINDE = 40    // px in sus de la care sheet-ul se face ecran plin
+  // PROCENTE DIN INALTIMEA FOII, NU PIXELI (T2).
+  // 110px fix insemnau doua gesturi diferite: pe o foaie de 300px erau o treime
+  // din ea — deci inchideai din greseala deruland — iar pe una de 780 abia o
+  // saptime, deci trageai pana obosea degetul. Fractiunile traiesc in
+  // `lib/gesturi.js`, langa cele ale randului.
+  const inaltimeFoaie = () => sheetEl?.offsetHeight || 1
 
   function trageJos(e) {
     if (!sheet || e.pointerType === 'mouse') return
     idPointer = e.pointerId
     y0 = e.clientY
     trasY = 0
+    pragTrecut = false
     trage = true
     try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch (_) {}
   }
@@ -160,9 +227,18 @@
   function trageMisca(e) {
     if (!trage || e.pointerId !== idPointer) return
     const dy = e.clientY - y0
+    const h = inaltimeFoaie()
     // In jos e liber (te duci spre inchidere). In sus se opreste scurt daca e deja
     // intins — altfel sheet-ul ar putea fi tras dincolo de marginea de sus.
-    trasY = intins ? Math.max(0, dy) : (dy < 0 ? Math.max(dy, -90) : dy)
+    // Capatul de sus e tot proportional: de doua ori pragul de intindere.
+    trasY = intins ? Math.max(0, dy) : (dy < 0 ? Math.max(dy, -h * PRAG_INTINDE * 2) : dy)
+    // Pragul se ANUNTA, ca la rand: degetul acopera manerul, deci confirmarea
+    // care nu se vede se simte. O singura data per trecere, nu la fiecare cadru.
+    const trecut = trasY > h * PRAG_INCHIDE
+    if (trecut !== pragTrecut) {
+      pragTrecut = trecut
+      if (trecut) puls()
+    }
   }
 
   function trageSus(e) {
@@ -177,8 +253,9 @@
     // se citeste exact ca lag de atingere. Iar arcul, care are voie sa depaseasca
     // tinta, tragea IN SUS fix in intervalul in care obiectul trebuia sa
     // accelereze in jos. Acum gestul si iesirea merg in acelasi sens.
-    if (trasY > PRAG_INCHIDE) { inchide(); return }
-    if (trasY < -PRAG_INTINDE) intins = true
+    const h = inaltimeFoaie()
+    if (trasY > h * PRAG_INCHIDE) { inchide(); return }
+    if (trasY < -h * PRAG_INTINDE) intins = true
     trasY = 0
   }
 
@@ -189,12 +266,14 @@
   // lasat-o pe cea dinainte.
   $effect(() => { if (open) { intins = inalt; trasY = 0 } })
 
-  // Semnalul pentru dock — cu curatare, deci si inchiderea, si distrugerea
-  // componentei cu modalul deschis il scad corect.
+  // Intrarea in stiva (si semnalul pentru dock) — cu curatare, deci si
+  // inchiderea, si distrugerea componentei cu modalul deschis o scad corect.
+  // Singura dependenta urmarita aici e `open`: `nivelNou`/`nivelInchis` isi
+  // poarta propriul `untrack` (vezi nota din `<script module>`).
   $effect(() => {
     if (!open) return
-    marcheazaModal(true)
-    return () => marcheazaModal(false)
+    nivel = nivelNou()
+    return () => { nivelInchis(); nivel = 0 }
   })
 
   // INTINDEREA VINE SI DIN CONTINUT, nu doar din antet (Ion, 2026-08-10, pe
@@ -205,15 +284,86 @@
   // preventDefault — derularea continua nestingherita sub acelasi deget; foaia
   // doar creste in timp ce derulezi). Inchiderea ramane pe antet, unde gestul
   // in jos nu se bate cu nimic.
+  // TREI GARZI, fiecare pentru un fel de fals-pozitiv (T1c):
+  //  - gestul porneste DOAR din capul listei (`scrollTop === 0`), altfel
+  //    derularea normala a subtaskurilor intindea foaia sub deget;
+  //  - pragul urca de la 24 la 56px, ca o derulare scurta sa nu se citeasca
+  //    drept intindere;
+  //  - cat timp tastatura e sus nu se intinde nimic: foaia tocmai s-a
+  //    micsorat ca sa-i faca loc, iar o intindere ar duce-o inapoi sub ea.
   let corpY0 = 0
   function corpAtinge(e) {
     if (!sheet || intins) return
+    if ((corpEl?.scrollTop ?? 0) > 0) { corpY0 = 0; return }
     corpY0 = e.touches[0].clientY
   }
   function corpTrage(e) {
     if (!sheet || intins || !corpY0) return
-    if (corpY0 - e.touches[0].clientY > 24) { intins = true; corpY0 = 0 }
+    if ((corpEl?.scrollTop ?? 0) > 0) { corpY0 = 0; return }
+    const kb = document.documentElement.style.getPropertyValue('--kb')
+    if (kb && kb !== '0px') return
+    if (corpY0 - e.touches[0].clientY > 56) { intins = true; corpY0 = 0 }
   }
+
+  // ===== REDIMENSIONAREA PANOULUI (T6, doar desktop) =====
+  // Latimea traieste pe <html> ca `--panou-w`, nu in starea componentei: e o
+  // preferinta a UTILIZATORULUI, nu a unei instante — foaia taskului si cea a
+  // perioadei trebuie sa se deschida la aceeasi latime, iar ea supravietuieste
+  // reincarcarii. Limitele sunt cele din desen: 380…720.
+  const PANOU_MIN = 380
+  const PANOU_MAX = 720
+  const CHEIE_PANOU = 'pif-panou-w'
+  let trageManer = $state(false)
+
+  /** Plafonul REAL, aceeasi formula ca `max-width` din CSS (`min(720px, 46vw)`).
+   *  Calculat, nu copiat ca numar: daca cele doua ar diverge, manerul ar promite
+   *  o latime pe care randarea o refuza — si tocmai asta era greseala de reparat. */
+  const panouMax = () => Math.min(PANOU_MAX, Math.round(window.innerWidth * 0.46))
+
+  if (typeof localStorage !== 'undefined') {
+    const salvat = parseInt(localStorage.getItem(CHEIE_PANOU) || '', 10)
+    if (salvat >= PANOU_MIN && salvat <= PANOU_MAX) {
+      document.documentElement.style.setProperty('--panou-w', salvat + 'px')
+    }
+  }
+
+  function apucaManer(e) {
+    if (!panou) return
+    e.preventDefault()
+    trageManer = true
+    const laMiscare = (ev) => {
+      // Panoul e lipit de marginea DIN DREAPTA, deci latimea creste cand
+      // cursorul merge spre stanga.
+      const w = Math.min(panouMax(), Math.max(PANOU_MIN, window.innerWidth - ev.clientX))
+      document.documentElement.style.setProperty('--panou-w', Math.round(w) + 'px')
+    }
+    const laRidicare = () => {
+      trageManer = false
+      window.removeEventListener('pointermove', laMiscare)
+      window.removeEventListener('pointerup', laRidicare)
+      try {
+        localStorage.setItem(CHEIE_PANOU,
+          parseInt(document.documentElement.style.getPropertyValue('--panou-w'), 10) || '')
+      } catch (_) {}
+    }
+    window.addEventListener('pointermove', laMiscare)
+    window.addEventListener('pointerup', laRidicare)
+  }
+
+  // LISTA FACE LOC, nu se ascunde sub panou — dar numai cand mai are ce da.
+  // Sub 1100px coloana de continut e deja ingusta, iar impinsul ar strange
+  // exact randurile pe care panoul ar trebui sa le lase citibile.
+  $effect(() => {
+    if (!open || !panou) return
+    const potriveste = () => document.documentElement.classList.toggle(
+      'are-panou', window.innerWidth >= 1100)
+    potriveste()
+    window.addEventListener('resize', potriveste)
+    return () => {
+      window.removeEventListener('resize', potriveste)
+      document.documentElement.classList.remove('are-panou')
+    }
+  })
 
   /** Singurul drum de inchidere pornit de utilizator. */
   function inchide() {
@@ -222,35 +372,89 @@
   }
 
   function onBackdrop(e) {
+    // Doar varful stivei raspunde: cu doua foi deschise, un clic pe fundal
+    // trebuie sa inchida CE VEZI, nu tot teancul.
+    if (!varf) return
     if (e.target === e.currentTarget) inchide()
   }
 
+  // CE POATE PRIMI FOCUS CU ADEVARAT.
+  // `querySelectorAll` intoarce si butoanele dezactivate, si pe cele dintr-un
+  // strat ascuns cu `display: none` — iar amandoua rup lucruri diferite:
+  //
+  //  - un buton DEZACTIVAT la coada listei („Creează proiectul", cat timp
+  //    numele e gol) nu poate fi niciodata `activeElement`, deci conditia de
+  //    intoarcere a capcanei nu se indeplineste NICIODATA si Tab pleaca in
+  //    pagina de sub voal (masurat: al 7-lea Tab ajungea pe dock);
+  //  - `ConfirmDialog` ascunde antetul pe desktop, deci primul „focusabil" din
+  //    DOM e chiar `.modal-close` nerandat. `focus()` pe el nu face nimic si nu
+  //    raporteaza nimic, deci focusul ramanea AFARA, pe butonul care deschisese
+  //    dialogul — iar Escape, ascultat pe backdrop, nu mai ajungea nicaieri.
+  //    Exact dialogul care scrie „Nu se poate anula" era cel din care nu se
+  //    putea iesi de la tastatura.
+  const SELECTOR_FOCUS = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  function focusabile() {
+    if (!backdropEl) return []
+    return [...backdropEl.querySelectorAll(SELECTOR_FOCUS)].filter(el =>
+      !el.disabled &&
+      el.getAttribute('aria-disabled') !== 'true' &&
+      el.tabIndex !== -1 &&
+      // `getClientRects()` gol = nerandat (display:none, stramos ascuns).
+      // Nu folosim `offsetParent`, care e null si pentru `position: fixed`.
+      el.getClientRects().length > 0)
+  }
+
   function onKey(e) {
-    if (e.key === 'Escape') { inchide(); return }
-    if (e.key === 'Tab' && backdropEl) {
-      const focusable = backdropEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-      if (focusable.length === 0) return
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    if (e.key !== 'Tab' || !backdropEl) return
+    const f = focusabile()
+    if (f.length === 0) return
+    const first = f[0]
+    const last = f[f.length - 1]
+    // Focusul poate fi in afara (o inchidere care a mutat DOM-ul sub el):
+    // atunci Tab il aduce inapoi, in loc sa-l lase sa plece mai departe.
+    if (!backdropEl.contains(document.activeElement)) {
+      e.preventDefault()
+      ;(e.shiftKey ? last : first).focus()
+      return
     }
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+  }
+
+  // ESCAPE ASCULTA PE FEREASTRA, NU PE VOAL.
+  // Legat de backdrop, functiona doar cat timp focusul era inauntru — deci
+  // exact in cazurile in care ceva mersese prost, tasta murea. Pe fereastra
+  // merge intotdeauna, iar regula „doar varful" o tine `varf`.
+  // `DatePicker` asculta pe CAPTURA si opreste propagarea, deci calendarul
+  // deschis peste o foaie se inchide singur, fara sa inchida si foaia — si
+  // butonul fizic „inapoi" de pe Android (`main.js`, Escape sintetic cu
+  // `bubbles: true`) ajunge acum aici oricare ar fi elementul focalizat.
+  function peEscape(e) {
+    if (e.key !== 'Escape' || !open || !varf) return
+    inchide()
   }
 
   $effect(() => {
     if (open) {
       previousFocus = document.activeElement
       tick().then(() => {
-        const first = backdropEl?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-        if (first) first.focus()
+        const f = focusabile()
+        if (f.length) f[0].focus()
         else backdropEl?.focus()
       })
     } else if (previousFocus) {
-      previousFocus.focus()
+      // Elementul poate sa nu mai existe (randul din care s-a deschis tocmai
+      // a fost sters): atunci `focus()` ar arunca, iar `isConnected` e
+      // verificarea ieftina care o previne.
+      if (previousFocus.isConnected) previousFocus.focus()
       previousFocus = null
     }
   })
 </script>
+
+<!-- `<svelte:window>` nu are voie sub `{#if}` — si nici nu trebuie: `peEscape`
+     iese singur cand modalul e inchis sau nu e varful stivei. -->
+<svelte:window onkeydown={peEscape} />
 
 {#if open}
   <!-- VOALUL PLEACA ODATA CU FOAIA, NU INAINTEA EI. Era stins in --dur-fast
@@ -261,11 +465,20 @@
        sensuri: la foaie 280 la intrare / 220 la iesire (contractul de miscare),
        la restul 220. `in:`/`out:`, nu `transition:` — doar asa functia de
        tranzitie afla sensul (`direction`), ca sa aleaga durata. -->
-  <div class="backdrop" bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
+  <div class="backdrop" class:varf bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
+       style:--nivel={nivel} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
        in:fade={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
        out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
-    <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage
+    <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
+         class:se-trage={trageManer}
          bind:this={sheetEl} style:--trasY="{trasY}px" in:intra out:intra>
+      {#if panou}
+        <!-- Manerul de latime. `<button>`, nu `<div>`: e un control, deci se
+             vede la Tab si spune ce e. Nu are actiune la clic — tragerea ii e
+             singurul rost — de aceea nu se muta focusul pe el la apasare. -->
+        <button class="panou-maner" type="button" aria-label="Trage ca să schimbi lățimea panoului"
+                onpointerdown={apucaManer}></button>
+      {/if}
       {#if sheet}
         <span class="sheet-grip" aria-hidden="true"></span>
       {/if}
@@ -281,7 +494,7 @@
         <h2 class="modal-title">{title}</h2>
         <button class="modal-close" onpointerdown={(e) => e.stopPropagation()} onclick={inchide} aria-label="Închide"><X size={18} /></button>
       </div>
-      <div class="modal-body" ontouchstart={corpAtinge} ontouchmove={corpTrage}>
+      <div class="modal-body" bind:this={corpEl} ontouchstart={corpAtinge} ontouchmove={corpTrage}>
         {@render children()}
       </div>
       {#if footer}
@@ -302,13 +515,21 @@
   .backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    /* VOALUL SE PICTEAZA DOAR PE VARF. Doua voaluri de 0,65 nu dau 0,65 — dau
+       0,88, deci fondul devine negru si foaia de dedesubt, care ar trebui sa
+       ramana context, dispare. `z-index` vine din nivel (vezi `--nivel`). */
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: var(--z-modal);
+    transition: background-color var(--dur-base) var(--ease);
     padding: calc(var(--space-md) + var(--safe-top)) calc(var(--space-md) + var(--safe-right)) calc(var(--space-md) + var(--safe-bottom)) calc(var(--space-md) + var(--safe-left));
   }
+  .backdrop.varf { background: rgba(0, 0, 0, 0.65); }
+  /* Foaia de dedesubt nu-si mai arata iesirea: butonul ei ar inchide un obiect
+     care nu e cel de deasupra. Ramane vizibila ca context, nu ca tinta. */
+  .modal:not(.varf) .modal-close { opacity: 0; pointer-events: none; }
   /* SI LINIE, SI UMBRA PE ACEEASI SUPRAFATA PLUTITOARE — chenarul a plecat (A5).
      Doua niveluri de suprafata se desprind prin UMBRA; linia de 1px e separator
      intre randuri, cu marja laterala. Popupul din DatePicker era deja fara. */
@@ -339,10 +560,39 @@
       justify-content: flex-end;
       align-items: stretch;
     }
+    /* LATIMEA E A UTILIZATORULUI (T6). 340px erau prea putini pentru o listă de
+       subtaskuri cu titluri reale; acum panoul se trage de muchia din stanga si
+       isi tine latimea intre reporniri (`--panou-w`, salvata in localStorage). */
     .modal-panou {
-      max-width: 340px;
+      width: var(--panou-w);
+      /* 720, nu 560: plafonul trebuie sa fie cel al MANERULUI, altfel manerul
+         minte — tragi pana la 720, se salveaza 720, si se randeaza 560.
+         `46vw` ramane paza reala: panoul nu are voie sa manance jumatate din
+         ecranul de pe care il citesti, oricat de mult ai trage. JS-ul foloseste
+         exact aceeasi formula, deci nu se poate salva o latime nerandabila. */
+      max-width: min(720px, 46vw);
       max-height: none;
     }
+    /* PANOUL NU ACOPERA CONTEXTUL — DECI NICI VOALUL NU-L ACOPERA.
+       Un voal de 0,65 peste exact lista pe care panoul ar trebui s-o lase la
+       vedere anuleaza motivul pentru care panoul e panou si nu caseta. */
+    .backdrop.varf:has(.modal-panou) { background: rgba(0, 0, 0, 0.18); }
+
+    /* Manerul: o bara subtire pe muchia din stanga, cu cursorul care spune ce
+       face. Se ingroasa la hover, nu se coloreaza — e o unealta, nu o stare. */
+    .panou-maner {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 6px;
+      cursor: col-resize;
+      background: transparent;
+      border: none;
+      padding: 0;
+      z-index: 2;
+      transition: background-color var(--dur-fast) var(--ease);
+    }
+    .panou-maner:hover, .panou-maner:focus-visible { background: var(--accent-subtle); }
+    .modal-panou.se-trage { transition: none; user-select: none; }
     /* 20, nu 24: la 340px de latime cele patru pixeli in plus de fiecare parte se
        iau din coloana de continut, care e deja jumatate cat a unei casete. */
     .modal-panou .modal-body { padding: var(--space-20); }
@@ -446,8 +696,10 @@
     .modal {
       max-width: 100%;
       /* dvh urmareste bara de adresa; sheet-ul nu trebuie sa depaseasca ecranul
-         nici cat timp bara se retrage. */
-      max-height: min(92dvh, 100dvh - var(--safe-top) - 24px);
+         nici cat timp bara se retrage. `--kb` (T1b) o scade pe cea a
+         tastaturii: foaia se MICSOREAZA, nu-si impinge continutul — un
+         `padding-bottom` ar tine butoanele tot sub tastatura, doar mai jos. */
+      max-height: min(92dvh, 100dvh - var(--safe-top) - 24px - var(--kb, 0px));
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       border-bottom: none;
       /* Umbra urca, nu coboara: sheet-ul se ridica peste pagina. */
@@ -457,7 +709,7 @@
        loc. Fara `.modal-panou` in lista asta ar fi ramas o coloana de 340px lipita
        de marginea de jos a unui ecran de 375. */
     .modal-sm, .modal-md, .modal-lg, .modal-xl, .modal-wide, .modal-zoom, .modal-panou { max-width: 100%; }
-    .modal-panou { max-height: min(92dvh, 100dvh - var(--safe-top) - 24px); }
+    .modal-panou { max-height: min(92dvh, 100dvh - var(--safe-top) - 24px - var(--kb, 0px)); }
 
     /* Antetul e suprafata de tragere. `touch-action: none` doar aici: gestul e
        al nostru, dar restul sheet-ului trebuie sa se poata DERULA normal. */
@@ -520,9 +772,11 @@
          cere asa, si nu prin `position: fixed; inset: 0`. Varianta cu `inset`
          pare mai ferma, dar se raporteaza la primul stramos cu transform, iar
          cat tine animatia de sosire a rutei acela e `.page`: masurat, foaia
-         iesea 1596px in loc de 812. `100dvh` nu poate gresi marimea. */
-      height: 100dvh;
-      max-height: 100dvh;
+         iesea 1596px in loc de 812. `100dvh` nu poate gresi marimea.
+         Minus `--kb`: si foaia „pe toata pagina" trebuie sa se stranga cand
+         urca tastatura, altfel campul in care tocmai scrii ramane sub ea. */
+      height: calc(100dvh - var(--kb, 0px));
+      max-height: calc(100dvh - var(--kb, 0px));
       padding-top: var(--safe-top);
       border-radius: 0;
     }
@@ -574,7 +828,7 @@
     /* doc = sheet pe tot ecranul pe mobil */
     .backdrop:has(.modal-doc) { padding: 0; }
     .modal-doc {
-      height: 100dvh; max-height: 100dvh;
+      height: calc(100dvh - var(--kb, 0px)); max-height: calc(100dvh - var(--kb, 0px));
       border-radius: 0; border: none;
       box-shadow: none;
     }

@@ -614,9 +614,17 @@ input[type="checkbox"].cbx:focus {
   from { transform: scale(1.5); }
   to { transform: none; }
 }
+/* TAIETURA MERGE CAT TEXTUL, NU CAT CUTIA (T3).
+   Era un `::after` absolut care crestea la `width: 100%` — adica latimea CUTIEI
+   titlului. Pe „Astăzi" cutia e intinsa de flex (`.atitle` intr-un `.amain` in
+   coloana), deci linia traversa tot randul si se oprea in dreptul termenului,
+   la un lat de palma dupa ultima litera.
+   Un GRADIENT desenat ca fundal se raporteaza la caseta LINIILOR DE TEXT, nu la
+   coloana de flex — deci se opreste exact unde se termina cuvantul, si ramane
+   corect si cand titlul se rupe pe doua randuri. */
 @keyframes bifTaie {
-  from { width: 0; }
-  to { width: 100%; }
+  from { background-size: 0 1.5px; }
+  to { background-size: 100% 1.5px; }
 }
 .bifare .check-empty {
   background: var(--success);
@@ -624,13 +632,14 @@ input[type="checkbox"].cbx:focus {
   animation: bifStamp var(--dur-base) var(--ease);
 }
 .bifare .ttitle, .bifare .atitle, .bifare .mrow-title {
-  position: relative;
   color: var(--text-dim);
   transition: color var(--dur-base) var(--ease);
-}
-.bifare .ttitle::after, .bifare .atitle::after, .bifare .mrow-title::after {
-  content: ''; position: absolute; left: 0; top: calc(50% - 1px); height: 1.5px;
-  background: var(--text-dim);
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  /* 58%, nu 50%: linia mediana a fontului cade sub jumatatea casetei, iar o
+     taietura la 50% trece prin partea de sus a literelor mici. */
+  background-position: 0 58%;
+  background-size: 0 1.5px;
   animation: bifTaie var(--dur-base) var(--ease) forwards;
 }
 

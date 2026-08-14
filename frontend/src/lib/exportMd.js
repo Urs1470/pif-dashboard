@@ -95,7 +95,7 @@ export async function exportMarkdown(projectId) {
   }
 
   md += `\n---\n\n`
-  md += `*Document generat automat din PIF Dashboard · ${today} · Ion Ursu*\n`
+  md += `*Document generat automat din TORQA · ${today} · Ion Ursu*\n`
 
   const filename = project.cod_proiect
     ? `${project.cod_proiect}_${(project.nume || 'proiect').replace(/[^a-z0-9]/gi, '_')}.md`

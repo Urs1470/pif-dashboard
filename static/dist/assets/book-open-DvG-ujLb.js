@@ -1,1 +1,0 @@
-import{E as e,F as t,P as n}from"./Modal-CniW-vDw.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=n(a,r),s=[[`path`,{d:`M12 7v14`}],[`path`,{d:`M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z`}]];e(i,t({name:`book-open`},()=>o,{get iconNode(){return s}}))}export{i as t};

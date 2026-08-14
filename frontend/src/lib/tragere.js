@@ -20,9 +20,10 @@
 //    `touchmove` non-passive. De aceea NU punem `touch-action: none` pe banda:
 //    o glisare pornita din greseala pe ea deruleaza pagina normal.
 
-export const PRAG_MOUSE = 4      // px — sub atat, e click
-export const PRAG_ANULARE = 10   // px — deget miscat inainte de apasare: deruleaza
-export const APASARE_LUNGA = 300 // ms
+// Pragurile traiesc in `lib/gesturi.js` — o singura definitie pentru toata
+// aplicatia. Se RE-exporta de aici doar ca importurile existente sa nu se rupa.
+import { PRAG_MOUSE, PRAG_ANULARE, APASARE_LUNGA, puls } from './gesturi.js'
+export { PRAG_MOUSE, PRAG_ANULARE, APASARE_LUNGA }
 
 /**
  * Porneste un gest din `pointerdown`. Cheama-l SINCRON din handler — citeste

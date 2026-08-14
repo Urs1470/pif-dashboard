@@ -22,7 +22,10 @@
 //     Randurile n-au toate aceeasi inaltime (unul cu doua chipuri e mai inalt),
 //     deci un pas fix ar aluneca dupa cateva pozitii.
 
-const PRAG_PORNIRE = 4      // px pe verticala inainte sa consideram ca a inceput tragerea
+import { PRAG_MOUSE, puls } from './gesturi.js'
+
+// Pornirea reordonarii e acelasi prag ca al mouse-ului: sub atat, e un click.
+const PRAG_PORNIRE = PRAG_MOUSE
 
 /**
  * Actiune Svelte pentru CONTAINERUL listei.
@@ -88,7 +91,7 @@ export function reordonare(node, opt = {}) {
       node.classList.add('reord-activ')
       tras.classList.add('reord-tras')
       try { node.setPointerCapture?.(pointerId) } catch (_) {}
-      navigator.vibrate?.(8)
+      puls(8)
     }
 
     // Mijlocul randului tras, in coordonatele de la inceput.

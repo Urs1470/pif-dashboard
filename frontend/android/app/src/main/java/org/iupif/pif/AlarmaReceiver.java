@@ -100,7 +100,7 @@ public class AlarmaReceiver extends BroadcastReceiver {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, canal)
-                .setSmallIcon(R.drawable.ic_stat_pif)
+                .setSmallIcon(R.drawable.ic_stat_torqa)
                 .setColor(accent(ctx))
                 .setContentTitle(titlu == null ? "Task personal" : titlu)
                 .setContentText(corp == null ? "" : corp)
