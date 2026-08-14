@@ -154,13 +154,33 @@ def mergi_la(page, tab, astepta=700):
 # click rapid, prima vizita: exact un cadru de schelet). Ion le descrisese fara
 # sa le poata numi: „la schimbul pe un alt tab aproape tot timpul vad un schelet
 # apoi apare pagina".
+# A TREIA CAPCANA, gasita tot pe 2026-08-14: „apare scheletul?" e intrebarea
+# GRESITA. Dupa ce scheletele au disparut, Ion a raportat mai departe „tot vad
+# schelete sau niste ramasite mai intai apoi apare rapid pagina" — si avea
+# dreptate. Ce se vedea nu era un schelet, era RAMA paginii noi fara continut:
+# titlul si bara de unelte randate la 221ms, iar randurile abia la 295. Store-ul
+# pornea gol fiindca `preia` cere intotdeauna de la server, chiar cand raspunsul
+# era deja adus de `pregateste` la hover.
+#
+# Deci masuram si CATE STARI VIZUALE DISTINCTE se perinda intre pagina veche si
+# cea noua. Contractul e doua: ce era, si ce e. Orice a treia stare e o ramasita,
+# indiferent cum o cheama clasa ei.
 CADRE = """
-window.__cadre = 0; window.__cand = []; window.__t = 0;
+window.__cadre = 0; window.__cand = []; window.__t = 0; window.__stari = [];
 (function bucla() {
   if (document.querySelector('.page-loading, .page .skeleton, .page .sk-lista')) {
     window.__cadre++;
     if (window.__t) window.__cand.push(Math.round(performance.now() - window.__t));
   }
+  try {
+    const q = (s) => document.querySelectorAll(s).length;
+    const cheie = [location.hash,
+      ((document.querySelector('.page h1') || {}).textContent || '').trim(),
+      q('.page-loading, .skeleton, .sk-lista'),
+      q('.page .trow, .page .arow, .page .pcard, .page .zi, .page .lane'),
+      !!document.querySelector('.empty-state, .es-wrap')].join('|');
+    if (window.__stari[window.__stari.length - 1] !== cheie) window.__stari.push(cheie);
+  } catch (_) {}
   requestAnimationFrame(bucla);
 })();
 """
@@ -188,14 +208,20 @@ def ruleaza_taburi(page, baza):
         for tur in ('prima vizita', 'a doua vizita'):
             for cale, nume in RUTE_TAB:
                 el = tab_din_doc(page, cale)
-                page.evaluate("window.__cadre = 0; window.__cand = []; window.__t = performance.now()")
+                page.evaluate("window.__cadre = 0; window.__cand = []; window.__stari = [];"
+                              " window.__t = performance.now()")
                 el.hover()
                 page.wait_for_timeout(60)
                 el.click()
                 page.wait_for_timeout(1400)
-                r = page.evaluate("({ n: window.__cadre, t: window.__cand[0] })")
+                r = page.evaluate("({ n: window.__cadre, t: window.__cand[0], stari: window.__stari })")
                 nota(r['n'] == 0, '%s (%s): fara schelet' % (nume, tur),
                      '%d cadre, primul la %sms' % (r['n'], r['t']) if r['n'] else '')
+                # Doua stari: pagina veche si pagina noua. A treia e o ramasita.
+                nota(len(r['stari']) <= 2, '%s (%s): fara stare intermediara' % (nume, tur),
+                     '%d stari: %s' % (len(r['stari']),
+                                       ' → '.join(s.split('|')[1] + '/' + s.split('|')[3] + 'r'
+                                                  for s in r['stari'])) if len(r['stari']) > 2 else '')
     finally:
         # Reteaua se lasa asa cum a fost gasita: probele de dupa nu trebuie sa
         # mosteneasca 150ms de latenta fara sa stie.

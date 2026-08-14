@@ -1,5 +1,5 @@
 import { apiJson } from '../lib/api.js'
-import { preia, uita } from '../lib/cache.js'
+import { preia, dinCache, uita } from '../lib/cache.js'
 
 export const projects = $state({
   items: [],
@@ -18,24 +18,32 @@ export function urlProiecte() {
   return `/api/proiecte${qs ? '?' + qs : ''}`
 }
 
+function aseazaProiecte(data) {
+  let items = Array.isArray(data) ? data : data.projects || []
+  if (projects.filters.search) {
+    const q = projects.filters.search.toLowerCase()
+    items = items.filter(p =>
+      (p.nume || '').toLowerCase().includes(q) ||
+      (p.cod_proiect || '').toLowerCase().includes(q) ||
+      (p.client || '').toLowerCase().includes(q) ||
+      (p.echipament_principal || '').toLowerCase().includes(q)
+    )
+  }
+  projects.items = items
+}
+
 export async function loadProjects() {
-  projects.loading = true
-  projects.error = null
+  const url = urlProiecte()
+  // Ce stim deja se pune SINCRON, inainte de primul cadru — vezi nota din
+  // `plan.svelte.js`: fara asta pagina se randa cu rama si fara carduri, si abia
+  // dupa un dus-intors aparea continutul.
+  const gata = dinCache(url)
+  if (gata !== undefined) { aseazaProiecte(gata); projects.error = null }
+  else projects.loading = true
   try {
-    const data = await preia(urlProiecte())
-    let items = Array.isArray(data) ? data : data.projects || []
-    if (projects.filters.search) {
-      const q = projects.filters.search.toLowerCase()
-      items = items.filter(p =>
-        (p.nume || '').toLowerCase().includes(q) ||
-        (p.cod_proiect || '').toLowerCase().includes(q) ||
-        (p.client || '').toLowerCase().includes(q) ||
-        (p.echipament_principal || '').toLowerCase().includes(q)
-      )
-    }
-    projects.items = items
+    aseazaProiecte(await preia(url))
   } catch (e) {
-    projects.error = e.message
+    if (gata === undefined) projects.error = e.message
   } finally {
     projects.loading = false
   }

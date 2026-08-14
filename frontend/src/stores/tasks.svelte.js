@@ -1,13 +1,28 @@
 import { apiJson } from '../lib/api.js'
-import { preia, uita } from '../lib/cache.js'
+import { preia, dinCache, uita } from '../lib/cache.js'
 
 // ORICE SCRIERE INVALIDEAZA LISTA, INTR-UN SINGUR LOC.
 // De cand citirea trece prin `preia`, o lista tinuta minte din greseala se
 // vede: revii pe tab si taskul bifat e la loc, pentru cateva cadre sau pana la
 // urmatoarea reincarcare. Pus in mutatii, nu la apelanti — jumatate din ele
 // (bifarea, mutarea termenului) isi scriu starea local si NU mai reincarca.
-const CAP_LISTA = '/api/global-tasks'
-function uitaLista() { uita(CAP_LISTA) }
+// UN TASK SE VEDE IN TREI LOCURI, deci o scriere le invalideaza pe toate trei.
+// `/api/plan` e cel usor de uitat: Planificatorul isi ia randurile de acolo, iar
+// mutarile lui cheama `updateTask`/`updateGlobalTask` si apoi `loadPlan()` — care
+// de acum se seedeaza SINCRON din memorie. Fara linia asta, o bara trasa cu
+// degetul ar clipi inapoi in pozitia veche exact in clipa in care ridici degetul.
+function uitaLista() {
+  uita('/api/global-tasks')
+  uita('/api/plan')
+}
+// Taskurile de PROIECT nu-si stiu proiectul aici (`updateTask` primeste doar
+// id-ul taskului), deci prefixul e cel larg. Costa o cerere in plus la
+// urmatoarea intrare pe /projects; alternativa ar fi o lista de proiecte care
+// arata alt numar de taskuri decat are.
+function uitaTaskuriProiect() {
+  uita('/api/plan')
+  uita('/api/proiecte')
+}
 
 export const tasks = $state({
   items: [],
@@ -37,17 +52,25 @@ export function urlGlobalTasks(opts = {}) {
 }
 
 export async function loadGlobalTasks(opts = {}) {
-  globalTasks.loading = true
-  globalTasks.error = null
+  const url = urlGlobalTasks(opts)
+  // Ce stim deja se pune SINCRON — vezi nota din `plan.svelte.js`.
+  const gata = dinCache(url)
+  if (gata !== undefined) {
+    globalTasks.items = Array.isArray(gata) ? gata : gata.tasks || []
+    globalTasks.error = null
+  } else {
+    globalTasks.loading = true
+    globalTasks.error = null
+  }
   try {
     // Prin `preia`, nu direct: la pornirea pe telefon cererea se da o data din
     // `main.js` (imediat, in paralel cu chunkul paginii) si a doua oara de aici,
     // cand pagina se monteaza. Cererile in zbor se impart, deci raman una
     // singura — si e cea care a pornit cu ~900ms mai devreme.
-    const data = await preia(urlGlobalTasks(opts))
+    const data = await preia(url)
     globalTasks.items = Array.isArray(data) ? data : data.tasks || []
   } catch (e) {
-    globalTasks.error = e.message
+    if (gata === undefined) globalTasks.error = e.message
   } finally {
     globalTasks.loading = false
   }
@@ -59,6 +82,7 @@ export async function createTask(projectId, data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
+  uitaTaskuriProiect()
   return result
 }
 
@@ -68,6 +92,7 @@ export async function updateTask(taskId, data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
+  uitaTaskuriProiect()
   return result
 }
 

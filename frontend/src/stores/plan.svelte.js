@@ -1,7 +1,7 @@
 import { apiJson } from '../lib/api.js'
 import { updateTask, updateGlobalTask } from './tasks.svelte.js'
 import { localToday, tomorrowISO } from '../lib/planDates.js'
-import { preia, uita } from '../lib/cache.js'
+import { preia, dinCache, uita } from '../lib/cache.js'
 
 // "Planificator" — 14-day operational swimlane. Lanes = projects (each carrying
 // its overall interval) with their tasks, plus a "Globale" lane. Read-model comes
@@ -37,19 +37,36 @@ export function urlPlan() {
   return `/api/plan?start=${t}&days=${plan.days}&today=${t}${plan.showDone ? '&done=1' : ''}`
 }
 
+function aseaza(data, t) {
+  plan.lanes = Array.isArray(data.lanes) ? data.lanes : []
+  plan.backlog = Array.isArray(data.backlog) ? data.backlog : []
+  plan.start = data.start || t
+  plan.days = data.days || plan.days
+  plan.today = data.today || t
+}
+
 export async function loadPlan() {
-  plan.loading = true
-  plan.error = null
+  const t = localToday()
+  const url = urlPlan()
+  // CE STIM DEJA SE PUNE SINCRON, INAINTE DE PRIMUL CADRU.
+  //
+  // `pregateste()` incalzeste raspunsul la hover, dar pana acum nimeni nu-l
+  // citea la montare: `preia` cu prospetime 0 cere INTOTDEAUNA de la server, iar
+  // pagina se randa cu store-ul gol. Masurat pe telefon la atingerea tabului:
+  // titlul si bara apareau la 221ms, iar randurile abia la 295 — 74ms de RAMA
+  // GOALA. Ion: „tot vad schelete sau niste ramasite mai intai".
+  //
+  // Nu e stricta „doar la montare" ca la Calendar: aici cache-ul e sters de
+  // fiecare scriere (vezi `uita` din mutatii), deci ce gaseste `dinCache` e prin
+  // constructie starea de dupa ultima scriere.
+  const gata = dinCache(url)
+  if (gata !== undefined) { aseaza(gata, t); plan.error = null }
+  else plan.loading = true
   try {
-    const t = localToday()
-    const data = await preia(urlPlan())
-    plan.lanes = Array.isArray(data.lanes) ? data.lanes : []
-    plan.backlog = Array.isArray(data.backlog) ? data.backlog : []
-    plan.start = data.start || t
-    plan.days = data.days || plan.days
-    plan.today = data.today || t
+    aseaza(await preia(url), t)
   } catch (e) {
-    plan.error = e.message
+    // Cu ecranul deja plin, o improspatare picata nu-l inlocuieste cu o eroare.
+    if (gata === undefined) plan.error = e.message
   } finally {
     plan.loading = false
   }
