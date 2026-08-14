@@ -55,6 +55,25 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-14 (2) — „APK-ul e semnat" NU inseamna „e semnat cu cheia buna".**
+  `apksigner verify --print-certs` spune doar CA e semnat. Autoritatea e
+  `$AMPRENTA` din `scripts/build-apk.ps1`, care compara amprenta certificatului
+  cu cea pinuita — si build-ul de release PICA daca nu se potriveste. Eu am
+  sarit peste ea (iesirea PowerShell era goala, am dedus reusita din faptul ca
+  fisierul APK exista) si era sa livrez un APK nesigur de instalat.
+  **Starea de acum, NEREZOLVATA:** keystore-ul de pe masina asta
+  (`Tools/keys/pif-release.jks`, alias `pif`, valabil din 2026-08-07) contine
+  `753182ea…c38ecbf0` — cheia VECHE. Scriptul pinueaza `7ea67415…7ab11988`,
+  descrisa in comentariu ca generata pe 2026-08-09 „aici". Cheia aia nu e in
+  `keys/`. Deci ori e intr-un backup, ori s-a pierdut; pana se lamureste, NU se
+  poate produce un APK care sa se instaleze peste aplicatia de pe telefon, si
+  canalul intern de actualizare (`build-apk.ps1 -Release -Upload`) e blocat.
+  Nu „repara" pinul ca sa treaca build-ul: pinul e singurul lucru care opreste
+  un release care ar rupe actualizarile pentru totdeauna.
+  **A doua capcana din aceeasi zona:** `npx cap sync` NU regenereaza iconitele.
+  Copierea surselor in `frontend/assets/` nu schimba nimic in APK — trebuie
+  `npx capacitor-assets generate --android`, care rescrie `res/mipmap-*`.
+
 - **2026-08-14 — Handoff „interactiuni, modale si miscare" (T1-T17) + audit de UI.**
   Aplicat integral. Ce trebuie tinut minte, fiindca s-a platit scump:
   **(1) `stiva.varf++` chemat dintr-un `$effect` = bucla.** E o CITIRE si o
