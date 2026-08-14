@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, tick } from 'svelte'
   import { CalendarRange, ChevronRight, CalendarDays, ArrowRight, X, CheckCircle2, Repeat, ExternalLink, Check, FileDown, Inbox, GripVertical, MapPin, Building2, Calendar } from '@lucide/svelte'
   import {
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
@@ -15,7 +15,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
-  import { motion, panou, motionDuration } from '../lib/motion.svelte.js'
+  import { motion, panou, motionDuration, aterizare } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -542,14 +542,35 @@
   let pasi = $state([])
   let pasiSeIncarca = $state(false)
 
+  // PANOUL SE DESCHIDE CU DATELE IN MANA (regula deja scrisa in aplicatie —
+  // vezi `desfacere` din `motion.svelte.js` si TaskPickerModal).
+  //
+  // Ion: „parca ceva vine de jos... e rupta animatia". Masurat cadru cu cadru:
+  // panoul se deschidea la 493px si se stangea la 404 in timpul propriei
+  // intrari, fiindca `sel` se punea INAINTE ca subtaskurile sa soseasca —
+  // deci marginea lui de jos matura in sus peste animatie. O tranzitie care
+  // anima spre o tinta ce se schimba sub ea nu se poate citi ca o sosire.
+  //
+  // Plafon de 250ms, ca la selectorul de taskuri: peste atat panoul se deschide
+  // oricum, cu SCHELET in locul pasilor — un loc tinut e o inlocuire, nu un
+  // salt. Sub plafon nu se vede niciodata.
   async function deschideTask(task, lane, el) {
     anchorEl = el || null
-    sel = { ...task, laneNume: lane?.nume, laneId: lane?.id, laneImpl: lane?.impl || [] }
+    const baza = { ...task, laneNume: lane?.nume, laneId: lane?.id, laneImpl: lane?.impl || [] }
     pasi = []
-    if (!task.subtask_total) return
-    pasiSeIncarca = true
-    try { pasi = await loadSubtasks(task.id) } catch { pasi = [] }
-    finally { pasiSeIncarca = false }
+    if (!task.subtask_total) { pasiSeIncarca = false; sel = baza; return }
+
+    let sosit = false
+    const cerere = loadSubtasks(task.id)
+      .then((r) => { pasi = r })
+      .catch(() => { pasi = [] })
+      .finally(() => { sosit = true })
+    await Promise.race([cerere, new Promise((r) => setTimeout(r, 250))])
+    // Scheletul se arata DOAR daca datele chiar intarzie; altfel panoul se
+    // deschide direct cu lista, la inaltimea ei finala.
+    pasiSeIncarca = !sosit
+    sel = baza
+    if (!sosit) await cerere.finally(() => { pasiSeIncarca = false })
   }
   function closePop() { sel = null; anchorEl = null; pasi = [] }
 
@@ -656,13 +677,24 @@
       laCommit: async (zi) => {
         document.body.classList.remove('plan-dragging')
         dragLabel = null
+        // O SINGURA REINCARCARE. `setTaskDates` cheama deja `loadPlan()` in el
+        // (vezi `stores/plan.svelte.js`), deci un al doilea apel aici insemna ca
+        // pista se reconstruia de DOUA ori dupa fiecare mutare — exact ce
+        // raporteaza Ion: „se pare ca se reincarca pagina, apoi se pune".
+        // Pe eroare se reincarca, fiindca atunci starea locala e cea gresita.
+        const dinainte = barEl.getBoundingClientRect()
         try {
           await setTaskDates(t.tip, t.id, { data_scadenta: zi })
           toast('Reprogramat', 'success')
+          // ATERIZARE (T9): pozitia vine din `left: %`, care nu se poate anima,
+          // deci fara asta reperul apare direct pe ziua noua.
+          await tick()
+          const nou = document.querySelector(`.bar[data-task="${t.id}"]`) || barEl
+          aterizare(nou, dinainte)
         } catch (err) {
           toast(`Eroare: ${err.message}`, 'error')
+          await loadPlan()
         }
-        await loadPlan()
       },
     })
   }
@@ -1023,6 +1055,7 @@
                                  ziua. De aceea impachetarea masoara suma lor. -->
                             <div
                               class="bar"
+                              data-task={it.id}
                               class:active={isActive(it.status)}
                               class:done={isDone(it.status)}
                               class:flip={it.flip}
@@ -2189,6 +2222,14 @@
                 column-gap var(--dur-base) var(--ease); }
   .lucru.cu-panou { grid-template-columns: minmax(0, 1fr) 320px; column-gap: var(--space-md); }
   .lucru:not(.cu-panou) .panou { position: absolute; top: 0; right: 0; width: 320px; }
+  /* PANOUL ISI TINE LATIMEA FINALA DIN PRIMUL CADRU.
+     Coloana creste animat de la 0 la 320 (ca sa se stranga lin diagrama), iar
+     panoul, daca si-o lua de la ea, isi RE-IMPACHETA textul la fiecare cadru:
+     masurat cu `requestAnimationFrame`, inaltimea lui pornea de la 820px si
+     cadea la 404 in ~85ms — adica marginea de jos matura 400px in sus. Exact
+     „parca ceva vine de jos" (Ion). Latimea fixa scoate reflow-ul din animatie:
+     coloana isi face loc, panoul doar apare. */
+  .lucru .panou { width: 320px; }
 
   .panou { background: var(--bg-surface);
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);

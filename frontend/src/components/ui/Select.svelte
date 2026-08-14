@@ -14,7 +14,47 @@
 
   let open = $state(false)
   let rootEl = $state(null)
+  let menuEl = $state(null)
+  let stilMeniu = $state('')
   let hi = $state(-1) // index evidentiat cu tastatura
+
+  // ===== MENIUL IESE DIN CE-L TAIE =====
+  // Era `position: absolute`, deci il decupa orice stramos care deruleaza — in
+  // practica `.modal-body`. Pentru un camp de jos din formular, optiunile
+  // cadeau sub marginea modalului si trebuia sa derulezi ca sa le vezi (raportat
+  // de Ion pe „Status" din modalul de proiect).
+  // Ridicat la <body> si pozitionat `fixed` din dreptunghiul declansatorului —
+  // exact tiparul pe care `DatePicker` il foloseste deja.
+  function portal(node) {
+    document.body.appendChild(node)
+    return { destroy() { node.remove() } }
+  }
+
+  const MARJA = 6
+  function aseaza() {
+    if (!open || !rootEl || !menuEl) return
+    const t = rootEl.querySelector('.field-select')
+    if (!t) return
+    const r = t.getBoundingClientRect()
+    const h = menuEl.offsetHeight || 0
+    const subT = window.innerHeight - r.bottom - MARJA
+    // Se intoarce in sus doar daca jos chiar nu incape SI sus e mai mult loc —
+    // altfel un meniu scurt ar sari peste camp fara motiv.
+    const sus = h > subT && r.top - MARJA > subT
+    const top = sus ? Math.max(MARJA, r.top - MARJA - h) : r.bottom + MARJA
+    // Plafonul de inaltime se ia din spatiul REAL ramas, nu dintr-o constanta:
+    // un meniu de 260px intr-o fereastra de 200 e tot taiat.
+    const maxH = Math.max(120, (sus ? r.top : window.innerHeight - r.bottom) - MARJA * 2)
+    let left = r.left
+    if (left + menuEl.offsetWidth > window.innerWidth - 8) {
+      left = Math.max(8, window.innerWidth - menuEl.offsetWidth - 8)
+    }
+    stilMeniu = `top:${Math.round(top)}px; left:${Math.round(left)}px; min-width:${Math.round(r.width)}px; max-height:${Math.round(maxH)}px;`
+  }
+
+  $effect(() => {
+    if (open && menuEl) aseaza()
+  })
 
   const items = $derived(options.map((o) => ({ value: o?.value ?? o, label: o?.label ?? o })))
   const selected = $derived(items.find((i) => String(i.value) === String(value)))
@@ -50,11 +90,17 @@
   }
 
   function onDocClick(e) {
-    if (open && rootEl && !rootEl.contains(e.target)) open = false
+    // Meniul nu mai e copilul lui `rootEl` (traieste in <body>), deci trebuie
+    // intrebat si el — altfel primul clic pe o optiune ar inchide meniul
+    // inainte sa fie ales ceva.
+    if (!open) return
+    if (rootEl?.contains(e.target) || menuEl?.contains(e.target)) return
+    open = false
   }
 </script>
 
 <svelte:document onclick={onDocClick} />
+<svelte:window onresize={aseaza} onscroll={aseaza} />
 
 <div class="field" class:has-error={error} bind:this={rootEl}>
   {#if label}
@@ -78,7 +124,9 @@
   </button>
 
   {#if open}
-    <div class="menu" role="listbox" transition:fly={{ y: -4, duration: motionDuration(DUR_FAST), easing: EASE }}>
+    <div class="menu" role="listbox" use:portal bind:this={menuEl} style={stilMeniu}
+         onkeydown={onKey}
+         transition:fly={{ y: -4, duration: motionDuration(DUR_FAST), easing: EASE }}>
       {#if placeholder}
         <button type="button" class="opt" class:sel={!selected} role="option" aria-selected={!selected}
           onclick={() => pick('')}>
@@ -154,19 +202,19 @@
   .has-error .field-select:focus { box-shadow: inset 0 0 0 1.5px var(--danger); }
 
   /* Meniul e o suprafata FLOTANTA: se desprinde prin umbra, nu prin chenar. */
+  /* `fixed`, nu `absolute`: pozitia vine din JS (`aseaza`), in spatiul
+     ferestrei. `:global` fiindca nodul e mutat la <body>, deci iese din
+     invelisul scopat al componentei. */
+  :global(.field .menu),
   .menu {
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 0;
-    min-width: 100%;
+    position: fixed;
     width: max-content;
     max-width: 260px;
-    z-index: var(--z-dropdown, 50);
+    z-index: var(--z-tooltip);
     background: var(--bg-overlay);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
     padding: 4px;
-    max-height: 260px;
     overflow-y: auto;
     scrollbar-width: thin;
   }
@@ -199,6 +247,6 @@
     .field-select { min-height: var(--tap-sheet); }
     .field-select.sm { min-height: var(--tap-min); }
     .opt { min-height: var(--tap-min); font-size: var(--font-body); padding: 8px 12px; }
-    .menu { max-width: none; max-height: 50dvh; overscroll-behavior: contain; }
+    .menu { max-width: none; overscroll-behavior: contain; }
   }
 </style>

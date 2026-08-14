@@ -119,6 +119,12 @@ export function etichetaTermenScurt(d) {
   if (k === 1) return 'mâine'
   if (k < 0) return `−${-k} z`
   if (k <= 6) return ZILE[new Date(String(d).slice(0, 10)).getDay()].slice(0, 3)
+  // `zz.ll`, NU „26 aug." — coloana termenului are 46px, iar „26 aug." cere ~55
+  // in DM Mono la 13px, deci se taia la „26 a…" (raportat de Ion: „se vede doar
+  // numarul, luna doar prima litera"). Forma numerica incape, se aliniaza pe
+  // cifre ca restul coloanei, si scoate din ea un cuvant care oricum n-avea ce
+  // cauta intr-o coloana mono — regula sistemului: daca textul se poate traduce,
+  // nu e mono.
   const t = new Date(String(d).slice(0, 10))
-  return t.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })
+  return `${t.getDate()}.${String(t.getMonth() + 1).padStart(2, '0')}`
 }

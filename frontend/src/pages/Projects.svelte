@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import { fly, slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { FolderKanban, Plus, ChevronDown, Archive, ArrowUpDown, Zap, Wrench } from '@lucide/svelte'
+  import { FolderKanban, Plus, ChevronDown, Archive, ArrowUpDown, Zap, Wrench, ArrowRightLeft } from '@lucide/svelte'
   import { projects, loadProjects, updateProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -149,7 +149,12 @@
 
 <svelte:document onclick={onDocClick} />
 
-<div class="page">
+<!-- `ruta-in`: ecranul SOSESTE, nu apare intre doua cadre. Aveau
+     animatia doar Calendar, Planificator si Taskuri, deci jumatate din
+     taburi se deschideau taiat si jumatate lin — raportat de Ion („nu
+     toate taburile au animatii de deschidere"). Regula traieste in
+     global.css, deci aici nu se adauga niciun CSS. -->
+<div class="page ruta-in">
   <div class="page-header">
     <!-- Titlu FARA iconita si cu SUBTITLU text, ca in desen (3a: „7 active ·
          3 finalizate") — si la aceeasi pozitie ca pe toate rutele
@@ -238,12 +243,16 @@
                  ori deschide proiectul, ori ii schimba statusul, si nu se poate
                  sti dinainte care. Un card = o tinta; statusul se schimba din
                  pagina proiectului. Pe desktop ramane control — dar unul care
-                 ARATA ca un control: fill discret + chevron, nu o eticheta. -->
+                 ARATA ca un control: fill discret + semnul de comutare.
+                 NU chevron (raportat de Ion: „pare un dropdown cand de fapt nu
+                 este"). Statusurile sunt DOUA de la v31, deci apasarea comuta
+                 intre ele — nu deschide o lista. Un chevron promite un meniu, si
+                 promisiunea aia se plateste la fiecare apasare care nu-l da. -->
             {#if ecran.telefon}
               <span class="status-pill" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}">{PROJECT_STATUS_LABELS[p.status] || p.status || '—'}</span>
             {:else}
               <button class="status-pill act" style="--st: {STATUS_COLORS[p.status] || 'var(--text-dim)'}" onclick={(e) => cycleProjectStatus(e, p)} title="Schimbă statusul">
-                {PROJECT_STATUS_LABELS[p.status] || p.status || '—'}<ChevronDown size={12} strokeWidth={2.2} />
+                {PROJECT_STATUS_LABELS[p.status] || p.status || '—'}<ArrowRightLeft size={11} strokeWidth={2.2} />
               </button>
             {/if}
           </div>

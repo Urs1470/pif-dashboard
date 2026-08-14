@@ -203,9 +203,15 @@ code, pre {
    animatia deloc: ea curge mai departe, doar transformul ei e ignorat cat timp
    exista un modal. (`!important` din foaia autorului bate o animatie CSS — e
    singurul mod de a invinge un keyframe fara sa-l opresti.) */
-html.are-modal .ruta-in {
-  transform: none !important;
-}
+/* GARDA DE AICI A PLECAT, fiindca nu facea ce promitea.
+   Era `html.are-modal .ruta-in { transform: none !important }`, cu motivul
+   „un strat peste pagina nu are voie sa depinda de geometria paginii" — corect
+   ca intentie, gresit ca mecanism: containmentul pentru `position: fixed` il da
+   FAPTUL ca o animatie afecteaza `transform`, nu valoarea lui. Cu animatia
+   umpland inainte (`forwards`), `.page` ramanea ancora oricat de mult ai fi
+   suprascris valoarea — si foaia zilei iesea 1526px in loc de 844.
+   Reparatia adevarata e la sursa: `.ruta-in` si `.cell-in` umplu acum INAPOI
+   (`backwards`), deci dupa ce se termina nu mai ating `transform` deloc. */
 
 /* ===== Focus ring global pe inputs ===== */
 input:focus, select:focus, textarea:focus {
@@ -832,7 +838,13 @@ input[type="checkbox"].cbx:focus {
    ordine, e o asteptare — ultima celula ar ajunge la 300ms+ dupa prima, adica
    mai tarziu decat dureaza propria ei sosire.
    Durata e `--dur-base` (era 500ms — de doua ori mai mult, fara motiv). */
-.cell-in { opacity: 0; animation: cellIn var(--dur-base) var(--ease) forwards;
+/* `backwards`, NU `forwards` — si nu e o subtilitate de stil, vezi `.ruta-in`.
+   Cu `backwards` starea de PLECARE se aplica in timpul intarzierii (deci celula
+   sta invizibila pana ii vine randul, exact ca inainte), iar dupa ce animatia se
+   termina elementul revine la stilul lui normal — adica `opacity: 1` fara sa fie
+   nevoie de fill. `opacity: 0` din regula de baza a plecat odata cu `forwards`:
+   cu el ar fi ramas invizibila pe veci. */
+.cell-in { animation: cellIn var(--dur-base) var(--ease) backwards;
   animation-delay: min(var(--celula, 0) * 40ms, 240ms); }
 @media (prefers-reduced-motion: reduce) {
   .cell-in { opacity: 1; animation: none; }
@@ -855,7 +867,23 @@ input[type="checkbox"].cbx:focus {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
-.ruta-in { opacity: 0; animation: rutaIn var(--dur-base) var(--ease) forwards; }
+/* `backwards`, NU `forwards` — ASTA E REPARATIA, si merita citita.
+   O animatie care ATINGE `transform` face din element blocul de referinta al
+   oricarui `position: fixed` dinauntru — si o face cat timp animatia AFECTEAZA
+   proprietatea, adica inclusiv dupa ce s-a terminat, daca umple inainte
+   (`forwards`). Nu conteaza ca valoarea finala e `transform: none`.
+   De aceea garda `html.are-modal .ruta-in { transform: none !important }` nu
+   ajuta: ea suprascrie VALOAREA, nu efectul asupra containmentului. Masurat:
+   foaia zilei din Calendar primea 1526px in loc de 844 si era impinsa sub pliu
+   (raportat de Ion), iar `offsetParent`-ul voalului iesea `.page.ruta-in` desi
+   transformul lui era `none`. Scos `animation` de pe `.page` la rulare: 844px,
+   instantaneu.
+   Cu `backwards` animatia nu mai umple dupa ce se termina, deci nu mai afecteaza
+   `transform`, deci nu mai exista bloc de referinta — iar `opacity: 0` din regula
+   de baza pleaca odata cu `forwards` (altfel pagina ar ramane invizibila).
+   Nu prin `animation-name: none` la deschiderea modalului: acela repornea
+   animatia rutei la INCHIDERE, si coborarea foii se vedea taiata. */
+.ruta-in { animation: rutaIn var(--dur-base) var(--ease) backwards; }
 @media (prefers-reduced-motion: reduce) {
   .ruta-in { opacity: 1; animation: none; }
 }

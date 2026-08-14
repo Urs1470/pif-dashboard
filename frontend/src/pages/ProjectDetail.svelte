@@ -528,7 +528,12 @@
   }
 </script>
 
-<div class="page">
+<!-- `ruta-in`: ecranul SOSESTE, nu apare intre doua cadre. Aveau
+     animatia doar Calendar, Planificator si Taskuri, deci jumatate din
+     taburi se deschideau taiat si jumatate lin — raportat de Ion („nu
+     toate taburile au animatii de deschidere"). Regula traieste in
+     global.css, deci aici nu se adauga niciun CSS. -->
+<div class="page ruta-in">
   <button class="back" onclick={() => navigate('/projects')}><ArrowLeft size={16} /> Proiecte</button>
 
   {#if loading}
