@@ -196,8 +196,27 @@
     const f0 = im.b
     const vecinStanga = lane.impl.filter((x) => x.id !== im.id && x.b < s0).sort((a, b) => b.b.localeCompare(a.b))[0]
     const vecinDreapta = lane.impl.filter((x) => x.id !== im.id && x.a > f0).sort((a, b) => a.a.localeCompare(b.a))[0]
+    // CAPATUL URMARESTE DEGETUL, CUANTIZAREA DOAR SE COMITE.
+    // Pana acum previzualizarea se desena din ziua cuantizata, deci trasul arata
+    // asa: ~700ms in care nu se misca NIMIC, apoi un salt de o zi intreaga (masurat:
+    // +84px, +76px, +75px la 14z). E exact defectul reparat pentru repere, unde
+    // `tragereTimeline` scrie un `--dx` continuu si lasa cuantizarea doar pentru ce
+    // se COMITE — perioadele n-au primit niciodata tratamentul ala.
+    // Limitele se calculeaza O DATA, la apucare: pana unde are voie sa ajunga
+    // capatul, ca sina sa nu treaca peste vecin si sa fie smucita inapoi.
+    const zMin = vecinStanga ? addDays(vecinStanga.b, 1) : plan.start
+    const zMax = vecinDreapta ? addDays(vecinDreapta.a, -1) : addDays(plan.start, plan.days - 1)
+    const limSt = spanRect(zMin, f0, plan.start, plan.days)
+    const limDr = spanRect(s0, zMax, plan.start, plan.days)
+    const stMin = limSt ? limSt.left : 0
+    const drMax = limDr ? limDr.left + limDr.width : 100
+    const pctDinX = (x) => {
+      const r = pista.getBoundingClientRect()
+      return Math.min(100, Math.max(0, ((x - r.left) / r.width) * 100))
+    }
+    const MIN_LAT = 0.4  // sub asta sina ar disparea de sub cursor
     incepeTragere(e, {
-      laInceput: () => { intindere = { id: im.id, a: s0, b: f0 } },
+      laInceput: () => { intindere = { id: im.id, a: s0, b: f0, viu: im.rect } },
       laMiscare: (x) => {
         const zi = ziDinX(x)
         let a = s0
@@ -209,12 +228,28 @@
           b = zi < s0 ? s0 : zi
           if (vecinDreapta && b >= vecinDreapta.a) b = addDays(vecinDreapta.a, -1)
         }
-        intindere = { id: im.id, a, b }
+        // Geometria VIE, in procente din pista — continua, nu pe zile.
+        const p = pctDinX(x)
+        const l0 = im.rect.left
+        const dr0 = im.rect.left + im.rect.width
+        let viu
+        if (capat === 'start') {
+          const st = Math.min(Math.max(p, stMin), dr0 - MIN_LAT)
+          viu = { left: st, width: dr0 - st }
+        } else {
+          const dr = Math.max(Math.min(p, drMax), l0 + MIN_LAT)
+          viu = { left: l0, width: dr - l0 }
+        }
+        intindere = { id: im.id, a, b, viu }
       },
       laFinal: async () => {
         const v = intindere
-        intindere = null
-        if (!v || (v.a === s0 && v.b === f0)) return
+        if (!v || (v.a === s0 && v.b === f0)) { intindere = null; return }
+        // PREVIZUALIZAREA SE TINE PANA CAND SOSESC DATELE NOI.
+        // Stearsa aici, banda se randa un cadru din `im.rect` — geometria VECHE —
+        // si abia apoi din raspuns: masurat, un salt inapoi de 235px chiar in
+        // clipa in care ridici degetul. `finally` o scoate si pe eroare, unde
+        // `loadPlan()` readuce oricum starea de pe server.
         try {
           await apiJson(`/api/implementari/${im.id}`, {
             method: 'PUT', body: { data_start: v.a, data_sfarsit: v.b },
@@ -231,6 +266,8 @@
         } catch (e2) {
           toast(`Eroare: ${e2.message}`, 'error')
           await loadPlan()
+        } finally {
+          intindere = null
         }
       },
       laAnulare: () => { intindere = null },
@@ -1044,7 +1081,10 @@
                          ele insele butoane, iar buton in buton e markup invalid —
                          aceeasi solutie ca la celula din Calendar. Previzualizarea
                          intinderii se deseneaza LIVE, din `intindere`, nu din rect. -->
-                    {@const rct = intindere?.id === im.id ? (spanRect(intindere.a, intindere.b, plan.start, plan.days) || im.rect) : im.rect}
+                    <!-- Geometria VIE cat timp tragi: `viu` e continua (urmareste
+                         degetul), nu cuantizata pe zi. Ce se COMITE ramane `a`/`b`,
+                         adica zilele — vezi `apucaCapatImpl`. -->
+                    {@const rct = intindere?.id === im.id ? (intindere.viu || im.rect) : im.rect}
                     <div class="impl-band loc-{im.locatie}" style="left:{rct.left}%; width:{rct.width}%"
                          class:pregatire={im.faza === 'pregatire'}
                          class:lat={im.rect.width >= inProcente(24, pistaPx)}
@@ -1933,9 +1973,14 @@
   /* Sub 24px sina n-are de unde fi apucata de doua manere de 9 — la 6L o zi are
      5,7px. Intinsul ramane la 7z/14z/30z, ca si pana acum. */
   .impl-band:not(.lat) .maner { display: none; }
-  /* Cat timp tragi, geometria se rescrie la fiecare pixel: fara animatia de
-     sosire (ar reporni) si fara tranzitia de culoare peste ea. */
-  .impl-band.se-trage { animation: none; transition: none; }
+  /* ANIMATIA DE SOSIRE NU SE MAI STINGE CAT TIMP TRAGI — si asta o repara.
+     `animation: none` parea o precautie („geometria se rescrie la fiecare pixel,
+     n-o lasa sa reporneasca"), dar o animatie CSS nu reporneste de la schimbari
+     de stil: reporneste cand `animation-name` se schimba. Adica exact ce facea
+     regula asta in clipa in care ridicai degetul si clasa pica — masurat, banda
+     sarea la opacitate 0 si `benziIn` o descoperea din nou de la stanga, 170ms.
+     Ce ramane e oprirea tranzitiei de culoare, ca sa nu se aseze peste geometrie. */
+  .impl-band.se-trage { transition: none; }
   .impl-band :global(.ib-ico) { flex: none; opacity: 0.85; }
   /* `.ib-out`, `.ib-txt`, `.ib-zile` si `.impl-band.lung` au plecat odata cu
      eticheta din banda: perioada nu mai scrie nimic in pista, ci in pastila de la
