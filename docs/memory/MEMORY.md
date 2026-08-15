@@ -79,6 +79,12 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
 3. **O decizie noua se scrie in `docs/decizii/`**, un fisier per decizie, plus un rand in
    `INDEX.md`. NU aici: fisierul asta e index, si un index care creste devine jurnal — a
    fost 187 KB si nimeni nu l-a citit vreodata integral.
+4. **Regulile complete de memorie**, cu defectul masurat care a produs fiecare regula:
+   `Knowledge/references/memorie-standard.md`. Cele care se aplica cel mai des aici:
+   *ce se poate genera se genereaza, iar generatorul citeste sursa care EXECUTA, nu
+   descrierea ei* · *fisierul incarcat mereu nu primeste niciodata o intrare datata* ·
+   *un fapt, un loc* · *verifica pe codul care ruleaza* · *absenta tacuta e cel mai rau
+   mod de esec* · *ce e verificat ramane adevarat*.
 
 ## Ultimele decizii
 
