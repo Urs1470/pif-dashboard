@@ -322,7 +322,7 @@
   /* Fara blur, ca la voalul modalului: sticla a iesit din sistem. */
   .dp-voal {
     position: fixed; inset: 0; z-index: calc(var(--z-tooltip) - 1);
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--scrim);
   }
   .dp-pop.sheet {
     top: auto; bottom: 0; left: 0; right: 0;
@@ -330,7 +330,7 @@
     padding: 0 var(--space-md) calc(var(--space-md) + var(--safe-bottom));
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-bottom: none;
-    box-shadow: 0 -14px 40px -12px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--shadow-foaie);
   }
   .dp-grip {
     display: block; width: 36px; height: 4px; margin: 8px auto 2px;

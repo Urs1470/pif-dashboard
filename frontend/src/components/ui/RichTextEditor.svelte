@@ -770,7 +770,7 @@
       /* Bara pluteste peste text acum, deci se desprinde prin umbra — in sus,
          fiindca ea e deasupra continutului. */
       border-bottom: none;
-      box-shadow: 0 -8px 20px -14px rgba(0, 0, 0, .55);
+      box-shadow: var(--shadow-foaie);
       /* Fara tastatura, insetul de siguranta tine butoanele deasupra barei de
          gesturi. Cu tastatura ridicata, ea acopera oricum zona aia, iar insetul
          ar fi 34px de bara moarta fix cand ai cel mai putin ecran. */

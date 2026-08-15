@@ -169,6 +169,30 @@ class Audit:
                 continue
             self.abatere('R2 hex brut', p, curat, m.start(), m.group(0))
 
+        # `rgb()`/`rgba()`/`hsl()` sunt tot culori scrise de mana, doar in alta
+        # notatie — iar regula de mai sus cauta doar `#`, deci treceau nevazute.
+        # Punct orb gasit la auditul din 2026-08-15: 14 aparitii, toate scrimuri
+        # si umbre fara token. Un audit care raporteaza „curat" fara sa se uite
+        # e mai rau decat unul care lipseste: te invata sa te bazezi pe el.
+        #
+        # `rgba(0,0,0,α)` NU e scutit, desi e „doar negru cu alfa": exact asta erau
+        # toate cele 14 — valuri si umbre scrise de mana, cu PATRU opacitati
+        # diferite (.5, .55, .6, .65) pentru acelasi lucru. E acelasi tipar ca
+        # cele trei ambere, doar in alta notatie. Negru cu alfa e legitim ca
+        # PRIMITIVA, adica in definitia unui token (`--shadow-*`, `--scrim-*` in
+        # tokens.css, care e scutit intreg), nu la locul de folosire.
+        for m in re.finditer(r'\b(?:rgba?|hsla?)\(([^)]*)\)', curat):
+            if in_span(m.start(), printuri):
+                continue
+            inainte = curat[max(0, m.start() - 90):m.start()]
+            # In `color-mix` si intr-o masca, negrul/albul sunt operatii, nu culori.
+            # `flood-color` la fel: intr-un filtru SVG negrul e canalul umbrei, iar
+            # intensitatea sta separat in `flood-opacity` — nu e o culoare de tema.
+            if ('color-mix' in inainte or 'mask-image' in inainte
+                    or 'flood-color' in inainte):
+                continue
+            self.abatere('R2 culoare bruta', p, curat, m.start(), m.group(0))
+
     # -- R3 -----------------------------------------------------------------
     def r3_durata_bruta(self, p, text, curat):
         """Durata scrisa in cifre intr-o tranzitie: scara de miscare se

@@ -813,7 +813,7 @@
        exact semnalul fara de care gestul e o loterie.
        Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
        componente. */
-    .arow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55);
+    .arow:global(.gl-tras) .gl-fata { box-shadow: var(--shadow-glisare);
                                       border-radius: var(--radius-sm); }
 
 

@@ -579,7 +579,7 @@
     transition: background-color var(--dur-base) var(--ease);
     padding: calc(var(--space-md) + var(--safe-top)) calc(var(--space-md) + var(--safe-right)) calc(var(--space-md) + var(--safe-bottom)) calc(var(--space-md) + var(--safe-left));
   }
-  .backdrop.varf { background: rgba(0, 0, 0, 0.65); }
+  .backdrop.varf { background: var(--scrim); }
   /* Foaia de dedesubt nu-si mai arata iesirea: butonul ei ar inchide un obiect
      care nu e cel de deasupra. Ramane vizibila ca context, nu ca tinta. */
   .modal:not(.varf) .modal-close { opacity: 0; pointer-events: none; }
@@ -629,7 +629,7 @@
     /* PANOUL NU ACOPERA CONTEXTUL — DECI NICI VOALUL NU-L ACOPERA.
        Un voal de 0,65 peste exact lista pe care panoul ar trebui s-o lase la
        vedere anuleaza motivul pentru care panoul e panou si nu caseta. */
-    .backdrop.varf:has(.modal-panou) { background: rgba(0, 0, 0, 0.18); }
+    .backdrop.varf:has(.modal-panou) { background: var(--scrim-slab); }
 
     /* Manerul: o bara subtire pe muchia din stanga, cu cursorul care spune ce
        face. Se ingroasa la hover, nu se coloreaza — e o unealta, nu o stare. */
@@ -756,7 +756,7 @@
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       border-bottom: none;
       /* Umbra urca, nu coboara: sheet-ul se ridica peste pagina. */
-      box-shadow: 0 -14px 40px -12px rgba(0, 0, 0, 0.6);
+      box-shadow: var(--shadow-foaie);
     }
     /* Pe telefon panoul REDEVINE foaie: acelasi continut, acelasi component, alt
        loc. Fara `.modal-panou` in lista asta ar fi ramas o coloana de 340px lipita

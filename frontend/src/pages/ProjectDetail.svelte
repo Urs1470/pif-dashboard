@@ -1591,7 +1591,7 @@
        exact semnalul fara de care gestul e o loterie.
        Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
        componente. */
-    .trow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .trow:global(.gl-tras) .gl-fata { box-shadow: var(--shadow-glisare); }
     .task-actions { display: none; }
     /* Ca in /tasks: pe telefon titlul se rupe pe doua randuri in loc sa fie
        taiat cu „…”. Un titlu de task trunchiat la 30 de caractere pe un
@@ -1626,7 +1626,7 @@
       touch-action: pan-y; padding: 0; }
     .sub-row .gl-fata { padding: 0 6px; gap: 9px; min-height: var(--tap-min);
       background: var(--bg-surface); border-radius: var(--radius-xs); }
-    .sub-row:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .sub-row:global(.gl-tras) .gl-fata { box-shadow: var(--shadow-glisare); }
     .sub-title { text-align: left; cursor: pointer; }
     .sub-nou { min-height: var(--tap-min); font-size: var(--font-small); }
     .sub-nou-p { width: 26px; }

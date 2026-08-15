@@ -2225,7 +2225,7 @@
        exact semnalul fara de care gestul e o loterie.
        Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
        componente. */
-    .trow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55);
+    .trow:global(.gl-tras) .gl-fata { box-shadow: var(--shadow-glisare);
                                       border-radius: var(--radius-sm); }
     .task-actions { display: none; }
     /* BIFA: 44px de ATINS, dar nu 44px de LATIME.
@@ -2347,7 +2347,7 @@
     .sub-row { position: relative; overflow: hidden; touch-action: pan-y; padding: 0; }
     .sub-row .gl-fata { padding: 0 6px; gap: 9px; min-height: var(--tap-sheet);
       background: var(--bg-overlay); border-radius: var(--radius-xs); }
-    .sub-row:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .sub-row:global(.gl-tras) .gl-fata { box-shadow: var(--shadow-glisare); }
     /* Titlul e tinta cea mai mare si face lucrul cel mai des: bifeaza. */
     .sub-title { text-align: left; cursor: pointer; }
     /* 1rem = 16px, aceeasi valoare pe CITIRE si pe SCRIERE. Regula globala urca

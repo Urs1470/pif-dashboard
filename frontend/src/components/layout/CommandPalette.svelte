@@ -341,7 +341,7 @@
   .palette-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--scrim);
     z-index: var(--z-modal);
     display: flex;
     align-items: flex-start;

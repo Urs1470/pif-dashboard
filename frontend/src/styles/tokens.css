@@ -47,6 +47,19 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 16px -10px rgba(0, 0, 0, .6);
   --shadow-md: 0 1px 2px rgba(0, 0, 0, .5), 0 14px 34px -16px rgba(0, 0, 0, .75);
 
+  /* Doua umbre care nu sunt niveluri de elevatie, ci OBIECTE anume — de aceea au
+     token propriu, nu se aproximeaza cu --shadow-md. Erau scrise de mana: cea de
+     glisare in SASE locuri identice, cea de foaie in DOUA. */
+  --shadow-glisare: -6px 0 12px -8px rgba(0, 0, 0, .55);   /* randul tras lateral */
+  --shadow-foaie: 0 -14px 40px -12px rgba(0, 0, 0, .6);    /* foaia ridicata de jos */
+
+  /* ---- Valul de sub un strat plutitor ----
+     Patru opacitati scrise de mana (.5, .6, .65, .18) pentru acelasi lucru. Doua
+     decizii, nu patru: cat de tare stingi ce e dedesubt. Cel slab e pentru cazul
+     in care peste val vine si un panou opac — atunci valul doar separa, nu stinge. */
+  --scrim: rgba(0, 0, 0, .6);
+  --scrim-slab: rgba(0, 0, 0, .18);
+
   /* ================================================================
      ALIASURI — nume vechi care raman in cod, mapate pe rolurile noi.
      Nu sunt roluri in plus: sunt acelasi rol sub numele cu care e deja
@@ -347,6 +360,10 @@
 
   --shadow-sm: 0 1px 2px rgba(20, 24, 31, .05), 0 4px 12px -8px rgba(20, 24, 31, .10);
   --shadow-md: 0 1px 2px rgba(20, 24, 31, .05), 0 10px 28px -14px rgba(20, 24, 31, .14);
+  --shadow-glisare: -6px 0 12px -8px rgba(20, 24, 31, .18);
+  --shadow-foaie: 0 -14px 40px -12px rgba(20, 24, 31, .16);
+  --scrim: rgba(20, 24, 31, .32);
+  --scrim-slab: rgba(20, 24, 31, .10);
 
   /* Toate alisurile de mai sus se rezolva prin `var()` la rolurile redefinite
      aici, deci nu se repeta. Exceptiile sunt cele care nu depind de tema. */

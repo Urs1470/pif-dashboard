@@ -2488,7 +2488,7 @@
        exact semnalul fara de care gestul e o loterie.
        Ancora (`.arow`/`.trow`/`.mrow`) ramane scoped, deci regula nu scapa in alte
        componente. */
-    .mrow:global(.gl-tras) .gl-fata { box-shadow: -6px 0 12px -8px rgba(0,0,0,0.55); }
+    .mrow:global(.gl-tras) .gl-fata { box-shadow: var(--shadow-glisare); }
     /* 52, nu 44: `--tap-min` e pragul de ATINS, iar aici bifa il asigura singura
        (`.mcheck` ramane 44). Randul de lista se citeste, deci ia `--row-h-mobile`. */
     .mrow-main { flex: 1 1 0; min-width: 0; padding: 0; min-height: var(--row-h-mobile); justify-content: center; }
