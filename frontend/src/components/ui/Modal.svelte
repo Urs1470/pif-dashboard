@@ -76,8 +76,49 @@
   import { tick } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, ARC } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
+  // Foaia si voalul ies in `body`: pagina din spate se RETRAGE (un `transform`
+  // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
+  // odata cu ce acopera. Vezi nota din `lib/portal.js`.
+  import { portal } from '../../lib/portal.js'
+
+  // ===== DE UNDE CRESTE CASETA (Ion, 2026-08-15: „din declansator") =====
+  //
+  // Scalarea din centru spune „o fereastra s-a deschis undeva". Un modal
+  // deschis dintr-un buton anume poate creste DIN butonul acela — o singura
+  // proprietate, `transform-origin`.
+  //
+  // Originea vine din ultima APASARE, nu dintr-o proprietate pasata de fiecare
+  // apelant: sunt peste douazeci de locuri care deschid modale, iar o
+  // proprietate noua pe fiecare ar fi fost uitata exact acolo unde conteaza.
+  // Fereastra de 600ms si distanta plafonata mai jos fac diferenta intre „am
+  // apasat ceva si s-a deschis asta" si „modalul a venit din alta parte".
+  //
+  // Cand NU exista o apasare recenta — deschidere din tastatura, din paleta,
+  // dintr-un gest, dintr-o notificare — nu exista nici origine, si caseta creste
+  // din centru ca pana acum. O origine gresita e mai rea decat niciuna: caseta
+  // ar parea ca vine din alt loc decat ai atins.
+  let ultimaApasare = { x: 0, y: 0, cand: 0 }
+  if (typeof window !== 'undefined') {
+    window.addEventListener('pointerdown', (e) => {
+      ultimaApasare = { x: e.clientX, y: e.clientY, cand: Date.now() }
+    }, { capture: true, passive: true })
+  }
+
+  function origineaCasetei(node) {
+    const a = ultimaApasare
+    if (!a.cand || Date.now() - a.cand > 600) return ''
+    const r = node.getBoundingClientRect()
+    if (!r.width || !r.height) return ''
+    const px = ((a.x - r.left) / r.width) * 100
+    const py = ((a.y - r.top) / r.height) * 100
+    // Peste distanta asta originea nu mai ajuta, incurca: o casetă care creste
+    // dintr-un punct aflat departe in afara ei se citeste ca o zvacnire, nu ca
+    // o legatura cu ce ai atins.
+    if (px < -120 || px > 220 || py < -120 || py > 220) return ''
+    return `${px.toFixed(1)}% ${py.toFixed(1)}%`
+  }
   import { PRAG_INCHIDE, PRAG_INTINDE, puls } from '../../lib/gesturi.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
@@ -186,7 +227,19 @@
     // o deplasare mica, pe axa lui. Distanta e mica cu bunastiinta: obiectul e
     // deja la locul lui, miscarea doar spune din ce parte a venit.
     if (panou) return { duration, easing: EASE, css: (t, u) => `opacity: ${t}; transform: translateX(${u * 8}px)` }
-    return scale(node, { start: 0.96, duration, easing: EASE })
+    // Caseta: creste din declansator daca exista unul, altfel din centru.
+    // ARC pe scalare (se misca in spatiu), `--ease` pe opacitate — regula
+    // `spatial` / `effects` din tokens.
+    const org = origineaCasetei(node)
+    if (org) node.style.transformOrigin = org
+    return {
+      duration: motionDuration(DUR_ARC),
+      easing: (t) => t,
+      css: (t) => `opacity: ${EASE(t)}; transform: scale(${0.96 + 0.04 * ARC(t)});`,
+      // Originea se sterge la final: lasata acolo, ar ramane pe casetă si
+      // pentru INCHIDERE, care se joaca din alt punct decat s-a deschis.
+      tick: (t) => { if (t === 1) node.style.transformOrigin = '' },
+    }
   }
 
   // ===== TRAGEREA SHEET-ULUI (telefon) =====
@@ -465,7 +518,7 @@
        sensuri: la foaie 280 la intrare / 220 la iesire (contractul de miscare),
        la restul 220. `in:`/`out:`, nu `transition:` — doar asa functia de
        tranzitie afla sensul (`direction`), ca sa aleaga durata. -->
-  <div class="backdrop" class:varf bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
+  <div class="backdrop" class:varf use:portal bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
        style:--nivel={nivel} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
        in:fade={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
        out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>

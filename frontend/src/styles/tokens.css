@@ -210,6 +210,30 @@
      urmareste degetul; revenirea dintr-un gest, din acelasi motiv. */
   --ease-spring: cubic-bezier(.34, 1.35, .42, 1);
 
+  /* ---- ARCUL: pentru ce se MISCA in spatiu (2026-08-15) ----
+     Sistemul avea o singura amortizare pentru tot — si pentru un rand care
+     soseste, si pentru un voal care se stinge. Corect, dar uniform: un obiect
+     oprit sec de `--ease` nu pare sa aiba masa. Material 3 desparte exact aici:
+     `spatial` (are voie sa depaseasca) si `effects` (culoare, opacitate —
+     NICIODATA, altfel se vede ca palpait).
+     Deci `--ease-arc` merge pe transform, si numai pe el.
+
+     `linear()`, nu `cubic-bezier`: un arc adevarat oscileaza, iar o bezier are
+     un singur maxim, deci nu poate reveni. Valorile sunt un oscilator amortizat
+     esantionat in 33 de puncte (durata 420ms, bounce .18 — notatia Apple).
+     Depaseste tinta cu ~1%: se simte, nu se vede.
+
+     DIFERIT de `--ease-spring`, care ramane pentru ce urmareste degetul:
+     acela depaseste cu 35%, si e potrivit doar cand mana ta a dat elanul. */
+  --dur-arc: 0.42s;
+  --ease-arc: linear(0, 0.0173, 0.0621, 0.1254, 0.2001, 0.2804, 0.3623, 0.4426, 0.5191, 0.5903, 0.6554, 0.7139, 0.7657, 0.8109, 0.8499, 0.8831, 0.911, 0.9341, 0.953, 0.9683, 0.9804, 0.9898, 0.997, 1.0023, 1.006, 1.0085, 1.0101, 1.0109, 1.0111, 1.0109, 1.0104, 1.0097, 1);
+
+  /* Elanul: acelasi oscilator, bounce .28, pentru UN singur obiect — tenta care
+     trece dintr-un tab in altul. Ea traverseaza o distanta pe care o vezi, deci
+     are voie sa arate ca a avut viteza. */
+  --dur-arc-elan: 0.38s;
+  --ease-arc-elan: linear(0, 0.0175, 0.0636, 0.1297, 0.2087, 0.2946, 0.3831, 0.4704, 0.5539, 0.6318, 0.7028, 0.7663, 0.822, 0.8699, 0.9104, 0.9439, 0.971, 0.9924, 1.0088, 1.0209, 1.0293, 1.0346, 1.0375, 1.0384, 1.0378, 1.0361, 1.0336, 1.0306, 1.0273, 1.0239, 1.0205, 1.0173, 1);
+
   /* Adancimea apasarii, tokenizata ca si durata: o singura valoare, ca nimic
      sa nu-si aleaga singur cat de tare se strange. */
   --press-scale: 0.965;

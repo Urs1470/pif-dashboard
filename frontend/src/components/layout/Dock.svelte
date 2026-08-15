@@ -479,8 +479,14 @@
      randare ar aluneca din colt spre slotul curent, ca si cum ai fi navigat.
      Doar `transform` — toate sloturile au aceeasi latime, deci pastila nu-si
      schimba marimea decat la trecerea de prag, unde un salt e corect. */
+  /* ELAN (Ion, 2026-08-15). Tenta traverseaza o distanta pe care O VEZI — de la
+     un slot la altul — deci are voie sa arate ca a avut viteza. Depaseste cu
+     ~4% si revine.
+     Doar `transform`: OPACITATEA ramane pe curba de vopsea. O depasire pe
+     opacitate se citeste ca palpait, si e chiar regula scrisa in tokens
+     („effects — NICIODATA"). */
   .dock-pilula.asezata {
-    transition: transform var(--dur-base) var(--ease), opacity var(--dur-fast) var(--ease);
+    transition: transform var(--dur-arc-elan) var(--ease-arc-elan), opacity var(--dur-fast) var(--ease);
   }
 
   .dock-item {

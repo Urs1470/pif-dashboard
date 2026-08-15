@@ -2,7 +2,7 @@
   import { X, Info, CircleCheck, CircleAlert, ArrowDownToLine, RefreshCw } from '@lucide/svelte'
   import { fly } from 'svelte/transition'
   import { ui, closeToast, runToastAction } from '../../stores/ui.svelte.js'
-  import { motionDuration, EASE } from '../../lib/motion.svelte.js'
+  import { motionDuration, EASE, ARC, DUR_ARC } from '../../lib/motion.svelte.js'
 
   // TREI ROLURI, NU PATRU TIPURI.
   //
@@ -32,7 +32,7 @@
       <!-- 240 la intrare / 180 la iesire (contract miscare): sosirea se vede,
            plecarea nu se lasa asteptata. -->
       <div class="toast rol-{t.rol ?? ROL[t.type] ?? 'neutru'}"
-           in:fly={{ y: 16, duration: motionDuration(240), easing: EASE }}
+           in:fly={{ y: 16, duration: motionDuration(DUR_ARC), easing: ARC }}
            out:fly={{ y: 16, duration: motionDuration(180), easing: EASE }}>
         <Ico size={17} strokeWidth={1.5} class="toast-ico" />
         <span class="toast-text">{t.message}</span>

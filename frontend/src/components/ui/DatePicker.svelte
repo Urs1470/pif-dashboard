@@ -2,6 +2,7 @@
   import { Calendar, ChevronLeft, ChevronRight, X } from '@lucide/svelte'
   import { ecran } from '../../lib/ecran.svelte.js'
   import { scale, fly, fade } from 'svelte/transition'
+  import { portal } from '../../lib/portal.js'
   import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
   import { nivelNou, nivelInchis } from './Modal.svelte'
 
@@ -194,10 +195,7 @@
   // .arow:hover) — altfel un card-frate ulterior in DOM il acopera desi are
   // z-index mare. position:fixed + getBoundingClientRect => coordonatele raman
   // corecte in spatiul viewport-ului.
-  function portal(node) {
-    document.body.appendChild(node)
-    return { destroy() { node.remove() } }
-  }
+  // Mutat in `lib/portal.js` cand `Modal` a avut nevoie de acelasi lucru.
 </script>
 
 <svelte:window onclick={onWindowClick} onkeydowncapture={onKey} onresize={() => open && positionPopup()} />

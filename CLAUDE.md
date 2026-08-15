@@ -919,8 +919,9 @@ Taskuri al proiectului au acum aceeași geometrie, până la pixel: 46px înăl�
 (nu iconițe mute) apărute la hover **la stânga** termenului, titlul cedează lățimea.
 Coloana de 16px a mânerului de reordonare e **rezervată pe toate rândurile**, ca absența să
 nu pară greșeală. Listele n-au rânduri-card: un separator de 1px cu marjă laterală.
-Ce a plecat de pe rând: categoria, fracția de pași, indicatorul de notiță, săgeata de
-desfacere. Dacă schimbi forma, schimb-o în **toate trei** — sursa e `Tasks.svelte`.
+Ce a plecat de pe rând: categoria, indicatorul de notiță, săgeata de desfacere.
+(Fracția de pași plecase și ea; s-a întors pe 2026-08-15 — vezi mai jos.)
+Dacă schimbi forma, schimb-o în **toate trei** — sursa e `Tasks.svelte`.
 
 **O singură cale de adăugare per ecran:** linia cu Enter pe desktop, butonul mare cu plus pe
 telefon (`/tasks`). Pe „Astăzi" rămâne compozitorul, fiindcă acolo e al boardului.
@@ -944,6 +945,49 @@ funcția se reia, se reia cu ambele capete.
 
 **Un singur toast pe ecran, 4s.** Cel înlocuit **se comite** (`onCommit`), nu se aruncă:
 altfel rândul rămânea șters din interfață și neșters din bază.
+
+### Contorul de pași se întoarce pe rând (2026-08-15)
+
+Ion: *„la taskuri, când are subtaskuri ar fi bine să arate un counter subtil undeva,
+câte din câte sunt îndeplinite."* Asta **ridică interdicția E1** („fracția de pași nu
+stă pe rând, rândul poartă două lucruri — ce e de făcut și când"), pusă la redesignul
+din 8 august. Se ridică în **toate cele patru liste deodată**: `/tasks`, „Astăzi",
+tabul Taskuri al proiectului și rândul mobil din Planificator.
+
+- **O rețetă, un loc: `.tpasi` în `global.css`.** Înainte de asta, același fapt avea
+  o haină pe „Astăzi" (`.a-pasi`, pe linia a doua), niciuna în celelalte trei, și un
+  `.tsub-chip` mort în `global.css` fără niciun consumator.
+- **Lângă titlu, nu într-o coloană.** O coloană ar fi goală pe majoritatea rândurilor,
+  iar o coloană cu goluri nu se mai citește pe verticală — adică pierde exact singurul
+  motiv pentru care termenul e coloană. Contorul răspunde la „cât din lucrul ăsta",
+  deci se leagă de titlu; termenul răspunde la „când" și rămâne pironit la dreapta.
+- **Fără culoare, nici la 5/5.** Pe rândul de task culoarea e rezervată severității
+  (inelul bifei + textul termenului, amândouă din `--ring`); o tentă verde ar fi al
+  treilea canal cromatic, adică fix ce a demontat tura 9. Că e gata pe dinăuntru o
+  spune cifra — și tot ea spune și cât mai e, ceea ce o tentă nu poate.
+- **Cea mai proaspătă sursă câștigă.** `pasi()` (în `Tasks.svelte` și `ProjectDetail`)
+  citește din `subtasksCache` când există, altfel din `subtask_total`/`_done` de la
+  server. Fără asta, bifarea unui pas în rândul desfăcut nu mișca cifra de deasupra
+  lui: `toggleSubtaskDone` scrie în cache și **nu** reîncarcă lista. Un `[]` în cache
+  înseamnă „am întrebat, n-are niciunul", deci scoate contorul.
+- **Scrierile de subtask invalidează acum listele** (`uitaSubtaskuri` în
+  `stores/tasks.svelte.js` → `/api/global-tasks`, `/api/plan`, `/api/proiecte`).
+  Fișierul își scria regula în cap — „orice scriere invalidează lista" — dar cele trei
+  mutații de subtask erau singurele scutite. Era invizibil cât timp nicio listă nu
+  arăta date de subtask; de acum, fără ele, bifai un pas, plecai de pe pagină și
+  cifra veche revenea din cache. Toate trei prefixele, fiindcă `updateSubtask` are
+  doar id-ul subtaskului: de acolo nu se poate ști dacă părintele e task de proiect
+  sau global.
+- **`.mrow-main` din Planificator și `.amain` de pe „Astăzi" sunt coloane**, deci
+  titlul a primit un înveliș de rând (`.mrow-titlu` / `.atitlu`). Pe „Astăzi",
+  `align-self: flex-start` a urcat pe înveliș: pe titlu ar fi însemnat aliniere pe
+  verticală, iar el era acolo ca tăietura de „done" să se oprească la ultima literă.
+- **`.tmain` din `ProjectDetail` era coloană degeaba** — rămăsese de pe vremea celei
+  de-a doua linii (`.tinfo`), care n-avea niciun consumator în markup de la E1 încoace.
+  Cu ea, contorul ar fi aterizat *sub* titlu aici și lângă el în celelalte trei.
+- **Prins în aceeași trecere:** pe „Astăzi" contorul era gardat pe `contextRand(it)`
+  împreună cu întreaga linie a doua, deci un task cu pași dar fără proiect și fără
+  categorie nu-l arăta deloc.
 
 ### Un singur editor pentru toate câmpurile lungi (Proiecte 5a, 2026-08-08)
 

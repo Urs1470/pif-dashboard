@@ -94,6 +94,55 @@ export function easeCss() {
 // dintr-un gest), gresit pentru orice altceva. De aceea nu e implicitul.
 export const SPRING = bezier(0.34, 1.35, 0.42, 1)
 
+// ARCUL, IN JS — perechea exacta a lui `--ease-arc` din tokens.css.
+//
+// CSS-ul il poarta ca `linear()` cu 33 de opriri; tranzitiile Svelte au nevoie
+// de o FUNCTIE, deci aici e formula insasi, nu esantioanele ei. Amandoua descriu
+// acelasi oscilator amortizat, deci nu exista „doua arcuri usor diferite dupa
+// cine deseneaza miscarea" — greseala pe care fisierul asta a facut-o o data cu
+// `--ease-spring` si o are scrisa mai sus.
+//
+// `bounce` e notatia Apple: 0 = fara depasire, .18 = depaseste cu ~1%.
+// Rezultatul nu depinde de durata, fiindca pulsatia se alege exact cat sa
+// incapa o perioada in ea — deci functia primeste progresul 0..1 si atat.
+function arcCu(bounce) {
+  const zeta = 1 - bounce
+  const wd = Math.sqrt(1 - zeta * zeta)
+  return (t) => {
+    if (t <= 0) return 0
+    if (t >= 1) return 1
+    const u = 2 * Math.PI * t
+    return 1 - Math.exp(-zeta * u) * (Math.cos(wd * u) + (zeta / wd) * Math.sin(wd * u))
+  }
+}
+
+/** Arcul pentru ce se MISCA in spatiu. Niciodata pe opacitate sau culoare —
+ *  vezi nota din tokens.css. */
+export const ARC = arcCu(0.18)
+export const DUR_ARC = 420
+
+/** Elanul: acelasi arc, mai vioi. Un singur consumator — tenta din dock. */
+export const ARC_ELAN = arcCu(0.28)
+export const DUR_ARC_ELAN = 380
+
+/** `--ease-arc` ca SIR, pentru `Element.animate()`. Acelasi mecanism ca
+ *  `easeCss` — se citeste din token la prima chemare — dar rezerva se
+ *  ESANTIONEAZA din `ARC` de mai sus, deci si ea vine din aceeasi formula.
+ *  Definita dupa `ARC` cu buna stiinta: rezerva o foloseste. */
+let _arcCss = ''
+export function arcCss() {
+  if (_arcCss) return _arcCss
+  const dinToken = typeof document !== 'undefined'
+    ? getComputedStyle(document.documentElement).getPropertyValue('--ease-arc').trim()
+    : ''
+  if (dinToken) { _arcCss = dinToken; return _arcCss }
+  const n = 32
+  const pct = []
+  for (let i = 0; i <= n; i++) pct.push(i === n ? 1 : +ARC(i / n).toFixed(4))
+  _arcCss = `linear(${pct.join(',')})`
+  return _arcCss
+}
+
 function readReducedMotion() {
   return typeof window !== 'undefined'
     && (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false)
@@ -149,15 +198,19 @@ export function motionDuration(ms) {
 // doua animatii de layout pe acelasi eveniment s-ar calca una pe alta.
 // Se foloseste cu `|local`, ca prima incarcare a listei sa NU se joace:
 // intrarea e pentru randul nou, nu pentru pagina noua.
-export function sosire(node, { duration = DUR_BASE } = {}) {
+export function sosire(node, { duration = DUR_ARC } = {}) {
   const d = motionDuration(duration)
   // Sub `reduced-motion` ramane doar stingerea: translatia e exact ce a cerut
   // utilizatorul sa nu se mai intample.
   const dz = motion.reduced ? 0 : 5
+  // ARC pe pozitie, `--ease` pe opacitate — nu din estetica, din regula scrisa
+  // in tokens: `spatial` are voie sa depaseasca, `effects` niciodata. O
+  // depasire pe opacitate se citeste ca palpait. De aceea nu se poate pune un
+  // singur easing pe amandoua, si se calculeaza separat.
   return {
     duration: d,
-    easing: EASE,
-    css: (t) => `opacity: ${t}; transform: translateY(${(1 - t) * dz}px);`,
+    easing: (t) => t,           // progres liniar; curbele se aplica mai jos
+    css: (t) => `opacity: ${EASE(t)}; transform: translateY(${(1 - ARC(t)) * dz}px);`,
   }
 }
 
@@ -311,8 +364,10 @@ export function aterizare(el, dinainte) {
   const dy = dinainte.top - acum.top
   // Sub o jumatate de pixel nu e o mutare, e zgomot de rotunjire.
   if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return
+  // Aterizarea e miscare in spatiu: arc. Sirul vine din acelasi token ca in CSS
+  // (`--ease-arc`), deci nu exista o a doua copie a curbei.
   el.animate(
     [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }],
-    { duration: d, easing: easeCss() },
+    { duration: motionDuration(DUR_ARC), easing: arcCss() },
   )
 }

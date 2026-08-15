@@ -181,6 +181,27 @@ code, pre {
    safe-area, ca sa nu ramana o dunga sub gestul de sistem. */
 @media (max-width: 768px) {
   html.are-modal .dock { --dock-shift: calc(100% + var(--safe-bottom) + 6px); }
+
+  /* PAGINA SE RETRAGE SUB FOAIE (Ion, 2026-08-15). Foaia vine DEASUPRA paginii,
+     nu peste ea — iar asta se spune cel mai bine lasand pagina sa se dea putin
+     inapoi, ca in iOS. Doar `transform`: se compune pe GPU, nu costa layout.
+     Numai pe telefon: pe desktop modalul e o casetă centrata sau un panou care
+     face loc, iar acolo retragerea n-ar insemna nimic.
+     Foaia si voalul NU se scaleaza odata cu pagina, fiindca ies in `body`
+     (`use:portal` din Modal) — fara asta, obiectul s-ar micsora impreuna cu
+     fundalul pe care il acopera. Aceeasi capcana ca la `.ruta-in`: un element
+     transformat devine bloc de referinta pentru orice `position: fixed`
+     dinauntru.
+     La INCHIDERE se intoarce pe curba obisnuita, nu pe arc: pagina care revine
+     n-are voie sa depaseasca — ar parea ca sare in fata. */
+  .app-main {
+    transform-origin: 50% 0;
+    transition: transform var(--dur-slow) var(--ease);
+  }
+  html.are-modal .app-main {
+    transform: scale(.93) translateY(6px);
+    transition: transform var(--dur-arc) var(--ease-arc);
+  }
 }
 
 /* SI INVELISUL RUTEI ISI LASA TRANSFORMUL cat timp e un modal deschis.
@@ -519,11 +540,18 @@ input:focus, select:focus, textarea:focus {
   animation-duration: 240ms;
   animation-timing-function: var(--ease, ease);
 }
+/* Pagina care VINE merge pe arc si pe drumul lat (Ion: „drum lat"). Cea care
+   PLEACA ramane pe curba de azi: un obiect care iese n-are voie sa depaseasca,
+   altfel pare ca se razgandeste. */
+::view-transition-new(root) {
+  animation-duration: var(--dur-arc);
+  animation-timing-function: var(--ease-arc, ease);
+}
 ::view-transition-new(root) {
   animation-name: vt-pagina-noua;
 }
 @keyframes vt-pagina-noua {
-  from { opacity: 0; transform: translateX(calc(var(--nav-sens, 0) * 10px)); }
+  from { opacity: 0; transform: translateX(calc(var(--nav-sens, 0) * 30px)); }
   to { opacity: 1; transform: none; }
 }
 
@@ -630,6 +658,8 @@ input[type="checkbox"].cbx:focus {
   border: 1.5px solid var(--ring, var(--border-strong));
   border-radius: 50%;
   flex: none;
+  /* Ancora bifei care se deseneaza (vezi `.bifare .check-empty::after`). */
+  position: relative;
   transition: box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
 .check-empty.small { --check-size: 14px; }
@@ -667,10 +697,40 @@ input[type="checkbox"].cbx:focus {
   from { background-size: 0 1.5px; }
   to { background-size: 100% 1.5px; }
 }
+/* BIFA SE DESENEAZA IN INEL (Ion, 2026-08-15: „bifa se deseneaza").
+   Inelul nu se mai umple cu verde plin — ar acoperi exact locul in care trebuie
+   sa incapa semnul. Ramane conturul, cu tenta, iar semnul se traseaza inauntru.
+   Doua borduri pe o cutie rotita 45° = un „✓"; dezvelirea se face din `clip-path`,
+   care se compune pe GPU si care, fiind aplicat INAINTE de `transform`, taie in
+   sistemul propriu al cutiei — deci merge de-a lungul semnului, nu peste el.
+   Intarzierea de 80ms lasa inelul sa se coloreze intai: mai intai se aprinde
+   tinta, apoi se scrie in ea. Totul se incheie in ~320ms, sub cei 400 pe care ii
+   asteapta JS-ul inainte sa lase randul sa plece. */
+@keyframes bifDesen {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
 .bifare .check-empty {
-  background: var(--success);
+  background: var(--success-subtle);
   border-color: var(--success);
   animation: bifStamp var(--dur-base) var(--ease);
+}
+.bifare .check-empty::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 30%;
+  height: 56%;
+  border: 2px solid var(--success);
+  border-top: 0;
+  border-left: 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+  animation: bifDesen var(--dur-base) var(--ease) 80ms backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Semnul ramane — el e informatie, nu decor. Doar trasarea lui dispare. */
+  .bifare .check-empty::after { animation: none; clip-path: none; }
 }
 .bifare .ttitle, .bifare .atitle, .bifare .mrow-title {
   color: var(--text-dim);
@@ -883,9 +943,15 @@ input[type="checkbox"].cbx:focus {
    Pe scurt: la schimbarea de tab tranzitia o detine browserul, iar scara asta
    se juca PESTE ea. Aici ramane cazul pentru care a fost scrisa: deschiderea
    aplicatiei, unde nu exista pagina veche de la care sa vii. */
+/* ARC, nu `--ease` (Ion, 2026-08-15: „arc si scara"). Celula se MISCA in
+   spatiu, deci intra in categoria `spatial` din tokens: are voie sa depaseasca
+   cu ~1% si sa se aseze. Pasul scarii creste de la 40 la 45ms, cat sa se
+   citeasca peste durata mai lunga a arcului; plafonul ramane la sase celule.
+   Scara se joaca DOAR aici, la prima incarcare — la schimbarea de tab s-ar
+   aduna peste tranzitia browserului (bugul reparat pe 14 august). */
 html.prima-incarcare .cell-in {
-  animation: cellIn var(--dur-base) var(--ease) backwards;
-  animation-delay: min(var(--celula, 0) * 40ms, 240ms);
+  animation: cellIn var(--dur-arc) var(--ease-arc) backwards;
+  animation-delay: min(var(--celula, 0) * 45ms, 270ms);
 }
 @media (prefers-reduced-motion: reduce) {
   html.prima-incarcare .cell-in { opacity: 1; animation: none; }
@@ -936,7 +1002,7 @@ html.prima-incarcare .cell-in {
    asta conteaza: `animation-name` care revine de la `none` la un nume
    reporneste animatia, deci o clasa pusa doar in timpul tranzitiei ar fi jucat,
    la scoatere, exact miscarea pe care o suprima. */
-html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-base) var(--ease) backwards; }
+html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-arc) var(--ease-arc) backwards; }
 
 /* ===== ASTEPTAREA SOSESTE, NU APARE =====
    Ion: „se poate adauga cate o animatie, ceva gen cum e la planificator pentru
@@ -953,7 +1019,7 @@ html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-base) var(--ease) ba
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
-.asteptare { animation: asteptareIn var(--dur-base) var(--ease) backwards; }
+.asteptare { animation: asteptareIn var(--dur-arc) var(--ease-arc) backwards; }
 @media (prefers-reduced-motion: reduce) {
   .asteptare { opacity: 1; animation: none; }
 }
