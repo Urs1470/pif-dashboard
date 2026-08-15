@@ -65,6 +65,10 @@ AUDIT_*.md
 .claude/*
 !.claude/settings.json
 !.claude/hooks/
+# Regulile cu `paths:` sunt sistemul de design mutat din CLAUDE.md — se incarca doar
+# cand atingi frontendul. Trebuie versionate: auto-memoria e locala per masina, deci
+# git e singurul lucru care le duce si pe celalalt PC.
+!.claude/rules/
 
 # Secrets
 .secret_key

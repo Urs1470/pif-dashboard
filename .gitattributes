@@ -1,0 +1,9 @@
+# `static/dist/` e build, dar TREBUIE versionat: deploy-ul face `git reset --hard` pe
+# server, unde nu exista npm. Costul e ca `git status`/`git diff` sunt ~95% zgomot de
+# artefacte cu nume hash-uite. `linguist-generated` il ascunde din diffuri si din
+# statisticile de limbaj, fara sa-l scoata din git.
+static/dist/** linguist-generated=true -diff
+
+# Bundle-uri minificate: n-are sens sa se incerce merge pe ele.
+static/dist/**.js binary
+static/dist/**.css binary

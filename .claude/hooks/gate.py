@@ -40,6 +40,11 @@ SCRIPTURI = RADACINA / 'scripts'
 MAX_BLOCARI = 2          # a (MAX_BLOCARI+1)-a oara raporteaza, nu blocheaza
 MAX_IESIRE = 3000        # caractere pastrate din coada iesirii unei porti
 TIMP_MAX = 900           # secunde per poarta (audit_mobil e cel mai lung)
+# Buget TOTAL, sub timeout-ul hook-ului din settings.json (900 s). Fara el, cinci porti
+# a cate 900 s puteau insuma 75 de minute, iar harness-ul ar fi omorat hook-ul la 900 —
+# adica tura s-ar fi incheiat FARA VERDICT. O poarta care tace arata exact ca una care
+# a trecut, si asta e singurul mod de esec pe care poarta n-are voie sa-l aiba.
+TIMP_TOTAL = 780         # 13 min; restul pana la 900 ramane pentru raportare
 
 FISIERE_API = {'database.py', 'app.py', 'utils.py', 'labels.py', 'csrf.py'}
 
@@ -226,8 +231,8 @@ def porti_pentru(atinse):
     return porti
 
 
-def ruleaza(argv, cwd):
-    p = subprocess.run(argv, cwd=str(cwd), env=mediu_probe(), timeout=TIMP_MAX,
+def ruleaza(argv, cwd, limita=None):
+    p = subprocess.run(argv, cwd=str(cwd), env=mediu_probe(), timeout=min(TIMP_MAX, limita) if limita else TIMP_MAX,
                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return p.returncode, p.stdout.decode('utf-8', 'replace')
 
@@ -302,7 +307,18 @@ def main():
 
     blocari = int(memo.get('blocari', 0))
 
+    import time
+    pornit = time.monotonic()
     for eticheta, argv, cwd, manual in porti:
+        ramas = TIMP_TOTAL - (time.monotonic() - pornit)
+        if ramas < 30:
+            memo['blocari'] = blocari
+            f_memo.write_text(json.dumps(memo), encoding='utf-8')
+            raporteaza(
+                'Poarta a ramas fara buget dupa %s: portile ramase (%s) NU au rulat. '
+                'Nu inseamna ca au trecut — ruleaza-le manual si spune-i lui Ion ce a ramas '
+                'neverificat.' % (eticheta, ', '.join(
+                    p[0] for p in porti[porti.index((eticheta, argv, cwd, manual)):])))
         if argv is None:                          # npm lipsa pe masina asta
             cod, iesire = 1, ('npm nu s-a gasit nici in PATH-ul mostenit, nici in '
                               'cel persistent din registru (`cai_persistente`), '
@@ -312,7 +328,7 @@ def main():
                               'instalat Node si adauga-l in PATH-ul de utilizator.')
         else:
             try:
-                cod, iesire = ruleaza(argv, cwd)
+                cod, iesire = ruleaza(argv, cwd, limita=int(ramas))
             except subprocess.TimeoutExpired:
                 cod, iesire = 1, 'Poarta a depasit %d s si a fost oprita.' % TIMP_MAX
             except Exception:
