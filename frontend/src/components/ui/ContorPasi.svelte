@@ -12,17 +12,23 @@
    */
   let { gata = 0, total = 0 } = $props()
 
-  // O FELIE, NU UN ARC. Prima varianta desena inelul cu `r=5` si `stroke-width:
-  // 2` — masurat pe machete, la 12px cele doua capete ale scarii („0/3" si
-  // „5/5") aratau aproape la fel: un arc de doua puncte nu are suprafata din
-  // care sa se citeasca cat e umplut.
-  // Trucul: `r=3` cu `stroke-width: 6` intinde conturul cu 3px de fiecare parte,
-  // deci de la centru (r=0) pana la marginea cercului (r=6) — adica pata plina a
-  // unei felii de tort, desenata fara niciun `path`. La 100% devine disc plin.
-  // Asta rezolva si obiectia „al doilea cerc pe rand": bifa e un CERC GOL de
-  // 18px, felia e o pata de 12px. Nu se pot confunda decat la 0%, unde raman
-  // amandoua goale — dar acolo felia e si mai mica, si mult mai stinsa.
-  const C = 2 * Math.PI * 3   // circumferinta cercului pe care se deseneaza felia
+  // UN INEL, CU GAURA — si a fost nevoie de doua incercari ca sa ramana inel.
+  //
+  // Prima varianta: `r=5` cu `stroke-width: 2`. NU SE CITEA — la 12px o banda de
+  // doua puncte n-are suprafata din care sa vezi cat e umplut; pe macheta „0/3"
+  // si „5/5" aratau aproape la fel.
+  // A doua: `r=3` cu `stroke-width: 6`, adica un contur intins de la centru pana
+  // la marginea cercului. Se citea, dar era o PLACINTA (Ion: „acum e disc, nu
+  // inel"). Directia aleasa se numea „inel", iar un inel are gaura.
+  //
+  // Raspunsul corect nu e sa umpli discul, ci sa INGROSI BANDA, pastrand golul:
+  // `r=4.5` cu `stroke-width: 3` deseneaza intre r=3 si r=6 — banda de 3px (cu
+  // 50% mai groasa decat la prima incercare, deci vizibila) si gaura de 6px in
+  // mijloc, deci forma ramane inel la orice umplere, inclusiv la 5/5.
+  // Bifa de la capatul randului e tot un cerc, dar de 18px si mereu goala, cu
+  // contur de 1.5; inelul are 12, banda de 3, si se umple. Nu se confunda.
+  const R = 4.5
+  const C = 2 * Math.PI * R   // circumferinta benzii pe care se deseneaza arcul
 
   const frac = $derived(total > 0 ? Math.min(1, Math.max(0, gata / total)) : 0)
 </script>
@@ -35,14 +41,16 @@
         aria-label="{gata} din {total} subtaskuri făcute"
         title="{gata} din {total} subtaskuri făcute">
     <svg class="tpasi-inel" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-      <circle class="tp-pista" cx="6" cy="6" r="5.25" />
+      <!-- Pista si arcul stau pe ACEEASI raza si aceeasi grosime: altfel n-ar fi
+           acelasi inel, ar fi doua cercuri concentrice. -->
+      <circle class="tp-pista" cx="6" cy="6" r={R} />
       {#if frac > 0}
         <!-- `rotate` ca ATRIBUT SVG, nu `transform-origin` in CSS: pe elementele
              SVG originea implicita e coltul din stanga-sus al viewport-ului, si
              ar cere si `transform-box: fill-box` ca sa se poarte cum te astepti.
              Forma din atribut ia centrul explicit si merge peste tot.
-             -90 muta inceputul feliei de la ora 3 la ora 12. -->
-        <circle class="tp-felie" cx="6" cy="6" r="3"
+             -90 muta inceputul arcului de la ora 3 la ora 12. -->
+        <circle class="tp-arc" cx="6" cy="6" r={R}
                 stroke-dasharray="{(frac * C).toFixed(3)} {C.toFixed(3)}"
                 transform="rotate(-90 6 6)" />
       {/if}

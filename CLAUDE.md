@@ -960,16 +960,22 @@ tabul Taskuri al proiectului și rândul mobil din Planificator.
   același `{#if}` s-ar repeta în patru locuri. Înainte, același fapt avea o haină pe
   „Astăzi" (`.a-pasi`, pe linia a doua), niciuna în celelalte trei, și un
   `.tsub-chip` mort în `global.css` fără niciun consumator.
-- **Inel + fracție, și inelul e o FELIE, nu un arc.** Direcția a ales-o Ion dintre
-  șapte machete (`ContorPasi.dc.html`). Prima versiune a inelului desena `r=5` cu
-  `stroke-width: 2` și **nu se citea**: la 12px un arc de două puncte n-are suprafață
-  din care să vezi cât e umplut — măsurat pe machetă, „0/3" și „5/5" arătau aproape
-  la fel. Trucul care rezolvă: `r=3` cu `stroke-width: 6` întinde conturul de la
-  centru (r=0) până la marginea cercului (r=6), deci pata plină a unei felii,
-  desenată fără niciun `path`. La 100% devine disc plin.
-  Asta răspunde și obiecției „al doilea cerc pe rând, lângă bifă": bifa e un cerc
-  **gol** de 18px, felia e o **pată** de 12 — se confundă doar la 0%, unde felia e
-  și mai mică, și mai stinsă.
+- **Inel + fracție — și inelul rămâne inel, cu gaură.** Direcția a ales-o Ion dintre
+  șapte machete (`ContorPasi.dc.html`), și a fost nevoie de **două** corecturi ca să
+  ajungă acolo:
+  1. `r=5` cu `stroke-width: 2` **nu se citea**: la 12px o bandă de două puncte n-are
+     suprafață din care să vezi cât e umplut — pe machetă, „0/3" și „5/5" arătau
+     aproape la fel.
+  2. `r=3` cu `stroke-width: 6` (contur întins de la centru până la margine) se citea,
+     dar ieșea o **plăcintă**. Ion: *„acum e disc, nu inel."* Direcția aleasă se numea
+     inel, iar un inel are gaură.
+  Răspunsul e să **îngroși banda, nu s-o umpli**: `r=4.5` cu `stroke-width: 3`
+  desenează între r=3 și r=6 — bandă de 3px (cu 50% mai groasă decât la prima
+  încercare, deci vizibilă) și gaură de 6px care rămâne la orice umplere, inclusiv
+  la 5/5. Pista și arcul iau **aceeași rază și aceeași grosime**: sunt fețele
+  aceluiași inel, nu două cercuri concentrice.
+  Nu se confundă cu bifa de la capătul rândului: aceea e un cerc de 18px, mereu gol,
+  cu contur de 1.5.
   `rotate` se scrie ca **atribut SVG**, nu `transform-origin` în CSS: pe elementele
   SVG originea implicită e colțul viewport-ului, și ar cere și `transform-box`.
 - **Lângă titlu, nu într-o coloană.** O coloană ar fi goală pe majoritatea rândurilor,

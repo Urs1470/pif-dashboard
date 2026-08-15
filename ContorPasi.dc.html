@@ -63,9 +63,9 @@ h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); letter-spaci
 
 /* ---- C/D. inel de progres ---- */
 .inel { flex: none; display: block; }
-.inel circle { fill: none; }
-.inel .pista { stroke: var(--border-strong); stroke-width: 1.5; }
-.inel .umplut { stroke: var(--text-dim); stroke-width: 6; }
+.inel circle { fill: none; stroke-width: 3; }
+.inel .pista { stroke: var(--border-strong); }
+.inel .umplut { stroke: var(--text-dim); }
 .pasi-c { display: flex; align-items: center; gap: 6px; flex: none;
   font-size: var(--font-small); color: var(--text-dim); }
 
@@ -136,13 +136,13 @@ absența, care e starea majorității rândurilor.</p>
       <div class="v-nume"><span class="v-cheie">C</span> Inel + fracție <span class="acum">ales — în cod</span></div>
       <p class="v-de-ce">Inelul dă distanța dintr-o privire (două treimi arată altfel decât o
         treime, ceea ce cifra singură nu face), cifrele rămân pentru exact.</p>
-      <p class="v-de-ce">Ales de Ion. Inelul e o FELIE plină, nu un arc de 2px: la 12px un arc nu are suprafață din care să citești cât e umplut — „0/3" și „5/5" arătau aproape la fel. Felia rezolvă și obiecția „al doilea cerc": bifa e un cerc GOL de 18px, felia e o pată de 12.</p>
+      <p class="v-de-ce">Ales de Ion. Banda inelului e de 3px, nu de 2: la 12px o bandă de două puncte n-are suprafață din care să citești cât e umplut — „0/3" și „5/5" arătau aproape la fel. Îngroșată, nu umplută: o variantă intermediară a întins conturul până în centru și a ieșit un DISC, nu un inel. Gaura de 6px rămâne la orice umplere.</p>
     </div>
     <div class="lista">
-      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Comandă piese de schimb</span><span class="pasi-c"><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="5.25"/><circle class="umplut" cx="6" cy="6" r="3" stroke-dasharray="7.540 18.850" transform="rotate(-90 6 6)"/></svg>2/5</span></span><span class="termen">azi</span></div>
-      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Verificare parametri drive</span><span class="pasi-c"><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="5.25"/></svg>0/3</span></span><span class="termen">mâine</span></div>
-      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Montaj tablou de forță</span><span class="pasi-c"><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="5.25"/><circle class="umplut" cx="6" cy="6" r="3" stroke-dasharray="18.850 18.850" transform="rotate(-90 6 6)"/></svg>5/5</span></span><span class="termen">vin</span></div>
-      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Reînnoire certificat de acces în site Continental</span><span class="pasi-c"><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="5.25"/><circle class="umplut" cx="6" cy="6" r="3" stroke-dasharray="4.712 18.850" transform="rotate(-90 6 6)"/></svg>3/12</span></span><span class="termen">18.08</span></div>
+      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Comandă piese de schimb</span><span class="pasi-c"><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="4.5"/><circle class="umplut" cx="6" cy="6" r="4.5" stroke-dasharray="11.310 28.274" transform="rotate(-90 6 6)"/></svg>2/5</span></span><span class="termen">azi</span></div>
+      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Verificare parametri drive</span><span class="pasi-c"><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="4.5"/></svg>0/3</span></span><span class="termen">mâine</span></div>
+      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Montaj tablou de forță</span><span class="pasi-c"><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="4.5"/><circle class="umplut" cx="6" cy="6" r="4.5" stroke-dasharray="28.274 28.274" transform="rotate(-90 6 6)"/></svg>5/5</span></span><span class="termen">vin</span></div>
+      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Reînnoire certificat de acces în site Continental</span><span class="pasi-c"><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="4.5"/><circle class="umplut" cx="6" cy="6" r="4.5" stroke-dasharray="7.069 28.274" transform="rotate(-90 6 6)"/></svg>3/12</span></span><span class="termen">18.08</span></div>
       <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Trimite PV-ul semnat</span></span><span class="termen">azi</span></div>
     </div>
   </div>
@@ -156,10 +156,10 @@ absența, care e starea majorității rândurilor.</p>
         E aici ca limită, ca să se vadă unde se termină subtilitatea.</p>
     </div>
     <div class="lista">
-      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Comandă piese de schimb</span><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="5.25"/><circle class="umplut" cx="6" cy="6" r="3" stroke-dasharray="7.540 18.850" transform="rotate(-90 6 6)"/></svg></span><span class="termen">azi</span></div>
-      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Verificare parametri drive</span><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="5.25"/></svg></span><span class="termen">mâine</span></div>
-      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Montaj tablou de forță</span><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="5.25"/><circle class="umplut" cx="6" cy="6" r="3" stroke-dasharray="18.850 18.850" transform="rotate(-90 6 6)"/></svg></span><span class="termen">vin</span></div>
-      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Reînnoire certificat de acces în site Continental</span><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="5.25"/><circle class="umplut" cx="6" cy="6" r="3" stroke-dasharray="4.712 18.850" transform="rotate(-90 6 6)"/></svg></span><span class="termen">18.08</span></div>
+      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Comandă piese de schimb</span><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="4.5"/><circle class="umplut" cx="6" cy="6" r="4.5" stroke-dasharray="11.310 28.274" transform="rotate(-90 6 6)"/></svg></span><span class="termen">azi</span></div>
+      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Verificare parametri drive</span><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="4.5"/></svg></span><span class="termen">mâine</span></div>
+      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Montaj tablou de forță</span><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="4.5"/><circle class="umplut" cx="6" cy="6" r="4.5" stroke-dasharray="28.274 28.274" transform="rotate(-90 6 6)"/></svg></span><span class="termen">vin</span></div>
+      <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Reînnoire certificat de acces în site Continental</span><svg class="inel" width="12" height="12" viewBox="0 0 12 12"><circle class="pista" cx="6" cy="6" r="4.5"/><circle class="umplut" cx="6" cy="6" r="4.5" stroke-dasharray="7.069 28.274" transform="rotate(-90 6 6)"/></svg></span><span class="termen">18.08</span></div>
       <div class="rand"><span class="bifa"></span><span class="principal"><span class="titlu">Trimite PV-ul semnat</span></span><span class="termen">azi</span></div>
     </div>
   </div>

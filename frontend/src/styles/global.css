@@ -498,13 +498,18 @@ input:focus, select:focus, textarea:focus {
   font-weight: var(--fw-normal);
   color: var(--text-dim);
 }
-/* Inelul: pista subtire + felia plina. Forma si de ce e felie, nu arc, sunt
-   explicate in `components/ui/ContorPasi.svelte` — aici stau doar culorile, ca
-   sa urmeze tema. Fara accent si fara verde: pe randul de task culoarea e a
-   severitatii, si asta nu se schimba fiindca am adaugat un desen. */
+/* Inelul: pista si arcul, pe aceeasi banda. Geometria (de ce banda de 3px si nu
+   una de 2, si de ce nu un disc plin) e explicata in
+   `components/ui/ContorPasi.svelte` — aici stau doar culorile, ca sa urmeze tema.
+   `stroke-width` trebuie sa fie ACELASI pe amandoua: pista si arcul sunt fetele
+   aceluiasi inel, nu doua cercuri concentrice.
+   Fara accent si fara verde: pe randul de task culoarea e a severitatii, si asta
+   nu se schimba fiindca am adaugat un desen. */
 .tpasi-inel { flex: none; display: block; }
-.tpasi-inel .tp-pista { fill: none; stroke: var(--border-strong); stroke-width: 1.5; }
-.tpasi-inel .tp-felie { fill: none; stroke: var(--text-dim); stroke-width: 6; }
+.tpasi-inel .tp-pista,
+.tpasi-inel .tp-arc { fill: none; stroke-width: 3; }
+.tpasi-inel .tp-pista { stroke: var(--border-strong); }
+.tpasi-inel .tp-arc { stroke: var(--text-dim); }
 /* `tabular-nums` se INTOARCE, si merita spus de ce, fiindca a fost scos cu doua
    ture mai devreme („latimea fixa e o unealta de coloana" — adevarat cand
    contorul era doar text). Acum nu e despre aliniere, e despre STABILITATE: cu

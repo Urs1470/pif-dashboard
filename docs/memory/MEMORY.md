@@ -191,16 +191,21 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
     `components/ui/ContorPasi.svelte` tine forma, `.tpasi` din `global.css` tine
     culorile; apelantii dau doar `gata`/`total`, iar componenta se randeaza ca
     NIMIC cand `total` e 0 — altfel acelasi `{#if}` s-ar repeta in patru locuri.
-  - **Inelul e o FELIE, nu un arc, si asta e partea care conteaza.** Prima
-    versiune (r=5, `stroke-width: 2`) NU SE CITEA: la 12px un arc de doua puncte
-    n-are suprafata din care sa vezi cat e umplut — pe macheta, „0/3" si „5/5"
-    aratau aproape la fel, si am spus-o inainte ca Ion sa aleaga. Trucul: `r=3` cu
-    `stroke-width: 6` intinde conturul de la centru (r=0) pana la marginea
-    cercului (r=6), deci pata plina a unei felii, fara niciun `path`; la 100%
-    devine disc plin. Rezolva si obiectia „al doilea cerc langa bifa": bifa e cerc
-    GOL de 18px, felia e PATA de 12.
+  - **Inelul: se INGROASA banda, nu se umple discul.** Doua corecturi pana acolo:
+    (1) `r=5` + `stroke-width: 2` NU SE CITEA — la 12px o banda de doua puncte
+    n-are suprafata din care sa vezi cat e umplut, si „0/3" si „5/5" aratau
+    aproape la fel (am spus-o inainte ca Ion sa aleaga); (2) `r=3` +
+    `stroke-width: 6` se citea, dar intinde conturul de la centru la margine,
+    deci iese o PLACINTA — Ion: „acum e disc, nu inel". Directia se numea inel.
+    Final: `r=4.5` + `stroke-width: 3`, adica banda intre r=3 si r=6 — cu 50% mai
+    groasa decat prima incercare, si gaura de 6px ramane la ORICE umplere.
+    Pista si arcul au aceeasi raza si aceeasi grosime: sunt fetele aceluiasi
+    inel, nu doua cercuri concentrice.
     `rotate` se scrie ca ATRIBUT SVG, nu `transform-origin` in CSS — pe elemente
     SVG originea implicita e coltul viewport-ului si ar cere si `transform-box`.
+    **Morala, pentru orice indicator mic:** cand un semn de 12px nu se citeste,
+    intrebarea e „cat de groasa e banda", nu „cat de plina e forma" — umplerea
+    schimba OBIECTUL, grosimea doar il face vizibil.
   - Cifrele: Gabarito 13/400, `--text-dim`, LANGA TITLU. Nu coloana: ar fi goala pe majoritatea randurilor,
     iar o coloana cu goluri nu se citeste pe verticala — adica pierde exact motivul
     pentru care termenul e coloana. A inlocuit `.tsub-chip`, mort in `global.css`
