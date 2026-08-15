@@ -41,15 +41,38 @@
   import SelectorZi from '../components/ui/SelectorZi.svelte'
   import { culoareProiect, CULOARE_NEUTRA } from '../lib/culori.js'
 
-  // Praguri pentru continutul unei benzi de perioada, in PROCENTE din fereastra —
-  // nu in zile: la 6 luni o zi are 6px, la 7 zile are 165. Sub primul prag ramane
-  // doar icoana (o litera taiata nu spune nimic, icoana spune „teren" / „sediu");
-  // sub al doilea, durata ar manca eticheta, deci o lasam doar in tooltip.
-  const BANDA_TEXT_MIN = 6.5
-  const BANDA_ZILE_MIN = 14
-  // La orizont lung banda nu mai are latime de citit: o perioada de o zi are
-  // 0,55% din 180, adica 5px. Sub 11px n-o mai poti nici vedea, nici apuca.
-  const BANDA_MIN_PX = 11
+  // PERIOADA E O SINA LA BAZA RANDULUI, NU FUNDALUL LUI.
+  //
+  // Pana acum banda tinea toata inaltimea randului si isi scria numele INAUNTRU,
+  // pe aceiasi pixeli orizontali pe care ii voiau titlurile taskurilor. De acolo
+  // veneau trei defecte masurate pe aplicatie (14z, pista 1034px):
+  //   · 4 din 6 etichete TAIATE — „Sediu EGB · Verificare parametri" primea 36px
+  //     din 183, adica 20% din nume;
+  //   · la 30z patru benzi ramaneau MUTE (doar iconita, niciun nume);
+  //   · la 3L/6L doua etichete se tipareau UNA PESTE ALTA, ilizibil, fiindca
+  //     `.ib-out` iesea din banda fara sa se uite daca locul de afara e liber.
+  // Plus: inaltimea randului venea din COLIZIUNI, nu din continut — eticheta
+  // benzii tinea randul intai al impachetarii, deci un proiect cu patru taskuri
+  // ajungea la 112px.
+  //
+  // Perioada e CONTEXT („unde esti"), taskul e CONTINUT („ce ai de facut"), deci
+  // contextul coboara intr-o sina de 4px la baza randului — conventia baseline
+  // din Gantt, unde bara subtire e contextul si cea groasa e subiectul. Taskurile
+  // primesc toata inaltimea si toata latimea, iar impachetarea nu mai are ce
+  // bloca.
+  //
+  // Iar fasia de jos ramane GOALA, deci o eticheta acolo are loc pana la perioada
+  // urmatoare — sute de pixeli, nu 37 dintr-o banda de o zi. De aceea locul se
+  // scrie intr-o pastila la capul sinei, si se scrie INTREG sau deloc.
+
+  // Cat cere pastila peste latimea cuvantului: iconita 10 + gap 3 + padding 4+6,
+  // plus 6 aer pana la sina urmatoare. Se compara cu golul REAL pana la perioada
+  // de dupa, deci pastila ori incape intreaga, ori nu se randeaza — nu exista
+  // stare in care se taie.
+  // (Latimea minima a sinei — 11px, fiindca o perioada de o zi are 5,7px la 6L —
+  // e acum regula CSS pe `.impl-band`, nu o constanta de aici: se aplica la toate
+  // orizonturile, fiindca sina are aceeasi forma peste tot.)
+  const PASTILA_CHROME = 29
   const HORIZONS = [
     { d: 7, l: '7z', cat: '7 zile' }, { d: 14, l: '14z', cat: '14 zile' }, { d: 30, l: '30z', cat: '30 zile' },
     { d: 90, l: '3L', cat: '3 luni' }, { d: 180, l: '6L', cat: '6 luni' },
@@ -322,20 +345,24 @@
   }
 
   // INALTIMEA RANDULUI URMEAZA CE A IESIT DIN IMPACHETARE.
-  // 14 sus (marginea benzii + aerul de deasupra primului reper), n randuri de
-  // 20 cu 4 intre ele, 6 jos. Minimul de 48 tine un rand de proiect apucabil si
-  // cand n-are decat o banda. 1 reper 48 · 2 repere 64 · 3 repere 88.
+  // 6 sus, n randuri de 20 cu 4 intre ele, si FASIA SINEI jos.
+  // Fasia e 20: sina de 4 la `bottom: 6`, iar pastila de 16 o incaleca centrat,
+  // deci ii trebuie exact atat cat sa nu atinga ultimul reper.
+  // 1 reper 46 · 2 repere 70 · 3 repere 94 (era 48 · 64 · 88, dar acolo randul
+  // intai era mancat de eticheta benzii).
   const H_REPER = 20
   const H_GOL = 4
+  const H_SINA = 20
   function geometrieBanda(n) {
     const r = Math.max(1, n)
     const stiva = r * H_REPER + (r - 1) * H_GOL
     // `min-height`, nu `height`: coloana de nume poate cere mai mult (numele de
-    // proiect se scriu pe doua randuri, ca sa nu iasa noua trunchieri identice).
-    // De aceea randul intai nu se calculeaza din inaltimea ASTA, ci din stiva —
-    // ea e centrata in pista, deci `50% - stiva/2` ramane adevarat si cand banda
-    // creste sub eticheta.
-    return { inaltime: Math.max(48, 14 + stiva + 6), stiva }
+    // proiect plus contorul plus chipul de tip). De aceea stiva se ANCOREAZA SUS
+    // (`.lane-track` are `justify-content: flex-start`) si nu se centreaza: altfel
+    // surplusul cerut de coloana din stanga ar cobora reperele in fasia sinei —
+    // masurat, exact asa aparea o suprapunere intre eticheta perioadei si titlul
+    // unui task.
+    return { inaltime: Math.max(44, 6 + stiva + H_SINA), stiva }
   }
 
   /** La orizont lung reperele se strang intr-un numar pe saptamana.
@@ -462,38 +489,33 @@
       const et = rect ? inProcente(latimeTitlu(t.titlu) + ETICHETA_PAD, pistaPx) : 0
       return { ...t, rect, flip: !!rect && rect.left + rect.width + et > 100, cheie: t.tip + ':' + t.id }
     })
+    // PASTILA INCAPE SAU NU SE RANDEAZA — nu se taie niciodata.
+    // Golul se masoara pana la INCEPUTUL perioadei urmatoare, nu pana la sfarsitul
+    // celei de fata: pastila sta la capul sinei si se intinde la dreapta peste ea,
+    // deci ce o poate lovi e vecina, nu propria durata. De asta o perioada de o zi
+    // isi poate scrie locul intreg daca dupa ea urmeaza o saptamana goala — exact
+    // cazul pe care vechea regula (prag in procente din fereastra) il rata.
     const impl = contopeste(lane.implementari)
       .map(im => ({ ...im, rect: spanRect(im.a, im.b, plan.start, plan.days) }))
       .filter(im => im.rect)
-      .map(im => {
-        const etichetaLunga = `${locLabel(im.locatie)}${im.eticheta ? ' · ' + im.eticheta : ''} · ${im.zile} ${im.zile === 1 ? 'zi' : 'zile'}`
-        // La orizont lung eticheta iese din bara, deci se intoarce dupa aceeasi
-        // regula ca titlul unui reper: numai cand n-ar incapea la dreapta. Fara
-        // ea, o perioada de la capatul ferestrei si-ar scrie numele in afara
-        // pistei si ar creste latimea derulabila cu 200px de gol.
-        const lat = Math.max(im.rect.width, inProcente(BANDA_MIN_PX, pistaPx))
-        const et = inProcente(latimeTitlu(etichetaLunga) + ETICHETA_PAD, pistaPx)
-        return { ...im, etichetaLunga, flip: lung && im.rect.left + lat + et > 100 }
+      .sort((a, b) => a.rect.left - b.rect.left)
+      .map((im, i, toate) => {
+        const urm = toate[i + 1]
+        const golPct = (urm ? urm.rect.left : 100) - im.rect.left
+        const golPx = (golPct / 100) * pistaPx
+        return { ...im, pastila: latimeTitlu(locLabel(im.locatie)) + PASTILA_CHROME <= golPx }
       })
-    // ETICHETA PERIOADEI TINE RANDUL INTAI.
-    // La orizont scurt se scrie in banda, deci ocupa exact latimea ei; la orizont
-    // lung banda e o bara de 20px si eticheta iese pe langa ea, deci ocupa bara
-    // (minim 11px) plus textul. In ambele cazuri e primul lucru de pe rand, si
-    // reperele care cad peste ea coboara.
-    const benzi = impl.map(im => {
-      if (!lung) return { de: im.rect.left, la: im.rect.left + im.rect.width }
-      const lat = Math.max(im.rect.width, inProcente(BANDA_MIN_PX, pistaPx))
-      const et = inProcente(latimeTitlu(im.etichetaLunga) + ETICHETA_PAD, pistaPx)
-      return im.flip
-        ? { de: im.rect.left - et, la: im.rect.left + lat }
-        : { de: im.rect.left, la: im.rect.left + lat + et }
-    })
+    // IMPACHETAREA NU MAI ARE CE BLOCA.
+    // `blocate` exista fiindca eticheta benzii se scria peste rand si trebuia sa
+    // impinga reperele in jos. Sina sta sub ei, in fasia ei, deci randul intai e
+    // liber — de aici vine si scaderea de inaltime: 112px -> 95px pe banda cea
+    // mai incarcata, fara sa se piarda nimic de pe ecran.
     const repere = lung
       ? numerePeSaptamana(tasks, columns.cols, pistaPx)
       : tasks.filter(t => t.rect)
           .map(t => ({ ...t, span: intinderea(t, pistaPx) }))
           .sort((a, b) => a.span.de - b.span.de || a.span.la - b.span.la)
-    const packed = packRows(repere, benzi)
+    const packed = packRows(repere, [])
     // Restantele vin de la server ca lista proprie: sunt INAINTEA ferestrei, deci
     // n-au geometrie si nu pot sta pe pista. Vezi `.rest-col`.
     const restante = lane.restante || []
@@ -1024,21 +1046,29 @@
                          intinderii se deseneaza LIVE, din `intindere`, nu din rect. -->
                     {@const rct = intindere?.id === im.id ? (spanRect(intindere.a, intindere.b, plan.start, plan.days) || im.rect) : im.rect}
                     <div class="impl-band loc-{im.locatie}" style="left:{rct.left}%; width:{rct.width}%"
-                         class:pregatire={im.faza === 'pregatire'} class:doar-ico={!lung && im.rect.width < BANDA_TEXT_MIN}
-                         class:lung class:flip={im.flip} class:se-trage={intindere?.id === im.id}
+                         class:pregatire={im.faza === 'pregatire'}
+                         class:lat={im.rect.width >= inProcente(24, pistaPx)}
+                         class:se-trage={intindere?.id === im.id}
                          class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
                          role="button" tabindex="0"
                          onclick={() => { if (!intindere) navigate(`/calendar?zi=${im.a}`) }}
                          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/calendar?zi=${im.a}`) } }}
                          title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {im.faza === 'pregatire' ? 'pregătire' : 'implementare'} · {formatDateShort(im.a)} → {formatDateShort(im.b)} · {im.zile} {im.zile === 1 ? 'zi' : 'zile'}{im.parti.length > 1 ? ` · ${im.parti.length} perioade lipite` : ''} · click pentru a o vedea în Calendar">
-                      {#if im.locatie === 'sediu'}<Building2 size={12} class="ib-ico" />{:else}<MapPin size={12} class="ib-ico" />{/if}
-                      {#if lung}
-                        <span class="ib-out">{im.etichetaLunga}</span>
-                      {:else}
-                        {#if im.rect.width >= BANDA_TEXT_MIN}
-                          <span class="ib-txt">{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''}</span>
-                        {/if}
-                        {#if im.rect.width >= BANDA_ZILE_MIN}<span class="ib-zile">{im.zile} {im.zile === 1 ? 'zi' : 'zile'}</span>{/if}
+                      <!-- PASTILA STA LA CAPUL VIZIBIL AL SINEI, NU LA ZIUA DE START.
+                           Fereastra porneste mereu din azi, deci o deplasare in
+                           CURS e taiata la stanga: inceputul ei e in trecut. Ancorata
+                           la `left: 0` al benzii, pastila se aseaza atunci pe muchia
+                           ferestrei si merge odata cu zilele, pe masura ce perioada
+                           se scurteaza din stanga — adica ramane citibila exact cand
+                           esti pe teren, cazul in care conteaza cel mai mult.
+                           Ce NU are voie sa faca e sa para inceput: pe `clipL` sina
+                           nu primeste terminator (vezi CSS), fiindca acolo ziua de
+                           start nu e pe ecran. -->
+                      {#if im.pastila}
+                        <span class="ib-pastila">
+                          {#if im.locatie === 'sediu'}<Building2 size={10} class="ib-ico" />{:else}<MapPin size={10} class="ib-ico" />{/if}
+                          {locLabel(im.locatie)}
+                        </span>
                       {/if}
                       <!-- Manerele de intindere — la hover, ca in Calendar. Nu si pe
                            benzile LIPITE (mai multe perioade): capatul lor apartine
@@ -1710,14 +1740,16 @@
   .rest-zi:active { transform: scale(var(--press-scale)); }
   .rest-gol { font-size: var(--font-small); color: var(--text-faint); }
 
-  /* STIVA DE REPERE E CENTRATA IN CHENARUL PERIOADEI, CU ACELEASI MARGINI.
-     Benzile stau la 7px sus si jos; daca stiva ar avea alt inset, ultimul reper
-     ar iesi sub chenarul benzii pe care se sprijina — si atunci banda n-ar mai
-     citi ca fundalul randului, ci ca inca un obiect care se intampla sa fie pe
-     acolo. `justify-content: center` distribuie surplusul de 6px al formulei
-     egal sus si jos. */
-  .lane-track { flex: 1; position: relative; min-width: 0; padding: 7px 0;
-    display: flex; flex-direction: column; justify-content: center; }
+  /* STIVA DE REPERE SE ANCOREAZA SUS, FASIA SINEI RAMANE A EI.
+     Era centrata, fiindca banda era fundalul randului si stiva trebuia sa stea
+     in chenarul ei. Acum jos e sina, iar inaltimea randului poate fi dictata de
+     COLOANA DIN STANGA cand ea cere mai mult decat formula (nume + contor +
+     chip). Centrata, surplusul acela cobora stiva cu jumatate din el, direct in
+     fasia sinei — masurat, exact asa aparea o suprapunere intre eticheta unei
+     perioade si titlul unui task. Ancorata sus, fasia de jos ramane a sinei
+     orice s-ar intampla in stanga. */
+  .lane-track { flex: 1; position: relative; min-width: 0; padding: 6px 0 20px;
+    display: flex; flex-direction: column; justify-content: flex-start; }
 
   /* ===== SOSIREA PISTEI (tura 13e) =====
      CE ARE INCEPUT, CRESTE DIN EL. CE DOAR ACOPERA UN INTERVAL, APARE.
@@ -1771,8 +1803,12 @@
      chiar si cand ambele capete sunt fixe — „de cand se pregateste" nu se stie
      niciodata, iar desenul o spune prin insasi textura benzii. Mastile de capat
      nesigur raman peste el, pe distanta fixa. */
-  .band { position: absolute; top: 7px; bottom: 7px; border-radius: var(--radius-sm);
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 9%, transparent) 45%);
+  /* Pregatirea coboara pe aceeasi linie ca sina, si ramane ce era: o spalatura
+     NEUTRA care se stinge spre stanga, fiindca „de cand se pregateste" nu se
+     stie. Pe 3px gradientul se citeste in continuare — el da directia, nu
+     suprafata. Accentul ramane al deplasarii, singur. */
+  .band { position: absolute; top: auto; bottom: 6px; height: 3px; border-radius: 2px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 34%, transparent) 45%);
     border: none; z-index: 0;
     animation: pregatireIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
@@ -1821,40 +1857,54 @@
      o umbra care o ridica peste randul ei, si singura culoare din pista care nu
      spunea nimic. Locul nu se mai codifica cromatic — se SCRIE, cu iconita si
      eticheta („Sediu EGB · 3 zile"). Ce ramane e tenta de accent cu inelul ei. */
-  .impl-band { position: absolute; top: 7px; bottom: 7px; display: flex; align-items: flex-start; gap: 5px;
-    padding: 3px 9px 0 11px; border-radius: var(--radius-sm); overflow: hidden; z-index: 0; text-align: left;
-    color: var(--accent-deep); border: none;
-    background: color-mix(in srgb, var(--accent) 10%, transparent);
-    /* Inelul e 26%, cat scrie in desen (5a) — nu 32%. Pe pista de desktop banda
-       are 88px si sta langa alte trei, deci diferenta de sase puncte se aduna cu
-       celelalte trepte prea grele si scoate perioada in fata reperelor, care sunt
-       subiectul randului. Pe telefon (`.mp-track .impl-band`) ramane 34%: acolo
-       banda are 34px, e singurul obiect din pista si n-are eticheta. */
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent);
+  /* SINA. Perioada e context, nu subiect: 4px la baza randului, in accent plin.
+     Plina, nu tenta: pe 4px inaltime o tenta de 10% nu se mai vede — aceeasi
+     regula de compensare care face ca pe pista mobila (34px) banda sa fie deja
+     desenata mai tare decat pe desktop.
+     `overflow: visible`: pastila iese din sina, si in sus, si la dreapta. */
+  .impl-band { position: absolute; top: auto; bottom: 6px; height: 4px;
+    min-width: 11px; border-radius: 2px; overflow: visible; z-index: 0;
+    background: var(--accent); border: none; color: var(--accent-deep);
     cursor: pointer; pointer-events: auto; transition: var(--transition-colors);
-    /* Se descopera, nu se intinde: `scaleX` ar turti textul dinauntru la jumatate
-       de latime pe la mijlocul miscarii, iar o eticheta care se lateste inapoi la
-       normal se citeste ca elastic, nu ca o perioada care incepe. */
+    /* Se descopera de la stanga, dinspre ziua in care incepe — ca inainte. */
     animation: benziIn var(--dur-base) var(--ease) backwards;
     animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
-  /* FORMA spune faza, o singura axa de culoare: implementarea e tenta plina de
-     mai sus, pregatirea e mai palida, cu inelul ei. Amandoua pe accent. */
-  .impl-band.pregatire { background: color-mix(in srgb, var(--accent) 5%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
-  /* Taiata de fereastra: muchie dreapta, fara bara de intrare — ziua de start nu e
-     acolo, e mai devreme. Deci nici sosirea nu poate porni de acolo: descoperirea
-     din stanga ar arata un inceput fix in locul in care muchia dreapta spune
-     „continua din afara ecranului". Ramane stingerea, ca la pregatire. */
-  .impl-band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-width: 0;
+  /* Zona de atingere: sina are 4px, degetul si cursorul au nevoie de mai mult.
+     Nu creste sina, creste doar tinta — si nu in sus peste ultimul reper. */
+  .impl-band::after { content: ''; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }
+  /* FORMA spune faza: implementarea e sina plina, pregatirea e mai palida.
+     O singura axa de culoare, ca peste tot. */
+  .impl-band.pregatire { background: color-mix(in srgb, var(--accent) 42%, transparent); }
+  /* TERMINATORUL — capatul care spune „de aici". Doar la stanga: ziua de start e
+     informatia, sfarsitul se citeste din lungime. Pe `clipL` NU se deseneaza:
+     acolo capatul sinei e muchia ferestrei, nu ziua de start (deplasarea e in
+     curs, a inceput inainte de azi), iar un terminator ar afirma un inceput fals.
+     Din acelasi motiv sosirea nu mai creste din stanga acolo. */
+  .impl-band::before { content: ''; position: absolute; left: 0; top: -3px;
+    width: 3px; height: 10px; border-radius: 2px; background: inherit; }
+  .impl-band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0;
     animation-name: pregatireIn; }
+  .impl-band.clipL::before { display: none; }
   .impl-band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-  .impl-band:hover { background: color-mix(in srgb, var(--accent) 16%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 48%, transparent); }
+  .impl-band:hover { background: var(--accent-deep); }
+  .impl-band:hover .ib-pastila { background: var(--accent); color: var(--accent-text); }
+  /* PASTILA DE LOC, la capul vizibil al sinei. Se randeaza doar cand incape
+     INTREAGA pana la perioada urmatoare (vezi `pastila` in `views`), deci n-are
+     nevoie de trunchiere si nu exista stare in care se taie. */
+  .ib-pastila { position: absolute; left: -2px; bottom: -6px; height: 16px;
+    display: inline-flex; align-items: center; gap: 3px; padding: 0 6px 0 4px;
+    border-radius: var(--radius-full); background: var(--accent-subtle);
+    color: var(--accent-on-subtle); font-size: var(--font-label);
+    font-weight: var(--fw-semibold); line-height: 1; white-space: nowrap;
+    box-shadow: 0 0 0 2px var(--bg-surface); pointer-events: none;
+    transition: var(--transition-colors); }
+  .impl-band.pregatire .ib-pastila { color: var(--text-secondary); }
   /* MANERELE DE INTINDERE — aceeasi gramatica ca in Calendar: doua bare subtiri,
-     la hover, pe toata inaltimea benzii. Aici banda e o TENTA (10%), deci linia
-     poate ramane pe accent — se vede. Cat timp tragi, banda nu mai naviga la
-     click si isi tine manerele aprinse. */
-  .impl-band .maner { position: absolute; top: 0; bottom: 0; width: 9px; padding: 0;
+     la hover. Pe sina se intind PESTE inaltimea ei (-5/+5), altfel un maner de
+     4px n-ar avea de unde fi apucat; sina insasi ramane de 4px, doar tinta
+     creste. Cat timp tragi, banda nu mai naviga la click si isi tine manerele
+     aprinse. */
+  .impl-band .maner { position: absolute; top: -5px; bottom: -5px; width: 9px; padding: 0;
     border: none; background: none; cursor: ew-resize; opacity: 0;
     transition: opacity var(--dur-fast) var(--ease); z-index: 2; }
   .impl-band .maner.st { left: 0; }
@@ -1880,51 +1930,18 @@
     .impl-band.se-trage .maner { opacity: 1; width: var(--tap-min); }
     .impl-band.se-trage .maner::after { width: 3px; }
   }
-  /* La orizont lung banda are latime minima 11px — doua manere de 9 n-ar lasa
-     de unde s-o apuci; si o zi are ~6px, deci gestul ar fi oricum imprecis.
-     La fel pe banda ingusta doar-cu-icoana. Intinsul se face la 7z/14z/30z. */
-  .impl-band.lung .maner, .impl-band.doar-ico .maner { display: none; }
+  /* Sub 24px sina n-are de unde fi apucata de doua manere de 9 — la 6L o zi are
+     5,7px. Intinsul ramane la 7z/14z/30z, ca si pana acum. */
+  .impl-band:not(.lat) .maner { display: none; }
   /* Cat timp tragi, geometria se rescrie la fiecare pixel: fara animatia de
      sosire (ar reporni) si fara tranzitia de culoare peste ea. */
-  .impl-band.se-trage { animation: none; transition: none;
-    box-shadow: inset 0 0 0 1.5px var(--accent); }
-  .impl-band :global(.ib-ico) { flex: none; opacity: 0.72; margin-top: 2px; }
-  /* LA ORIZONT LUNG, O BARA PE RANDUL INTAI.
-     `50% - stiva/2` e chiar coordonata randului intai: stiva de repere e
-     centrata in pista, iar pista are acelasi inset sus si jos (7px). Se
-     calculeaza asa, si nu din inaltimea benzii, fiindca banda poate creste sub
-     coloana de nume — vezi `geometrieBanda`. */
-  .impl-band.lung { top: calc(50% - var(--h-stiva, 20px) / 2); bottom: auto; height: var(--row-h);
-    min-width: 11px; padding: 0; gap: 0; align-items: center; justify-content: center;
-    border-radius: var(--radius-xs); overflow: visible; }
-  .impl-band.lung :global(.ib-ico) { margin-top: 0; }
-  /* Eticheta iese la dreapta barei, ca titlul unui reper — la 6L nici cinci zile
-     n-au latime de text. Ea E ce tine randul intai in impachetare, deci se
-     masoara si acolo (`benzi`). */
-  .ib-out { position: absolute; left: 100%; top: 0; height: var(--row-h);
-    display: flex; align-items: center; padding-left: 7px; white-space: nowrap;
-    font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary);
-    text-shadow: 0 0 3px var(--bg-surface), 0 0 6px var(--bg-surface); }
-  .impl-band.flip .ib-out { left: auto; right: 100%; padding-left: 0; padding-right: 7px; }
-  /* O zi, la 30 de zile fereastra, are 38px: nu incape nici „Si…". Ramane icoana,
-     centrata, si tot tooltipul. */
-  .impl-band.doar-ico { padding: 0 2px; justify-content: center; }
-  .ib-txt { font-size: var(--font-small); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* NUMARUL DE ZILE STA LIPIT DE TITLU, NU LA MARGINEA DIN DREAPTA.
-     Avea `margin-left: auto`, adica exact ce interzice regula: impins in capatul
-     benzii, cadea peste eticheta reperului care incepe imediat dupa ea. Lipit de
-     titlu, ocupa spatiul pe care impachetarea l-a rezervat deja pentru banda.
-     Fara `opacity` SI fara procent: cerneala e `--accent-deep`, plina. `--on-color` e
-     cerneala fillului SATURAT — banda e insa tenta de 10%, deci acolo ar fi iesit alb
-     pe alb (tema deschisa), respectiv negru pe negru (tema intunecata). Desenat
-     (`Planificator.dc.html`, turul 4): mono, `--ac-d`, plin.
-     Treapta: desenul scrie 11, scara aplicatiei se opreste la 12 (`--font-label`,
-     vezi `tokens.css`) si nu exista nicaieri un `px` brut de font. Ia treapta cea
-     mai mica din scara — 13 il facea sa concureze cu titlul benzii, ceea ce era
-     chiar reprosul. */
-  .ib-zile { flex: none; padding-left: 2px; font-family: var(--font-mono);
-    font-size: var(--font-label); font-variant-numeric: tabular-nums;
-    color: var(--accent-deep); white-space: nowrap; }
+  .impl-band.se-trage { animation: none; transition: none; }
+  .impl-band :global(.ib-ico) { flex: none; opacity: 0.85; }
+  /* `.ib-out`, `.ib-txt`, `.ib-zile` si `.impl-band.lung` au plecat odata cu
+     eticheta din banda: perioada nu mai scrie nimic in pista, ci in pastila de la
+     capul sinei. Cu ele a plecat si bug-ul masurat la 3L/6L, unde doua `.ib-out`
+     de pe acelasi rand se tipareau una peste alta — `.ib-out` iesea din banda
+     fara sa verifice daca locul de afara e liber. */
   /* RANDUL PERIOADEI E NEUTRU, NU O A TREIA BANDA DE ACCENT (desen 4c).
      Purta `accent 10% + inel 32%` — exact haina benzii de implementare, repetata
      imediat sub pista care o desena deja. Doua obiecte identice cromatic, unul
@@ -2153,6 +2170,13 @@
      pe tema intunecata). Cand proiectul n-are nicio perioada in fereastra,
      stingerea e la ambele capete pe PROCENTE (22/78), nu pe distanta fixa de
      desktop: pe o pista ingusta 56px de fiecare parte ar inghiti aproape tot. */
+  /* PISTA MOBILA NU E O SINA — acolo perioada ramane blocul de 34px pe care il
+     desenau turele vechi: e singurul obiect din pista, n-are eticheta si nu
+     concureaza cu niciun task, deci n-avea de ce sa coboare. Trebuie insa sa-si
+     ANULEZE explicit `height` si `top` din baza noua, altfel ramane sina de 4px:
+     cu `top`, `bottom` si `height` puse toate trei, `height` castiga. */
+  .mp-track .band, .mp-track .impl-band { height: auto; }
+  .mp-track .impl-band::before, .mp-track .impl-band::after { display: none; }
   .mp-track .band { top: 5px; bottom: 5px; border-radius: 6px; z-index: 2;
     background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 14%, transparent) 45%); }
   .mp-track .band.deschis.deschisL {
@@ -2161,8 +2185,11 @@
   /* DOAR ICONITA, CENTRATA: eticheta se scrie pe randul perioadei din card,
      unde are latimea intreaga. Aici perioada e DESEN, nu buton — cine vrea s-o
      deschida atinge randul (`.mimpl`), care are si chevron. */
+  /* `display: flex` se REAFIRMA aici: baza noua e o sina, care n-are copii de
+     asezat, deci nu mai e flex — iar fara el `align-items`/`justify-content` de
+     mai jos n-ar centra nimic si iconita ar cadea in coltul din stanga-sus. */
   .mp-track .impl-band { top: 5px; bottom: 5px; padding: 0; gap: 0; z-index: 2;
-    align-items: center; justify-content: center; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; border-radius: 6px;
     background: color-mix(in srgb, var(--accent) 18%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 36%, transparent);
     pointer-events: none; cursor: default; }

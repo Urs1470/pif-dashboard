@@ -55,6 +55,28 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-15 (6) — Perioada e o sina la baza randului (Planificator).** Ion, despre
+  perioadele de o zi: „acum este taiata si nu arata prea bine". Simptomul era al
+  structurii: perioada e un INTERVAL care tinea toata inaltimea randului si isi scria
+  numele INAUNTRU, pe aceiasi pixeli pe care ii voiau titlurile taskurilor, care sunt
+  PUNCTE.
+  - **Masurat pe aplicatia care ruleaza** (14z, pista 1034px): 4 din 6 etichete taiate —
+    „Sediu EGB · Verificare parametri" primea **36px din 183**; la 30z patru benzi
+    ramaneau MUTE; la 3L/6L doua etichete se tipareau UNA PESTE ALTA (bug in productie,
+    `.ib-out` iesea din banda fara sa verifice daca locul e liber). Dupa: **0 taiat, 0
+    suprapus pe toate cele cinci orizonturi**, grafic 410 -> 371px.
+  - **Pragul in PROCENTE era greseala de fond.** `BANDA_TEXT_MIN = 6.5` pretindea ca
+    masoara daca textul incape, dar procentele nu spun nimic despre pixeli: o zi la 14z
+    trece pragul fie ca inseamna 48px, fie 95. Acum golul se masoara in px, pana la
+    inceputul perioadei urmatoare — pastila incape intreaga sau nu se randeaza.
+  - **`packRows(repere, [])`** — `blocate` a ramas fara obiect, si de aici vine scaderea
+    de inaltime. **`.lane-track` se ancoreaza sus**, altfel surplusul cerut de coloana din
+    stanga coboara stiva in fasia sinei.
+  - **Capcana:** `.mp-track .impl-band` trebuie sa-si reafirme `height: auto` SI
+    `display: flex` — cu top/bottom/height puse toate trei castiga `height`, iar baza noua
+    nu mai e flex.
+  - Detaliile si tabelul de masuratori: CLAUDE.md, „Perioada e o sina la baza randului".
+
 - **2026-08-15 (5) — Comutarea sferei nu e o schimbare de pagina.** Ion: „la
   comutatia dintre taskuri personale si lucru parca se reincarca pagina si se
   vede asta", plus „pe Android vreau prin swipe sa pot face comutatia".

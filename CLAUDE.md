@@ -1137,14 +1137,15 @@ rândurilor**, **antetul de timp** și **orizontul lung**.
 - **`packRows` măsoară ce se desenează, nu ziua.** Reperul e acum chiar coloana termenului
   (bară de o zi, 20px, contur = de făcut · plin = în lucru · tentă verde cu bifă = făcut), iar
   titlul **iese din ea**, la dreapta. Deci întinderea unui reper e *bara + titlul*, nu una din
-  ele. Rândul: `14 + n×20 + (n−1)×4 + 6`, minim 48 → **1 reper 48 · 2 repere 64 · 3 repere 88**.
-  Stiva e centrată în chenarul perioadei, cu aceleași margini ca el (**7px**) — înainte banda
-  avea 5 și stiva 7, deci ultimul reper ieșea de sub chenarul pe care se sprijină.
-  - **Eticheta perioadei ține rândul întâi**, pe lățimea benzii (la orizont lung: bara + textul
-    de lângă ea). Fără asta, singurul lucru vizibil peste bandă era titlul ei tăiat de un reper.
+  ele. ~~Rândul: `14 + n×20 + (n−1)×4 + 6`, minim 48~~ → **înlocuit 2026-08-15**, vezi
+  „Perioada e o șină la baza rândului" mai jos: `6 + n×20 + (n−1)×4 + 20`, minim 44 →
+  **1 reper 46 · 2 repere 70 · 3 repere 94**. Stiva nu se mai centrează, se **ancorează sus**.
+  - ~~**Eticheta perioadei ține rândul întâi**~~ — **nu mai e adevărat.** Perioada nu mai scrie
+    nimic în pistă, deci `packRows` se cheamă cu `blocate` GOL. Asta e chiar sursa scăderii de
+    înălțime: rândul nu mai crește din coliziuni.
   - **Suprapunerea se testează cu TOT rândul, nu cu ultimul așezat.** Greedy-ul clasic „după
-    ultimul" presupune că totul intră în ordine; aici rândul întâi pornește ocupat pe mijloc,
-    deci un reper mai timpuriu decât banda are voie să încapă înaintea ei.
+    ultimul" presupune că totul intră în ordine. Regula rămâne corectă și utilă (două repere
+    apropiate), chiar dacă rândul întâi nu mai pornește ocupat.
   - **Numele de proiect a revenit pe UN rând.** Cu două rânduri, eticheta cerea 73px și
     `min-height: 48` nu mai însemna nimic: o bandă cu un reper și una cu trei arătau la fel —
     adică exact ce trebuia să spună înălțimea. Numele reale se despart de la primele caractere;
@@ -1152,9 +1153,9 @@ rândurilor**, **antetul de timp** și **orizontul lung**.
     dreapta.
   - **Întoarcerea titlului (`flip`) e geometrică, nu un prag.** Era `left > 62`, ales pentru
     altă geometrie: un reper la 64% cu titlu de 15% se măsura spre STÂNGA, peste bandă, și
-    cobora trei rânduri degeaba. Acum se întoarce doar când n-ar încăpea la dreapta —
-    aceeași regulă și pentru eticheta unei perioade, altfel una de la capătul ferestrei își
-    scria numele în afara pistei și creștea lățimea derulabilă cu 200px de gol.
+    cobora trei rânduri degeaba. Acum se întoarce doar când n-ar încăpea la dreapta.
+    (Se aplica ~~și etichetei unei perioade~~ — de la 2026-08-15 perioada n-are etichetă în
+    pistă, deci `flip` a rămas doar al reperelor.)
 - **Antetul are o singură structură: grosier peste fin.** Rând de săptămâni (S32 · S33)
   peste rândul de zile (inițială + cifră), 52px. Separator `--border` între coloane,
   `--border-strong` la granița grupei, **coborând continuu prin toate benzile**. Grupele nu-și
@@ -1170,9 +1171,11 @@ rândurilor**, **antetul de timp** și **orizontul lung**.
   `unitCerut` și Planificatorul cere `week` și la 6L — implicitul dădea luni, iar peste luni
   n-are ce să mai urce. Ganttul de proiect nu cere nimic și rămâne pe scara veche: fereastra
   lui vine din date și poate ține un an, unde 52 de coloane de săptămână ar fi trei ecrane.
-  - Perioadele rămân proporționale, dar devin **bare pe rândul întâi** cu eticheta **lângă**
-    ele și **lățime minimă 11px** — la 6L cinci zile înseamnă 25px, deci nu mai e text de pus
-    înăuntru, iar eticheta scoasă afară are nevoie de un rând pe care să stea.
+  - ~~Perioadele devin **bare pe rândul întâi** cu eticheta **lângă** ele~~ — **scos
+    2026-08-15.** Exact mecanismul ăsta (`.ib-out`) avea un bug: eticheta ieșea din bandă fără
+    să verifice dacă locul de afară e liber, deci două perioade pe același rând își tipăreau
+    numele **una peste alta**, ilizibil (măsurat: 2 perechi, la 3L și la 6L). Acum perioada e
+    aceeași șină la toate orizonturile; **lățimea minimă de 11px a rămas**, ca regulă CSS.
   - **Reperele se strâng într-un număr pe săptămână** (`.count accent`, aceeași pastilă ca
     peste tot). Nu deschide nimic și nici n-ar avea unde: fereastra pornește mereu din azi,
     deci nu există zi pe care să aterizezi. Spune în ce săptămână se îngrămădesc — adică unde
@@ -1183,6 +1186,56 @@ rândurilor**, **antetul de timp** și **orizontul lung**.
   - **`iso` rămâne gol pe coloanele de săptămână.** Ganttul de proiect îl compară cu ziua de
     azi (`c.iso === today`); cu data de luni acolo, săptămâna s-ar aprinde o zi din șapte.
     Coloana care CONȚINE azi se află din procente (`contineAzi`), nu dintr-o egalitate.
+
+### Perioada e o șină la baza rândului (2026-08-15)
+
+Ion: *„nu arată prea bine"* — despre perioadele de o zi, tăiate. Simptomul era însă al unei
+structuri: perioada e un **interval** care ținea toată înălțimea rândului și își scria numele
+**înăuntru**, pe aceiași pixeli orizontali pe care îi voiau titlurile taskurilor, care sunt
+**puncte**. Măsurat pe aplicație (14z, pistă 1034px, 4 proiecte, 6 perioade, 13 taskuri):
+
+| orizont | text tăiat | text peste text | benzi fără nume |
+|---|---|---|---|
+| 7z | 3 | 0 | 0 |
+| 14z | **4** | 0 | 0 |
+| 30z | 1 | 0 | **4** |
+| 3L / 6L | 0 | **2** | 0 |
+
+Cazul cel mai rău: „Sediu EGB · Verificare parametri" primea **36px din 183** — 20% din nume.
+Iar înălțimea venea din **coliziuni**, nu din conținut: eticheta benzii ținea rândul întâi al
+împachetării, deci un proiect cu patru taskuri ajungea la 112px.
+
+**Perioada e CONTEXT („unde ești"), taskul e CONȚINUT („ce ai de făcut").** Contextul coboară
+într-o **șină de 4px la baza rândului** — convenția baseline din Gantt, unde bara subțire e
+contextul și cea groasă e subiectul. Aceeași gramatică o folosesc uneltele de resurse (Float,
+Resource Guru țin disponibilitatea într-o bară separată de rezervări). Rezultat măsurat:
+**0 tăiat și 0 suprapus pe toate cele cinci orizonturi**, graficul de la 410 la 371px.
+
+- **Fâșia de jos e goală, deci eticheta are loc.** Locul se scrie într-o **pastilă la capul
+  șinei** („⚲ Site" / „🏢 Sediu EGB"), iar golul se măsoară până la **începutul perioadei
+  următoare** — deci pastila încape întreagă sau nu se randează. Nu există stare în care se
+  taie. Vechiul prag (`BANDA_TEXT_MIN`, în **procente din fereastră**) pretindea că măsoară
+  dacă textul încape, dar procentele nu spun nimic despre pixeli: o zi la 14z trece pragul de
+  6,5% fie că înseamnă 48px, fie 95.
+- **`packRows(repere, [])`** — `blocate` a rămas fără obiect. De aici vine scăderea de
+  înălțime, fără să dispară nimic de pe ecran.
+- **`.lane-track` se ancorează sus** (`flex-start`), nu se mai centrează. Înălțimea rândului
+  poate fi dictată de coloana din stânga când ea cere mai mult decât formula (nume + contor +
+  chip, ~25px); centrată, surplusul cobora stiva în fâșia șinei — măsurat, exact așa apărea o
+  suprapunere între eticheta unei perioade și titlul unui task.
+- **Pastila merge cu zilele.** Fereastra pornește mereu din azi, deci o deplasare **în curs**
+  e tăiată la stânga; ancorată la capul *vizibil* al șinei, pastila stă pe muchia ferestrei și
+  avansează pe măsură ce perioada se scurtează — rămâne citibilă exact când ești pe teren.
+  **Pe `clipL` șina nu primește terminator**, altfel capul ei ar afirma că deplasarea începe azi.
+- **Șina e plină, nu tentă.** Pe 4px înălțime o tentă de 10% nu se mai vede — aceeași
+  compensare de suprafață pe care pista mobilă (34px) o făcea deja, desenând banda mai tare
+  decât desktopul.
+- **Au plecat:** `.impl-band.lung`, `.ib-out`, `.ib-txt`, `.ib-zile`, `flip` de pe bandă,
+  `BANDA_TEXT_MIN`, `BANDA_ZILE_MIN`, și `--h-stiva` n-a mai rămas cu niciun consumator în CSS.
+- **Capcană, pista mobilă:** `.mp-track .impl-band` trebuie să-și **reafirme `height: auto` și
+  `display: flex`**. Cu `top`, `bottom` și `height` puse toate trei, `height` câștigă — deci
+  fără prima, blocul de 34px de pe telefon devenea șina de 4px; fără a doua, iconița cădea în
+  colțul din stânga-sus, fiindcă baza nouă nu mai e flex.
 
 ## Design system (frontend)
 
