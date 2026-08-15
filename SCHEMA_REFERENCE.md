@@ -1,295 +1,93 @@
-# PIF Dashboard — Schema & API Reference
+# Contract de integrare — PIF Dashboard
 
-> Generat pentru a servi ca briefing pentru un alt LLM care va construi un endpoint de import structurat.
+Pentru cine scrie ceva ce vorbeste cu API-ul din afara aplicatiei (Cowork, skill-uri
+din vault, scripturi).
 
----
+**Schema NU se mai scrie aici.** Sursa unica e `docs/memory/DB_MAP.md`, generat de
+`scripts/gen_memory.py` prin PRAGMA pe o baza construita pe loc — deci nu poate ramane
+in urma. Rutele: `docs/memory/API_MAP.md`, generat din decoratori. Ambele se
+regenereaza la fiecare commit care atinge cod Python (`.githooks/pre-commit`).
 
-## 1. Schema completă SQLite (din `database.py` → `init_db()`)
+Fisierul asta pastreaza doar ce nu se poate genera: regulile de scriere.
 
-### PROIECTE
-```sql
-CREATE TABLE IF NOT EXISTS proiecte (
-    id TEXT PRIMARY KEY,                       -- UUID v4 (generate_uuid())
-    tip TEXT NOT NULL,                          -- 'PIF' | 'Service'
-    nume TEXT NOT NULL,
-    client TEXT,                                -- text liber (nume client, NU foreign key)
-    locatie TEXT,
-    echipament_principal TEXT,
-    producator TEXT,                            -- 'ABB' | 'Siemens' | 'Danfoss' | 'Lenze' | 'Altul'
-    cod_proiect TEXT,
-    pm TEXT,                                    -- project manager
-    folder_server TEXT,
-    data_incepere TEXT,                         -- ISO date string 'YYYY-MM-DD'
-    deadline TEXT,                              -- ISO date string
-    data_crearii TEXT,                          -- ISO date string
-    status TEXT DEFAULT 'in_lucru',             -- enum mai jos
-    observatii TEXT,
-    nr_comanda TEXT,
-    nr_contract TEXT,
-    service_before TEXT,                        -- Service only: stare echipament inainte
-    service_after TEXT,                         -- Service only: stare echipament dupa
-    confirmat_client INTEGER DEFAULT 0,         -- 0/1 boolean
-    client_nume_confirmare TEXT,
-    created_at TEXT,                            -- ISO datetime
-    updated_at TEXT,                            -- ISO datetime
-    notify_on_complete INTEGER DEFAULT 1,
-    notify_on_deadline INTEGER DEFAULT 1,
-    vault_folder TEXT                           -- folder în vault-ul Obsidian, ex. 'wiki/job/projects/<slug>' (v27)
-);
-```
+## Autentificare
 
-**Câmpuri obligatorii la INSERT**: `tip` (NOT NULL), `nume` (NOT NULL). Restul au defaults sau sunt nullable.
-**ID**: UUID v4 text, generat server-side sau poate fi furnizat de client.
+| cine | cum |
+|---|---|
+| masina (Cowork, `pif-sync.py`, scripturi) | `Authorization: Bearer $PIF_API_TOKEN` — scutit de CSRF |
+| browser | cookie de sesiune + `X-CSRF-Token` (valoarea cookie-ului `csrf_token`) |
 
-### CLIENTI
-```sql
-CREATE TABLE IF NOT EXISTS clienti (
-    id TEXT PRIMARY KEY,                        -- UUID v4
-    nume TEXT NOT NULL,
-    adresa TEXT,
-    telefon TEXT,
-    email TEXT,
-    contact_principal TEXT,
-    note TEXT,
-    created_at TEXT                             -- ISO datetime
-);
-```
+Rate limit: 60 cereri/minut per IP pe `/api/*`.
 
-**Relația cu proiecte**: NICIUNA (NU e foreign key). `proiecte.client` e text liber. Un proiect poate exista fără client. Tabela `clienti` e un registru independent pentru autocompletare.
+## Reguli de scriere
 
-> **Tabele șterse.** v23: `checklist_pif`, `checklist_categorii`,
-> `project_templates`, `assistant_memory` (Hermes AI) — cod mort, zero UI.
-> **v28: `parametri_master`, `fault_codes`, `echipamente`, `atasamente`** —
-> restrângere de scop; parametrii și fault-urile se iau din manual, backup-urile
-> de drive stau în vault (`raw/projects/<slug>/`), citite de skill-ul
-> `drive-backup`. Datele au fost arhivate în vault la
-> `raw/pif-dashboard/2026-07-27-inainte-de-v28/`. Fișierele urcate NU au fost
-> șterse de pe disc — doar tabela. Toate sunt `DROP TABLE IF EXISTS`, idempotente.
+1. **Actualizarea e `PUT`, niciodata `PATCH`.** Nu exista handler PATCH.
+2. **Toate scrierile JSON trec prin `get_json_or_400()`**, care normalizeaza datele
+   (`utils.norm_date`): accepta ISO si formatele romanesti (`23.02.2026`, `5/3/2026`),
+   respinge cu 400 orice altceva. O data pe care baza n-o poate citi nu intra.
+3. **`observatii` e HTML**, nu markdown si nu text simplu (o scrie editorul din UI).
+4. **Statusuri.** Proiect: `pregatire` | `finalizat`. Task: `to_do` | `done`. Cheile
+   vechi (`in_lucru`, `blocat`, …) sunt mapate DOAR la citire, ca un rand nemigrat sa
+   nu apara brut; nu le scrie.
+5. **`data_finalizare` exista daca si numai daca statusul e `finalizat`.** Serverul o
+   pune singur la inchidere si o STERGE la redeschidere — nu o trimite pe cont propriu
+   decat cand corectezi ziua unei lucrari inchise mai tarziu.
+6. **`implementari.faza` (`pregatire`|`implementare`) e independenta de `locatie`**
+   (`site`|`sediu`). Sunt doua fapte, nu unul cu doua nume.
+7. **`implementari.confirmata` e raspunsul „s-a facut" pentru PERIOADA.** Nu atinge
+   statusul proiectului cand confirmi o deplasare.
+8. **`sfera`** (`munca`|`personal`) pe `global_tasks` e opt-in la citire: implicit,
+   listele intorc doar `munca`. O valoare necunoscuta da 400, nu se corecteaza tacit.
 
-### TASKS (per proiect)
-```sql
-CREATE TABLE IF NOT EXISTS tasks (
-    id TEXT PRIMARY KEY,                        -- UUID v4
-    proiect_id TEXT NOT NULL,                   -- FK -> proiecte.id ON DELETE CASCADE
-    titlu TEXT NOT NULL,
-    status TEXT DEFAULT 'to_do',                -- 'to_do' | 'in_progress' | 'done'
-    prioritate TEXT DEFAULT 'normal',           -- 'normal' | 'urgent' | 'minor'
-    data_scadenta TEXT,
-    data_finalizare TEXT,
-    ordine INTEGER DEFAULT 0,
-    descriere TEXT,
-    recurenta TEXT,                              -- 'zilnic' | 'saptamanal' | 'lunar' | null
-    updated_at TEXT,
-    created_at TEXT,
-    FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
-);
+## Import de debrief — `POST /api/import/debrief`
 
-CREATE TABLE IF NOT EXISTS task_subtasks (
-    id TEXT PRIMARY KEY,                        -- UUID v4
-    task_id TEXT NOT NULL,                      -- referinta la tasks.id (fara FK constraint!)
-    titlu TEXT NOT NULL,
-    done INTEGER DEFAULT 0,
-    ordine INTEGER DEFAULT 0,
-    created_at TEXT
-);
-```
+**Scrie efectiv doar doua lucruri: `client{}` si `proiect{}`.** Verificat in
+`blueprints/projects.py:864-1080` — nu exista niciun `INSERT INTO tasks` acolo.
 
-### GLOBAL TASKS (independente de proiecte)
-```sql
--- Setul efectiv de coloane (CREATE TABLE-ul din init_db e incomplet:
--- `recurenta`, `ordine_agenda` si `sfera` vin din migrari — v9, v21, v38).
-CREATE TABLE IF NOT EXISTS global_tasks (
-    id TEXT PRIMARY KEY,                        -- UUID v4
-    titlu TEXT NOT NULL,
-    descriere TEXT,
-    status TEXT DEFAULT 'to_do',                -- 'to_do' | 'done' (v34)
-    categorie TEXT DEFAULT 'General',           -- text liber
-    sfera TEXT DEFAULT 'munca',                 -- 'munca' | 'personal' (v38)
-    data_scadenta TEXT,
-    data_finalizare TEXT,
-    recurenta TEXT,                              -- 'zilnic' | 'saptamanal' | 'lunar' | null
-    ordine_agenda INTEGER DEFAULT 0,             -- ordinea pe boardul „Astăzi"
-    created_at TEXT,
-    updated_at TEXT
-);
--- `prioritate` a plecat in v34, `data_planificata` in v33.
--- `sfera` separa taskurile personale de cele de munca; TOATE interogarile pe
--- global_tasks filtreaza explicit (lipsa parametrului = 'munca', fail-closed).
-```
+- `meta.debrief_id` face importul idempotent (reimportul aceluiasi debrief intoarce
+  proiectul existent, nu-l dubleaza).
+- **`tasks[]` se pierde in tacere.** E acceptat de JSON, dar nimic nu-l scrie si nu
+  apare in `sumar`. Daca debrief-ul are taskuri, trimite-le separat, dupa import, cu
+  `POST /api/proiecte/<id>/tasks`.
+- `jurnal[]` se **plieaza in** `observatii` (PIF) / `service_after` (Service) —
+  tabela de jurnal a plecat in v22.
+- `echipamente[]` e **ignorat** din v28, dar numarat in `sumar.echipamente_ignorate`
+  — asta e comportamentul corect: vizibil, nu inghitit.
+- `ore[]` ignorat din v22 (orele se ponteaza in e100).
+- **Nu exista** `checklist_items[]`, `params_json`, `ore_total_secunde`.
 
----
+**Doua coloane pe care importul NU le scrie, desi exista:**
 
-## 2. Cum se creează un proiect — cod real
+- **`data_finalizare`** — deci un debrief cu `status: 'finalizat'` creeaza un proiect
+  care incalca invariantul de la punctul 5: inchis, dar fara data inchiderii. Efect
+  concret: taierea perioadelor la citire cade pe `date('now')`, adica lucrarea
+  ramane in Calendar pana azi in loc sa se opreasca in ziua inchiderii.
+- **`vault_folder`** — legatura cu `wiki/job/projects/<client>/<slug>/` nu se face.
 
-**Fișier**: `blueprints/projects.py`, linia 64
+Pana cand importul le acopera, dupa un import cu status `finalizat` trimite un
+`PUT /api/proiecte/<id>` cu `data_finalizare` si `vault_folder`.
 
-```python
-@projects_bp.route('/api/proiecte', methods=['POST'])
-@login_required
-def create_proiect():
-    data = request.json
-    conn = get_db()
-    cursor = conn.cursor()
-    now = datetime.now().isoformat()
-    project_id = data.get('id') or generate_uuid()
+## Export — `GET /api/proiecte/<id>/snapshot`
 
-    cursor.execute('''
-        INSERT INTO proiecte (
-            id, tip, nume, client, locatie, echipament_principal, producator,
-            cod_proiect, pm, folder_server, data_incepere, deadline, data_crearii,
-            status, observatii, nr_comanda, nr_contract, service_before, service_after,
-            confirmat_client, client_nume_confirmare, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        project_id,
-        data.get('tip', 'PIF'),                  # 'PIF' sau 'Service'
-        data.get('nume', ''),                     # obligatoriu logic
-        data.get('client', ''),
-        data.get('locatie', ''),
-        data.get('echipament_principal', ''),
-        data.get('producator', 'Altul'),
-        data.get('cod_proiect', ''),
-        data.get('pm', ''),
-        data.get('folder_server', ''),
-        data.get('data_incepere', ''),
-        data.get('deadline', ''),
-        data.get('data_crearii', now[:10]),
-        data.get('status', 'in_lucru'),
-        data.get('observatii', ''),
-        data.get('nr_comanda', ''),
-        data.get('nr_contract', ''),
-        data.get('service_before', ''),
-        data.get('service_after', ''),
-        data.get('confirmat_client', 0),
-        data.get('client_nume_confirmare', ''),
-        now, now
-    ))
-    conn.commit()
-    conn.close()
-    return jsonify({'id': project_id, 'message': 'Project created'}), 201
-```
+Intoarce `meta`, `client`, `proiect{}`, `tasks[]` (cu `subtasks[]`), `calcule[]`.
+**Nu** intoarce echipamente, checklist, jurnal, ore sau perioade — pentru perioade
+cere `GET /api/proiecte/<id>/implementari`.
 
----
+## Sincronizarea cu vault-ul
 
-## 3. Endpointuri existente de import/bulk/batch
+`Knowledge/tools/pif-sync.py`: `list · status [slug] · create <slug> · push [slug] ·
+pull <slug> · push-obs <slug> <fisier.md> · link [slug]`.
 
-| Endpoint | Verb | Ce face | Import? |
-|---|---|---|---|
-| `/api/proiecte/batch` | POST | Batch update status sau batch delete pe mai multe proiecte | NU |
-| `/api/parametri/bulk` | GET | Read-only dump de parametri pentru cache offline mobil | NU |
-| `/api/import-params/preview` | POST | Preview import parametri din fișier export producător (parsează, nu scrie) | Partial |
+Cheia de legatura e `dashboard_id` din frontmatter-ul lui
+`wiki/job/projects/<client>/<slug>/README.md`; `SYNC_KEYS = ('status',)` — se
+sincronizeaza doar statusul. In sens invers, serverul scrie frontmatter in vault si
+comite (`blueprints/obsidian.py`).
 
-**Nu există endpoint de import/upsert structurat. Trebuie creat de la zero.**
+## Ce nu mai exista
 
----
-
-## 4. Enumuri și valori fixe
-
-### Tipul proiectului
-```
-'PIF'       — Punere În Funcțiune
-'Service'   — Intervenție Service
-```
-
-### Statusul proiectului
-```
-'in_lucru'      — În lucru (default)
-'blocat'        — Blocat
-'in_asteptare'  — În așteptare (atenție: cu diacritice, "ș")
-'finalizat'     — Finalizat
-'anulat'        — Anulat
-```
-
-### Statusul taskului (project tasks + global tasks)
-```
-'to_do'         — De făcut (default)
-'in_progress'   — În progres
-'done'          — Finalizat
-```
-
-### Prioritate task
-```
--- Project tasks (lowercase):
-'normal'   | 'urgent'  | 'minor'
-
--- Global tasks (capitalized):
-'Normal'   | 'Urgent'  | 'Minor'
-```
-
-### Producători hardcodați
-```
-'ABB'  | 'Siemens'  | 'Danfoss'  | 'Lenze'  | 'Altul'
-```
-
-### Recurență (tasks)
-```
-'zilnic'      | 'saptamanal'  | 'lunar'  | null (fără recurență)
-```
-
-### Tip atașament
-```
-'fisier'   — default
-```
-
----
-
-## 5. ~~Structura checklist PIF~~ (ȘTERS v23)
-
-Feature-ul Checklist PIF (tabelele `checklist_pif` + `checklist_categorii`,
-rutele `/api/proiecte/<id>/checklist*`, secțiunea din export PDF) a fost șters
-în v23 — era cod mort fără niciun UI în SPA. La fel `project_templates`
-(`/api/templates`) și `assistant_memory` (Hermes AI). Migrația v22→v23 face DROP.
-
----
-
-## 6. Sistem de identificare
-
-| Entitate | Tip ID | Generat cum |
-|---|---|---|
-| proiecte | UUID v4 text | `str(uuid.uuid4())` server-side, sau furnizat de client |
-| clienti | UUID v4 text | idem |
-| tasks | UUID v4 text | idem |
-| task_subtasks | UUID v4 text | idem |
-| global_tasks | UUID v4 text | idem |
-
-Toate endpoint-urile acceptă `"id"` în JSON body — dacă e furnizat, îl folosesc; altfel generează UUID nou.
-
----
-
----
-
-## 8. Validări și logică de business
-
-### Un proiect poate exista fără client?
-**Da.** `client` e `TEXT` nullable, nu FK. Un proiect cu `client = ""` e valid.
-
-### Cascade deletes
-Când un proiect se șterge (via batch delete):
-1. Se șterg explicit: `task_subtasks` (ale task-urilor proiectului), apoi `tasks`
-2. FK CASCADE ar face o parte din treabă, dar codul face și explicit pentru siguranță
-3. Directorul proiectului din `UPLOAD_FOLDER` se șterge de pe disc
-3. Fișierele fizice ale atașamentelor se șterg de pe disk (`shutil.rmtree`)
-
-### Unicitate
-- Toate ID-urile sunt PK → unice
-- Nu există unique constraints pe nume, cod_proiect, serial_number — pot exista duplicate
-- `clienti.nume` are index dar NU unique
-
-### CSRF
-Toate endpoint-urile POST/PUT/DELETE necesită header `X-CSRF-Token` (double-submit cookie pattern). Token-ul se citește din cookie-ul `csrf_token`. Webhook-ul `/webhook/deploy` e exempt.
-
----
-
-## 9. Indexuri existenți
-
-```sql
-idx_proiecte_status          ON proiecte(status)
-idx_proiecte_producator      ON proiecte(producator)
-idx_proiecte_tip             ON proiecte(tip)
-idx_tasks_proiect_id         ON tasks(proiect_id)
-idx_tasks_status             ON tasks(status)
-idx_global_tasks_status      ON global_tasks(status)
-idx_clienti_nume             ON clienti(nume)
-idx_task_subtasks_task_id    ON task_subtasks(task_id)
-idx_implementari_proiect     ON implementari(proiect_id)
-```
+Ca sa nu reapara in cod scris de un agent care a citit un document vechi: `deadline`,
+`prioritate`, `pm`, `nr_contract`, `data_incepere`, `notify_on_deadline`, timer/ore,
+tabelele `jurnal`, `checklist_pif`, `echipamente`, `atasamente`, `parametri_master`,
+`fault_codes`, `project_templates`, ruta `GET /api/dashboard/home`, Gantt-ul de
+proiect si `gantt.pdf`, tabul Calcule, `static/app.js`, `static/core.js`,
+integrarea Google Calendar.

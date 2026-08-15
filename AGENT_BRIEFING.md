@@ -13,7 +13,9 @@ PIF Dashboard. Ion alege scope-ul, copiază blocul de mai jos, înlocuiește `<S
 ## Template (copy-paste, înlocuiește slot-urile)
 
 ```
-Lucrezi la PIF Dashboard, repo C:\Users\ion.ursu\pif-dashboard pe Windows-ul lui Ion.
+Lucrezi la PIF Dashboard, in repo-ul din directorul curent (pe PC-ul de acasa
+`C:\Users\Ion Ursu\Repos\pif-dashboard`, pe cel de job alta cale — nu presupune,
+verifica cu `git rev-parse --show-toplevel`).
 Tu esti sesiunea "<SCOPE>". Alte sesiuni Claude pot lucra in paralel pe ACELASI worktree
 (deci acelasi .git si acelasi index git).
 

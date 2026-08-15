@@ -161,6 +161,19 @@ def mediu_probe():
     return mediu
 
 
+def relevante(atinse):
+    """Subsetul care poate declansa o poarta — restul nu conteaza pentru semnatura.
+
+    Tine pasul cu `porti_pentru`: daca acolo apare un criteriu nou de fisier,
+    apare si aici, altfel o modificare ar declansa o poarta fara sa intre in
+    semnatura si poarta ar rula la nesfarsit.
+    """
+    return [p for p in atinse
+            if (p.startswith('frontend/src/') and p.endswith(('.svelte', '.css', '.js')))
+            or (p.startswith('blueprints/') and p.endswith('.py'))
+            or p in FISIERE_API]
+
+
 def porti_pentru(atinse):
     """(eticheta, argv, cwd, cum-o-rulezi-manual) in ordine ieftin -> scump."""
     porti = []
@@ -228,6 +241,15 @@ def main():
     if date.get('agent_id'):
         iesi_curat()
 
+    # Supapa. Nu e o portita de comoditate: exista fiindca o poarta care nu poate
+    # fi oprita se ocoleste prin a nu edita fisierul, ceea ce e mai rau. Cand e
+    # folosita, o SPUNE in context — nu tace.
+    if os.environ.get('PIF_GATE', '').lower() == 'skip':
+        raporteaza('PIF_GATE=skip: poarta a fost sarita in mod deliberat. '
+                   'Verificatoarele NU au rulat — spune-i lui Ion explicit ce n-a '
+                   'fost verificat, sau ruleaza manual `python scripts/audit_design.py` '
+                   'si `python scripts/smoke_ui.py`.')
+
     sid = sid_curat(date.get('session_id', ''))
     STARE.mkdir(parents=True, exist_ok=True)
     f_atinse = STARE / ('%s.touched' % sid)
@@ -259,8 +281,15 @@ def main():
 
     # Semnatura = ce s-a atins + cand a fost scris ultima oara. Neschimbata de la
     # ultima trecere curata => nu mai are ce verifica, ies instant.
+    #
+    # Se calculeaza DOAR peste fisierele care declanseaza o poarta. Inainte se
+    # calcula peste tot ce s-a atins, iar fiecare sesiune se incheie cu o retusare
+    # in CLAUDE.md / docs/memory/ — deci semnatura se schimba dupa ce verificarea
+    # trecuse deja, si urmatorul Stop relua build + smoke_ui + audit_mobil (3-6
+    # minute) pentru un text care nu intra in bundle. Un fisier de documentatie nu
+    # poate strica nici build-ul, nici geometria de pe telefon.
     semnatura = []
-    for r in atinse:
+    for r in relevante(atinse):
         p = RADACINA / r
         semnatura.append('%s:%s' % (r, p.stat().st_mtime_ns if p.exists() else 0))
     semnatura = '|'.join(semnatura)

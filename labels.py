@@ -1,6 +1,10 @@
 """Centralised label dictionaries for project / task statuses.
 Source of truth for backend rendering (Excel exports, PDF, etc.).
-Mirror lives at static/core.js: getStatusLabel().
+
+Oglinda din `static/core.js` a plecat odata cu aplicatia legacy (2026-06-17).
+Astazi partea de client isi scrie etichetele in Svelte; fisierul asta ramane
+sursa pentru ce randeaza serverul, si e citit de `scripts/gen_memory.py` ca sa
+ajunga in `docs/memory/DB_MAP.md`.
 """
 
 # Doua statusuri, atat (v31, cerinta lui Ion). Un proiect ori e in lucru la el,

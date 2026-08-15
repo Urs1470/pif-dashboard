@@ -1,5 +1,5 @@
 #!/bin/sh
-# Auto-regenerare memorie proiect (docs/memory/CODE_MAP.md + API_MAP.md)
+# Auto-regenerare memorie proiect (docs/memory/CODE_MAP.md + API_MAP.md + DB_MAP.md)
 # Activare (o singura data per clona): git config core.hooksPath .githooks
 # Ruleaza doar daca commit-ul atinge cod relevant; nu blocheaza commit-ul la eroare.
 
@@ -36,8 +36,8 @@ else
 fi
 
 if $PY scripts/gen_memory.py >/dev/null 2>&1; then
-    git add docs/memory/CODE_MAP.md docs/memory/API_MAP.md
-    echo "[pre-commit] memorie regenerata (docs/memory/CODE_MAP.md + API_MAP.md)"
+    git add docs/memory/CODE_MAP.md docs/memory/API_MAP.md docs/memory/DB_MAP.md
+    echo "[pre-commit] memorie regenerata (CODE_MAP + API_MAP + DB_MAP)"
 else
     echo "[pre-commit] AVERTISMENT: scripts/gen_memory.py a esuat - commit continua, regenereaza manual" >&2
 fi

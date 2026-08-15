@@ -4,6 +4,12 @@
 
 Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
+## static/service-worker.js (411 linii)
+
+### (top)
+
+`64:precacheShell`, `208:cacheFirstWithNetwork`, `241:cacheFirstCDN`, `268:networkFirstWithCache`, `305:networkFirstWithNetwork`
+
 ## app.py (663 linii)
 
 `47:_client_ip`, `57:get_or_create_secret_key`, `78:file_hash`, `96:_asset_path`, `111:inject_version`, `137:make_session_permanent`, `147:setup_logging`, `179:check_rate_limit`, `218:check_login_rate_limit`, `240:before_request_func`, `281:after_request_func`, `325:get_hashed_pin`, `334:_git_commit`, `348:healthz`, `354:health_redirect`, `359:whoami`, `366:login_page`, `373:login`, `385:logout`, `391:login_hash`, `411:_serve_frontend`, `419:index`, `424:dist_assets`, `430:favicon`, `435:manifest`, `440:app_icon`, `449:calc_public`, `459:protected_docs`, `471:service_worker`, `476:add_sw_header`, `497:get_deploy_secret`, `505:webhook_deploy`, `590:api_deploy`, `646:page_not_found`, `653:internal_error`
@@ -20,7 +26,31 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `26:_generate_token`, `35:_get_or_refresh_token`, `43:init_csrf`
 
-## labels.py (38 linii)
+## labels.py (42 linii)
 
-`33:project_status_label`, `37:task_status_label`
+`37:project_status_label`, `41:task_status_label`
+
+## blueprints/admin.py (1016 linii)
+
+`57:get_stats`, `91:_pdf_safe_text`, `105:_pdf_make_styles`, `133:_pdf_section_header`, `146:_pdf_section_admin`, `174:_pdf_section_tech`, `192:_pdf_section_tasks`, `226:export_pdf`, `294:_ics_feed_key`, `308:export_ics_key`, `314:export_ics`, `440:backup_database`, `470:restore_database`, `633:admin_db_upload_page`, `679:admin_db_upload`, `756:admin_db_dump`, `799:_search_snippet`, `815:global_search`, `866:plan_departament_get`, `877:plan_departament_set`, `894:calendar_view`
+
+## blueprints/app_update.py (135 linii)
+
+`49:_meta`, `58:app_upload`, `113:app_version`, `123:app_apk`
+
+## blueprints/obsidian.py (541 linii)
+
+`33:_obsidian_vault`, `41:_obsidian_safe_path`, `55:_obsidian_walk`, `80:_obsidian_index`, `100:_obsidian_config_dict`, `118:obsidian_config_get`, `124:obsidian_config_set`, `137:obsidian_note_get`, `172:_scrub_secrets`, `177:_git_env`, `188:_git`, `194:_default_vault_repo`, `199:_maybe_refresh_vault`, `237:_dashboard_git_credentials`, `253:obsidian_vault_key`, `278:obsidian_vault_sync`, `334:_obsidian_safe_dir`, `350:project_wiki_notes`, `410:sync_project_frontmatter`, `482:obsidian_note_put`
+
+## blueprints/projects.py (1276 linii)
+
+`30:get_proiecte`, `80:create_proiect`, `126:get_proiect`, `154:update_proiect`, `263:delete_proiect`, `296:batch_proiecte`, `354:get_clienti`, `372:_normalize_client_name`, `385:create_client`, `415:get_client`, `429:update_client`, `463:delete_client`, `482:get_project_snapshot`, `577:_familie_from_echipament`, `608:preview_import_abb_multi`, `709:_familie_param_meta`, `723:_equals_default`, `740:_is_zeroish`, `748:_filter_drive_params`, `817:preview_import_archive`, `866:import_debrief`, `1088:_impl_row`, `1108:get_implementari`, `1119:create_implementare`, `1145:update_implementare`, `1186:delete_implementare`, `1206:_calc_row`, `1224:get_calcule`, `1235:create_calcul`, `1267:delete_calcul`
+
+## blueprints/push.py (637 linii)
+
+`100:_setari`, `113:_valideaza_setari`, `145:_b64`, `149:_unb64`, `158:_secret_curent`, `174:mint_token`, `184:verifica_token`, `206:_priv_raw`, `215:_chei_vapid`, `245:_abonamente`, `252:_salveaza_abonamente`, `256:_hash_endpoint`, `264:send_to_all`, `306:taskuri_de_notificat`, `325:taskuri_scadente`, `345:_de_notificat`, `358:_zile_de_cand`, `366:check_and_send_daily`, `419:porneste_planificator`, `451:push_vapid_public`, `459:push_subscribe`, `478:push_unsubscribe`, `489:push_tokens`, `524:push_setari_get`, `530:push_setari_put`, `549:push_status`, `563:push_test`, `580:push_action`
+
+## blueprints/tasks.py (1017 linii)
+
+`18:_skip_weekend`, `28:_next_recurrence_date`, `53:_spawn_recurring_task`, `81:_spawn_recurring_global_task`, `111:get_tasks`, `158:create_task`, `202:update_task`, `272:delete_task`, `293:get_subtasks`, `304:create_subtask`, `327:update_subtask`, `342:delete_subtask`, `366:_sfera_or_none`, `373:get_global_tasks`, `453:create_global_task`, `492:get_global_task`, `507:update_global_task`, `577:delete_global_task`, `607:_resolve_today`, `616:_agenda_item`, `654:get_agenda_today`, `715:get_agenda_candidates`, `765:reorder_agenda`, `793:_span_intersects`, `806:get_plan`
 
