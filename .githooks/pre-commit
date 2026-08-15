@@ -24,13 +24,22 @@ if echo "$STAGED" | grep -qE '^static/dist/'; then
 fi
 # ---------------------------------------------------------------------------
 
-echo "$STAGED" | grep -qE '^(app\.py|database\.py|utils\.py|csrf\.py|labels\.py|blueprints/.*\.py|static/(app|mobile|core)\.js)$' || exit 0
+echo "$STAGED" | grep -qE '^(app\.py|database\.py|utils\.py|csrf\.py|labels\.py|blueprints/.*\.py|static/service-worker\.js)$' || exit 0
 
-if command -v python3 >/dev/null 2>&1; then
-    PY=python3
-elif command -v python >/dev/null 2>&1; then
-    PY=python
-else
+# Interpretorul se ALEGE PROBAND, nu dupa nume. Pe Windows `python3` exista in PATH
+# ca alias catre Microsoft Store (`WindowsApps/python3`): `command -v` il gaseste,
+# deci vechea verificare il alegea, iar el tipareste "Python was not found" si iese
+# cu 49. Rezultatul: pe PC-ul de acasa regenerarea hartilor n-a rulat NICIODATA —
+# doar tiparea un avertisment care trecea in derulare. Exact clasa de esec pe care
+# hartile trebuiau s-o previna: o absenta tacuta.
+PY=
+for cand in python python3 py; do
+    if command -v "$cand" >/dev/null 2>&1 && "$cand" -c 'import sys' >/dev/null 2>&1; then
+        PY=$cand
+        break
+    fi
+done
+if [ -z "$PY" ]; then
     echo "[pre-commit] python negasit - sar regenerarea memoriei (ruleaza manual: python scripts/gen_memory.py)" >&2
     exit 0
 fi
