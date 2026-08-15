@@ -22,7 +22,7 @@
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { ArrowLeft, Plus, CheckCircle2, CalendarDays, ListChecks, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, Check, Text } from '@lucide/svelte'
-  import ImplPeriods from '../components/projects/ImplPeriods.svelte'
+  import ImplPeriods, { urlPerioade } from '../components/projects/ImplPeriods.svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
     loadProjectDetail, loadProjectTasks, deleteProject, updateProject,
@@ -35,7 +35,7 @@
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate, router } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, desfacere, EASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, desfacere, alunecare, EASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
@@ -63,6 +63,67 @@
   let loading = $state(true)
   let error = $state(null)
   let activeTab = $state('tasks')
+
+  // ===== COMUTAREA TABURILOR (2026-08-15) =====
+  //
+  // Ion: „cum se deschid taburile de proiecte, acum e cu ramasite si schelet,
+  // nu se deschide fluent."
+  //
+  // Continutul se estompa deja (`in:fade`), dar FARA directie — singurul loc din
+  // aplicatie ramas asa, dupa ce ruta, luna din Calendar si sfera din Taskuri au
+  // primit toate o alunecare care spune incotro ai mers. Un fondu pur intre doua
+  // liste diferite nu spune nimic despre relatia lor.
+  //
+  // Sensul vine din ORDINEA taburilor, ca la doc: mergi spre dreapta ->
+  // continutul soseste din dreapta.
+  let tabSens = $state(0)
+  function alegeTab(cheie) {
+    if (cheie === activeTab) return
+    const a = tabs.findIndex((t) => t.key === activeTab)
+    const z = tabs.findIndex((t) => t.key === cheie)
+    tabSens = a >= 0 && z >= 0 ? (z > a ? 1 : -1) : 0
+    activeTab = cheie
+  }
+
+  // Sublinierea se MASOARA din tabul activ, nu se calculeaza din indici: cele
+  // trei etichete au latimi diferite, iar o socoteala paralela s-ar desparti de
+  // desen la prima schimbare de text sau de font.
+  let tabsEl = $state(null)
+  let linie = $state({ x: 0, w: 0, gata: false })
+  let linieAsezata = $state(false)
+  let linieMasurata = false        // NEreactiv: citit in efectul care scrie `linie`
+
+  function masoaraLinia() {
+    const el = tabsEl?.querySelector('.tab.active')
+    if (!el) { linie.gata = false; return false }
+    linie.x = el.offsetLeft
+    linie.w = el.offsetWidth
+    linie.gata = true
+    return true
+  }
+
+  $effect(() => {
+    activeTab; tabs
+    if (!tabsEl) return
+    if (masoaraLinia() && !linieMasurata) {
+      linieMasurata = true
+      // Un cadru fara tranzitie, ca prima asezare sa nu alunece din stanga.
+      requestAnimationFrame(() => { linieAsezata = true })
+    }
+  })
+
+  /** Incalzeste datele unui tab INAINTE sa fie deschis — la hover pe desktop, la
+   *  apasare pe telefon. Masurat cu 150ms dus-intors: prima vizita pe „Perioade"
+   *  si pe „Wiki" trecea printr-un cadru de schelet si trei stari vizuale; a doua
+   *  era deja curata, fiindca memoria le avea. Deci nu lipsea cache-ul, lipsea
+   *  momentul in care sa fie umplut.
+   *  Taskurile nu apar aici: vin odata cu proiectul, in `load()`. */
+  function pregatesteTab(cheie) {
+    try {
+      if (cheie === 'perioade') _preia(urlPerioade(params.id), { proaspat: 5000 })
+      else if (cheie === 'wiki') _preia(urlWiki(params.id), { proaspat: 5000 })
+    } catch (_) { /* incalzirea e tacuta prin definitie */ }
+  }
 
   let newTaskTitle = $state('')
   let newTaskData = $state('')   // termenul ales din „Alege data", la compozitor
@@ -562,6 +623,28 @@
 
   onMount(() => { load() })
 
+  // TABURILE SE INCALZESC LA DESCHIDEREA PAGINII, nu la hover.
+  //
+  // Hoverul e prea tarziu, si se poate masura: intre `pointerenter` si click
+  // trec ~150ms pe desktop si ~100 pe telefon, adica exact cat un dus-intors
+  // prin tunel — deci prima vizita pe „Perioade" sau pe „Wiki" tot trecea
+  // printr-un cadru de schelet si trei stari vizuale. Preincarcarea de la hover
+  // ramane (nu strica, si acopera cazul in care cererea de aici a picat), dar
+  // ea singura nu ajungea.
+  //
+  // Pe rand liber, nu imediat: pagina are deja doua cereri proprii la montare
+  // (proiectul si taskurile lui), iar taburile n-au voie sa concureze cu ele.
+  // Pana apesi un tab au trecut oricum secunde.
+  $effect(() => {
+    const cere = () => { pregatesteTab('perioade'); pregatesteTab('wiki') }
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(cere, { timeout: 2000 })
+      return () => cancelIdleCallback(id)
+    }
+    const t = setTimeout(cere, 900)
+    return () => clearTimeout(t)
+  })
+
   // Datele de identificare, mutate in bara laterala din fostul tab „Info"
   // (2026-07-27): tabul repeta antetul README-ului din wiki, iar 4 din 10 campuri
   // erau aproape mereu goale. Randurile fara valoare nu se deseneaza deloc.
@@ -732,9 +815,19 @@
         </div>
       {/if}
 
-    <div class="tabs">
+    <div class="tabs" bind:this={tabsEl}>
+      <!-- Sublinierea e UN obiect care se muta, nu o bordura care se aprinde in
+           alta parte — aceeasi gramatica cu pastila din doc si cursorul de sfera.
+           Latimea difera de la un tab la altul, deci se scaleaza pe X in loc sa
+           se anime `width`: scalarea se compune pe GPU, latimea cere layout. -->
+      <span class="tab-linie" class:gata={linie.gata} class:asezata={linieAsezata}
+            style="--lx:{linie.x}px; --lw:{linie.w / 100}" aria-hidden="true"></span>
       {#each tabs as tab}
-        <button class="tab" class:active={activeTab === tab.key} onclick={() => activeTab = tab.key}>
+        <button class="tab" class:active={activeTab === tab.key}
+                data-tab={tab.key}
+                onclick={() => alegeTab(tab.key)}
+                onpointerenter={() => pregatesteTab(tab.key)}
+                onpointerdown={() => pregatesteTab(tab.key)}>
           <tab.icon size={16} />
           {tab.label}
         </button>
@@ -745,7 +838,7 @@
       {#key activeTab}
       <!-- 220 (element), nu 120 (vopsea): schimbarea tabului aduce CONTINUT
            nou, e o sosire — aceeasi treapta ca lista si ca foaia de ruta. -->
-      <div class="tab-pane" in:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
+      <div class="tab-pane" in:alunecare={{ sens: tabSens }}>
       {#if activeTab === 'tasks'}
         <!-- „N/M finalizate" a plecat: railul din dreapta arata bara de progres SI
              cifra mare, in acelasi ecran, la 300px distanta. Aceeasi informatie,
@@ -1185,6 +1278,33 @@
   /* `.tab-count` a plecat — e `.count accent` din global.css. */
 
   .tab-content { min-height: 200px; }
+
+  /* Sublinierea taburilor. `.tabs` are `overflow-x: auto`, deci e deja un
+     container de derulare — dar NU e pozitionat, iar un copil absolut s-ar
+     raporta la pagina. `position: relative` il face reperul, si atunci
+     `offsetLeft` al tabului si `left: 0` al liniei masoara din acelasi punct.
+     Latimea de referinta e 100px, scalata pe X: asa nu se anima `width`. */
+  .tabs { position: relative; }
+  .tab-linie {
+    position: absolute;
+    left: 0;
+    bottom: -1px;              /* peste linia de 1px a lui `.tabs` */
+    width: 100px;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: left;
+    transform: translateX(var(--lx, 0)) scaleX(var(--lw, 0));
+    opacity: 0;
+    pointer-events: none;
+  }
+  .tab-linie.gata { opacity: 1; }
+  .tab-linie.asezata {
+    transition: transform var(--dur-arc-elan) var(--ease-arc-elan), opacity var(--dur-fast) var(--ease);
+  }
+  /* Bordura proprie a tabului pleaca: sublinierea e acum un singur obiect care
+     se muta. Lasata, s-ar aprinde in acelasi timp la destinatie — doua semne
+     pentru acelasi lucru, exact ce s-a demontat la tenta din doc. */
+  :global(.tabs) .tab.active { border-bottom-color: transparent; }
 
   /* Wiki tab */
   .wiki-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 16px; color: var(--text-secondary); text-align: center; }

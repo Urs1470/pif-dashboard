@@ -304,6 +304,45 @@ def ruleaza_sfere(page, baza):
          page.evaluate("location.hash"))
 
 
+
+# ============ TABURILE DIN PAGINA DE PROIECT ============
+#
+# Ion, 2026-08-15: „cum se deschid taburile de proiecte, acum e cu ramasite si
+# schelet, nu se deschide fluent."
+#
+# A CINCEA OARA aceeasi familie de eroare de masurare: prima sonda asculta
+# `animationstart`, si a raportat „nicio animatie". Fals — Svelte 5 ruleaza
+# tranzitiile prin Web Animations, care NU emit evenimentul ala. Se numara cu
+# `document.getAnimations()`, la mijlocul miscarii.
+#
+# Ce era adevarat: prima vizita pe „Perioade" si pe „Wiki" trecea printr-un
+# cadru de schelet si TREI stari vizuale, fiindca datele lor se cereau abia la
+# deschiderea tabului. Se incalzesc acum la deschiderea PAGINII, pe rand liber.
+def ruleaza_taburi_proiect(page, baza, pid):
+    page.goto(baza + '/#/projects/' + pid, wait_until='load')
+    page.wait_for_timeout(2600)          # si pentru incalzirea pe rand liber
+    taburi = page.locator('.tab')
+    n = taburi.count()
+    if not n:
+        out('  SARI  pagina de proiect n-are taburi')
+        return
+    # Ordinea sare peste tabul DEJA activ: un click pe el nu schimba nimic, deci
+    # nici n-are ce anima — `alegeTab` iese devreme cu buna stiinta. Masurat pe
+    # el, contractul „continutul se misca" ar fi picat pe un comportament corect.
+    ordine = list(range(1, n)) + [0]
+    for i in ordine:
+        et = (taburi.nth(i).text_content() or '').strip()[:10]
+        page.evaluate("window.__cadre = 0; window.__stari = []; window.__t = performance.now()")
+        taburi.nth(i).click()
+        page.wait_for_timeout(60)
+        viu = page.evaluate("document.getAnimations().length")
+        page.wait_for_timeout(1100)
+        r = page.evaluate("({ n: window.__cadre, stari: window.__stari })")
+        nota(r['n'] == 0, 'tab „%s": fara schelet' % et, '%d cadre' % r['n'])
+        nota(viu > 0, 'tab „%s": continutul se MISCA' % et,
+             'nicio animatie activa' if not viu else '')
+
+
 # ----------------------------------------------------------------------- probe
 def ruleaza(page, baza, pid):
     out('\n--- 1. prima incarcare: pagina SOSESTE ---')
@@ -446,7 +485,10 @@ def ruleaza(page, baza, pid):
     ruleaza_repornire(page, baza)
 
     if pid:
-        out('\n--- 11. pagina de proiect se deschide cu ce stie ---')
+        out('\n--- 11. taburile DIN pagina de proiect ---')
+        ruleaza_taburi_proiect(page, baza, pid)
+
+        out('\n--- 12. pagina de proiect se deschide cu ce stie ---')
         page.goto(baza + '/#/projects', wait_until='networkidle')
         page.wait_for_timeout(600)
         # Cardul e un `role="button"`, nu un link — de aceea are nevoie de

@@ -1,3 +1,11 @@
+<script module>
+  /** URL-ul perioadelor, exportat: il cere si componenta la montare, si
+   *  preincalzirea de la hover pe tabul „Perioade" din pagina de proiect. Doua
+   *  sabloane pentru acelasi raspuns n-ar nimeri aceeasi intrare in memorie,
+   *  deci incalzirea n-ar scoate scheletul — si nimic n-ar da eroare. */
+  export const urlPerioade = (id) => `/api/proiecte/${id}/implementari`
+</script>
+
 <script>
   import { onMount } from 'svelte'
   import { MapPin, Building2, Plus, CalendarRange, Pencil, Check } from '@lucide/svelte'
@@ -18,10 +26,8 @@
   // proiect: `periods` e stare de componenta, deci fiecare intrare pe tab
   // pornea de la zero. Ion: „taburile din proiecte se incarca tot cu schelete
   // de fiecare data."
-  const url = () => `/api/proiecte/${projectId}/implementari`
-
   async function load() {
-    const u = url()
+    const u = urlPerioade(projectId)
     const gata = dinCache(u)
     if (gata !== undefined) { periods = gata; loading = false }
     else loading = true
