@@ -598,6 +598,23 @@
   }
   function locLabel(l) { return l === 'sediu' ? 'Sediu EGB' : 'Site' }
 
+  /** Adresa Calendarului pentru o perioada: ziua ei SI cine e.
+   *
+   *  Pana acum se trimitea doar `?zi=`, deci ajungeai pe ziua buna si trebuia sa
+   *  cauti singur care dintre benzile de acolo e cea pe care ai apasat — intr-o zi
+   *  cu trei lucrari, click-ul nu mai avea raspuns. Cu `?per=` Calendarul stie pe
+   *  cine sa aprinda.
+   *
+   *  `parti`, nu `id`: o banda din Planificator poate fi mai multe perioade
+   *  CONTOPITE (vezi `contopeste` — zile consecutive la acelasi loc sunt un singur
+   *  obiect pe ecran). Trimise toate, se aprind toate; trimis doar id-ul benzii,
+   *  s-ar aprinde prima si restul deplasarii ar ramane stinsa, chiar daca pe ecran
+   *  arata ca un intreg. */
+  function linkCalendar(im) {
+    const ids = (im.parti?.length ? im.parti : [im]).map(p => p.id).filter(Boolean).join(',')
+    return `/calendar?zi=${im.a}${ids ? `&per=${encodeURIComponent(ids)}` : ''}`
+  }
+
   // --- TASKUL DESCHIS: PANOU LATERAL, NU POPOVER (4e) ---
   //
   // Era un popover plutitor de 256px, ancorat la bara apasata, cu patru linii de
@@ -1091,8 +1108,8 @@
                          class:se-trage={intindere?.id === im.id}
                          class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
                          role="button" tabindex="0"
-                         onclick={() => { if (!intindere) navigate(`/calendar?zi=${im.a}`) }}
-                         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/calendar?zi=${im.a}`) } }}
+                         onclick={() => { if (!intindere) navigate(linkCalendar(im)) }}
+                         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(linkCalendar(im)) } }}
                          title="{locLabel(im.locatie)}{im.eticheta ? ' · ' + im.eticheta : ''} · {im.faza === 'pregatire' ? 'pregătire' : 'implementare'} · {formatDateShort(im.a)} → {formatDateShort(im.b)} · {im.zile} {im.zile === 1 ? 'zi' : 'zile'}{im.parti.length > 1 ? ` · ${im.parti.length} perioade lipite` : ''} · click pentru a o vedea în Calendar">
                       <!-- PASTILA STA LA CAPUL VIZIBIL AL SINEI, NU LA ZIUA DE START.
                            Fereastra porneste mereu din azi, deci o deplasare in
@@ -1222,7 +1239,7 @@
                  editare: perioadele se schimba in Calendar, iar clicul te duce
                  chiar in ziua ei. -->
             {#if per}
-              <button class="fapt link" onclick={() => navigate(`/calendar?zi=${per.a}`)}>
+              <button class="fapt link" onclick={() => navigate(linkCalendar(per))}>
                 <span class="fapt-et">Perioadă</span>
                 <span class="fapt-val">{locLabel(per.locatie)}{per.eticheta ? ' · ' + per.eticheta : ''} · {formatDateShort(per.a)}–{formatDateShort(per.b)}</span>
                 <ChevronRight size={16} class="fapt-ico" />
@@ -1450,7 +1467,7 @@
                per perioada — vezi `perioadaDeAratat`. -->
           {#if per}
             <button class="mimpl loc-{per.im.locatie}" class:pregatire={per.im.faza === 'pregatire'}
-                    onclick={() => navigate(`/calendar?zi=${per.im.a}`)}
+                    onclick={() => navigate(linkCalendar(per.im))}
                     title="{lane.impl.length > 1 ? `${lane.impl.length} perioade în fereastră — ` : ''}vezi în Calendar">
               {#if per.im.locatie === 'sediu'}<Building2 size={15} class="mimpl-ico" />{:else}<MapPin size={15} class="mimpl-ico" />{/if}
               <span class="mimpl-loc">{locLabel(per.im.locatie)}{per.im.eticheta ? ' · ' + per.im.eticheta : ''}</span>

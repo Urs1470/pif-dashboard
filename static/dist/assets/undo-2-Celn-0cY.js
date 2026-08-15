@@ -1,1 +1,0 @@
-import{H as e,N as t,V as n}from"./Modal-D9XDpBZY.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=n(a,r),s=[[`path`,{d:`M9 14 4 9l5-5`}],[`path`,{d:`M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11`}]];t(i,e({name:`undo-2`},()=>o,{get iconNode(){return s}}))}export{i as t};

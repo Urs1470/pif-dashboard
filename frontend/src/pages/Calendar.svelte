@@ -1117,6 +1117,23 @@
   // acelasi model ca tragerea (mijloc = muta, capete = redimensioneaza).
   let perioadaSel = $state('')   // id-ul perioadei pe care sta focusul
 
+  // PERIOADA CU CARE AI VENIT DE PE PLANIFICATOR.
+  //
+  // `?per=` aduce id-urile perioadei apasate acolo (mai multe cand banda de acolo
+  // e o deplasare contopita). Ele se aprind O DATA, la sosire, si se sting singure
+  // — nu e o selectie, e un raspuns la „pe care am apasat". Daca ar ramane aprinse,
+  // ar deveni o a doua stare persistenta langa `perioadaSel` si n-ai mai sti care
+  // dintre ele inseamna ce.
+  let gasite = $state(new Set())
+  let ceasGasite = null
+  function stingeGasitele() {
+    clearTimeout(ceasGasite)
+    // Sub reduced-motion nu exista miscare care sa atraga privirea, deci semnul
+    // static trebuie sa stea mai mult ca sa fie prins.
+    ceasGasite = setTimeout(() => { gasite = new Set() }, motion.reduced ? 2000 : 1400)
+  }
+  onDestroy(() => clearTimeout(ceasGasite))
+
   function perioadaDupaId(id) {
     return perioade.find(p => p.id === id) || null
   }
@@ -1196,7 +1213,12 @@
       deschideNeplanificate = false
       anchor = monthStart(zi)
     }
-    load()
+    // Aprinderea se programeaza DUPA ce sosesc datele: pana atunci benzile nu
+    // exista in DOM, iar o animatie pornita pe un element care nu s-a randat inca
+    // se termina inainte s-o vada cineva.
+    const cerute = (router.query?.per || '').split(',').map(s => s.trim()).filter(Boolean)
+    if (cerute.length) gasite = new Set(cerute)
+    load().then(() => { if (gasite.size) stingeGasitele() })
   })
   /* TITLUL STA IN PAGINA, ca pe /projects, /tasks si /plan — nu in bara
      aplicatiei (raportat de Ion: „titlurile paginilor sunt neuniforme, undeva
@@ -1434,6 +1456,7 @@
               class:decizie={!!b.p.necesita_decizie}
               class:se-trage={trag?.id === b.p.id}
               class:tastata={perioadaSel === b.p.id}
+              class:gasita={gasite.has(b.p.id)}
               style="grid-row: {b.rand}; grid-column: {b.col} / span {b.span}; --c: {culoareLucrare(b.p)}; --i: {b.banda}"
               onpointerdown={(e) => apucaLucrare(e, b)}
               onclick={(e) => clickBanda(e, b)}
@@ -2191,6 +2214,46 @@
      jurul ei poarta deja tenta. */
   .banda.decizie { background: var(--danger); }
   .banda.decizie .banda-t { color: var(--accent-text); }
+
+  /* ===== „ASTA E, PE ASTA AI APASAT" =====
+     Sosirea de pe Planificator (`?per=`). Un raspuns, nu o stare: se joaca O
+     SINGURA data si se stinge singur (`stingeGasitele`).
+     DE CE NU E UN PULS: contractul de miscare interzice glowul si inelele care
+     respira — un semn care se repeta cere atentie la nesfarsit, iar aici
+     intrebarea are un raspuns si se termina. Deci un inel care se desface o data
+     si dispare, plus banda care se aseaza.
+     Doar `transform` si `opacity`: inelul e un pseudo-element propriu, ca sa nu
+     animam `box-shadow`-ul benzii (care poarta deja starea — pregatire, facuta). */
+  @keyframes gasitaInel {
+    0%   { opacity: 0; transform: scale(0.94); }
+    18%  { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.12); }
+  }
+  @keyframes gasitaBanda {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.035); }
+    100% { transform: scale(1); }
+  }
+  /* Se ridica peste vecine cat tine semnul: inelul depaseste banda, iar sub o
+     banda de pe randul urmator ar fi taiat pe jumatate. */
+  .banda.gasita { z-index: 4; animation: gasitaBanda var(--dur-arc) var(--ease-arc) 1; }
+  /* 900ms e SINGURA valoare din afara scarii de miscare, si are un motiv: scara
+     (90 / 220 / 280 / 420) masoara cat ii ia unui obiect sa AJUNGA undeva, iar
+     asta nu e o sosire — e un semn care trebuie sa mai stea dupa ce banda s-a
+     asezat, altfel se termina inainte ca ochiul sa fi ajuns pe el. Tine cat
+     dubla aterizarii. */
+  .banda.gasita::after {
+    content: ''; position: absolute; inset: -3px; border-radius: var(--radius-sm);
+    box-shadow: 0 0 0 2px var(--accent); pointer-events: none;
+    animation: gasitaInel 900ms var(--ease) 1 both;
+  }
+  /* Fara miscare, semnul trebuie sa fie STATIC si sa stea — `stingeGasitele` ii
+     da 2s in loc de 1,4. Regula sta dupa cele de mai sus fiindca un `@media` nu
+     adauga specificitate. */
+  @media (prefers-reduced-motion: reduce) {
+    .banda.gasita { animation: none; }
+    .banda.gasita::after { animation: none; opacity: 1; transform: none; }
+  }
   .banda-t { display: block; font-size: var(--font-label); font-weight: var(--fw-semibold);
              line-height: var(--lh-snug); color: var(--accent-text);
              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
