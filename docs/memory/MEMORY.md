@@ -87,10 +87,25 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
     `.impl-band.pregatire`, `.banda.pregatire` din Calendar) — aceea ramane.
     Keyframe-ul `pregatireIn` NU a plecat cu ea: il foloseste `.impl-band.clipL`;
     redenumit `apareIn`.
+  - **URMARE, si e cea mai importanta lectie a turei: `touch-action: pan-y` pe
+    `.page`.** Prima livrare a trecut toate probele si pe telefon NU MERGEA. Ion:
+    „comutatia doar cu swipe pe toolbar a ramas" — iar simptomul spunea cauza:
+    `.toolbar` isi are de mult `touch-action: pan-y`, `.page` nu-l avea. Fara
+    declaratie, browserul pastreaza dreptul de a revendica dragul orizontal
+    pentru derulare si trimite `pointercancel`, deci gestul murea inainte de prag
+    peste tot in afara de bara.
+    **De ce n-a prins-o proba:** masura cu `PointerEvent`-uri fabricate din
+    pagina, care OCOLESC complet arbitrajul de `touch-action`. O proba care
+    ocoleste chiar mecanismul stricat trece vesela peste el. Cu deget adevarat
+    (CDP `Input.dispatchTouchEvent`) bug-ul s-a reprodus din prima.
+    **Regula generala: un gest se verifica cu DEGETUL, nu cu evenimente scrise de
+    mana.** `audit_mobil` o stia deja pentru tragerea perioadelor; eu am rescris-o
+    pe pielea mea. Si: cand ceva merge pe O SINGURA suprafata, compara CSS-ul
+    acelei suprafete cu al celorlalte inainte sa cauti in JS.
   - Verificat: build curat, `audit_design` curat, `smoke_ui` 20/20, `audit_mobil`
-    curat, plus o proba proprie de 14 verificari pentru gest (comuta de pe cele
-    patru suprafete, NU de pe rand, verticala castiga, margine, prag, clicul
-    inghitit, feedback viu, zero transform ramas).
+    curat, o proba de 14 verificari cu evenimente sintetice SI o a doua de 9
+    verificari cu deget adevarat, pe lista scurta si pe lista plina — a doua e
+    singura care conteaza pentru un gest.
 
 - **2026-08-15 (6) — Taburile din pagina de proiect.** Ion: „cum se deschid
   taburile de proiecte, acum e cu ramasite si schelet, nu se deschide fluent."

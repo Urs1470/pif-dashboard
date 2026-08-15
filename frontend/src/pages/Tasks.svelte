@@ -2171,7 +2171,21 @@
     padding: var(--space-md) var(--space-sm); }
 
   @media (max-width: 768px) {
-    .page { padding: var(--space-md);
+    /* `touch-action: pan-y` — FARA EA GESTUL DE SFERA NU EXISTA PE UN TELEFON
+       ADEVARAT, si asta a fost raportat: „comutatia doar cu swipe pe toolbar a
+       ramas". Motivul: `pan-y` ii spune browserului „verticala e a ta,
+       orizontala e a mea". Fara declaratie, browserul pastreaza dreptul de a
+       revendica un drag orizontal pentru propria lui mecanica de derulare si
+       trimite `pointercancel` — deci gestul murea inainte de prag. Bara mergea
+       fiindca `.toolbar` isi are de mult propriul `touch-action: pan-y`; de aceea
+       simptomul arata exact ca „n-am schimbat nimic".
+       NU se vede cu evenimente `PointerEvent` fabricate din pagina: alea ocolesc
+       complet arbitrajul de touch-action al browserului, deci prima proba trecea
+       vesela peste bug. Se verifica doar cu atingere reala (CDP
+       `Input.dispatchTouchEvent`) — vezi `proba_sfere_deget`.
+       Sigur aici fiindca `.page` e scopat la Tasks si pe /tasks nu exista niciun
+       scroller orizontal; derularea verticala ramane nativa. */
+    .page { padding: var(--space-md); touch-action: pan-y;
       /* BUTONUL PLUTITOR ISI FACE LOC. `.app-content` rezerva doar cat dockul
          (`--dock-h + 24`), dar butonul sta cu 28px peste dock si e inalt de 58 —
          deci ultimul rand al listei ajungea sub el, cu tot cu coloana termenului,

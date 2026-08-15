@@ -1254,6 +1254,22 @@ din ecran nu există. Acum e al **paginii întregi** (`.page`), cu o singură ex
 - Verticala câștigă la egalitate, decis o singură dată la 10px; ascultătorii sunt
   pasivi și nu se cheamă `preventDefault` nicăieri, deci derularea nativă nu e
   niciodată blocată.
+- **`touch-action: pan-y` pe `.page` — fără ea gestul NU EXISTĂ pe un telefon
+  adevărat.** Prima livrare a lărgit gestul, a trecut proba, și pe telefon Ion a
+  raportat: *„comutația doar cu swipe pe toolbar a rămas."* Avea dreptate, și
+  simptomul spunea chiar cauza: `.toolbar` își are de mult propriul
+  `touch-action: pan-y`, `.page` nu-l avea. Fără declarație, browserul păstrează
+  dreptul de a revendica un drag orizontal pentru mecanica lui de derulare și
+  trimite `pointercancel` — deci gestul murea înainte de prag, exact peste tot în
+  afară de bară.
+  **Și de ce n-a prins-o proba:** măsura cu `PointerEvent`-uri fabricate din
+  pagină, iar alea ocolesc complet arbitrajul de `touch-action` al browserului.
+  O probă care ocolește chiar mecanismul stricat trece veselă peste el. Regula,
+  scrisă deja în `audit_mobil` pentru tragerea perioadelor: **un gest se verifică
+  cu degetul** (CDP `Input.dispatchTouchEvent`), nu cu evenimente scrise de mână.
+  Cu deget adevărat, bug-ul s-a reprodus din prima încercare.
+  Sigur pe `/tasks` fiindcă `.page` e scopat la pagina asta și aici nu există
+  niciun scroller orizontal; verificat că derularea verticală rămâne nativă.
 
 ### Banda de pregătire a plecat din Planificator (2026-08-15)
 
