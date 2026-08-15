@@ -262,7 +262,7 @@ def before_request_func():
                 logger.info("PIF Dashboard initialized")
 
     _rl_api = request.path.startswith('/api/') and request.path not in ('/api/login', '/api/healthz')
-    _rl_login = request.path in ('/login', '/login-hash') and request.method == 'POST'
+    _rl_login = request.path == '/login' and request.method == 'POST'
     if _rl_login and not check_login_rate_limit():
         logger.warning(f"Login rate limit exceeded for IP: {_client_ip()}")
         return jsonify({'error': 'Prea multe incercari de login. Reincearca in cateva minute.'}), 429, {'Retry-After': str(LOGIN_WINDOW)}
@@ -386,21 +386,6 @@ def logout():
     session.clear()
     return redirect(url_for('login_page'))
 
-
-@app.route('/login-hash', methods=['POST'])
-def login_hash():
-    data = get_json_or_400()
-    pin_hash = data.get('pin_hash', '')
-    if not pin_hash:
-        return jsonify({'error': 'Missing pin_hash'}), 400
-    pin = os.environ.get('PIF_DASHBOARD_PIN')
-    if not pin:
-        return jsonify({'error': 'Server misconfigured'}), 500
-    expected_hash = hashlib.sha256(pin.encode()).hexdigest()
-    if hmac.compare_digest(str(pin_hash), expected_hash):
-        session['authenticated'] = True
-        return jsonify({'success': True})
-    return jsonify({'error': 'Invalid hash'}), 401
 
 
 # ============ FRONTEND ROUTES ============

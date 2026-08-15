@@ -60,9 +60,9 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
   build + smoke + audit_mobil. Supapa: `PIF_GATE=skip` (o si anunta in context).
 - **`python3` pe Windows e stubul din Microsoft Store** — exista in PATH, iese cu 49.
   Scripturile care aleg interpretorul trebuie sa-l PROBEZE, nu sa-l ia dupa nume.
-- **Importul de debrief scrie doar clientul si proiectul.** `tasks[]` se pierde in tacere, iar
-  `data_finalizare` si `vault_folder` nu se scriu — deci un debrief `finalizat` incalca
-  invariantul si ramane in Calendar pana azi. Detalii: `SCHEMA_REFERENCE.md`.
+- **Importul de debrief** scrie client + proiect + `tasks[]`, pune singur `data_finalizare`
+  cand statusul e `finalizat` si accepta `vault_folder`. Reparat pe 2026-08-15: pana atunci
+  `tasks[]` era acceptat si nu-l scria nimic. Detalii: `SCHEMA_REFERENCE.md`.
 - **CSRF:** clientul citeste cookie-ul `csrf_token` si-l trimite ca `X-CSRF-Token`. Scutite:
   GET/HEAD/OPTIONS, `/webhook/*`, si cererile cu Bearer.
 - **Taskurile recurente** (zilnic/saptamanal/lunar) isi nasc urmatoarea instanta la bifare —

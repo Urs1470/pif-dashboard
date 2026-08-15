@@ -291,61 +291,11 @@ def delete_proiect(project_id):
 
 # ============ BATCH OPERATIONS ============
 
-@projects_bp.route('/api/proiecte/batch', methods=['POST'])
-@login_required
-def batch_proiecte():
-    """Batch update or delete multiple projects"""
-    data = get_json_or_400()
-    action = data.get('action')  # 'update_status' or 'delete'
-    if action not in ('update_status', 'delete'):
-        return jsonify({'error': 'Invalid action'}), 400
-    project_ids = data.get('project_ids', [])
-    if not isinstance(project_ids, list) or len(project_ids) > 500:
-        return jsonify({'error': 'Lista invalida (max 500)'}), 400
-
-    if not project_ids:
-        return jsonify({'error': 'No projects selected'}), 400
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    try:
-        if action == 'update_status':
-            new_status = data.get('status')
-            if not new_status:
-                return jsonify({'error': 'Status required for update'}), 400
-
-            now = datetime.now().isoformat()
-            for pid in project_ids:
-                cursor.execute('UPDATE proiecte SET status = ?, updated_at = ? WHERE id = ?', (new_status, now, pid))
-
-            conn.commit()
-            logger.info(f"Batch updated {len(project_ids)} projects to status: {new_status}")
-            return jsonify({'message': f'{len(project_ids)} projects updated'})
-
-        elif action == 'delete':
-            for pid in project_ids:
-                cursor.execute(
-                    'DELETE FROM task_subtasks WHERE task_id IN (SELECT id FROM tasks WHERE proiect_id = ?)',
-                    (pid,)
-                )
-                cursor.execute('DELETE FROM tasks WHERE proiect_id = ?', (pid,))
-                cursor.execute('DELETE FROM proiecte WHERE id = ?', (pid,))
-
-            conn.commit()
-            for pid in project_ids:
-                shutil.rmtree(os.path.join(UPLOAD_FOLDER, pid), ignore_errors=True)
-            logger.info(f"Batch deleted {len(project_ids)} projects")
-            return jsonify({'message': f'{len(project_ids)} projects deleted'})
-
-        else:
-            return jsonify({'error': 'Invalid action'}), 400
-
-    except Exception as e:
-        conn.rollback()
-        logger.error(f"Batch operation error: {e}")
-        return jsonify({'error': 'Batch operation failed'}), 500
-
+#  a plecat pe 2026-08-15: zero consumatori, in SPA si in
+# afara lui. Avea si un defect care ar fi lovit exact la folosire — ramura de
+# stergere scotea `task_subtasks`, `tasks` si `proiecte`, dar NU si
+# `implementari`/`task_dependencies`, spre deosebire de stergerea unui singur
+# proiect. Adica ar fi lasat perioade orfane in Calendar.
 
 # ============ CLIENTS ============
 
@@ -928,6 +878,10 @@ def import_debrief():
         # v28: tabela `echipamente` a fost stearsa. Raportam cate au venit in
         # payload si au fost ignorate, ca sa nu para ca s-au importat.
         'echipamente_ignorate': len(data.get('echipamente') or []),
+        # Cate taskuri au intrat efectiv. Pana pe 2026-08-15 `tasks[]` era acceptat
+        # de JSON si NU era scris nicaieri: un debrief cu taskuri se importa cu
+        # succes si le pierdea in tacere, fara eroare si fara nimic in sumar.
+        'taskuri_create': 0,
     }
 
     try:
@@ -1007,13 +961,24 @@ def import_debrief():
             logger.info(f"Import debrief: found existing project '{proiect_nume}' ({project_id})")
         else:
             project_id = proiect_data.get('id') or generate_uuid()
+            # Invariantul din CLAUDE.md: `data_finalizare` exista daca si numai daca
+            # statusul e `finalizat`. Importul nu o scria deloc, deci un debrief
+            # inchis (cazul NORMAL — debrief-ul se face la finalul lucrarii) crea un
+            # proiect inchis fara ziua inchiderii. Efectul se vedea abia in Calendar:
+            # taierea perioadelor cade pe `date('now')` cand data lipseste, deci
+            # deplasarea ramanea afisata pana azi in loc sa se opreasca atunci.
+            status_val = proiect_data.get('status', 'pregatire')
+            data_final = (proiect_data.get('data_finalizare') or now[:10]
+                          ) if status_val == 'finalizat' else ''
             cursor.execute('''
                 INSERT INTO proiecte (
                     id, tip, nume, client, locatie, echipament_principal, producator,
                     cod_proiect, folder_server, data_crearii,
-                    status, observatii, nr_comanda, service_before, service_after,
-                    confirmat_client, client_nume_confirmare, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    status, data_finalizare, observatii, nr_comanda,
+                    service_before, service_after,
+                    confirmat_client, client_nume_confirmare, vault_folder,
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 project_id,
                 proiect_data.get('tip', 'PIF'),
@@ -1025,13 +990,17 @@ def import_debrief():
                 proiect_data.get('cod_proiect', ''),
                 proiect_data.get('folder_server', ''),
                 proiect_data.get('data_crearii', now[:10]),
-                proiect_data.get('status', 'pregatire'),
+                status_val,
+                data_final,
                 observatii_val,
                 proiect_data.get('nr_comanda', ''),
                 proiect_data.get('service_before', ''),
                 service_after_val,
                 proiect_data.get('confirmat_client', 0),
                 proiect_data.get('client_nume_confirmare', ''),
+                # Legatura cu dosarul din vault: `wiki/job/projects/<client>/<slug>/`.
+                # Fara ea, tabul Wiki al proiectului nou importat e gol.
+                proiect_data.get('vault_folder', ''),
                 now, now,
             ))
             logger.info(f"Import debrief: created project '{proiect_nume}' ({project_id})")
@@ -1043,6 +1012,45 @@ def import_debrief():
             logger.info(
                 f"Import debrief: {sumar['echipamente_ignorate']} echipamente ignorate "
                 f"(v28) pentru proiectul {project_id}")
+
+        # ── 3. Taskuri ─────────────────────────────────────────────
+        # Se scriu DUPA proiect, ca sa existe parintele. La un proiect existent se
+        # adauga la coada, nu se rescriu cele de acolo: un re-import nu are voie sa
+        # stearga ce a bifat omul intre timp.
+        taskuri = data.get('tasks') or []
+        if taskuri:
+            cursor.execute(
+                'SELECT MAX(ordine) AS m FROM tasks WHERE proiect_id = ?', (project_id,))
+            r = cursor.fetchone()
+            ordine = (r['m'] if r and r['m'] is not None else 0)
+            for t in taskuri:
+                titlu = (t.get('titlu') or t.get('title') or '').strip()
+                if not titlu:
+                    continue                      # un task fara titlu n-are ce afisa
+                ordine += 1
+                stare = t.get('status', 'to_do')
+                cursor.execute('''
+                    INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta,
+                                       data_finalizare, ordine, created_at, descriere,
+                                       recurenta, updated_at, ordine_agenda)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    t.get('id') or generate_uuid(),
+                    project_id,
+                    titlu,
+                    stare,
+                    t.get('data_scadenta', ''),
+                    # Aceeasi regula ca la proiect: data de finalizare exista doar
+                    # daca e chiar facut.
+                    (t.get('data_finalizare') or now[:10]) if stare == 'done' else '',
+                    ordine,
+                    now,
+                    t.get('descriere', ''),
+                    t.get('recurenta', ''),
+                    now,
+                    t.get('ordine_agenda', 0),
+                ))
+                sumar['taskuri_create'] += 1
 
         # jurnal[] s-a pliat deja in observatii/service_after (sectiunea 2);
         # ore[] se ignora — orele se ponteaza in e100, nu in dashboard (v22).
@@ -1218,59 +1226,11 @@ def _calc_row(row):
             d[k] = {}
     return d
 
-
-@projects_bp.route('/api/proiecte/<project_id>/calcule', methods=['GET'])
-@login_required
-def get_calcule(project_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM calcule WHERE proiect_id = ? ORDER BY created_at DESC', (project_id,))
-    rows = [_calc_row(r) for r in cursor.fetchall()]
-    conn.close()
-    return jsonify(rows)
-
-
-@projects_bp.route('/api/proiecte/<project_id>/calcule', methods=['POST'])
-@login_required
-def create_calcul(project_id):
-    data = get_json_or_400()
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT id FROM proiecte WHERE id = ?', (project_id,))
-    if cursor.fetchone() is None:
-        conn.close()
-        return jsonify({'error': 'Proiect inexistent'}), 404
-
-    stare = (data.get('stare') or '').strip().lower()
-    if stare not in _CALC_STARI:
-        stare = None   # modulele fara praguri n-au stare — vezi LIMITS din driveCalc
-
-    calc_id = data.get('id') or generate_uuid()
-    cursor.execute('''INSERT INTO calcule (id, proiect_id, titlu, modul_id, modul_titlu,
-                          intrari, rezultate, verdicte, stare, nota, created_at)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                   (calc_id, project_id,
-                    (data.get('titlu') or '').strip() or (data.get('modul_titlu') or 'Calcul'),
-                    data.get('modul_id'), data.get('modul_titlu'),
-                    json.dumps(data.get('intrari') or {}, ensure_ascii=False),
-                    json.dumps(data.get('rezultate') or {}, ensure_ascii=False),
-                    json.dumps(data.get('verdicte') or {}, ensure_ascii=False),
-                    stare, (data.get('nota') or '').strip(),
-                    datetime.now().isoformat()))
-    conn.commit()
-    conn.close()
-    return jsonify({'id': calc_id}), 201
-
-
-@projects_bp.route('/api/calcule/<calc_id>', methods=['DELETE'])
-@login_required
-def delete_calcul(calc_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM calcule WHERE id = ?', (calc_id,))
-    deleted = cursor.rowcount
-    conn.commit()
-    conn.close()
-    if deleted == 0:
-        return jsonify({'error': 'Calcul inexistent'}), 404
-    return jsonify({'message': 'ok'})
+# Cele trei rute `calcule` (GET/POST pe proiect, DELETE pe calcul) au plecat pe
+# 2026-08-15: tabul Calcule al paginii de proiect — singurul lor consumator — a
+# fost scos la redesignul din 8 august, iar un buton care salveaza intr-un loc pe
+# care nu-l mai poti deschide e mai rau decat lipsa lui.
+#
+# TABELA `calcule` RAMANE si e VIE: o citeste `/api/proiecte/<id>/snapshot`, de
+# unde skill-ul `pif-debrief` ia calculele ca sa nu le retastezi in PV. Se scrie
+# doar prin import/restore. `_calc_row` ramane, il foloseste snapshotul.

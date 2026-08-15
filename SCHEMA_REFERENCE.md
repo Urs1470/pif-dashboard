@@ -41,31 +41,26 @@ Rate limit: 60 cereri/minut per IP pe `/api/*`.
 
 ## Import de debrief — `POST /api/import/debrief`
 
-**Scrie efectiv doar doua lucruri: `client{}` si `proiect{}`.** Verificat in
-`blueprints/projects.py:864-1080` — nu exista niciun `INSERT INTO tasks` acolo.
+Scrie `client{}`, `proiect{}` si `tasks[]`.
 
 - `meta.debrief_id` face importul idempotent (reimportul aceluiasi debrief intoarce
   proiectul existent, nu-l dubleaza).
-- **`tasks[]` se pierde in tacere.** E acceptat de JSON, dar nimic nu-l scrie si nu
-  apare in `sumar`. Daca debrief-ul are taskuri, trimite-le separat, dupa import, cu
-  `POST /api/proiecte/<id>/tasks`.
+- **`tasks[]`** intra ca taskuri de proiect, in ordinea din payload, la coada celor
+  existente — un re-import nu sterge ce ai bifat intre timp. Un task fara `titlu` se
+  sare. Numarul lor apare in `sumar.taskuri_create`.
+  *(Pana pe 2026-08-15 cheia era acceptata si nu o scria nimic: taskurile se pierdeau
+  in tacere, fara eroare si fara nimic in sumar.)*
+- **`data_finalizare` se pune singura** cand statusul e `finalizat` (azi, daca n-o
+  trimiti) si ramane goala altfel — invariantul de la punctul 5. Aceeasi regula la
+  taskuri, dupa `status: 'done'`.
+- **`vault_folder`** se scrie daca il trimiti: e legatura cu
+  `wiki/job/projects/<client>/<slug>/`, fara care tabul Wiki al proiectului e gol.
 - `jurnal[]` se **plieaza in** `observatii` (PIF) / `service_after` (Service) —
   tabela de jurnal a plecat in v22.
 - `echipamente[]` e **ignorat** din v28, dar numarat in `sumar.echipamente_ignorate`
   — asta e comportamentul corect: vizibil, nu inghitit.
 - `ore[]` ignorat din v22 (orele se ponteaza in e100).
 - **Nu exista** `checklist_items[]`, `params_json`, `ore_total_secunde`.
-
-**Doua coloane pe care importul NU le scrie, desi exista:**
-
-- **`data_finalizare`** — deci un debrief cu `status: 'finalizat'` creeaza un proiect
-  care incalca invariantul de la punctul 5: inchis, dar fara data inchiderii. Efect
-  concret: taierea perioadelor la citire cade pe `date('now')`, adica lucrarea
-  ramane in Calendar pana azi in loc sa se opreasca in ziua inchiderii.
-- **`vault_folder`** — legatura cu `wiki/job/projects/<client>/<slug>/` nu se face.
-
-Pana cand importul le acopera, dupa un import cu status `finalizat` trimite un
-`PUT /api/proiecte/<id>` cu `data_finalizare` si `vault_folder`.
 
 ## Export — `GET /api/proiecte/<id>/snapshot`
 

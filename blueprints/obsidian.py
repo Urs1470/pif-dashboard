@@ -113,23 +113,13 @@ def _obsidian_config_dict():
 # Routes
 # ---------------------------------------------------------------------------
 
-@obsidian_bp.route('/api/obsidian/config', methods=['GET'])
-@login_required
-def obsidian_config_get():
-    return jsonify(_obsidian_config_dict())
-
-
-@obsidian_bp.route('/api/obsidian/config', methods=['PUT'])
-@login_required
-def obsidian_config_set():
-    data = request.get_json(silent=True) or {}
-    if 'vault_path' in data:
-        path = (data.get('vault_path') or '').strip()
-        if path and not os.path.isdir(path):
-            return jsonify({'error': 'Calea nu există sau nu este un folder'}), 400
-        set_app_setting(OBSIDIAN_SETTING_KEY, path)
-    _obsidian_cache.update({'path': None, 'sig': None, 'notes': None})  # invalidate
-    return jsonify(_obsidian_config_dict())
+# Cele doua rute `/api/obsidian/config` (GET/PUT calea vaultului) au plecat pe
+# 2026-08-15: erau ale unei pagini de administrare scoase din navigatie in iulie.
+# Nimic nu le mai chema. Calea se seteaza pe server, direct in `app_settings`, sau
+# se descopera singura (clona de langa cod / `~/Projects/Knowledge`).
+#
+# `_obsidian_config_dict()` si `OBSIDIAN_SETTING_KEY` RAMAN — le foloseste
+# `vault-sync`, care e viu.
 
 
 @obsidian_bp.route('/api/obsidian/note', methods=['GET'])

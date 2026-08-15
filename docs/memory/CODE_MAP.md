@@ -10,9 +10,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `64:precacheShell`, `208:cacheFirstWithNetwork`, `241:cacheFirstCDN`, `268:networkFirstWithCache`, `305:networkFirstWithNetwork`
 
-## app.py (663 linii)
+## app.py (648 linii)
 
-`47:_client_ip`, `57:get_or_create_secret_key`, `78:file_hash`, `96:_asset_path`, `111:inject_version`, `137:make_session_permanent`, `147:setup_logging`, `179:check_rate_limit`, `218:check_login_rate_limit`, `240:before_request_func`, `281:after_request_func`, `325:get_hashed_pin`, `334:_git_commit`, `348:healthz`, `354:health_redirect`, `359:whoami`, `366:login_page`, `373:login`, `385:logout`, `391:login_hash`, `411:_serve_frontend`, `419:index`, `424:dist_assets`, `430:favicon`, `435:manifest`, `440:app_icon`, `449:calc_public`, `459:protected_docs`, `471:service_worker`, `476:add_sw_header`, `497:get_deploy_secret`, `505:webhook_deploy`, `590:api_deploy`, `646:page_not_found`, `653:internal_error`
+`47:_client_ip`, `57:get_or_create_secret_key`, `78:file_hash`, `96:_asset_path`, `111:inject_version`, `137:make_session_permanent`, `147:setup_logging`, `179:check_rate_limit`, `218:check_login_rate_limit`, `240:before_request_func`, `281:after_request_func`, `325:get_hashed_pin`, `334:_git_commit`, `348:healthz`, `354:health_redirect`, `359:whoami`, `366:login_page`, `373:login`, `385:logout`, `396:_serve_frontend`, `404:index`, `409:dist_assets`, `415:favicon`, `420:manifest`, `425:app_icon`, `434:calc_public`, `444:protected_docs`, `456:service_worker`, `461:add_sw_header`, `482:get_deploy_secret`, `490:webhook_deploy`, `575:api_deploy`, `631:page_not_found`, `638:internal_error`
 
 ## database.py (1848 linii)
 
@@ -38,13 +38,13 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `49:_meta`, `58:app_upload`, `113:app_version`, `123:app_apk`
 
-## blueprints/obsidian.py (541 linii)
+## blueprints/obsidian.py (531 linii)
 
-`33:_obsidian_vault`, `41:_obsidian_safe_path`, `55:_obsidian_walk`, `80:_obsidian_index`, `100:_obsidian_config_dict`, `118:obsidian_config_get`, `124:obsidian_config_set`, `137:obsidian_note_get`, `172:_scrub_secrets`, `177:_git_env`, `188:_git`, `194:_default_vault_repo`, `199:_maybe_refresh_vault`, `237:_dashboard_git_credentials`, `253:obsidian_vault_key`, `278:obsidian_vault_sync`, `334:_obsidian_safe_dir`, `350:project_wiki_notes`, `410:sync_project_frontmatter`, `482:obsidian_note_put`
+`33:_obsidian_vault`, `41:_obsidian_safe_path`, `55:_obsidian_walk`, `80:_obsidian_index`, `100:_obsidian_config_dict`, `127:obsidian_note_get`, `162:_scrub_secrets`, `167:_git_env`, `178:_git`, `184:_default_vault_repo`, `189:_maybe_refresh_vault`, `227:_dashboard_git_credentials`, `243:obsidian_vault_key`, `268:obsidian_vault_sync`, `324:_obsidian_safe_dir`, `340:project_wiki_notes`, `400:sync_project_frontmatter`, `472:obsidian_note_put`
 
-## blueprints/projects.py (1276 linii)
+## blueprints/projects.py (1236 linii)
 
-`30:get_proiecte`, `80:create_proiect`, `126:get_proiect`, `154:update_proiect`, `263:delete_proiect`, `296:batch_proiecte`, `354:get_clienti`, `372:_normalize_client_name`, `385:create_client`, `415:get_client`, `429:update_client`, `463:delete_client`, `482:get_project_snapshot`, `577:_familie_from_echipament`, `608:preview_import_abb_multi`, `709:_familie_param_meta`, `723:_equals_default`, `740:_is_zeroish`, `748:_filter_drive_params`, `817:preview_import_archive`, `866:import_debrief`, `1088:_impl_row`, `1108:get_implementari`, `1119:create_implementare`, `1145:update_implementare`, `1186:delete_implementare`, `1206:_calc_row`, `1224:get_calcule`, `1235:create_calcul`, `1267:delete_calcul`
+`30:get_proiecte`, `80:create_proiect`, `126:get_proiect`, `154:update_proiect`, `263:delete_proiect`, `304:get_clienti`, `322:_normalize_client_name`, `335:create_client`, `365:get_client`, `379:update_client`, `413:delete_client`, `432:get_project_snapshot`, `527:_familie_from_echipament`, `558:preview_import_abb_multi`, `659:_familie_param_meta`, `673:_equals_default`, `690:_is_zeroish`, `698:_filter_drive_params`, `767:preview_import_archive`, `816:import_debrief`, `1096:_impl_row`, `1116:get_implementari`, `1127:create_implementare`, `1153:update_implementare`, `1194:delete_implementare`, `1214:_calc_row`
 
 ## blueprints/push.py (637 linii)
 
