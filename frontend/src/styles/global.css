@@ -474,17 +474,44 @@ input:focus, select:focus, textarea:focus {
    un al treilea canal cromatic ar reface exact ce a demontat tura 9. Ca e gata pe
    dinauntru o spune cifra — „5/5" — si tot ea spune si cat mai e, ceea ce o tenta
    verde nu poate.
-   13, nu 12, din acelasi motiv ca la coloana de termen: pe rand asta e METADATA,
-   iar 12 e treapta etichetelor majuscule, alta clasa de text cu alt tracking.
+   NU E MONO, si asta e chiar regula sistemului, nu o preferinta: DM Mono e
+   pentru cifre care SE COMPARA PE VERTICALA. Termenul e mono fiindca e o coloana
+   pironita, deci se citeste de sus in jos; contorul pluteste dupa un titlu de
+   lungime variabila, deci nu se aliniaza cu nimic si n-are ce compara. Prima
+   varianta l-a scris totusi mono, si se vedea: langa literele rotunde ale lui
+   Gabarito, cifrele late si bara oblica groasa ale unui monospatiat se citeau ca
+   un fragment de cod lipit pe rand — adica exact contrariul lui „subtil". In
+   Gabarito, la 400 fata de 500 al titlului, se aseaza in text si il lasa in pace.
+   Din acelasi motiv pleaca si `tabular-nums`: latimea fixa e o unealta de coloana.
+   13, nu 12: pe rand asta e METADATA, iar 12 e treapta etichetelor majuscule,
+   alta clasa de text, cu alt tracking si cu majuscule.
    `flex: none` — titlul cedeaza latimea, contorul niciodata: un „2/" retezat de
    ellipsis ar fi mai rau decat niciun contor. */
 .tpasi {
   flex: none;
-  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  /* 5px intre inel si cifre, 8 (gap-ul randului) intre contor si titlu: cele doua
+     bucati trebuie sa se citeasca drept UN obiect, nu doua lucruri alaturate. */
+  gap: 5px;
   font-size: var(--font-small);
-  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-normal);
   color: var(--text-dim);
 }
+/* Inelul: pista subtire + felia plina. Forma si de ce e felie, nu arc, sunt
+   explicate in `components/ui/ContorPasi.svelte` — aici stau doar culorile, ca
+   sa urmeze tema. Fara accent si fara verde: pe randul de task culoarea e a
+   severitatii, si asta nu se schimba fiindca am adaugat un desen. */
+.tpasi-inel { flex: none; display: block; }
+.tpasi-inel .tp-pista { fill: none; stroke: var(--border-strong); stroke-width: 1.5; }
+.tpasi-inel .tp-felie { fill: none; stroke: var(--text-dim); stroke-width: 6; }
+/* `tabular-nums` se INTOARCE, si merita spus de ce, fiindca a fost scos cu doua
+   ture mai devreme („latimea fixa e o unealta de coloana" — adevarat cand
+   contorul era doar text). Acum nu e despre aliniere, e despre STABILITATE: cu
+   cifre proportionale, „1/4" si „2/4" nu au aceeasi latime, deci la fiecare bifa
+   tot contorul — inclusiv inelul — s-ar deplasa lateral cu un pixel-doi. Singurul
+   lucru care are voie sa se miste cand bifezi un pas e felia care creste. */
+.tpasi-cifre { font-variant-numeric: tabular-nums; }
 
 /* Bara de progres a subtaskurilor. „1/4" spune cifra, dar nu si CAT de departe
    esti — doua treimi si o treime arata la fel intr-un chip. */

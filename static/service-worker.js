@@ -20,7 +20,7 @@
 // telefon. De atunci `.githooks/pre-commit` refuza un commit care atinge
 // `static/dist/` fara sa atinga si linia de mai jos.
 
-const VERSION = 'v142';
+const VERSION = 'v143';
 const STATIC_CACHE = 'torqa-static-' + VERSION;
 const API_CACHE = 'torqa-api-' + VERSION;
 

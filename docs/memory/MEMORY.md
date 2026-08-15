@@ -186,13 +186,40 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
   indeplinite." Ridica interdictia E1 din redesignul de pe 8 august („fractia de
   pasi nu sta pe rand"), in TOATE cele patru liste deodata: `/tasks`, „Astăzi",
   tabul Taskuri al proiectului, randul mobil din Planificator.
-  - Reteta unica `.tpasi` in `global.css` (mono, `--font-small`, `--text-dim`,
-    `flex: none`), LANGA TITLU. Nu coloana: ar fi goala pe majoritatea randurilor,
+  - **Forma finala: INEL + FRACTIE**, aleasa de Ion dintre sapte machete
+    (`ContorPasi.dc.html`, pastrata in repo ca urma a deciziei). Componenta
+    `components/ui/ContorPasi.svelte` tine forma, `.tpasi` din `global.css` tine
+    culorile; apelantii dau doar `gata`/`total`, iar componenta se randeaza ca
+    NIMIC cand `total` e 0 — altfel acelasi `{#if}` s-ar repeta in patru locuri.
+  - **Inelul e o FELIE, nu un arc, si asta e partea care conteaza.** Prima
+    versiune (r=5, `stroke-width: 2`) NU SE CITEA: la 12px un arc de doua puncte
+    n-are suprafata din care sa vezi cat e umplut — pe macheta, „0/3" si „5/5"
+    aratau aproape la fel, si am spus-o inainte ca Ion sa aleaga. Trucul: `r=3` cu
+    `stroke-width: 6` intinde conturul de la centru (r=0) pana la marginea
+    cercului (r=6), deci pata plina a unei felii, fara niciun `path`; la 100%
+    devine disc plin. Rezolva si obiectia „al doilea cerc langa bifa": bifa e cerc
+    GOL de 18px, felia e PATA de 12.
+    `rotate` se scrie ca ATRIBUT SVG, nu `transform-origin` in CSS — pe elemente
+    SVG originea implicita e coltul viewport-ului si ar cere si `transform-box`.
+  - Cifrele: Gabarito 13/400, `--text-dim`, LANGA TITLU. Nu coloana: ar fi goala pe majoritatea randurilor,
     iar o coloana cu goluri nu se citeste pe verticala — adica pierde exact motivul
     pentru care termenul e coloana. A inlocuit `.tsub-chip`, mort in `global.css`
     de la redesign, si `.a-pasi`, care traia doar pe „Astăzi".
   - **Fara culoare, nici la „5/5".** Pe randul de task culoarea e rezervata
     severitatii; o tenta verde ar fi al treilea canal cromatic (tura 9).
+  - **NU E MONO, si asta e regula sistemului, nu gust.** Prima livrare l-a scris
+    in DM Mono si Ion a cerut „mai subtil si mai estetic" — avea dreptate, si
+    motivul era scris deja in `CLAUDE.md`: mono e pentru cifre care SE COMPARA PE
+    VERTICALA. Termenul e mono fiindca e coloana pironita; contorul pluteste dupa
+    un titlu de lungime variabila, deci nu se aliniaza cu nimic. Langa literele
+    rotunde ale lui Gabarito, cifrele late si bara oblica groasa a unui
+    monospatiat se citeau ca un fragment de cod lipit pe rand. In Gabarito 400
+    (titlul e 500) „1/4" masoara 16px, nu 23 — si pe telefon nu se mai citeste
+    impreuna cu termenul mono de langa el.
+    `tabular-nums` a plecat atunci si S-A INTORS odata cu inelul, din alt motiv:
+    nu alinierea, ci stabilitatea — cu cifre proportionale „1/4" si „2/4" n-au
+    aceeasi latime, deci la fiecare bifa tot contorul (si felia) s-ar deplasa
+    lateral. Singurul lucru care are voie sa se miste la bifare e felia.
   - **Bugul de fond, si singura parte care nu era cosmetica:** `createSubtask` /
     `updateSubtask` / `deleteSubtask` erau SINGURELE mutatii din
     `stores/tasks.svelte.js` care nu invalidau nimic, desi fisierul isi scrie
@@ -214,10 +241,13 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
     unui reload, oricat de corect ar fi salvata. Insamanteaza fara restante.
   - Verificat: build curat, `audit_design` curat, `smoke_ui` 20/20, `audit_mobil`
     curat (pe baza insamantata: si gesturile, si lista de facut), `audit_navigare`
-    toate contractele, plus o proba AD-HOC de 18 verificari, rulata o data si
-    NECOMISA (contorul in cele patru liste, absent fara pasi, geometrie pe
-    360/390px, bifare 1/4 -> 2/4 sub 250ms, cifra pastrata dupa navigare si dupa
-    F5). Daca invarianta „o scriere de subtask invalideaza cele trei liste" se mai
+    toate contractele, plus o proba AD-HOC de 22 de verificari, NECOMISA (contorul
+    in cele patru liste, absent fara pasi, geometrie pe 360/390px, bifare
+    1/4 -> 2/4 sub 250ms, cifra pastrata dupa navigare si dupa F5, si — important
+    pentru inel — ca `stroke-dasharray` chiar corespunde fractiei: 2/5 = 40%,
+    3/3 = 100%, 1/4 = 25%. Fara masuratoarea aia, un inel desenat mereu la fel ar
+    trece toate probele de text.)
+    Daca invarianta „o scriere de subtask invalideaza cele trei liste" se mai
     rupe o data, merita mutata intr-un script din `scripts/` — niciunul dintre
     cele cinci audituri existente nu o atinge.
 

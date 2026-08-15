@@ -43,6 +43,7 @@
   import Card from '../components/ui/Card.svelte'
   import Button from '../components/ui/Button.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
+  import ContorPasi from '../components/ui/ContorPasi.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import Input from '../components/ui/Input.svelte'
@@ -182,7 +183,7 @@
   function pasi(t) {
     const subs = subtasksCache[t.id]
     const total = subs ? subs.length : (t.subtask_total || 0)
-    if (!total) return null
+    if (!total) return { total: 0, gata: 0 }
     return { total, gata: subs ? subs.filter(s => s.done).length : (t.subtask_done || 0) }
   }
   let newSubtaskTitle = $state('')
@@ -902,14 +903,9 @@
                          (cerinta Ion, 2026-08-15). Randul purta pana acum doua
                          lucruri — ce e de facut si cand — iar progresul se citea
                          doar din randul desfacut; interdictia s-a ridicat, dar tot
-                         intr-un singur fel pe toate suprafetele: text mono si gri
-                         langa titlu, nicio culoare. -->
-                    {#if pasi(t)}
-                      {@const p = pasi(t)}
-                      <span class="tpasi" role="img"
-                            aria-label="{p.gata} din {p.total} subtaskuri făcute"
-                            title="{p.gata} din {p.total} subtaskuri făcute">{p.gata}/{p.total}</span>
-                    {/if}
+                         intr-un singur fel pe toate suprafetele: aceeasi
+                         componenta, inel plus cifre, fara nicio culoare. -->
+                    <ContorPasi {...pasi(t)} />
                   </button>
                   <div class="task-actions">
                     <span class="ta-dp" title="Planifică — alege ziua">

@@ -29,6 +29,7 @@
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
+  import ContorPasi from '../components/ui/ContorPasi.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import Button from '../components/ui/Button.svelte'
@@ -160,7 +161,7 @@
   function pasi(t) {
     const subs = subtasksCache[t.id]
     const total = subs ? subs.length : (t.subtask_total || 0)
-    if (!total) return null
+    if (!total) return { total: 0, gata: 0 }
     return { total, gata: subs ? subs.filter(s => s.done).length : (t.subtask_done || 0) }
   }
 
@@ -1186,13 +1187,9 @@
                    O coloana ar fi goala pe majoritatea randurilor, iar o coloana
                    cu goluri nu se mai citeste pe verticala — adica pierde exact
                    singurul motiv pentru care ar fi coloana (vezi termenul).
-                   Aici e legat de titlu: e „cat din lucrul asta", nu „cand". -->
-              {#if pasi(t)}
-                {@const p = pasi(t)}
-                <span class="tpasi" role="img"
-                      aria-label="{p.gata} din {p.total} subtaskuri făcute"
-                      title="{p.gata} din {p.total} subtaskuri făcute">{p.gata}/{p.total}</span>
-              {/if}
+                   Aici e legat de titlu: e „cat din lucrul asta", nu „cand".
+                   Componenta se randeaza singura ca nimic daca `total` e 0. -->
+              <ContorPasi {...pasi(t)} />
             </button>
             <!-- ACTIUNILE APAR LA HOVER, CU TEXT, SPRE INTERIOR.
                  Erau patru iconite mute pironite in dreapta, adica exact acolo

@@ -34,6 +34,7 @@
   import { motion, panou, motionDuration, aterizare } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
+  import ContorPasi from '../components/ui/ContorPasi.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
   import ErrorState from '../components/ui/ErrorState.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
@@ -1511,11 +1512,7 @@
                        Titlul spune ce si cat; chipurile de dedesubt spun cand. -->
                   <span class="mrow-titlu">
                     <span class="mrow-title">{t.titlu}</span>
-                    {#if t.subtask_total}
-                      <span class="tpasi" role="img"
-                            aria-label="{t.subtask_done || 0} din {t.subtask_total} subtaskuri făcute"
-                            title="{t.subtask_done || 0} din {t.subtask_total} subtaskuri făcute">{t.subtask_done || 0}/{t.subtask_total}</span>
-                    {/if}
+                    <ContorPasi gata={t.subtask_done || 0} total={t.subtask_total || 0} />
                   </span>
                   <!-- ADAPTAT, nu copiat. Ordinea si semnele sunt cele din /tasks
                        si de pe „Astăzi" — intai CAND, apoi CAT — dar data ramane

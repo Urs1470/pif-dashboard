@@ -954,9 +954,24 @@ stă pe rând, rândul poartă două lucruri — ce e de făcut și când"), pus
 din 8 august. Se ridică în **toate cele patru liste deodată**: `/tasks`, „Astăzi",
 tabul Taskuri al proiectului și rândul mobil din Planificator.
 
-- **O rețetă, un loc: `.tpasi` în `global.css`.** Înainte de asta, același fapt avea
-  o haină pe „Astăzi" (`.a-pasi`, pe linia a doua), niciuna în celelalte trei, și un
+- **O rețetă, un loc: `components/ui/ContorPasi.svelte` + `.tpasi` în `global.css`.**
+  Forma (SVG-ul) stă în componentă, culorile în `global.css`; apelanții dau doar
+  `gata`/`total` și componenta se randează ca **nimic** dacă `total` e 0 — altfel
+  același `{#if}` s-ar repeta în patru locuri. Înainte, același fapt avea o haină pe
+  „Astăzi" (`.a-pasi`, pe linia a doua), niciuna în celelalte trei, și un
   `.tsub-chip` mort în `global.css` fără niciun consumator.
+- **Inel + fracție, și inelul e o FELIE, nu un arc.** Direcția a ales-o Ion dintre
+  șapte machete (`ContorPasi.dc.html`). Prima versiune a inelului desena `r=5` cu
+  `stroke-width: 2` și **nu se citea**: la 12px un arc de două puncte n-are suprafață
+  din care să vezi cât e umplut — măsurat pe machetă, „0/3" și „5/5" arătau aproape
+  la fel. Trucul care rezolvă: `r=3` cu `stroke-width: 6` întinde conturul de la
+  centru (r=0) până la marginea cercului (r=6), deci pata plină a unei felii,
+  desenată fără niciun `path`. La 100% devine disc plin.
+  Asta răspunde și obiecției „al doilea cerc pe rând, lângă bifă": bifa e un cerc
+  **gol** de 18px, felia e o **pată** de 12 — se confundă doar la 0%, unde felia e
+  și mai mică, și mai stinsă.
+  `rotate` se scrie ca **atribut SVG**, nu `transform-origin` în CSS: pe elementele
+  SVG originea implicită e colțul viewport-ului, și ar cere și `transform-box`.
 - **Lângă titlu, nu într-o coloană.** O coloană ar fi goală pe majoritatea rândurilor,
   iar o coloană cu goluri nu se mai citește pe verticală — adică pierde exact singurul
   motiv pentru care termenul e coloană. Contorul răspunde la „cât din lucrul ăsta",
@@ -965,6 +980,18 @@ tabul Taskuri al proiectului și rândul mobil din Planificator.
   (inelul bifei + textul termenului, amândouă din `--ring`); o tentă verde ar fi al
   treilea canal cromatic, adică fix ce a demontat tura 9. Că e gata pe dinăuntru o
   spune cifra — și tot ea spune și cât mai e, ceea ce o tentă nu poate.
+- **Și fără mono** — Gabarito 13/400, sub cele 15/500 ale titlului. Prima livrare l-a
+  scris în DM Mono și Ion a cerut „mai subtil și mai estetic"; regula era deja scrisă
+  mai sus: *mono = cifre care se compară pe verticală*. Termenul e mono fiindcă e o
+  coloană pironită, citită de sus în jos; contorul plutește după un titlu de lungime
+  variabilă, deci nu se aliniază cu nimic și n-are ce compara. Lângă literele rotunde
+  ale lui Gabarito, cifrele late și bara oblică groasă a unui monospațiat se citeau ca
+  un fragment de cod lipit pe rând. Măsurat: „1/4" trece de la 23px la 16, iar pe
+  telefon nu se mai citește împreună cu termenul mono de alături.
+  **`tabular-nums` a plecat atunci și s-a întors odată cu inelul**, din alt motiv:
+  nu alinierea, ci stabilitatea. Cu cifre proporționale „1/4" și „2/4" n-au aceeași
+  lățime, deci la fiecare bifă tot contorul — inclusiv felia — s-ar deplasa lateral.
+  Singurul lucru care are voie să se miște când bifezi un pas e felia care crește.
 - **Cea mai proaspătă sursă câștigă.** `pasi()` (în `Tasks.svelte` și `ProjectDetail`)
   citește din `subtasksCache` când există, altfel din `subtask_total`/`_done` de la
   server. Fără asta, bifarea unui pas în rândul desfăcut nu mișca cifra de deasupra

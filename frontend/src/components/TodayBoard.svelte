@@ -8,6 +8,7 @@
   } from '../stores/agenda.svelte.js'
   import { dueRing, formatDate, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
   import { etichetaTermenScurt } from '../lib/grupare.js'
+  import ContorPasi from './ui/ContorPasi.svelte'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { reordonare } from '../lib/reordonare.js'
   import { ecran } from '../lib/ecran.svelte.js'
@@ -381,11 +382,7 @@
                  proiect si fara categorie nu-si arata contorul deloc. -->
             <span class="atitlu">
               <span class="atitle">{it.titlu}</span>
-              {#if it.subtask_total}
-                <span class="tpasi" role="img"
-                      aria-label="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute"
-                      title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">{it.subtask_done || 0}/{it.subtask_total}</span>
-              {/if}
+              <ContorPasi gata={it.subtask_done || 0} total={it.subtask_total || 0} />
             </span>
             <!-- A DOUA LINIE, doar cand are ce spune: unde e taskul (proiectul
                  sau categoria). Erau cinci chipuri pe un rand — termen, pasi,
@@ -469,11 +466,7 @@
           <button class="amain" onclick={(e) => openItem(e, it)}>
             <span class="atitlu">
               <span class="atitle">{it.titlu}</span>
-              {#if it.subtask_total}
-                <span class="tpasi" role="img"
-                      aria-label="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute"
-                      title="{it.subtask_done || 0} din {it.subtask_total} subtaskuri făcute">{it.subtask_done || 0}/{it.subtask_total}</span>
-              {/if}
+              <ContorPasi gata={it.subtask_done || 0} total={it.subtask_total || 0} />
             </span>
           </button>
 
