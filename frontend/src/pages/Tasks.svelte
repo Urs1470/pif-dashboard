@@ -19,6 +19,9 @@
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, alunecare, DUR_FAST, EASE } from '../lib/motion.svelte.js'
+  // Acelasi puls de prag ca la glisarea unui rand: doua gesturi diferite, dar
+  // „ai trecut pragul" trebuie sa se simta la fel, altfel se invata separat.
+  import { puls } from '../lib/gesturi.js'
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, createGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
@@ -835,53 +838,150 @@
 
   // ===== COMUTAREA SFEREI PRIN GLISARE (telefon) =====
   //
-  // Ion: „pe Android vreau prin swipe sa pot face comutatia."
+  // Ion, a doua oara: „vreau sa comut cu gest de swipe pe android intre
+  // personale si lucru."
   //
-  // Gestul sta pe BARA DE UNELTE, nu pe lista, si asta e o alegere, nu o
-  // scurtatura. Pe lista, orizontala e deja luata: fiecare rand are propriul
-  // gest (dreapta = bifat, stanga = planifica), iar doua intelesuri pe aceeasi
-  // directie si aceeasi suprafata inseamna ca uneori obtii altceva decat ai
-  // vrut. Regula scrisa in aplicatie de la gesturile de rand incoace e ca o
-  // ratare n-are voie sa produca ALTCEVA — deci sfera se comuta glisand exact
-  // obiectul care arata cele doua sfere.
+  // Prima versiune punea gestul DOAR pe bara de unelte. Functiona — masurat, cu
+  // deget adevarat, chiar comuta — dar bara e o banda de 46px dintr-un ecran de
+  // 844, asezata sus, adica exact unde nu sta degetul cand citesti lista. Un
+  // gest care exista doar pe 5% din ecran nu exista.
+  //
+  // Acum gestul e al PAGINII INTREGI, cu o singura exceptie: un gest care incepe
+  // PE UN RAND ii apartine randului. Nu e o scapare, e chiar regula care tine
+  // gesturile din aplicatie: pe rand orizontala e deja un verb (dreapta =
+  // „Făcut", stanga = „Planifică"), iar o ratare n-are voie sa produca ALTCEVA.
+  // Daca sfera s-ar comuta si de pe rand, o tinta ratata ar bifa un task — adica
+  // exact felul de greseala pentru care randul are prag de 42% si „Anulează".
+  // Ce ramane pentru gest: capul paginii, bara, capetele de grupa (care sunt
+  // LIPITE sus, deci mereu la indemana cat derulezi), golurile dintre randuri si
+  // spatiul de sub lista.
   //
   // Verticala castiga la egalitate: pe un ecran care deruleaza, derularea e
-  // gestul implicit, iar `touch-action: pan-y` lasa browserul s-o duca.
-  const PRAG_AXA = 8      // pana aici nu stim ce fel de gest e
-  const PRAG_SFERA = 45   // cat trebuie parcurs ca sa comute
+  // gestul implicit. Nu chemam `preventDefault` nicaieri (ascultatorii sunt
+  // pasivi), deci derularea nativa nu e niciodata blocata.
+  const PRAG_AXA = 10      // pana aici nu stim ce fel de gest e
+  const PRAG_SFERA = 60    // cat trebuie parcurs ca sa comute
+  const TRAS_MAX = 64      // cat se lasa continutul tras (amortizat)
+
+  // FEEDBACK VIU. Fara el gestul e o loterie: tragi si ori se schimba pagina,
+  // ori nu, si nu afli decat dupa ce ridici degetul. Continutul urmeaza degetul
+  // amortizat, deci se vede ca ai apucat ceva; la margine (nu mai e nimic in
+  // partea aia) se lasa de doua ori mai putin si nu comuta — asta E raspunsul
+  // „nu ai unde sa mergi", spus in timpul gestului, nu dupa.
+  let trasSfera = $state(0)
+  let trasAnimat = $state(false)
+
+  // Stilul se scrie DOAR cat timp gestul e viu. Un `transform` ramas pe element
+  // — chiar si identitatea — face din el blocul de referinta al oricarui
+  // `position: fixed` dinauntru; e capcana platita deja o data la `.ruta-in`.
+  const stilTras = $derived(
+    trasSfera || trasAnimat
+      ? `transform: translateX(${trasSfera}px); transition: ${trasAnimat ? 'transform var(--dur-base) var(--ease)' : 'none'}`
+      : ''
+  )
+
+  let cronoTras = null
+  function asazaInapoi() {
+    trasAnimat = true
+    trasSfera = 0
+    clearTimeout(cronoTras)
+    cronoTras = setTimeout(() => { trasAnimat = false }, DUR_BASE + 40)
+  }
+
   function glisareSfere(node) {
-    let x0 = 0, y0 = 0, urmarim = false, decis = false
+    let x0 = 0, y0 = 0, urmarim = false, decis = false, orizontal = false
+    let pointerId = null, trecut = false, aGlisat = false
+
+    /** Marginea: „Muncă" e prima, „Personal" a doua. Spre stanga aduci ce e in
+     *  dreapta, deci din Personal nu mai ai ce aduce, si invers. */
+    const laMargine = (dx) =>
+      (dx < 0 && sferaActiva === 'personal') || (dx > 0 && sferaActiva === 'munca')
+
+    const amortizeaza = (dx) => {
+      const capat = laMargine(dx)
+      const v = dx * (capat ? 0.18 : 0.42)
+      const max = capat ? TRAS_MAX / 2 : TRAS_MAX
+      return Math.max(-max, Math.min(max, v))
+    }
+
     function jos(e) {
       if (!ecran.telefon || e.pointerType === 'mouse') return
-      x0 = e.clientX; y0 = e.clientY; urmarim = true; decis = false
+      // RANDUL ISI TINE VERBUL. Vezi comentariul de sus: pe `.trow` orizontala
+      // inseamna deja „Făcut" / „Planifică".
+      if (e.target?.closest?.('.trow')) return
+      // Nici peste o foaie, un modal sau un calendar deschis: acolo gestul e al lor.
+      if (e.target?.closest?.('.modal, .dp, [role="dialog"]')) return
+      pointerId = e.pointerId
+      x0 = e.clientX; y0 = e.clientY
+      urmarim = true; decis = false; orizontal = false; trecut = false
     }
+
     function misca(e) {
-      if (!urmarim || decis) return
+      if (!urmarim || e.pointerId !== pointerId) return
       const dx = e.clientX - x0, dy = e.clientY - y0
-      if (Math.abs(dx) < PRAG_AXA && Math.abs(dy) < PRAG_AXA) return
-      decis = true
-      if (Math.abs(dy) >= Math.abs(dx)) urmarim = false   // deruleaza, nu comuta
+      if (!decis) {
+        if (Math.abs(dx) < PRAG_AXA && Math.abs(dy) < PRAG_AXA) return
+        decis = true
+        // Decis O SINGURA DATA, ca la randuri: daca degetul a plecat mai mult pe
+        // verticala, gestul e al derularii si nu ni-l mai luam inapoi.
+        orizontal = Math.abs(dx) > Math.abs(dy)
+        if (!orizontal) { urmarim = false; return }
+        trasAnimat = false
+      }
+      if (!orizontal) return
+      aGlisat = true
+      trasSfera = amortizeaza(dx)
+      // Pragul se anunta CAND e atins, nu la ridicarea degetului.
+      const acum = !laMargine(dx) && Math.abs(dx) >= PRAG_SFERA
+      if (acum !== trecut) { trecut = acum; if (acum) puls() }
     }
+
     function sus(e) {
-      if (!urmarim) return
+      if (!urmarim || e.pointerId !== pointerId) return
       urmarim = false
+      pointerId = null
       const dx = e.clientX - x0
-      if (Math.abs(dx) < PRAG_SFERA) return
-      // „Muncă" e in stanga, „Personal" in dreapta. Glisezi spre STANGA ca sa
-      // aduci ce e in dreapta — acelasi sens cu care lista aluneca dupa aceea.
-      const tinta = dx < 0 ? 'personal' : 'munca'
-      if (tinta === sferaActiva) return
-      navigate(tinta === 'personal' ? '/tasks?sfera=personal' : '/tasks')
+      const comuta = orizontal && !laMargine(dx) && Math.abs(dx) >= PRAG_SFERA
+      asazaInapoi()
+      if (!comuta) return
+      // Glisezi spre STANGA ca sa aduci ce e in dreapta — acelasi sens cu care
+      // lista aluneca dupa aceea (`listaSens`).
+      navigate(dx < 0 ? '/tasks?sfera=personal' : '/tasks')
     }
+
+    function anulat(e) {
+      if (!urmarim || (pointerId !== null && e.pointerId !== pointerId)) return
+      urmarim = false; pointerId = null
+      asazaInapoi()
+    }
+
+    // GESTUL NU E CLICK — aceeasi regula ca la randuri (`lib/glisare.js`), si aici
+    // chiar e obligatorie: bara de unelte contine cele doua segmente, deci un
+    // gest pornit PE „Personal" se termina, la ridicarea degetului, cu un click
+    // pe „Personal" — care navigheaza inapoi si anuleaza exact comutarea pe care
+    // tocmai ai cerut-o. Prins de proba, nu dedus.
+    // In faza de CAPTURARE, ca sa ajungem inaintea butonului; si doar cand chiar
+    // s-a glisat, altfel am inghiti atingerile obisnuite de pe toata pagina.
+    function inghiteClick(e) {
+      if (!aGlisat) return
+      aGlisat = false
+      e.stopPropagation()
+      e.preventDefault()
+    }
+
     node.addEventListener('pointerdown', jos, { passive: true })
     node.addEventListener('pointermove', misca, { passive: true })
     node.addEventListener('pointerup', sus, { passive: true })
-    node.addEventListener('pointercancel', () => { urmarim = false }, { passive: true })
+    node.addEventListener('pointercancel', anulat, { passive: true })
+    node.addEventListener('click', inghiteClick, true)
     return {
       destroy() {
+        clearTimeout(cronoTras)
         node.removeEventListener('pointerdown', jos)
         node.removeEventListener('pointermove', misca)
         node.removeEventListener('pointerup', sus)
+        node.removeEventListener('pointercancel', anulat)
+        node.removeEventListener('click', inghiteClick, true)
       },
     }
   }
@@ -1009,7 +1109,9 @@
   </div>
 {/snippet}
 
-<div class="page">
+<!-- Gestul de comutare a sferei sta pe PAGINA, nu pe bara: vezi `glisareSfere`.
+     Pe bara insemna 46px din 844, adica un gest care practic nu exista. -->
+<div class="page" use:glisareSfere>
   <!-- O SINGURA CALE DE ADAUGARE PER ECRAN.
        Erau doua, mereu amandoua pe ecran: butonul „+ Nou" din cap (deschide un
        formular cu patru campuri) si linia de scriere rapida din lista. Doua usi
@@ -1039,7 +1141,7 @@
 
        Ce ramane pe rand: SFERA — care nu e un filtru, ci in ce lume esti — si
        arhiva, o destinatie rara, in haina de actiune-fantoma. -->
-  <div class="toolbar" use:glisareSfere>
+  <div class="toolbar">
     <!-- CURSORUL DE TAB — singurul elastic din aplicatie (contractul de miscare).
          Fillul activ nu mai e fondul segmentului: e un CURSOR care ALUNECA de pe
          un segment pe celalalt (220ms, --ease-spring). Raportat de Ion: „nu pare
@@ -1069,7 +1171,11 @@
   </div>
 
   <div class="v3grid">
-  <div class="list-cell cell-in">
+  <!-- Continutul urmeaza degetul cat tine gestul de sfera. Se misca DOAR el, nu
+       si capul paginii cu bara: comutatorul isi are propria miscare (cursorul
+       care aluneca), iar doua obiecte care se misca altfel pe acelasi gest se
+       citesc ca doua lucruri, nu ca unul. -->
+  <div class="list-cell cell-in" style={stilTras}>
   {#if !showArchive && !ecran.telefon}
     <form class="quick-add" onsubmit={(e) => { e.preventDefault(); quickAdd() }}>
       <div class="qa-rand">

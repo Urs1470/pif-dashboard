@@ -55,6 +55,43 @@ Migrations: in-code in `database.py` (`run_migrations()`), currently **v28**, id
 
 ## Recent decisions
 
+- **2026-08-15 (7) — Gestul de sfera pe toata pagina, si banda de pregatire scoasa.**
+  Doua cereri ale lui Ion in aceeasi tura.
+  - **„vreau sa comut cu gest de swipe pe android intre personale si lucru".**
+    Gestul EXISTA deja, si masurat cu deget adevarat CHIAR FUNCTIONA — dar doar pe
+    `.toolbar`, o banda de 46px din 844. Lectia: „e implementat" si „e la indemana"
+    sunt lucruri diferite; masoara SUPRAFATA pe care raspunde un gest, nu doar
+    daca raspunde. Acum e pe `.page`.
+  - **Exceptia care ramane: un gest pornit pe `.trow` e al randului** (dreapta
+    „Făcut", stanga „Planifică"). Regula aplicatiei: o ratare n-are voie sa
+    produca ALTCEVA. Costul e masurat si real — cu lista plina randurile acoperă
+    627px din 844, deci gestului ii raman 26% din ecran; cu lista scurta, 82%.
+    Capul de grupa e LIPIT sus, deci ramane la indemana oricat derulezi.
+  - **Bug prins de proba, nu dedus:** gestul nu inghitea clicul de la ridicarea
+    degetului, iar bara contine chiar cele doua segmente — deci un gest pornit PE
+    „Personal" se termina cu un click pe „Personal" si anula comutarea. Acum e
+    inghitit in faza de CAPTURARE, ca in `lib/glisare.js`.
+  - **Doua capcane de MASURAT, amandoua m-au pacalit intai:** (1) citirea DOM-ului
+    sincron, imediat dupa `dispatchEvent`, vede starea VECHE — Svelte scrie pe
+    microtask, deci proba raporta „0 cadre de feedback" pentru un feedback care
+    exista; fiecare pas al gestului trebuie dat intr-un APEL SEPARAT. (2) clicul
+    sintetic de la finalul tragerii cade pe elementul de START, deci o proba care
+    porneste gestul pe un buton masoara butonul, nu gestul.
+  - **Banda de pregatire din Planificator a plecat** („e clar ca este in pregatire
+    fara sa vad pe planificator, dar acum arata straniu"). Era DERIVATA — golul
+    dintre etape — si isi recunostea singura capatul inventat (stanga estompata,
+    fiindca „de cand se pregateste" nu se stie de la v36). Dupa ce perioada a
+    devenit sina de 4px, ea ramasese singurul lucru lat de pe pista: fundalul era
+    mai prezent decat datele.
+    **NU confunda cu faza `pregatire` a unei PERIOADE reale** (`implementari.faza`,
+    `.impl-band.pregatire`, `.banda.pregatire` din Calendar) — aceea ramane.
+    Keyframe-ul `pregatireIn` NU a plecat cu ea: il foloseste `.impl-band.clipL`;
+    redenumit `apareIn`.
+  - Verificat: build curat, `audit_design` curat, `smoke_ui` 20/20, `audit_mobil`
+    curat, plus o proba proprie de 14 verificari pentru gest (comuta de pe cele
+    patru suprafete, NU de pe rand, verticala castiga, margine, prag, clicul
+    inghitit, feedback viu, zero transform ramas).
+
 - **2026-08-15 (6) — Taburile din pagina de proiect.** Ion: „cum se deschid
   taburile de proiecte, acum e cu ramasite si schelet, nu se deschide fluent."
   - **A CINCEA OARA aceeasi familie de eroare de masurare.** Prima sonda asculta

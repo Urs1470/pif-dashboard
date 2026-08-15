@@ -295,7 +295,7 @@ al patrulea e o inconsecvență în interiorul aceluiași rând.
     pornesc de la `opacity: 0`, iar la print animațiile nu se joacă. Fără regulă,
     exportul PDF al Planificatorului (care tipărește exact `.page` cu `.chart`
     înăuntru) ar fi ieșit **alb**. Aceeași grijă în blocul de print din `Plan.svelte`
-    pentru `.band` / `.impl-band`.
+    pentru `.impl-band`.
   - Indicii de celulă merg **prin** `.backlog`: pe telefon sertarul stă DEASUPRA
     listei, deci `.chart`=0, `.backlog`=1, `.mlist`=2 — altfel capul ar sosi după
     coadă, exact bug-ul reparat în tura 8.
@@ -339,15 +339,16 @@ al patrulea e o inconsecvență în interiorul aceluiași rând.
   - **`.impl-band.clipL`** (tăiată de fereastră la stânga) cade înapoi pe stingere:
     ziua ei de start nu e pe ecran, deci o descoperire din stânga ar inventa un
     început fix acolo unde muchia dreaptă spune „continuă din afară".
-  - **`.band` (pregătirea) NU crește** — `segmentePregatire` pornește de la marginea
-    ferestrei fiindcă „de când se pregătește" nu se știe, iar capătul stâng e
-    estompat tocmai ca să spună asta. O creștere din stânga ar afirma o zi de start
-    pe care desenul o neagă la un centimetru mai jos.
+  - ~~**`.band` (pregătirea) NU crește**~~ — **banda de pregătire a plecat de tot pe
+    2026-08-15**, vezi mai jos. Era singurul obiect de pe rând fără zi de start,
+    deci singurul care doar se stingea în loc să crească; keyframe-ul i-a
+    supraviețuit (redenumit `apareIn`) fiindcă îl folosește `.impl-band.clipL` — o
+    perioadă tăiată de marginea ferestrei n-are nici ea un început vizibil.
   - **Reduced-motion anulează animația, nu doar durata**, și regula stă la **finalul**
     foii: plasa globală scurtează `animation-duration`, dar nu atinge
     `animation-delay` — cu `backwards`, rândul șase ar sta 240ms invizibil și apoi
     ar pocni. Iar un `@media` nu adaugă specificitate, deci scrisă mai sus ar fi
-    fost anulată de `.band` / `.impl-band` / `.bar`.
+    fost anulată de `.impl-band` / `.bar` (și de `.band`, cât a existat).
   - **Variabila de decalaj se numește `--rand`**, nu `--celula` (acela e pasul de
     32ms al celulelor de pagină și s-ar moșteni peste orice `.cell-in` de dedesubt)
     și nu `--i` (acela înseamnă deja „rândul benzii" în Calendar).
@@ -1219,6 +1220,69 @@ rândurilor**, **antetul de timp** și **orizontul lung**.
   - **`iso` rămâne gol pe coloanele de săptămână.** Ganttul de proiect îl compară cu ziua de
     azi (`c.iso === today`); cu data de luni acolo, săptămâna s-ar aprinde o zi din șapte.
     Coloana care CONȚINE azi se află din procente (`contineAzi`), nu dintr-o egalitate.
+
+### Sfera se comută cu degetul, pe toată pagina (2026-08-15)
+
+Ion: *„vreau să comut cu gest de swipe pe Android între personale și lucru."*
+
+Gestul exista deja — dar **doar pe bara de unelte**. Măsurat cu deget adevărat:
+funcționa, comuta corect; numai că bara e o bandă de **46px dintr-un ecran de 844**,
+sus, adică exact unde nu stă degetul când citești lista. Un gest care există pe 5%
+din ecran nu există. Acum e al **paginii întregi** (`.page`), cu o singură excepție.
+
+- **Un gest care începe pe un RÂND aparține rândului.** Acolo orizontala e deja un
+  verb — dreapta „Făcut", stânga „Planifică" — iar regula care ține gesturile din
+  aplicație e că **o ratare n-are voie să producă ALTCEVA**. Dacă sfera s-ar comuta
+  și de pe rând, o țintă ratată ar bifa un task.
+  **Costul, măsurat, și e real:** cu lista plină (15 taskuri pe 390×844) rândurile
+  acoperă 627px, deci gestului îi rămân **217px, 26% din ecran**; cu listă scurtă,
+  82%. Ce rămâne mereu la îndemână: capul paginii, bara, **capul de grupă — care e
+  lipit sus, deci vizibil oricât ai derula** — golurile dintre rânduri și spațiul de
+  sub listă.
+- **Feedback viu, altfel gestul e o loterie.** Conținutul (`.list-cell`) urmează
+  degetul amortizat (0,42 din distanță, plafon 64px); la margine se lasă de două ori
+  mai puțin și nu comută — ăsta **e** răspunsul „nu ai unde să mergi", spus în timpul
+  gestului, nu după. Pragul dă același `puls()` ca la rânduri: două gesturi diferite,
+  dar „ai trecut pragul" trebuie să se simtă la fel.
+- **Transformul se scrie DOAR cât ține gestul.** Un `transform` rămas — chiar și
+  identitatea — face din element blocul de referință al oricărui `position: fixed`
+  dinăuntru; capcană plătită deja o dată la `.ruta-in`.
+- **Gestul înghite clicul de la ridicarea degetului** (fază de capturare, ca în
+  `lib/glisare.js`), și aici e obligatoriu, nu igienă: bara conține chiar cele două
+  segmente, deci un gest pornit **pe** „Personal" se termina cu un clic pe „Personal",
+  care naviga înapoi și anula exact comutarea cerută. Prins de probă, nu dedus.
+- Verticala câștigă la egalitate, decis o singură dată la 10px; ascultătorii sunt
+  pasivi și nu se cheamă `preventDefault` nicăieri, deci derularea nativă nu e
+  niciodată blocată.
+
+### Banda de pregătire a plecat din Planificator (2026-08-15)
+
+Ion: *„scoate din planificator banda de pregătire, e clar că este în pregătire fără
+să văd pe planificator, dar acum arată straniu cu banda de pregătire."*
+
+Era un obiect **derivat**, nu unul introdus: `segmentePregatire()` calcula
+complementul etapelor — golul de dinaintea primei implementări și golurile dintre
+ele — și îl desena ca o spălătură pe toată pista. Două lucruri nu se puteau apăra:
+
+- **Spunea ceva ce se știe deja.** Un proiect care nu e `finalizat` e în pregătire;
+  statusul o zice, iar Planificatorul e despre **când** ești undeva, nu despre în ce
+  stare e proiectul.
+- **Capătul ei își recunoștea singur că e inventat.** Nu există o zi „de când se
+  pregătește" (`data_incepere` a plecat în v36), deci banda pornea de la marginea
+  ferestrei cu stânga estompată — adică ocupa toată lățimea ca să spună „nu știu de
+  când". După ce perioada a devenit o șină de 4px la baza rândului, banda rămăsese
+  singurul lucru lat de pe pistă, și de aceea „arăta straniu": fundalul era mai
+  prezent decât datele.
+
+Ce **rămâne**, și nu trebuie confundat cu ea: **faza `pregatire` a unei PERIOADE
+reale** (`implementari.faza`) — aia e o perioadă pe care ai pus-o tu în Calendar, cu
+zile adevărate, și se desenează în continuare pe șină, palid (`.impl-band.pregatire`).
+La fel `.banda.pregatire` din Calendar. Numele se suprapun; obiectele nu.
+
+Prins în aceeași trecere: keyframe-ul `pregatireIn` **nu** a plecat cu ea — îl
+folosea și `.impl-band.clipL`, o perioadă tăiată de marginea ferestrei, care n-are
+nici ea un început vizibil din care să crească. S-a redenumit **`apareIn`**, ca
+numele să spună ce face, nu cine îl folosea prima dată.
 
 ### Perioada e o șină la baza rândului (2026-08-15)
 

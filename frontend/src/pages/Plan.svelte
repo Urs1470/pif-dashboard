@@ -423,47 +423,14 @@
     })
   }
 
-  // PREGATIREA NU SE INTRODUCE — E GOLUL.
-  // Ion: „perioada pana la implementare este perioada de pregatire (…) apoi de la
-  // o etapa de implementare la alta la fel este pregatire."
-  // Deci nu e un lucru pe care il tastezi, e complementul etapelor: golul de
-  // dinaintea primei etape si golurile DINTRE etape. Ion, 2026-07-30: „dupa ultima
-  // perioada de implementare nu mai exista perioada de pregatire" — banda nu mai
-  // curge pana la marginea ferestrei. Segment DESCHIS la dreapta rămâne un singur
-  // caz: nicio etapa fixata, deci tot ce se vede e pregatire pentru o implementare
-  // pe care inca n-o sti.
-  function segmentePregatire(lane) {
-    // Un proiect inchis nu mai pregateste nimic.
-    if (lane.tip !== 'proiect' || lane.status === 'finalizat') return []
-    // Golul e rupt DOAR de implementari. O zi de pregatire blocata explicit
-    // (ex. „Parametrizare atelier", la sediu) face parte din pregatire, nu o
-    // intrerupe — se deseneaza peste banda, ca bara plina.
-    const etape = (lane.implementari || [])
-      .filter(im => im.data_start && (im.faza || 'implementare') === 'implementare')
-      .map(im => ({ a: im.data_start.slice(0, 10), b: (im.data_sfarsit || im.data_start).slice(0, 10) }))
-      .sort((x, y) => x.a.localeCompare(y.a))
-    // De cand se pregateste, nu se mai sti: `data_incepere` a plecat in v36, iar
-    // `prima_zi` (min al perioadelor) e chiar prima etapa — pornind de acolo,
-    // pregatirea dinaintea primei implementari ar avea latime zero. Deci pornim de
-    // la marginea ferestrei: pregatirea e in curs, chiar daca nu stim de cand —
-    // iar banda taiata la stanga spune exact asta.
-    const inceput = plan.start
-    if (!inceput) return []
-    const out = []
-    let cursor = inceput
-    for (const e of etape) {
-      // Capatul nesigur e cel din STANGA, nu cel din dreapta: ziua in care s-a
-      // apucat de pregatire nu se sti, in timp ce ziua din dreapta e o data reala
-      // — prima zi de implementare. Un gol DINTRE doua etape are amandoua capetele
-      // sigure (a doua zi dupa etapa precedenta), deci nu se estompeaza.
-      if (cursor < e.a) out.push({ de: cursor, la: addDays(e.a, -1), deschis: false, nesigurStart: cursor === plan.start })
-      if (e.b >= cursor) cursor = addDays(e.b, 1)
-    }
-    // Nicio etapa fixata: toata fereastra e pregatire — nesigura la ambele capete.
-    // Cand exista etape, ultima INCHEIE pregatirea: nu mai desenam nimic dupa ea.
-    if (etape.length === 0) out.push({ de: cursor, la: '', deschis: true, nesigurStart: true })
-    return out
-  }
+  // BANDA DE PREGATIRE A PLECAT (Ion, 2026-08-15): „e clar ca este in pregatire
+  // fara sa vad pe planificator". Era un lucru DERIVAT — complementul etapelor,
+  // nu o data introdusa de cineva — desenat cu capatul stang estompat fiindca
+  // „de cand se pregateste" nu se stie. Adica o banda care ocupa toata pista ca
+  // sa spuna ceva ce statusul proiectului spune deja, si al carei capat isi
+  // recunostea singur ca e inventat. `.impl-band` (perioadele reale, cu zile
+  // reale) ramane; faza `pregatire` a unei PERIOADE ramane si ea — aceea e o
+  // perioada pe care ai pus-o tu in Calendar, nu un gol.
 
   // DOUA PERIOADE LIPITE, DE ACEEASI CATEGORIE, SUNT UNA.
   // Ion, 2026-07-30: „daca sunt doua perioade de implementare de aceeasi categorie
@@ -504,15 +471,6 @@
 
   const views = $derived(plan.lanes.map((lane) => {
     const color = laneColor(lane.id)
-    // Segmentele de pregatire, decupate pe fereastra vizibila. Cele deschise se
-    // intind pana la marginea din dreapta si primesc muchie estompata.
-    const pregatire = segmentePregatire(lane)
-      .map(seg => {
-        const capat = seg.deschis ? addDays(plan.start, plan.days) : seg.la
-        const rect = spanRect(seg.de, capat, plan.start, plan.days)
-        return rect ? { ...seg, rect } : null
-      })
-      .filter(Boolean)
     const tasks = lane.tasks.map(t => {
       const rect = spanRect(effDue(t), effDue(t), plan.start, plan.days)
       // TITLUL SE INTOARCE DOAR CAND N-AR INCAPEA LA DREAPTA.
@@ -557,7 +515,7 @@
     // Restantele vin de la server ca lista proprie: sunt INAINTEA ferestrei, deci
     // n-au geometrie si nu pot sta pe pista. Vezi `.rest-col`.
     const restante = lane.restante || []
-    return { ...lane, ...despartClient(lane.nume), color, pregatire, tasks, packed, geo: geometrieBanda(packed.length), impl, restante }
+    return { ...lane, ...despartClient(lane.nume), color, tasks, packed, geo: geometrieBanda(packed.length), impl, restante }
   }))
   // Coloana „Restante" apare doar cand are ce arata. O coloana mereu goala e exact
   // felul de gol rezervat pe care il repara restul turei.
@@ -1076,12 +1034,6 @@
                   </div>
                 {/if}
                 <div class="lane-track">
-                  {#each lane.pregatire as seg, i (i)}
-                    <div class="band" class:clipL={seg.rect.clippedLeft} class:clipR={seg.rect.clippedRight}
-                         class:deschis={seg.deschis} class:deschisL={seg.nesigurStart}
-                         style="left:{seg.rect.left}%; width:{seg.rect.width}%"
-                         title="Pregătire{seg.deschis ? ' — următoarea etapă nu e încă fixată' : ` · ${formatDateShort(seg.de)} – ${formatDateShort(seg.la)}`}"></div>
-                  {/each}
                   <!-- Perioada nu e un rand pe langa taskuri — e banda randului, pe
                        toata inaltimea, ca pregatirea (Ion, 2026-07-30). Cele doua
                        benzi paveaza acelasi rand: gol = pregatire, plin = pe teren.
@@ -1394,11 +1346,6 @@
                      curata — weekendul e treaba graficului de desktop. -->
                 {#if i === coloanaAzi}<div class="mp-azi" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
               {/each}
-              {#each lane.pregatire as seg, i (i)}
-                <div class="band" class:clipL={seg.rect.clippedLeft} class:clipR={seg.rect.clippedRight}
-                     class:deschis={seg.deschis} class:deschisL={seg.nesigurStart}
-                     style="left:{seg.rect.left}%; width:{seg.rect.width}%"></div>
-              {/each}
               {#each lane.impl as im (im.id)}
                 <div class="impl-band doar-ico loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
                      class:pregatire={im.faza === 'pregatire'}
@@ -1414,9 +1361,9 @@
         </div>
       </section>
 
-      <!-- `.band` si `.impl-band` sunt aceleasi clase ca pe desktop, deci pista
-           mobila mosteneste sosirea din 13e fara nicio regula in plus — ii trebuie
-           doar indicele randului, ca decalajul sa urmeze grupurile. -->
+      <!-- `.impl-band` e aceeasi clasa ca pe desktop, deci pista mobila
+           mosteneste sosirea din 13e fara nicio regula in plus — ii trebuie doar
+           indicele randului, ca decalajul sa urmeze grupurile. -->
       {#each views as lane, li (lane.tip + ':' + lane.id)}
         {@const per = perioadaDeAratat(lane)}
         {@const gol = !per && !lane.tasks.length && !lane.restante.length}
@@ -1812,11 +1759,11 @@
        · `.impl-band` — o perioada cu o zi de start REALA. Se descopera de la
          stanga la dreapta, adica dinspre ziua in care incepe: miscarea spune
          chiar lucrul pe care banda il codifica prin pozitie.
-       · `.band` (pregatirea) — NU are inceput. `segmentePregatire` porneste de
-         la marginea ferestrei fiindca „de cand se pregateste" nu se sti, si
-         capatul stang e estompat tocmai ca sa spuna asta. Daca ar creste din
-         stanga, miscarea ar afirma o zi de start pe care desenul o neaga la un
-         centimetru mai jos. Deci doar se stinge in ecran — e fundal.
+       · banda de pregatire a plecat (2026-08-15). Ea era singura de pe rand
+         FARA zi de start, deci singura care doar se stingea in loc sa creasca;
+         `apareIn` i-a supravietuit fiindca il foloseste `.impl-band.clipL` —
+         o perioada taiata de marginea ferestrei n-are nici ea un inceput vizibil
+         din care sa creasca.
        · `.bar` — un reper de o zi (v33). N-are latime de intins, deci creste
          PE LOC, din punctul lui: `transform-origin: left` e chiar ziua lui.
 
@@ -1832,7 +1779,7 @@
     from { opacity: 0; clip-path: inset(0 100% 0 0); }
     to { opacity: 1; clip-path: inset(0 0 0 0); }
   }
-  @keyframes pregatireIn {
+  @keyframes apareIn {
     from { opacity: 0; }
     to { opacity: 1; }
   }
@@ -1857,41 +1804,15 @@
      chiar si cand ambele capete sunt fixe — „de cand se pregateste" nu se stie
      niciodata, iar desenul o spune prin insasi textura benzii. Mastile de capat
      nesigur raman peste el, pe distanta fixa. */
-  /* Pregatirea coboara pe aceeasi linie ca sina, si ramane ce era: o spalatura
-     NEUTRA care se stinge spre stanga, fiindca „de cand se pregateste" nu se
-     stie. Pe 3px gradientul se citeste in continuare — el da directia, nu
-     suprafata. Accentul ramane al deplasarii, singur. */
-  .band { position: absolute; top: auto; bottom: 6px; height: 3px; border-radius: 2px;
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 34%, transparent) 45%);
-    border: none; z-index: 0;
-    animation: pregatireIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
-  .band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-  .band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-  /* CAPATUL NESIGUR SE STINGE, CEL SIGUR RAMANE NET.
-     Nesigur e START-ul: nu exista o zi „de cand se pregateste" (v36). Capatul din
-     dreapta e prima zi de implementare — data reala, deci muchie clara. Cand nu e
-     fixata nicio etapa, si dreapta e nesigura, deci se sting amandoua. Estomparea
-     e pe o distanta FIXA, ca sa arate la fel si pe o banda de trei zile si pe una
-     de trei luni. */
-  .band.deschisL { border-left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0;
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 56px);
-    mask-image: linear-gradient(to right, transparent 0, #000 56px); }
-  .band.deschis { border-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0;
-    -webkit-mask-image: linear-gradient(to left, transparent 0, #000 56px);
-    mask-image: linear-gradient(to left, transparent 0, #000 56px); }
-  .band.deschis.deschisL {
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%); }
   /* Taskurile stau peste benzi, deci randurile lasa clickul sa treaca prin golul
      dintre bare pana la banda de dedesubt. */
   .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
   .t-row { position: relative; height: var(--row-h); }
   /* Perioada de implementare (Site / Sediu EGB) — banda pe toata inaltimea randului,
      exact insetul benzii de pregatire, ca cele doua sa se imbine fara decalaj.
-     ACCENTUL E AL IMPLEMENTARII, SINGUR. Golul de pregatire (`.band`, mai sus) e
-     o spalatura NEUTRA, deci intre cele doua nu se compara doua procente de
-     accent, ci doua lucruri diferite. Inauntrul `.impl-band` faza se mai spune
+     ACCENTUL E AL IMPLEMENTARII, SINGUR — si de cand golul de pregatire a plecat
+     (2026-08-15) e si singurul lucru desenat pe sina, deci nu mai are cu ce sa se
+     compare. Inauntrul `.impl-band` faza se mai spune
      inca o data, mai fin: 10% pentru perioada inceputa, 5% + inel mai subtire
      pentru cea inca in pregatire — dar acolo obiectul are eticheta lui, deci
      nuanta e un adaos, nu singurul semnal. Locul NU se codifica cromatic (se
@@ -1937,7 +1858,7 @@
   .impl-band::before { content: ''; position: absolute; left: 0; top: -3px;
     width: 3px; height: 10px; border-radius: 2px; background: inherit; }
   .impl-band.clipL { border-top-left-radius: 0; border-bottom-left-radius: 0;
-    animation-name: pregatireIn; }
+    animation-name: apareIn; }
   .impl-band.clipL::before { display: none; }
   .impl-band.clipR { border-top-right-radius: 0; border-bottom-right-radius: 0; }
   .impl-band:hover { background: var(--accent-deep); }
@@ -2234,13 +2155,8 @@
      concureaza cu niciun task, deci n-avea de ce sa coboare. Trebuie insa sa-si
      ANULEZE explicit `height` si `top` din baza noua, altfel ramane sina de 4px:
      cu `top`, `bottom` si `height` puse toate trei, `height` castiga. */
-  .mp-track .band, .mp-track .impl-band { height: auto; }
+  .mp-track .impl-band { height: auto; }
   .mp-track .impl-band::before, .mp-track .impl-band::after { display: none; }
-  .mp-track .band { top: 5px; bottom: 5px; border-radius: 6px; z-index: 2;
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-dim) 14%, transparent) 45%); }
-  .mp-track .band.deschis.deschisL {
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0, #000 22%, #000 78%, transparent 100%); }
   /* DOAR ICONITA, CENTRATA: eticheta se scrie pe randul perioadei din card,
      unde are latimea intreaga. Aici perioada e DESEN, nu buton — cine vrea s-o
      deschida atinge randul (`.mimpl`), care are si chevron. */
@@ -2627,9 +2543,9 @@
      `opacity: 0`. Randul sase ar sta 240ms invizibil si pe urma ar pocni pe ecran:
      acelasi stagger, doar fara partea care il facea lizibil. Se scot de tot.
      Aici, la sfarsit: media query-ul nu adauga specificitate, deci scris mai sus
-     ar fi fost anulat de `.band` / `.impl-band` / `.bar`. */
+     ar fi fost anulat de `.impl-band` / `.bar`. */
   @media (prefers-reduced-motion: reduce) {
-    .band, .impl-band, .bar, .wk { animation: none; }
+    .impl-band, .bar, .wk { animation: none; }
   }
 
   /* ===== print (browser print-to-PDF) ===== */
@@ -2654,7 +2570,7 @@
     /* Aceeasi grija ca la `.cell-in` in global.css: sosirile astea pornesc de la
        `opacity: 0`, iar la print animatia nu se joaca — fara `none` explicit,
        benzile ar lipsi din PDF si ar ramane un grafic cu randuri goale. */
-    .bar, .wk, .band, .impl-band { animation: none !important; opacity: 1 !important; }
+    .bar, .wk, .impl-band { animation: none !important; opacity: 1 !important; }
     .bar { box-shadow: none !important; }
   }
   :global(body.plan-pagebreak) .lane { break-after: page; }
