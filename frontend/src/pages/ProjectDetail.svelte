@@ -1265,10 +1265,10 @@
   .f-ico { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-subtle); color: var(--accent-on-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .f-ico.f-red { background: var(--danger-subtle); color: var(--danger); }
   .f-ico.f-green { background: var(--success-subtle); color: var(--success); }
-  .f-meta { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-faint); white-space: nowrap; flex-shrink: 0; }
-  .field-label { flex: 1; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .f-meta { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
+  .field-label { flex: 1; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
   .field-body { font-size: var(--font-small); color: var(--text); line-height: var(--lh-relaxed); padding: var(--space-sm) var(--space-lg) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
-  .field-empty { padding: var(--space-sm) var(--space-lg) var(--space-md); font-size: var(--font-small); color: var(--text-faint); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
+  .field-empty { padding: var(--space-sm) var(--space-lg) var(--space-md); font-size: var(--font-small); color: var(--text-dim); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
   .field-empty:hover { color: var(--accent); }
 
   /* `.tab-count` a plecat — e `.count accent` din global.css. */
@@ -1333,7 +1333,7 @@
   .qa-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
   .qa-dp :global(.dp-trigger) { min-height: 30px; padding: 4px 12px;
     border-radius: var(--radius-full); font-size: var(--font-small); }
-  .qa-hint { font-size: var(--font-small); color: var(--text-faint); margin-left: auto; }
+  .qa-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: auto; }
 
   .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
@@ -1354,7 +1354,7 @@
     padding: 10px 2px 5px; margin-top: var(--space-xs);
     font-family: var(--font-mono); font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-label); color: var(--text-faint); }
+    letter-spacing: var(--tracking-label); color: var(--text-dim); }
   .grup-cap:first-child { margin-top: 0; }
   .grup-n { display: inline-flex; align-items: center; justify-content: center;
     min-width: 17px; height: 17px; padding: 0 5px; border-radius: var(--radius-full);
@@ -1481,27 +1481,27 @@
     margin-top: var(--space-sm); padding-top: var(--space-sm);
     border-top: 1px dashed var(--border-subtle); }
   .td-link { display: inline-flex; align-items: center; gap: 6px; padding: 0;
-    background: none; border: none; color: var(--text-faint);
+    background: none; border: none; color: var(--text-dim);
     font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }
   .td-link:hover { color: var(--accent); }
   .td-link.areNota { color: var(--text-dim); }
   .td-dp :global(.dp) { width: auto; }
   .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: 6px;
     background: none; border: none; box-shadow: none; border-radius: 0;
-    color: var(--text-faint); font-size: var(--font-small); }
+    color: var(--text-dim); font-size: var(--font-small); }
   .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
   .sub-section { display: flex; flex-direction: column; gap: 2px; }
   /* Antetul sectiunii de subtaskuri — aceeasi reteta ca in /tasks (titlu + bara
      + numar pe un rand); .sub-bara/.sub-num vin din global.css. */
   .sub-head { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 4px; }
-  .sub-cap { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); flex: none; }
+  .sub-cap { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); flex: none; }
   .sub-row { display: flex; align-items: center; gap: 9px; min-height: 32px;
     padding: 0 6px; border-radius: var(--radius-xs); }
   .sub-row:hover { background: var(--bg-hover); }
   /* Ultimul RAND al listei, nu un formular care sta gol pe ecran. */
   .sub-nou { display: flex; align-items: center; gap: 9px; width: 100%;
     min-height: 32px; padding: 0 6px; border: none; border-radius: var(--radius-xs);
-    background: none; color: var(--text-faint); font-size: var(--font-small);
+    background: none; color: var(--text-dim); font-size: var(--font-small);
     cursor: pointer; transition: var(--transition-colors); }
   .sub-nou:hover { background: var(--accent-subtle); color: var(--accent); }
   .sub-nou-p { display: flex; align-items: center; justify-content: center;
@@ -1513,7 +1513,7 @@
   .sub-title { flex: 1; font-size: var(--font-small); color: var(--text); min-width: 0;
     background: none; border: none; padding: 0; text-align: left; cursor: pointer;
     overflow-wrap: anywhere; }
-  .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
+  .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
   .sub-add { display: flex; gap: var(--space-xs); margin-top: 0; }
@@ -1527,7 +1527,7 @@
   /* Detalii in bara laterala (fostul tab Info) — grila de doua coloane, fara
      randuri goale: campurile necompletate nici nu ajung in lista. */
   .rdet { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; margin: 6px 0 0; }
-  .rdet dt { font-size: var(--font-small); color: var(--text-faint); white-space: nowrap; }
+  .rdet dt { font-size: var(--font-small); color: var(--text-dim); white-space: nowrap; }
   .rdet dd { margin: 0; font-size: var(--font-small); color: var(--text-secondary); overflow-wrap: anywhere; }
 
 
@@ -1553,7 +1553,7 @@
       font-size: var(--font-small); color: var(--text-dim);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rm-cand.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
-    .rm-cand.rm-gol { color: var(--text-faint); }
+    .rm-cand.rm-gol { color: var(--text-dim); }
     /* „Detalii" TREBUIE sa prinda ambele coloane. Celelalte celule au o cifra si
        o eticheta (1/3, o data) si stau bine pe jumatate de rand; asta are perechi
        eticheta-valoare, iar pe jumatate de rand valoarea primea 55px si se rupea

@@ -335,7 +335,7 @@ input:focus, select:focus, textarea:focus {
   color: var(--success);
   opacity: 0;
   transform: translateX(-6px);
-  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease);
 }
 
 /* PRAGUL TRECUT: pista devine plina, bifa se umple si pocneste scurt, eticheta
@@ -407,7 +407,7 @@ input:focus, select:focus, textarea:focus {
   color: var(--accent);
   opacity: 0;
   transform: translateX(6px);
-  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease);
 }
 .gl-amana .gl-pista-s { background: var(--accent); }
 .gl-amana .gl-pista-s .gl-ico-s {
@@ -1073,7 +1073,7 @@ html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-arc) var(--ease-arc)
   font-size: var(--font-label);
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
-  color: var(--text-faint);
+  color: var(--text-dim);
   font-weight: var(--fw-semibold);
   display: flex;
   align-items: center;

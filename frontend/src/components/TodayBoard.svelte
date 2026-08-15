@@ -517,7 +517,7 @@
      propozitie. */
   .bh-left { display: flex; align-items: baseline; gap: var(--space-12); color: var(--text); min-width: 0; }
   .bh-left h2 { font-size: var(--font-title); font-weight: var(--fw-semibold);
-                letter-spacing: -0.015em; }
+                letter-spacing: var(--tracking-tight); }
   .bh-zi { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim);
            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .bh-restante { display: inline-flex; align-items: center; gap: 6px; flex: none;
@@ -572,7 +572,7 @@
      culoare pe ecran. */
   .pers-ico { display: inline-flex; align-items: center; color: var(--text-dim); flex-shrink: 0; }
   .pers-n { font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums;
-    text-transform: none; letter-spacing: 0; }
+    text-transform: none; letter-spacing: var(--tracking-normal); }
 
   .a-list { display: flex; flex-direction: column; }
   /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia

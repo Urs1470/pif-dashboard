@@ -234,6 +234,32 @@ class Audit:
                              m.group(0))
 
     # -- R9 -----------------------------------------------------------------
+    # -- R11 ----------------------------------------------------------------
+    def r11_tipografie_bruta(self, p, text, curat):
+        """`letter-spacing` scris in cifre. Scara are trei valori, atat.
+
+        Nu se vedea pana la auditul din 2026-08-15, fiindca auditul nu se uita:
+        erau cinci locuri, dintre care doua cu `-0.015em` scris de mana langa un
+        `--tracking-tight` de `-0.01em`. Doua valori pentru „stramt" e exact
+        felul in care s-au nascut cele trei ambere.
+
+        `line-height` NU e prins aici, cu buna stiinta: `line-height: 1` pe o
+        cutie de iconita sau pe un numar e idiomul „cutia strange glifa" — un
+        reset de layout, nu o alegere tipografica, si niciun token din scara
+        (1.15 / 1.35 / 1.55 / 1.7) nu inseamna asta. O regula care l-ar cere
+        tokenizat ar produce doar zgomot.
+        """
+        if p.name == 'tokens.css':
+            return
+        printuri = blocuri_print(curat)
+        for m in re.finditer(r'letter-spacing:\s*([^;{}]+)', curat):
+            val = m.group(1).strip()
+            if val.startswith('var(--tracking') or 'inherit' in val or 'normal' == val:
+                continue
+            if in_span(m.start(), printuri):
+                continue
+            self.abatere('R11 letter-spacing brut', p, curat, m.start(), m.group(0))
+
     def r9_touch_action_fara_gest(self, p, text, curat):
         """`touch-action: none` ii ia browserului derularea pe acel element.
         Se plateste doar daca exista un gest care s-o inlocuiasca. Pe `.bar` din
@@ -367,6 +393,7 @@ def main():
         a.r5_paleta_duplicata(p, text, curat)
         a.r8_tranzitie_fara_easing(p, text, curat)
         a.r9_touch_action_fara_gest(p, text, curat)
+        a.r11_tipografie_bruta(p, text, curat)
         a.r10_zindex_literal(p, text, curat)
         a.r11_hover_only(p, text, curat)
 

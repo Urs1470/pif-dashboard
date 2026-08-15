@@ -412,7 +412,7 @@
     min-height: 36px; padding: 0 10px; border-radius: var(--radius-sm);
     background: transparent; border: 1px solid transparent;
     font-size: var(--font-small); font-weight: var(--fw-medium);
-    color: var(--text-faint); cursor: pointer; transition: var(--transition-colors); }
+    color: var(--text-dim); cursor: pointer; transition: var(--transition-colors); }
   .a-ico:hover { color: var(--text); background: var(--bg-hover); }
   .a-ico.on { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .a-n { font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums; }
@@ -450,7 +450,7 @@
      ea, iar intr-o grila de carduri asta inseamna ca randul respira sub mouse.
      Elevatia se citeste din UMBRA — deci hoverul o adanceste, si atat.
      Raspunsul ramane pe `--dur-fast`: hoverul ajunge inaintea deciziei. */
-  .pcard { position: relative; display: flex; flex-direction: column; min-height: 142px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+  .pcard { position: relative; display: flex; flex-direction: column; min-height: 142px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease); }
   /* Doar unde exista cursor. Pe touch, cardul atins ramanea ridicat cu 4px si cu
      umbra pana atingeai altceva — parea selectat, desi nu era. */
   @media (hover: hover) {
@@ -489,18 +489,18 @@
      INFORMATIE (tiny, mono) si poarta singura culoarea. Data plina sta in
      `title` — nu ocupa un rand pentru ceva ce verifici cand cauti. */
   .card-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: baseline; gap: 7px; }
-  .foot-faza { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .foot-faza { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
   .foot-cand { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); }
   .foot-cand.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
   .skeleton-card { gap: 8px; cursor: default; }
 
   .dim { color: var(--text-secondary); }
   /* Tipul e o LINIE, nu un fill: aceeasi definitie pe card si in arhiva. */
-  .tip-ico { display: inline-flex; align-items: center; color: var(--text-faint); flex-shrink: 0; }
-  .ptip { width: 74px; flex: none; display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .tip-ico { display: inline-flex; align-items: center; color: var(--text-dim); flex-shrink: 0; }
+  .ptip { width: 74px; flex: none; display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
   /* Fara `margin-left`: distanta pana la iconita o da `gap`-ul lui `.card-top`.
      Erau amandoua — 4 din gap plus 7 din marja, adica 11 in loc de 7. */
-  .tip-label { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .tip-label { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
 
   .archive { margin-top: var(--space-lg); }
   /* DM Mono e doar pentru cifre si coduri. „Arhivă · finalizate" e text — deci
@@ -578,7 +578,7 @@
     background: color-mix(in oklab, var(--st) 13%, transparent);
     border: 1px solid transparent; white-space: nowrap; }
   .status-pill.act { padding: 0 8px 0 11px; cursor: pointer;
-    transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+    transition: border-color var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease); }
   .status-pill.act :global(svg) { opacity: .6; }
   @media (hover: hover) {
     .status-pill.act:hover { border-color: var(--st); }

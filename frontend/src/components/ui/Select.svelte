@@ -190,7 +190,7 @@
   }
   .fs-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .field-select.ph .fs-text { color: var(--text-dim); }
-  .field-select :global(.fs-chev) { color: var(--text-dim); flex-shrink: 0; transition: transform var(--dur-fast) var(--ease); }
+  .field-select :global(.fs-chev) { color: var(--text-dim); flex-shrink: 0; transition: transform var(--dur-press) var(--ease); }
   .field-select.open :global(.fs-chev) { transform: rotate(180deg); }
   .field-select:hover:not(:disabled):not(:focus) { box-shadow: inset 0 0 0 1px var(--border-strong); }
   .field-select:focus, .field-select.open {

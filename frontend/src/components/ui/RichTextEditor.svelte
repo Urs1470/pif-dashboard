@@ -689,7 +689,7 @@
   }
   .rte-editor:empty::before {
     content: attr(data-placeholder);
-    color: var(--text-faint);
+    color: var(--text-dim);
     font-style: italic;
     pointer-events: none;
   }

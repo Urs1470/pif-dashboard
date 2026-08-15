@@ -506,7 +506,7 @@
     background: transparent;
     border: none;
     transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease),
-      transform var(--dur-fast) var(--ease);
+      transform var(--dur-press) var(--ease);
   }
   /* Ridicarea e un raspuns la cursor. Pe touch ramanea ridicata tableta atinsa
      ultima data, deci dock-ul arata mereu ca si cum ai fi peste un alt tab decat

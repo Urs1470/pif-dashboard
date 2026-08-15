@@ -1739,7 +1739,7 @@
     cursor: pointer; transition: var(--transition-pressable); }
   .rest-zi:hover { box-shadow: inset 0 0 0 1px var(--danger); }
   .rest-zi:active { transform: scale(var(--press-scale)); }
-  .rest-gol { font-size: var(--font-small); color: var(--text-faint); }
+  .rest-gol { font-size: var(--font-small); color: var(--text-dim); }
 
   /* STIVA DE REPERE SE ANCOREAZA SUS, FASIA SINEI RAMANE A EI.
      Era centrata, fiindca banda era fundalul randului si stiva trebuia sa stea
@@ -1947,7 +1947,7 @@
     color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* Chevronul spune ca randul DUCE undeva (in Calendar) — inainte nu se vedea
      din nimic ca perioada e o tinta. */
-  .mimpl :global(.mimpl-chev) { flex: none; color: var(--text-faint); }
+  .mimpl :global(.mimpl-chev) { flex: none; color: var(--text-dim); }
   .mimpl-range { display: inline-flex; align-items: center; gap: 6px; flex: none; font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-secondary); }
   /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
      44px fiecare, inaintea primului task. Duc toate in acelasi loc — Calendar. */
@@ -1961,7 +1961,7 @@
   .mgrup-cap { display: flex; align-items: center; gap: var(--space-xs);
     padding: 10px 4px 5px; font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-label); color: var(--text-faint); }
+    letter-spacing: var(--tracking-label); color: var(--text-dim); }
   /* Cifra e TEXT mono, nu pastila (desen 4c): pastila cu inel e a capului de
      card (`.count.danger`), unde cifra cere actiune; aici doar numara. */
   .grup-n { color: var(--text-dim);
@@ -2120,7 +2120,7 @@
   /* Granita de saptamana e muchia GROASA (--border-strong), ca pe desktop:
      subtila n-ar imparti nimic intr-o pista de 34px. */
   .mp-z.granita { border-left: 1px solid var(--border-strong); }
-  .mp-z.we { color: var(--text-faint); }
+  .mp-z.we { color: var(--text-dim); }
   /* AZI = CIFRA IN ACCENT, CU O SUBLINIERE DE 2px. Fara pastila plina: aceea e
      ziua SELECTATA din Calendar, si un obiect nu poate avea doua intelesuri.
      Sublinierea coboara 4px SUB rand (desen) — deci celula de azi isi ridica
@@ -2194,7 +2194,7 @@
   .mgol.static:active { transform: none; }
   .mgol-n { flex: 1; min-width: 0; font-size: var(--font-rand); font-weight: var(--fw-semibold);
     color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mgol :global(.mgol-chev) { flex: none; color: var(--text-faint); }
+  .mgol :global(.mgol-chev) { flex: none; color: var(--text-dim); }
   .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
   /* --font-rand (15 fix): capul cardului e un titlu de RAND, nu corp — pe
      telefon corpul urca la 16, capul nu (mocheta A / desen 4c: nume 15/600). */
@@ -2246,10 +2246,10 @@
   .gl-fata { display: contents; }
   .gl-actiuni { display: none; }
   .mcheck { display: none; }
-  .mbtn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; background: none; border: none; }
+  .mbtn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; background: none; border: none; }
   .mbtn:hover { background: var(--bg-hover); color: var(--text); }
   .mrow-date { width: 34px; flex-shrink: 0; }
-  .mrow-date :global(.dp-trigger) { width: 34px; min-height: 34px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-faint); }
+  .mrow-date :global(.dp-trigger) { width: 34px; min-height: 34px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-dim); }
   .mrow-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--text); }
   .mrow-date :global(.dp-value) { display: none; }
 
@@ -2374,21 +2374,21 @@
   .bl-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); }
   /* `.bl-count` a plecat — e `.count accent` din global.css. */
   .bl-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: 4px; }
-  .bl-head :global(.bl-chev) { margin-left: auto; color: var(--text-faint); transition: transform var(--dur-fast) var(--ease); }
+  .bl-head :global(.bl-chev) { margin-left: auto; color: var(--text-dim); transition: transform var(--dur-press) var(--ease); }
   .backlog.open .bl-head :global(.bl-chev) { transform: rotate(90deg); }
   .bl-items { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 16px; }
-  /* Dunga era `var(--text-faint)` — o linie gri care nu codifica nimic. Se sterge
+  /* Dunga era `var(--text-dim)` — o linie gri care nu codifica nimic. Se sterge
      fara inlocuitor; severitatea acestui chip o poarta chipul lui de termen. */
   .bl-chip { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 7px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: grab; max-width: 320px; }
   .bl-chip:hover { border-color: var(--border-strong); }
   .bl-chip:active { cursor: grabbing; }
-  .bl-chip :global(.bl-grip) { color: var(--text-faint); flex-shrink: 0; }
+  .bl-chip :global(.bl-grip) { color: var(--text-dim); flex-shrink: 0; }
   .bl-sev { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .bl-txt { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
   .bl-proj { font-size: var(--font-small); color: var(--accent-on-subtle); background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
   .bl-proj.glob { color: var(--text-dim); background: var(--bg-elevated); }
   .bl-date { width: 30px; flex-shrink: 0; }
-  .bl-date :global(.dp-trigger) { width: 30px; min-height: 30px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-faint); }
+  .bl-date :global(.dp-trigger) { width: 30px; min-height: 30px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-dim); }
   .bl-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--accent); }
   .bl-date :global(.dp-value) { display: none; }
 

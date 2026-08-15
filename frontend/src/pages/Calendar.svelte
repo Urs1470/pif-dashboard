@@ -2328,7 +2328,7 @@
   .ag-cap { display: flex; align-items: center; gap: var(--space-sm);
     padding: 12px 2px 6px; border-top: 1px solid var(--border);
     font-family: var(--font-mono); font-size: var(--font-label);
-    letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-faint); }
+    letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-dim); }
   .ag-linie { flex: 1; height: 1px; background: var(--border-subtle); }
   .ag-n { font-variant-numeric: tabular-nums; }
   /* RANDURILE NU SUNT CARDURI (M5). Erau fill tentat plus chenar de 1px — pe
@@ -2364,9 +2364,9 @@
   .ag-cand { flex: none; font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); }
   .ag-lucrari { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
   .ag-l { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); color: var(--text-secondary); }
-  .ag-l.pregatire { color: var(--text-faint); }
+  .ag-l.pregatire { color: var(--text-dim); }
   .ag-l.facuta { color: var(--success-deep); }
-  .ag-faza { color: var(--text-faint); }
+  .ag-faza { color: var(--text-dim); }
   .ag-intrebare { font-size: var(--font-small); color: var(--danger-deep); }
 
   .side { display: flex; flex-direction: column; gap: var(--space-md); }
@@ -2382,20 +2382,20 @@
   .pan-zi { font-size: var(--font-h2); font-weight: var(--fw-semibold); color: var(--text);
             letter-spacing: var(--tracking-tight); line-height: var(--lh-tight); }
   .pan-sub { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-dim); margin: 3px 0 10px; }
-  .pan-h { display: flex; align-items: center; gap: 8px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .pan-h { display: flex; align-items: center; gap: 8px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
   /* Cifra e MONO simplu, nu o pastila (desen C14): antetul are deja greutatea lui. */
-  .cnt { font-family: var(--font-mono); color: var(--text-secondary); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+  .cnt { font-family: var(--font-mono); color: var(--text-secondary); letter-spacing: var(--tracking-normal); font-variant-numeric: tabular-nums; }
   /* Linia mica de pe manerul foii taca — titlul zilei se scrie in corp, la 21/600
      (M9). `:has` pe clasa din corp, ca Modal sa nu invete despre Calendar. */
   :global(.modal:has(.pan.in-foaie) .modal-title) { display: none; }
-  .pan-hint { font-size: var(--font-small); color: var(--text-faint); margin: 4px 0 8px; }
+  .pan-hint { font-size: var(--font-small); color: var(--text-dim); margin: 4px 0 8px; }
   .gol { font-size: var(--font-small); color: var(--text-dim); }
 
   .urm { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; margin-top: 10px;
          padding: 9px 11px; border-radius: var(--radius-md); border: 1px solid var(--border);
          background: var(--bg-elevated); cursor: pointer; }
   .urm:hover { border-color: var(--accent); }
-  .urm-h { font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-faint); }
+  .urm-h { font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
   .urm-d { display: flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text); }
   .urm-l { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); }
 

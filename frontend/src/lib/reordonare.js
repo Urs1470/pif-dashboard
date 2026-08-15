@@ -112,7 +112,7 @@ export function reordonare(node, opt = {}) {
 
     for (let i = 0; i < randuri.length; i++) {
       if (i === din) { randuri[i].style.transform = `translateY(${dy}px)`; continue }
-      randuri[i].style.transition = 'transform var(--dur-fast) var(--ease)'
+      randuri[i].style.transition = 'transform var(--dur-press) var(--ease)'
       // Randurile dintre pozitia veche si cea noua se dau la o parte cu exact
       // inaltimea randului tras — asa golul urmareste degetul.
       let d = 0

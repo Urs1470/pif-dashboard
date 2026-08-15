@@ -670,7 +670,7 @@
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
     font-weight: var(--fw-semibold);
-    color: var(--text-faint);
+    color: var(--text-dim);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -846,7 +846,7 @@
       text-transform: uppercase;
       letter-spacing: var(--tracking-label);
       font-weight: var(--fw-semibold);
-      color: var(--text-faint);
+      color: var(--text-dim);
     }
     .modal.sheet .modal-close { width: 40px; height: 40px; margin-right: -6px; }
     /* 32px e o tinta de cursor. Degetul are nevoie de 44, iar `X`-ul e singura

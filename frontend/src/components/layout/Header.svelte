@@ -133,7 +133,7 @@
     gap: 10px;
     font-weight: var(--fw-semibold);
     font-size: var(--font-brand);
-    letter-spacing: -0.015em;
+    letter-spacing: var(--tracking-tight);
     color: var(--text);
     white-space: nowrap;
   }

@@ -1034,7 +1034,7 @@
   .equip-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
   .equip-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: var(--font-small); color: var(--text); cursor: pointer; }
   .equip-sub { font-size: var(--font-small); font-weight: var(--fw-normal); color: var(--text-dim); }
-  .equip-chev { display: flex; color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); }
+  .equip-chev { display: flex; color: var(--text-dim); transition: transform var(--dur-press) var(--ease); }
   .equip-chev.open { transform: rotate(90deg); color: var(--accent); }
   .equip-switch { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; }
   .equip-body { margin-top: 4px; }
@@ -1185,7 +1185,7 @@
     transition: background-color var(--dur-fast) var(--ease);
   }
   .acc-head:hover { background: var(--bg-hover); }
-  .acc-chev { display: flex; flex-shrink: 0; color: var(--text-dim); transition: transform var(--dur-fast) var(--ease); }
+  .acc-chev { display: flex; flex-shrink: 0; color: var(--text-dim); transition: transform var(--dur-press) var(--ease); }
   .acc-chev.open { transform: rotate(90deg); color: var(--accent); }
   .acc-title {
     flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px;
@@ -1232,7 +1232,7 @@
   /* aceeasi reteta de grup ca nav-ul din Parametri: separator dashed + punct de accent */
   .nav-sec {
     font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-label); color: var(--text-faint); padding: 14px 10px 6px;
+    letter-spacing: var(--tracking-label); color: var(--text-dim); padding: 14px 10px 6px;
     margin-top: 10px; border-top: 1px dashed var(--border);
     display: flex; align-items: center; gap: 8px;
   }

@@ -1690,7 +1690,7 @@
      ca sa se vada din bara in ce lista te uiti. */
   .a-ico { display: inline-flex; align-items: center; gap: 6px; min-height: 30px;
     padding: 0 10px; border: none; background: none; border-radius: var(--radius-sm);
-    color: var(--text-faint); font-size: var(--font-small); font-weight: var(--fw-medium);
+    color: var(--text-dim); font-size: var(--font-small); font-weight: var(--fw-medium);
     cursor: pointer; transition: var(--transition-colors); }
   .a-ico:hover { color: var(--text); background: var(--bg-hover); }
   .a-ico.on { color: var(--accent-on-subtle); background: var(--accent-subtle); }
@@ -1745,7 +1745,7 @@
      au ramas ale ferestrei de notificari, care le folosea deja pe toate. */
   .g-ico { position: relative; display: flex; align-items: center; justify-content: center;
            width: 30px; min-height: 30px; background: none; border: none; cursor: pointer;
-           color: var(--text-faint); border-radius: var(--radius-sm);
+           color: var(--text-dim); border-radius: var(--radius-sm);
            transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .g-ico:hover { color: var(--text); background: var(--bg-hover); }
   /* Acelasi punct ca pe clopotel, pe segmentul de sfera. */
@@ -1879,7 +1879,7 @@
      poarte, era vopsea pentru un element care nu mai exista. */
   .grup-n { font-family: var(--font-mono); font-size: var(--font-label);
     color: var(--danger); font-variant-numeric: tabular-nums;
-    text-transform: none; letter-spacing: 0; }
+    text-transform: none; letter-spacing: var(--tracking-normal); }
   .grup-cap.ton-danger::before { background: var(--danger); }
   .grup-cap.ton-accent::before { background: var(--accent); }
   /* „Fără termen" e INEL, nu punct plin: absenta termenului se spune prin absenta
@@ -1900,7 +1900,7 @@
   .qa-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
   .qa-dp :global(.dp-trigger) { min-height: 30px; padding: 4px 12px;
     border-radius: var(--radius-full); font-size: var(--font-small); }
-  .qa-hint { font-size: var(--font-small); color: var(--text-faint); margin-left: auto; }
+  .qa-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: auto; }
 
   /* ===== randul desfasurat ===== */
   /* Cele doua actiuni rare, SUB continut si la 11px: chipurile de dinainte stateau
@@ -1925,7 +1925,7 @@
     background: var(--bg-overlay);
   }
   .td-link { display: inline-flex; align-items: center; gap: 6px; padding: 0;
-    background: none; border: none; color: var(--text-faint);
+    background: none; border: none; color: var(--text-dim);
     font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }
   .td-link:hover { color: var(--accent); }
   .td-link.areNota { color: var(--text-dim); }
@@ -1934,7 +1934,7 @@
   .td-dp :global(.dp) { width: auto; }
   .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: 6px;
     background: none; border: none; box-shadow: none; border-radius: 0;
-    color: var(--text-faint); font-size: var(--font-small); }
+    color: var(--text-dim); font-size: var(--font-small); }
   .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
 
@@ -2061,7 +2061,7 @@
   /* ===== Foaia taskului ===== */
   .sub-cap { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 6px; }
   .sub-cap-t { font-size: var(--font-label); text-transform: uppercase;
-    letter-spacing: var(--tracking-label); font-weight: var(--fw-semibold); color: var(--text-faint); flex: none; }
+    letter-spacing: var(--tracking-label); font-weight: var(--fw-semibold); color: var(--text-dim); flex: none; }
   .sub-gol { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm) 0; }
   /* Fiecare subtask e un card, ca la Todoist: pe fundalul foii randurile fara
      suprafata proprie se citeau ca un bloc de text, nu ca lucruri separate.
@@ -2079,7 +2079,7 @@
      coloana, ca randul sa se alinieze cu subtaskurile de deasupra. */
   .sub-nou { display: flex; align-items: center; gap: 9px; width: 100%;
     min-height: 32px; padding: 0 6px; border: none; border-radius: var(--radius-xs);
-    background: none; color: var(--text-faint); font-size: var(--font-small);
+    background: none; color: var(--text-dim); font-size: var(--font-small);
     cursor: pointer; transition: var(--transition-colors); }
   .sub-nou:hover { background: var(--accent-subtle); color: var(--accent); }
   .sub-nou-p { display: flex; align-items: center; justify-content: center;
@@ -2106,7 +2106,7 @@
   /* Acelasi `--ring` ca inelul bifei din capul foii — un singur izvor de culoare. */
   .ts-val.sev { color: var(--ring); }
   .ts-fara { color: var(--text-dim); font-weight: var(--fw-normal); }
-  .ts-rand :global(.ts-chev) { flex: none; opacity: 0.5; transition: transform var(--dur-fast) var(--ease); }
+  .ts-rand :global(.ts-chev) { flex: none; opacity: 0.5; transition: transform var(--dur-press) var(--ease); }
   .ts-rand.activ :global(.ts-chev) { transform: rotate(180deg); }
 
   /* Doar asezarea; butoanele sunt ale lui `SelectorZi`. */
@@ -2131,7 +2131,7 @@
     box-shadow: 0 1px 0 var(--accent); }
   .sub-edit:focus { border: none; box-shadow: 0 1px 0 var(--accent); outline: none; }
   /* Bara de progres: subtire, aceeasi latime cu randurile de sub ea. */
-  .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-faint); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
+  .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
   .sub-add { display: flex; gap: var(--space-xs); margin-top: 0; }

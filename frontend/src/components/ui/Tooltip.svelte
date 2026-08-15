@@ -197,7 +197,7 @@
     pointer-events: none;
     opacity: 0;
     transform: translateY(3px);
-    transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+    transition: opacity var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease);
   }
   .tip.jos { transform: translateY(-3px); }
   .tip.vaz { opacity: 1; transform: translateY(0); }

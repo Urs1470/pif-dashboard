@@ -219,7 +219,7 @@
   .cand { font-weight: var(--fw-semibold);
           font-size: var(--font-small); color: var(--accent-deep); white-space: nowrap; }
   .unde { font-size: var(--font-small); color: var(--text); white-space: nowrap; }
-  .sep { color: var(--text-faint); }
+  .sep { color: var(--text-dim); }
   .ce { font-size: var(--font-small); color: var(--text-secondary); min-width: 0;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 34ch; }
   /* dim, nu faint: intervalul e raspunsul la „cand pleci" — informatie, nu
@@ -228,7 +228,7 @@
           white-space: nowrap; letter-spacing: var(--tracking-normal); }
 
   /* Următoarele două — text simplu, fără cadru: context, nu obiect. */
-  .apoi { font-size: var(--font-small); color: var(--text-faint); white-space: nowrap; }
+  .apoi { font-size: var(--font-small); color: var(--text-dim); white-space: nowrap; }
   /* Intervalul e informatie (dim); cuvantul de legatura „apoi" ramane faint. */
   .ap { font-family: var(--font-mono); color: var(--text-dim); }
   /* Spatiul dintre interval si loc vine din CSS, nu dintr-un caracter scris in
