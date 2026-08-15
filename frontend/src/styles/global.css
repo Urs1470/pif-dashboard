@@ -158,11 +158,17 @@ code, pre {
    --font-body), deci fiecare cautare si fiecare formular declansa asta.
    `!important` din acelasi motiv ca la `input[type=date]` mai jos: stilurile scoped
    Svelte (.mf-input.svelte-xxx) au doua clase, deci bat un selector de element.
-   Nu atinge bifele si comutatoarele — acolo font-size nu inseamna nimic. */
+   Nu atinge bifele si comutatoarele — acolo font-size nu inseamna nimic.
+   REGULA E UN PRAG DE JOS, nu o marime. Scrisa ca marime fixa, ea COBORA la 16
+   si campul de titlu al unui task (`CampTitlu`, treapta `--font-h2` = 21px) —
+   adica exact campul facut mai mare dinadins. Scutirea e sigura tocmai fiindca
+   merge in sensul bun: 21 > 16, deci Safari n-are ce mari. Orice camp scutit de
+   aici trebuie sa fie DEASUPRA pragului; unul sub el aduce inapoi zoomul din
+   care nu se mai iese. */
 @media (max-width: 768px) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
   select,
-  textarea {
+  textarea:not(.camp-titlu) {
     font-size: var(--font-input-mobile) !important;
   }
 }
@@ -1035,6 +1041,22 @@ html.prima-incarcare .cell-in {
    reporneste animatia, deci o clasa pusa doar in timpul tranzitiei ar fi jucat,
    la scoatere, exact miscarea pe care o suprima. */
 html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-arc) var(--ease-arc) backwards; }
+
+/* ===== SOSIREA ASTEAPTA VALUL =====
+   Cat timp splashul de deschidere e pe ecran (`index.html`), pagina de dedesubt
+   se construieste — deci `rutaIn` si scara de celule se JUCAU acolo, ascunse.
+   Cand valul se ridica, ele erau deja terminate: vedeai pagina asezata, taiata,
+   fara nicio sosire. Tot ce castigasem era ca nu se mai scutura.
+   `animation-play-state: paused` le tine la starea de PLECARE (`backwards`
+   umple inapoi in timpul intarzierii, deci celula sta invizibila si asteapta
+   cuminte). Steagul cade in aceeasi clipa in care valul incepe sa se stinga, si
+   de acolo cele doua miscari merg impreuna: valul pleaca in sus, pagina vine de
+   jos. O singura deschidere, nu doua.
+   NU se pune pe `.asteptare`: scheletele traiesc SUB val, iar daca datele intarzie
+   peste plafon vrei sa vezi ceva viu in clipa in care valul pleaca, nu patru
+   dungi inghetate care abia atunci incep sa soseasca. */
+html.splash-activ .ruta-in,
+html.splash-activ .cell-in { animation-play-state: paused; }
 
 /* ===== ASTEPTAREA SOSESTE, NU APARE =====
    Ion: „se poate adauga cate o animatie, ceva gen cum e la planificator pentru

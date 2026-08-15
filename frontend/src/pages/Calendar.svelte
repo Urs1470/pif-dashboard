@@ -1800,7 +1800,12 @@
              (Ion, 2026-08-10) — detaliile unei zile nu incap intr-o jumatate
              de foaie, iar intinderea manuala era un gest in plus de fiecare
              data. -->
-        <Modal open={foaieZi} inalt title={dayLabel(selectata)} onclose={() => foaieZi = false}>
+        <!-- `iesireGest`: fara `X` in colt (Ion: „pe mobil e incomod, nu l-am
+             folosit niciodata"). Foaia zilei e continut curat — se citeste, nu
+             se completeaza — deci tragerea in jos de oriunde si gestul „inapoi"
+             de pe Android o inchid amandoua, si amandoua ajung sub deget acolo
+             unde el chiar sta. Vezi `iesireGest` in `Modal.svelte`. -->
+        <Modal open={foaieZi} inalt iesireGest title={dayLabel(selectata)} onclose={() => foaieZi = false}>
           {@render panouZi(false)}
         </Modal>
       {/if}

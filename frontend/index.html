@@ -54,8 +54,160 @@
     <link rel="preload" href="/static/fonts/DMMono-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/static/fonts/DMMono-400-ext.woff2" as="font" type="font/woff2" crossorigin />
     <title>TORQA</title>
+    <!-- ===== POARTA DE DESCHIDERE =====
+         Ion: „ecranul de deschidere este taskuri personale si cand se deschide
+         vad cum se muta si cu ramasite."
+         Ce vedea nu era o eroare, erau CINCI asezari puse cap la cap peste
+         aceiasi pixeli: capul paginii se deseneaza gol, scheletele sosesc,
+         lista le inlocuieste, fonturile se schimba sub textul deja citit (masurat:
+         `document.fonts` inca in `loading` la 1533ms), iar docul isi masoara
+         inaltimea si impinge continutul. Fiecare pas e corect singur; impreuna
+         sunt o pagina care se scutura.
+         Un splash nu ascunde incetineala — o ASEAZA: ce se misca se misca sub
+         val, iar tu vezi pagina o singura data, gata asezata.
+         DE CE AICI, IN HTML, si nu intr-o componenta Svelte: componenta ar
+         aparea abia dupa ce se incarca si se executa bundle-ul, adica exact
+         dupa clipa pe care trebuie s-o acopere. Asta e singurul loc desenat in
+         primul cadru. Din acelasi motiv stingerea are un cronometru propriu, in
+         afara bundle-ului: daca modulul nu ajunge sa se execute (retea moarta,
+         eroare de import), valul TREBUIE sa plece oricum — altfel un ecran cu
+         sigla e tot ce mai ramane din aplicatie. -->
+    <style>
+      /* Ascuns implicit: se aprinde doar cand scriptul de mai jos pune
+         `splash-activ` pe <html>. Fara asta ar clipi si pe desktop, unde
+         aplicatia vine din cache si nu e nimic de acoperit. */
+      #splash { display: none; }
+      html.splash-activ #splash {
+        display: flex; align-items: center; justify-content: center;
+        position: fixed; inset: 0; z-index: 9000;
+        /* Prima declaratie e plasa: daca foaia de stil intarzie, fondul e tot
+           opac. A doua o inlocuieste imediat ce tokenii exista. */
+        background: #121417;
+        background: var(--bg);
+      }
+      html[data-theme="light"].splash-activ #splash { background: #f4f5f7; background: var(--bg); }
+      /* Marca e ACEEASI cu cea de pe ecranul de autentificare (`login.html`):
+         placa in accent, unda in cerneala pe fill, numele dedesubt. Login ->
+         splash -> aplicatie trebuie sa fie acelasi obiect care se apropie, nu
+         trei ecrane de la trei aplicatii. */
+      #splash .sp-marca {
+        display: flex; flex-direction: column; align-items: center; gap: 14px;
+        will-change: transform, opacity;
+      }
+      #splash .sp-logo { width: 60px; height: 60px; }
+      #splash .sp-placa { fill: #8ab2d9; fill: var(--accent); }
+      #splash .sp-unda {
+        fill: none; stroke: #0e1114; stroke: var(--accent-text);
+        stroke-width: 6.4; stroke-linecap: round; stroke-linejoin: round;
+        /* 104 = lungimea exacta a traseului (11,5+20+10,5+20+10,5+20+11,5).
+           Scrisa, nu masurata cu `getTotalLength`: masurarea ar cere JS in
+           primul cadru, iar traseul e o constanta din siglă. */
+        stroke-dasharray: 104; stroke-dashoffset: 104;
+      }
+      #splash .sp-nume {
+        font-family: 'Gabarito', system-ui, sans-serif;
+        font-size: 21px; font-weight: 600; letter-spacing: -0.01em;
+        color: #e9ecef; color: var(--text);
+      }
+      /* SOSIREA: placa se aseaza, unda se SCRIE, numele urca dupa ea. Trei
+         miscari in ordinea in care se citeste marca, nu trei deodata.
+         Curbele si duratele sunt cele din `tokens.css` (`--dur-arc` .42s,
+         `--ease-arc`), scrise aici pentru ca stilul e inline si nu are voie sa
+         depinda de foaia care inca se incarca. */
+      @keyframes spPlaca { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: none; } }
+      @keyframes spUnda  { to { stroke-dashoffset: 0; } }
+      @keyframes spNume  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+      html.splash-activ .sp-logo { animation: spPlaca .42s cubic-bezier(.32,.72,.28,1) backwards; }
+      html.splash-activ .sp-unda { animation: spUnda .58s cubic-bezier(.32,.72,.28,1) .16s backwards; }
+      html.splash-activ .sp-nume { animation: spNume .42s cubic-bezier(.32,.72,.28,1) .34s backwards; }
+      /* PLECAREA: valul se stinge, marca se departeaza cu 4%. Nu invers (marca
+         micsorata ar parea ca se retrage inapoi in ecran); asa se citeste ca o
+         ridicare de pe pagina care ramane dedesubt. `pointer-events: none` din
+         prima clipa a plecarii: din momentul in care vezi lista, o poti si
+         atinge — nu dupa ce se termina animatia. */
+      #splash.pleaca {
+        opacity: 0; pointer-events: none;
+        transition: opacity .28s cubic-bezier(.32,.72,.28,1);
+      }
+      #splash.pleaca .sp-marca {
+        transform: scale(1.04);
+        transition: transform .28s cubic-bezier(.32,.72,.28,1);
+      }
+      /* Valul RAMANE cand miscarea e refuzata — el nu e decor, el e ce te scapa
+         de pagina care se scutura. Ce pleaca e desenarea lui pas cu pas. */
+      @media (prefers-reduced-motion: reduce) {
+        html.splash-activ .sp-logo,
+        html.splash-activ .sp-nume { animation: none; }
+        html.splash-activ .sp-unda { animation: none; stroke-dashoffset: 0; }
+        #splash.pleaca, #splash.pleaca .sp-marca { transition-duration: .12s; }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash" aria-hidden="true" role="presentation">
+      <div class="sp-marca">
+        <svg class="sp-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect class="sp-placa" width="64" height="64" rx="14" />
+          <path class="sp-unda" d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" />
+        </svg>
+        <span class="sp-nume">TORQA</span>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var el = document.getElementById('splash')
+        if (!el) return
+        // CINE IL VEDE. Pe telefon (inclusiv carcasa Android, care e un WebView
+        // peste acelasi site) si pe orice instalare pe ecranul principal. Intr-o
+        // fila de desktop nu: acolo aplicatia vine din cache in cateva zeci de
+        // milisecunde, iar un val de o secunda peste ea n-ar acoperi o
+        // asezare, ar ADAUGA o asteptare.
+        var potrivit = false
+        try {
+          potrivit = window.matchMedia('(display-mode: standalone)').matches ||
+                     window.navigator.standalone === true ||
+                     window.matchMedia('(max-width: 768px)').matches
+        } catch (e) { potrivit = false }
+        if (!potrivit) { el.remove(); return }
+        document.documentElement.classList.add('splash-activ')
+
+        var t0 = Date.now()
+        // MINIM: sub o treime de secunda un val nu se citeste ca un ecran, ci ca
+        // o clipire — adica exact ce reparam. Pe o pornire calda datele sunt
+        // gata mai repede de atat, deci acest prag E durata splashului.
+        var MINIM = 420
+        // MAXIM: peste atat nu mai astepti aplicatia, astepti valul. Pagina de
+        // dedesubt e oricum utila (schelete + ce e in cache), deci la capat il
+        // dam la o parte chiar daca datele n-au sosit.
+        var MAXIM = 2600
+        var plecat = false
+
+        function stinge() {
+          if (plecat) return
+          plecat = true
+          // Steagul cade ODATA cu inceputul stingerii, nu dupa: sosirea paginii
+          // (`.ruta-in` + scara de celule din `global.css`) porneste exact cand
+          // valul incepe sa se ridice, deci vezi O SINGURA miscare continua, nu
+          // doua puse cap la cap. Vezi `html.splash-activ` in `global.css`.
+          document.documentElement.classList.remove('splash-activ')
+          el.classList.add('pleaca')
+          // Scos din DOM la capat: un element fix cat tot ecranul, ramas peste
+          // pagina chiar si transparent, e un strat pe care compozitorul il
+          // deseneaza la fiecare cadru degeaba.
+          setTimeout(function () { el.remove() }, 400)
+        }
+
+        window.__splash = {
+          gata: function () {
+            var ramas = MINIM - (Date.now() - t0)
+            if (ramas > 0) setTimeout(stinge, ramas)
+            else stinge()
+          },
+        }
+        // Plasa de siguranta, in afara bundle-ului — vezi comentariul de sus.
+        setTimeout(stinge, MAXIM)
+      })()
+    </script>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>

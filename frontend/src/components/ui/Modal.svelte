@@ -119,7 +119,7 @@
     if (px < -120 || px > 220 || py < -120 || py > 220) return ''
     return `${px.toFixed(1)}% ${py.toFixed(1)}%`
   }
-  import { PRAG_INCHIDE, PRAG_INTINDE, puls } from '../../lib/gesturi.js'
+  import { PRAG_INCHIDE, PRAG_INTINDE, PRAG_DIRECTIE, puls } from '../../lib/gesturi.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
   // jos) — nu cand parintele pune `open = false` singur. Exista fiindca un modal de
@@ -133,7 +133,14 @@
   // din Calendar (Ion: „fa-l sa se deschida tot timpul aproape pe toata
   // pagina, ca sa incapa deodata toate detaliile"). Gestul de tras in jos
   // inchide, ca oricand.
-  let { open = $bindable(false), title = '', size = 'md', inalt = false, children, footer, onclose } = $props()
+  // `iesireGest`: PE TELEFON foaia asta nu mai are `X` in colt — iesirea e
+  // gestul (tragi in jos de oriunde din continut) plus butonul „inapoi" de pe
+  // Android, care ajunge aici ca Escape prin `main.js`. Se cere EXPLICIT, si nu
+  // se aplica singura peste tot: intr-o foaie cu campuri, cu tastatura sus,
+  // gestul din continut e oprit dinadins (vezi `tastaturaSus`) si atunci `X`-ul
+  // chiar e singura iesire vizibila. Pe desktop nu schimba nimic — acolo coltul
+  // e la un centimetru de cursor, nu la celalalt capat al mainii.
+  let { open = $bindable(false), title = '', size = 'md', inalt = false, iesireGest = false, children, footer, onclose } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
   let corpEl = $state(null)
@@ -344,18 +351,78 @@
   //    drept intindere;
   //  - cat timp tastatura e sus nu se intinde nimic: foaia tocmai s-a
   //    micsorat ca sa-i faca loc, iar o intindere ar duce-o inapoi sub ea.
+  //
+  // …SI INCHIDEREA VINE TOT DIN CONTINUT (tura 16). Ion, despre foaia zilei din
+  // Calendar: „X-ul de inchidere din colt, pe mobil e incomod, nu l-am folosit
+  // niciodata; pana acum am inchis din gestul inapoi pe Android."
+  // Are dreptate, si nu e o chestiune de gust: pe un telefon inalt coltul de sus
+  // e singurul loc de pe ecran la care nu ajungi fara sa muti mana din priza.
+  // Iesirea exista deja ca gest — tragi de antet in jos — dar antetul e IN
+  // ACELASI COLT de neatins. Deci gestul corect nu era inventat, era doar pus
+  // unde nu ajunge degetul.
+  // Acum se trage de CE VEZI, oriunde in foaie, cu o singura conditie: lista sa
+  // fie la capatul de sus. Aceeasi conditie care face intinderea sa nu se bata
+  // cu derularea o face si pe inchidere sa nu se bata: cand mai ai continut
+  // deasupra, gestul in jos inseamna „deruleaza inapoi" si atat.
+  // Acelasi prag (`PRAG_INCHIDE`), acelasi puls la trecerea lui si acelasi
+  // `trasY` ca la antet — un singur gest cu doua suprafete, nu doua gesturi.
   let corpY0 = 0
+  let corpJos = false           // gestul din corp a devenit o inchidere
+
+  /** Tastatura sus = esti intr-un formular, iar foaia tocmai s-a micsorat ca
+   *  sa-i faca loc. Nici intindere, nici inchidere din continut: acolo degetul
+   *  scrie, si `X`-ul din antet ramane iesirea (vezi `iesireGest`). */
+  const tastaturaSus = () => {
+    const kb = document.documentElement.style.getPropertyValue('--kb')
+    return !!kb && kb !== '0px'
+  }
+
   function corpAtinge(e) {
-    if (!sheet || intins) return
-    if ((corpEl?.scrollTop ?? 0) > 0) { corpY0 = 0; return }
+    corpJos = false
+    corpY0 = 0
+    if (!sheet || e.touches.length !== 1 || tastaturaSus()) return
+    if ((corpEl?.scrollTop ?? 0) > 0) return
     corpY0 = e.touches[0].clientY
   }
   function corpTrage(e) {
-    if (!sheet || intins || !corpY0) return
-    if ((corpEl?.scrollTop ?? 0) > 0) { corpY0 = 0; return }
-    const kb = document.documentElement.style.getPropertyValue('--kb')
-    if (kb && kb !== '0px') return
-    if (corpY0 - e.touches[0].clientY > 56) { intins = true; corpY0 = 0 }
+    if (!sheet || !corpY0) return
+    const dy = e.touches[0].clientY - corpY0
+    // IN SUS — intinde, exact ca pana acum (si doar daca mai are unde).
+    if (!corpJos && dy < 0) {
+      if (intins) { corpY0 = 0; return }
+      if (dy < -56) { intins = true; corpY0 = 0 }
+      return
+    }
+    if (dy <= 0) return
+    // IN JOS — inchide. Se ia decizia o singura data, dupa `PRAG_DIRECTIE`, ca
+    // la orice alt gest din aplicatie; pana atunci degetul poate inca sa fie pe
+    // drum spre o derulare.
+    if (!corpJos) {
+      if ((corpEl?.scrollTop ?? 0) > 0) { corpY0 = 0; return }
+      if (dy < PRAG_DIRECTIE) return
+      corpJos = true
+      trage = true
+      pragTrecut = false
+    }
+    // Fara asta, browserul ar face si el ceva cu degetul (saltul de capat de
+    // lista) exact cat timp foaia coboara — doua obiecte pe aceeasi axa.
+    if (e.cancelable) e.preventDefault()
+    trasY = dy - PRAG_DIRECTIE
+    const trecut = trasY > inaltimeFoaie() * PRAG_INCHIDE
+    if (trecut !== pragTrecut) {
+      pragTrecut = trecut
+      if (trecut) puls()
+    }
+  }
+  function corpRidica() {
+    corpY0 = 0
+    if (!corpJos) return
+    corpJos = false
+    trage = false
+    // `trasY` ramane unde l-a lasat degetul cand chiar se inchide — vezi nota
+    // lunga din `trageSus`: zeroit aici, iesirea s-ar anula singura la jumatate.
+    if (trasY > inaltimeFoaie() * PRAG_INCHIDE) { inchide(); return }
+    trasY = 0
   }
 
   // ===== REDIMENSIONAREA PANOULUI (T6, doar desktop) =====
@@ -491,6 +558,15 @@
     if (open) {
       previousFocus = document.activeElement
       tick().then(() => {
+        // CINE A DESCHIS FEREASTRA POATE ALEGE UNDE CADE FOCUSUL, si atunci nu
+        // i-l mai luam. Regula de aici („primul focalizabil") e buna cand nu
+        // stie nimeni mai bine, dar primul din DOM e `X`-ul din antet — deci un
+        // formular al carui unic camp care conteaza e titlul se deschidea cu
+        // cursorul pe butonul de inchidere. Apelantul isi punea focusul (vezi
+        // `openNewModal` in Tasks) si efectul de aici i-l muta inapoi, o clipa
+        // mai tarziu — pe telefon asta inseamna si tastatura care se inchide la
+        // loc dupa ce tocmai s-a deschis.
+        if (backdropEl?.contains(document.activeElement)) return
         const f = focusabile()
         if (f.length) f[0].focus()
         else backdropEl?.focus()
@@ -545,9 +621,12 @@
            onpointerdown={trageJos} onpointermove={trageMisca}
            onpointerup={trageSus} onpointercancel={trageSus}>
         <h2 class="modal-title">{title}</h2>
-        <button class="modal-close" onpointerdown={(e) => e.stopPropagation()} onclick={inchide} aria-label="Închide"><X size={18} /></button>
+        {#if !(sheet && iesireGest)}
+          <button class="modal-close" onpointerdown={(e) => e.stopPropagation()} onclick={inchide} aria-label="Închide"><X size={18} /></button>
+        {/if}
       </div>
-      <div class="modal-body" bind:this={corpEl} ontouchstart={corpAtinge} ontouchmove={corpTrage}>
+      <div class="modal-body" bind:this={corpEl} ontouchstart={corpAtinge} ontouchmove={corpTrage}
+           ontouchend={corpRidica} ontouchcancel={corpRidica}>
         {@render children()}
       </div>
       {#if footer}

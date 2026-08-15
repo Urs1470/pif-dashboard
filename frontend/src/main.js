@@ -8,6 +8,7 @@ import { todayISO } from './lib/calendarDates.js'
 import { esteNativ, reprogrameaza } from './lib/notificari.js'
 import { App as CapApp } from '@capacitor/app'
 import { verifica as verificaActualizarea, descarcaSiInstaleaza } from './lib/actualizare.js'
+import { splashDupa } from './lib/splash.js'
 import { toastFix, actualizeazaToast } from './stores/ui.svelte.js'
 // Dashboard-ul e in spatele login-ului -> runtime.docsOk e implicit true (vezi runtime.svelte.js),
 // deci extrasele de carti se vad. Pe /calc public, calc-main.js le gateaza dupa autentificare.
@@ -29,15 +30,21 @@ import { toastFix, actualizeazaToast } from './stores/ui.svelte.js'
 // deschide Acasa, iar o notificare atinsa deschide alta ruta. Ce nu se
 // potriveste nu se incalzeste — o cerere degeaba ar fura banda exact de la
 // chunkul care se astepta.
+let dateleAterizarii = null
 if (router.path === '/tasks') {
   // `sfera: 'toate'` — aceleasi optiuni cu care o cere pagina (vezi Tasks.svelte).
   // Alte optiuni ar da alt URL, deci alta cerere, deci doua in loc de una.
-  loadGlobalTasks({ sfera: 'toate' })
+  dateleAterizarii = loadGlobalTasks({ sfera: 'toate' })
 }
 
 const app = mount(App, {
   target: document.getElementById('app'),
 })
+
+// Valul de deschidere pleaca abia cand pagina de dedesubt e asezata — vezi
+// `lib/splash.js` pentru ce inseamna „asezata" si `index.html` pentru val.
+// Chemat DUPA `mount`, ca sa nu numaram cadre pictate inainte sa existe ce picta.
+splashDupa(dateleAterizarii)
 
 // NOTIFICARILE DE DIMINEATA, cand aplicatia ruleaza in shell-ul Android.
 // In browser `esteNativ()` e fals si nu se intampla nimic — acelasi bundle e

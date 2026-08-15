@@ -27,6 +27,52 @@ export const PRAG_INTINDE = 0.08
 /** px de mouse sub care gestul ramane un click. */
 export const PRAG_MOUSE = 4
 
+/**
+ * BANDA DE JOS — px de la marginea de jos a ferestrei in care orizontala
+ * apartine TABURILOR, nu randului de sub deget.
+ *
+ * Ion: „vreau sa dau swipe din zona de jos a ecranului, am ecran mare, degetul
+ * natural imi cade putin mai sus de dock."
+ *
+ * Pana acum comutarea taburilor era a paginii intregi, cu o exceptie: un gest
+ * pornit pe un rand ii apartine randului (acolo orizontala inseamna deja
+ * „Făcut" / „Planifică"). Regula e buna, dar pe un telefon inalt lista ACOPERA
+ * exact fasia in care sta degetul mare — deci exceptia inghitea gestul in
+ * singurul loc din care el chiar se da. Un gest care exista peste tot in afara
+ * de unde ajunge mana nu exista.
+ *
+ * 200px, si e o socoteala, nu o cifra rotunda: docul ocupa ~100 (68 inaltime +
+ * 14 desprindere + zona sigura), deci raman ~100px de lista deasupra lui —
+ * doua randuri de `--row-h-mobile`. Atat, si nu mai mult: fiecare pixel de
+ * banda e un pixel in care nu mai poti bifa un task cu degetul, iar bifarea e
+ * gestul pe care il faci de zeci de ori pe zi.
+ *
+ * MASURATA DE LA MARGINEA FERESTREI, nu de la doc: docul se ascunde la derulare
+ * si se muta cand se deschide un modal, deci pozitia lui e o tinta in miscare
+ * — iar un prag de gest care se muta sub deget e mai rau decat unul asezat
+ * cativa pixeli mai sus.
+ */
+export const BANDA_TABURI = 200
+
+/** True cand punctul de PORNIRE al gestului cade in banda de jos. */
+export function inBandaTaburi(clientY) {
+  return clientY >= window.innerHeight - BANDA_TABURI
+}
+
+/**
+ * VITEZA CARE COMITE, in px/ms. Un prag de distanta singur cere un gest LUNG,
+ * si asta se simte ca efort („swipeul necesita prea multa presiune"): ca sa
+ * comuti trebuia sa duci degetul pana la capat, cu tot cu franarea de la
+ * amortizare, care spune exact pe dos — ca obiectul se opune.
+ * O aruncare scurta si rapida e acelasi gest, dat de o mana care stie deja unde
+ * merge. 0,4px/ms ≈ 6px pe cadru: peste ce se poate face din greseala in timp
+ * ce derulezi, sub ce trebuie sa tii degetul apasat ca sa „impingi" ecranul.
+ */
+export const VITEZA_ARUNCARE = 0.4
+
+/** px minimi pentru o aruncare — sub atat e o atingere care a tremurat. */
+export const PRAG_ARUNCARE = 18
+
 /** px miscati inainte de apasarea lunga = utilizatorul deruleaza, nu apuca. */
 export const PRAG_ANULARE = 10
 
