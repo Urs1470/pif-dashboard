@@ -278,6 +278,32 @@ def ruleaza_repornire(page, baza):
              'la %sms, %d cadre de asteptare' % (r['c'], r['n']))
 
 
+
+# ================== COMUTAREA SFEREI NU E O SCHIMBARE DE PAGINA ==================
+#
+# Ion, 2026-08-15: „la comutatia dintre taskuri personale si lucru parca se
+# reincarca pagina si se vede asta." Se vedea fiindca asa era: sfera traieste in
+# interogare, comutatorul cheama `navigate`, iar `navigate` pornea o View
+# Transition pe RADACINA — tot ecranul, antet inclusiv, pentru o filtrare care
+# nu cere nicio cerere. De la „drumul lat" tot ecranul si aluneca 30px.
+#
+# Contractul: cand CALEA nu se schimba, tranzitia de radacina nu se joaca.
+# Pagina isi are propria miscare pentru starea ei.
+def ruleaza_sfere(page, baza):
+    page.goto(baza + '/#/tasks', wait_until='load')
+    page.wait_for_timeout(1500)
+    page.evaluate("window.__anim = []")
+    tinta = page.locator('.seg').last
+    tinta.click()
+    page.wait_for_timeout(900)
+    an = page.evaluate("window.__anim.slice()")
+    radacina = [a for a in an if 'vt-pagina' in a]
+    nota(not radacina, 'sfera: nicio tranzitie de radacina',
+         'gasite: %s' % sorted(set(radacina)) if radacina else '')
+    nota('sfera=personal' in page.evaluate("location.hash"), 'sfera: a comutat',
+         page.evaluate("location.hash"))
+
+
 # ----------------------------------------------------------------------- probe
 def ruleaza(page, baza, pid):
     out('\n--- 1. prima incarcare: pagina SOSESTE ---')
@@ -413,11 +439,14 @@ def ruleaza(page, baza, pid):
     out('\n--- 8. fiecare tab, cu LATENTA si masurat pe CADRE ---')
     ruleaza_taburi(page, baza)
 
-    out('\n--- 9. a DOUA deschidere a aplicatiei nu asteapta nimic ---')
+    out('\n--- 9. comutarea sferei nu e o schimbare de pagina ---')
+    ruleaza_sfere(page, baza)
+
+    out('\n--- 10. a DOUA deschidere a aplicatiei nu asteapta nimic ---')
     ruleaza_repornire(page, baza)
 
     if pid:
-        out('\n--- 10. pagina de proiect se deschide cu ce stie ---')
+        out('\n--- 11. pagina de proiect se deschide cu ce stie ---')
         page.goto(baza + '/#/projects', wait_until='networkidle')
         page.wait_for_timeout(600)
         # Cardul e un `role="button"`, nu un link — de aceea are nevoie de

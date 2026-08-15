@@ -814,13 +814,76 @@
   let listaSens = $state(0)
   $effect(() => {
     const tinta = sferaActiva + ':' + showArchive
-    if (!globalTasks.loading && listaCheie !== tinta) {
-      // Prima asezare nu e o comutare: pagina soseste prin `.ruta-in`, nu
-      // aluneca dintr-o parte (sens 0 = `alunecare` nu face nimic).
-      listaSens = listaCheie === '' ? 0 : (showArchive ? 1 : (sferaActiva === 'personal' ? 1 : -1))
-      listaCheie = tinta
-    }
+    if (listaCheie === tinta) return
+    // SFERA NU ASTEAPTA RETEAUA, ARHIVA DA.
+    //
+    // Garda pe `loading` a fost scrisa cand comutarea sferei CEREA date. Nu mai
+    // cere: lista vine „toate" dintr-un foc, iar sfera e o filtrare in memorie.
+    // Ramasa peste tot, ea intarzia comutarea cu cat tinea o improspatare in
+    // fundal — apasai „Personal" si nu se intampla nimic o zecime de secunda,
+    // exact felul de intarziere care se citeste ca „aplicatia s-a blocat".
+    // Arhiva chiar cere o cerere (`arhiva` e in dependintele fetch-ului), deci
+    // ea asteapta mai departe.
+    const doarSfera = listaCheie.split(':')[1] === String(showArchive)
+    if (!doarSfera && globalTasks.loading) return
+    // Prima asezare nu e o comutare: pagina soseste prin `.ruta-in`, nu
+    // aluneca dintr-o parte (sens 0 = `alunecare` nu face nimic).
+    listaSens = listaCheie === '' ? 0 : (showArchive ? 1 : (sferaActiva === 'personal' ? 1 : -1))
+    listaCheie = tinta
   })
+
+  // ===== COMUTAREA SFEREI PRIN GLISARE (telefon) =====
+  //
+  // Ion: „pe Android vreau prin swipe sa pot face comutatia."
+  //
+  // Gestul sta pe BARA DE UNELTE, nu pe lista, si asta e o alegere, nu o
+  // scurtatura. Pe lista, orizontala e deja luata: fiecare rand are propriul
+  // gest (dreapta = bifat, stanga = planifica), iar doua intelesuri pe aceeasi
+  // directie si aceeasi suprafata inseamna ca uneori obtii altceva decat ai
+  // vrut. Regula scrisa in aplicatie de la gesturile de rand incoace e ca o
+  // ratare n-are voie sa produca ALTCEVA — deci sfera se comuta glisand exact
+  // obiectul care arata cele doua sfere.
+  //
+  // Verticala castiga la egalitate: pe un ecran care deruleaza, derularea e
+  // gestul implicit, iar `touch-action: pan-y` lasa browserul s-o duca.
+  const PRAG_AXA = 8      // pana aici nu stim ce fel de gest e
+  const PRAG_SFERA = 45   // cat trebuie parcurs ca sa comute
+  function glisareSfere(node) {
+    let x0 = 0, y0 = 0, urmarim = false, decis = false
+    function jos(e) {
+      if (!ecran.telefon || e.pointerType === 'mouse') return
+      x0 = e.clientX; y0 = e.clientY; urmarim = true; decis = false
+    }
+    function misca(e) {
+      if (!urmarim || decis) return
+      const dx = e.clientX - x0, dy = e.clientY - y0
+      if (Math.abs(dx) < PRAG_AXA && Math.abs(dy) < PRAG_AXA) return
+      decis = true
+      if (Math.abs(dy) >= Math.abs(dx)) urmarim = false   // deruleaza, nu comuta
+    }
+    function sus(e) {
+      if (!urmarim) return
+      urmarim = false
+      const dx = e.clientX - x0
+      if (Math.abs(dx) < PRAG_SFERA) return
+      // „Muncă" e in stanga, „Personal" in dreapta. Glisezi spre STANGA ca sa
+      // aduci ce e in dreapta — acelasi sens cu care lista aluneca dupa aceea.
+      const tinta = dx < 0 ? 'personal' : 'munca'
+      if (tinta === sferaActiva) return
+      navigate(tinta === 'personal' ? '/tasks?sfera=personal' : '/tasks')
+    }
+    node.addEventListener('pointerdown', jos, { passive: true })
+    node.addEventListener('pointermove', misca, { passive: true })
+    node.addEventListener('pointerup', sus, { passive: true })
+    node.addEventListener('pointercancel', () => { urmarim = false }, { passive: true })
+    return {
+      destroy() {
+        node.removeEventListener('pointerdown', jos)
+        node.removeEventListener('pointermove', misca)
+        node.removeEventListener('pointerup', sus)
+      },
+    }
+  }
 </script>
 
 {#snippet taskDetail(t)}
@@ -975,7 +1038,7 @@
 
        Ce ramane pe rand: SFERA — care nu e un filtru, ci in ce lume esti — si
        arhiva, o destinatie rara, in haina de actiune-fantoma. -->
-  <div class="toolbar">
+  <div class="toolbar" use:glisareSfere>
     <!-- CURSORUL DE TAB — singurul elastic din aplicatie (contractul de miscare).
          Fillul activ nu mai e fondul segmentului: e un CURSOR care ALUNECA de pe
          un segment pe celalalt (220ms, --ease-spring). Raportat de Ion: „nu pare
@@ -1503,7 +1566,9 @@
      crestea de la 46 la 98px. Se citea ca o scapare de randare, nu ca o decizie.
      Acum comutatorul cedeaza latimea (`min-width: 0`), iar cele trei raman pe
      un rand pe orice telefon. */
-  .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: nowrap; }
+  /* `pan-y`: derularea verticala ramane a browserului, orizontala e a
+     gestului de comutare a sferei (vezi `glisareSfere`). */
+  .toolbar { touch-action: pan-y; display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: nowrap; }
   .toolbar .sfere { min-width: 0; }
   /* Compozitorul are DOUA randuri acum (camp + chipuri de zi), deci coloana.
      Cat timp era `flex-direction: row`, chipurile se asezau LANGA camp, ieseau
@@ -1559,7 +1624,10 @@
     width: calc(50% - 3px); border-radius: calc(var(--radius-sm) - 3px);
     background: var(--accent);
     transform: translateX(calc(var(--i, 0) * 100%));
-    transition: transform var(--dur-base) var(--ease-spring); }
+    /* ELAN, ca pastila din dock (15 august): acelasi fel de obiect — o tenta
+       care traverseaza o distanta pe care o vezi. `--ease-spring` depasea cu
+       35%, potrivit cand mana ta da elanul; aici elanul il da comutatorul. */
+    transition: transform var(--dur-arc-elan) var(--ease-arc-elan); }
   /* SFERA SE DEOSEBESTE PRIN SEMN, NU PRIN CULOARE.
      Aici era un punct violet lipit inaintea lui „Personal": o bulina decorativa
      care aducea a treia culoare pe o bara unde amberul insemna deja „activ", iar

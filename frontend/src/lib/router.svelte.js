@@ -232,6 +232,23 @@ export function navigate(path) {
   // dar are un efect care conteaza: pana la `applyPath` cererea e in zbor, deci
   // montarea paginii cade pe ea in loc sa porneasca a doua.
   preincarca(path)
+
+  // ACEEASI PAGINA, ALT FILTRU — NU E O SCHIMBARE DE PAGINA.
+  //
+  // Ion: „la comutatia dintre taskuri personale si lucru parca se reincarca
+  // pagina si se vede asta." Se vedea fiindca ASA ERA: sfera traieste in
+  // interogare (`#/tasks?sfera=personal`), comutatorul cheama `navigate`, iar
+  // `navigate` pornea o View Transition pe RADACINA — adica pe tot ecranul,
+  // antet si continut, pentru o filtrare care nu cere nicio cerere de retea.
+  // De la „drumul lat" din 15 august tot ecranul si aluneca 30px, deci reprosul
+  // a devenit imposibil de ignorat.
+  //
+  // Regula: tranzitia de radacina e a RUTEI. Cand calea nu se schimba, ce s-a
+  // schimbat e o stare din pagina, iar pagina isi are deja propria miscare
+  // pentru ea (in Taskuri: `{#key listaCheie}` cu `alunecare` directionala).
+  // Doua animatii peste aceiasi pixeli e exact ce s-a reparat pe 14 august.
+  if (cale(path) === router.path) { applyPath(path); return }
+
   if (!viewTransitionsOn()) { applyPath(path); return }
   try {
     document.startViewTransition(async () => {
