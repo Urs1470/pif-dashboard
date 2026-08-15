@@ -1128,9 +1128,11 @@
   let ceasGasite = null
   function stingeGasitele() {
     clearTimeout(ceasGasite)
-    // Sub reduced-motion nu exista miscare care sa atraga privirea, deci semnul
-    // static trebuie sa stea mai mult ca sa fie prins.
-    ceasGasite = setTimeout(() => { gasite = new Set() }, motion.reduced ? 2000 : 1400)
+    // Cat tine semnul, calculat din ce se joaca: decalajul pana dupa tranzitia de
+    // ruta (420) + a doua bataie (380) + durata inelului (1000) = 1800, plus o
+    // rasuflare. Sub reduced-motion nu exista miscare care sa atraga privirea,
+    // deci semnul static trebuie sa stea mai mult ca sa fie prins.
+    ceasGasite = setTimeout(() => { gasite = new Set() }, motion.reduced ? 3200 : 2400)
   }
   onDestroy(() => clearTimeout(ceasGasite))
 
@@ -2224,35 +2226,56 @@
      si dispare, plus banda care se aseaza.
      Doar `transform` si `opacity`: inelul e un pseudo-element propriu, ca sa nu
      animam `box-shadow`-ul benzii (care poarta deja starea — pregatire, facuta). */
+  /* Inelul TINE PLIN pe la mijloc, nu doar trece prin opacitate 1: un semn care
+     creste si se stinge fara sa se opreasca nicaieri e greu de prins din
+     periferie — masurat pe Ion, „de-abia sesizez". */
   @keyframes gasitaInel {
-    0%   { opacity: 0; transform: scale(0.94); }
-    18%  { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.12); }
+    0%   { opacity: 0; transform: scale(0.92); }
+    15%  { opacity: 1; transform: scale(1); }
+    45%  { opacity: 1; transform: scale(1.06); }
+    100% { opacity: 0; transform: scale(1.22); }
   }
   @keyframes gasitaBanda {
     0%   { transform: scale(1); }
-    30%  { transform: scale(1.035); }
+    30%  { transform: scale(1.04); }
     100% { transform: scale(1); }
   }
-  /* Se ridica peste vecine cat tine semnul: inelul depaseste banda, iar sub o
-     banda de pe randul urmator ar fi taiat pe jumatate. */
-  .banda.gasita { z-index: 4; animation: gasitaBanda var(--dur-arc) var(--ease-arc) 1; }
-  /* 900ms e SINGURA valoare din afara scarii de miscare, si are un motiv: scara
-     (90 / 220 / 280 / 420) masoara cat ii ia unui obiect sa AJUNGA undeva, iar
-     asta nu e o sosire — e un semn care trebuie sa mai stea dupa ce banda s-a
-     asezat, altfel se termina inainte ca ochiul sa fi ajuns pe el. Tine cat
-     dubla aterizarii. */
+  /* SEMNUL PORNESTE DUPA CE PAGINA A TERMINAT DE VENIT.
+     Prima versiune pornea odata cu ea, si de-aia „de-abia se sesiza": masurat pe
+     aplicatie, tranzitia de ruta tine 82 -> 500ms, iar inelul isi consuma varful
+     (opacitate 1) pe la 244ms — adica exact in cross-fade, cand ochiul urmareste
+     toata pagina schimbandu-se, nu un inel de 2px. `gasitaBanda` se termina la
+     500ms, deci se juca INTEGRAL in spatele tranzitiei: invizibila cap-coada.
+     Decalajul e `--dur-arc`, chiar tokenul cu care intra pagina noua
+     (`::view-transition-new(root)` din global.css) — deci raman sincronizate
+     daca se schimba vreodata; nu e un numar potrivit din ochi. */
+  .banda.gasita { z-index: 4;
+    animation: gasitaBanda var(--dur-arc) var(--ease-arc) var(--dur-arc) both; }
+  /* DOUA BATAI, NU UN PULS. Contractul interzice „inele care respira" — adica un
+     semn care se repeta LA NESFARSIT si cere atentie fara sa spuna cand s-a
+     terminat. Aici sunt exact doua si apoi liniste: a doua nu adauga un inteles
+     nou, ii da primeia o a doua sansa sa fie prinsa, fiindca raspunsul la „pe
+     care am apasat" merita vazut o data.
+     1000ms e in afara scarii de miscare, cu acelasi motiv scris si inainte:
+     scara (90/220/280/420) masoara cat ii ia unui obiect sa AJUNGA undeva, iar
+     asta nu e o sosire, e un semn care trebuie sa mai stea dupa ce banda s-a
+     asezat. */
+  .banda.gasita::before,
   .banda.gasita::after {
     content: ''; position: absolute; inset: -3px; border-radius: var(--radius-sm);
     box-shadow: 0 0 0 2px var(--accent); pointer-events: none;
-    animation: gasitaInel 900ms var(--ease) 1 both;
+    animation: gasitaInel 1000ms var(--ease) both;
   }
+  .banda.gasita::before { animation-delay: var(--dur-arc); }
+  .banda.gasita::after { animation-delay: calc(var(--dur-arc) + 380ms); }
   /* Fara miscare, semnul trebuie sa fie STATIC si sa stea — `stingeGasitele` ii
-     da 2s in loc de 1,4. Regula sta dupa cele de mai sus fiindca un `@media` nu
-     adauga specificitate. */
+     da mai mult timp. Regula sta dupa cele de mai sus fiindca un `@media` nu
+     adauga specificitate. Un singur inel: al doilea ar fi doar acelasi contur
+     desenat inca o data peste primul, fara nimic de spus. */
   @media (prefers-reduced-motion: reduce) {
     .banda.gasita { animation: none; }
-    .banda.gasita::after { animation: none; opacity: 1; transform: none; }
+    .banda.gasita::before { animation: none; opacity: 1; transform: none; }
+    .banda.gasita::after { display: none; }
   }
   .banda-t { display: block; font-size: var(--font-label); font-weight: var(--fw-semibold);
              line-height: var(--lh-snug); color: var(--accent-text);
