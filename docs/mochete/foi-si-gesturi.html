@@ -1,0 +1,1138 @@
+<title>Foi și gesturi pe telefon</title>
+<style>
+/* ============================================================
+   Tokenurile aplicatiei, copiate din frontend/src/styles/tokens.css.
+   Mocheta trebuie sa arate cu CULORILE si RITMUL aplicatiei reale,
+   altfel nu compari variante de foaie, compari doua palete.
+   Dark e implicit, ca in aplicatie; light e perechea din acelasi fisier.
+   ============================================================ */
+:root {
+  color-scheme: dark;
+  --bg: #121417;
+  --bg-surface: #191d21;
+  --bg-elevated: #1f242a;
+  --border: #262b31;
+  --border-strong: #343b43;
+  --text: #e9ecef;
+  --text-secondary: #9ba3ad;
+  --text-dim: #868f99;
+  --accent: #8ab2d9;
+  --accent-deep: #aecbe8;
+  --accent-subtle: #1c2733;
+  --accent-text: #0e1114;
+  --danger: #e0917f;
+  --success: #82c2a2;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4), 0 6px 16px -10px rgba(0,0,0,.6);
+  --shadow-md: 0 1px 2px rgba(0,0,0,.5), 0 14px 34px -16px rgba(0,0,0,.75);
+  --shadow-foaie: 0 -14px 40px -12px rgba(0,0,0,.6);
+  --scrim: rgba(0,0,0,.6);
+  --bg-hover: color-mix(in oklab, var(--text) 6%, var(--bg-surface));
+  --umbra-telefon: 0 2px 4px rgba(0,0,0,.5), 0 30px 60px -30px rgba(0,0,0,.9);
+  --inel-telefon: #2b3138;
+}
+:root:not([data-theme="dark"]) { }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f4f5f7;
+    --bg-surface: #ffffff;
+    --bg-elevated: #f7f8fa;
+    --border: #e6e8ec;
+    --border-strong: #d2d6dc;
+    --text: #1b1e23;
+    --text-secondary: #5a6270;
+    --text-dim: #656c78;
+    --accent: #4e7192;
+    --accent-deep: #3d5f83;
+    --accent-subtle: #ebf1f7;
+    --accent-text: #ffffff;
+    --danger: #b04a38;
+    --success: #3f7d5e;
+    --shadow-sm: 0 1px 2px rgba(20,24,31,.05), 0 4px 12px -8px rgba(20,24,31,.10);
+    --shadow-md: 0 1px 2px rgba(20,24,31,.05), 0 10px 28px -14px rgba(20,24,31,.14);
+    --shadow-foaie: 0 -14px 40px -12px rgba(20,24,31,.16);
+    --scrim: rgba(20,24,31,.32);
+    --bg-hover: color-mix(in oklab, var(--text) 6%, var(--bg-surface));
+    --umbra-telefon: 0 2px 4px rgba(20,24,31,.06), 0 30px 60px -32px rgba(20,24,31,.35);
+    --inel-telefon: #d2d6dc;
+  }
+}
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f5f7;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f7f8fa;
+  --border: #e6e8ec;
+  --border-strong: #d2d6dc;
+  --text: #1b1e23;
+  --text-secondary: #5a6270;
+  --text-dim: #656c78;
+  --accent: #4e7192;
+  --accent-deep: #3d5f83;
+  --accent-subtle: #ebf1f7;
+  --accent-text: #ffffff;
+  --danger: #b04a38;
+  --success: #3f7d5e;
+  --shadow-sm: 0 1px 2px rgba(20,24,31,.05), 0 4px 12px -8px rgba(20,24,31,.10);
+  --shadow-md: 0 1px 2px rgba(20,24,31,.05), 0 10px 28px -14px rgba(20,24,31,.14);
+  --shadow-foaie: 0 -14px 40px -12px rgba(20,24,31,.16);
+  --scrim: rgba(20,24,31,.32);
+  --bg-hover: color-mix(in oklab, var(--text) 6%, var(--bg-surface));
+  --umbra-telefon: 0 2px 4px rgba(20,24,31,.06), 0 30px 60px -32px rgba(20,24,31,.35);
+  --inel-telefon: #d2d6dc;
+}
+
+:root {
+  --font-sans: 'Gabarito', system-ui, -apple-system, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'Fira Code', monospace;
+  --radius-xs: 8px; --radius-sm: 10px; --radius-md: 14px; --radius-lg: 20px; --radius-full: 9999px;
+  --dur-press: .09s; --dur-base: .22s; --dur-slow: .28s; --dur-fast: .12s;
+  --ease: cubic-bezier(.32,.72,.28,1);
+  --ease-spring: cubic-bezier(.34,1.35,.42,1);
+  --dur-arc: .42s;
+  --ease-arc: linear(0,.0173,.0621,.1254,.2001,.2804,.3623,.4426,.5191,.5903,.6554,.7139,.7657,.8109,.8499,.8831,.911,.9341,.953,.9683,.9804,.9898,.997,1.0023,1.006,1.0085,1.0101,1.0109,1.0111,1.0109,1.0104,1.0097,1);
+  --press-scale: .965;
+  --tap-min: 44px;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.invelis { max-width: 1180px; margin: 0 auto; padding: 40px 20px 96px; }
+
+/* ---- Antet ---- */
+.cap { display: flex; flex-direction: column; gap: 14px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+.cap-eticheta {
+  font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--text-dim);
+}
+h1 {
+  margin: 0; font-size: clamp(28px, 5vw, 42px); font-weight: 600;
+  letter-spacing: -.02em; line-height: 1.1; text-wrap: balance; max-width: 18ch;
+}
+.cap-sub { margin: 0; max-width: 62ch; color: var(--text-secondary); font-size: 17px; }
+.cap-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.jeton {
+  font-family: var(--font-mono); font-size: 12px; color: var(--text-dim);
+  background: var(--bg-elevated); border-radius: var(--radius-full); padding: 4px 11px;
+}
+
+/* ---- Sectiuni ---- */
+section { padding-top: 56px; }
+.sec-cap { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.sec-nr {
+  font-family: var(--font-mono); font-size: 12px; color: var(--accent);
+  letter-spacing: .08em;
+}
+h2 { margin: 0; font-size: clamp(21px, 3vw, 27px); font-weight: 600; letter-spacing: -.015em; line-height: 1.2; text-wrap: balance; }
+.sec-cap p { margin: 0; max-width: 68ch; color: var(--text-secondary); }
+
+h3 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; text-wrap: balance; }
+
+/* ---- Randul: telefon + explicatie ---- */
+.rand {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 36px;
+  align-items: start; padding: 30px 0; border-top: 1px solid var(--border);
+}
+.rand:first-of-type { border-top: none; }
+@media (max-width: 780px) {
+  .rand { grid-template-columns: 1fr; gap: 22px; justify-items: center; }
+  .rand-text { max-width: 100%; }
+}
+.rand-text { display: flex; flex-direction: column; gap: 12px; max-width: 56ch; }
+.rand-text p { margin: 0; color: var(--text-secondary); }
+.rand-text p strong { color: var(--text); font-weight: 600; }
+.stare {
+  display: inline-flex; align-items: center; gap: 7px; align-self: flex-start;
+  font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: var(--radius-full);
+}
+.stare::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.stare.azi { color: var(--text-dim); background: var(--bg-elevated); }
+.stare.nou { color: var(--accent-deep); background: var(--accent-subtle); }
+[data-theme="light"] .stare.nou, :root:not([data-theme="dark"]) .stare.nou { color: var(--accent-deep); }
+
+.gest { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; padding-left: 0; list-style: none; }
+.gest li { display: flex; gap: 10px; font-size: 14px; color: var(--text-secondary); }
+.gest li span:first-child {
+  flex: 0 0 auto; font-family: var(--font-mono); font-size: 11px; color: var(--accent);
+  background: var(--accent-subtle); border-radius: var(--radius-xs); padding: 1px 7px;
+  align-self: flex-start; margin-top: 2px; white-space: nowrap;
+}
+
+/* ---- Telefonul ---- */
+.telefon {
+  position: relative; width: min(304px, 80vw); aspect-ratio: 304 / 620;
+  background: var(--bg); border-radius: 30px; overflow: hidden;
+  box-shadow: var(--umbra-telefon), 0 0 0 1px var(--inel-telefon), 0 0 0 7px var(--bg-surface), 0 0 0 8px var(--inel-telefon);
+  isolation: isolate; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+}
+.bara-stare {
+  position: absolute; inset: 0 0 auto 0; height: 30px; z-index: 3; pointer-events: none;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+}
+.ecran { position: absolute; inset: 30px 0 0 0; display: flex; flex-direction: column; }
+.ecran-cap { padding: 8px 16px 12px; display: flex; align-items: baseline; justify-content: space-between; }
+.ecran-titlu { font-size: 24px; font-weight: 600; letter-spacing: -.02em; }
+.ecran-numar { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+.lista { flex: 1; overflow: hidden; padding: 0 12px; display: flex; flex-direction: column; gap: 2px; }
+.rnd { display: flex; align-items: center; gap: 11px; padding: 11px 8px; border-radius: var(--radius-sm); }
+.bifa { flex: 0 0 auto; width: 19px; height: 19px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--border-strong); }
+.rnd.tare .bifa { box-shadow: inset 0 0 0 1.5px var(--danger); }
+.rnd-txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.rnd-t { font-size: 15px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rnd-m { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+.rnd.tare .rnd-m { color: var(--danger); }
+.doc-bara {
+  position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%);
+  width: 108px; height: 4px; border-radius: 99px; background: var(--border-strong); opacity: .7; z-index: 4; pointer-events: none;
+}
+
+/* Dock-ul de jos, ca in aplicatie — coboara cand exista o foaie. */
+.doc {
+  position: absolute; left: 10px; right: 10px; bottom: 14px; z-index: 2;
+  height: 54px; border-radius: var(--radius-lg); background: var(--bg-surface);
+  box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: space-around;
+  transition: transform var(--dur-slow) var(--ease), opacity var(--dur-base) var(--ease);
+}
+.telefon.are-foaie .doc { transform: translateY(76px); opacity: 0; }
+.doc-i { width: 20px; height: 20px; border-radius: 6px; background: var(--border-strong); }
+.doc-i.on { background: var(--accent); }
+
+/* Butonul care porneste demonstratia */
+.pornire {
+  position: absolute; right: 14px; bottom: 82px; z-index: 2;
+  height: 46px; padding: 0 18px; border: none; border-radius: var(--radius-full);
+  background: var(--accent); color: var(--accent-text);
+  font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--dur-press) var(--ease), opacity var(--dur-base) var(--ease);
+}
+.pornire:active { transform: scale(var(--press-scale)); }
+.telefon.are-foaie .pornire { opacity: 0; pointer-events: none; }
+
+/* ---- Voalul si foaia ---- */
+.voal {
+  position: absolute; inset: 0; z-index: 5; background: var(--scrim);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease);
+}
+.voal.pe { opacity: 1; pointer-events: auto; }
+.foaie {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6;
+  background: var(--bg-surface); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-foaie); display: flex; flex-direction: column;
+  translate: 0 100%; will-change: translate; touch-action: none;
+  overflow: hidden;
+}
+.foaie.animata { transition: translate var(--dur-slow) var(--ease-spring); }
+.foaie.plina { border-radius: 0; }
+.maner-zona { flex: 0 0 auto; padding: 8px 14px 2px; display: flex; flex-direction: column; align-items: center; cursor: grab; }
+.maner { width: 38px; height: 4px; border-radius: 99px; background: var(--border-strong); transition: background-color var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease); }
+.foaie.se-trage .maner { background: var(--accent); width: 52px; }
+.f-cap { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 16px 0; min-height: 30px; }
+.f-titlu { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-dim); }
+.f-x {
+  width: 36px; height: 36px; margin-right: -8px; border: none; background: none; cursor: pointer;
+  color: var(--text-dim); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm);
+  font-size: 19px; line-height: 1; font-family: inherit;
+}
+.f-x:active { transform: scale(var(--press-scale)); }
+/* `pan-y`, nu implicitul: `.foaie` are `touch-action: none` (gestul e al nostru),
+   iar fara asta corpul foii n-ar mai derula deloc pe telefon. Aceeasi impartire
+   ca in aplicatie: gestul pe antet, derularea in corp. */
+.f-corp { flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; padding: 10px 16px 16px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
+.f-corp::-webkit-scrollbar { width: 0; }
+
+/* piese de continut in foaie */
+.camp { display: flex; flex-direction: column; gap: 5px; }
+.camp-et { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-dim); }
+.camp-in {
+  min-height: 46px; display: flex; align-items: center; padding: 0 12px;
+  background: var(--bg-elevated); border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--border); font-size: 15px; color: var(--text);
+}
+.camp-in.gol { color: var(--text-dim); }
+.chipuri { display: flex; gap: 7px; flex-wrap: wrap; }
+.chip {
+  padding: 8px 13px; border-radius: var(--radius-xs); background: var(--bg-elevated);
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+}
+.chip.on { background: var(--accent-subtle); color: var(--accent-deep); }
+.f-subsol { flex: 0 0 auto; padding: 10px 16px 18px; display: flex; gap: 8px; }
+.f-b {
+  flex: 1; min-height: 48px; border: none; border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform var(--dur-press) var(--ease);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.f-b:active { transform: scale(var(--press-scale)); }
+.f-b.plin { background: var(--accent); color: var(--accent-text); }
+.f-b.rau { background: var(--danger); color: var(--accent-text); }
+.f-b.gol { background: var(--bg-elevated); color: var(--text-secondary); }
+.f-text { font-size: 15px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+.f-intrebare { font-size: 21px; font-weight: 600; letter-spacing: -.015em; line-height: 1.2; margin: 0; color: var(--text); text-wrap: balance; }
+.optiuni { display: flex; flex-direction: column; gap: 2px; margin: -4px -6px; }
+.opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 50px; padding: 0 12px; border-radius: var(--radius-sm);
+  font-size: 16px; color: var(--text); cursor: pointer; background: none; border: none;
+  font-family: inherit; text-align: left; width: 100%;
+}
+.opt:active { background: var(--bg-hover); }
+.opt.sel { background: var(--accent-subtle); color: var(--accent-deep); font-weight: 600; }
+.opt-semn { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+.zi-rand { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--border); }
+.zi-rand:first-child { border-top: none; }
+.zi-ora { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); flex: 0 0 42px; padding-top: 2px; }
+.zi-t { font-size: 15px; line-height: 1.35; }
+.zi-m { font-size: 13px; color: var(--text-dim); }
+.banda { border-radius: var(--radius-xs); padding: 9px 11px; background: var(--accent-subtle); color: var(--accent-deep); font-size: 13px; font-weight: 600; }
+.doc-linii { display: flex; flex-direction: column; gap: 9px; }
+.doc-linii i { display: block; height: 9px; border-radius: 4px; background: var(--bg-elevated); }
+
+/* Cat de sus e foaia, scris. O bara subtire pe margine se citea ca un artefact
+   de randare — cifra spune acelasi lucru fara sa fie confundata cu altceva.
+   Sta in zona manerului, unde e oricum degetul, si e doar pentru mocheta:
+   in aplicatie treapta se vede din pozitia foii, nu dintr-o eticheta. */
+.maner-zona { position: relative; }
+.treapta-et {
+  position: absolute; right: 14px; top: 6px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em;
+  color: var(--text-dim); background: var(--bg-elevated);
+  border-radius: var(--radius-full); padding: 2px 8px;
+  transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.foaie.se-trage .treapta-et { color: var(--accent-deep); background: var(--accent-subtle); }
+
+/* ---- Constatari ---- */
+.constatari { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: 14px; }
+.fisa {
+  background: var(--bg-surface); border-radius: var(--radius-md); padding: 18px;
+  display: flex; flex-direction: column; gap: 8px; box-shadow: var(--shadow-sm);
+}
+.fisa-cap { display: flex; align-items: baseline; gap: 9px; }
+.fisa-nr { font-family: var(--font-mono); font-size: 12px; color: var(--danger); flex: 0 0 auto; }
+.fisa h4 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
+.fisa p { margin: 0; font-size: 14px; color: var(--text-secondary); }
+.ref { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); word-break: break-all; }
+.fisa.bun .fisa-nr { color: var(--success); }
+
+/* ---- Tabel ---- */
+.masa-invelis { overflow-x: auto; border-radius: var(--radius-md); background: var(--bg-surface); box-shadow: var(--shadow-sm); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14px; }
+th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--text-dim); }
+tr:last-child td { border-bottom: none; }
+td code, .cod { font-family: var(--font-mono); font-size: 12.5px; color: var(--accent-deep); }
+:root:not([data-theme="dark"]) td code, :root:not([data-theme="dark"]) .cod { color: var(--accent-deep); }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+
+/* ---- Lista de verdicte ---- */
+.verdicte { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: v; }
+.verdicte li {
+  display: grid; grid-template-columns: auto minmax(0,1fr); gap: 14px; align-items: start;
+  background: var(--bg-surface); border-radius: var(--radius-md); padding: 16px 18px; box-shadow: var(--shadow-sm);
+}
+.verdicte li::before {
+  counter-increment: v; content: counter(v);
+  font-family: var(--font-mono); font-size: 13px; color: var(--accent);
+  background: var(--accent-subtle); border-radius: var(--radius-xs); padding: 2px 9px;
+}
+.verdicte b { display: block; font-weight: 600; margin-bottom: 3px; }
+.verdicte span { color: var(--text-secondary); font-size: 15px; }
+
+.nota { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-dim); max-width: 70ch; }
+
+@media (prefers-reduced-motion: reduce) {
+  .foaie.animata { transition-duration: .12s; transition-timing-function: var(--ease); }
+  .voal, .doc, .pornire { transition-duration: .12s; }
+}
+</style>
+
+<div class="invelis">
+
+  <header class="cap">
+    <div class="cap-eticheta">PIF Dashboard · recenzie de interfață</div>
+    <h1>Foi și gesturi pe telefon</h1>
+    <p class="cap-sub">
+      Ce forme de foaie are aplicația azi, ce forme îi lipsesc, și cât de standardizate
+      sunt de fapt animațiile și atingerea. Fiecare telefon de mai jos <strong>funcționează</strong>:
+      deschide-l și trage de foaie cu degetul. Așa se compară, nu din poză.
+    </p>
+    <div class="cap-meta">
+      <span class="jeton">18 utilizări de &lt;Modal&gt;</span>
+      <span class="jeton">7 nume de mărime</span>
+      <span class="jeton">3 forme reale pe telefon</span>
+      <span class="jeton">0 gesturi cu viteză</span>
+    </div>
+  </header>
+
+  <!-- ================= 1. CE AI AZI ================= -->
+  <section>
+    <div class="sec-cap">
+      <div class="sec-nr">01</div>
+      <h2>Ce ai azi</h2>
+      <p>
+        <code class="cod">Modal.svelte</code> acceptă șapte mărimi — <code class="cod">sm md lg xl wide zoom panou</code> —
+        plus două comutatoare, <code class="cod">inalt</code> și <code class="cod">iesireGest</code>.
+        Pe telefon însă toate cele șapte mărimi cad în aceeași regulă
+        (<code class="cod">max-width: 100%</code>), deci vocabularul e desktop: pe telefon rămân
+        <strong>trei forme</strong>, iar două dintre ele sunt folosite câte o singură dată în toată aplicația.
+      </p>
+    </div>
+
+    <div class="rand">
+      <div class="telefon" data-demo="azi-standard"></div>
+      <div class="rand-text">
+        <span class="stare azi">Azi · 16 din 18 modale</span>
+        <h3>Foaia standard</h3>
+        <p>
+          Înălțimea vine din conținut, plafonată la 92% din ecran. Tragi de antet în jos și, peste
+          28% din înălțimea ei, se închide. Tragi în sus peste 8% și se întinde la ecran plin.
+        </p>
+        <p>
+          <strong>Problema se simte la a doua tragere:</strong> odată întinsă, nu mai poate fi adusă
+          înapoi. Trasul în jos înseamnă acum doar „închide". Ai o singură ușă și niciun drum de întoarcere —
+          exact reproșul de la care a pornit gestul („nu poți s-o tragi înapoi"), rezolvat doar pe jumătate.
+        </p>
+        <ul class="gest">
+          <li><span>trage ↓</span><span>peste 28% → închide</span></li>
+          <li><span>trage ↑</span><span>peste 8% → ecran plin, ireversibil</span></li>
+          <li><span>lipsă</span><span>întoarcerea la înălțimea normală</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rand">
+      <div class="telefon" data-demo="azi-inalt"></div>
+      <div class="rand-text">
+        <span class="stare azi">Azi · 1 utilizare (Calendar)</span>
+        <h3>Foaia înaltă, fără X</h3>
+        <p>
+          <code class="cod">inalt</code> + <code class="cod">iesireGest</code>: se deschide direct pe tot
+          ecranul, nu are buton de închidere, iar gestul de coborâre funcționează
+          <strong>din tot conținutul</strong>, nu doar din antet — cu o condiție bună: lista să fie
+          la capătul de sus, altfel gestul în jos înseamnă „derulează înapoi".
+        </p>
+        <p>
+          E cea mai bine gândită foaie din aplicație. Și e folosită într-un singur loc: panoul zilei
+          din Calendar. Foaia taskului, care se deschide de zece ori mai des, n-o are.
+        </p>
+        <ul class="gest">
+          <li><span>trage ↓</span><span>din orice punct al conținutului</span></li>
+          <li><span>Android</span><span>butonul „înapoi" ajunge aici ca Escape</span></li>
+          <li><span>lipsă</span><span>o treaptă intermediară între plin și închis</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rand">
+      <div class="telefon" data-demo="azi-doc"></div>
+      <div class="rand-text">
+        <span class="stare azi">Azi · 1 utilizare (editor)</span>
+        <h3>Documentul</h3>
+        <p>
+          <code class="cod">size="doc"</code>: ecran plin, fără colțuri rotunjite, fără umbră, corpul
+          nu derulează — pagina dinăuntru își gestionează singură scroll-ul. Titlul e coborât la
+          micro-etichetă, fiindcă repetă oricum taskul din care ai venit.
+        </p>
+        <p>
+          Corect ca formă. Dar <strong>nu are gest</strong>: singura ieșire e X-ul din colțul de sus,
+          adică fix locul de pe ecran la care degetul mare nu ajunge fără să muți mâna.
+        </p>
+        <ul class="gest">
+          <li><span>ieșire</span><span>doar X, în colțul de neatins</span></li>
+          <li><span>lipsă</span><span>coborârea din antet, ca la celelalte foi</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2. CE LIPSESTE ================= -->
+  <section>
+    <div class="sec-cap">
+      <div class="sec-nr">02</div>
+      <h2>Ce lipsește foii</h2>
+      <p>
+        Nu sunt scăpări de execuție — codul e scris cu grijă și fiecare decizie are motivul lângă ea.
+        Sunt lucruri care n-au fost încă cerute, și care despart o foaie bună de una care se simte nativă.
+      </p>
+    </div>
+
+    <div class="constatari">
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">01</span><h4>Nicio treaptă intermediară</h4></div>
+        <p>Foaia are două stări: cât conținutul și tot ecranul. Trecerea e un prag, nu o poziție pe care o alegi. O foaie de task ar trebui să stea la jumătate cât citești lista din spate, și să urce doar când scrii.</p>
+        <div class="ref">Modal.svelte:280 · PRAG_INTINDE</div>
+      </div>
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">02</span><h4>Închiderea nu ascultă viteza</h4></div>
+        <p>Pragul e pur și simplu distanța: 28% din înălțime. O aruncare scurtă și rapidă în jos — gestul natural de „pleacă" — nu închide nimic, fiindcă degetul n-a parcurs destul. Niciun gest din aplicație nu măsoară viteza.</p>
+        <div class="ref">gesturi.js:22 · glisare.js:219</div>
+      </div>
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">03</span><h4>Voalul nu urmărește degetul</h4></div>
+        <p>Cât tragi foaia în jos, voalul rămâne la aceeași opacitate până în ultima clipă. Nu-ți spune cât de aproape ești de a pierde ce ai deschis, deci gestul nu e reversibil cu ochii.</p>
+        <div class="ref">Modal.svelte:647 · .backdrop.varf</div>
+      </div>
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">04</span><h4>Capătul de sus e un zid</h4></div>
+        <p>Trasul în sus peste limită se oprește sec (<code class="cod">Math.max</code>). Un capăt care nu cedează deloc se citește ca o interfață blocată; unul care cedează puțin și revine spune „aici e capătul".</p>
+        <div class="ref">Modal.svelte:280</div>
+      </div>
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">05</span><h4>Meniurile n-au primit tratamentul</h4></div>
+        <p><code class="cod">DatePicker</code> devine foaie pe telefon — bine. Meniul de sortare din Proiecte rămâne un dropdown de 150px cu rânduri de 30px, agățat de colț. Aceeași aplicație, două idei despre ce e un meniu.</p>
+        <div class="ref">Projects.svelte:448 · .sort-menu</div>
+      </div>
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">06</span><h4>Foile stivuite n-au adâncime</h4></div>
+        <p>Stiva de niveluri există și e corectă (Escape știe pe cine închide). Dar foaia de dedesubt rămâne la aceeași mărime: nu se vede că e un teanc, deci nu se vede nici că mai ai un pas de făcut înapoi.</p>
+        <div class="ref">Modal.svelte:26 · stiva</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3. VARIANTE ================= -->
+  <section>
+    <div class="sec-cap">
+      <div class="sec-nr">03</div>
+      <h2>Variantele</h2>
+      <p>
+        Cinci forme care ar acoperi tot ce deschide azi aplicația, plus lucrurile pe care nu le poate
+        deschide încă. Toate sunt aceeași componentă cu altă configurație — nu cinci componente noi.
+        Trage de fiecare.
+      </p>
+    </div>
+
+    <div class="rand">
+      <div class="telefon" data-demo="detente"></div>
+      <div class="rand-text">
+        <span class="stare nou">Propunere · înlocuiește foaia standard</span>
+        <h3>Foaia cu trepte</h3>
+        <p>
+          Trei poziții — jumătate, aproape tot, tot — și <strong>drumul e continuu în ambele sensuri</strong>.
+          Nu mai există prag ireversibil: unde dai drumul, acolo se așază, la cea mai apropiată treaptă.
+        </p>
+        <p>
+          Aruncarea contează: o mișcare rapidă în jos închide chiar de sus, fiindcă se calculează unde
+          <em>ar ajunge</em> degetul, nu unde s-a oprit. Voalul se subțiază pe măsură ce cobori, deci
+          vezi cât mai ai până pierzi foaia și te poți răzgândi.
+        </p>
+        <ul class="gest">
+          <li><span>trepte</span><span>50% · 88% · 100%</span></li>
+          <li><span>viteză</span><span>proiecție 100 ms, ca la iOS</span></li>
+          <li><span>voal</span><span>opacitatea urmărește poziția</span></li>
+          <li><span>capăt</span><span>cedează 30 px și revine cu arc</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rand">
+      <div class="telefon" data-demo="strans"></div>
+      <div class="rand-text">
+        <span class="stare nou">Propunere · pentru confirmări și formulare scurte</span>
+        <h3>Foaia strânsă pe conținut</h3>
+        <p>
+          Ocupă exact cât are de spus și nu se întinde deloc. O confirmare de ștergere nu are trepte —
+          are două butoane și o întrebare. Orice gest de întindere pe ea ar promite un conținut care nu există.
+        </p>
+        <p>
+          Ordinea butoanelor rămâne cea de azi și e corectă: distructivul sus, „Renunță" jos, sub degetul
+          mare — se pierde mai puțin dintr-o apăsare greșită. <strong>Asta funcționează deja bine în aplicație</strong>;
+          varianta o face explicită, ca foaia să nu mai moștenească gesturi care n-au ce face pe ea.
+        </p>
+        <ul class="gest">
+          <li><span>trage ↓</span><span>închide (prag mic, e o foaie scundă)</span></li>
+          <li><span>trage ↑</span><span>nimic — nu promite ce n-are</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rand">
+      <div class="telefon" data-demo="actiuni"></div>
+      <div class="rand-text">
+        <span class="stare nou">Propunere · înlocuiește dropdown-urile de pe telefon</span>
+        <h3>Foaia de acțiuni</h3>
+        <p>
+          Meniul de sortare, meniul din antet, orice listă scurtă de alegeri: pe telefon devin foaie,
+          cu rânduri de 50px în loc de 30. Nu e o formă nouă — e foaia strânsă, cu o listă înăuntru.
+        </p>
+        <p>
+          Câștigul nu e estetic. Un dropdown agățat de colțul din dreapta sus are ținte de jumătate din
+          <code class="cod">--tap-min</code> și stă exact acolo unde degetul acoperă ce citește.
+        </p>
+        <ul class="gest">
+          <li><span>rânduri</span><span>50 px, alegerea curentă marcată</span></li>
+          <li><span>ieșire</span><span>voal, gest, sau alegerea în sine</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rand">
+      <div class="telefon" data-demo="plina"></div>
+      <div class="rand-text">
+        <span class="stare nou">Propunere · pentru editor și pentru foaia zilei</span>
+        <h3>Pagina completă, cu gest</h3>
+        <p>
+          Ce e azi <code class="cod">doc</code>, plus ce lipsea: <strong>se coboară din antet</strong>.
+          Un document ocupă tot ecranul, deci n-are voal de atins și n-are margine pe care s-o apuci —
+          rămâne doar X-ul din colț, adică drumul cel mai lung pentru degetul mare.
+        </p>
+        <p>
+          Antetul devine suprafață de tragere, ca la orice altă foaie. X-ul rămâne, pentru tastatură și
+          pentru desktop; pe telefon nu mai e singura ieșire.
+        </p>
+        <ul class="gest">
+          <li><span>trage ↓</span><span>din antet → închide</span></li>
+          <li><span>rezervă</span><span>X și butonul „înapoi" de pe Android</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rand">
+      <div class="telefon" data-demo="teanc"></div>
+      <div class="rand-text">
+        <span class="stare nou">Propunere · foaie peste foaie</span>
+        <h3>Teancul cu adâncime</h3>
+        <p>
+          Când o foaie deschide altă foaie — taskul care deschide „Alege ziua", perioada care cere o
+          confirmare — cea de dedesubt <strong>se retrage puțin</strong>: se micșorează și își rotunjește
+          colțurile de sus.
+        </p>
+        <p>
+          Nu e decor. E singurul semn că mai ai un pas de făcut înapoi înainte să te întorci în listă,
+          iar fără el a doua foaie arată exact ca prima și nu știi câte închizi.
+        </p>
+        <ul class="gest">
+          <li><span>a doua foaie</span><span>prima coboară 12 px și scade la 94%</span></li>
+          <li><span>voal</span><span>un singur strat, nu două suprapuse</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 4. ANIMATIE ================= -->
+  <section>
+    <div class="sec-cap">
+      <div class="sec-nr">04</div>
+      <h2>Animația, la nivel de aplicație</h2>
+      <p>
+        Aici răspunsul e mai bun decât te-ai aștepta. Sistemul de mișcare e printre cele mai
+        disciplinate lucruri din tot codul: durate numărate, curbe cu o singură definiție, și fiecare
+        excepție scrisă în comentariu, cu motivul ei.
+      </p>
+    </div>
+
+    <div class="masa-invelis">
+      <table>
+        <thead>
+          <tr><th>Ce</th><th>Valoare</th><th>Unde se folosește</th><th>Stare</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>--dur-press</code></td><td class="num">90 ms</td><td>apăsarea, scalare la 0,965</td><td>coerent</td></tr>
+          <tr><td><code>--dur-base</code></td><td class="num">220 ms</td><td>element: rând, chip, toast</td><td>coerent</td></tr>
+          <tr><td><code>--dur-slow</code></td><td class="num">280 ms</td><td>suprafață: foaie, panou</td><td>coerent</td></tr>
+          <tr><td><code>--dur-fast</code></td><td class="num">120 ms</td><td>vopsea: hover, culoare — nu mișcare</td><td>coerent</td></tr>
+          <tr><td><code>--dur-arc</code></td><td class="num">420 ms</td><td>obiect care sosește sau aterizează</td><td>coerent</td></tr>
+          <tr><td><code>DUR_ZBOR</code></td><td class="num">130 ms</td><td>rândul bifat care zboară afară</td><td>excepție motivată</td></tr>
+          <tr><td><code>alunecare</code></td><td class="num">240 ms</td><td>schimbarea lunii, direcțional</td><td>excepție motivată</td></tr>
+          <tr><td><code>panou</code></td><td class="num">200 ms</td><td>panoul lateral de desktop</td><td>excepție motivată</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="constatari" style="margin-top:20px">
+      <div class="fisa bun">
+        <div class="fisa-cap"><span class="fisa-nr">✓</span><h4>Curbele au o singură sursă</h4></div>
+        <p>Aceleași patru numere generează și funcția de easing pentru tranzițiile Svelte, și șirul <code class="cod">cubic-bezier()</code> pentru CSS, și <code class="cod">linear()</code> pentru WAAPI. Nu există „două arcuri ușor diferite după cine desenează mișcarea".</p>
+        <div class="ref">motion.svelte.js:68 · PUNCTE_EASE</div>
+      </div>
+      <div class="fisa bun">
+        <div class="fisa-cap"><span class="fisa-nr">✓</span><h4>„Mai puțină mișcare" nu înseamnă zero</h4></div>
+        <p>Sub <code class="cod">prefers-reduced-motion</code> durata cade la 120 ms, nu la 0. Motivul e scris: la zero nu se mai emite <code class="cod">transitionend</code>, iar un rând care pleacă și unul care vine se înlocuiesc între două cadre.</p>
+        <div class="ref">motion.svelte.js:169</div>
+      </div>
+      <div class="fisa bun">
+        <div class="fisa-cap"><span class="fisa-nr">✓</span><h4>Arcul e despărțit de restul</h4></div>
+        <p><code class="cod">--ease-arc</code> merge doar pe <code class="cod">transform</code>, niciodată pe opacitate — o depășire pe opacitate se vede ca pâlpâit. Regula e scrisă în tokens și respectată în cod.</p>
+        <div class="ref">tokens.css:226</div>
+      </div>
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">01</span><h4>Două arcuri, aceeași familie de nume</h4></div>
+        <p><code class="cod">--ease-spring</code> depășește cu 35%, <code class="cod">--ease-arc</code> cu 1%. Diferența e mare și regula e scrisă, dar numele nu o poartă: „spring" și „arc" nu spun care e pentru deget și care pentru sosire.</p>
+        <div class="ref">tokens.css:224 și :242</div>
+      </div>
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">02</span><h4>Vibrația are un singur cuvânt</h4></div>
+        <p><code class="cod">puls()</code> se cheamă doar la trecerea unui prag, mereu cu 12 ms. Nu există un puls diferit pentru „gata, s-a făcut" sau pentru „nu se poate" — deci degetul primește confirmarea intenției, dar nu și pe a rezultatului.</p>
+        <div class="ref">gesturi.js:56</div>
+      </div>
+      <div class="fisa">
+        <div class="fisa-cap"><span class="fisa-nr">03</span><h4><code class="cod">touch-action</code> e scris de mână în 8 locuri</h4></div>
+        <p>Același <code class="cod">pan-y</code> se repetă în Tasks, Plan, ProjectDetail, TodayBoard. E corect peste tot, dar e o convenție ținută minte, nu una impusă — a noua listă o poate uita, iar simptomul (lista nu mai derulează) apare abia pe telefon.</p>
+        <div class="ref">6 fișiere, 10 declarații</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. ATINGERE ================= -->
+  <section>
+    <div class="sec-cap">
+      <div class="sec-nr">05</div>
+      <h2>Atingerea</h2>
+      <p>
+        Pragurile de gest sunt centralizate într-un singur fișier, cu motivul scris — și e o decizie
+        bună, luată după ce aceleași trei gesturi fuseseră reglate separat și se simțeau ca trei aplicații.
+        Ce a rămas în urmă e dimensiunea a treia a unui gest: viteza.
+      </p>
+    </div>
+
+    <div class="masa-invelis">
+      <table>
+        <thead>
+          <tr><th>Prag</th><th>Valoare</th><th>Raportat la</th><th>Ce decide</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>PRAG_DIRECTIE</code></td><td class="num">8 px</td><td>degetul</td><td>pe ce axă e gestul; nu se mai răzgândește</td></tr>
+          <tr><td><code>PRAG_ACTIUNE</code></td><td class="num">42%</td><td>lățimea rândului</td><td>bifare, amânare</td></tr>
+          <tr><td><code>PRAG_INCHIDE</code></td><td class="num">28%</td><td>înălțimea foii</td><td>închiderea foii</td></tr>
+          <tr><td><code>PRAG_INTINDE</code></td><td class="num">8%</td><td>înălțimea foii</td><td>întinderea foii</td></tr>
+          <tr><td><code>PRAG_MOUSE</code></td><td class="num">4 px</td><td>cursorul</td><td>sub atât, gestul rămâne click</td></tr>
+          <tr><td><code>APASARE_LUNGA</code></td><td class="num">300 ms</td><td>timpul</td><td>degetul „apucă" un obiect</td></tr>
+          <tr><td><code>PRAG_ANULARE</code></td><td class="num">10 px</td><td>degetul</td><td>derulezi, nu apuci</td></tr>
+          <tr><td>viteză</td><td class="num">—</td><td>—</td><td><strong>nu există niciun prag de viteză</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ul class="verdicte" style="margin-top:20px">
+      <li>
+        <div>
+          <b>Procente, nu pixeli — și e decizia corectă</b>
+          <span>Un prag fix nu înseamnă același lucru pe două obiecte de mărimi diferite: 110 px erau o treime dintr-o foaie scundă și o șeptime dintr-una înaltă. Ce a rămas în pixeli descrie <em>degetul</em>, nu obiectul — și acolo pixelii chiar sunt absoluți.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Direcția se decide o dată și nu se mai schimbă</b>
+          <span>La primii 8 px se hotărăște dacă gestul e al rândului sau al paginii. Fără asta, o listă lungă devine imposibil de derulat fiindcă fiecare rând fură degetul. Regula e aplicată identic în glisare, în tragerea foii și în pistă.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Podeaua de apăsare acoperă tot, cu specificitate zero</b>
+          <span>O singură regulă <code class="cod">:where(...):active</code> în <code class="cod">global.css</code> dă răspuns la atingere celor ~109 suprafețe care n-aveau <code class="cod">:active</code> propriu — și, având specificitate zero, orice componentă care își definește propriul stil câștigă automat. E o podea, nu un stil impus.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Comiterea se leagă de animație, nu de un cronometru paralel</b>
+          <span>Bifarea așteaptă <code class="cod">transitionend</code>-ul zborului, cu cronometru de rezervă doar pentru cazul în care evenimentul nu vine deloc. Detaliul ăsta e motivul pentru care rândul bifat nu mai „revine și pleacă din nou".</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Ce lipsește: viteza, peste tot</b>
+          <span>Nici foaia, nici rândul glisat, nici banda din calendar nu se uită la cât de repede s-a mișcat degetul. Consecința practică: gesturile trebuie făcute <em>lung</em>, iar aruncarea scurtă — cea pe care o faci fără să te gândești — nu produce nimic. E singura schimbare din listă care se simte în fiecare zi, în fiecare gest.</span>
+        </div>
+      </li>
+      <li>
+        <div>
+          <b>Ce lipsește: gestul de întoarcere</b>
+          <span>Android trimite butonul „înapoi" ca Escape, deci foaia se închide. Dar <em>glisarea</em> de la marginea stângă — gestul cu care se închide orice pe Android — nu e legată de nimic în aplicație. Pe o pagină de proiect deschisă din listă, asta e mișcarea pe care mâna o face prima.</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ================= 6. ORDINEA ================= -->
+  <section>
+    <div class="sec-cap">
+      <div class="sec-nr">06</div>
+      <h2>În ce ordine le-aș face</h2>
+      <p>Ordonate după cât se simt raportat la cât costă. Primele două se ating aproape numai în <code class="cod">Modal.svelte</code>.</p>
+    </div>
+    <ul class="verdicte">
+      <li><div><b>Viteza în tragerea foii și în glisarea rândului</b><span>Un eșantion de poziție și timp la fiecare <code class="cod">pointermove</code>, o proiecție de 100 ms la ridicare. Se schimbă în două fișiere și se simte în fiecare gest, în fiecare zi.</span></div></li>
+      <li><div><b>Trepte, în locul pragului ireversibil</b><span>Foaia devine continuă în ambele sensuri și se așază la treapta cea mai apropiată. Rezolvă și reproșul rămas („nu poți s-o tragi înapoi"), și lipsa unei poziții de mijloc.</span></div></li>
+      <li><div><b>Voalul urmărește poziția</b><span>Trei linii. Face gestul reversibil cu ochii, nu doar cu degetul.</span></div></li>
+      <li><div><b>Gest de coborâre pe <code class="cod">doc</code>, și <code class="cod">iesireGest</code> pe foaia taskului</b><span>Amândouă există deja ca mecanism — trebuie doar cerute acolo unde încă nu sunt.</span></div></li>
+      <li><div><b>Meniurile devin foi pe telefon</b><span>Sortarea din Proiecte și meniul din antet. Aceeași componentă, altă configurație.</span></div></li>
+      <li><div><b>Adâncime la teanc</b><span>Ultima, fiindcă e singura pur vizuală — dar e și cea care face aplicația să arate „profi" la prima deschidere.</span></div></li>
+    </ul>
+  </section>
+
+  <p class="nota">
+    Mochetele rulează cu tokenurile reale din <code class="cod">frontend/src/styles/tokens.css</code> —
+    aceleași culori, raze, durate și curbe. Gabarito și DM Mono nu se pot încărca aici (politica de
+    securitate a paginii blochează fonturile externe), deci textul cade pe fontul de sistem;
+    în aplicație rămâne Gabarito. Referințele de fișier:linie sunt de la commit-ul curent de pe
+    <code class="cod">master</code>.
+  </p>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const REDUS = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const puls = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+
+  // ---- Conținutul ecranului din spate (aceeași listă peste tot) ----
+  const RANDURI = [
+    ['Verifică parametrii Danfoss FC302', 'azi · stand 4', true],
+    ['Comandă cablu ecranat 4×2,5', 'mâine', false],
+    ['Trimite raport PIF — hala 2', '21 aug', false],
+    ['Programează recepția cu beneficiarul', '23 aug', false],
+    ['Actualizează schema de forță', '27 aug', false],
+    ['Test la sarcină — pompa P-102', '29 aug', false],
+    ['Instruire operatori', '2 sep', false],
+  ];
+
+  function ecranHtml() {
+    const randuri = RANDURI.map(([t, m, tare]) => `
+      <div class="rnd${tare ? ' tare' : ''}">
+        <span class="bifa"></span>
+        <span class="rnd-txt"><span class="rnd-t">${t}</span><span class="rnd-m">${m}</span></span>
+      </div>`).join('');
+    return `
+      <div class="bara-stare"><span>9:41</span><span>PIF</span></div>
+      <div class="ecran">
+        <div class="ecran-cap"><span class="ecran-titlu">Astăzi</span><span class="ecran-numar">7</span></div>
+        <div class="lista">${randuri}</div>
+      </div>
+      <div class="doc"><span class="doc-i on"></span><span class="doc-i"></span><span class="doc-i"></span><span class="doc-i"></span></div>
+      <div class="doc-bara"></div>`;
+  }
+
+  // ---- Conținuturile de foaie ----
+  const CORP = {
+    task: `
+      <div class="camp"><span class="camp-et">Titlu</span><span class="camp-in">Verifică parametrii Danfoss FC302</span></div>
+      <div class="camp"><span class="camp-et">Proiect</span><span class="camp-in">Retrofit linie ambalare — hala 2</span></div>
+      <div class="camp"><span class="camp-et">Termen</span><span class="camp-in">16 august 2026</span></div>
+      <div class="camp"><span class="camp-et">Categorie</span>
+        <div class="chipuri"><span class="chip on">Punere în funcțiune</span><span class="chip">Documentație</span><span class="chip">Achiziții</span></div>
+      </div>
+      <div class="camp"><span class="camp-et">Recurență</span><span class="camp-in gol">Fără</span></div>
+      <div class="camp"><span class="camp-et">Notiță</span><span class="camp-in gol">Adaugă o notiță…</span></div>`,
+    zi: `
+      <div class="banda">Deplasare · site · implementare</div>
+      <div class="zi-rand"><span class="zi-ora">08:00</span><span><span class="zi-t">Plecare către Brăila</span><span class="zi-m">3 h 20 min · 214 km</span></span></div>
+      <div class="zi-rand"><span class="zi-ora">12:00</span><span><span class="zi-t">Verifică parametrii Danfoss FC302</span><span class="zi-m">Retrofit linie ambalare — stand 4</span></span></div>
+      <div class="zi-rand"><span class="zi-ora">14:30</span><span><span class="zi-t">Test la sarcină — pompa P-102</span><span class="zi-m">cu operatorii de tură</span></span></div>
+      <div class="zi-rand"><span class="zi-ora">16:00</span><span><span class="zi-t">Recepție parțială cu beneficiarul</span><span class="zi-m">proces-verbal + semnături</span></span></div>
+      <div class="zi-rand"><span class="zi-ora">18:00</span><span><span class="zi-t">Întoarcere</span><span class="zi-m">cazare Galați</span></span></div>`,
+    doc: `<div class="doc-linii">
+        <i style="width:88%"></i><i style="width:96%"></i><i style="width:72%"></i><i style="width:100%"></i>
+        <i style="width:64%"></i><i style="width:92%"></i><i style="width:81%"></i><i style="width:48%"></i>
+        <i style="width:97%"></i><i style="width:70%"></i><i style="width:86%"></i><i style="width:59%"></i>
+        <i style="width:93%"></i><i style="width:77%"></i>
+      </div>`,
+    confirmare: `
+      <p class="f-intrebare">Ștergi proiectul „Retrofit linie ambalare"?</p>
+      <p class="f-text">Dispar odată cu el 7 taskuri și 2 perioade de deplasare. Nu se poate anula.</p>`,
+    sortare: `
+      <div class="optiuni">
+        <button class="opt sel">Termen<span class="opt-semn">↑</span></button>
+        <button class="opt">Nume<span class="opt-semn"></span></button>
+        <button class="opt">Ultima modificare<span class="opt-semn"></span></button>
+        <button class="opt">Număr de taskuri<span class="opt-semn"></span></button>
+        <button class="opt">Data de început<span class="opt-semn"></span></button>
+      </div>`,
+    ziua: `
+      <div class="camp"><span class="camp-et">Ziua</span><span class="camp-in">Vineri, 21 august</span></div>
+      <div class="chipuri"><span class="chip on">Azi</span><span class="chip">Mâine</span><span class="chip">Luni</span><span class="chip">Fără termen</span></div>`,
+  };
+
+  // ---- Configurațiile demonstrațiilor ----
+  const DEMO = {
+    'azi-standard': {
+      buton: 'Task nou', titlu: 'Task nou', corp: CORP.task,
+      subsol: '<button class="f-b gol">Renunță</button><button class="f-b plin">Creează</button>',
+      trepte: [0.62, 0.94], intransigent: true,
+    },
+    'azi-inalt': {
+      buton: 'Vezi ziua', titlu: 'Vineri, 21 august', corp: CORP.zi,
+      trepte: [1], faraX: true, dinCorp: true, plina: true,
+    },
+    'azi-doc': {
+      buton: 'Notițe', titlu: 'Notițe — Danfoss FC302', corp: CORP.doc,
+      trepte: [1], plina: true, faraManer: true, faraGest: true,
+    },
+    'detente': {
+      buton: 'Task nou', titlu: 'Task nou', corp: CORP.task,
+      subsol: '<button class="f-b gol">Renunță</button><button class="f-b plin">Creează</button>',
+      trepte: [0.50, 0.88, 1], viteza: true, voalUrmareste: true, arc: true, dinCorp: true,
+      arataTrepte: true, plinaLaVarf: true,
+    },
+    'strans': {
+      buton: 'Șterge proiectul', titlu: 'Confirmare', corp: CORP.confirmare,
+      subsol: '<div style="display:flex;flex-direction:column;gap:8px;width:100%"><button class="f-b rau">Șterge proiectul</button><button class="f-b gol">Renunță</button></div>',
+      strans: true, viteza: true, voalUrmareste: true, faraX: true, pragMic: true,
+    },
+    'actiuni': {
+      buton: 'Sortează', titlu: 'Sortează după', corp: CORP.sortare,
+      strans: true, viteza: true, voalUrmareste: true, faraX: true, pragMic: true,
+    },
+    'plina': {
+      buton: 'Notițe', titlu: 'Notițe — Danfoss FC302', corp: CORP.doc,
+      trepte: [1], plina: true, viteza: true, voalUrmareste: true, arc: true,
+    },
+    'teanc': {
+      buton: 'Deschide taskul', titlu: 'Task', corp: CORP.task,
+      trepte: [0.72], viteza: true, voalUrmareste: true, arc: true,
+      copil: { titlu: 'Alege ziua', corp: CORP.ziua, strans: true },
+    },
+  };
+
+  // =========================================================
+  // Motorul de foaie. O singură implementare, configurată diferit.
+  // Poziția se scrie pe `translate` și se măsoară în px de la
+  // vârful foii; 0 = treapta cea mai înaltă, H = complet ascunsă.
+  // =========================================================
+  function construieste(telefon, cfg, nivel, laInchidere) {
+    const R = telefon.getBoundingClientRect();
+    const inaltimeCadru = R.height;
+    const trepte = cfg.strans ? null : (cfg.trepte || [0.9]);
+    const maxFractiune = trepte ? trepte[trepte.length - 1] : 0;
+
+    const voal = document.createElement('div');
+    voal.className = 'voal';
+
+    const foaie = document.createElement('div');
+    foaie.className = 'foaie';
+    if (cfg.plina && maxFractiune >= 1) foaie.classList.add('plina');
+
+    const eticheta = cfg.arataTrepte ? '<span class="treapta-et"></span>' : '';
+    const maner = cfg.faraManer ? '' : `<div class="maner-zona"><span class="maner"></span>${eticheta}</div>`;
+    const x = cfg.faraX ? '' : '<button class="f-x" aria-label="Închide">×</button>';
+    const subsol = cfg.subsol ? `<div class="f-subsol">${cfg.subsol}</div>` : '';
+    foaie.innerHTML = `${maner}
+      <div class="f-cap"><span class="f-titlu">${cfg.titlu}</span>${x}</div>
+      <div class="f-corp">${cfg.corp}</div>${subsol}`;
+
+    telefon.appendChild(voal);
+    telefon.appendChild(foaie);
+
+    // Înălțimea foii: strânsă pe conținut, sau cât treapta cea mai înaltă.
+    if (cfg.strans) {
+      foaie.style.height = 'auto';
+      foaie.style.maxHeight = Math.round(inaltimeCadru * 0.85) + 'px';
+    } else {
+      foaie.style.height = Math.round(inaltimeCadru * maxFractiune) + 'px';
+    }
+
+    // Măsurată după ce e în DOM, ca `auto` să fie deja rezolvat.
+    const H = foaie.getBoundingClientRect().height;
+    // Poziția fiecărei trepte, în px de la vârf.
+    const pozitii = cfg.strans ? [0] : trepte.map((f) => H - f * inaltimeCadru);
+    let idx = 0;                                   // treapta curentă
+    let y = H;                                     // pornim ascunși
+    let trage = false, idPointer = null, y0 = 0, yLaStart = 0;
+    let esantioane = [];                           // {t, y} pentru viteză
+    let pragTrecut = false;
+    let inchisa = false;
+
+    const pragInchidere = cfg.pragMic ? 0.22 : 0.28;
+
+    function pune(v, animat) {
+      y = v;
+      foaie.classList.toggle('animata', !!animat && !REDUS);
+      foaie.style.translate = `0 ${v}px`;
+      if (cfg.voalUrmareste) {
+        const jos = pozitii[0];
+        const t = Math.min(1, Math.max(0, (v - jos) / Math.max(1, H - jos)));
+        voal.style.opacity = String((1 - t).toFixed(3));
+      }
+      if (cfg.arataTrepte) semnaleazaTrepte(v);
+    }
+
+    function semnaleazaTrepte(v) {
+      const et = foaie.querySelector('.treapta-et');
+      if (!et) return;
+      // Cat din ecran ocupa foaia in clipa asta — nu treapta spre care merge,
+      // ci pozitia reala, ca sa se vada ca drumul e continuu, nu in salturi.
+      const proc = Math.round(((H - v) / inaltimeCadru) * 100);
+      et.textContent = Math.max(0, Math.min(100, proc)) + '%';
+    }
+
+    function deschide() {
+      // Un cadru la poziția ascunsă, apoi animăm — altfel nu există tranziție.
+      pune(H, false);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        voal.classList.add('pe');
+        if (cfg.voalUrmareste) voal.style.opacity = '1';
+        idx = 0;
+        pune(pozitii[0], true);
+      }));
+      // Dock-ul si butonul de pornire raspund DOAR primului nivel: a doua foaie
+      // se inchide peste prima, iar daca ar scoate si ea clasa, dock-ul ar urca
+      // inapoi sub o foaie inca deschisa.
+      if (nivel === 1) telefon.classList.add('are-foaie');
+    }
+
+    function inchide() {
+      if (inchisa) return;
+      inchisa = true;
+      voal.classList.remove('pe');
+      voal.style.opacity = '0';
+      pune(H, true);
+      if (nivel === 1) telefon.classList.remove('are-foaie');
+      setTimeout(() => { voal.remove(); foaie.remove(); laInchidere && laInchidere(); }, REDUS ? 130 : 300);
+    }
+
+    // ---- Gestul ----
+    function apuca(e) {
+      if (cfg.faraGest) return;
+      trage = true; idPointer = e.pointerId;
+      y0 = e.clientY; yLaStart = y;
+      esantioane = [{ t: performance.now(), y: e.clientY }];
+      pragTrecut = false;
+      foaie.classList.add('se-trage');
+      foaie.classList.remove('animata');
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+    }
+
+    function misca(e) {
+      if (!trage || e.pointerId !== idPointer) return;
+      const dy = e.clientY - y0;
+      let v = yLaStart + dy;
+      const sus = pozitii[pozitii.length - 1];
+      if (v < sus) {
+        // Capătul de sus cedează, nu e zid — 30 px de rezistență logaritmică.
+        v = cfg.arc ? sus - Math.min(30, Math.pow(sus - v, 0.72)) : sus;
+      }
+      if (v > H) v = H;
+      pune(v, false);
+      esantioane.push({ t: performance.now(), y: e.clientY });
+      if (esantioane.length > 6) esantioane.shift();
+      const trecut = v > pozitii[0] + (H - pozitii[0]) * pragInchidere;
+      if (trecut !== pragTrecut) { pragTrecut = trecut; if (trecut) puls(12); }
+    }
+
+    function lasa(e) {
+      if (!trage || e.pointerId !== idPointer) return;
+      trage = false; idPointer = null;
+      foaie.classList.remove('se-trage');
+
+      // VITEZA SE IA DIN ULTIMELE ~80 ms, NU DIN TOT GESTUL.
+      // Media pe tot drumul spune cu ce viteză ai mers, nu cu ce viteză ai
+      // PLECAT — iar o aruncare începe încet și se termină repede. Cu media,
+      // exact gestul care ar trebui să închidă („trag puțin, apoi zvârl") iese
+      // lent. Fereastra scurtă măsoară ce face degetul în clipa ridicării.
+      let vel = 0;
+      if (cfg.viteza && esantioane.length >= 2) {
+        const b = esantioane[esantioane.length - 1];
+        let a = esantioane[esantioane.length - 2];
+        for (let i = esantioane.length - 2; i >= 0; i--) {
+          if (b.t - esantioane[i].t > 80) break;
+          a = esantioane[i];
+        }
+        const dt = b.t - a.t;
+        if (dt > 0) vel = (b.y - a.y) / dt;
+      }
+      // Unde AR ajunge degetul dacă ar continua 100 ms — proiecția UIKit.
+      const proiectat = y + vel * 100;
+
+      const jos = pozitii[0];
+      if (proiectat > jos + (H - jos) * pragInchidere) { inchide(); return; }
+
+      if (cfg.intransigent) {
+        // Comportamentul de azi: se întinde o dată, nu se mai întoarce.
+        if (y < pozitii[idx] - inaltimeCadru * 0.08 && idx < pozitii.length - 1) {
+          idx = Math.min(idx + 1, pozitii.length - 1);
+        }
+        pune(pozitii[idx], true);
+        return;
+      }
+      // Se așază la treapta cea mai apropiată de unde ar fi ajuns.
+      let cel = 0, dMin = Infinity;
+      pozitii.forEach((p, i) => { const d = Math.abs(p - proiectat); if (d < dMin) { dMin = d; cel = i; } });
+      if (cel !== idx) puls(8);
+      idx = cel;
+      pune(pozitii[idx], true);
+      if (cfg.plinaLaVarf) foaie.classList.toggle('plina', idx === pozitii.length - 1);
+    }
+
+    const zonaManer = foaie.querySelector('.maner-zona');
+    const cap = foaie.querySelector('.f-cap');
+    [zonaManer, cap].forEach((el) => {
+      if (!el) return;
+      el.addEventListener('pointerdown', apuca);
+      el.addEventListener('pointermove', misca);
+      el.addEventListener('pointerup', lasa);
+      el.addEventListener('pointercancel', lasa);
+    });
+    if (cfg.dinCorp) {
+      const corp = foaie.querySelector('.f-corp');
+      corp.addEventListener('pointerdown', (e) => { if (corp.scrollTop <= 0) apuca(e); });
+      corp.addEventListener('pointermove', misca);
+      corp.addEventListener('pointerup', lasa);
+      corp.addEventListener('pointercancel', lasa);
+    }
+
+    const btnX = foaie.querySelector('.f-x');
+    if (btnX) btnX.addEventListener('click', inchide);
+    voal.addEventListener('click', inchide);
+
+    return { deschide, inchide, foaie, voal };
+  }
+
+  // ---- Montarea fiecărui telefon ----
+  document.querySelectorAll('.telefon').forEach((telefon) => {
+    const cheie = telefon.dataset.demo;
+    const cfg = DEMO[cheie];
+    if (!cfg) return;
+
+    telefon.innerHTML = ecranHtml();
+
+    const buton = document.createElement('button');
+    buton.className = 'pornire';
+    buton.textContent = cfg.buton;
+    telefon.appendChild(buton);
+
+    let deschisa = null;
+    let copil = null;
+
+    buton.addEventListener('click', () => {
+      if (deschisa) return;
+      deschisa = construieste(telefon, cfg, 1, () => { deschisa = null; });
+      deschisa.deschide();
+
+      // Teancul: a doua foaie, după o clipă, ca să se vadă retragerea primei.
+      if (cfg.copil) {
+        setTimeout(() => {
+          if (!deschisa) return;
+          deschisa.foaie.style.transition = 'translate var(--dur-slow) var(--ease), scale var(--dur-slow) var(--ease), border-radius var(--dur-slow) var(--ease)';
+          deschisa.foaie.style.scale = '0.94';
+          deschisa.foaie.style.transformOrigin = 'bottom center';
+          deschisa.foaie.style.borderRadius = 'var(--radius-md) var(--radius-md) 0 0';
+          deschisa.voal.style.opacity = '0';
+          copil = construieste(telefon, Object.assign({}, cfg.copil, { viteza: true, voalUrmareste: true, faraX: true, pragMic: true }), 2, () => {
+            copil = null;
+            if (!deschisa) return;
+            deschisa.foaie.style.scale = '1';
+            deschisa.foaie.style.borderRadius = '';
+            deschisa.voal.style.opacity = '1';
+          });
+          copil.foaie.style.zIndex = '8';
+          copil.voal.style.zIndex = '7';
+          copil.deschide();
+        }, 900);
+      }
+    });
+  });
+})();
+</script>
