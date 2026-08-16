@@ -65,13 +65,18 @@ export function inBandaTaburi(clientY) {
  * comuti trebuia sa duci degetul pana la capat, cu tot cu franarea de la
  * amortizare, care spune exact pe dos — ca obiectul se opune.
  * O aruncare scurta si rapida e acelasi gest, dat de o mana care stie deja unde
- * merge. 0,4px/ms ≈ 6px pe cadru: peste ce se poate face din greseala in timp
- * ce derulezi, sub ce trebuie sa tii degetul apasat ca sa „impingi" ecranul.
+ * merge.
+ *
+ * 0,28px/ms ≈ 4px pe cadru. Era 0,4, si cerea o smucitura anume; acum ca gestul
+ * nu mai porneste din greseala (vezi `DOMINANTA` in Tasks.svelte — orizontala
+ * trebuie sa fie limpede), pragul de viteza n-are ce sa mai apere. Ce apara el
+ * de fapt nu e pornirea, ci INTENTIA: o mana care duce degetul si-l lasa acolo
+ * n-a aruncat nimic.
  */
-export const VITEZA_ARUNCARE = 0.4
+export const VITEZA_ARUNCARE = 0.28
 
 /** px minimi pentru o aruncare — sub atat e o atingere care a tremurat. */
-export const PRAG_ARUNCARE = 18
+export const PRAG_ARUNCARE = 12
 
 /** px miscati inainte de apasarea lunga = utilizatorul deruleaza, nu apuca. */
 export const PRAG_ANULARE = 10

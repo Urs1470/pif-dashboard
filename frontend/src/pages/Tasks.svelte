@@ -885,14 +885,48 @@
   // Verticala castiga la egalitate: pe un ecran care deruleaza, derularea e
   // gestul implicit. Nu chemam `preventDefault` nicaieri (ascultatorii sunt
   // pasivi), deci derularea nativa nu e niciodata blocata.
-  const PRAG_AXA = 8       // pana aici nu stim ce fel de gest e (= PRAG_DIRECTIE)
-  // CAT TREBUIE PARCURS CA SA COMUTE. Era 60px — cu amortizarea de 0,42 asta
-  // insemna ca degetul facea 60 si continutul se misca 25, deci gestul se simtea
-  // ca o impingere intr-un obiect care se opune (Ion: „nu trebuie sa necesite
-  // atata presiune"). 36px e sub un centimetru de deget si peste orice tremur;
-  // restul drumului il face acum viteza, nu forta — vezi `VITEZA_ARUNCARE`.
-  const PRAG_SFERA = 36
-  const TRAS_MAX = 72      // cat se lasa continutul tras (amortizat)
+  // ===== DOUA PRAGURI DIFERITE PENTRU DOUA INTREBARI DIFERITE =====
+  //
+  // Ion, dupa prima incercare: „nu lucreaza prea bine, parca e prea sensibil dar
+  // totodata necesita un swipe foarte lung." Suna a contradictie si nu e: sunt
+  // doua momente ale aceluiasi gest, si erau reglate pe dos.
+  //
+  // PORNIREA era prea usoara. Se decidea axa la 8px, cu `|dx| > |dy|` — o
+  // comparatie pe care degetul mare o trece din intamplare, fiindca degetul mare
+  // nu merge drept: pivoteaza din incheietura, deci ORICE derulare porneste pe
+  // un arc cu componenta laterala. Rezultatul: derulai lista si continutul
+  // zvacnea in lateral (si derula in acelasi timp — nu chemam `preventDefault`,
+  // deci pagina isi facea treaba ei peste a noastra). Asta e „prea sensibil".
+  //
+  // COMITEREA era prea scumpa. Nu atat pragul in sine, cat ce VEDEAI din el:
+  // amortizarea de 0,42 muta continutul 15px cand degetul facuse 36, iar omul nu
+  // isi masoara gestul in pixeli de deget, ci in cat s-a miscat lucrul de sub el.
+  // Vedeai un obiect care abia se clinteste, deci trageai mai departe. Asta e
+  // „swipe foarte lung".
+  //
+  // Deci: greu de pornit din greseala, usor de dus la capat odata pornit.
+  // 16, nu 8 si nici 12: la 12 un deget care pleaca lateral si abia apoi coboara
+  // (arcul incheieturii, masurat ca gest sintetic) inca trecea drept orizontal —
+  // la pasul in care se decidea, drumul lateral era 15px si cel vertical 9, deci
+  // raportul iesea peste `DOMINANTA` cu un fir de par. La 16 aceeasi miscare se
+  // judeca un pas mai tarziu, cand verticala a apucat sa se vada: 19 lateral la
+  // 13 vertical, adica sub prag, deci ramane derulare.
+  // Nu costa nimic la comitere: pragul de comutare se masoara de la PUNCTUL DE
+  // PLECARE, nu de la cel in care s-a decis axa.
+  const PRAG_AXA = 16      // pana aici nu stim ce fel de gest e
+  /** Cat de limpede trebuie sa fie orizontala ca sa fie a noastra. 1 insemna
+   *  „macar cu un fir de par mai mult decat verticala", adica arcul degetului
+   *  mare. La 1,6 gestul trebuie sa fie CHIAR lateral; ce e diagonal ramane al
+   *  derularii, care e lucrul implicit pe un ecran care deruleaza. */
+  const DOMINANTA = 1.6
+  /** Cat trebuie parcurs ca sa comute. Era 60, apoi 36. */
+  const PRAG_SFERA = 28
+  const TRAS_MAX = 96      // cat se lasa continutul tras (amortizat)
+  /** CONTINUTUL URMEAZA DEGETUL, nu se opune lui. 0,42 era o franare: obiectul
+   *  facea mai putin de jumatate din drumul mainii. 0,7 se citeste ca „l-am
+   *  apucat", si tot lasa o urma de rezistenta, cat sa se simta ca e un gest cu
+   *  prag, nu o foaie libera. */
+  const URMARIRE = 0.7
 
   // FEEDBACK VIU. Fara el gestul e o loterie: tragi si ori se schimba pagina,
   // ori nu, si nu afli decat dupa ce ridici degetul. Continutul urmeaza degetul
@@ -961,8 +995,10 @@
 
     const amortizeaza = (dx) => {
       const capat = laMargine(dx)
-      const v = dx * (capat ? 0.18 : 0.42)
-      const max = capat ? TRAS_MAX / 2 : TRAS_MAX
+      // La capat ramane o franare tare: acolo raspunsul E „nu ai unde sa mergi",
+      // si se spune prin faptul ca obiectul abia se clinteste.
+      const v = dx * (capat ? 0.18 : URMARIRE)
+      const max = capat ? TRAS_MAX / 3 : TRAS_MAX
       return Math.max(-max, Math.min(max, v))
     }
 
@@ -989,14 +1025,31 @@
       if (!decis) {
         if (Math.abs(dx) < PRAG_AXA && Math.abs(dy) < PRAG_AXA) return
         decis = true
-        // Decis O SINGURA DATA, ca la randuri: daca degetul a plecat mai mult pe
-        // verticala, gestul e al derularii si nu ni-l mai luam inapoi.
-        orizontal = Math.abs(dx) > Math.abs(dy)
+        // Decis O SINGURA DATA, ca la randuri, si numai cand orizontala e
+        // LIMPEDE (vezi `DOMINANTA`): la egalitate castiga derularea, fiindca pe
+        // un ecran care deruleaza ea e gestul implicit.
+        orizontal = Math.abs(dx) > Math.abs(dy) * DOMINANTA
         if (!orizontal) { urmarim = false; return }
         trasAnimat = false
         trageSfera = true
       }
       if (!orizontal) return
+      // VETO: GESTUL SE POATE DOVEDI, DIN MERS, O DERULARE.
+      //
+      // Decizia se ia la 16px, si atat cat vede ea e uneori prea putin: un deget
+      // care pleaca lateral si abia apoi coboara (masurat: 21px lateral la 8px
+      // vertical in clipa deciziei) arata la fel ca o glisare — si abia peste
+      // inca zece cadre se vede ca de fapt cobora, 55 lateral la 110 vertical.
+      // Regula „decis o data, fara razgandire" ramane in picioare unde conteaza:
+      // NU luam niciodata un gest inapoi de la derulare. Aici il dam INAPOI, si
+      // asta nu poate strica nimic — cel mai rau lucru care se poate intampla e
+      // ca lista se deruleaza, adica exact ce facea degetul.
+      if (Math.abs(dy) > Math.abs(dx) * DOMINANTA) {
+        urmarim = false
+        orizontal = false
+        asazaInapoi()
+        return
+      }
       aGlisat = true
       // Viteza segmentului curent. `timeStamp` vine de la eveniment, deci e ceasul
       // browserului, nu al nostru — nu se muta daca un cadru intarzie.

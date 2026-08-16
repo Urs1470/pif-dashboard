@@ -142,8 +142,8 @@
         #splash.pleaca, #splash.pleaca .sp-marca { transition-duration: .12s; }
       }
     </style>
-    <script type="module" crossorigin src="/assets/main-CejGzIxw.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/Modal-Ci30VKia.js">
+    <script type="module" crossorigin src="/assets/main-DqbjaJ6u.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/Modal-CjecW4Bs.js">
     <link rel="stylesheet" crossorigin href="/assets/Modal-D8vKj3oT.css">
     <link rel="stylesheet" crossorigin href="/assets/main-4CFizIag.css">
   </head>
@@ -180,10 +180,15 @@
         // o clipire — adica exact ce reparam. Pe o pornire calda datele sunt
         // gata mai repede de atat, deci acest prag E durata splashului.
         var MINIM = 420
-        // MAXIM: peste atat nu mai astepti aplicatia, astepti valul. Pagina de
-        // dedesubt e oricum utila (schelete + ce e in cache), deci la capat il
-        // dam la o parte chiar daca datele n-au sosit.
-        var MAXIM = 2600
+        // MAXIM e PLASA, nu poarta. Poarta o tine `lib/splash.js`, care stie sa
+        // se uite la ecran (are date? mai e vreun schelet?); asta de aici exista
+        // doar pentru cazul in care bundle-ul nu ajunge sa ruleze deloc.
+        // Era 2600, si taia poarta inainte s-apuce ea sa se pronunte: masurat pe
+        // o pornire rece cu API lent, valul pleca la 4308ms si raspunsul venea
+        // la 6309 — adica exact scheletul pe care il acopeream, aratat dupa
+        // aceea (raportat de Ion). Trebuie sa fie mai mare decat plafonul din
+        // modul, nu mai mic.
+        var MAXIM = 6500
         var plecat = false
 
         function stinge() {

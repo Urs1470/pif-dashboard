@@ -20,11 +20,33 @@
 //      prinde cadrul in care se aseaza DOM-ul, al doilea pe cel in care chiar
 //      s-a pictat.
 //
-// Nu asteptam la nesfarsit: `index.html` are propriul plafon, iar aici cea mai
-// lenta dintre asteptari e oricum intrecuta de el. Cererea de date NU respinge
-// niciodata (vezi `loadGlobalTasks`), dar o prindem oricum — o eroare in lantul
-// asta ar lasa valul pe ecran pana la plafon, adica ar transforma o retea
-// proasta intr-o pornire lunga.
+//   4. …SI NU MAI E NICIUN SCHELET PE ECRAN. Punctele 1-3 pareau sa acopere
+//      asta, si nu o acopereau. Masurat, cu API-ul incetinit ca peste tunel si
+//      cu memoria locala goala (adica exact o pornire dupa ore intregi):
+//      valul pleca la 4308ms, pe plafonul din `index.html`, iar raspunsul venea
+//      la 6309 — deci scheletul a stat DESCOPERIT 115 cadre, aproape doua
+//      secunde. Ion: „vad un schelet pentru o fractiune de secunda; daca am
+//      taskuri sa vad direct taskuri, iar daca lista e goala sa vad lista goala,
+//      fara incarcare."
+//      Promisiunea cererii nu e o garantie ca pagina s-a asezat — plafonul o
+//      poate intrece, si atunci tot ce facem e sa mutam asteptarea de sub val in
+//      fata ochilor. Singurul lucru care raspunde CHIAR la intrebarea „mai
+//      astepti ceva?" e ecranul insusi.
+//
+// Nu asteptam la nesfarsit. Plafonul e mai mare decat inainte, dinadins: cand
+// reteaua chiar e proasta, o marca linistita citeste mai bine decat patru dungi
+// gri, si nu minte cu nimic — chiar se incarca. Iar cazurile in care ceva
+// merge PROST nu asteapta plafonul: o cerere picata da `ErrorState`, nu schelet,
+// deci poarta se deschide imediat.
+
+/** Ce inseamna „pagina inca asteapta", in markup. `.asteptare` e invelisul
+ *  starii de asteptare (vezi `global.css`), `.skeleton` e dunga insasi — a doua
+ *  prinde si locurile care pun schelete fara invelis. */
+const SELECTOR_ASTEPTARE = '.asteptare, .skeleton'
+
+/** Peste atat, valul pleaca oricum. Perechea lui din `index.html` e mai mare cu
+ *  o marja, ca plasa de acolo sa nu taie poarta de aici inainte sa se pronunte. */
+const PLAFON = 5000
 
 /**
  * @param {Promise<any>|null} dateleAterizarii cererea rutei pe care se deschide
@@ -34,14 +56,27 @@ export function splashDupa(dateleAterizarii) {
   const val = /** @type {any} */ (window).__splash
   if (!val) return   // desktop, sau valul a fost deja scos
 
+  const pana = performance.now() + PLAFON
+
   const cadruPictat = () =>
     new Promise((gata) => requestAnimationFrame(() => requestAnimationFrame(gata)))
+
+  // Se intreaba pe cadru, nu pe cronometru: raspunsul se schimba exact atunci
+  // cand se schimba si ce se vede.
+  const faraAsteptare = () => new Promise((gata) => {
+    const verifica = () => {
+      if (performance.now() >= pana || !document.querySelector(SELECTOR_ASTEPTARE)) return gata()
+      requestAnimationFrame(verifica)
+    }
+    requestAnimationFrame(verifica)
+  })
 
   Promise.all([
     dateleAterizarii || Promise.resolve(),
     document.fonts?.ready || Promise.resolve(),
   ])
-    .then(cadruPictat)
     .catch(() => {})
+    .then(cadruPictat)
+    .then(faraAsteptare)
     .then(() => val.gata())
 }
