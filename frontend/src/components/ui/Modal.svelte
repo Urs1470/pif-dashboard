@@ -821,16 +821,33 @@
      Manerul de sus nu e decor — spune „asta se trage/inchide de aici" si da o zona
      de apucat care nu e nici titlu, nici buton. */
   @media (max-width: 768px) {
+    /* FOAIA SE RIDICA DEASUPRA TASTATURII, NU DOAR SE MICSOREAZA.
+       Regula de mai jos ii scadea inaltimea cu `--kb` si atat — si asta nu
+       ajuta, fiindca foaia e ANCORATA JOS (`align-items: flex-end`): micsorata,
+       ea isi coboara marginea de sus, iar cea de jos ramane tot la marginea
+       ecranului, adica tot sub tastatura. In WebView-ul Capacitor `innerHeight`
+       nici nu se micsoreaza cand urca tastatura (vezi nota de la `--kb` din
+       <script module>), deci nimic nu o impingea in sus.
+       Masurat pe „Task Nou", ecran 915 cu tastatura de 300: foaia tinea 451..915,
+       iar din ea se vedea DOAR titlul — „Categorie", „Termen", „Recurență" si
+       butonul „Creează" cadeau toate sub tastatura, si corpul nici nu derula, deci
+       nu se putea ajunge la ele. Ion: „tastatura putin acopera recurenta taskului."
+       Podeaua o ridica VOALUL, nu foaia: un `padding-bottom` pe foaie i-ar impinge
+       continutul si i-ar lasa marginea unde era — exact obiectia scrisa mai jos,
+       si e corecta. Pe voal insa, `padding-bottom` MUTA copilul ancorat la capat.
+       Fara tastatura `--kb` e 0, deci nu se schimba nimic. */
     .backdrop {
       align-items: flex-end;
-      padding: 0;
+      padding: 0 0 var(--kb, 0px);
+      transition: padding-bottom var(--dur-base) var(--ease);
     }
     .modal {
       max-width: 100%;
       /* dvh urmareste bara de adresa; sheet-ul nu trebuie sa depaseasca ecranul
          nici cat timp bara se retrage. `--kb` (T1b) o scade pe cea a
          tastaturii: foaia se MICSOREAZA, nu-si impinge continutul — un
-         `padding-bottom` ar tine butoanele tot sub tastatura, doar mai jos. */
+         `padding-bottom` PE EA ar tine butoanele tot sub tastatura, doar mai jos
+         (ridicarea o face voalul, mai sus). */
       max-height: min(92dvh, 100dvh - var(--safe-top) - 24px - var(--kb, 0px));
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       border-bottom: none;

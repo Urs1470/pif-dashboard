@@ -37,7 +37,6 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import Button from '../components/ui/Button.svelte'
   import Modal from '../components/ui/Modal.svelte'
-  import CampTitlu from '../components/ui/CampTitlu.svelte'
   import Input from '../components/ui/Input.svelte'
   import Textarea from '../components/ui/Textarea.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
@@ -1290,17 +1289,16 @@
 
 <Modal bind:open={showNewModal} title="Task Nou" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
-    <!-- TITLUL E SUBIECTUL FERESTREI, NU PRIMUL DINTRE PATRU CAMPURI.
-         Vezi `CampTitlu.svelte` pentru ce inseamna asta si de ce e `<textarea>`.
-         Focusul cade pe el la deschidere (`campTitlu`, mai jos): pe telefon
-         butonul „+ Nou" E calea de adaugare, deci intre gandul „am de facut X"
-         si prima litera n-are ce sta o atingere in plus.
+    <!-- Titlul e un camp ca oricare altul — a fost o vreme unul mare, care isi
+         crestea inaltimea, si a plecat la cererea lui Ion („poti sa faci campul
+         titlu task cum era inainte"). Ce ramane castigat: focusul cade pe el la
+         deschidere (`campTitlu`, mai jos), deci pe telefon, unde „+ Nou" E calea
+         de adaugare, nu mai sta o atingere intre gand si prima litera.
          DESCRIEREA A PLECAT DE AICI (Ion: „nu folosesc niciodata acel camp").
          Nu s-a pierdut nimic: nota unui task se scrie din randul lui, la
          „Adaugă notă", unde ai si editorul intreg, nu trei randuri intr-un
          formular de creare. -->
-    <CampTitlu bind:value={formTitle} bind:ref={campTitlu}
-               placeholder="Ce ai de făcut?" onenter={handleCreate} />
+    <Input label="Titlu" bind:value={formTitle} bind:ref={campTitlu} placeholder="Ce ai de făcut?" />
     <div class="form-row-2">
       <!-- Componentele librariei, nu campuri de mana: regula din CLAUDE.md
            („NU <input> brut in formulare"). Categoria era singurul camp brut
@@ -1325,7 +1323,7 @@
          acelasi lucru n-au voie sa-l ceara in doua feluri. Descrierea RAMANE
          doar aici — la creare nu se scrie niciodata (Ion), la editare e singura
          cale scurta catre nota unui task deja existent. -->
-    <CampTitlu bind:value={formTitle} placeholder="Titlu task" onenter={handleEdit} />
+    <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
     <div class="form-row-2">
       <!-- Componentele librariei, nu campuri de mana: regula din CLAUDE.md
