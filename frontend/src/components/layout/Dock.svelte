@@ -386,6 +386,13 @@
            pus pentru centrare, si foaia ar fi plecat lateral cat tine animatia. -->
       <div class="mm-ancora">
         <div class="mm-foaie" role="menu" aria-label="Mai mult"
+             onkeydown={(e) => {
+               const items = [...e.currentTarget.querySelectorAll('[role="menuitem"]')]
+               const idx = items.indexOf(document.activeElement)
+               if (e.key === 'ArrowDown') { e.preventDefault(); items[(idx + 1) % items.length]?.focus() }
+               else if (e.key === 'ArrowUp') { e.preventDefault(); items[(idx - 1 + items.length) % items.length]?.focus() }
+               else if (e.key === 'Escape') { e.preventDefault(); foaieDeschisa = false }
+             }}
              transition:fly={{ y: 12, duration: motionDuration(DUR_BASE), easing: EASE }}>
           <button class="mm-cauta" onclick={openSearch} role="menuitem">
             <Search size={17} /> Caută în tot dashboardul

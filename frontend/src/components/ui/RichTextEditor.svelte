@@ -785,6 +785,8 @@
        deruleaza: ar fi intins bara la infinit. Starea vine dupa ultimul buton. */
     .tspatiu { display: none; }
 
+    .math-btn { min-height: var(--tap-min); }
+    .math-inp { min-height: var(--tap-min); }
     .math-bar { top: 8px; width: calc(100% - 12px); }
     /* Padding-ul de jos tine ultimul rand deasupra barei, care acum e acolo. */
     .rte-editor { padding: 16px 16px 96px; min-height: 100%; }

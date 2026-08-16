@@ -137,6 +137,9 @@
     else if (e.key === 'ArrowUp') { e.preventDefault(); selected = nextSelectable(selected, -1) }
     else if (e.key === 'Enter') { activateSelected() }
     else if (e.key === 'Escape') { close() }
+    else if (e.key === 'Tab') { e.preventDefault() }
+    else if (e.key === 'Home') { e.preventDefault(); selected = nextSelectable(-1, 1) }
+    else if (e.key === 'End') { e.preventDefault(); selected = nextSelectable(flatResults.length, -1) }
   }
 
   function activateSelected() {
@@ -253,7 +256,7 @@
   <div class="palette-backdrop" onclick={close} role="presentation"
        style:--nivel={nivel} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
        transition:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
-    <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="listbox" tabindex="-1"
+    <div class="palette" onclick={(e) => e.stopPropagation()} onkeydown={handleKey} role="dialog" aria-label="Paletă de comenzi" tabindex="-1"
          transition:paletaIn>
       <!-- RANDUL DE SUS *ESTE* CAMPUL.
            Era o pastila cu chenar si fundal propriu, asezata INAUNTRUL panoului:
@@ -266,13 +269,17 @@
           bind:this={inputEl}
           type="text"
           bind:value={query}
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="cp-results"
+          aria-autocomplete="list"
           placeholder="Caută în tot dashboardul..."
           autocomplete="off"
           spellcheck="false"
         />
         <kbd>Esc</kbd>
       </div>
-      <div class="palette-list">
+      <div class="palette-list" id="cp-results" role="listbox">
         {#if !isSearchMode}
           {#each navFiltered as cmd, i (cmd.path)}
             <button

@@ -930,10 +930,7 @@
       font-weight: var(--fw-semibold);
       color: var(--text-dim);
     }
-    .modal.sheet .modal-close { width: 40px; height: 40px; margin-right: -6px; }
-    /* 32px e o tinta de cursor. Degetul are nevoie de 44, iar `X`-ul e singura
-       iesire cand tastatura acopera restul sheet-ului. Marginea negativa il tine
-       aliniat optic cu titlul, desi caseta lui a crescut. */
+    .modal.sheet .modal-close { width: var(--tap-min); height: var(--tap-min); margin-right: -6px; }
     .modal-close { width: var(--tap-min); height: var(--tap-min); margin-right: -10px; }
 
     .modal-header { padding-left: var(--space-md); padding-right: var(--space-md); }

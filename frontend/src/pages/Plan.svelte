@@ -2439,19 +2439,12 @@
     .seg { display: none; }
     .toggle { display: none; }
     .mlist { display: flex; }
-    /* Pe telefon pista nu se randeaza, deci nici panoul ei: acolo reperul duce la
-       randul din lista, care are deja foaia lui. Regula e si o plasa — daca
-       micsorezi fereastra cu panoul deschis, el nu ramane atarnat singur. */
     .panou { display: none; }
     .lucru, .lucru.cu-panou { display: block; }
-    /* SERTARUL STA SUB AGENDA, NU DEASUPRA EI (raportat de Ion, cu poza).
-       In DOM sertarul vine inaintea listei mobile fiindca pe desktop locul lui e
-       sub grafic — dar pe telefon graficul dispare si sertarul urca primul lucru
-       pe ecran, inaintea pistei „Perioade". „Fara termen" e sertarul, nu agenda
-       (aceeasi regula ca in /tasks: ultima grupa) — deci coboara la coada. */
     .page { display: flex; flex-direction: column; }
     .mlist { order: 1; }
     .backlog { order: 2; }
+    .mbtn { width: var(--tap-min); height: var(--tap-min); }
   }
 
   @media (max-width: 768px) {

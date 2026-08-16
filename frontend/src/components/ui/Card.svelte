@@ -38,8 +38,12 @@
   }
   .clickable {
     cursor: pointer;
+    transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease);
   }
   .clickable:hover {
     box-shadow: var(--shadow-md);
+  }
+  .clickable:active {
+    transform: scale(var(--press-scale));
   }
 </style>

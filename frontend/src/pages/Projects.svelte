@@ -219,7 +219,15 @@
         {/if}
       </button>
       {#if sortOpen}
-        <div class="sort-menu" role="listbox" transition:fly={{ y: -4, duration: motionDuration(DUR_BASE), easing: EASE }}>
+        <div class="sort-menu" role="listbox"
+             onkeydown={(e) => {
+               const opts = [...e.currentTarget.querySelectorAll('[role="option"]')]
+               const idx = opts.indexOf(document.activeElement)
+               if (e.key === 'ArrowDown') { e.preventDefault(); opts[(idx + 1) % opts.length]?.focus() }
+               else if (e.key === 'ArrowUp') { e.preventDefault(); opts[(idx - 1 + opts.length) % opts.length]?.focus() }
+               else if (e.key === 'Escape') { e.preventDefault(); sortOpen = false }
+             }}
+             transition:fly={{ y: -4, duration: motionDuration(DUR_BASE), easing: EASE }}>
           {#each sortOptions as opt (opt.value)}
             <button class="sort-opt" class:sel={sort.key === opt.value} role="option" aria-selected={sort.key === opt.value} onclick={() => pickSort(opt.value)}>
               <span>{opt.label}</span>
@@ -442,7 +450,7 @@
   .sort-opt:hover { background: var(--bg-hover); color: var(--text); }
   .sort-opt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
 
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: var(--space-md); }
   /* HOVERUL RIDICA UMBRA, NU CARDUL (T13).
      `.pcard` era singurul obiect din aplicatie care se MUTA la hover (4px in
      sus). Dockul scosese exact asta, cu motivul scris in cod: o suprafata care
@@ -450,7 +458,7 @@
      ea, iar intr-o grila de carduri asta inseamna ca randul respira sub mouse.
      Elevatia se citeste din UMBRA — deci hoverul o adanceste, si atat.
      Raspunsul ramane pe `--dur-fast`: hoverul ajunge inaintea deciziei. */
-  .pcard { position: relative; display: flex; flex-direction: column; min-height: 142px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 18px 20px; cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease); }
+  .pcard { position: relative; display: flex; flex-direction: column; min-height: 142px; background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: var(--space-md) var(--space-20); cursor: pointer; text-align: left; transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease); }
   /* Doar unde exista cursor. Pe touch, cardul atins ramanea ridicat cu 4px si cu
      umbra pana atingeai altceva — parea selectat, desi nu era. */
   @media (hover: hover) {
@@ -556,7 +564,7 @@
     position: fixed; right: calc(var(--space-md) + var(--safe-right));
     bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
     width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
-    border-radius: 18px; border: none;
+    border-radius: var(--radius-lg); border: none;
     background: var(--accent); color: var(--accent-text);
     box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
     cursor: pointer; transition: var(--transition-pressable); }

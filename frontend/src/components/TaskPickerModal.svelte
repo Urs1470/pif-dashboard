@@ -194,7 +194,7 @@
     align-items: center;
     gap: 11px;
     height: 56px;
-    padding: 0 18px;
+    padding: 0 var(--space-20);
     border-bottom: 1px solid var(--border);
     color: var(--text-dim);
     flex: none;

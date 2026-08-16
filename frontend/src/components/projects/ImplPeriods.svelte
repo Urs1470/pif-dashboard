@@ -16,11 +16,13 @@
   import { shortDate } from '../../lib/calendarDates.js'
   import Skeleton from '../ui/Skeleton.svelte'
   import ImplPeriodModal from './ImplPeriodModal.svelte'
+  import { toast } from '../../stores/ui.svelte.js'
 
   let { projectId } = $props()
 
   let periods = $state([])
   let loading = $state(true)
+  let eroare = $state(false)
   let open = $state(false)
   let editing = $state(null)
 
@@ -33,8 +35,12 @@
     const gata = dinCache(u)
     if (gata !== undefined) { periods = gata; loading = false }
     else loading = true
+    eroare = false
     try { periods = await preia(u) }
-    catch { if (gata === undefined) periods = [] }
+    catch (e) {
+      if (gata === undefined) { periods = []; eroare = true }
+      toast(`Perioade: ${e.message}`, 'error')
+    }
     finally { loading = false }
   }
 
@@ -70,6 +76,8 @@
 
   {#if loading && periods.length === 0}
     <Skeleton varianta="rand" randuri={2} />
+  {:else if eroare}
+    <p class="ip-muted ip-eroare">Nu s-au putut încărca perioadele. <button class="ip-reinc" onclick={load}>Reîncearcă</button></p>
   {:else if periods.length === 0}
     <p class="ip-muted">Nicio perioadă. Adaugă una — de acolo se nasc benzile din Calendar și Planificator.</p>
   {:else}
@@ -122,6 +130,8 @@
   .ip-add:hover { background: var(--accent-deep); }
   .ip-add:active { transform: scale(var(--press-scale)); }
   .ip-muted { color: var(--text-dim); font-size: var(--font-small); padding: 6px 2px; text-wrap: pretty; }
+  .ip-eroare { color: var(--danger); }
+  .ip-reinc { color: var(--accent); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; background: none; border: none; padding: 0; text-decoration: underline; }
 
   .ip-list { display: flex; flex-direction: column; }
   .ip-sep { height: 1px; background: var(--border); margin: 0 10px; }

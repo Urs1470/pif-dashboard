@@ -54,7 +54,9 @@
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import MarkdownView from '../components/notes/MarkdownView.svelte'
   import EditorLung from '../components/ui/EditorLung.svelte'
-  import { todayISO, addDays } from '../lib/calendarDates.js'
+  import { todayISO, addDays, diffDays } from '../lib/calendarDates.js'
+
+  let azi = $state(todayISO())
 
   let { params } = $props()
   let project = $state(null)
@@ -477,17 +479,25 @@
   }
 
   async function handleDeleteProject() {
-    await deleteProject(params.id)
-    toast('Proiect șters', 'success')
-    navigate('/projects')
+    try {
+      await deleteProject(params.id)
+      toast('Proiect șters', 'success')
+      navigate('/projects')
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    }
   }
 
   async function doDeleteTask() {
     if (!taskDeleteId) return
-    await deleteTask(taskDeleteId)
-    taskDeleteId = null
-    await reloadTasks()
-    toast('Task șters', 'success')
+    try {
+      await deleteTask(taskDeleteId)
+      taskDeleteId = null
+      await reloadTasks()
+      toast('Task șters', 'success')
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    }
   }
 
 
@@ -525,10 +535,9 @@
       try {
         const subs = await loadSubtasks(taskId)
         subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
-      } catch (_) {
-        // Cheia se scrie si pe eroare: altfel panoul n-ar avea ce arata si
-        // atingerea randului ar ramane fara raspuns.
+      } catch (e) {
         subtasksCache = { ...subtasksCache, [taskId]: [] }
+        toast(`Subtaskuri: ${e.message}`, 'error')
       } finally {
         inZbor.delete(taskId)
       }
@@ -549,8 +558,9 @@
     subtasksCache = { ...subtasksCache, [taskId]: subtasksCache[taskId].map(s => s.id === sub.id ? { ...s, done: next } : s) }
     try {
       await updateSubtask(sub.id, { done: next })
-    } catch (_) {
+    } catch (e) {
       subtasksCache = { ...subtasksCache, [taskId]: subtasksCache[taskId].map(s => s.id === sub.id ? { ...s, done: sub.done } : s) }
+      toast(`Eroare: ${e.message}`, 'error')
     }
     await reloadTasks()
   }
@@ -632,7 +642,23 @@
     showFieldEdit = true
   }
 
-  onMount(() => { load() })
+  function improspateazaZiua() {
+    const nou = todayISO()
+    if (nou !== azi) azi = nou
+  }
+
+  onMount(() => {
+    load()
+    const onVis = () => { if (document.visibilityState === 'visible') improspateazaZiua() }
+    document.addEventListener('visibilitychange', onVis)
+    const laMiezulNoptii = () => {
+      const acum = new Date()
+      const maine = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + 1)
+      return setTimeout(() => { improspateazaZiua(); idTimer = laMiezulNoptii() }, maine - acum + 500)
+    }
+    let idTimer = laMiezulNoptii()
+    return () => { clearTimeout(idTimer); document.removeEventListener('visibilitychange', onVis) }
+  })
 
   // TABURILE SE INCALZESC LA DESCHIDEREA PAGINII, nu la hover.
   //
@@ -687,7 +713,7 @@
   const FAZA_LABEL = { pregatire: 'Pregătire', implementare: 'Implementare' }
   const urmDays = $derived.by(() => {
     if (!project?.urmatoarea) return null
-    return Math.round((new Date(String(project.urmatoarea).slice(0, 10)) - new Date(new Date().toDateString())) / 86400000)
+    return diffDays(azi, String(project.urmatoarea).slice(0, 10))
   })
   function urmLabel(d) {
     if (d === null) return ''
@@ -700,7 +726,7 @@
   // pentru un proiect închis, iar ea decide până unde ține Calendarul perioadele.
   const zileDeLaFinal = $derived.by(() => {
     if (!project?.data_finalizare) return null
-    return Math.round((new Date(new Date().toDateString()) - new Date(String(project.data_finalizare).slice(0, 10))) / 86400000)
+    return diffDays(String(project.data_finalizare).slice(0, 10), azi)
   })
   function finalLabel(d) {
     if (d === null) return ''
@@ -1248,7 +1274,7 @@
   .rail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
   .rail-main { min-width: 0; }
   .rail { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-height) + 16px); max-height: calc(100vh - var(--header-height) - var(--space-lg)); overflow-y: auto; }
-  .rcell { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 16px 18px; }
+  .rcell { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-md) var(--space-20); }
   .rprog { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; }
   .rprog-num { font-family: var(--font-mono); font-size: var(--font-title); font-weight: var(--fw-semibold); color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
   .rbar { flex: 1; height: 6px; border-radius: var(--radius-full); background: var(--bg-panel); overflow: hidden; }
@@ -1619,6 +1645,8 @@
     .td-jos { gap: var(--space-lg); }
     .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
     .quick-add-btn { width: var(--tap-min); }
+    .qa-chip { min-height: var(--tap-sheet); }
+    .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); }
     /* Aceeasi reteta ca in Taskuri si Astăzi: 44px de atins, 30px de latime.
        Cercul de 18px intr-o caseta de 44 impingea titlul cu un sfert de ecran. */
     .check { position: relative; min-width: 30px; width: 30px; min-height: var(--tap-min);

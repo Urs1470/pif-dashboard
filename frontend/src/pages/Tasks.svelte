@@ -297,6 +297,8 @@
       }, { arhiva: showArchive, sfera: 'toate' })
       resetForm()
       showNewModal = false
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
     } finally { creating = false }
   }
 
@@ -323,9 +325,9 @@
       }, { arhiva: showArchive, sfera: 'toate' })
       quickTitle = ''
       quickData = ''
-      // Focusul RAMANE in camp: intr-o lista de facut adaugi trei lucruri la rand,
-      // nu unul. Fara asta, tastatura se inchide dupa fiecare.
       quickInput?.focus()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
     } finally { quickAdding = false }
   }
 
@@ -370,6 +372,8 @@
       showEditModal = false
       editingTask = null
       await reload()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
     } finally { creating = false }
   }
 
@@ -469,23 +473,43 @@
   }
 
 
+  let subtaskBusy = $state(new Set())
+
   async function toggleSubtaskDone(sub) {
-    await updateSubtask(sub.id, { done: sub.done ? 0 : 1 })
+    if (subtaskBusy.has(sub.id)) return
+    subtaskBusy = new Set([...subtaskBusy, sub.id])
+    const next = sub.done ? 0 : 1
     subtasksCache = {
       ...subtasksCache,
-      [sub.task_id]: subtasksCache[sub.task_id].map(s => s.id === sub.id ? { ...s, done: s.done ? 0 : 1 } : s)
+      [sub.task_id]: subtasksCache[sub.task_id].map(s => s.id === sub.id ? { ...s, done: next } : s)
+    }
+    try {
+      await updateSubtask(sub.id, { done: next })
+    } catch (e) {
+      subtasksCache = {
+        ...subtasksCache,
+        [sub.task_id]: subtasksCache[sub.task_id].map(s => s.id === sub.id ? { ...s, done: sub.done } : s)
+      }
+      toast(`Eroare: ${e.message}`, 'error')
+    } finally {
+      const s = new Set(subtaskBusy); s.delete(sub.id); subtaskBusy = s
     }
   }
 
+  let addingSubtask = $state(false)
+
   async function addSubtask(taskId) {
-    if (!newSubtaskTitle.trim()) return
-    // Compozitorul RAMANE deschis, gol si focalizat: subtaskurile se scriu in
-    // rafala, nu unul singur. La fel ca la compozitorul de taskuri din lista.
-    await createSubtask(taskId, newSubtaskTitle.trim())
-    newSubtaskTitle = ''
-    const subs = await loadSubtasks(taskId)
-    subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
-    await reload()
+    if (!newSubtaskTitle.trim() || addingSubtask) return
+    addingSubtask = true
+    try {
+      await createSubtask(taskId, newSubtaskTitle.trim())
+      newSubtaskTitle = ''
+      const subs = await loadSubtasks(taskId)
+      subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
+      await reload()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    } finally { addingSubtask = false }
   }
 
   // REDENUMIREA UNUI SUBTASK.
@@ -506,10 +530,14 @@
     const nou = editSubTitlu.trim()
     editSubId = ''
     if (!nou || nou === sub.titlu) return
-    await updateSubtask(sub.id, { titlu: nou })
-    subtasksCache = {
-      ...subtasksCache,
-      [sub.task_id]: (subtasksCache[sub.task_id] || []).map(s => s.id === sub.id ? { ...s, titlu: nou } : s),
+    try {
+      await updateSubtask(sub.id, { titlu: nou })
+      subtasksCache = {
+        ...subtasksCache,
+        [sub.task_id]: (subtasksCache[sub.task_id] || []).map(s => s.id === sub.id ? { ...s, titlu: nou } : s),
+      }
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
     }
   }
 
@@ -608,10 +636,14 @@
 
   async function doDeleteTask() {
     if (!taskDeleteId) return
-    await deleteGlobalTask(taskDeleteId)
-    taskDeleteId = null
-    await reload()
-    toast('Task șters', 'success')
+    try {
+      await deleteGlobalTask(taskDeleteId)
+      taskDeleteId = null
+      await reload()
+      toast('Task șters', 'success')
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    }
   }
 
 
@@ -1557,7 +1589,7 @@
     position: fixed; right: calc(var(--space-md) + var(--safe-right));
     bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
     width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
-    border-radius: 18px; border: none;
+    border-radius: var(--radius-lg); border: none;
     background: var(--accent); color: var(--accent-text);
     box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
     cursor: pointer; transition: var(--transition-pressable); }

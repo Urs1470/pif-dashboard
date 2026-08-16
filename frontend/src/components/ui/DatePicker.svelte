@@ -327,6 +327,7 @@
   .dp-pop.sheet {
     top: auto; bottom: 0; left: 0; right: 0;
     width: auto; max-width: 100%;
+    z-index: var(--z-tooltip);
     padding: 0 var(--space-md) calc(var(--space-md) + var(--safe-bottom));
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-bottom: none;

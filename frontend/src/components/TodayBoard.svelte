@@ -367,7 +367,7 @@
                cu degetul (lib/reordonare.js). Statea la capatul din dreapta al
                randului, adica exact unde e coloana de termen — deci pe telefon
                reordonarea si termenul se bateau pe aceiasi pixeli. -->
-          <span class="grip" role="button" tabindex="0" aria-label="Trage pentru a reordona" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
+          <span class="grip" role="button" tabindex="0" aria-label="Reordonează cu săgețile" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} onkeydown={(e) => { if (e.key === 'ArrowUp' && i > 0) { e.preventDefault(); commitMove(i, i - 1) } else if (e.key === 'ArrowDown' && i < items.length - 1) { e.preventDefault(); commitMove(i, i + 1) } }} title="Trage sau folosește săgețile pentru a reordona"><GripVertical size={15} /></span>
           <span class="gl-maner" aria-hidden="true"><GripVertical size={17} /></span>
 
           <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">
@@ -539,7 +539,7 @@
      de pe `input` pe invelis, ca iconita sa stea in interiorul lor; inputul
      ramane text gol pe fondul invelisului. Focusul se muta odata cu ele:
      `:focus-within`, fiindca ce primeste focusul e copilul. */
-  .quick-add { display: flex; margin: 0 var(--space-sm) 18px; }
+  .quick-add { display: flex; margin: 0 var(--space-sm) var(--space-md); }
   .qa-camp { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
     min-height: 44px; padding: 0 14px; background: var(--bg-elevated);
     border: 1px solid var(--border); border-radius: var(--radius-sm);

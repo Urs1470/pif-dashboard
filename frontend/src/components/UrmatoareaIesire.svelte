@@ -67,16 +67,15 @@
 
   onMount(() => {
     incarca()
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') improspateazaZiua()
-    })
+    const onVis = () => { if (document.visibilityState === 'visible') improspateazaZiua() }
+    document.addEventListener('visibilitychange', onVis)
     const laMiezulNoptii = () => {
       const acum = new Date()
       const maine = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + 1)
       return setTimeout(() => { improspateazaZiua(); idTimer = laMiezulNoptii() }, maine - acum + 500)
     }
     let idTimer = laMiezulNoptii()
-    return () => clearTimeout(idTimer)
+    return () => { clearTimeout(idTimer); document.removeEventListener('visibilitychange', onVis) }
   })
 
   function scurt(client) {
