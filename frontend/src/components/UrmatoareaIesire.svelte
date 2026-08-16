@@ -10,38 +10,56 @@
   // Datele vin din /api/calendar, care le calculează deja pentru Calendar.
   import { onMount } from 'svelte'
   import { MapPin, Building2, AlertTriangle, ChevronRight, CalendarX2 } from '@lucide/svelte'
-  import { apiJson } from '../lib/api.js'
+  import { preia, dinCache } from '../lib/cache.js'
   import { navigate } from '../lib/router.svelte.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { todayISO, addDays, diffDays, shortDate } from '../lib/calendarDates.js'
 
-  let data = $state(null)
+  const azi = todayISO()
+  const URL_IESIRI = `/api/calendar?start=${azi}&zile=120`
+
+  // PORNESTE PLINA, DACA STIM CEVA. `dinCache` raspunde SINCRON, la evaluarea
+  // modulului, deci valoarea e aici inainte de primul cadru — nu dupa `onMount`,
+  // cand pagina s-a desenat deja o data fara ea.
+  let data = $state(dinCache(URL_IESIRI) ?? null)
   // EROAREA NU E ACELASI LUCRU CU „NIMIC PLANIFICAT". Inainte, orice esec de
   // retea lasa `data = null` si componenta disparea FARA NICIUN SEMN — adica
   // exact lectia scrisa la v29 in CLAUDE.md: o absenta tacuta te invata sa nu
   // te bazezi pe restul. Linia ramane pe ecran si spune ca nu stie, cu drum
   // de reincercare.
   let eroare = $state(false)
-  const azi = todayISO()
 
-  // INSTANT DIN CACHE, PROASPAT DIN RETEA (raportat de Ion: banda „Acum" venea
-  // dupa taskurile din „Astazi"). /api/calendar pe 120 de zile e cea mai grea
-  // cerere de pe ecran, iar prima linie a paginii era ultima sosita. Ultimul
-  // raspuns bun sta in sessionStorage: la montare se arata ACELA imediat, iar
-  // reteaua doar il improspateaza — perioadele se schimba rar in cele cateva
-  // minute dintre doua vizite, deci „vechiul" e aproape mereu si „adevaratul".
-  const CHEIE_CACHE = 'pif-iesiri'
+  // INSTANT DIN MEMORIE, PROASPAT DIN RETEA (raportat de Ion de doua ori: intai
+  // „banda «Acum» venea dupa taskurile din «Astazi»", apoi „pe mobil, pe Acasa,
+  // urmatoarea zi apare putin mai tarziu decat pagina"). /api/calendar pe 120 de
+  // zile e cea mai grea cerere de pe ecran, iar prima linie a paginii era ultima
+  // sosita.
+  //
+  // Prima reparatie tinea ultimul raspuns in `sessionStorage`, si de aceea nu a
+  // fost de ajuns: `sessionStorage` moare cand se inchide fila — iar pe Android
+  // exact asta INSEAMNA „pornirea aplicatiei", adica fix momentul in care se
+  // vedea asteptarea. Acceleratorul lipsea tocmai unde era nevoie de el.
+  // Verificat: dupa o vizita pe Acasa, `pif-agenda` (boardul) statea in
+  // `localStorage` si `pif-iesiri` (linia asta) in `sessionStorage` — doua
+  // blocuri de pe acelasi ecran cu doua sorti diferite la repornire.
+  //
+  // Acum nu mai are cache propriu deloc: foloseste `lib/cache.js`, care exista
+  // fix pentru asta („memoria supravietuieste repornirii"), se hidrateaza sincron
+  // din disc la incarcarea modulului si imparte cererile in zbor. Aceeasi
+  // decizie pe care a luat-o deja `stores/agenda` cand a mutat boardul.
+  //
+  // Raspunsul de ieri nu poate ajunge pe ecran: URL-ul poarta ziua in el
+  // (`start=${azi}`), deci un raspuns de ieri e alta cheie si pur si simplu nu
+  // se gaseste — nu e nevoie de o verificare in plus, ca la agenda.
   async function incarca() {
     eroare = false
     try {
-      const c = sessionStorage.getItem(CHEIE_CACHE)
-      if (c && !data) data = JSON.parse(c)
-    } catch (_) { /* cache corupt sau indisponibil — reteaua decide */ }
-    try {
-      const proaspat = await apiJson(`/api/calendar?start=${azi}&zile=120`)
-      data = proaspat
-      try { sessionStorage.setItem(CHEIE_CACHE, JSON.stringify(proaspat)) } catch (_) {}
-    } catch (_) { if (!data) { data = null; eroare = true } }
+      data = await preia(URL_IESIRI)
+    } catch (_) {
+      // Cu date vechi pe ecran, un esec de retea nu le sterge: ramane ce se
+      // vede. Fara ele, linia SPUNE ca nu stie (vezi nota de la `eroare`).
+      if (!data) { data = null; eroare = true }
+    }
   }
   onMount(incarca)
 
