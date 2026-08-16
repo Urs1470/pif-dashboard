@@ -78,7 +78,7 @@
   // ca pe server).
   const sferaActiva = $derived(router.query.sfera === 'personal' ? 'personal' : 'munca')
 
-  let showArchive = $state(false)
+  let showArchive = $state(router.query.arhiva === '1')
   let taskDeleteId = $state(null)
   let showTaskDelete = $state(false)
   let showNewModal = $state(false)
@@ -172,50 +172,45 @@
   // stampila + taietura care matura + textul care se stinge, apoi randul pleaca).
   // Regulile traiesc in global.css (`.bifare`); aici doar clipa.
   let bifatAcum = $state('')
+  let toggling = $state(false)
 
   async function toggleStatus(task, dinGest = false) {
-    const next = task.status === 'done' ? 'to_do' : 'done'
-    // STAMPILA INAINTE DE PLECARE — dar nu si pe gest: la glisare verdele
-    // pistei si zborul randului sunt deja raspunsul, iar a doua animatie peste
-    // aceiasi pixeli ar incalca „o singura animatie pe schimbare".
-    if (next === 'done' && !dinGest) {
-      bifatAcum = task.id
-      await new Promise(r => setTimeout(r, motionDuration(400)))
-      bifatAcum = ''
-    }
-    // OPTIMIST, ca randul sa plece IN CLIPA in care il atingi.
-    // Fara asta, intre atingere si disparitie sta un dus-intors cu serverul
-    // (~200ms de nimic), iar animatia de iesire nu se mai citeste ca raspuns la
-    // gestul tau, ci ca ceva ce se intampla singur, mai tarziu. La eroare,
-    // reincarcarea din `catch` pune lista la loc — deci minciuna dureaza cel
-    // mult cat cererea.
-    globalTasks.items = globalTasks.items.map(t => t.id === task.id ? { ...t, status: next } : t)
-    let res
+    if (toggling) return
+    toggling = true
     try {
-      res = await updateGlobalTask(task.id, { status: next })
-    } catch (e) {
+      const next = task.status === 'done' ? 'to_do' : 'done'
+      // STAMPILA INAINTE DE PLECARE — dar nu si pe gest: la glisare verdele
+      // pistei si zborul randului sunt deja raspunsul, iar a doua animatie peste
+      // aceiasi pixeli ar incalca „o singura animatie pe schimbare".
+      if (next === 'done' && !dinGest) {
+        bifatAcum = task.id
+        await new Promise(r => setTimeout(r, motionDuration(400)))
+        bifatAcum = ''
+      }
+      // OPTIMIST, ca randul sa plece IN CLIPA in care il atingi.
+      globalTasks.items = globalTasks.items.map(t => t.id === task.id ? { ...t, status: next } : t)
+      let res
+      try {
+        res = await updateGlobalTask(task.id, { status: next })
+      } catch (e) {
+        await reload()
+        toast(`Eroare: ${e.message}`, 'error')
+        return
+      }
       await reload()
-      toast(`Eroare: ${e.message}`, 'error')
-      return
-    }
-    await reload()
-    if (res?.recurring_spawned) {
-      toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
-      return
-    }
-    // ANULEAZA la bifare. Pe telefon bifatul se face si din glisare, deci se face
-    // si din greseala — iar un task bifat DISPARE din lista (trece in „finalizate",
-    // sectiune inchisa). Fara drumul inapoi ramai cu un task pierdut si convingerea
-    // ca l-ai facut. Nu e o stergere, deci nu amanam nimic: actiunea s-a intamplat
-    // deja, butonul doar o intoarce.
-    if (next === 'done') {
-      toastUndo(`Făcut: ${task.titlu.slice(0, 34)}${task.titlu.length > 34 ? '…' : ''}`, {
-        onUndo: async () => {
-          await updateGlobalTask(task.id, { status: 'to_do' })
-          await reload()
-        },
-      })
-    }
+      if (res?.recurring_spawned) {
+        toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
+        return
+      }
+      if (next === 'done') {
+        toastUndo(`Făcut: ${task.titlu.slice(0, 34)}${task.titlu.length > 34 ? '…' : ''}`, {
+          onUndo: async () => {
+            await updateGlobalTask(task.id, { status: 'to_do' })
+            await reload()
+          },
+        })
+      }
+    } finally { toggling = false }
   }
 
   /** Muta termenul unui task. `null` il sterge (taskul se intoarce in „Fără termen"). */
@@ -422,11 +417,13 @@
       try {
         const subs = await loadSubtasks(taskId)
         subtasksCache = { ...subtasksCache, [taskId]: Array.isArray(subs) ? subs : [] }
-      } catch (_) {
+      } catch (e) {
         // Si pe eroare cheia se scrie: panoul se deschide gol, cu invitatia de
         // adaugare. Fara ea, `toggleTaskExpand` n-ar avea ce arata si atingerea
         // randului ar ramane fara raspuns.
+        console.error('Subtaskuri:', e)
         subtasksCache = { ...subtasksCache, [taskId]: [] }
+        toast('Nu s-au putut încărca subtaskurile', 'error')
       } finally {
         inZbor.delete(taskId)
       }
@@ -802,6 +799,22 @@
   // FARA sferaActiva printre dependinte: sfera nu mai cere retea (vine „toate"
   // dintr-un foc), deci comutarea ei nu redeclanseaza fetch-ul.
   $effect(() => { loadGlobalTasks({ arhiva: showArchive, sfera: 'toate' }) })
+
+  // Arhiva in URL: starea supravietuieste unui refresh.
+  $effect(() => {
+    const arhiva = showArchive
+    const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : ''
+    const qi = hash.indexOf('?')
+    const path = qi === -1 ? hash : hash.slice(0, qi)
+    const params = new URLSearchParams(qi === -1 ? '' : hash.slice(qi + 1))
+    if (arhiva) params.set('arhiva', '1')
+    else params.delete('arhiva')
+    const qs = params.toString()
+    const target = '#' + (path || '/tasks') + (qs ? '?' + qs : '')
+    if (window.location.hash !== target) {
+      history.replaceState(null, '', target)
+    }
+  })
 
   // Editorul lung se aduce IN LINISTE, dupa ce pagina e gata de folosit — nu la
   // import, unde ar sta pe drumul critic al primei deschideri (vezi

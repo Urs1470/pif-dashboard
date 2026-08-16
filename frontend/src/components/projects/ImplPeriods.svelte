@@ -8,7 +8,9 @@
 
 <script>
   import { onMount } from 'svelte'
+  import { fade } from 'svelte/transition'
   import { MapPin, Building2, Plus, CalendarRange, Pencil, Check } from '@lucide/svelte'
+  import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
   import { apiJson } from '../../lib/api.js'
   import { preia, dinCache, uita } from '../../lib/cache.js'
   import { shortDate } from '../../lib/calendarDates.js'
@@ -77,7 +79,7 @@
     <div class="ip-list">
       {#each periods as p, i (p.id)}
         {#if i > 0}<span class="ip-sep"></span>{/if}
-        <button class="ip-rand" onclick={() => edit(p)}>
+        <button class="ip-rand" onclick={() => edit(p)} transition:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
           <span class="ip-ico">
             {#if p.locatie === 'sediu'}<Building2 size={15} strokeWidth={1.5} />{:else}<MapPin size={15} strokeWidth={1.5} />{/if}
           </span>

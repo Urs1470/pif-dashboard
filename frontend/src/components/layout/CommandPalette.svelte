@@ -117,7 +117,13 @@
           searchResults = (data.results || []).filter(r => !DROPPED_TYPES.has(r.type))
         } catch (_) {
           searchResults = []
-        } finally { searching = false }
+        } finally {
+          searching = false
+          if (flatResults[selected]?._group) {
+            const next = nextSelectable(selected, 1)
+            if (next !== selected) selected = next
+          }
+        }
       }, 200)
     } else {
       searchResults = []

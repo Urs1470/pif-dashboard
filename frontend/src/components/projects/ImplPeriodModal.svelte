@@ -259,7 +259,7 @@
       </div>
     {/if}
 
-    <button class="ip-salveaza" onclick={save} disabled={busy}>Salvează</button>
+    <button class="ip-salveaza" onclick={save} disabled={busy || !intervalOk}>Salvează</button>
 
     {#if period?.id}
       <div class="ip-rar">

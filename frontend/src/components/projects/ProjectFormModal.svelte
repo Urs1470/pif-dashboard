@@ -60,7 +60,7 @@
   })
 
   async function save() {
-    if (!form.nume.trim()) return
+    if (!form.nume.trim()) { toast('Numele e obligatoriu', 'error'); return }
     saving = true
     try {
       if (isEdit) {

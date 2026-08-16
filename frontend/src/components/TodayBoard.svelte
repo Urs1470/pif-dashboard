@@ -287,7 +287,7 @@
         <span class="bh-restante"><span class="bh-punct"></span>{restanteCount} {restanteCount === 1 ? 'restant' : 'restante'}</span>
       {/if}
     </div>
-    <button class="bh-add" onclick={() => showPicker = true}>
+    <button class="bh-add" onclick={() => showPicker = true} aria-label="Adaugă task existent">
       <ListPlus size={15} /> <span class="bh-add-txt">Adaugă task existent</span>
     </button>
   </div>
@@ -367,7 +367,7 @@
                cu degetul (lib/reordonare.js). Statea la capatul din dreapta al
                randului, adica exact unde e coloana de termen — deci pe telefon
                reordonarea si termenul se bateau pe aceiasi pixeli. -->
-          <span class="grip" role="button" tabindex="-1" aria-label="Trage pentru a reordona" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
+          <span class="grip" role="button" tabindex="0" aria-label="Trage pentru a reordona" draggable="true" ondragstart={(e) => onDragStart(e, i)} ondragend={onDragEnd} title="Trage pentru a reordona"><GripVertical size={15} /></span>
           <span class="gl-maner" aria-hidden="true"><GripVertical size={17} /></span>
 
           <button class="check" onclick={() => onToggle(it)} title="Marchează ca făcut">

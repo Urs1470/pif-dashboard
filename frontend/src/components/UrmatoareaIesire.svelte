@@ -15,8 +15,8 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { todayISO, addDays, diffDays, shortDate } from '../lib/calendarDates.js'
 
-  const azi = todayISO()
-  const URL_IESIRI = `/api/calendar?start=${azi}&zile=120`
+  let azi = $state(todayISO())
+  const URL_IESIRI = $derived(`/api/calendar?start=${azi}&zile=120`)
 
   // PORNESTE PLINA, DACA STIM CEVA. `dinCache` raspunde SINCRON, la evaluarea
   // modulului, deci valoarea e aici inainte de primul cadru — nu dupa `onMount`,
@@ -56,12 +56,28 @@
     try {
       data = await preia(URL_IESIRI)
     } catch (_) {
-      // Cu date vechi pe ecran, un esec de retea nu le sterge: ramane ce se
-      // vede. Fara ele, linia SPUNE ca nu stie (vezi nota de la `eroare`).
       if (!data) { data = null; eroare = true }
     }
   }
-  onMount(incarca)
+
+  function improspateazaZiua() {
+    const nou = todayISO()
+    if (nou !== azi) { azi = nou; incarca() }
+  }
+
+  onMount(() => {
+    incarca()
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') improspateazaZiua()
+    })
+    const laMiezulNoptii = () => {
+      const acum = new Date()
+      const maine = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + 1)
+      return setTimeout(() => { improspateazaZiua(); idTimer = laMiezulNoptii() }, maine - acum + 500)
+    }
+    let idTimer = laMiezulNoptii()
+    return () => clearTimeout(idTimer)
+  })
 
   function scurt(client) {
     const c = (client || '').trim()
@@ -264,7 +280,7 @@
     border: 1px solid var(--border); background: var(--bg-surface);
     color: var(--text-secondary); font-size: var(--font-small);
     font-weight: var(--fw-medium); cursor: pointer;
-    transition: var(--transition-colors); min-height: 26px; }
+    transition: var(--transition-colors); min-height: var(--tap-min); }
   .reinc:hover { border-color: var(--accent); color: var(--accent); }
 
   /* Doua contoare, aceeasi haina, tonul e singura diferenta: neutru = ce

@@ -622,6 +622,8 @@
     /* Contorul arhivei ar dubla latimea iconitei; numarul se citeste oricum din
        lista cand o deschizi. */
     .a-n { display: none; }
+    .arch-badge { display: none; }
+    .arch-client { width: 80px; }
     /* PASTILA DE STATUS E ETICHETA PE TOUCH (vezi markup: nici nu mai e <button>),
        deci stratul invizibil de 44px din jurul ei — care fura atingeri de la card
        — a plecat cu totul. Un card = o tinta. */

@@ -369,9 +369,17 @@
   }
 
   async function toggleTaskStatus(task) {
-    const next = task.status === 'done' ? 'to_do' : 'done'
+    const prev = task.status
+    const next = prev === 'done' ? 'to_do' : 'done'
     tasks = tasks.map(t => t.id === task.id ? { ...t, status: next } : t)
-    const res = await updateTask(task.id, { status: next })
+    let res
+    try {
+      res = await updateTask(task.id, { status: next })
+    } catch (e) {
+      tasks = tasks.map(t => t.id === task.id ? { ...t, status: prev } : t)
+      toast(`Eroare: ${e.message}`, 'error')
+      return
+    }
     if (res?.recurring_spawned) {
       toast(`Finalizat ✓ — următoarea apariție: ${formatDate(res.recurring_next)}`, 'success')
       await reloadTasks()
@@ -424,6 +432,8 @@
       newTaskTitle = ''
       newTaskData = ''
       await reloadTasks()
+    } catch (e) {
+      toast(`Eroare la creare: ${e.message}`, 'error')
     } finally { creatingTask = false }
   }
 
@@ -1237,7 +1247,7 @@
   /* Layout V3: continut principal + rail persistent */
   .rail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 14px; align-items: start; }
   .rail-main { min-width: 0; }
-  .rail { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-height) + 16px); }
+  .rail { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-height) + 16px); max-height: calc(100vh - var(--header-height) - var(--space-lg)); overflow-y: auto; }
   .rcell { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 16px 18px; }
   .rprog { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; }
   .rprog-num { font-family: var(--font-mono); font-size: var(--font-title); font-weight: var(--fw-semibold); color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
@@ -1253,7 +1263,7 @@
   /* HAINA NEUTRA PE TOATE TREI SECTIUNILE. Aveau un degrade dinspre accent —
      deci rubrica isi lua o culoare, desi culoarea e rezervata STARII. Un fond
      plat le face egale, cum au fost desenate. */
-  .field-section { margin-bottom: var(--space-sm); background: var(--bg-surface); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow var(--dur-fast) var(--ease); cursor: pointer; text-align: left; }
+  .field-section { margin-bottom: var(--space-sm); background: var(--bg-surface); border-radius: var(--radius-md); overflow: clip; box-shadow: var(--shadow-sm); transition: box-shadow var(--dur-fast) var(--ease); cursor: pointer; text-align: left; }
   /* `:hover { border-color }` a plecat: sectiunea n-are chenar din B2, deci
      declaratia nu putea colora nimic. Daca hoverul se vrea inapoi, e pe umbra
      (`--shadow-md`) — tranzitia lui e deja scrisa mai sus. */

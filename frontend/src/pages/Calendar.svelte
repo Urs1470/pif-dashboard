@@ -116,7 +116,12 @@
   // (prima randare, sau un salt care cade pe luna in care esti deja).
   let sensLuna = $state(0)
 
-  const azi = todayISO()
+  let azi = $state(todayISO())
+
+  function improspateazaZiua() {
+    const nou = todayISO()
+    if (nou !== azi) { azi = nou; load() }
+  }
 
   /** Perioada s-a incheiat inainte de azi. Se uita la ULTIMA zi (`data_sfarsit`,
    *  cu `data_start` ca rezerva pentru perioadele de o zi) — o perioada in curs
@@ -698,10 +703,10 @@
     anchor = tinta
   }
 
-  function pas(n) {
+  async function pas(n) {
     sensLuna = n < 0 ? -1 : 1
     anchor = addMonths(anchor, n)
-    load()
+    await load()
   }
   function laAzi() {
     // „Azi" e tot un salt la o zi anume, doar ca poate fi de un an: acelasi
@@ -1221,6 +1226,18 @@
     const cerute = (router.query?.per || '').split(',').map(s => s.trim()).filter(Boolean)
     if (cerute.length) gasite = new Set(cerute)
     load().then(() => { if (gasite.size) stingeGasitele() })
+
+    // AZI NU E CONST — daca aplicatia sta deschisa peste miezul noptii, ziua
+    // de azi se muta. Acelasi tipar ca in UrmatoareaIesire.svelte.
+    const peVizibil = () => { if (document.visibilityState === 'visible') improspateazaZiua() }
+    document.addEventListener('visibilitychange', peVizibil)
+    const laMiezulNoptii = () => {
+      const acum = new Date()
+      const maine = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + 1)
+      return setTimeout(() => { improspateazaZiua(); idTimer = laMiezulNoptii() }, maine - acum + 500)
+    }
+    let idTimer = laMiezulNoptii()
+    return () => { clearTimeout(idTimer); document.removeEventListener('visibilitychange', peVizibil) }
   })
   /* TITLUL STA IN PAGINA, ca pe /projects, /tasks si /plan — nu in bara
      aplicatiei (raportat de Ion: „titlurile paginilor sunt neuniforme, undeva
@@ -2086,8 +2103,7 @@
             height: calc(var(--n) * var(--h-banda));
             border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
             border-left: none; border-right: none;
-            background: color-mix(in srgb, var(--accent) 10%, transparent);
-            transition: height var(--dur-slow) var(--ease), margin-top var(--dur-slow) var(--ease); }
+            background: color-mix(in srgb, var(--accent) 10%, transparent); }
   .chenar.inceput { margin-left: 3px; border-left: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
                     border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
   .chenar.sfarsit { margin-right: 3px; border-right: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);

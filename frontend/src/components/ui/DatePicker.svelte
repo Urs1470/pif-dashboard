@@ -270,7 +270,7 @@
 
   /* Suprafata flotanta: se desprinde prin UMBRA, nu si prin chenar. */
   .dp-pop {
-    position: fixed; z-index: var(--z-tooltip);
+    position: fixed; z-index: var(--z-dropdown);
     width: 268px; padding: 12px;
     background: var(--bg-overlay);
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);

@@ -70,6 +70,15 @@
     // care o scad cad pe invalid si inaltimea foii dispare cu totul.
     document.documentElement.style.setProperty('--kb', '0px')
   }
+
+  // Ultima apasare pe ecran — partajata de TOATE instantele. Fiecare modal o
+  // citeste cand se deschide ca sa creasca din punctul unde ai atins.
+  let ultimaApasare = { x: 0, y: 0, cand: 0 }
+  if (typeof window !== 'undefined') {
+    window.addEventListener('pointerdown', (e) => {
+      ultimaApasare = { x: e.clientX, y: e.clientY, cand: Date.now() }
+    }, { capture: true, passive: true })
+  }
 </script>
 
 <script>
@@ -82,29 +91,6 @@
   // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
   // odata cu ce acopera. Vezi nota din `lib/portal.js`.
   import { portal } from '../../lib/portal.js'
-
-  // ===== DE UNDE CRESTE CASETA (Ion, 2026-08-15: „din declansator") =====
-  //
-  // Scalarea din centru spune „o fereastra s-a deschis undeva". Un modal
-  // deschis dintr-un buton anume poate creste DIN butonul acela — o singura
-  // proprietate, `transform-origin`.
-  //
-  // Originea vine din ultima APASARE, nu dintr-o proprietate pasata de fiecare
-  // apelant: sunt peste douazeci de locuri care deschid modale, iar o
-  // proprietate noua pe fiecare ar fi fost uitata exact acolo unde conteaza.
-  // Fereastra de 600ms si distanta plafonata mai jos fac diferenta intre „am
-  // apasat ceva si s-a deschis asta" si „modalul a venit din alta parte".
-  //
-  // Cand NU exista o apasare recenta — deschidere din tastatura, din paleta,
-  // dintr-un gest, dintr-o notificare — nu exista nici origine, si caseta creste
-  // din centru ca pana acum. O origine gresita e mai rea decat niciuna: caseta
-  // ar parea ca vine din alt loc decat ai atins.
-  let ultimaApasare = { x: 0, y: 0, cand: 0 }
-  if (typeof window !== 'undefined') {
-    window.addEventListener('pointerdown', (e) => {
-      ultimaApasare = { x: e.clientX, y: e.clientY, cand: Date.now() }
-    }, { capture: true, passive: true })
-  }
 
   function origineaCasetei(node) {
     const a = ultimaApasare

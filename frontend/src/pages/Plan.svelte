@@ -635,7 +635,15 @@
       // reincarcare, panoul ar arata „3/5" si randul din spatele lui „2/5" —
       // aceeasi intrebare cu doua raspunsuri, pe acelasi ecran. `updateSubtask`
       // a invalidat deja cache-ul, deci asta chiar ajunge la server.
-      loadPlan()
+      await loadPlan()
+      if (sel) {
+        let found = null
+        for (const lane of views) {
+          const t = lane.tasks.find(t => t.id === sel.id)
+          if (t) { found = { ...t, laneNume: lane.nume, laneId: lane.id, laneImpl: lane.impl || [] }; break }
+        }
+        sel = found
+      }
     } catch (e) {
       pasi = pasi.map(x => x.id === p.id ? { ...x, done: p.done } : x)
       toast(`Eroare: ${e.message}`, 'error')
@@ -2428,6 +2436,8 @@
 
   @media (max-width: 820px) {
     .chart { display: none; }
+    .seg { display: none; }
+    .toggle { display: none; }
     .mlist { display: flex; }
     /* Pe telefon pista nu se randeaza, deci nici panoul ei: acolo reperul duce la
        randul din lista, care are deja foaia lui. Regula e si o plasa — daca
@@ -2463,7 +2473,7 @@
     .seg-btn.seg-6l { display: none; }
     /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
        butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
-    .toggle { flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: 6px 8px; }
+    .toggle { display: inline-flex; flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: 6px 8px; }
     .tg-lung { display: none; }
 
     /* Randurile listei: butoanele erau de 34px, adica sub pragul la care nimeresti

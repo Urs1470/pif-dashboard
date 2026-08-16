@@ -29,6 +29,17 @@
     meniuDeschis = false
   }
 
+  function navMeniu(e) {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+    e.preventDefault()
+    const items = [...e.currentTarget.querySelectorAll('[role="menuitemradio"]')]
+    const cur = items.indexOf(document.activeElement)
+    const next = e.key === 'ArrowDown'
+      ? (cur + 1) % items.length
+      : (cur - 1 + items.length) % items.length
+    items[next]?.focus()
+  }
+
   function inafara(nod) {
     const pe = (e) => { if (!nod.contains(e.target)) meniuDeschis = false }
     const esc = (e) => { if (e.key === 'Escape') meniuDeschis = false }
@@ -82,7 +93,7 @@
         <IcoCurenta size={17} strokeWidth={1.5} />
       </button>
       {#if meniuDeschis}
-        <div class="tema-meniu" role="menu"
+        <div class="tema-meniu" role="menu" tabindex="-1" onkeydown={navMeniu}
              transition:fly={{ y: -4, duration: motionDuration(DUR_BASE), easing: EASE }}>
           {#each MODURI as m (m.mod)}
             <button class="tema-rand" class:activ={tema.mod === m.mod} role="menuitemradio"
