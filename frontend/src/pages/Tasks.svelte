@@ -1291,7 +1291,16 @@
   <!-- Titlul foii e TITLUL TASKULUI. Era `categorie`, care e implicit „General"
        si nu se scrie niciodata in interfata — deci fiecare foaie deschisa pe
        telefon se numea „General". -->
-  <Modal bind:open={showSheet} size="panou" title={sheetTask.titlu || 'Task'}>
+  <!-- `iesireGest`: pe telefon foaia asta nu mai are `X` in colt. Iesirea e
+       gestul in jos (din antet SAU din continut, cat timp lista e la capatul de
+       sus) plus butonul „inapoi" de pe Android. Coltul din dreapta sus e, pe un
+       telefon inalt, singurul loc de pe ecran la care nu ajungi fara sa muti mana
+       din priza — iar foaia asta se deschide de zece ori mai des decat cea a
+       zilei din Calendar, care primise deja tratamentul.
+       Se poate cere aici fiindca foaia n-are NICIUN camp de text: cat timp
+       tastatura e sus, gestul din continut se opreste dinadins (`tastaturaSus`),
+       si atunci `X`-ul chiar ar fi singura iesire vizibila. -->
+  <Modal bind:open={showSheet} size="panou" iesireGest title={sheetTask.titlu || 'Task'}>
     <!-- Foaia poarta `--ring` pe cap: bifa mare e primul lucru din foaie, deci e
          chiar locul unde severitatea trebuie sa se vada. -->
     <div class="ts-cap" style="--ring: {dueRing(sheetTask.data_scadenta)}">

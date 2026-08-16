@@ -291,6 +291,19 @@
      tine in localStorage. Plafonul real ramane `max-width: min(720px, 46vw)`. */
   --panou-w: clamp(420px, 32vw, 560px);
 
+  /* Inaltimea foii de pe telefon CAT TIMP DEGETUL E PE EA. O scrie
+     `Modal.svelte` in px, la fiecare cadru al gestului, si o retrage la
+     ridicare — in repaus inaltimea vine din clasa treptei, in `dvh`, ca sa se
+     poata strange singura cand urca tastatura. Implicitul e `auto`, adica exact
+     ce inseamna „nu trage nimeni de ea": treapta de baza e cat continutul. */
+  --h-foaie: auto;
+
+  /* Cat de opac e voalul de sub un strat plutitor, 0..1. Il scrie tot
+     `Modal.svelte`, ca sa scada odata cu foaia trasa in jos — asa se vede cat
+     mai ai pana pierzi ce ai deschis. 1 = voalul intreg, adica starea in repaus
+     si singura care exista pe desktop, unde nu se trage de nimic. */
+  --voal-p: 1;
+
   /* Deplasarea CONTINUA a obiectului tras pe o pista de zile. O scrie
      `lib/tragereTimeline.js` pe elementul apucat, la fiecare cadru; 0 e starea
      in repaus, adica exact ce trebuie sa fie cand nu trage nimeni. Perechea ei,

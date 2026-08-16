@@ -56,3 +56,72 @@ export const DUR_ZBOR = 130
 export function puls(ms = 12) {
   try { navigator.vibrate?.(ms) } catch (_) {}
 }
+
+// ===== VITEZA — A TREIA DIMENSIUNE A UNUI GEST =====
+//
+// Pana acum fiecare gest din aplicatie se uita la o singura marime: CAT de
+// departe a ajuns degetul. Asta face ca gestul sa trebuiasca facut LUNG, iar
+// aruncarea scurta si rapida — cea pe care mana o face fara sa se gandeasca —
+// sa nu produca nimic. Nu e o preferinta de stil: pe telefon „arunc foaia in
+// jos" e gestul implicit de inchidere in tot sistemul de operare, iar o
+// interfata care il ignora se simte grea chiar daca fiecare animatie din ea e
+// corecta.
+//
+// Solutia standard (UIKit, si de acolo peste tot): nu compari pozitia, compari
+// UNDE AR AJUNGE degetul daca ar mai continua putin. Asa un gest scurt si
+// iute si unul lung si lenes ajung la aceeasi concluzie, care e exact ce
+// asteapta mana.
+
+/** ms pe care se masoara viteza, inapoi de la ridicarea degetului.
+ *  Media pe TOT gestul ar fi gresita: o aruncare incepe incet si se termina
+ *  repede, deci media o raporteaza ca lenta — adica exact gestul pe care
+ *  proiectia trebuie sa-l prinda ar iesi sub prag. */
+export const FEREASTRA_VITEZA = 80
+
+/** ms in viitor pe care se proiecteaza degetul la ridicare. */
+export const PROIECTIE = 100
+
+/** px/ms peste care nu se mai crede masuratoarea. Doua esantioane la 1ms
+ *  distanta dau viteze absurde (si le dau usor: un `pointermove` intarziat
+ *  urmat de doua la rand). Plafonul tine proiectia in aceeasi lume cu ecranul:
+ *  3 px/ms × 100ms = 300px, adica deja mai mult decat o latime de telefon. */
+const VITEZA_MAX = 3
+
+/**
+ * Urmareste pozitia unui deget si spune, la ridicare, unde ar fi ajuns.
+ * Se foloseste pe o singura axa — cea pe care s-a decis gestul.
+ *
+ *   const u = urmaritor()
+ *   u.porneste(e.clientY)                 // la pointerdown
+ *   u.adauga(e.clientY)                   // la fiecare pointermove
+ *   const tinta = u.proiectat(pozitieAcum) // la pointerup
+ */
+export function urmaritor() {
+  let esantioane = []
+  const adauga = (v) => {
+    esantioane.push({ t: performance.now(), v })
+    // Opt e mai mult decat incap in fereastra la 60Hz (~5), deci taierea nu
+    // poate pierde un esantion care ar fi contat.
+    if (esantioane.length > 8) esantioane.shift()
+  }
+  const viteza = () => {
+    if (esantioane.length < 2) return 0
+    const b = esantioane[esantioane.length - 1]
+    let a = esantioane[esantioane.length - 2]
+    for (let i = esantioane.length - 2; i >= 0; i--) {
+      if (b.t - esantioane[i].t > FEREASTRA_VITEZA) break
+      a = esantioane[i]
+    }
+    const dt = b.t - a.t
+    if (dt <= 0) return 0
+    const v = (b.v - a.v) / dt
+    return Math.max(-VITEZA_MAX, Math.min(VITEZA_MAX, v))
+  }
+  return {
+    porneste(v) { esantioane = []; adauga(v) },
+    adauga,
+    viteza,
+    /** Unde ajunge `acum` daca degetul si-ar continua drumul `PROIECTIE` ms. */
+    proiectat(acum) { return acum + viteza() * PROIECTIE },
+  }
+}

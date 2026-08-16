@@ -82,7 +82,7 @@
 </script>
 
 <script>
-  import { tick } from 'svelte'
+  import { tick, untrack } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, ARC } from '../../lib/motion.svelte.js'
@@ -105,7 +105,7 @@
     if (px < -120 || px > 220 || py < -120 || py > 220) return ''
     return `${px.toFixed(1)}% ${py.toFixed(1)}%`
   }
-  import { PRAG_INCHIDE, PRAG_INTINDE, PRAG_DIRECTIE, puls } from '../../lib/gesturi.js'
+  import { PRAG_INCHIDE, PRAG_INTINDE, PRAG_DIRECTIE, puls, urmaritor } from '../../lib/gesturi.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
   // jos) — nu cand parintele pune `open = false` singur. Exista fiindca un modal de
@@ -141,6 +141,15 @@
   // inchidere. Deci si intrarea trebuie sa vina de jos — un `scale` din centru
   // spune „fereastra", nu „sertar".
   const sheet = $derived(ecran.telefon)
+
+  // Documentul isi tine singur geometria (`.modal-doc`: ecran plin, corp care nu
+  // deruleaza, pagina dinauntru cu scroll propriu), deci nu intra in masinaria
+  // treptelor — ar fi doua reguli peste aceeasi inaltime. Gestul de coborare il
+  // are si el: `trasY` merge pe orice foaie.
+  const cuTrepte = $derived(sheet && size !== 'doc')
+
+  // Foaia de dedesubt, cand peste ea s-a deschis alta. Vezi `.acoperit` in CSS.
+  const acoperit = $derived(nivel > 0 && nivel < stiva.varf)
 
   // UN DETALIU, O COMPONENTA: panou lateral pe desktop, foaie de jos pe telefon.
   // Acelasi continut, aceeasi ordine — se schimba doar unde se asaza.
@@ -235,82 +244,235 @@
     }
   }
 
-  // ===== TRAGEREA SHEET-ULUI (telefon) =====
+  // ===== TRAGEREA SHEET-ULUI (telefon) — TREPTE, NU UN PRAG =====
   // Ion: „nu poate fi tras pe tot ecranul, nu poti sa-l tragi inapoi, doar prin x".
-  // Manerul era pana acum DECOR: un dreptunghi care arata a maner si nu facea
-  // nimic. Pe telefon asta e mai rau decat sa nu-l ai — promite un gest care nu
-  // exista, deci incerci, nu se intampla nimic, si cauti `X`-ul.
+  // Manerul era pana atunci DECOR: un dreptunghi care arata a maner si nu facea
+  // nimic. Prima reparatie i-a dat gestul, dar l-a facut cu SENS UNIC: trageai in
+  // sus peste un prag si foaia se intindea pentru totdeauna — de acolo incolo,
+  // tras in jos insemna doar „inchide". Adica jumatatea a doua a reprosului („nu
+  // poti sa-l tragi inapoi") a ramas in picioare, doar ca mai greu de vazut.
+  //
+  // Acum foaia are TREPTE si drumul e continuu in amandoua sensurile. UN SINGUR
+  // SCALAR conduce tot gestul: cat din foaie se vede. Peste treapta de baza
+  // degetul CRESTE foaia (marginea de jos ramane lipita de ecran, cea de sus
+  // urmeaza degetul); sub ea, foaia COBOARA intreaga spre inchidere. Nu mai sunt
+  // doua gesturi cu doua mecanisme — unul pe inaltime, altul pe deplasare — ci
+  // unul singur cu doua jumatati, si de aceea nu mai poate exista o stare din
+  // care sa nu existe drum inapoi.
   //
   // Deplasarea merge pe proprietatea `translate`, NU pe `transform`: tranzitiile
   // Svelte de intrare/iesire scriu `transform` inline pe acelasi nod, iar doua
   // surse pe aceeasi proprietate s-ar suprascrie. `translate` e o proprietate
   // separata, deci cele doua se compun in loc sa se bata.
+  //
+  // INALTIMEA IN PIXELI E DOAR A GESTULUI. Cat timp degetul e pe ecran foaia
+  // primeste o inaltime in px (`--h-foaie`); la ridicare o preda inapoi CSS-ului,
+  // care o tine in `dvh` minus tastatura. O valoare in px n-ar sti sa se stranga
+  // cand urca tastatura — si tocmai foaia „pe tot ecranul" trebuie sa faca asta
+  // (vezi nota lunga de la `--kb`).
   let trasY = $state(0)
+  let hFoaie = $state(null)     // inaltimea ceruta in timpul gestului, in px
   let trage = $state(false)
-  let intins = $state(false)   // tras in sus pana la ecran plin
+  let intins = $state(false)    // pe treapta de sus (ecran plin)
+  let voalP = $state(1)         // opacitatea voalului, 0..1 — urmareste degetul
   let sheetEl = $state(null)
-  let y0 = 0
   let idPointer = null
   let pragTrecut = false
 
-  // PROCENTE DIN INALTIMEA FOII, NU PIXELI (T2).
-  // 110px fix insemnau doua gesturi diferite: pe o foaie de 300px erau o treime
-  // din ea — deci inchideai din greseala deruland — iar pe una de 780 abia o
-  // saptime, deci trageai pana obosea degetul. Fractiunile traiesc in
-  // `lib/gesturi.js`, langa cele ale randului.
-  const inaltimeFoaie = () => sheetEl?.offsetHeight || 1
+  // Starea gestului — `let` simplu: nu se citeste la randare, deci n-are ce
+  // cauta in `$state` (o scriere pe cadru ar invalida degeaba componenta).
+  let trepte = [0]
+  let treapta = 0
+  let hBaza = 0
+  let hApucat = 0
+  let yApucat = 0
+  let totalAcum = 0
+  let ceasPredare = null
+  const vit = urmaritor()
 
-  function trageJos(e) {
-    if (!sheet || e.pointerType === 'mouse') return
-    idPointer = e.pointerId
-    y0 = e.clientY
-    trasY = 0
-    pragTrecut = false
-    trage = true
-    try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch (_) {}
+  /** Inaltimea maxima pe care o poate lua foaia. Se MASOARA din voal, nu se
+   *  recalculeaza formula din CSS: doua formule pentru acelasi lucru se
+   *  desincronizeaza tacut, iar atunci gestul promite o inaltime pe care
+   *  randarea o refuza — exact greseala reparata la manerul panoului.
+   *  Voalul e `inset: 0` cu `padding-bottom: var(--kb)`, deci caseta lui de
+   *  continut E fix spatiul in care incape foaia. */
+  function plafonPlin() {
+    if (!backdropEl) return window.innerHeight
+    const jos = parseFloat(getComputedStyle(backdropEl).paddingBottom) || 0
+    return Math.max(1, backdropEl.clientHeight - jos)
   }
 
-  function trageMisca(e) {
-    if (!trage || e.pointerId !== idPointer) return
-    const dy = e.clientY - y0
-    const h = inaltimeFoaie()
-    // In jos e liber (te duci spre inchidere). In sus se opreste scurt daca e deja
-    // intins — altfel sheet-ul ar putea fi tras dincolo de marginea de sus.
-    // Capatul de sus e tot proportional: de doua ori pragul de intindere.
-    trasY = intins ? Math.max(0, dy) : (dy < 0 ? Math.max(dy, -h * PRAG_INTINDE * 2) : dy)
+  /** Are foaia ce sa arate in plus daca o intinzi? Daca nu, treapta de sus nici
+   *  nu exista, si gestul in sus se opreste in arc. O foaie care se intinde ca
+   *  sa descopere spatiu gol promite un continut care nu e acolo — aceeasi
+   *  greseala ca manerul-decor, doar la alta scara. */
+  function poateCreste() {
+    if (inalt) return true
+    if (!corpEl) return false
+    return corpEl.scrollHeight - corpEl.clientHeight > 4
+  }
+
+  function reimprospateazaTrepte() {
+    const plin = plafonPlin()
+    if (inalt) {
+      // Foaia care se deschide deja intinsa capata o treapta de MIJLOC: de acolo
+      // se vede si ce e dedesubt, fara s-o inchizi. Pana acum singurul drum
+      // inapoi din ea era inchiderea.
+      trepte = [Math.round(plin * 0.55), plin]
+      return
+    }
+    // Pe treapta de baza inaltimea se RE-MASOARA la fiecare apucare: continutul
+    // se poate schimba cat foaia e deschisa (subtaskuri sosite, un camp aparut),
+    // si atunci o valoare retinuta de la gestul trecut ar fi treapta altei foi.
+    if (treapta === 0 && hFoaie === null) hBaza = sheetEl?.offsetHeight || 0
+    trepte = poateCreste() ? [hBaza, plin] : [hBaza]
+  }
+
+  /** Cat din foaie se vede acum — punctul de plecare al gestului. */
+  function inaltimeVizibila() {
+    return Math.max(0, (sheetEl?.offsetHeight || 0) - trasY)
+  }
+
+  function apuca(clientY) {
+    untrack(reimprospateazaTrepte)
+    hApucat = inaltimeVizibila()
+    yApucat = clientY
+    totalAcum = hApucat
+    vit.porneste(hApucat)
+    pragTrecut = false
+    trage = true
+  }
+
+  /** `total` = cat din foaie se vede. Singurul lucru pe care il misca degetul. */
+  function aseaza(total) {
+    totalAcum = total
+    vit.adauga(total)
+    const h0 = trepte[0]
+    const hMax = trepte[trepte.length - 1]
+    let v = total
+    if (v > hMax) {
+      // CAPATUL DE SUS CEDEAZA, NU E ZID. Un `Math.max` sec se citeste ca
+      // interfata blocata; o rezistenta care creste cu distanta spune „aici e
+      // capatul" si se intoarce singura cand dai drumul.
+      v = hMax + Math.min(30, Math.pow(v - hMax, 0.72))
+    }
+    if (v >= h0) {
+      trasY = 0
+      if (cuTrepte) hFoaie = Math.round(v)
+      voalP = 1
+    } else {
+      if (cuTrepte) hFoaie = Math.round(h0)
+      trasY = h0 - v
+      // VOALUL URMARESTE DEGETUL. Cat timp foaia coboara, opacitatea scade odata
+      // cu ea: vezi cat mai ai pana pierzi ce ai deschis, deci gestul e
+      // reversibil cu OCHII, nu doar cu degetul.
+      voalP = Math.max(0, Math.min(1, v / h0))
+    }
     // Pragul se ANUNTA, ca la rand: degetul acopera manerul, deci confirmarea
     // care nu se vede se simte. O singura data per trecere, nu la fiecare cadru.
-    const trecut = trasY > h * PRAG_INCHIDE
+    const trecut = v < h0 * (1 - PRAG_INCHIDE)
     if (trecut !== pragTrecut) {
       pragTrecut = trecut
       if (trecut) puls()
     }
   }
 
-  function trageSus(e) {
-    if (!trage || e.pointerId !== idPointer) return
+  function lasa() {
+    if (!trage) return
     trage = false
     idPointer = null
-    // `trasY` RAMANE unde l-ai lasat. Punandu-l pe 0 aici, doua miscari se
-    // compuneau pe acelasi obiect, pe proprietati diferite si in sensuri opuse:
-    // `translate` revenea de la 118px la 0 in --dur-slow CU ARC, in timp ce
-    // tranzitia de iesire cobora foaia cu toata inaltimea ei. Prima jumatate a
-    // iesirii se anula singura — foaia se misca in jos incet, apoi brusc, ceea ce
-    // se citeste exact ca lag de atingere. Iar arcul, care are voie sa depaseasca
-    // tinta, tragea IN SUS fix in intervalul in care obiectul trebuia sa
-    // accelereze in jos. Acum gestul si iesirea merg in acelasi sens.
-    const h = inaltimeFoaie()
-    if (trasY > h * PRAG_INCHIDE) { inchide(); return }
-    if (trasY < -h * PRAG_INTINDE) intins = true
-    trasY = 0
+    const h0 = trepte[0]
+    // NU pozitia in care s-a oprit degetul, ci UNDE AR FI AJUNS daca ar mai fi
+    // continuat putin. Asa o aruncare scurta si iute si o tragere lunga si
+    // lenesa ajung la aceeasi concluzie — adica exact ce asteapta mana.
+    const proiectat = vit.proiectat(totalAcum)
+    if (proiectat < h0 * (1 - PRAG_INCHIDE)) {
+      // `trasY` RAMANE unde l-a lasat degetul. Zeroit aici, doua miscari s-ar
+      // compune pe acelasi obiect in sensuri opuse: revenirea spre 0 CU ARC, in
+      // timp ce tranzitia de iesire coboara foaia cu toata inaltimea ei. Prima
+      // jumatate a iesirii s-ar anula singura — se citeste exact ca lag.
+      inchide()
+      return
+    }
+    let cel = 0, dMin = Infinity
+    trepte.forEach((h, i) => {
+      const d = Math.abs(h - proiectat)
+      if (d < dMin) { dMin = d; cel = i }
+    })
+    if (cel !== treapta) puls(8)
+    duLaTreapta(cel)
   }
 
-  // La fiecare deschidere pornim din starea normala, nu din cea intinsa a
-  // taskului dinainte.
-  // `trasY` nu se mai zeroeaza la ridicarea degetului (vezi `trageSus`), deci se
-  // zeroeaza aici: foaia urmatoare porneste din pozitia ei, nu din cea in care ai
-  // lasat-o pe cea dinainte.
-  $effect(() => { if (open) { intins = inalt; trasY = 0 } })
+  /** Aseaza foaia pe o treapta si PREDA inaltimea inapoi CSS-ului. */
+  function duLaTreapta(i) {
+    treapta = i
+    trasY = 0
+    voalP = 1
+    intins = trepte.length > 1 && i === trepte.length - 1
+    if (!cuTrepte) return
+    clearTimeout(ceasPredare)
+    if (intins || inalt) {
+      // Amandoua treptele astea au o clasa care le da inaltimea in `dvh`, deci
+      // px-ul se poate lasa imediat: tranzitia merge intre doua valori calculate.
+      hFoaie = null
+      return
+    }
+    // Treapta de baza e `height: auto`, iar spre `auto` nu se poate anima. Se
+    // tine valoarea in px cat tine tranzitia, apoi se preda — la aceeasi
+    // inaltime, deci fara salt, dar de acolo incolo foaia urmeaza continutul.
+    hFoaie = trepte[0]
+    ceasPredare = setTimeout(() => {
+      if (!trage && treapta === 0) hFoaie = null
+    }, motionDuration(DUR_BASE) + 40)
+  }
+
+  // Se trage de TOT ANTETUL, nu de bara de 4px. Ion: „pot sa ridic doar daca tin
+  // apasat bara aia de sus, nu este prea comod".
+  function trageJos(e) {
+    if (!sheet || e.pointerType === 'mouse') return
+    idPointer = e.pointerId
+    apuca(e.clientY)
+    try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch (_) {}
+  }
+
+  function trageMisca(e) {
+    if (!trage || e.pointerId !== idPointer) return
+    aseaza(hApucat - (e.clientY - yApucat))
+  }
+
+  function trageSus(e) {
+    if (!trage || e.pointerId !== idPointer) return
+    lasa()
+  }
+
+  // La fiecare deschidere pornim din starea de baza, nu din treapta foii
+  // dinainte. `trasY` nu se zeroeaza la ridicarea degetului (vezi `lasa`), deci
+  // se zeroeaza aici.
+  // `untrack`: inauntru se si citesc, si se scriu stari reactive (`treapta` e
+  // citita de `reimprospateazaTrepte` si scrisa aici) — fara el efectul s-ar
+  // re-porni singur, greseala pe care fisierul asta a facut-o deja o data la
+  // stiva de niveluri si o are scrisa in `<script module>`.
+  $effect(() => {
+    if (!open) return
+    untrack(() => {
+      trasY = 0
+      voalP = 1
+      hFoaie = null
+      intins = false
+      treapta = 0
+      if (!sheet) return
+      reimprospateazaTrepte()
+      // `inalt` se deschide DIRECT pe treapta de sus — fara `hFoaie`, deci fara
+      // tranzitie: inaltimea vine din clasa, adica e buna din primul cadru.
+      if (inalt && trepte.length > 1) {
+        treapta = trepte.length - 1
+        intins = true
+      }
+    })
+    // Ceasul de predare a inaltimii nu are voie sa supravietuiasca foii: ar
+    // scrie pe starea unei componente inchise.
+    return () => clearTimeout(ceasPredare)
+  })
 
   // Intrarea in stiva (si semnalul pentru dock) — cu curatare, deci si
   // inchiderea, si distrugerea componentei cu modalul deschis o scad corect.
@@ -373,42 +535,43 @@
   function corpTrage(e) {
     if (!sheet || !corpY0) return
     const dy = e.touches[0].clientY - corpY0
-    // IN SUS — intinde, exact ca pana acum (si doar daca mai are unde).
+    // IN SUS — urca o treapta, o SINGURA data si FARA `preventDefault`:
+    // derularea continua nestingherita sub acelasi deget, foaia doar creste in
+    // timp ce derulezi. Aici, spre deosebire de antet, cresterea NU urmareste
+    // degetul cadru cu cadru — s-ar bate cu scroll-ul pentru acelasi gest.
     if (!corpJos && dy < 0) {
       if (intins) { corpY0 = 0; return }
-      if (dy < -56) { intins = true; corpY0 = 0 }
+      untrack(reimprospateazaTrepte)
+      if (trepte.length > 1 && dy < -trepte[0] * PRAG_INTINDE) {
+        duLaTreapta(trepte.length - 1)
+        corpY0 = 0
+      }
       return
     }
     if (dy <= 0) return
-    // IN JOS — inchide. Se ia decizia o singura data, dupa `PRAG_DIRECTIE`, ca
-    // la orice alt gest din aplicatie; pana atunci degetul poate inca sa fie pe
-    // drum spre o derulare.
+    // IN JOS — acelasi gest ca la antet, cu aceleasi trepte, acelasi prag si
+    // aceeasi proiectie de viteza. Se ia decizia o singura data, dupa
+    // `PRAG_DIRECTIE`, ca la orice alt gest din aplicatie; pana atunci degetul
+    // poate inca sa fie pe drum spre o derulare.
     if (!corpJos) {
       if ((corpEl?.scrollTop ?? 0) > 0) { corpY0 = 0; return }
       if (dy < PRAG_DIRECTIE) return
       corpJos = true
-      trage = true
-      pragTrecut = false
+      // Se apuca de unde s-a DECIS directia, nu de unde a inceput atingerea:
+      // altfel cei 8px de hotarare s-ar aduna la deplasare si foaia ar sari
+      // sub deget in clipa in care gestul devine al ei.
+      apuca(corpY0 + PRAG_DIRECTIE)
     }
     // Fara asta, browserul ar face si el ceva cu degetul (saltul de capat de
     // lista) exact cat timp foaia coboara — doua obiecte pe aceeasi axa.
     if (e.cancelable) e.preventDefault()
-    trasY = dy - PRAG_DIRECTIE
-    const trecut = trasY > inaltimeFoaie() * PRAG_INCHIDE
-    if (trecut !== pragTrecut) {
-      pragTrecut = trecut
-      if (trecut) puls()
-    }
+    aseaza(hApucat - (e.touches[0].clientY - yApucat))
   }
   function corpRidica() {
     corpY0 = 0
     if (!corpJos) return
     corpJos = false
-    trage = false
-    // `trasY` ramane unde l-a lasat degetul cand chiar se inchide — vezi nota
-    // lunga din `trageSus`: zeroit aici, iesirea s-ar anula singura la jumatate.
-    if (trasY > inaltimeFoaie() * PRAG_INCHIDE) { inchide(); return }
-    trasY = 0
+    lasa()
   }
 
   // ===== REDIMENSIONAREA PANOULUI (T6, doar desktop) =====
@@ -580,13 +743,15 @@
        sensuri: la foaie 280 la intrare / 220 la iesire (contractul de miscare),
        la restul 220. `in:`/`out:`, nu `transition:` — doar asa functia de
        tranzitie afla sensul (`direction`), ca sa aleaga durata. -->
-  <div class="backdrop" class:varf use:portal bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
-       style:--nivel={nivel} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
+  <div class="backdrop" class:varf class:trage use:portal bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
+       style:--nivel={nivel} style:--voal-p={voalP} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
        in:fade={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
        out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
+         class:acoperit class:gest={hFoaie !== null} class:mijloc={sheet && inalt && !intins}
          class:se-trage={trageManer}
-         bind:this={sheetEl} style:--trasY="{trasY}px" in:intra out:intra>
+         bind:this={sheetEl} style:--trasY="{trasY}px" style:--h-foaie={hFoaie === null ? null : `${hFoaie}px`}
+         in:intra out:intra>
       {#if panou}
         <!-- Manerul de latime. `<button>`, nu `<div>`: e un control, deci se
              vede la Tab si spune ce e. Nu are actiune la clic — tragerea ii e
@@ -644,7 +809,14 @@
     transition: background-color var(--dur-base) var(--ease);
     padding: calc(var(--space-md) + var(--safe-top)) calc(var(--space-md) + var(--safe-right)) calc(var(--space-md) + var(--safe-bottom)) calc(var(--space-md) + var(--safe-left));
   }
-  .backdrop.varf { background: var(--scrim); }
+  /* VOALUL URMARESTE DEGETUL. `--voal-p` (0..1) o scrie componenta cat timp foaia
+     coboara: la 1 e voalul intreg, la 0 nu mai e nimic din el. Fara asta gestul nu
+     era reversibil cu ochii — trageai jumatate de foaie si nimic nu-ti spunea cat
+     mai ai pana pierzi ce ai deschis. In repaus e mereu 1, deci pe desktop (unde
+     nu exista gest) regula da exact `--scrim`, ca pana acum. */
+  .backdrop.varf { background: color-mix(in srgb, var(--scrim) calc(var(--voal-p, 1) * 100%), transparent); }
+  /* Cat timp degetul e pe ecran, voalul n-are voie sa ramana in urma lui. */
+  .backdrop.trage { transition: none; }
   /* Foaia de dedesubt nu-si mai arata iesirea: butonul ei ar inchide un obiect
      care nu e cel de deasupra. Ramane vizibila ca context, nu ca tinta. */
   .modal:not(.varf) .modal-close { opacity: 0; pointer-events: none; }
@@ -871,49 +1043,93 @@
        Revenirea foloseste ARCUL (--ease-spring): un obiect pe care l-ai tras si
        l-ai eliberat se aseaza cu o depasire mica, nu se opreste mecanic — de
        aceea si durata e --dur-slow, arcul are nevoie de loc sa se aseze.
-       Prima linie e rezerva pentru browserele fara `linear()`. */
+       `height`/`max-height` sunt proprietati de LAYOUT, deci in mod normal nu se
+       anima (regula din tokens: doar transform si opacity). Aici e exceptia
+       numita: schimbarea de treapta CHIAR schimba geometria foii, si nu exista
+       transform care s-o poata exprima — o scalare ar intinde si textul.
+       Rezerva pentru browserele fara `linear()` a plecat: `--ease-spring` e o
+       `cubic-bezier` de cand arcul si-a luat token propriu, deci nu mai are de
+       ce sa cada. */
     .modal.sheet {
       translate: 0 var(--trasY, 0px);
-      transition: translate var(--dur-base) var(--ease), max-height var(--dur-base) var(--ease);
-      transition: translate var(--dur-slow) var(--ease-spring), max-height var(--dur-base) var(--ease);
+      transition: translate var(--dur-slow) var(--ease-spring),
+                  height var(--dur-base) var(--ease),
+                  max-height var(--dur-base) var(--ease),
+                  scale var(--dur-slow) var(--ease),
+                  border-radius var(--dur-slow) var(--ease);
       will-change: translate;
     }
     .modal.sheet.trage { transition: none; }
 
-    /* Tras in sus = ecran plin. DOAR `max-height`, niciodata si `height`:
-       prima varianta le seta pe amandoua, iar `height` fix face saltul pe care Ion
-       l-a numit „se rupe modalul si dupa abia se extinde" — continutul se reaseza
-       instantaneu, apoi tranzitia pornea de la o geometrie deja schimbata. */
-    .modal.sheet.intins {
-      max-height: calc(100dvh - var(--safe-top));
+    /* ===== TEANCUL ARE ADANCIME =====
+       Cand o foaie deschide alta foaie — taskul care deschide „Alege ziua",
+       perioada care cere o confirmare — cea de dedesubt se RETRAGE: se
+       micsoreaza dinspre marginea de jos si isi rotunjeste coltul la loc.
+       Nu e decor. Stiva de niveluri exista si e corecta (Escape stie pe cine
+       inchide), dar pe ecran a doua foaie arata exact ca prima, deci nu se vedea
+       ca mai ai un pas de facut inapoi pana sa ajungi in lista.
+       `scale`, nu `transform`: `transform` e al tranzitiilor Svelte de
+       intrare/iesire, iar `translate` e al gestului. Trei proprietati separate,
+       trei stapani, zero suprascrieri — aceeasi impartire ca la `--trasY`. */
+    .modal.sheet.acoperit {
+      scale: 0.94;
+      transform-origin: bottom center;
     }
-    /* `inalt` = FOAIA E O PAGINA. Nu „aproape tot ecranul", ci TOT: `100dvh`,
-       pana sub bara de stare. A luat trei runde, si de fiecare data valoarea a
-       fost aproape — de aici lectia:
-         - `max-height: min(92dvh, …)` din regula de baza taia la 92% (masurat:
-           747 din 812) — `height` singur nu bate un plafon, deci se scriu
-           amandoua;
-         - `calc(100dvh - var(--safe-top))` parea „tot ecranul" pe emulator,
-           unde safe-area e 0. Pe telefonul lui Ion, cu edge-to-edge pornit
-           (`decorFitsSystemWindows(false)` + `viewport-fit=cover`), `--safe-top`
-           e REAL (~50px) — iar foaia fiind ancorata JOS, cei 50px ramaneau o
-           fasie de pagina vizibila sus. Exact „nu se urca pana sus".
-       Deci inaltimea nu mai scade safe-area: o INCLUDE si o compenseaza cu
-       padding, ca manerul si titlul sa nu intre sub bara de stare. Colturile
-       de sus se indreapta: la marginea ecranului o raza n-ar avea ce rotunji,
-       si ar arata ca o scapare de 20px. */
-    .modal.sheet.inalt {
-      /* `100dvh` e VIEWPORT, indiferent de parinte — de aceea inaltimea se
-         cere asa, si nu prin `position: fixed; inset: 0`. Varianta cu `inset`
-         pare mai ferma, dar se raporteaza la primul stramos cu transform, iar
-         cat tine animatia de sosire a rutei acela e `.page`: masurat, foaia
-         iesea 1596px in loc de 812. `100dvh` nu poate gresi marimea.
-         Minus `--kb`: si foaia „pe toata pagina" trebuie sa se stranga cand
-         urca tastatura, altfel campul in care tocmai scrii ramane sub ea. */
+
+    /* ===== TREPTELE FOII =====
+       La ODIHNA inaltimea vine din CSS, in `dvh`, deci se strange singura cand
+       urca tastatura. In timpul gestului o scrie JS-ul in px (clasa `.gest`),
+       fiindca atunci trebuie sa urmeze degetul cadru cu cadru. Ordinea de aici
+       conteaza: `.gest` vine ULTIMA, ca sa bata clasele de treapta — au aceeasi
+       specificitate, deci decide pozitia in fisier. */
+
+    /* TREAPTA DE SUS: foaia e o PAGINA, nu „aproape tot ecranul". Regula asta era
+       scrisa de DOUA ori — o data pentru `.intins`, o data pentru `.inalt` — cu
+       doua inaltimi usor diferite (una scadea `--safe-top`, cealalta il includea),
+       deci aceeasi foaie ajungea sus altfel dupa cum se deschisese. Acum e o
+       singura treapta.
+       Inaltimea INCLUDE safe-area si o compenseaza cu padding: foaia e ancorata
+       JOS, iar pe telefonul lui Ion, cu edge-to-edge pornit, `--safe-top` e real
+       (~50px) — scazut din inaltime, lasa o fasie de pagina vizibila sus. Exact
+       „nu se urca pana sus". Coltul se indreapta: la marginea ecranului o raza
+       n-are ce rotunji si arata ca o scapare de 20px.
+       `100dvh` e VIEWPORT indiferent de parinte — de aceea inaltimea se cere asa
+       si nu prin `position: fixed; inset: 0`, care se raporteaza la primul
+       stramos cu transform (cat tine sosirea rutei, acela e `.page`: masurat,
+       foaia iesea 1596px in loc de 812). */
+    .modal.sheet.intins:not(.modal-doc) {
       height: calc(100dvh - var(--kb, 0px));
       max-height: calc(100dvh - var(--kb, 0px));
       padding-top: var(--safe-top);
       border-radius: 0;
+    }
+    /* TREAPTA DE MIJLOC — doar pentru foaia care se deschide intinsa (`inalt`).
+       Pana acum din ea nu exista drum inapoi decat inchiderea; de aici se vede si
+       ce e dedesubt fara s-o pierzi. */
+    .modal.sheet.mijloc:not(.modal-doc) {
+      height: calc((100dvh - var(--kb, 0px)) * 0.55);
+      max-height: calc((100dvh - var(--kb, 0px)) * 0.55);
+    }
+    /* Inaltimea gestului. Ultima, deci bate treptele cat timp degetul e pe ecran. */
+    .modal.sheet.gest:not(.modal-doc) {
+      height: var(--h-foaie);
+      max-height: var(--h-foaie);
+    }
+    /* Regula lui `.inalt` a plecat de aici: „se deschide pe tot ecranul" nu mai e
+       o geometrie proprie, e TREAPTA DE SUS a oricarei foi (`.intins`, mai sus).
+       `inalt` a ramas doar ce a fost mereu — o intentie a apelantului: pe ce
+       treapta se deschide. Cat timp erau doua reguli, aceeasi foaie ajungea sus
+       altfel dupa cum se deschisese, si nici nu se putea intoarce din ea.
+       Ce s-a invatat atunci si e acum in `.intins`: `max-height` fara `height`
+       nu urca nimic (plafonul de 92% taia la 747 din 812), iar
+       `calc(100dvh - var(--safe-top))` parea corect doar pe emulator, unde
+       safe-area e 0. */
+
+    /* Adancimea teancului vine DUPA trepte, cu aceeasi specificitate ca ele:
+       la egalitate decide pozitia in fisier, si coltul rotunjit al foii retrase
+       trebuie sa bata coltul drept al treptei de sus. */
+    .modal.sheet.acoperit:not(.modal-doc) {
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
     }
     /* Antetul sheet-ului e o LINIE DE CONTEXT, nu un titlu de fereastra — ca
        „📥 Inbox >" la Todoist. Inainte lua ~90px pe verticala pentru un singur

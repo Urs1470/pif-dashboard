@@ -31,6 +31,7 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
+  import Modal from '../components/ui/Modal.svelte'
 
   // CHIPURILE DE FILTRU AU PLECAT. Grila separa deja finalizatele in „Arhivă"
   // pliabila; „Finalizat" ca chip arata exact acel continut, dar in grila, iar
@@ -145,6 +146,11 @@
     sortOpen = false
   }
   function onDocClick(e) {
+    // Pe telefon meniul e o FOAIE, cu voalul ei — inchiderea vine de acolo.
+    // Regula de aici ar inchide-o si la o atingere pe un loc gol DIN foaie:
+    // foaia se randeaza in `body` (portal), deci tot ce e in ea e „in afara"
+    // declansatorului.
+    if (ecran.telefon) return
     if (sortOpen && sortEl && !sortEl.contains(e.target)) sortOpen = false
   }
 
@@ -218,7 +224,12 @@
           <span class="sort-dir-ind">{sort.dir === 1 ? '\u2191' : '\u2193'}</span>
         {/if}
       </button>
-      {#if sortOpen}
+      <!-- PE TELEFON MENIUL E O FOAIE, NU UN DROPDOWN (vezi foaia de mai jos).
+           Un panou de 150px agatat de coltul din dreapta sus are randuri de 30px
+           \u2014 sub jumatate din `--tap-min` \u2014 si sta exact acolo unde degetul
+           acopera ce citeste. `DatePicker` primise deja tratamentul asta; meniul
+           ramasese singurul strat plutitor din aplicatie desenat pentru cursor. -->
+      {#if sortOpen && !ecran.telefon}
         <div class="sort-menu" role="listbox"
              onkeydown={(e) => {
                const opts = [...e.currentTarget.querySelectorAll('[role="option"]')]
@@ -228,12 +239,7 @@
                else if (e.key === 'Escape') { e.preventDefault(); sortOpen = false }
              }}
              transition:fly={{ y: -4, duration: motionDuration(DUR_BASE), easing: EASE }}>
-          {#each sortOptions as opt (opt.value)}
-            <button class="sort-opt" class:sel={sort.key === opt.value} role="option" aria-selected={sort.key === opt.value} onclick={() => pickSort(opt.value)}>
-              <span>{opt.label}</span>
-              {#if sort.key === opt.value}<span class="sort-dir-ind">{sort.dir === 1 ? '\u2191' : '\u2193'}</span>{/if}
-            </button>
-          {/each}
+          {@render optiuniSortare()}
         </div>
       {/if}
     </div>
@@ -381,6 +387,28 @@
   {/if}
 </div>
 
+<!-- Optiunile de sortare, o singura data pentru amandoua suprafetele: dropdown
+     pe desktop, foaie pe telefon. Duplicate, cele doua liste s-ar desincroniza
+     exact la a sasea optiune adaugata. -->
+{#snippet optiuniSortare()}
+  {#each sortOptions as opt (opt.value)}
+    <button class="sort-opt" class:sel={sort.key === opt.value} role="option"
+            aria-selected={sort.key === opt.value} onclick={() => pickSort(opt.value)}>
+      <span>{opt.label}</span>
+      {#if sort.key === opt.value}<span class="sort-dir-ind">{sort.dir === 1 ? '↑' : '↓'}</span>{/if}
+    </button>
+  {/each}
+{/snippet}
+
+{#if ecran.telefon}
+  <!-- `iesireGest`: pe o foaie de meniu `X`-ul din colt e drumul cel mai lung
+       pentru degetul mare, iar iesirea exista deja de trei ori — voalul, gestul
+       in jos, si alegerea insasi. -->
+  <Modal bind:open={sortOpen} title="Sortează după" iesireGest>
+    <div class="meniu-foaie" role="listbox">{@render optiuniSortare()}</div>
+  </Modal>
+{/if}
+
 <ProjectFormModal bind:open={showNewModal} onsaved={() => loadProjects()} />
 
 <!-- `danger={false}`: finalizarea nu distruge nimic, e un pas normal din viata
@@ -449,6 +477,19 @@
   .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
   .sort-opt:hover { background: var(--bg-hover); color: var(--text); }
   .sort-opt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+
+  /* Aceleasi optiuni, pe foaie: randul creste de la 30 la `--tap-sheet` si textul
+     de la meta (13) la corp, fiindca aici nu mai e un panou pe langa cursor, ci
+     lista principala a ecranului. Marginile negative anuleaza padding-ul foii pe
+     laterale, ca randul atins sa mearga de la o margine la alta — pe telefon o
+     tinta care se opreste la 16px de marginea ecranului rateaza degetul mare. */
+  .meniu-foaie { display: flex; flex-direction: column; gap: 2px; margin: 0 calc(var(--space-md) * -1 + 4px); }
+  .meniu-foaie .sort-opt {
+    min-height: var(--tap-sheet);
+    padding: 0 var(--space-12);
+    font-size: var(--font-body);
+  }
+  .meniu-foaie .sort-opt:active { background: var(--bg-active); }
 
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: var(--space-md); }
   /* HOVERUL RIDICA UMBRA, NU CARDUL (T13).

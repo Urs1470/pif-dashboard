@@ -92,10 +92,16 @@ python scripts/test_suite.py        # API + verificari statice (44 de probe)
 python scripts/smoke_ui.py          # fiecare ruta in Chromium, desktop + mobil
 python scripts/audit_mobil.py       # geometrie si gesturi pe trei latimi de telefon
 python scripts/audit_navigare.py    # ce se intampla, masurat, cand schimbi tabul
+python scripts/audit_foaie.py       # foaia de pe telefon: trepte, viteza, voal
 ```
 
 Fiecare exista fiindca prinde un mod de esec care trece de build: importul lipsa care lasa
-pagina pe schelet, butonul taiat de marginea ecranului, a doua paleta rotita cu doua pozitii.
+pagina pe schelet, butonul taiat de marginea ecranului, a doua paleta rotita cu doua pozitii,
+foaia care se intinde si nu se mai poate trage inapoi.
+
+**`audit_foaie.py` cere atingere ADEVARATA** (`Input.dispatchTouchEvent`, ca `audit_mobil`):
+mouse-ul lui Playwright emite `pointerType: 'mouse'`, iar foaia iese exact pe conditia asta —
+cu mouse-ul, gestul nu porneste deloc si proba ar raporta verde pe un gest inexistent.
 
 **Poarta** (`.claude/hooks/gate.py`, la Stop) le ruleaza singura, pe ce s-a atins: CSS/Svelte
 → `audit_design`; backend → `test_suite`; surse SPA → build + `smoke_ui` + `audit_mobil`.

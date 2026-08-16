@@ -34,7 +34,7 @@
 //     ajunge la butonul de dedesubt (sau ar deschide taskul). Il inghitim o
 //     singura data, in faza de capturare.
 
-import { PRAG_DIRECTIE, PRAG_ACTIUNE, DUR_ZBOR, puls } from './gesturi.js'
+import { PRAG_DIRECTIE, PRAG_ACTIUNE, DUR_ZBOR, puls, urmaritor } from './gesturi.js'
 
 const PRAG_DESCHIDE = 0.4    // fractiune din latimea panoului
 
@@ -66,6 +66,11 @@ export function glisare(node, opt = {}) {
   let latimeRand = 0
   let trecutDePrag = false
   let trecutDePragS = false
+  // Cat de repede mergea degetul cand l-ai ridicat. Vezi `urmaritor` in
+  // `gesturi.js`: pragul nu se mai compara cu locul in care s-a oprit randul, ci
+  // cu locul in care AR FI AJUNS. Fara asta, singurul mod de a bifa era sa duci
+  // randul aproape jumatate de ecran — o aruncare scurta si iuta nu facea nimic.
+  const vit = urmaritor()
 
   const pragBifa = () => latimeRand * PRAG_ACTIUNE
 
@@ -165,6 +170,7 @@ export function glisare(node, opt = {}) {
     dir = null; dx = 0; aGlisat = false
     latimeRand = node.offsetWidth
     trecutDePrag = false
+    vit.porneste(0)
   }
 
   function onMove(e) {
@@ -192,6 +198,7 @@ export function glisare(node, opt = {}) {
     if (v < 0 && !latime && !onAmana) v = v * 0.18
     if (v > 0 && !onBifa) v = v * 0.18
     dx = v
+    vit.adauga(v)
     pune(v, false)
     puneProgres(v)
     const trecutS = amanaLibera() && -v > pragBifa()
@@ -216,7 +223,13 @@ export function glisare(node, opt = {}) {
     if (dir !== 'orizontal') { dir = null; return }
     dir = null
 
-    if (onBifa && dx > pragBifa()) {
+    // UNDE AR FI AJUNS DEGETUL, nu unde s-a oprit. Un gest scurt si iute si unul
+    // lung si lenes trebuie sa ajunga la aceeasi concluzie — altfel bifarea cere
+    // o cursa de 42% din latimea ecranului facuta INCET, adica exact pe dos fata
+    // de cum se bifeaza un task cand ai mainile ocupate.
+    const proiectat = vit.proiectat(dx)
+
+    if (onBifa && proiectat > pragBifa()) {
       // Randul pleaca spre dreapta si abia apoi se bifeaza — miscarea e
       // confirmarea, nu un efect decorativ dupa fapt. `gl-bifa` NU se scoate aici:
       // pista trebuie sa ramana plina si bifata cat timp randul iese de sub ea,
@@ -225,7 +238,7 @@ export function glisare(node, opt = {}) {
       zboaraApoi(latimeRand, onBifa)
       return
     }
-    if (amanaLibera() && -dx > pragBifa()) {
+    if (amanaLibera() && -proiectat > pragBifa()) {
       // Simetric cu bifarea: randul pleaca spre stanga si abia apoi se muta
       // termenul — miscarea E confirmarea.
       node.style.setProperty('--gl-s', '1')
@@ -236,7 +249,7 @@ export function glisare(node, opt = {}) {
     node.classList.remove('gl-amana')
     trecutDePrag = false
     trecutDePragS = false
-    if (latime && dx < -latime * PRAG_DESCHIDE) deschide()
+    if (latime && proiectat < -latime * PRAG_DESCHIDE) deschide()
     else inchide()
   }
 

@@ -24,6 +24,26 @@
 
   let meniuDeschis = $state(false)
 
+  // FOAIA SE INCARCA LENES, SI NU DIN ELEGANTA.
+  //
+  // `Header` traieste in cadrul permanent al aplicatiei, deci tot ce importa el
+  // STATIC ajunge in chunk-ul preincarcat la pornire. Cu `import Modal from …`
+  // scris normal, Rollup a mutat foaia (~80kB) langa `api`, adica exact in ce se
+  // descarca si se parseaza inainte de primul cadru.
+  //
+  // Masurat cu `scripts/audit_navigare.py`: pastila dockului nu mai apuca sa
+  // plece din slotul vechi pana la 90ms — adica se rupea contractul „schimbarea
+  // de tab ALUNECA, nu sare", pe o pagina care n-are nicio legatura cu meniul de
+  // tema. Un contract nu se strica intotdeauna de acolo de unde ai scris.
+  //
+  // Meniul de tema se deschide rar, si pana atunci foaia e oricum in cache: orice
+  // ruta cu un modal a incarcat-o deja.
+  let FoaieMeniu = $state(null)
+  $effect(() => {
+    if (!meniuDeschis || !ecran.telefon || FoaieMeniu) return
+    import('../ui/Modal.svelte').then((m) => { FoaieMeniu = m.default })
+  })
+
   function alege(mod) {
     setMod(mod)
     meniuDeschis = false
@@ -41,7 +61,10 @@
   }
 
   function inafara(nod) {
-    const pe = (e) => { if (!nod.contains(e.target)) meniuDeschis = false }
+    // Pe telefon meniul e o FOAIE, cu voalul ei — inchiderea vine de acolo, iar
+    // regula de aici ar inchide-o la orice atingere in ea: foaia se randeaza in
+    // `body` (portal), deci e „in afara" declansatorului.
+    const pe = (e) => { if (!ecran.telefon && !nod.contains(e.target)) meniuDeschis = false }
     const esc = (e) => { if (e.key === 'Escape') meniuDeschis = false }
     document.addEventListener('pointerdown', pe)
     document.addEventListener('keydown', esc)
@@ -92,22 +115,35 @@
               aria-haspopup="menu" aria-expanded={meniuDeschis} aria-label="Temă" title="Temă">
         <IcoCurenta size={17} strokeWidth={1.5} />
       </button>
-      {#if meniuDeschis}
+      <!-- PE TELEFON MENIUL E O FOAIE, NU UN DROPDOWN. Randuri de 38px agatate
+           de coltul din dreapta sus, sub degetul care le acopera — vezi foaia
+           de mai jos, si aceeasi schimbare la sortarea din Proiecte. -->
+      {#if meniuDeschis && !ecran.telefon}
         <div class="tema-meniu" role="menu" tabindex="-1" onkeydown={navMeniu}
              transition:fly={{ y: -4, duration: motionDuration(DUR_BASE), easing: EASE }}>
-          {#each MODURI as m (m.mod)}
-            <button class="tema-rand" class:activ={tema.mod === m.mod} role="menuitemradio"
-                    aria-checked={tema.mod === m.mod} onclick={() => alege(m.mod)}>
-              <m.Ico size={16} strokeWidth={1.5} />
-              {m.eticheta}
-              {#if tema.mod === m.mod}<Check size={15} strokeWidth={1.5} class="tema-bifa" />{/if}
-            </button>
-          {/each}
+          {@render moduriTema()}
         </div>
       {/if}
     </div>
   </div>
 </header>
+
+{#snippet moduriTema()}
+  {#each MODURI as m (m.mod)}
+    <button class="tema-rand" class:activ={tema.mod === m.mod} role="menuitemradio"
+            aria-checked={tema.mod === m.mod} onclick={() => alege(m.mod)}>
+      <m.Ico size={16} strokeWidth={1.5} />
+      {m.eticheta}
+      {#if tema.mod === m.mod}<Check size={15} strokeWidth={1.5} class="tema-bifa" />{/if}
+    </button>
+  {/each}
+{/snippet}
+
+{#if ecran.telefon && FoaieMeniu}
+  <FoaieMeniu bind:open={meniuDeschis} title="Temă" iesireGest>
+    <div class="tema-foaie" role="menu" tabindex="-1" onkeydown={navMeniu}>{@render moduriTema()}</div>
+  </FoaieMeniu>
+{/if}
 
 <style>
   .header {
@@ -210,6 +246,13 @@
     font-weight: var(--fw-semibold);
   }
   .tema-rand :global(.tema-bifa) { margin-left: auto; }
+
+  /* Aceleasi trei randuri, pe foaie: 38px -> `--tap-sheet`, si de la o margine la
+     alta (marginile negative anuleaza padding-ul lateral al foii). O tinta care
+     se opreste la 16px de marginea ecranului rateaza degetul mare. */
+  .tema-foaie { display: flex; flex-direction: column; gap: 2px; margin: 0 calc(var(--space-md) * -1 + 4px); }
+  .tema-foaie .tema-rand { height: var(--tap-sheet); padding: 0 var(--space-12); }
+  .tema-foaie .tema-rand:active { background: var(--bg-active); }
 
   @media (max-width: 768px) {
     .header {
