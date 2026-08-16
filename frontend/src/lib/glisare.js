@@ -34,7 +34,7 @@
 //     ajunge la butonul de dedesubt (sau ar deschide taskul). Il inghitim o
 //     singura data, in faza de capturare.
 
-import { PRAG_DIRECTIE, PRAG_ACTIUNE, DUR_ZBOR, puls, inBandaTaburi } from './gesturi.js'
+import { PRAG_DIRECTIE, PRAG_ACTIUNE, DUR_ZBOR, puls } from './gesturi.js'
 
 const PRAG_DESCHIDE = 0.4    // fractiune din latimea panoului
 
@@ -47,10 +47,10 @@ export function inchideGlisarea() {
 
 /**
  * @param {HTMLElement} node randul; trebuie sa contina `.gl-fata` si (optional) `.gl-actiuni`
- * @param {{ latime?: number, onBifa?: () => void, activ?: boolean, bandaTaburi?: boolean }} opt
+ * @param {{ latime?: number, onBifa?: () => void, activ?: boolean }} opt
  */
 export function glisare(node, opt = {}) {
-  let { latime = 0, onBifa = null, onAmana = null, activ = true, bandaTaburi = false } = opt
+  let { latime = 0, onBifa = null, onAmana = null, activ = true } = opt
   const fata = node.querySelector('.gl-fata')
   if (!fata) return {}
 
@@ -160,11 +160,6 @@ export function glisare(node, opt = {}) {
     // Fara exceptia asta ambele geasturi ar porni din aceeasi apasare si randul
     // ar aluneca si lateral cat timp il muti in sus.
     if (e.target.closest('.gl-maner')) return
-    // BANDA DE JOS E A TABURILOR (doar unde exista taburi de comutat — vezi
-    // `BANDA_TABURI` in `gesturi.js`). Randul cedeaza el, aici, in loc ca pagina
-    // sa-i fure gestul de deasupra: doua ascultatoare care se cearta pe acelasi
-    // deget produc exact felul de ratare in care se bifeaza un task nevrut.
-    if (bandaTaburi && inBandaTaburi(e.clientY)) return
     pointerId = e.pointerId
     x0 = e.clientX; y0 = e.clientY
     dir = null; dx = 0; aGlisat = false
@@ -264,7 +259,6 @@ export function glisare(node, opt = {}) {
       latime = nou.latime ?? latime
       onBifa = nou.onBifa ?? onBifa
       onAmana = nou.onAmana ?? onAmana
-      bandaTaburi = nou.bandaTaburi ?? bandaTaburi
       if (nou.activ !== undefined && nou.activ !== activ) {
         activ = nou.activ
         if (!activ) inchide(false)
