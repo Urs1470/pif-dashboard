@@ -142,9 +142,9 @@
         #splash.pleaca, #splash.pleaca .sp-marca { transition-duration: .12s; }
       }
     </style>
-    <script type="module" crossorigin src="/assets/main-L7yaeoL4.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/Modal-CjecW4Bs.js">
-    <link rel="stylesheet" crossorigin href="/assets/Modal-D8vKj3oT.css">
+    <script type="module" crossorigin src="/assets/main-BukrZbZm.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/Modal-DLj6oJkk.js">
+    <link rel="stylesheet" crossorigin href="/assets/Modal-DShiJz5q.css">
     <link rel="stylesheet" crossorigin href="/assets/main-4CFizIag.css">
   </head>
   <body>
@@ -198,6 +198,17 @@
           // (`.ruta-in` + scara de celule din `global.css`) porneste exact cand
           // valul incepe sa se ridice, deci vezi O SINGURA miscare continua, nu
           // doua puse cap la cap. Vezi `html.splash-activ` in `global.css`.
+          //
+          // `splash-a-lucrat` ramane pus, si spune paginii ca sosirea ei se joaca
+          // SUB un val care se ridica — deci fara stingere, doar cu miscare.
+          // Motivul, masurat: valul se stinge in 280ms, iar celula soseste in
+          // 420, si pornea de la opacitate 0 EXACT cand valul incepea sa plece.
+          // Deci ultimele ~140ms le vedeai descoperite: antetul si bara erau
+          // deja intregi, iar continutul paginii inca se ingrosa sub ochi.
+          // Ion: „taskuri personale se incarca putin mai tarziu, adica campul
+          // «niciun task personal»." Nu se incarca mai tarziu — se STINGEA mai
+          // tarziu. Vezi `html.splash-a-lucrat` in `global.css`.
+          document.documentElement.classList.add('splash-a-lucrat')
           document.documentElement.classList.remove('splash-activ')
           el.classList.add('pleaca')
           // Scos din DOM la capat: un element fix cat tot ecranul, ramas peste

@@ -1058,6 +1058,26 @@ html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-arc) var(--ease-arc)
 html.splash-activ .ruta-in,
 html.splash-activ .cell-in { animation-play-state: paused; }
 
+/* …SI CAND CHIAR A FOST UN VAL, SOSIREA NU MAI STINGE, DOAR MISCA.
+   Masurat pe /tasks, din clipa in care cade steagul: bara de taburi era deja la
+   opacitate 1, iar celula listei pornea de la 0 si urca 420ms — adica se termina
+   la ~140ms DUPA ce valul disparuse de tot (el se stinge in 280). Ultimele cadre
+   le vedeai descoperite: pagina intreaga, cu continutul ei inca transparent.
+   Ion: „campul «niciun task personal» apare putin mai tarziu."
+   Doua stingeri peste aceiasi pixeli, una dupa alta — aceeasi greseala de fond
+   ca „trei intrari, doua axe" de mai sus, doar ca a doua venea de la val.
+   Ce ramane e MISCAREA: celula tot urca 10px cat timp valul se ridica, deci
+   deschiderea are viata, dar nimic nu mai e pe jumatate vizibil dupa ce valul a
+   plecat. Fara val (desktop, sau cand nu s-a aratat) nu se schimba nimic.
+   Steagul e pus de `index.html` in aceeasi clipa in care il stinge pe celalalt,
+   si il scoate `router.svelte.js` odata cu `prima-incarcare`. */
+@keyframes sosireMiscare {
+  from { transform: translateY(10px); }
+  to { transform: none; }
+}
+html.prima-incarcare.splash-a-lucrat .ruta-in,
+html.prima-incarcare.splash-a-lucrat .cell-in { animation-name: sosireMiscare; }
+
 /* ===== ASTEPTAREA SOSESTE, NU APARE =====
    Ion: „se poate adauga cate o animatie, ceva gen cum e la planificator pentru
    incarcarea paginii la comutare si la porniri."

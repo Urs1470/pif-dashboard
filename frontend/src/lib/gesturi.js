@@ -28,35 +28,74 @@ export const PRAG_INTINDE = 0.08
 export const PRAG_MOUSE = 4
 
 /**
- * BANDA DE JOS — px de la marginea de jos a ferestrei in care orizontala
- * apartine TABURILOR, nu randului de sub deget.
+ * BANDA DE JOS — fasia in care orizontala apartine TABURILOR, nu randului de
+ * sub deget.
  *
  * Ion: „vreau sa dau swipe din zona de jos a ecranului, am ecran mare, degetul
- * natural imi cade putin mai sus de dock."
+ * natural imi cade putin mai sus de dock." Si, dupa prima incercare: „tot banda
+ * de swipe e prea sus."
  *
- * Pana acum comutarea taburilor era a paginii intregi, cu o exceptie: un gest
- * pornit pe un rand ii apartine randului (acolo orizontala inseamna deja
- * „Făcut" / „Planifică"). Regula e buna, dar pe un telefon inalt lista ACOPERA
- * exact fasia in care sta degetul mare — deci exceptia inghitea gestul in
- * singurul loc din care el chiar se da. Un gest care exista peste tot in afara
- * de unde ajunge mana nu exista.
+ * Comutarea taburilor era a paginii intregi, cu o exceptie: un gest pornit pe un
+ * rand ii apartine randului (acolo orizontala inseamna deja „Făcut" /
+ * „Planifică"). Regula e buna, dar pe un telefon inalt lista ACOPERA exact fasia
+ * in care sta degetul mare — deci exceptia inghitea gestul in singurul loc din
+ * care el chiar se da.
  *
- * 200px, si e o socoteala, nu o cifra rotunda: docul ocupa ~100 (68 inaltime +
- * 14 desprindere + zona sigura), deci raman ~100px de lista deasupra lui —
- * doua randuri de `--row-h-mobile`. Atat, si nu mai mult: fiecare pixel de
- * banda e un pixel in care nu mai poti bifa un task cu degetul, iar bifarea e
- * gestul pe care il faci de zeci de ori pe zi.
+ * PRIMA VERSIUNE MASURA 200px DE LA MARGINEA FERESTREI, si a gresit din doua
+ * parti deodata:
+ *  — SUS lua prea mult: ~100px de lista peste doc, adica doua randuri in care nu
+ *    se mai putea bifa un task prin glisare. Fiecare pixel de banda e un pixel
+ *    furat de la gestul pe care il faci de zeci de ori pe zi.
+ *  — JOS nu ajungea deloc: docul e FRATE cu continutul, nu copil, deci o apasare
+ *    pe el nu ajungea la niciun ascultator. Fix cea mai de jos fasie a ecranului,
+ *    unde cade degetul mare cand mana sta relaxata, era moarta.
  *
- * MASURATA DE LA MARGINEA FERESTREI, nu de la doc: docul se ascunde la derulare
- * si se muta cand se deschide un modal, deci pozitia lui e o tinta in miscare
- * — iar un prag de gest care se muta sub deget e mai rau decat unul asezat
- * cativa pixeli mai sus.
+ * Acum banda se masoara DE LA DOC, nu de la marginea ferestrei, si il include si
+ * pe el: „peste doc si doua randuri deasupra lui". Docul e si reperul pe care
+ * omul il VEDE — deci pragul e definit de acelasi lucru care il ghideaza pe el,
+ * nu de o presupunere despre inaltimea zonei sigure a telefonului lui.
+ *
+ * 112 = doua randuri de `--row-h-mobile` (52) plus o suflare. Ion, dupa ce
+ * fasia a fost o vreme de un singur rand: „vreau mai mult deasupra dock-ului."
+ * Costul e cel spus de la inceput si nu s-a schimbat: in banda nu se mai poate
+ * bifa un task prin glisare. Sub doc insa nu se putea nici inainte, deci nu se
+ * pierde nimic acolo — se castiga.
  */
-export const BANDA_TABURI = 200
+export const BANDA_PESTE_DOC = 112
+
+/** Zona sigura de jos, in px. Masurata O DATA, cu o sonda: `env()` nu se poate
+ *  citi din JS (o proprietate personalizata s-ar intoarce ca text nerezolvat),
+ *  iar valoarea difera de la telefon la telefon — pe unul cu navigare din gest e
+ *  ~24px, pe unul cu butoane e 0. Exact felul de diferenta care face un prag
+ *  scris „din ochi" sa fie corect pe masina de dezvoltare si gresit in mana. */
+let _zonaSigura = null
+function zonaSigura() {
+  if (_zonaSigura !== null) return _zonaSigura
+  try {
+    const sonda = document.createElement('div')
+    sonda.style.cssText = 'position:fixed;bottom:0;left:-9999px;width:0;' +
+                          'height:env(safe-area-inset-bottom,0px);pointer-events:none;'
+    document.body.appendChild(sonda)
+    _zonaSigura = sonda.offsetHeight
+    sonda.remove()
+  } catch (_) { _zonaSigura = 0 }
+  return _zonaSigura
+}
+
+/** Cat ocupa docul de la marginea de jos in sus, ca ASEZARE — nu ca pozitie
+ *  curenta. `offsetHeight` nu e atins de `transform`, deci raspunsul e acelasi
+ *  si cand docul e coborat (ascuns la derulare, dat la o parte de un modal).
+ *  Un prag de gest care se muta sub deget ar fi mai rau decat unul aproximativ.
+ *  `14` e desprinderea din `Dock.svelte` (`bottom: calc(14px + safe)`). */
+function inaltimeaDocului() {
+  const doc = document.querySelector('.dock')
+  const h = doc?.offsetHeight || 68
+  return h + 14 + zonaSigura()
+}
 
 /** True cand punctul de PORNIRE al gestului cade in banda de jos. */
 export function inBandaTaburi(clientY) {
-  return clientY >= window.innerHeight - BANDA_TABURI
+  return clientY >= window.innerHeight - (inaltimeaDocului() + BANDA_PESTE_DOC)
 }
 
 /**

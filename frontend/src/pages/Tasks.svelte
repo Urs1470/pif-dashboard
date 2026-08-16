@@ -977,10 +977,14 @@
     // inauntrul paginii, si niciun ascultator nu auzea nimic. Masurat, nu dedus:
     // exact pe sfera „Personal" goala, adica pe ecranul cu care se deschide
     // aplicatia.
-    // `.app-content` e `flex: 1` intr-un `.app-main` de `100dvh`, deci umple
-    // ecranul intotdeauna. Si ne alege singur ce e in afara: docul si orice
-    // modal (portat in `body`) raman pe dinafara, fara nicio garda in plus.
-    const zona = node.closest('.app-content') || node
+    // `.app-layout` le contine pe AMANDOUA — continutul si docul. Docul e
+    // FRATE cu continutul, nu copil, deci pe `.app-content` o apasare pe el nu
+    // ajungea la niciun ascultator: cea mai de jos fasie a ecranului, exact
+    // acolo unde cade degetul mare cand mana sta relaxata, era moarta.
+    // (`.app-content` singur nici nu ajungea: e inalt cat continutul, deci cu
+    // lista scurta banda cadea in gol — masurat pe sfera „Personal" goala.)
+    // Modalele raman pe dinafara oricum: ies in `body` prin `portal`.
+    const zona = node.closest('.app-layout') || node.closest('.app-content') || node
     let x0 = 0, y0 = 0, urmarim = false, decis = false, orizontal = false
     let pointerId = null, trecut = false, aGlisat = false
     // Ultimul segment de miscare, pentru viteza de la ridicarea degetului. Doua
@@ -1013,6 +1017,9 @@
       if (e.target?.closest?.('.trow, .sub-row') && !inBandaTaburi(e.clientY)) return
       // Nici peste o foaie, un modal sau un calendar deschis: acolo gestul e al lor.
       if (e.target?.closest?.('.modal, .dp, [role="dialog"]')) return
+      // Foaia „Mai mult" a docului e tot un strat deschis, doar ca traieste
+      // INAUNTRUL docului — deci a intrat in raza ascultatorului odata cu el.
+      if (e.target?.closest?.('.mm-foaie, .mm-fundal')) return
       pointerId = e.pointerId
       x0 = e.clientX; y0 = e.clientY
       xUltim = e.clientX; tUltim = e.timeStamp; viteza = 0
