@@ -1,6 +1,7 @@
 // Tema traieste in `lib/tema.svelte.js` (o foloseste si bundle-ul separat /calc).
 // Aici raman doar re-exporturile, ca importurile existente sa nu se rupa.
 import { tema, setMod, cicleazaTema } from '../lib/tema.svelte.js'
+import { facut, refuzat } from '../lib/gesturi.js'
 
 export { tema, setMod }
 export const toggleTheme = cicleazaTema
@@ -45,6 +46,12 @@ function faceLoc() {
 }
 
 export function toast(message, type = 'info', duration = DURATA_TOAST) {
+  // „NU SE POATE", in mana. Toastul de eroare vine intotdeauna dupa o actiune pe
+  // care a pornit-o utilizatorul (o salvare, o mutare, o stergere), deci degetul
+  // e inca pe ecran si merita raspunsul — iar textul, pe telefon, apare fix acolo
+  // unde nu te uiti. Vezi vocabularul din `lib/gesturi.js`: se vibreaza pentru ce
+  // a facut DEGETUL, si un esec al actiunii lui e exact asta.
+  if (type === 'error') refuzat()
   faceLoc()
   const id = ++toastId
   ui.toasts.push({ id, message, type })
@@ -58,6 +65,11 @@ export function toast(message, type = 'info', duration = DURATA_TOAST) {
 // stergerea), onUndo la apasarea butonului (revine). Fix reversibil pentru
 // stergeri: caller-ul scoate optimist din UI, apoi decide aici comitere vs revenire.
 export function toastUndo(message, { onUndo, onCommit, actionLabel = 'Anulează', duration = DURATA_TOAST } = {}) {
+  // „GATA, S-A FACUT". `toastUndo` e chemat EXACT cand o actiune a schimbat date
+  // si se poate da inapoi — bifare, mutare, stergere. E singurul punct din
+  // aplicatie care stie cu certitudine ca fapta s-a comis, deci aici sta
+  // confirmarea, nu imprastiata prin cele sase locuri care il cheama.
+  facut()
   faceLoc()
   const id = ++toastId
   ui.toasts.push({ id, message, type: 'info', actionLabel })

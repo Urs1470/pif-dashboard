@@ -56,30 +56,26 @@ export const tema = $state({
 // Ion comuta des — si un pocnet pe tot ecranul e cel mai violent lucru pe care il
 // face aplicatia, tocmai la o actiune care nu schimba nicio informatie.
 //
-// Cadrul primeste ~320ms o clasa care pune o tranzitie de CULOARE pe tot
-// subarborele, apoi si-o scoate. Permanenta n-are ce cauta: fiecare hover si
-// fiecare stare ar trage dupa ea 300ms, si atunci raspunsul la atingere s-ar
-// simti moale peste tot.
+// PRIMA VARIANTA A FOST GRESITA, SI A FOST PRINSA MASURAND.
+// Punea 320ms o clasa care dadea `transition` de culoare pe tot subarborele.
+// `scripts/audit_reactivitate.py`: CINCI cadre pierdute, cel mai lung 252ms —
+// un sfert de secunda de ecran inghetat, fix in mijlocul miscarii pe care voia
+// s-o faca mai lina. Nu costa tranzitia, costa instantierea ei pe fiecare nod.
 //
-// DOAR proprietati de culoare, cu bunastiinta. Miscarea nu intra in lista: o
-// tranzitie de `transform` fortata pe tot arborele ar prinde, in cele 320ms,
-// obiecte care se misca din alt motiv (pastila din dock, foaia trasa de deget) si
-// le-ar da alta durata decat au. Tranzitiile Svelte nu sunt atinse deloc — ele
-// merg pe `animation`, nu pe `transition`.
-// `--dur-slow` (280) plus o marja: clasa trebuie sa traiasca putin mai mult
-// decat tranzitia pe care o porneste, altfel ultimele cadre ale trecerii raman
-// fara regula si culoarea sare la capat.
-const DUR_TEMA = 320
-let ceasTema = null
+// Acum face acelasi lucru cu O SINGURA animatie: browserul fotografiaza ecranul
+// vechi si pe cel nou si le suprapune pe compozitor. Doua imagini, nu N tranzitii.
+// Regulile de stingere sunt in `global.css`, la `html.tema-vt`.
+//
+// Fara `startViewTransition`, comutarea ramane instantanee. Mai bine sec decat
+// inghetat: un pocnet tine un cadru, varianta dinainte tinea 252ms.
+function schimbaAtributul(efectiv) {
+  document.documentElement.setAttribute('data-theme', efectiv)
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', BARA[efectiv])
+}
 
-function treceLinLaTema() {
-  if (typeof document === 'undefined') return
-  const el = document.documentElement
-  // Prima aplicare (la incarcare) NU e o comutare: acolo nu exista „de la ce"
-  // sa treaca, iar o tranzitie ar intarzia primul cadru pictat.
-  el.classList.add('tema-trece')
-  clearTimeout(ceasTema)
-  ceasTema = setTimeout(() => el.classList.remove('tema-trece'), DUR_TEMA)
+function ceruMaiPutinaMiscare() {
+  return typeof window !== 'undefined'
+    && (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false)
 }
 
 function aplica(lin = false) {
@@ -87,9 +83,20 @@ function aplica(lin = false) {
   if (efectiv === tema.efectiva && lin) return   // nimic de trecut
   tema.efectiva = efectiv
   if (typeof document === 'undefined') return
-  if (lin) treceLinLaTema()
-  document.documentElement.setAttribute('data-theme', efectiv)
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', BARA[efectiv])
+
+  // Cine a cerut mai putina miscare a cerut si asta: schimbarea de tema nu e
+  // miscare, e vopsea — nu se pierde nicio informatie daca vine dintr-un cadru.
+  if (!lin || ceruMaiPutinaMiscare() || !document.startViewTransition) {
+    schimbaAtributul(efectiv)
+    return
+  }
+  const el = document.documentElement
+  el.classList.add('tema-vt')
+  const vt = document.startViewTransition(() => schimbaAtributul(efectiv))
+  // `finally` si nu `then`: daca tranzitia e intrerupta (comuti de doua ori
+  // repede), clasa TREBUIE scoasa oricum — altfel urmatoarea navigare ar
+  // mosteni stingerea de tema in loc de alunecarea ei.
+  vt.finished.catch(() => {}).finally(() => el.classList.remove('tema-vt'))
 }
 
 export function setMod(mod) {

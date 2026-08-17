@@ -3,6 +3,7 @@
   import Header from './components/layout/Header.svelte'
   import Dock from './components/layout/Dock.svelte'
   import Toast from './components/ui/Toast.svelte'
+  import TrageReincarca from './components/ui/TrageReincarca.svelte'
   import Tooltip from './components/ui/Tooltip.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
   import { setLucideProps, Compass, ArrowLeft } from '@lucide/svelte'
@@ -225,6 +226,9 @@
   <Dock deschideCautarea={() => paleta?.deschide()} />
   <CommandPalette bind:this={paleta} />
   <Toast />
+  <!-- Arcul de „trage sa reincarci". Randat O SINGURA data, aici: gestul e al
+       cadrului, nu al paginii — vezi `lib/reincarcare.svelte.js`. -->
+  <TrageReincarca />
   <!-- Un singur tooltip pentru toata aplicatia; citeste atributele `title`. -->
   <Tooltip />
 </div>

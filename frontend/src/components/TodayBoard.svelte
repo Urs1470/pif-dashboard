@@ -19,6 +19,8 @@
   import { morphNavigate } from '../lib/focus.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import FoaieAdauga from './FoaieAdauga.svelte'
+  import { inregistreaza } from '../lib/reincarcare.svelte.js'
+  import { uita } from '../lib/cache.js'
   import EmptyState from './ui/EmptyState.svelte'
   import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
@@ -315,6 +317,11 @@
   // inchis: pe desktop panoul e ascuns, deci ar ramane un rand impins la stanga
   // fara nimic dedesubt.
   $effect(() => { if (!peTelefon) inchideGlisarea() })
+
+  // TRAGE SA REINCARCI, pe Acasa. `uita` inainte: altfel cererea s-ar servi din
+  // cache si arcul s-ar roti degeaba — exact in singurul moment in care gestul e
+  // chemat, adica atunci cand banuiesti ca ce vezi nu mai e adevarat.
+  $effect(() => inregistreaza(async () => { uita('/api/agenda'); await loadAgendaToday() }))
 
   onMount(() => {
     loadAgendaToday()

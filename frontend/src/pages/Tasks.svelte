@@ -16,6 +16,8 @@
 
 <script>
   import { ecran } from '../lib/ecran.svelte.js'
+  import { inregistreaza } from '../lib/reincarcare.svelte.js'
+  import { uita } from '../lib/cache.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, alunecare, DUR_FAST, EASE } from '../lib/motion.svelte.js'
@@ -836,6 +838,11 @@
   // FARA sferaActiva printre dependinte: sfera nu mai cere retea (vine „toate"
   // dintr-un foc), deci comutarea ei nu redeclanseaza fetch-ul.
   $effect(() => { loadGlobalTasks({ arhiva: showArchive, sfera: 'toate' }) })
+
+  // TRAGE SA REINCARCI. `uita` inainte de `reload`: fara el cererea s-ar servi
+  // din cache si gestul ar roti degeaba — adica ar minti exact in singurul caz
+  // in care e chemat, cand banuiesti ca ce vezi nu mai e adevarat.
+  $effect(() => inregistreaza(async () => { uita('/api/global-tasks'); await reload() }))
 
   // Arhiva in URL: starea supravietuieste unui refresh.
   $effect(() => {

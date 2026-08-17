@@ -93,6 +93,7 @@ python scripts/smoke_ui.py          # fiecare ruta in Chromium, desktop + mobil
 python scripts/audit_mobil.py       # geometrie si gesturi pe trei latimi de telefon
 python scripts/audit_navigare.py    # ce se intampla, masurat, cand schimbi tabul
 python scripts/audit_foaie.py       # foaia de pe telefon: trepte, viteza, voal
+python scripts/audit_reactivitate.py # cat de repede raspunde si cat de neted curge
 ```
 
 Fiecare exista fiindca prinde un mod de esec care trece de build: importul lipsa care lasa

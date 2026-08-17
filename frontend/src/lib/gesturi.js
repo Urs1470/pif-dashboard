@@ -79,6 +79,43 @@ export function puls(ms = 12) {
   try { navigator.vibrate?.(ms) } catch (_) {}
 }
 
+// ===== VOCABULARUL VIBRATIILOR — PATRU CUVINTE, NU UNUL =====
+//
+// `puls()` spunea un singur lucru: „ai trecut un prag". Degetul primea deci
+// confirmarea INTENTIEI, dar niciodata pe cea a REZULTATULUI — si tocmai
+// rezultatul e ce nu vezi, fiindca in clipa aia degetul acopera randul si ochiul
+// e deja in alta parte.
+//
+// Patru cuvinte, fiecare cu un inteles care nu se suprapune cu altul. Regula de
+// mai jos e cea care le tine sa nu se inmulteasca: se vibreaza pentru ce a facut
+// DEGETUL, niciodata pentru ce s-a intamplat singur. O notificare, o cerere care
+// s-a intors, o reimprospatare de fundal — alea n-au voie sa bata in mana.
+//
+// De ce PATTERN si nu doar durate: doua vibratii de 12 si 20ms nu se deosebesc
+// pe un telefon in buzunar sau in manusa. Doua batai despartite de o pauza, da.
+
+/** „Ai trecut pragul" — cat timp degetul e inca pe ecran, si te poti razgandi.
+ *  Cea mai deasa, deci si cea mai scurta. (`puls()` de mai sus, nume vechi
+ *  pastrat: are deja sase consumatori.) */
+export const pragAtins = puls
+
+/** „S-a asezat pe alta treapta." Mai slaba decat pragul: nu s-a decis nimic,
+ *  doar s-a mutat ceva sub deget. */
+export function treaptaNoua() { puls(8) }
+
+/** „GATA, s-a facut" — actiunea a fost comisa si datele s-au schimbat.
+ *  Doua batai scurte: se simte ca o incheiere, nu ca un avertisment. */
+export function facut() {
+  try { navigator.vibrate?.([14, 34, 14]) } catch (_) {}
+}
+
+/** „NU se poate" — actiunea a fost refuzata sau a picat.
+ *  Una lunga: singurul cuvant din vocabular care se simte NEPLACUT, dinadins.
+ *  Daca ar semana cu „gata", ar fi mai rau decat sa nu existe. */
+export function refuzat() {
+  try { navigator.vibrate?.([32, 40, 32]) } catch (_) {}
+}
+
 // ===== VITEZA — A TREIA DIMENSIUNE A UNUI GEST =====
 //
 // Pana acum fiecare gest din aplicatie se uita la o singura marime: CAT de
