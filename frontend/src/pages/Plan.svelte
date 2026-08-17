@@ -589,7 +589,7 @@
   let pasiSeIncarca = $state(false)
 
   // PANOUL SE DESCHIDE CU DATELE IN MANA (regula deja scrisa in aplicatie —
-  // vezi `desfacere` din `motion.svelte.js` si TaskPickerModal).
+  // vezi `desfacere` din `motion.svelte.js` si `components/FoaieAdauga.svelte`).
   //
   // Ion: „parca ceva vine de jos... e rupta animatia". Masurat cadru cu cadru:
   // panoul se deschidea la 493px si se stangea la 404 in timpul propriei

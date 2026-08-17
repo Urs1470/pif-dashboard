@@ -6,7 +6,7 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 **Total: 81 rute.**
 
 
-## blueprints\admin.py (13 rute)
+## blueprints/admin.py (13 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -24,7 +24,7 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | PUT | `/api/settings/plan-departament` | `plan_departament_set` | 875 |
 | GET | `/api/calendar` | `calendar_view` | 892 |
 
-## blueprints\app_update.py (3 rute)
+## blueprints/app_update.py (3 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -32,7 +32,7 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | GET | `/api/app/version` | `app_version` | 111 |
 | GET | `/api/app/apk` | `app_apk` | 121 |
 
-## blueprints\obsidian.py (5 rute)
+## blueprints/obsidian.py (5 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -42,7 +42,7 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 338 |
 | PUT | `/api/obsidian/note` | `obsidian_note_put` | 470 |
 
-## blueprints\projects.py (18 rute)
+## blueprints/projects.py (18 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -65,7 +65,7 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1151 |
 | DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1192 |
 
-## blueprints\push.py (9 rute)
+## blueprints/push.py (9 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
@@ -79,7 +79,7 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | POST | `/api/push/test` | `push_test` | 708 |
 | POST | `/api/push/action` | `push_action` | 726 |
 
-## blueprints\tasks.py (17 rute)
+## blueprints/tasks.py (17 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
