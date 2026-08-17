@@ -24,9 +24,10 @@
   //               intre gest si rezultat.
   //   'actiuni' — cele cinci actiuni din handoff. Aici ajunge APASAREA LUNGA: ea
   //               nu declara dinainte ce vrei, deci are dreptul sa intrebe.
-  import { ExternalLink, CalendarSearch, Sunrise, Clock, X } from '@lucide/svelte'
+  import { ExternalLink, CalendarSearch, Sunrise } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import SelectorZi from './ui/SelectorZi.svelte'
+  import SelectorOra from './ui/SelectorOra.svelte'
   import DatePicker from './ui/DatePicker.svelte'
   import SolidIcon from './ui/SolidIcon.svelte'
 
@@ -56,11 +57,12 @@
   // personal — doua conditii, fiindca ele spun lucruri diferite: prima „lista asta
   // stie sa salveze o ora", a doua „taskul asta are unde s-o ţină".
   const araOra = $derived(!!onOra && task?.sfera === 'personal')
-  // `<input type="time">` prin `Input`, nu un widget propriu: selectorul nativ de
-  // ora e cel pe care mana il stie deja din tot telefonul, iar `Input` aduce inelul
-  // de focus si fontul de 16px (sub el Safari mareste pagina la focus).
-  // Se scrie la `change`, nu la fiecare tasta: un `<input type="time">` gol trece
-  // prin valori partiale, si fiecare ar fi un PUT.
+  // `SelectorOra`, nu `<input type="time">`. Prima varianta folosea campul nativ, cu
+  // argumentul c-ar fi „selectorul pe care mana il stie din tot telefonul". Ion:
+  // „trebuie ora sa pot selecta cu un ceas, tot omogen cu designul" — si avea
+  // dreptate: selectorul nativ vine cu fundalul, colturile si tipografia
+  // sistemului, deci era singurul loc din aplicatie in care alegerea unei valori
+  // arata ca alt program. Ceasul propriu e pe aceeasi carcasa ca `DatePicker`.
   let oraLocal = $state('')
   $effect(() => { oraLocal = task?.ora || '' })
 
@@ -88,15 +90,10 @@
      incheiat. -->
 {#snippet randOra()}
   {#if araOra}
-    <label class="ft-ora">
-      <Clock size={16} strokeWidth={1.5} />
-      <span class="ft-ora-et">Ora</span>
-      <input type="time" bind:value={oraLocal} onchange={() => onOra?.(oraLocal || '')} />
-      {#if oraLocal}
-        <button type="button" class="ft-ora-x" onclick={() => { oraLocal = ''; onOra?.('') }}
-                aria-label="Scoate ora"><X size={14} strokeWidth={2.5} /></button>
-      {/if}
-    </label>
+    <!-- `SelectorOra` isi aduce propriul declansator, in aceeasi reteta de camp ca
+         `DatePicker` — deci randul nu mai are nevoie de cutia lui. Eticheta „Ora" o
+         scrie componenta (`label`), ca la orice alt camp al sistemului. -->
+    <SelectorOra label="Ora" value={oraLocal} onchange={(v) => { oraLocal = v; onOra?.(v) }} />
   {/if}
 {/snippet}
 
@@ -237,56 +234,10 @@
   .ft-dp :global(.dp-trigger svg) { display: none; }
   .ft-dp :global(.dp-trigger:hover) { background: none; color: inherit; }
 
-  /* RANDUL DE ORA. Aceeasi cutie ca `.ft-rand` — 48 inalt, raza 10, suprafata 2 —
-     fiindca e acelasi fel de obiect: un rand din foaie. Ce difera e ca el nu
-     EXECUTA, ci ţine o valoare, deci nu are `:active` care sa-l stranga.
-     `<input type="time">` brut, cu bunastiinta si contrar regulii „NU input brut in
-     formulare": aici nu e un formular, e un rand de control, iar `Input` ar aduce
-     eticheta si cutia LUI peste cea de aici. Ce trebuia luat de la `Input` — 16px,
-     ca Safari sa nu mareasca pagina la focus — se scrie explicit mai jos. */
-  .ft-ora {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    min-height: var(--tap-sheet);
-    padding: 0 14px;
-    border-radius: var(--radius-sm);
-    background: var(--bg-elevated);
-    color: var(--text);
-    font-size: var(--font-body);
-    font-weight: var(--fw-medium);
-    cursor: pointer;
-  }
-  .ft-ora :global(svg) { flex: none; color: var(--text-dim); }
-  .ft-ora-et { flex: 1; min-width: 0; }
-  .ft-ora input {
-    flex: none;
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    /* 16px: sub atat Safari mareste pagina la focus si foaia sare. */
-    font-size: var(--font-input-mobile);
-    text-align: right;
-  }
-  .ft-ora input:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-xs); }
-  /* Ora goala: WebView-ul deseneaza „--:--" palid, dar declansatorul de ceas al
-     lui poate lipsi — de asta randul intreg e `<label>`, deci atingerea oriunde pe
-     el deschide selectorul. */
-  .ft-ora-x {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-full);
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: var(--transition-colors);
-  }
-  .ft-ora-x:hover { background: var(--danger-subtle); color: var(--danger-deep); }
+  /* Aici stateau `.ft-ora*` — cutia randului de ora, cu un `<input type="time">`
+     inauntru. Au plecat odata cu el: `SelectorOra` isi aduce propriul declansator,
+     in aceeasi reteta de camp ca `DatePicker`, deci o a doua cutie in jurul lui ar
+     fi un chenar in chenar. */
 
   /* Un rand ca celelalte patru, deosebit DOAR de cerneala — nu de o linie sau de
      un spatiu in plus. Asa cere handoff-ul, si e si regula sistemului: cand doua

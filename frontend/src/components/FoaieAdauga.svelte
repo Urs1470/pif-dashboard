@@ -485,7 +485,10 @@
   }
   .fa-chip button:hover { opacity: 1; background: color-mix(in oklab, currentColor 14%, transparent); }
 
-  .fa-list { overflow-y: auto; min-height: 0; padding: 6px; }
+  /* Si pe desktop lista are inaltime FIXA, din acelasi motiv: caseta e centrata,
+     deci cand se scurteaza se muta si sus si jos — de doua ori mai mult decat pe
+     telefon, unde foaia e lipita de baza si creste doar intr-o directie. */
+  .fa-list { overflow-y: auto; height: 340px; padding: 6px; }
 
   /* CREAREA: 52 = `--row-h-mobile`, aceeasi inaltime ca randurile de dedesubt.
      Tenta de accent plus cerneala adanca — nu fill saturat: un rand de lista
@@ -594,8 +597,25 @@
   .fa-extra { display: flex; flex-direction: column; gap: var(--space-12); padding-top: 4px; }
 
   @media (max-width: 768px) {
-    /* Lista se plafoneaza, ca foaia sa nu creasca peste ecran cand ai 30 de
-       candidati — aceeasi valoare ca la vechea foaie de cautare. */
-    .fa-list { max-height: 46dvh; }
+    /* ===== FOAIA NU-SI SCHIMBA INALTIMEA CAT TIMP SCRII =====
+       Ion, 2026-08-17: „cand tastez ceva in taskuri modalul isi schimba dimensiunea
+       la orice tastare, este aiurea (…) schimbarea se poate face exact in momentul
+       cand vrei sa adaugi ceva si ratezi."
+       Ultima jumatate de propozitie e problema adevarata, si nu e de confort: foaia
+       creste sau scade DUPA ce degetul a plecat spre ecran, deci apesi unde era
+       randul, nu unde a ajuns. O interfata care se muta singura in mijlocul unui
+       gest transforma fiecare atingere in pariu.
+       Se muta din trei cauze deodata, si `max-height` nu apara de niciuna: lista se
+       scurteaza pe masura ce cautarea filtreaza, randul „Creează" apare la prima
+       litera, iar randul de chipuri apare cand parserul recunoaste o zi. Un plafon
+       lasa CONTINUTUL sa dea inaltimea cat timp e sub el — adica exact cazul.
+       Deci inaltime FIXA pe corp, iar lista ia ce rămâne (`flex: 1`) si deruleaza
+       inauntru. De la deschidere pana la inchidere foaia are o singura dimensiune,
+       si tot ce se schimba se schimba SUB ea.
+       58dvh: cu tastatura sus rămân ~5 randuri vizibile — masurat la fel ca la
+       vechiul plafon de 46dvh — iar fara ea foaia nu ajunge sa para un ecran plin. */
+    .fa { height: 58dvh; }
+    .fa-list { flex: 1; min-height: 0; }
+    .fa-cauta, .fa-chipuri, .fa-jos { flex: none; }
   }
 </style>

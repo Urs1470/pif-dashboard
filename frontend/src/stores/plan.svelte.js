@@ -11,13 +11,27 @@ function readWeekends() {
   try { return localStorage.getItem(LS_WEEKENDS) !== '0' } catch { return true }
 }
 
+// TASKURILE FINALIZATE SE VAD IMPLICIT (Ion, 2026-08-17: „vreau ca atat pe desktop
+// cat si pe mobil sa fie aratate taskurile finalizate by default").
+//
+// Erau ascunse implicit, iar pe TELEFON comutatorul „Finalizate" e
+// `display: none` (vezi `.toggle` in blocul de 768px din `Plan.svelte`) — deci
+// acolo nu exista NICIO cale de a le vedea. Planificatorul de pe telefon arata
+// numai ce mai ai de facut, iar ce ai facut dispărea fara urma: exact invers de
+// ce vrei cand te uiti la o zi trecuta.
+// Se persista, ca weekendurile: daca le stingi pe desktop, rămân stinse.
+const LS_DONE = 'pif-plan-done'
+function readDone() {
+  try { return localStorage.getItem(LS_DONE) !== '0' } catch { return true }
+}
+
 export const plan = $state({
   lanes: [],
   backlog: [],
   start: '',
   days: 14,
   today: '',
-  showDone: false,
+  showDone: readDone(),
   showWeekends: readWeekends(), // evidentiaza weekendurile (doar in modul pe zile)
   loading: false,
   error: null,
@@ -86,6 +100,7 @@ export function setHorizon(days) {
 
 export function toggleShowDone() {
   plan.showDone = !plan.showDone
+  try { localStorage.setItem(LS_DONE, plan.showDone ? '1' : '0') } catch {}
   return loadPlan()
 }
 

@@ -530,7 +530,12 @@ def planificator_pe_telefon(ctx, baza):
     capete = page.eval_on_selector_all('.mg-zi-cap', 'e => e.map(x => x.textContent.trim())')
     zi(len(capete) == 7, 'sapte capete de zi', capete)
     zi(capete[:1] == ['Lu'], 'saptamana incepe LUNI', capete)
-    zi(page.locator('.mg-legenda .mgl').count() == 3, 'legenda are trei semne')
+    # PATRU semne de cand incarcarea se numara: un task · restant · facut ·
+    # deplasare. Weekendul a plecat din legenda (se deduce din poziţia in
+    # saptamana). Cifra e verificata, nu doar „exista o legenda": o legenda care
+    # rămâne in urma desenului e mai rea decat niciuna.
+    zi(page.locator('.mg-legenda .mgl').count() == 4, 'legenda are patru semne',
+       page.locator('.mg-legenda .mgl').count())
     zi(page.locator('.mg-cap-zi').count() == 1, 'capul zilei alese e pe ecran')
 
     # Celula selectata: EXACT una. Doua ar insemna ca resetarea celei vechi nu s-a
@@ -538,9 +543,12 @@ def planificator_pe_telefon(ctx, baza):
     zi(page.locator('.mg-cel.activa').count() == 1, 'exact o celula e selectata',
        page.locator('.mg-cel.activa').count())
 
-    # ZIUA CU DATE — inima testului. `.mg-bara` se randeaza doar pe zilele cu
-    # taskuri, deci ea E semnul c-avem ce apasa.
-    incarcate = page.locator('.mg-cel:has(.mg-bara)')
+    # ZIUA CU DATE — inima testului. `.mg-seg` se randeaza doar pe zilele cu
+    # taskuri, deci el E semnul c-avem ce apasa.
+    # (Era `.mg-bara`, bara unica a carei latime spunea incarcarea. A devenit
+    # segmente numarabile pe 2026-08-17, la cererea lui Ion — iar testul a semnalat
+    # singur schimbarea, prin „SARI", in loc s-o treaca in tacere.)
+    incarcate = page.locator('.mg-cel:has(.mg-seg)')
     if incarcate.count() == 0:
         # Nu se numara ca problema: poate chiar nu exista taskuri in fereastra. Dar
         # se SPUNE, ca un „OK" verde sa nu ascunda faptul c-am sarit peste tot ce
@@ -563,6 +571,41 @@ def planificator_pe_telefon(ctx, baza):
         nr_cap = (page.locator('.mg-cz-n').first.text_content() or '').strip()
         zi(nr_cap == str(randuri), 'capul zilei numara exact randurile aratate',
            '%s vs %s randuri' % (nr_cap, randuri))
+
+        # SEGMENTELE SE NUMARA. Rostul lor e sa poti spune „doua" sau „cinci" fara
+        # sa deschizi ziua, deci relatia dintre cate segmente vezi si cate randuri
+        # sunt trebuie sa se ţină. Plafonul e 4: peste atat ultimul segment devine
+        # „mai mult" (`.plus`), si ATUNCI numarul de segmente nu mai egaleaza
+        # randurile — dar plafonul trebuie sa fie ANUNTAT, altfel patru segmente ar
+        # insemna „exact patru" pentru o zi cu noua.
+        activa = page.locator('.mg-cel.activa')
+        n_seg = activa.locator('.mg-seg').count()
+        n_plus = activa.locator('.mg-seg.plus').count()
+        if randuri <= 4:
+            zi(n_seg == randuri, 'un segment per intrare (sub plafon)',
+               '%s segmente vs %s randuri' % (n_seg, randuri))
+            zi(n_plus == 0, 'sub plafon nu se marcheaza „mai mult"')
+        else:
+            zi(n_seg == 4, 'la plafon se desenează patru segmente', n_seg)
+            zi(n_plus == 1, 'plafonul e ANUNTAT (ultimul segment e „mai mult")')
+
+    # PERIOADA NU ARATA CA UN TASK. Ion: „ar trebui segmente de implementare sa se
+    # deosebeasca de taskuri." Verificarea nu e „exista banda" — e ca banda si
+    # segmentul sunt DOUA forme diferite: banda se intinde pe latime (continua, o
+    # fasie de timp), segmentul e o bucata de 7px. Daca cineva le-ar aduce vreodata
+    # la aceeasi geometrie, deosebirea ar dispărea fara sa crape nimic.
+    banda = page.locator('.mg-banda').first
+    if banda.count() == 0:
+        out('  SARI  nicio perioada de implementare in grila — deosebirea NU s-a verificat')
+    else:
+        seg = page.locator('.mg-seg').first
+        cb = banda.bounding_box()
+        cs = seg.bounding_box() if seg.count() else None
+        zi(cb and cb['width'] >= 20, 'banda de perioada se intinde pe latime', cb)
+        if cs:
+            zi(cb['width'] > cs['width'] * 2,
+               'banda si segmentul sunt DOUA forme, nu una',
+               'banda %s vs segment %s' % (round(cb['width']), round(cs['width'])))
 
     # Ziua goala are o propozitie, nu o pagina taiata.
     goale = page.locator('.mg-cel:not(:has(.mg-bara))')
@@ -681,6 +724,29 @@ def lista_de_facut(ctx, baza):
             page.wait_for_timeout(400)
             zi(page.locator('.fa-chip.zi').count() == 0,
                'fara zi in text nu apare chip de zi')
+            # FOAIA NU-SI SCHIMBA INALTIMEA CAT TIMP SCRII.
+            #
+            # Ion: „cand tastez ceva in taskuri modalul isi schimba dimensiunea la
+            # orice tastare (…) schimbarea se poate face exact in momentul cand vrei
+            # sa adaugi ceva si ratezi." Asta e ce se masoara: inaltimea foii la trei
+            # momente care schimbau CONTINUTUL — camp gol, text care filtreaza lista,
+            # text care aduce si randul de chipuri. Toleranta 2px: sub-pixelii de
+            # layout nu sunt o mutare pe care sa o simta degetul.
+            def h_foaie():
+                return page.evaluate("""() => {
+                  const f = document.querySelector('.modal.sheet');
+                  return f ? Math.round(f.getBoundingClientRect().height) : 0;
+                }""")
+            camp.fill(''); page.wait_for_timeout(700); h0 = h_foaie()
+            camp.fill(MARCA); page.wait_for_timeout(700); h1 = h_foaie()
+            camp.fill('mâine ' + MARCA); page.wait_for_timeout(700); h2 = h_foaie()
+            camp.fill('zzz' + MARCA); page.wait_for_timeout(700); h3 = h_foaie()
+            stabila = max(h0, h1, h2, h3) - min(h0, h1, h2, h3) <= 2
+            zi(stabila, 'foaia nu-si schimba inaltimea la tastare',
+               'inaltimi: %s' % [h0, h1, h2, h3])
+
+            camp.fill(MARCA)
+            page.wait_for_timeout(500)
             page.locator('.fa-creeaza').first.click()
             page.wait_for_timeout(1800)
             zi(page.eval_on_selector_all('.trow', 'e => e.length') == n0 + 1, 'taskul s-a creat')

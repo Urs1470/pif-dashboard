@@ -164,6 +164,26 @@
     return { catN, catRest: catRest.join(' '), interval }
   })
 
+  // PE TELEFON SUBTITLUL SPUNE ALTCEVA, fiindca ecranul arata altceva.
+  //
+  // Ion, 2026-08-17: „pe mobil nu mai are sens alegerea perioadei de sus, arata
+  // aceeasi perioada tot timpul, nu?" — exact. Grila e fixa: patru saptamani de
+  // luni. Orizontul (`plan.days`) a devenit o unealta INTERNA, urcata la 30 doar ca
+  // sa acopere grila, iar segmentul din care se alegea e ascuns sub 768px.
+  // Subtitlul insa continua sa citeasca orizontul, deci scria „de azi, 30 zile ·
+  // 17 aug – 15 sep" peste o grila care arata 17 aug – 13 sep. Nu doar fara sens:
+  // GRESIT cu doua zile, si dintr-o sursa pe care n-o poti corecta din ecran.
+  // Deci pe telefon spune ce se vede: intervalul grilei, si nimic despre alegeri.
+  const subtitluGrila = $derived.by(() => {
+    if (!gridStart) return ''
+    const ultima = addDays(gridStart, ZILE_GRILA - 1)
+    const l1 = numeLuna(gridStart)
+    const l2 = numeLuna(ultima)
+    return l1 === l2
+      ? `${ziLuna(gridStart)}–${ziLuna(ultima)} ${l2}`
+      : `${ziLuna(gridStart)} ${l1} – ${ziLuna(ultima)} ${l2}`
+  })
+
   /** Interval compact: aceeasi luna se scrie O data — „17–18 aug", nu
    *  „17 aug. – 18 aug." (raportat de Ion, cu poza). O zi = o zi. */
   function intervalScurt(a, b) {
@@ -785,15 +805,41 @@
   /** Cate taskuri si cate restante cad pe fiecare zi. Se socoteste O DATA pentru
    *  toata grila, nu per celula: 28 de celule × N taskuri ar fi o parcurgere
    *  pentru fiecare zi, la fiecare randare. */
+  const GOL_ZI = () => ({ n: 0, restante: 0, gata: 0, impl: false, pregatire: false })
+
   const perZi = $derived.by(() => {
     const m = new Map()
+    const ia = (zi) => {
+      let c = m.get(zi)
+      if (!c) { c = GOL_ZI(); m.set(zi, c) }
+      return c
+    }
     for (const t of toateTaskurile) {
       const zi = String(t.data_scadenta || '').slice(0, 10)
       if (!zi) continue
-      const c = m.get(zi) || { n: 0, restante: 0 }
+      const c = ia(zi)
       c.n++
-      if (esteRestant(t.data_scadenta)) c.restante++
-      m.set(zi, c)
+      if (isDone(t.status)) c.gata++
+      else if (esteRestant(t.data_scadenta)) c.restante++
+    }
+    // PERIOADELE DE IMPLEMENTARE, PE ZILE. Ion: „ar trebui segmente de implementare
+    // sa se deosebeasca de taskuri." Ele nu sunt taskuri si nu se numara cu ele: un
+    // task e un lucru de bifat, o perioada e o fasie de timp in care ESTI undeva.
+    // De asta nu intra in `n` — ar amesteca doua unitati intr-o singura cifra — ci
+    // primesc doua steaguri, iar celula le deseneaza cu alta FORMA (banda continua
+    // sub segmente; vezi CSS).
+    // Faza pastreaza regula sistemului: plin = implementare, contur/palid =
+    // pregatire (aceeasi ca pe swimlane si in Calendar).
+    for (const lane of views) {
+      for (const im of lane.impl || []) {
+        if (!im.a || !im.b) continue
+        for (let z = im.a; z <= im.b; z = addDays(z, 1)) {
+          const c = ia(z)
+          if (im.faza === 'pregatire') c.pregatire = true
+          else c.impl = true
+          if (z === im.b) break
+        }
+      }
     }
     return m
   })
@@ -801,7 +847,7 @@
   const celuleGrila = $derived.by(() =>
     buildDays(gridStart, ZILE_GRILA).map(z => ({
       ...z,
-      ...(perZi.get(z.iso) || { n: 0, restante: 0 }),
+      ...(perZi.get(z.iso) || GOL_ZI()),
     }))
   )
 
@@ -810,10 +856,34 @@
   let ziAleasa = $state('')
   const ziActiva = $derived(ziAleasa || plan.today || localToday())
 
-  /** Lățimea barei de incarcare, in px: 10 la un task, +8 pe fiecare urmator,
-   *  plafonata la 28 — peste atat bara ar atinge muchiile celulei de 52 si n-ar
-   *  mai spune „mai mult", ar spune „plin". */
-  const latimeBara = (n) => Math.min(28, 10 + n * 8)
+  /** CATE segmente se desenează intr-o celula, si de ce cifra asta.
+   *
+   *  Ion: „pe planificator nu ar trebui sa pot vedea cate intrari sunt? gen mai
+   *  multe segmente unul langa altul." Avea dreptate, si nu doar ca preferinta:
+   *  o bara a carei LATIME spune incarcarea se citeste comparativ („ziua asta are
+   *  mai mult decat aia"), dar nu se poate NUMARA — iar cand te uiti la o zi vrei
+   *  sa stii daca ai doua lucruri sau cinci.
+   *  Deci: un segment per intrare, unul langa altul.
+   *
+   *  PLAFON 4, si se SPUNE cand s-a atins. Celula are ~48px pe 390: patru segmente
+   *  de 7px cu 3px intre ele fac 37 — incap cu aer. La al cincilea ar trebui sa
+   *  scad latimea segmentului, si atunci n-ar mai fi numarabil, care e tot rostul.
+   *  Peste plafon, ultimul segment devine „mai mult" (vezi `.mg-seg.plus` in CSS):
+   *  un plafon care nu se anunta arata ca o numaratoare exacta si minte. */
+  const MAX_SEG = 4
+  const segmente = (c) => {
+    const total = c.n
+    if (!total) return []
+    const out = []
+    // Ordinea in care se desenează spune severitatea, nu doar numarul: restantele
+    // intai, apoi ce e de facut, apoi ce s-a facut. Ochiul citeste de la stanga.
+    for (let i = 0; i < Math.min(total, MAX_SEG); i++) {
+      const rest = i < c.restante
+      const gata = !rest && i >= (total - c.gata)
+      out.push({ rest, gata, plus: total > MAX_SEG && i === MAX_SEG - 1 })
+    }
+    return out
+  }
 
   /** Capetele de zi ale grilei, luni-prima. Din ACELEASI initiale ca antetul de
    *  coloane al swimlane-ului (`buildDays().wd`), ca sa nu existe doua tabele. */
@@ -1049,7 +1119,14 @@
       <h1>Planificator</h1>
       <!-- Ce fereastra vezi, scris o data. Antetul de timp n-o mai spune: acolo
            luna ar fi un al treilea nivel peste saptamani si zile. -->
-      {#if subtitlu}<span class="page-sub">de azi, <span class="ps-n">{subtitlu.catN}</span>&nbsp;{subtitlu.catRest} · <span class="ps-n">{subtitlu.interval}</span></span>{/if}
+      <!-- Doua subtitluri, fiindca sunt doua ecrane: pe desktop fereastra e ALEASA
+           (de aici „de azi, 14 zile"), pe telefon e FIXA — grila de patru
+           saptamani — deci se scrie doar ce interval vezi. -->
+      {#if ecran.telefon}
+        {#if subtitluGrila}<span class="page-sub"><span class="ps-n">{subtitluGrila}</span></span>{/if}
+      {:else if subtitlu}
+        <span class="page-sub">de azi, <span class="ps-n">{subtitlu.catN}</span>&nbsp;{subtitlu.catRest} · <span class="ps-n">{subtitlu.interval}</span></span>
+      {/if}
     </div>
     <div class="controls">
       <div class="seg" role="group" aria-label="Orizont">
@@ -1479,23 +1556,42 @@
                     class:rest={c.restante > 0}
                     class:activa={c.iso === ziActiva}
                     aria-pressed={c.iso === ziActiva}
-                    aria-label="{c.dayNum} {c.month} — {c.n} {c.n === 1 ? 'task' : 'taskuri'}{c.restante ? `, ${c.restante} restante` : ''}"
+                    aria-label="{c.dayNum} {c.month} — {c.n} {c.n === 1 ? 'task' : 'taskuri'}{c.restante ? `, ${c.restante} restante` : ''}{c.gata ? `, ${c.gata} făcute` : ''}{c.impl ? ', implementare' : c.pregatire ? ', pregătire' : ''}"
                     onclick={() => ziAleasa = c.iso}>
               <span class="mg-nr">{c.dayNum}</span>
-              <!-- Bara se randeaza DOAR cand exista ceva: o bara de lungime zero pe
-                   fiecare zi goala ar fi 28 de urme care nu spun nimic. -->
+              <!-- SEGMENTELE se randeaza DOAR cand exista ceva: 28 de urme de
+                   lungime zero n-ar spune nimic si ar face grila sa arate ocupata. -->
               {#if c.n > 0}
-                <span class="mg-bara" style="width: {latimeBara(c.n)}px"></span>
+                <span class="mg-seg-rand" aria-hidden="true">
+                  {#each segmente(c) as s}
+                    <span class="mg-seg" class:rest={s.rest} class:gata={s.gata} class:plus={s.plus}></span>
+                  {/each}
+                </span>
+              {/if}
+              <!-- PERIOADA E O BANDA, NU UN SEGMENT — si asta e toata deosebirea
+                   cerută: taskurile sunt lucruri de bifat (bucati), o perioada e o
+                   fasie de timp in care ESTI undeva (continua). Doua unitati
+                   diferite n-au voie sa arate la fel, oricat de mica e celula.
+                   Plin = implementare, contur = pregatire: aceeasi regula ca pe
+                   swimlane si in Calendar, nu un al treilea cod de invatat. -->
+              {#if c.impl || c.pregatire}
+                <span class="mg-banda" class:pregatire={!c.impl} aria-hidden="true"></span>
               {/if}
             </button>
           {/each}
         </div>
         <!-- LEGENDA. Trei semne, si toate trei au nevoie de traducere: bara e o
              lungime (nu un numar), iar cele doua tente sunt culori de stare. -->
+        <!-- LEGENDA. Patru semne, si fiecare are nevoie de traducere: trei sunt
+             forme (segment / segment roșu / bandă) si unul e o tenta. Weekendul a
+             plecat din ea — o zi de weekend se recunoaste din poziţia in
+             saptamana, iar legenda nu e un inventar de culori, e pentru ce NU se
+             deduce. -->
         <div class="mg-legenda">
-          <span class="mgl"><span class="mgl-bara"></span>încărcare</span>
-          <span class="mgl"><span class="mgl-p rest"></span>restant</span>
-          <span class="mgl"><span class="mgl-p we"></span>weekend</span>
+          <span class="mgl"><span class="mgl-seg"></span>un task</span>
+          <span class="mgl"><span class="mgl-seg rest"></span>restant</span>
+          <span class="mgl"><span class="mgl-seg gata"></span>făcut</span>
+          <span class="mgl"><span class="mgl-banda"></span>deplasare</span>
         </div>
       </section>
 
@@ -2272,13 +2368,47 @@
     font-variant-numeric: tabular-nums;
     line-height: 1;
   }
-  /* BARA DE INCARCARE: 3px, latimea scrisa inline din `latimeBara(n)`. E o
-     LUNGIME, nu o culoare — deci pe o zi obisnuita rămâne neutra si nu adauga un
-     al doilea canal cromatic peste tentele de stare. */
-  .mg-bara {
+  /* SEGMENTELE: unul per task, ca sa se poata NUMARA. 7px lat × 3 inalt, 3px intre
+     ele — patru incap in celula de ~48px cu aer, si la latimea asta doua segmente
+     lipite se citesc ca doua, nu ca o bara. */
+  .mg-seg-rand { display: flex; align-items: center; gap: 3px; height: 3px; }
+  .mg-seg {
+    width: 7px;
     height: 3px;
     border-radius: var(--radius-full);
     background: var(--border-strong);
+  }
+  /* Restantele si facutele NU sunt culori decorative, sunt aceleasi doua stari ale
+     sistemului: rosu cere actiune, iar ce s-a facut se stinge (nu se coloreaza
+     verde — pe randul de task verdele e rezervat confirmarii unui GEST, iar aici
+     ar fi al treilea canal cromatic intr-o celula de 48px). */
+  .mg-seg.rest { background: var(--danger); }
+  .mg-seg.gata { background: var(--border); }
+  /* PLAFONUL SE VEDE. Al patrulea segment, cand sunt mai multe de patru, se lungeste
+     si se ascute la dreapta: „de aici incolo, mai mult". Fara semnul asta patru
+     segmente ar insemna „exact patru", iar o zi cu nouă taskuri ar arata la fel ca
+     una cu patru — adica exact minciuna pe care o repara numararea. */
+  .mg-seg.plus {
+    width: 12px;
+    border-top-right-radius: 1px;
+    border-bottom-right-radius: 1px;
+  }
+
+  /* BANDA DE PERIOADA: continua, pe toata latimea utila a celulei, lipita de baza.
+     Deosebirea de segmente e de FORMA, nu de culoare — o fasie de timp vs. bucati
+     de lucru. Plin = implementare, contur = pregatire (regula sistemului). */
+  .mg-banda {
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    bottom: 4px;
+    height: 3px;
+    border-radius: var(--radius-full);
+    background: var(--accent);
+  }
+  .mg-banda.pregatire {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
   }
 
   /* WEEKENDUL e suprafata 2: nu e o stare, e un fel de zi. */
@@ -2291,13 +2421,23 @@
      culoare. */
   .mg-cel.rest { background: var(--danger-subtle); }
   .mg-cel.rest .mg-nr { color: var(--danger-deep); }
-  .mg-cel.rest .mg-bara { background: var(--danger); }
   /* ZIUA ALEASA: fill saturat de accent cu cerneala pe el. Ultima regula, deci
      bate weekendul si restantele — ce ai atins tu e mai important decat ce e ziua
      de fel, si trebuie sa se vada dintr-o privire unde eşti in grila. */
   .mg-cel.activa { background: var(--accent); }
   .mg-cel.activa .mg-nr { color: var(--accent-text); font-weight: var(--fw-semibold); }
-  .mg-cel.activa .mg-bara { background: var(--accent-text); opacity: .85; }
+  /* Pe fillul de accent, TOT ce e desenat trece pe cerneala lui — inclusiv banda de
+     perioada, care altfel ar fi accent peste accent, adica invizibila exact pe ziua
+     la care te uiti. Segmentele isi pastreaza ierarhia prin opacitate: restant
+     intreg, de facut mai palid, facut abia vizibil. */
+  .mg-cel.activa .mg-seg { background: var(--accent-text); opacity: .55; }
+  .mg-cel.activa .mg-seg.rest { opacity: 1; }
+  .mg-cel.activa .mg-seg.gata { opacity: .3; }
+  .mg-cel.activa .mg-banda { background: var(--accent-text); opacity: .9; }
+  .mg-cel.activa .mg-banda.pregatire {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-text) 70%, transparent);
+  }
 
   .mg-legenda {
     display: flex;
@@ -2308,10 +2448,12 @@
     color: var(--text-dim);
   }
   .mgl { display: inline-flex; align-items: center; gap: 6px; }
-  .mgl-bara { width: 16px; height: 3px; border-radius: var(--radius-full); background: var(--border-strong); }
-  .mgl-p { width: 10px; height: 10px; border-radius: var(--radius-xs); }
-  .mgl-p.rest { background: var(--danger-subtle); box-shadow: inset 0 0 0 1px var(--danger); }
-  .mgl-p.we { background: var(--bg-elevated); box-shadow: inset 0 0 0 1px var(--border-strong); }
+  /* Semnele din legenda sunt ACELEASI obiecte ca in celula, la aceeasi marime — o
+     legenda cu semne „aproximative" te pune sa faci potrivirea in cap. */
+  .mgl-seg { width: 7px; height: 3px; border-radius: var(--radius-full); background: var(--border-strong); }
+  .mgl-seg.rest { background: var(--danger); }
+  .mgl-seg.gata { background: var(--border); }
+  .mgl-banda { width: 16px; height: 3px; border-radius: var(--radius-full); background: var(--accent); }
 
   /* CAPUL ZILEI ALESE. `baseline`, ca numarul si textul sa stea pe aceeasi linie
      de scris — la fel ca in capul boardului „Astăzi" si al paginii Taskuri. */
