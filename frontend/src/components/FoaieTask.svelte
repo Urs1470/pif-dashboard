@@ -24,7 +24,7 @@
   //               intre gest si rezultat.
   //   'actiuni' — cele cinci actiuni din handoff. Aici ajunge APASAREA LUNGA: ea
   //               nu declara dinainte ce vrei, deci are dreptul sa intrebe.
-  import { ExternalLink, CalendarSearch, Sunrise } from '@lucide/svelte'
+  import { CalendarSearch, Sunrise, Clock } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import SelectorZi from './ui/SelectorZi.svelte'
   import SelectorOra from './ui/SelectorOra.svelte'
@@ -42,13 +42,11 @@
     onMaine,
     /** ('HH:MM'|'') — '' scoate ora. Lipsa lui ASCUNDE randul de ora. */
     onOra = null,
-    onBifa,
-    onDeschide,
+    /** Redeschide foaia de adaugare pe taskul asta. Lipsa lui ASCUNDE randul. */
+    onEditeaza = null,
     /** Lipsa lui ASCUNDE randul de stergere — o lista fara drum inapoi nu-l arata. */
     onSterge = null,
   } = $props()
-
-  const gata = $derived(task?.status === 'done' || task?.status === 'finalizat')
 
   // ORA, DOAR PE TASKURILE PERSONALE (v41). Ion: „imi trebuie si ora sa pot seta
   // pentru taskuri, pana cand doar pentru cele personale." Coloana e pe
@@ -88,12 +86,20 @@
      de obicei una dupa alta, iar o foaie care pleaca dupa prima te pune s-o
      redeschizi pentru a doua. Se inchide cand alegi ZIUA — acolo gestul s-a
      incheiat. -->
+<!-- Randul de ora ARATA CA CELELALTE RANDURI. Ion: „butonul sa nu se deosebeasca de
+     celelalte." Prima varianta lasa `SelectorOra` sa-si aduca propriul camp — cu
+     eticheta deasupra, muchie interioara si 46px — deci intre randuri de 48 fara
+     chenar sta un camp de formular: aceeasi actiune, alta clasa de obiect.
+     Acum declansatorul lui se dezbraca si imprumuta `.ft-rand`, exact ca al lui
+     `DatePicker` la „Alege ziua" (`.ft-dp`). Un singur fel de rand in foaie. -->
 {#snippet randOra()}
   {#if araOra}
-    <!-- `SelectorOra` isi aduce propriul declansator, in aceeasi reteta de camp ca
-         `DatePicker` — deci randul nu mai are nevoie de cutia lui. Eticheta „Ora" o
-         scrie componenta (`label`), ca la orice alt camp al sistemului. -->
-    <SelectorOra label="Ora" value={oraLocal} onchange={(v) => { oraLocal = v; onOra?.(v) }} />
+    <span class="ft-rand ft-ora">
+      <Clock size={16} strokeWidth={1.5} />
+      <span class="ft-ora-et">Ora</span>
+      <SelectorOra value={oraLocal} eticheta={oraLocal || 'Setează'}
+                   onchange={(v) => { oraLocal = v; onOra?.(v) }} />
+    </span>
   {/if}
 {/snippet}
 
@@ -109,14 +115,31 @@
         {@render randOra()}
       </div>
     {:else}
-      <!-- CELE CINCI ACTIUNI, in ordinea din handoff: Bifează · Mută pe mâine ·
-           Alege ziua · Deschide · Șterge. Ordinea e cea a frecventei, si de aceea
-           „Șterge" e ultima — dar nu doar ultima, ci si SUB o linie (mai jos). -->
+      <!-- CE RAMANE IN FOAIE E CE N-ARE ALTA CALE.
+           Handoff-ul cerea cinci actiuni: Bifează · Mută pe mâine · Alege ziua ·
+           Deschide · Șterge. Doua au plecat la cererea lui Ion, si amandoua pentru
+           acelasi motiv — erau al doilea drum catre ceva care se face deja:
+             „Bifează"  — o face glisarea la dreapta, bifa din rand si bifa mare din
+                          foaia taskului. Ion: „am destule locuri de unde pot face asta."
+             „Deschide" — o face atingerea randului.
+           Un meniu care repeta ce e deja pe ecran il face mai lung fara sa-l faca
+           mai capabil, iar aici lungimea costa: foaia soseste sub deget.
+           Rămân ziua, ORA si stergerea — singurele care nu se pot face altfel de pe
+           telefon. -->
       <div class="ft-verbe">
-        <button class="ft-rand" onclick={() => apoi(onBifa)}>
-          <SolidIcon name="check" size={17} />
-          {gata ? 'Redeschide' : 'Bifează'}
-        </button>
+        {#if onEditeaza}
+          <!-- „Editează" redeschide FOAIA DE ADAUGARE cu titlul curent, selectat.
+               Nu un al doilea formular: aceeasi foaie care creeaza, fiindca e
+               aceeasi intrebare („cum se numeste si cand?") — iar textul selectat
+               inseamna ca poti rescrie randul dintr-un gest, care e ce faci de cele
+               mai multe ori cand deschizi un task. -->
+          <button class="ft-rand" onclick={() => apoi(onEditeaza)}>
+            <SolidIcon name="pencil" size={16} />
+            Editează
+          </button>
+        {/if}
+
+        {@render randOra()}
 
         <button class="ft-rand" onclick={() => apoi(onMaine)}>
           <Sunrise size={16} strokeWidth={1.5} />
@@ -134,19 +157,10 @@
                       onchange={(v) => apoi(() => onZi?.(v || null))} />
         </span>
 
-        {@render randOra()}
-
-        {#if onDeschide}
-          <button class="ft-rand" onclick={() => apoi(onDeschide)}>
-            <ExternalLink size={16} strokeWidth={1.5} />
-            Deschide
-          </button>
-        {/if}
-
         {#if onSterge}
-          <!-- STERGEREA STA SINGURA SUB O LINIE. Nu e a cincea actiune egala: din
-               ea pierzi ceva. Aceeasi ierarhie ca „Scoate din calendar" in
-               `SelectorZi`, si acolo si aici din acelasi motiv.
+          <!-- STERGEREA STA ULTIMA. Nu e o actiune egala cu celelalte: din ea pierzi
+               ceva. Aceeasi ierarhie ca „Scoate din calendar" in `SelectorZi`, si
+               acolo si aici din acelasi motiv.
                `--danger-deep`, cum cere handoff-ul: `-deep` inseamna „mai mult
                contrast" in AMBELE teme (pe intuneric mai deschis, pe lumina mai
                inchis — vezi nota de la `--accent-hover` in tokens.css), deci pe
@@ -233,6 +247,31 @@
   }
   .ft-dp :global(.dp-trigger svg) { display: none; }
   .ft-dp :global(.dp-trigger:hover) { background: none; color: inherit; }
+
+  /* RANDUL DE ORA: aceeasi dezbracare ca `.ft-dp`, ca sa nu se deosebeasca de
+     celelalte randuri (Ion). Ce rămâne din `SelectorOra` e doar declansatorul lui,
+     fara cutie, fara eticheta si fara iconita proprie — iconita si cuvantul „Ora"
+     le pune randul, in aceeasi ordine ca la vecinii lui. Valoarea sta la dreapta,
+     in mono, unde stau toate valorile din foaie. */
+  .ft-ora { padding: 0 14px; }
+  .ft-ora-et { flex: 1; min-width: 0; }
+  .ft-ora :global(.so) { width: auto; flex: none; gap: 0; }
+  .ft-ora :global(.so-trigger) {
+    width: auto;
+    min-height: var(--tap-sheet);
+    padding: 0;
+    gap: 0;
+    background: none;
+    box-shadow: none;
+    color: inherit;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--font-body);
+    font-weight: var(--fw-medium);
+  }
+  /* Ceasul lui ar fi al doilea langa cel al randului. */
+  .ft-ora :global(.so-trigger svg) { display: none; }
+  .ft-ora :global(.so-trigger:hover) { background: none; box-shadow: none; color: inherit; }
 
   /* Aici stateau `.ft-ora*` — cutia randului de ora, cu un `<input type="time">`
      inauntru. Au plecat odata cu el: `SelectorOra` isi aduce propriul declansator,

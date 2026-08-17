@@ -26,7 +26,7 @@
   // ramane din intentia handoff-ului e treapta: 12, majuscule, 600, ls .05em —
   // adica exact clasa de eticheta din propria lui secțiune de tipografie.
   import { tick } from 'svelte'
-  import { Search, Mic, Plus, X, ChevronDown } from '@lucide/svelte'
+  import { Search, Mic, Plus, X, ChevronDown, Check } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import Select from './ui/Select.svelte'
@@ -49,6 +49,20 @@
     sfera = 'munca',
     /** Se cheama dupa orice scriere reusita, ca pagina sa-si reincarce lista. */
     onSchimbare = () => {},
+    // ===== MODUL DE EDITARE =====
+    //
+    // Ion, 2026-08-17: „editeaza, care redeschide modalul de creare task cu textul
+    // introdus curent si selectat pentru editare."
+    //
+    // Aceeasi foaie, nu un al doilea formular — si nu doar din economie: intrebarea
+    // e identica („cum se numeste si cand?"), deci si parserul trebuie sa fie
+    // identic. Asa „mâine la 8" scris la EDITARE face exact ce face la creare, in
+    // loc sa rămână text in titlu.
+    /** Taskul editat, sau `null` pentru creare. */
+    editeaza = null,
+    /** async (dateNoi) => {} — pagina isi salveaza taskul cu functia ei, cu
+     *  reload-ul si undo-ul ei. Foaia nu stie pe ce ruta trăiește taskul. */
+    onSalveaza = null,
   } = $props()
 
   let q = $state('')
@@ -141,6 +155,9 @@
       refuzOra = false
       return
     }
+    // La EDITARE campul porneste cu titlul curent — asta e tot rostul randului
+    // „Editează": rescrii ce era, nu scrii de la zero.
+    if (editeaza) q = editeaza.titlu || ''
     const ceas = setTimeout(() => { deschis = true }, PLAFON_DESCHIDERE)
     return () => clearTimeout(ceas)
   })
@@ -154,7 +171,19 @@
   // rand pentru SCRIS (butonul din care vine se numeste „+"), deci pe DESKTOP
   // focusul cade in camp. Pe telefon randul de sus rămâne la indemana: cine vrea
   // sa scrie il atinge, si atunci saltul e raspunsul la gestul lui.
-  $effect(() => { if (deschis && !esteTelefon()) tick().then(() => campEl?.focus()) })
+  // LA EDITARE, FOCUS SI SELECTIE — INCLUSIV PE TELEFON.
+  //
+  // Regula „o foaie din care ALEGI nu-si cheama singura tastatura" rămâne pentru
+  // creare: acolo randul de sus e o cautare, si tastatura ar fi a doua sosire peste
+  // foaia care tocmai s-a asezat. La editare intrebarea e inversa — ai cerut
+  // explicit sa scrii, iar Ion a cerut si textul SELECTAT („selectat pentru
+  // editare"), fiindca de cele mai multe ori rescrii randul, nu adaugi la el.
+  // Deci un `select()`, nu doar `focus()`.
+  $effect(() => {
+    if (!deschis) return
+    if (editeaza) tick().then(() => { campEl?.focus(); campEl?.select() })
+    else if (!esteTelefon()) tick().then(() => campEl?.focus())
+  })
 
   function esteTelefon() {
     try { return window.matchMedia('(max-width: 768px)').matches } catch { return false }
@@ -187,6 +216,26 @@
   // Un task cu proiect e task DE PROIECT (`/api/proiecte/:id/tasks`), unul fara e
   // global. Decizia se ia din chipul de proiect — adica din ce VEZI, nu din unde
   // ai deschis foaia: daca ai scris alt proiect in titlu, acela cantareste.
+  // LA EDITARE se SCRIE peste task, nu se creeaza al doilea. Pagina primeste doar
+  // ce s-a schimbat; ea decide pe ce ruta merge (global vs proiect) si cum
+  // reincarca — foaia nu stie unde trăiește taskul, si nu are de ce sa stie.
+  async function salveaza() {
+    const titlu = titluCurat.trim()
+    if (!titlu || creating) return
+    creating = true
+    try {
+      await onSalveaza?.({
+        titlu,
+        ...(ziAleasa ? { data_scadenta: ziAleasa } : {}),
+        ...(oraAleasa ? { ora: oraAleasa } : {}),
+      })
+      open = false
+      onSchimbare()
+    } catch (e) {
+      toast(`Eroare: ${e.message}`, 'error')
+    } finally { creating = false }
+  }
+
   async function creeaza() {
     const titlu = titluCurat.trim()
     if (!titlu || creating) return
@@ -277,7 +326,7 @@
   }
 </script>
 
-<Modal bind:open={deschis} onclose={() => open = false} title="Adaugă task" size="md">
+<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="md">
   <div class="fa">
     <!-- RANDUL DE SUS *ESTE* CAMPUL: 56px, lupa 17, text 16 (sub 16 Safari face
          zoom la focus), si contorul „N din M" in mono la dreapta — cifre care se
@@ -285,7 +334,7 @@
     <div class="fa-cauta">
       <Search size={17} strokeWidth={1.5} />
       <input type="text" placeholder="Ce ai de făcut?" bind:value={q} bind:this={campEl}
-             onkeydown={(e) => { if (e.key === 'Enter' && titluCurat.trim()) { e.preventDefault(); creeaza() } }} />
+             onkeydown={(e) => { if (e.key === 'Enter' && titluCurat.trim()) { e.preventDefault(); editeaza ? salveaza() : creeaza() } }} />
       {#if q.trim() && items.length}<span class="fa-nr">{items.length} din {total}</span>{/if}
       {#if Motor}
         <button class="fa-mic" class:asculta onclick={dicteaza}
@@ -332,16 +381,18 @@
            task nou. 52px (`--row-h-mobile`) — aceeasi inaltime ca randurile de
            dedesubt, ca lista sa fie o lista, nu un buton plus o lista. -->
       {#if titluCurat.trim()}
-        <button class="fa-creeaza" onclick={creeaza} disabled={creating}>
-          <span class="fa-plus"><Plus size={17} strokeWidth={2} /></span>
-          <span class="fa-ct">Creează „{titluCurat}"</span>
+        <button class="fa-creeaza" onclick={editeaza ? salveaza : creeaza} disabled={creating}>
+          <span class="fa-plus">
+            {#if editeaza}<Check size={17} strokeWidth={2.5} />{:else}<Plus size={17} strokeWidth={2} />{/if}
+          </span>
+          <span class="fa-ct">{editeaza ? 'Salvează' : 'Creează'} „{titluCurat}"</span>
           {#if ziAleasa && citit.etichetaZi}<span class="fa-cz">{citit.etichetaZi}</span>{/if}
         </button>
       {/if}
 
       {#if loading && items.length === 0}
         <div class="fa-schelet"><Skeleton varianta="rand" randuri={3} /></div>
-      {:else if items.length > 0}
+      {:else if items.length > 0 && !editeaza}
         <div class="fa-cap">Există deja</div>
         {#each ORDINE_GRUPE as gid (gid)}
           {#if grupe[gid]?.items.length}

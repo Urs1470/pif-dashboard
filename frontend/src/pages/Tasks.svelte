@@ -405,6 +405,9 @@
   // „Deschide" si „Mută pe mâine" fara sa treci prin foaia mare.
   let foaieTask = $state(null)
   let foaieDeschisa = $state(false)
+  // Taskul pe care foaia de adaugare il EDITEAZA. Se stinge la inchidere, altfel
+  // urmatorul „+" ar redeschide ultima editare.
+  let taskEditat = $state(null)
 
   function deschideFoaiaActiuni(t) {
     foaieTask = t
@@ -1269,7 +1272,7 @@
        dar SCRIS — „mâine revizie pompa" — iar Categoria si Recurenta au intrat in
        foaie, unde nu mai ocupa doua randuri din patru pentru ceva folosit rar. -->
   {#if ecran.telefon && !showArchive}
-    <button class="fab" onclick={() => showAdauga = true} aria-label="Task nou">
+    <button class="fab" onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Task nou">
       <Plus size={25} strokeWidth={1.5} />
     </button>
   {/if}
@@ -1342,15 +1345,16 @@
            onZi={(v) => setTermenData(foaieTask, v)}
            onMaine={() => setTermen(foaieTask, 1)}
            onOra={(v) => setOra(foaieTask, v)}
-           onBifa={() => toggleStatus(foaieTask)}
-           onDeschide={() => deschideFoaia(foaieTask.id)}
+           onEditeaza={() => { taskEditat = foaieTask; showAdauga = true }}
            onSterge={() => stergeDinLista(foaieTask)} />
 
 <!-- FOAIA DE ADAUGARE — aceeasi in /tasks, pe „Astăzi" si in tabul Taskuri al unui
      proiect. Aici a inlocuit modalul „Task Nou" (patru campuri peste tastatura),
      care nu putea spune daca taskul exista deja: scriai „revizie pompa", apasai
      Creează, si se năștea al doilea. -->
-<FoaieAdauga bind:open={showAdauga} sfera={sferaActiva} onSchimbare={reload} />
+<FoaieAdauga bind:open={showAdauga} sfera={sferaActiva} onSchimbare={reload}
+             editeaza={taskEditat}
+             onSalveaza={async (d) => { await updateGlobalTask(taskEditat.id, d) }} />
 
 <Modal bind:open={showEditModal} title="Editează Task" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>

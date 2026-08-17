@@ -12,7 +12,7 @@
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { apasareLunga } from '../lib/apasareLunga.js'
   import { reordonare } from '../lib/reordonare.js'
-  import { stergeTask, updateGlobalTask } from '../stores/tasks.svelte.js'
+  import { stergeTask, updateGlobalTask, actualizeazaTask } from '../stores/tasks.svelte.js'
   import FoaieTask from './FoaieTask.svelte'
   import { ecran } from '../lib/ecran.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -222,6 +222,7 @@
   let foaieTask = $state(null)
   let foaieMod = $state('actiuni')
   let foaieDeschisa = $state(false)
+  let taskEditat = $state(null)
 
   function deschideFoaia(it, mod) {
     foaieTask = it
@@ -347,7 +348,7 @@
     <!-- „Adaugă task", nu „Adaugă task EXISTENT": foaia nu mai e doar o cautare.
          Scrii, si primul rand e „Creează «…»" — cine scria aici un titlu care nu
          exista primea inainte „Niciun task găsit" si un drum inchis. -->
-    <button class="bh-add" onclick={() => showAdauga = true} aria-label="Adaugă task">
+    <button class="bh-add" onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Adaugă task">
       <ListPlus size={15} /> <span class="bh-add-txt">Adaugă task</span>
     </button>
   </div>
@@ -554,7 +555,10 @@
 
 <!-- ACEEASI foaie de adaugare ca in /tasks si ca in tabul Taskuri al unui proiect.
      Aici a inlocuit `TaskPickerModal`, care putea doar sa CAUTE. -->
-<FoaieAdauga bind:open={showAdauga} onSchimbare={() => { loadAgendaToday(); onchange() }} />
+<FoaieAdauga bind:open={showAdauga} onSchimbare={() => { loadAgendaToday(); onchange() }}
+             sfera={taskEditat?.sfera || 'munca'}
+             editeaza={taskEditat}
+             onSalveaza={async (d) => { await actualizeazaTask(taskEditat.tip, taskEditat.id, d) }} />
 
 <!-- Foaia randului de pe telefon. „Deschide" duce taskul in lista lui, exact unde
      ducea si atingerea titlului (`openItem`). -->
@@ -562,8 +566,7 @@
            onZi={(v) => onMoveDate(foaieTask, v)}
            onMaine={() => onTomorrow(foaieTask)}
            onOra={(v) => setOra(foaieTask, v)}
-           onBifa={() => onToggle(foaieTask)}
-           onDeschide={() => openItem(null, foaieTask)}
+           onEditeaza={() => { taskEditat = foaieTask; showAdauga = true }}
            onSterge={() => stergeDinBoard(foaieTask)} />
 
 <style>

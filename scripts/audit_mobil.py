@@ -751,6 +751,66 @@ def lista_de_facut(ctx, baza):
             page.wait_for_timeout(1800)
             zi(page.eval_on_selector_all('.trow', 'e => e.length') == n0 + 1, 'taskul s-a creat')
 
+    # ===== FOAIA DE LA APASARE LUNGA — CE CONTINE SI CE NU =====
+    #
+    # Lista e cea cerută de Ion pe 2026-08-17: „editeaza care redeschide modalul de
+    # creare task cu textul introdus curent si selectat pentru editare, setare ora,
+    # muta pe urmatoarea zi, alege ziua si sterg."
+    # Se verifica si ABSENTELE, nu doar prezentele: „Bifează" si „Deschide" au fost
+    # scoase pentru ca erau al doilea drum catre ceva care se face deja (glisarea la
+    # dreapta, respectiv atingerea randului). Un meniu creste usor si tacit — daca
+    # nimeni nu cere sa NU fie acolo, se intorc la prima ocazie.
+    r = page.evaluate(CAUTA_RAND, MARCA)
+    if r:
+        cx, cy = r[0] + r[2] * 0.5, r[1] + r[3] / 2
+        # Apasare lunga: peste `APASARE_MENIU` (420ms), fara sa miste degetul.
+        page.evaluate("""([x, y]) => {
+          const el = document.elementFromPoint(x, y);
+          const ev = (t) => el.dispatchEvent(new PointerEvent(t, {
+            pointerId: 9, pointerType: 'touch', isPrimary: true,
+            clientX: x, clientY: y, bubbles: true, cancelable: true }));
+          ev('pointerdown');
+          window.__ridica = () => ev('pointerup');
+        }""", [cx, cy])
+        page.wait_for_timeout(700)
+        page.evaluate('() => window.__ridica && window.__ridica()')
+        page.wait_for_timeout(700)
+        randuri_foaie = [t.strip() for t in page.eval_on_selector_all(
+            '.modal .ft-rand', 'e => e.map(x => x.textContent)')]
+        text_foaie = ' | '.join(randuri_foaie)
+        zi(len(randuri_foaie) > 0, 'apasarea lunga deschide foaia de actiuni', text_foaie)
+        if randuri_foaie:
+            for cerut in ('Editează', 'Mută pe mâine', 'Alege ziua', 'Șterge'):
+                zi(any(cerut in x for x in randuri_foaie), 'foaia are „%s"' % cerut, text_foaie)
+            for interzis in ('Bifează', 'Redeschide', 'Deschide'):
+                # „Deschide" apare ca subsir in „Redeschide", deci se compara pe
+                # randul intreg, nu pe text lipit.
+                zi(not any(x.strip().startswith(interzis) for x in randuri_foaie),
+                   'foaia NU mai are „%s"' % interzis, text_foaie)
+
+            # „Editează" duce in foaia de adaugare, cu titlul CURENT si SELECTAT.
+            page.locator('.modal .ft-rand', has_text='Editează').first.click()
+            page.wait_for_timeout(1200)
+            camp_ed = page.locator('.fa-cauta input').first
+            zi(camp_ed.count() > 0, '„Editează" deschide foaia de adaugare')
+            if camp_ed.count():
+                stare = page.evaluate("""() => {
+                  const i = document.querySelector('.fa-cauta input');
+                  return { val: i ? i.value : null,
+                           focus: document.activeElement === i,
+                           sel: i ? (i.selectionEnd - i.selectionStart) : 0 };
+                }""")
+                zi(stare['val'] == MARCA, 'campul porneste cu titlul curent', stare)
+                zi(stare['focus'], 'campul are focusul (la editare tastatura E scopul)', stare)
+                zi(stare['sel'] == len(MARCA), 'textul e SELECTAT, ca sa se poata rescrie', stare)
+                zi(page.locator('.fa-creeaza').first.text_content().strip().startswith('Salvează'),
+                   'primul rand e „Salvează", nu „Creează"',
+                   page.locator('.fa-creeaza').first.text_content())
+                zi(page.locator('.fa-cap').count() == 0,
+                   'la editare nu se mai arata „EXISTĂ DEJA" (ar planifica alt task)')
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(600)
+
     # mutare din gest: glisarea spre stanga deschide FOAIA cu panoul de termen
     # desfacut, si alegi ziua acolo. Pe /tasks termenele sunt imprastiate pe
     # saptamani, deci un „Mâine" fix ar fi o zi aleasa de aplicatie, nu de tine —

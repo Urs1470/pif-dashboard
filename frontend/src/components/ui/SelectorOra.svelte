@@ -1,25 +1,29 @@
 <script>
-  // CEASUL: al doilea selector de timp al aplicatiei, pe ACEEASI carcasa ca primul.
+  // CEASUL, CU CADRAN. Ion, 2026-08-17: „vreau ora sa fie ca ceas, nu grila."
   //
-  // Ion, 2026-08-17: „in primul rand trebuie ora sa pot selecta cu un ceas, tot
-  // omogen cu designul." Prima varianta punea un `<input type="time">` — merge, dar
-  // deschide selectorul SISTEMULUI: alt fundal, alte colturi, alta tipografie, si pe
-  // Android chiar un cadran analogic. Adica singurul loc din aplicatie in care
-  // alegerea unei valori arata ca alt program.
+  // Prima varianta punea doua grile de celule rotunde, cu argumentul c-ar fi
+  // omogene cu calendarul (care e si el o grila) si c-un cadran ar fi singura forma
+  // circulara mare din aplicatie. Argumentul era despre consecventa interna; cererea
+  // e despre ce recunoaste mana. Un cadran nu e o abatere de la limbajul
+  // sistemului, e obiectul pe care limbajul il descrie: 24 de ore nu sunt un set de
+  // valori fara ordine (ca zilele unei luni, care se aliniaza pe saptamani), ele se
+  // intorc — iar un cerc spune „se intoarce" fara sa citesti nimic.
   //
-  // OMOGEN INSEAMNA ACELASI OBIECT, nu „ceva asemanator": carcasa e copiata la
-  // structura din `DatePicker.svelte` — acelasi declansator (a patra retea de camp
-  // a sistemului: suprafata 2, muchie interioara 1px, raza de control, 46px / 48 in
-  // foaie), aceeasi regula de asezare (popover agatat de declansator pe desktop,
-  // FOAIE lipita de baza pe telefon), acelasi voal, aceeasi intrare in stiva de
-  // modale, aceleasi durate. Cine a invatat calendarul stie deja ceasul.
+  // CE RAMANE DIN OMOGENITATE, si e partea care conteaza: carcasa. Declansatorul,
+  // asezarea (popover agatat pe desktop, FOAIE lipita de baza pe telefon), voalul,
+  // intrarea in stiva de modale, durata intrarii — toate copiate la valoare din
+  // `DatePicker.svelte`. Ce se schimba e ce e INAUNTRU.
   //
-  // DE CE DOUA GRILE SI NU UN CADRAN. Un cadran analogic ar fi singura forma
-  // circulara mare din aplicatie (cercul e rezervat bifei), si cere doua gesturi
-  // imprecise pe o suprafata mica. Calendarul rezolva deja „alege dintr-un set
-  // finit" cu o grila de celule rotunde — deci ora foloseste acelasi limbaj: 24 de
-  // ore intr-o grila de 6, apoi minutele in pas de 5, in aceeasi grila de 6.
-  // La pas de 5 nu se pierde nimic real: un task nu se pune la 8:37.
+  // DOUA INELE, nu doua ecrane. Romania scrie ora pe 24, deci un cadran de 12 ar
+  // cere un comutator AM/PM — un al treilea lucru de atins pentru o informaţie pe
+  // care ora scrisa o are deja. Inel exterior 1–12, interior 13–00: exact ce face
+  // si ceasul de 24 de ore din Material, si singura asezare in care toate cele 24
+  // de valori sunt pe ecran deodata.
+  //
+  // ORA APOI MINUTUL, pe acelasi cadran. Nu doua cadrane alaturi: pe 390px ar fi
+  // doua cercuri de ~150px, adica numere de sub 20px. Se comuta singur dupa ce
+  // alegi ora, si se poate comuta inapoi atingand ora din antet — antetul e si
+  // afisaj si navigatie, ca in orice selector de timp.
   import { Clock, X } from '@lucide/svelte'
   import { ecran } from '../../lib/ecran.svelte.js'
   import { scale, fade } from 'svelte/transition'
@@ -38,19 +42,15 @@
     eticheta = '',
   } = $props()
 
-  const ORE = Array.from({ length: 24 }, (_, i) => i)
-  const MINUTE = Array.from({ length: 12 }, (_, i) => i * 5)
-
   let open = $state(false)
   let triggerEl = $state(null)
   let popupEl = $state(null)
   let popupStyle = $state('')
 
-  // Ce s-a ales pana acum, in timpul deschiderii. Se pleaca de la valoarea primita;
-  // fara ea, de la ora rotunda urmatoare — nu de la 00:00, care ar cere sa treci
-  // prin toata grila ca sa ajungi la o ora de lucru.
   let h = $state(null)
   let m = $state(0)
+  /** 'ora' | 'minut' — ce alege cadranul acum. */
+  let faza = $state('ora')
 
   const p2 = (n) => String(n).padStart(2, '0')
 
@@ -72,33 +72,121 @@
     else {
       const acum = new Date()
       h = acum.getHours()
-      // La pas de 5, in SUS: ora propusa e una care n-a trecut inca.
+      // Pas de 5, in SUS: ora propusa e una care n-a trecut inca.
       m = Math.ceil(acum.getMinutes() / 5) * 5
       if (m >= 60) { m = 0; h = (h + 1) % 24 }
     }
+    faza = 'ora'
     open = true
   }
 
-  /** Se scrie la FIECARE atingere, nu la un buton „Gata".
-   *  Motivul e cel din `SelectorZi` si din calendar: o alegere dintr-un set finit e
-   *  deja decizia — un pas de confirmare in plus n-ar apara nimic, fiindca valoarea
-   *  se vede pe declansator si se poate schimba din aceeasi foaie. */
+  /** Se scrie la fiecare atingere — alegerea dintr-un set finit E decizia, iar
+   *  valoarea se vede pe declansator si se poate schimba din aceeasi foaie. */
   function scrie() {
     if (h === null) return
     value = `${p2(h)}:${p2(m)}`
     onchange?.(value)
   }
 
-  function alegeOra(x) { h = x; scrie() }
-  // Minutul INCHIDE, ora nu: ordinea fireasca e ora apoi minutul, deci minutul e
-  // ultimul gest. Cine vrea ora rotunda atinge „00" si a terminat tot in doua
-  // atingeri — la fel de multe ca la un selector nativ.
-  function alegeMinut(x) { m = x; scrie(); close() }
+  // ===== GEOMETRIA CADRANULUI =====
+  //
+  // Sistem de coordonate 0..240, scalat de `viewBox` — deci cadranul e la fel pe
+  // popoverul de 244px si pe foaia de 390, si nicio valoare de aici nu e in px.
+  const C = 120                 // centrul
+  const R_EXT = 96              // inelul de afara (1–12, si minutele)
+  const R_INT = 62              // inelul de dinauntru (13–00)
+  const R_PASTILA = 17          // discul de sub un numar ales
+
+  /** Unghiul unei valori pe un cadran cu `pasi` diviziuni, de la 12 in sus, in radiani. */
+  const unghi = (i, pasi) => (i / pasi) * 2 * Math.PI
+  const pozitie = (i, pasi, r) => ({
+    x: C + r * Math.sin(unghi(i, pasi)),
+    y: C - r * Math.cos(unghi(i, pasi)),
+  })
+
+  // Orele: 1..12 pe inelul exterior, 13..23 + 00 pe cel interior. Poziţia lui 12 si
+  // a lui 00 e aceeasi (sus), pe inele diferite — adica exact ce spune un ceas.
+  const ORE_EXT = $derived(Array.from({ length: 12 }, (_, k) => {
+    const val = k + 1 === 12 ? 12 : k + 1
+    return { val, ...pozitie(k + 1, 12, R_EXT) }
+  }))
+  const ORE_INT = $derived(Array.from({ length: 12 }, (_, k) => {
+    const val = k + 13 === 24 ? 0 : k + 13
+    return { val, ...pozitie(k + 1, 12, R_INT) }
+  }))
+  // Minutele: 12 etichete la pas de 5. Se pot alege si minutele intermediare, prin
+  // tragere pe cadran (vezi `dinPunct`) — dar SCRISE sunt doar cele de 5, altfel
+  // cadranul ar avea 60 de numere si niciunul citibil.
+  const MINUTE = $derived(Array.from({ length: 12 }, (_, k) => ({
+    val: k * 5, ...pozitie(k, 12, R_EXT),
+  })))
+
+  /** Unde sta capatul acului acum. */
+  const ac = $derived.by(() => {
+    if (faza === 'minut') return { ...pozitie(m / 5, 12, R_EXT), r: R_EXT }
+    if (h === null) return { x: C, y: C - R_EXT, r: R_EXT }
+    const interior = h === 0 || h > 12
+    const idx = h === 0 ? 12 : (h > 12 ? h - 12 : h)
+    const r = interior ? R_INT : R_EXT
+    return { ...pozitie(idx, 12, r), r }
+  })
+
+  function alegeOra(v) {
+    h = v
+    scrie()
+    // Comutarea la minute e ce face ceasul sa fie doua atingeri, nu doua ecrane.
+    faza = 'minut'
+  }
+  function alegeMinut(v) {
+    m = v
+    scrie()
+    close()
+  }
+
+  /** Valoarea de sub un punct de pe cadran — pentru tragere cu degetul.
+   *  La minute da pas de 1: cine trage vrea 8:37, cine atinge un numar vrea 8:35. */
+  function dinPunct(ev) {
+    const svg = ev.currentTarget
+    const r = svg.getBoundingClientRect()
+    const x = ((ev.clientX - r.left) / r.width) * 240 - C
+    const y = ((ev.clientY - r.top) / r.height) * 240 - C
+    const raza = Math.hypot(x, y)
+    // `atan2(x, -y)`: 0 in sus, crescator spre dreapta — ca pe un ceas.
+    let a = Math.atan2(x, -y)
+    if (a < 0) a += 2 * Math.PI
+    if (faza === 'minut') {
+      const v = Math.round((a / (2 * Math.PI)) * 60) % 60
+      m = v
+      scrie()
+      return
+    }
+    const idx = Math.round((a / (2 * Math.PI)) * 12) || 12
+    const interior = raza < (R_EXT + R_INT) / 2
+    h = interior ? (idx === 12 ? 0 : idx + 12) : idx
+    scrie()
+  }
+
+  let trage = $state(false)
+  function jos(ev) {
+    if (ev.pointerType === 'mouse' && ev.button !== 0) return
+    trage = true
+    ev.currentTarget.setPointerCapture?.(ev.pointerId)
+    dinPunct(ev)
+  }
+  function misca(ev) { if (trage) dinPunct(ev) }
+  function sus(ev) {
+    if (!trage) return
+    trage = false
+    try { ev.currentTarget.releasePointerCapture?.(ev.pointerId) } catch (_) {}
+    // Ridicarea degetului INCHEIE pasul: la ora trece la minute, la minute inchide.
+    if (faza === 'ora') faza = 'minut'
+    else close()
+  }
 
   function acum() {
     const a = new Date()
     h = a.getHours()
-    m = Math.round(a.getMinutes() / 5) * 5 % 60
+    m = a.getMinutes()
     scrie()
     close()
   }
@@ -111,16 +199,13 @@
 
   function close() { open = false }
 
-  // Pe telefon ceasul e FOAIE, ca si calendarul: grila de 6 coloane pe latimea
-  // intreaga da celule de ~52px, iar in popoverul de 268px ar da ~40 — sub pragul
-  // la care nimeresti ora din prima.
   const sheet = $derived(ecran.telefon)
 
   function positionPopup() {
     if (sheet) { popupStyle = ''; return }
     if (!triggerEl || !popupEl) return
     const r = triggerEl.getBoundingClientRect()
-    const popupH = popupEl.offsetHeight || 300
+    const popupH = popupEl.offsetHeight || 360
     const popupW = popupEl.offsetWidth || 268
     let top = r.bottom + 6
     if (top + popupH > window.innerHeight && r.top - popupH - 6 >= 0) top = r.top - popupH - 6
@@ -128,7 +213,7 @@
     if (left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8
     if (left < 8) left = 8
     // Acelasi corectiv ca in DatePicker: un stramos cu `transform` devine blocul de
-    // referinta al unui `position: fixed`, deci coordonatele trebuie mutate cu el.
+    // referinta al unui `position: fixed`.
     const cb = popupEl.offsetParent
     if (cb) {
       const cbr = cb.getBoundingClientRect()
@@ -140,9 +225,8 @@
 
   $effect(() => { if (open && popupEl) positionPopup() })
 
-  // Intra in stiva de modale DOAR ca foaie — exact regula din DatePicker: ca foaie
-  // are voal si trebuie sa fie „varf"; ca popover n-are voal, si daca ar lua varful
-  // ar stinge voalul panoului de sub el.
+  // Intra in stiva de modale DOAR ca foaie — regula din DatePicker: ca foaie are
+  // voal si trebuie sa fie „varf"; ca popover n-are voal si n-ar avea ce sa preia.
   $effect(() => {
     if (!open || !sheet) return
     nivelNou()
@@ -171,7 +255,6 @@
   </button>
 
   {#if open && sheet}
-    <!-- Voalul e al foii, nu al paginii — ca la calendar. -->
     <div class="so-voal" use:portal onclick={close} role="presentation"
          transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}></div>
   {/if}
@@ -179,26 +262,49 @@
   {#if open}
     <div class="so-pop" class:sheet use:portal bind:this={popupEl} style={popupStyle} transition:deschide>
       {#if sheet}<span class="so-grip" aria-hidden="true"></span>{/if}
+
+      <!-- ANTETUL E SI AFISAJ SI NAVIGATIE: cifra activa spune ce alege cadranul, iar
+           cealalta e butonul cu care te intorci. Doua puncte fixe intre ele — nu
+           clipesc, ceasul nu e un cronometru. -->
       <div class="so-head">
-        <span class="so-title">Ora</span>
-        <!-- Ce ai ales pana acum, in mono: se citeste ca o valoare, nu ca un titlu,
-             si se schimba sub ochi la fiecare atingere. -->
-        <span class="so-cit">{h === null ? '--:--' : `${p2(h)}:${p2(m)}`}</span>
+        <button type="button" class="so-h" class:activ={faza === 'ora'} onclick={() => faza = 'ora'}>
+          {h === null ? '--' : p2(h)}
+        </button>
+        <span class="so-doua">:</span>
+        <button type="button" class="so-h" class:activ={faza === 'minut'} onclick={() => faza = 'minut'}>
+          {p2(m)}
+        </button>
       </div>
 
-      <span class="so-sec">Ora</span>
-      <div class="so-grid">
-        {#each ORE as x}
-          <button type="button" class="so-cel" class:selected={h === x} onclick={() => alegeOra(x)}>{p2(x)}</button>
-        {/each}
-      </div>
+      <!-- CADRANUL. `touch-action: none` pe el, ca tragerea sa nu deruleze foaia. -->
+      <svg class="so-cadran" viewBox="0 0 240 240" role="application"
+           aria-label={faza === 'ora' ? 'Alege ora' : 'Alege minutul'}
+           onpointerdown={jos} onpointermove={misca} onpointerup={sus} onpointercancel={sus}>
+        <circle class="so-fata" cx={C} cy={C} r="112" />
 
-      <span class="so-sec">Minute</span>
-      <div class="so-grid">
-        {#each MINUTE as x}
-          <button type="button" class="so-cel" class:selected={m === x} onclick={() => alegeMinut(x)}>{p2(x)}</button>
-        {/each}
-      </div>
+        <!-- Acul: linia din centru plus discul de la capat. Discul e DESENAT INAINTE
+             de numere, ca cifra aleasa sa stea PESTE el si sa se citeasca in cerneala
+             de pe fill — nu sub un disc opac. -->
+        <line class="so-ac" x1={C} y1={C} x2={ac.x} y2={ac.y} />
+        <circle class="so-pivot" cx={C} cy={C} r="3.5" />
+        <circle class="so-pastila" cx={ac.x} cy={ac.y} r={R_PASTILA} />
+
+        {#if faza === 'ora'}
+          {#each ORE_EXT as o (o.val)}
+            <text class="so-nr" class:sel={h === o.val} x={o.x} y={o.y}
+                  onclick={() => alegeOra(o.val)}>{o.val}</text>
+          {/each}
+          {#each ORE_INT as o (o.val)}
+            <text class="so-nr mic" class:sel={h === o.val} x={o.x} y={o.y}
+                  onclick={() => alegeOra(o.val)}>{p2(o.val)}</text>
+          {/each}
+        {:else}
+          {#each MINUTE as o (o.val)}
+            <text class="so-nr" class:sel={m === o.val} x={o.x} y={o.y}
+                  onclick={() => alegeMinut(o.val)}>{p2(o.val)}</text>
+          {/each}
+        {/if}
+      </svg>
 
       <div class="so-foot">
         <button type="button" class="so-foot-btn" onclick={acum}>Acum</button>
@@ -217,10 +323,9 @@
     text-transform: uppercase; letter-spacing: var(--tracking-label);
   }
 
-  /* A PATRA RETETA DE CAMP A SISTEMULUI, copiata la valoare din `.dp-trigger`:
-     suprafata 2 · muchie interioara 1px · raza de control · 46px (48 in foaie) ·
-     focus la 1,5px accent. Nu „asemanatoare" — identica, altfel ora si data ar fi
-     doua feluri de camp una langa alta, in aceeasi foaie. */
+  /* A PATRA RETETA DE CAMP A SISTEMULUI, copiata la valoare din `.dp-trigger`.
+     Cine o gazduieste intr-un rand de foaie o dezbraca, exact ca la `DatePicker`
+     (vezi `.ft-ora` in `FoaieTask.svelte`). */
   .so-trigger {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
     min-height: 46px; padding: 10px 12px; width: 100%;
@@ -235,51 +340,66 @@
   .so-trigger:disabled { opacity: .5; cursor: not-allowed; }
   .so-trigger.placeholder .so-value { color: var(--text-dim); }
   .so-trigger :global(svg) { color: var(--text-dim); flex-shrink: 0; }
-  /* Valoarea e o CIFRA, deci mono — se compara pe verticala cu termenele si cu
-     celelalte ore din liste. */
-  .so-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
-  .so-trigger:not(.placeholder) .so-value { font-family: var(--font-mono); }
+  .so-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .so-trigger:not(.placeholder) .so-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-  .so-voal {
-    position: fixed; inset: 0; background: var(--scrim);
-    z-index: calc(var(--z-modal) + 40);
-  }
+  .so-voal { position: fixed; inset: 0; background: var(--scrim); z-index: calc(var(--z-modal) + 40); }
 
-  /* Suprafata flotanta: se desprinde prin UMBRA, nu prin chenar. */
   .so-pop {
     position: fixed; z-index: var(--z-dropdown);
     width: 268px; padding: 12px;
     background: var(--bg-overlay);
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);
   }
-  .so-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
-  .so-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
-  .so-cit {
-    font-family: var(--font-mono); font-size: var(--font-small);
-    color: var(--accent-deep); font-variant-numeric: tabular-nums;
-  }
 
-  .so-sec {
-    display: block;
-    font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-dim);
-    text-transform: uppercase; letter-spacing: var(--tracking-label);
-    padding: 6px 0 4px;
-  }
-
-  /* SASE COLOANE, celule rotunde — acelasi limbaj ca grila de zile din calendar
-     (`.dp-grid` / `.dp-day`). 24 de ore intra in patru randuri, 12 minute in doua. */
-  .so-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }
-  .so-cel {
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    border-radius: var(--radius-full);
-    font-family: var(--font-mono); font-size: var(--font-small);
+  /* Antetul: treapta de PANOU (21), fiindca cifrele astea sunt titlul foii — ce ai
+     ales. Mono si tabular: doua cifre care se schimba sub deget n-au voie sa mute
+     doua puncte. */
+  .so-head { display: flex; align-items: baseline; justify-content: center; gap: 2px; padding: 2px 0 10px; }
+  .so-h {
+    font-family: var(--font-mono); font-size: var(--font-h2); font-weight: var(--fw-semibold);
     font-variant-numeric: tabular-nums;
-    color: var(--text-secondary); cursor: pointer;
+    color: var(--text-dim); background: none; border: none; cursor: pointer;
+    padding: 2px 6px; border-radius: var(--radius-xs);
     transition: var(--transition-colors);
   }
-  .so-cel:hover { background: var(--bg-hover); color: var(--text); }
-  .so-cel.selected { background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
-  .so-cel.selected:hover { background: var(--accent); color: var(--accent-text); }
+  .so-h:hover { color: var(--text-secondary); }
+  /* Cifra ACTIVA e cea pe care o alege cadranul. Tenta, nu fill: un fill saturat pe
+     o cifra de 21 ar striga mai tare decat cadranul de dedesubt. */
+  .so-h.activ { color: var(--accent-deep); background: var(--accent-subtle); }
+  .so-doua {
+    font-family: var(--font-mono); font-size: var(--font-h2); font-weight: var(--fw-semibold);
+    color: var(--text-dim);
+  }
+
+  /* CADRANUL. `aspect-ratio: 1` pe latimea disponibila — deci 244px in popover si
+     ~358 pe foaie, fara nicio valoare in px aici. */
+  .so-cadran {
+    display: block; width: 100%; aspect-ratio: 1;
+    touch-action: none;             /* tragerea alege ora, nu deruleaza foaia */
+    -webkit-user-select: none; user-select: none;
+  }
+  /* Fata ceasului e suprafata 2 — acelasi ton ca orice camp. Fara chenar: cercul
+     insusi e forma, iar o muchie in plus ar fi al doilea contur langa numere. */
+  .so-fata { fill: var(--bg-elevated); }
+  .so-ac { stroke: var(--accent); stroke-width: 2; }
+  .so-pivot { fill: var(--accent); }
+  .so-pastila { fill: var(--accent); }
+
+  .so-nr {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: var(--fw-medium);
+    fill: var(--text-secondary);
+    text-anchor: middle;
+    dominant-baseline: central;
+    cursor: pointer;
+  }
+  /* Inelul interior (13–00) e mai mic: doua inele de aceeasi greutate s-ar citi ca
+     un singur camp de numere, si n-ai mai vedea ca sunt doua scari. */
+  .so-nr.mic { font-size: 12.5px; fill: var(--text-dim); }
+  /* Numarul ALES sta peste discul de accent, deci ia cerneala de pe fill. */
+  .so-nr.sel { fill: var(--accent-text); font-weight: var(--fw-semibold); }
 
   .so-foot {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -294,13 +414,11 @@
   .so-foot-btn:hover { opacity: .8; }
   .so-foot-btn.clear { color: var(--danger); background: transparent; }
 
-  /* ===== Telefon: ceasul e foaie, cu celule pe care se poate nimeri =====
-     Latimea intreaga imparte 6 coloane la ~52px in loc de ~40. Sub 44 greseala nu e
-     „ai atins alaturi", e „ai pus taskul la alta ora si n-ai vazut". */
+  /* ===== Telefon: ceasul e foaie, cu un cadran cat latimea ecranului ===== */
   .so-pop.sheet {
     position: fixed; left: 0; right: 0; bottom: 0; top: auto;
-    width: auto; max-height: 88dvh; overflow-y: auto;
-    padding: 6px var(--space-md) calc(var(--space-md) + var(--safe-bottom));
+    width: auto; max-height: 92dvh; overflow-y: auto;
+    padding: 6px var(--space-lg) calc(var(--space-md) + var(--safe-bottom));
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow: var(--shadow-foaie);
     background: var(--bg-surface);
@@ -313,9 +431,9 @@
   }
   @media (max-width: 768px) {
     .so-trigger { min-height: var(--tap-sheet); }
-    /* Celula nu mai e patrata pe foaie: la 6 coloane pe 390px ar iesi 52 inalta,
-       si cele sase randuri (4 de ore + 2 de minute) n-ar incapea fara derulare.
-       48 = `--tap-sheet`, adica exact pragul de atingere din foaie. */
-    .so-cel { aspect-ratio: auto; min-height: var(--tap-sheet); }
+    /* Pe un cadran de ~358px numerele cresc odata cu el: la 15px pe SVG scalat ar
+       iesi ~22px reali pe inelul de afara. Nu se mai ating, deci nu mai e nevoie de
+       nimic in plus — dar acul se ingroasa, ca sa rămână in proporţie. */
+    .so-ac { stroke-width: 2.5; }
   }
 </style>

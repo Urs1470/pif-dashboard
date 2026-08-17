@@ -34,6 +34,8 @@
   import { glisare } from '../lib/glisare.js'
   import { apasareLunga } from '../lib/apasareLunga.js'
   import FoaieTask from '../components/FoaieTask.svelte'
+  import FoaieAdauga from '../components/FoaieAdauga.svelte'
+  import { actualizeazaTask } from '../stores/tasks.svelte.js'
   import { motion, panou, motionDuration, aterizare } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -684,6 +686,17 @@
   let foaieTask = $state(null)
   let foaieMod = $state('actiuni')
   let foaieDeschisa = $state(false)
+  let showAdauga = $state(false)
+  let taskEditat = $state(null)
+
+  /** Ora unui task personal, din foaia randului (v41). */
+  async function setOraPlan(t, v) {
+    if (!t) return
+    try {
+      await actualizeazaTask(t.tip, t.id, { ora: v || '' })
+      await loadPlan()
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
 
   function deschideFoaia(t, mod) {
     foaieTask = t
@@ -1134,7 +1147,12 @@
           <button class="seg-btn" class:active={plan.days === h.d} class:seg-6l={h.d === 180} onclick={() => setHorizon(h.d)}>{h.l}</button>
         {/each}
       </div>
-      <button class="toggle" class:on={plan.showWeekends} disabled={unit !== 'day'} onclick={toggleWeekends} title={unit === 'day' ? 'Evidențiază weekendurile' : 'Weekendurile apar doar în vederea pe zile'}>
+      <!-- „Weekend" e o unealta a SWIMLANE-ului: tenteaza coloanele de sambata si
+           duminica din graficul de desktop. In grila de pe telefon weekendul se
+           marcheaza oricum, mereu (o zi de weekend intr-un calendar nu e o opţiune,
+           e un fapt) — deci acolo butonul nu controla nimic. Ascuns pe telefon, cu
+           clasa lui, nu prin poziţie in rand. -->
+      <button class="toggle doar-desktop" class:on={plan.showWeekends} disabled={unit !== 'day'} onclick={toggleWeekends} title={unit === 'day' ? 'Evidențiază weekendurile' : 'Weekendurile apar doar în vederea pe zile'}>
         <span class="tk-box">{#if plan.showWeekends}<Check size={11} strokeWidth={3} />{/if}</span> Weekend
       </button>
       <button class="toggle" class:on={plan.showDone} onclick={toggleShowDone} title="Arată taskurile finalizate">
@@ -1754,9 +1772,17 @@
 <FoaieTask bind:open={foaieDeschisa} task={foaieTask} mod={foaieMod}
            onZi={(v) => planificaDinFoaie(foaieTask, v)}
            onMaine={() => onTomorrow(foaieTask)}
-           onBifa={() => onDone(foaieTask)}
-           onDeschide={() => openTask(foaieTask)}
+           onOra={(v) => setOraPlan(foaieTask, v)}
+           onEditeaza={() => { taskEditat = foaieTask; showAdauga = true }}
            onSterge={() => stergeDinPlan(foaieTask)} />
+
+<!-- Foaia de adaugare exista aici DOAR ca editor: Planificatorul n-are buton de
+     adaugare (planifici ce exista, nu creezi de la zero), dar „Editează" din foaia
+     randului trebuie sa duca la acelasi loc ca in celelalte trei liste. -->
+<FoaieAdauga bind:open={showAdauga} onSchimbare={loadPlan}
+             sfera={taskEditat?.sfera || 'munca'}
+             editeaza={taskEditat}
+             onSalveaza={async (d) => { await actualizeazaTask(taskEditat.tip, taskEditat.id, d) }} />
 
 <Modal bind:open={showExport} title="Export PDF" size="sm">
   <div class="exp">

@@ -517,6 +517,7 @@
   let foaieMod = $state('actiuni')
   let foaieDeschisa = $state(false)
   let showAdauga = $state(false)
+  let taskEditat = $state(null)
 
   function deschideFoaia(t, mod) {
     foaieTask = t
@@ -1284,21 +1285,22 @@
      de adaugare de pe telefon. Doar in tabul Taskuri: in celelalte taburi n-ar avea
      ce sa adauge. Proiectul intra precompletat din pagina curenta. -->
 {#if ecran.telefon && activeTab === 'tasks' && project}
-  <button class="fab" onclick={() => showAdauga = true} aria-label="Task nou în proiect">
+  <button class="fab" onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Task nou în proiect">
     <Plus size={25} strokeWidth={1.5} />
   </button>
 {/if}
 
 <!-- ACEEASI foaie de adaugare ca in /tasks si pe „Astăzi". -->
-<FoaieAdauga bind:open={showAdauga} proiect={project} onSchimbare={reloadTasks} />
+<FoaieAdauga bind:open={showAdauga} proiect={project} onSchimbare={reloadTasks}
+             editeaza={taskEditat}
+             onSalveaza={async (d) => { await updateTask(taskEditat.id, d) }} />
 
 <!-- Foaia randului de pe telefon. „Deschide" e formularul de editare: aici el E
      detaliul taskului, nu exista alta pagina in care sa-l duci. -->
 <FoaieTask bind:open={foaieDeschisa} task={foaieTask} mod={foaieMod}
            onZi={(v) => setTermenTaskData(foaieTask, v)}
            onMaine={() => setTermenTask(foaieTask, 1)}
-           onBifa={() => toggleTaskStatus(foaieTask)}
-           onDeschide={() => openTaskEditModal(foaieTask)}
+           onEditeaza={() => { taskEditat = foaieTask; showAdauga = true }}
            onSterge={() => stergeTaskDinLista(foaieTask)} />
 
 <Modal bind:open={showTaskEditModal} title="Editează Task" size="panou">
