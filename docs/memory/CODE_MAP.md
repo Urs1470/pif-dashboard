@@ -46,9 +46,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `30:get_proiecte`, `80:create_proiect`, `126:get_proiect`, `154:update_proiect`, `263:delete_proiect`, `304:get_clienti`, `322:_normalize_client_name`, `335:create_client`, `365:get_client`, `379:update_client`, `413:delete_client`, `432:get_project_snapshot`, `527:_familie_from_echipament`, `558:preview_import_abb_multi`, `659:_familie_param_meta`, `673:_equals_default`, `690:_is_zeroish`, `698:_filter_drive_params`, `767:preview_import_archive`, `816:import_debrief`, `1096:_impl_row`, `1116:get_implementari`, `1127:create_implementare`, `1153:update_implementare`, `1194:delete_implementare`, `1214:_calc_row`
 
-## blueprints/push.py (637 linii)
+## blueprints/push.py (784 linii)
 
-`100:_setari`, `113:_valideaza_setari`, `145:_b64`, `149:_unb64`, `158:_secret_curent`, `174:mint_token`, `184:verifica_token`, `206:_priv_raw`, `215:_chei_vapid`, `245:_abonamente`, `252:_salveaza_abonamente`, `256:_hash_endpoint`, `264:send_to_all`, `306:taskuri_de_notificat`, `325:taskuri_scadente`, `345:_de_notificat`, `358:_zile_de_cand`, `366:check_and_send_daily`, `419:porneste_planificator`, `451:push_vapid_public`, `459:push_subscribe`, `478:push_unsubscribe`, `489:push_tokens`, `524:push_setari_get`, `530:push_setari_put`, `549:push_status`, `563:push_test`, `580:push_action`
+`117:_setari`, `130:_valideaza_setari`, `166:_b64`, `170:_unb64`, `179:_secret_curent`, `195:mint_token`, `205:verifica_token`, `227:_priv_raw`, `236:_chei_vapid`, `266:_abonamente`, `273:_salveaza_abonamente`, `277:_hash_endpoint`, `285:send_to_all`, `327:taskuri_de_notificat`, `346:taskuri_scadente`, `366:taskuri_cu_ora`, `386:_ore_trimise`, `402:_minute`, `415:check_and_send_ore`, `481:_de_notificat`, `494:_zile_de_cand`, `502:check_and_send_daily`, `555:porneste_planificator`, `598:push_vapid_public`, `606:push_subscribe`, `625:push_unsubscribe`, `636:push_tokens`, `671:push_setari_get`, `677:push_setari_put`, `696:push_status`, `710:push_test`, `727:push_action`
 
 ## blueprints/tasks.py (1068 linii)
 

@@ -52,6 +52,7 @@ const NotificariPif = registerPlugin('NotificariPif')
 const IMPLICITE = {
   ora: 8, zileVechime: 2, scadente: true, faraTermen: true,
   deplasari: true, oraDeplasare: 18,
+  oreExacte: true,
 }
 const ZILE_INAINTE = 7       // cate dimineti programam in avans
 // PLECARILE SE PROGRAMEAZA MULT MAI DEPARTE decat diminetile. Nu din simetrie:
@@ -237,6 +238,57 @@ export async function reprogrameaza(items, setari = IMPLICITE, perioade = []) {
       actiuni: false,
     })
   }
+  // ===== ORA EXACTA A UNUI TASK =====
+  //
+  // Ion, 2026-08-17: „trebuie sa fie notificari pentru taskurile cu ore precise."
+  //
+  // DE CE SI AICI, cand serverul are deja `check_and_send_ore`: cele doua canale nu
+  // sunt redundante, sunt pentru doua situatii. Web pushul cere ca telefonul sa aiba
+  // reţea si serviciul sa fie treaz; alarma locala suna si in avion, fiindca sistemul
+  // o ţine. Pe carcasa Android (unde Ion isi vede taskurile) canalul local E cel care
+  // suna — de aceea taskurile de dimineata sunt programate local de ani, iar ora
+  // exacta n-avea de ce sa fie tratata altfel.
+  // Nu se dubleaza: eticheta `pif-ora-*` a serverului si id-ul local sunt doua chei
+  // diferite, dar canalul local le pune pe TELEFON si web pushul in browser — iar
+  // `esteNativ()` de la inceputul functiei taie tot blocul asta pe web.
+  //
+  // Se programeaza pe ZIUA taskului, nu in avans pe sapte zile ca diminetile:
+  // o ora exista doar pe taskul care o are, deci nu exista „aceeasi alarma peste
+  // trei zile". Ce cade in trecut nu se programeaza — `at <= acum` ar fi o alarma
+  // care suna imediat.
+  if (s.oreExacte) {
+    for (const t of items || []) {
+      if (t.sfera !== 'personal' || t.status === 'done') continue
+      const zi = (t.data_scadenta || '').trim().slice(0, 10)
+      const ora = (t.ora || '').trim()
+      if (!zi || !/^\d{1,2}:\d{2}$/.test(ora)) continue
+      const [H, M] = ora.split(':').map(Number)
+      if (H > 23 || M > 59) continue
+      const cand = new Date(+zi.slice(0, 4), +zi.slice(5, 7) - 1, +zi.slice(8, 10), H, M, 0, 0)
+      if (cand <= acum) continue
+      deProgramat.push({
+        // Cheie proprie (`ora:`): altfel ar da acelasi id ca alarma de dimineata a
+        // aceluiasi task in aceeasi zi, si una ar suprascrie-o pe cealalta.
+        id: idNotificare(`ora:${t.id}`, zi),
+        taskId: t.id,
+        at: cand.getTime(),
+        titlu: t.titlu || 'Task personal',
+        // Ora se SCRIE: notificarea poate fi citita mai tarziu din bara, iar „acum"
+        // ar minti atunci. „La 09:00" rămâne adevarat.
+        corp: `La ${ora}.`,
+        url: `/#/tasks?sfera=personal&focus=global:${t.id}`,
+        server: window.location.origin,
+        canal: CANAL,
+        actiuni: true,
+        // La ora taskului singura amanare cu inteles e „Mâine": „Azi" ar scrie ziua
+        // pe care o are deja (acelasi raţionament ca la `scadent`).
+        // `a2id`/`a2text`, nu un obiect: asa le citeste partea nativa.
+        a2id: 'maine',
+        a2text: 'Mâine',
+      })
+    }
+  }
+
   for (let d = 0; d < ZILE_INAINTE; d++) {
     const zi = new Date(acum.getFullYear(), acum.getMonth(), acum.getDate() + d, s.ora, 0, 0, 0)
     if (zi <= acum) continue                       // ora de azi a trecut deja

@@ -790,9 +790,20 @@
       // text din <input type=number>) ar ramane afisat gresit.
       const { programate, ...salvate } = await apiJson('/api/push/setari', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        // SE TRIMIT TOATE, nu doar cele patru de dinainte.
+        //
+        // `deplasari` si `oraDeplasare` lipseau din corp, iar serverul completeaza
+        // ce nu primeste din IMPLICITE (`_valideaza_setari` porneste de la
+        // `SETARI_IMPLICITE`, nu de la ce e in baza) — deci stingeai „Seara
+        // dinaintea unei plecări", salvai, si se reaprindea singura. Un comutator
+        // care nu-si tine starea te invata ca setarile mint, exact ce spune nota de
+        // la `taskuri_scadente` din `push.py`.
+        // Gasit adaugand `oreExacte`: el ar fi avut exact aceeasi soarta.
         body: JSON.stringify({
           ora: Number(setari.ora), zileVechime: Number(setari.zileVechime),
           scadente: !!setari.scadente, faraTermen: !!setari.faraTermen,
+          oreExacte: !!setari.oreExacte,
+          deplasari: !!setari.deplasari, oraDeplasare: Number(setari.oraDeplasare),
         }),
       })
       setari = salvate
@@ -1484,6 +1495,17 @@
         <label class="n-comutator">
           <input type="checkbox" bind:checked={setari.faraTermen} />
           <span>Taskurile rămase fără termen</span>
+        </label>
+        <!-- ORA EXACTĂ (v41). Ion: „trebuie să fie notificări pentru taskurile cu
+             ore precise." E al treilea fel, și nu se suprapune cu primul: „scadente"
+             anunță DIMINEAȚA tot ce cade azi, ăsta anunță LA ORA lui. Un task cu oră
+             primește ambele, și e corect — unul spune „ai asta azi", altul „acum".
+             N-are selector de oră lângă el, ca deplasările: ora nu e o setare aici,
+             e a taskului. Și nu intră în regula „cel puțin un fel pornit" — nu e un
+             semnal de dimineață, e o alarmă. -->
+        <label class="n-comutator">
+          <input type="checkbox" bind:checked={setari.oreExacte} />
+          <span>La ora exactă a taskului</span>
         </label>
         <!-- AL TREILEA COMUTATOR E ALTĂ ÎNTREBARE: nu „ce am de făcut azi", ci
              „mâine plec". De aceea are ora lui (seara dinainte), canalul lui pe

@@ -67,6 +67,10 @@ K_VAPID_PUB = 'push_vapid_public'
 K_SUBS = 'push_subscriptions'
 K_DAILY = 'push_daily_last'
 K_LAST_ERROR = 'push_last_error'
+# Ce ore exacte s-au anunţat deja. UN SINGUR RAND, cu un JSON `{taskId: 'ISO'}` —
+# nu o cheie per task: taskurile cu ora se aduna la nesfarsit, iar `app_settings` ar
+# creste cu fiecare zi trecuta. Harta se curata la citire (vezi `_ore_trimise`).
+K_ORE = 'push_ore_trimise'
 
 _secret = b''               # setat de porneste_planificator (threadul n-are app context)
 _planificator_pornit = False
@@ -94,7 +98,20 @@ SETARI_IMPLICITE = {
     # notificari de plecare prin web push — vezi `notificari.js`).
     'deplasari': True,
     'oraDeplasare': 18,      # seara dinainte
+    # ORA EXACTA A UNUI TASK (v41). Ion: „trebuie sa fie notificari pentru taskurile
+    # cu ore precise." E al TREILEA motiv, si nu se suprapune cu celelalte doua:
+    # „scadente" anunta DIMINEATA tot ce cade azi, asta anunta LA ORA. Un task cu
+    # ora primeste amandoua, si e corect — unul spune „ai asta azi", celalalt „acum".
+    'oreExacte': True,
 }
+
+# Cat de tarziu are voie sa plece o notificare de ora, in minute. Bucla merge la
+# 5 minute, deci in mers normal intarzierea e sub atat; fereastra exista pentru
+# REPORNIRI: serviciul se reporneste la fiecare deploy, iar dupa o pauza de doua
+# ore un „e 9:00" trimis la 11:00 nu e o amintire, e zgomot — si mai rau, te invata
+# ca ora din notificare nu inseamna nimic. Peste fereastra, ora se marcheaza ca
+# trimisa fara sa se trimita: ziua e pierduta, dar tacut.
+FEREASTRA_ORA = 30
 
 
 def _setari():
@@ -137,6 +154,10 @@ def _valideaza_setari(d):
         return None, 'Ora plecării trebuie să fie între 0 și 23.'
     out['oraDeplasare'] = ora_dep
     out['deplasari'] = bool(d.get('deplasari', out['deplasari']))
+    # Ora exacta NU intra in regula „cel putin unul pornit", ca si deplasarile: ea
+    # nu e un semnal de dimineata, e o alarma pentru un task care are ceas. Ai voie
+    # sa n-o vrei deloc fara sa rămâi fara notificari.
+    out['oreExacte'] = bool(d.get('oreExacte', out['oreExacte']))
     if not out['scadente'] and not out['faraTermen']:
         return None, 'Cel puțin un fel de notificare trebuie să rămână pornit.'
     return out, None
@@ -342,6 +363,121 @@ def taskuri_scadente(cursor, azi=None):
     return [row_to_dict(r) for r in cursor.fetchall()]
 
 
+def taskuri_cu_ora(cursor, zi):
+    """Taskurile personale de AZI care au o ora scrisa.
+
+    Al treilea motiv (v41), si nu se suprapune cu primele doua: `taskuri_scadente`
+    intoarce tot ce cade azi — cu sau fara ora — si le anunta DIMINEATA; asta le ia
+    doar pe cele cu ceas, ca sa le anunte LA ora lor.
+    Sfera se scrie LITERAL, regula casei: un grep pe `FROM global_tasks` trebuie sa
+    arate decizia de sfera. Ora exista doar pe `global_tasks` (v41), deci taskurile
+    de proiect nu pot avea una — nu e o omisiune aici.
+    """
+    cursor.execute('''
+        SELECT g.* FROM global_tasks g
+        WHERE g.sfera = 'personal' AND g.status != 'done'
+          AND substr(TRIM(COALESCE(g.data_scadenta, '')), 1, 10) = ?
+          AND TRIM(COALESCE(g.ora, '')) <> ''
+        ORDER BY g.ora ASC
+    ''', (zi,))
+    return [row_to_dict(r) for r in cursor.fetchall()]
+
+
+def _ore_trimise(azi):
+    """Harta `{taskId: 'YYYY-MM-DD'}` a orelor deja anunţate, curatata de zilele
+    trecute. Curatarea e LA CITIRE, nu pe un job separat: harta se citeste oricum la
+    fiecare trecere a buclei, deci n-are rost un al doilea mecanism care sa uite."""
+    val = get_app_setting(K_ORE)
+    if not val:
+        return {}
+    try:
+        d = json.loads(val)
+    except ValueError:
+        return {}
+    if not isinstance(d, dict):
+        return {}
+    return {k: v for k, v in d.items() if v == azi}
+
+
+def _minute(hhmm):
+    """'HH:MM' -> minute de la miezul nopţii, sau None daca nu se poate citi.
+    Nu arunca: o ora stricata in baza n-are voie sa opreasca restul notificarilor."""
+    try:
+        h, m = str(hhmm).strip().split(':')
+        h, m = int(h), int(m)
+        if not (0 <= h <= 23 and 0 <= m <= 59):
+            return None
+        return h * 60 + m
+    except (ValueError, AttributeError):
+        return None
+
+
+def check_and_send_ore(now=None, trimite=None):
+    """Notificarile de ORA. Se cheama din aceeasi bucla ca cea zilnica, la 5 minute.
+
+    Intoarce lista de id-uri anunţate (goala cand nu e nimic) — testabil fara push.
+
+    DE CE NU E PARTE DIN `check_and_send_daily`: aceea are un claim PE ZI („am
+    trimis azi?"), care e exact ce trebuie pentru un buletin de dimineata si exact
+    ce NU trebuie aici. Un task la 9:00 si unul la 17:00 sunt doua anunţuri in
+    aceeasi zi, deci claimul e per TASK per zi.
+    """
+    now = now or datetime.now()
+    setari = _setari()
+    if not setari.get('oreExacte'):
+        return []
+
+    azi = now.strftime('%Y-%m-%d')
+    acum_min = now.hour * 60 + now.minute
+
+    conn = get_db()
+    cursor = conn.cursor()
+    randuri = taskuri_cu_ora(cursor, azi)
+    conn.close()
+    if not randuri:
+        return []
+
+    trimise = _ore_trimise(azi)
+    de_trimis = []
+    marcate = dict(trimise)
+    for t in randuri:
+        if trimise.get(str(t['id'])) == azi:
+            continue
+        m = _minute(t.get('ora'))
+        if m is None or acum_min < m:
+            continue
+        marcate[str(t['id'])] = azi          # se marcheaza si cand fereastra a trecut
+        if acum_min - m <= FEREASTRA_ORA:
+            de_trimis.append(t)
+
+    if marcate != trimise:
+        # SE MARCHEAZA INAINTE DE TRIMITERE, ca la claimul zilnic si din acelasi
+        # motiv: doua workere gunicorn ruleaza aceeasi bucla. O notificare dubla la
+        # fiecare ora erodeaza increderea definitiv; una pierduta la un crash se
+        # vindeca de la sine la urmatorul task.
+        set_app_setting(K_ORE, json.dumps(marcate))
+
+    expeditor = trimite or send_to_all
+    for t in de_trimis:
+        expeditor({
+            'title': t.get('titlu') or 'Task personal',
+            # Ora se SCRIE in corp: notificarea poate fi citita cu intarziere din
+            # bara de sistem, iar „acum" ar minti atunci. „La 09:00" rămâne adevarat.
+            'body': f"La {t['ora']}.",
+            # Eticheta e ALTA decat a buletinului de dimineata (`pif-task-<id>`):
+            # altfel anunţul de ora l-ar INLOCUI in bara pe cel de dimineata, sau
+            # invers, iar unul din cele doua ar dispărea fara sa fi fost citit.
+            'tag': f"pif-ora-{t['id']}",
+            'url': f"/#/tasks?sfera=personal&focus=global:{t['id']}",
+            'token': mint_token(t['id'], now),
+            'actions': True,
+            # La ora taskului singura amanare cu inteles e „Mâine": „Azi" ar scrie
+            # ziua pe care o are deja (acelasi raţionament ca la `scadent`).
+            'a2': {'id': 'maine', 'text': 'Mâine'},
+        })
+    return [t['id'] for t in de_trimis]
+
+
 def _de_notificat(cursor, setari, acum):
     """(task, motiv, zile) pentru o zi — aceeasi ordine si aceleasi doua motive
     ca pe telefon. Scadentele primele: au un ceas, celelalte doar o vechime."""
@@ -437,6 +573,17 @@ def porneste_planificator(secret=b''):
                     check_and_send_daily()
             except Exception:
                 logger.exception('Push: verificarea zilnica a esuat')
+            # ORELE EXACTE SE VERIFICA SEPARAT, si in `try` propriu: sunt doua
+            # intrebari cu doua deduplicari diferite (o stampila pe ZI vs. una pe
+            # task-si-zi), iar daca una crapa cealalta trebuie sa mearga mai departe.
+            # Aceeasi bucla de 5 minute, fiindca asta E rezolutia de care are nevoie
+            # o ora: mai des n-ar schimba nimic (notificarea la 9:03 pentru 9:00 e
+            # exacta), mai rar ar rata fereastra.
+            try:
+                if _PUSH_OK:
+                    check_and_send_ore()
+            except Exception:
+                logger.exception('Push: verificarea orelor exacte a esuat')
             time.sleep(300)
 
     threading.Thread(target=_bucla, daemon=True).start()
