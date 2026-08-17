@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-08-17
+
+- [2026-08-17 Handoff „Rafinare mobil": ce s-a luat, ce s-a respins](2026-08-17-handoff-rafinare-mobil-triaj.md) — auditul de 31 de interacțiuni descria PROTOTIPUL: 10 din 17 „rupturi" erau deja reparate în cod. Luat: `--ease-iesire` (ieșirea accelerează, nu frânează) + trecerea lină de temă. Respins: pragul fix de 118px, apăsarea lungă (e ocupată de reordonare), două curbe în plus.
+
 ## 2026-08-15
 
 - [2026-08-15 Sfera se comută cu degetul, pe toată pagina](2026-08-15-sfera-gest-toata-pagina.md) — gestul de sferă urcă de pe bara de 46px pe `.page`; excepția: un gest pornit pe un rând rămâne al rândului.

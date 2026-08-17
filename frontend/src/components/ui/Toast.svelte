@@ -33,7 +33,7 @@
            plecarea nu se lasa asteptata. -->
       <div class="toast rol-{t.rol ?? ROL[t.type] ?? 'neutru'}"
            in:fly={{ y: 16, duration: motionDuration(DUR_ARC), easing: ARC }}
-           out:fly={{ y: 16, duration: motionDuration(180), easing: EASE }}>
+           out:fly={{ y: 16, duration: motionDuration(180), easing: EASE_IESIRE }}>
         <Ico size={17} strokeWidth={1.5} class="toast-ico" />
         <span class="toast-text">{t.message}</span>
         {#if t.progres != null}

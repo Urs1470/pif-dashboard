@@ -68,6 +68,23 @@ function bezier(x1, y1, x2, y2) {
 const PUNCTE_EASE = [0.32, 0.72, 0.28, 1]
 export const EASE = bezier(...PUNCTE_EASE)
 
+// CURBA DE IESIRE — `--ease` citita invers.
+//
+// Perechea exacta a lui `--ease-iesire` din tokens.css, unde e si motivul scris:
+// ce SOSESTE franeaza (il urmaresti pana se opreste), ce PLEACA accelereaza (nu-l
+// mai urmaresti, deci n-are de ce sa se aseze). Pana acum sistemul avea o singura
+// curba pentru amandoua sensurile, si de aceea o foaie care se inchide parea ca
+// zaboveste.
+//
+// NU e oglinda lui `--ease`, desi asta a fost prima incercare si ar fi fost mai
+// elegant (un singur set de numere). Motivul complet, cu masuratori, e la
+// `--ease-iesire` in tokens.css: oglinda misca foaia 6,9% din drum in primele
+// 100ms, adica nimic in fereastra in care ochiul decide daca a raspuns —
+// contrazice regula scrisa la `--dur-press`. Aici e accelerarea standard.
+// Perechea exacta a tokenului; o schimbi acolo, o schimbi si aici.
+const PUNCTE_IESIRE = [0.4, 0, 1, 1]
+export const EASE_IESIRE = bezier(...PUNCTE_IESIRE)
+
 /** Curba standard ca SIR, pentru `Element.animate()` — care nu primeste o
  *  functie, ci sintaxa CSS.
  *

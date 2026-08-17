@@ -24,7 +24,8 @@ otel pe hartie, doua teme (dark implicit + light), amandoua in tokens.
   `font-size`, `letter-spacing`, `line-height` in afara `tokens.css` sunt abateri.
 - **Miscare — patru durate, trei curbe** (verifica in tokens, nu din memorie):
   `--dur-press` .09 · `--dur-base` .22 · `--dur-slow` .28 · `--dur-fast` .12 (vopsea, nu
-  miscare); `--ease` peste tot, `--ease-spring` cand ceva urmareste degetul, `--ease-arc` /
+  miscare); `--ease` la SOSIRE, `--ease-iesire` la PLECARE (accelereaza, nu franeaza —
+  ce pleaca nu mai e urmarit), `--ease-spring` cand ceva urmareste degetul, `--ease-arc` /
   `--ease-arc-elan` pentru arcele lungi. NU `transition: all` — foloseste
   `--transition-colors` sau `--transition-pressable`. Doar `transform`/`opacity` in animatii.
 - **Componente:** `components/ui/` — `<Input>`, `<Textarea>`, `<Select>`, `<DatePicker>`

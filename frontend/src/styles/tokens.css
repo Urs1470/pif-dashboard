@@ -219,6 +219,31 @@
      deci nu are nevoie de cadrul unui element care sosește. */
   --dur-fast: 0.12s;
   --ease: cubic-bezier(.32, .72, .28, 1);
+
+  /* IESIREA ACCELEREAZA, NU FRANEAZA (2026-08-17, handoff „Rafinare mobil").
+     `--ease` e o curba de SOSIRE: pleaca repede si se aseaza lin — exact ce
+     trebuie pentru un obiect care vine si RAMANE, fiindca ochiul il urmareste
+     pana se opreste. Pusa si pe iesire, ea face fix pe dos: obiectul zaboveste
+     la plecare, deci pare ca se razgandeste. Ce pleaca nu mai e urmarit, deci
+     n-are de ce sa se aseze — porneste lin si accelereaza afara.
+     Sistemul avea o singura curba pentru amandoua sensurile; asta e perechea ei.
+
+     DE CE NU E OGLINDA LUI `--ease`. Prima varianta a fost exact ea, derivata:
+     oglinda unei `cubic-bezier` (x1,y1,x2,y2) e (1-x2,1-y2,1-x1,1-y1), deci din
+     (.32,.72,.28,1) iese (.72,0,.68,.28) — elegant, si fara un al doilea set de
+     numere de tinut sincronizat. Masurat insa, cade pe o regula pe care fisierul
+     asta o are deja scrisa la `--dur-press`: „sub ~100ms legatura cauza-efect se
+     citeste ca instantanee". Dintr-o iesire de 220ms, la 100ms oglinda mutase
+     foaia 6,9% din drum — adica in fereastra in care ochiul decide „a raspuns?"
+     nu se intamplase nimic. `--ease` e ATAT de mult ease-out (87% in prima
+     jumatate) incat oglinda ei e prea mult ease-in ca sa fie folosibila.
+     (Aceeasi capcana: valoarea din handoff, .4/.02/.72/.06, da 9,3% — practic
+     tot oglinda, doar scrisa altfel.)
+
+     Asta e accelerarea standard — pleaca vizibil si isi ia viteza pana iese din
+     cadru: 11% la 60ms, 27% la 100ms, viteza maxima fix in clipa in care obiectul
+     paraseste ecranul. Raspunsul se vede la timp, si totusi nu franeaza. */
+  --ease-iesire: cubic-bezier(.4, 0, 1, 1);
   /* Singura curba cu depasire din sistem. Cursorul de tab o are fiindca
      urmareste degetul; revenirea dintr-un gest, din acelasi motiv. */
   --ease-spring: cubic-bezier(.34, 1.35, .42, 1);

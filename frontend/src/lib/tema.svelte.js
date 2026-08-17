@@ -49,10 +49,45 @@ export const tema = $state({
   efectiva: 'dark',           // ce se vede; calculata la incarcare, mai jos
 })
 
-function aplica() {
+// LUMINA SE SCHIMBA, NU SE COMUTA.
+//
+// Toate suprafetele isi iau culoarea din tokenuri, iar tokenurile se schimba
+// intr-un singur cadru: ecranul POCNEA dintr-o tema in alta. Pe telefon, in hala,
+// Ion comuta des — si un pocnet pe tot ecranul e cel mai violent lucru pe care il
+// face aplicatia, tocmai la o actiune care nu schimba nicio informatie.
+//
+// Cadrul primeste ~320ms o clasa care pune o tranzitie de CULOARE pe tot
+// subarborele, apoi si-o scoate. Permanenta n-are ce cauta: fiecare hover si
+// fiecare stare ar trage dupa ea 300ms, si atunci raspunsul la atingere s-ar
+// simti moale peste tot.
+//
+// DOAR proprietati de culoare, cu bunastiinta. Miscarea nu intra in lista: o
+// tranzitie de `transform` fortata pe tot arborele ar prinde, in cele 320ms,
+// obiecte care se misca din alt motiv (pastila din dock, foaia trasa de deget) si
+// le-ar da alta durata decat au. Tranzitiile Svelte nu sunt atinse deloc — ele
+// merg pe `animation`, nu pe `transition`.
+// `--dur-slow` (280) plus o marja: clasa trebuie sa traiasca putin mai mult
+// decat tranzitia pe care o porneste, altfel ultimele cadre ale trecerii raman
+// fara regula si culoarea sare la capat.
+const DUR_TEMA = 320
+let ceasTema = null
+
+function treceLinLaTema() {
+  if (typeof document === 'undefined') return
+  const el = document.documentElement
+  // Prima aplicare (la incarcare) NU e o comutare: acolo nu exista „de la ce"
+  // sa treaca, iar o tranzitie ar intarzia primul cadru pictat.
+  el.classList.add('tema-trece')
+  clearTimeout(ceasTema)
+  ceasTema = setTimeout(() => el.classList.remove('tema-trece'), DUR_TEMA)
+}
+
+function aplica(lin = false) {
   const efectiv = tema.mod === 'auto' ? tema.sistem : tema.mod
+  if (efectiv === tema.efectiva && lin) return   // nimic de trecut
   tema.efectiva = efectiv
   if (typeof document === 'undefined') return
+  if (lin) treceLinLaTema()
   document.documentElement.setAttribute('data-theme', efectiv)
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', BARA[efectiv])
 }
@@ -61,7 +96,7 @@ export function setMod(mod) {
   if (!MODURI.includes(mod)) return
   tema.mod = mod
   try { localStorage.setItem(CHEIE, mod) } catch (_) {}
-  aplica()
+  aplica(true)
 }
 
 /** Ciclu auto -> deschisa -> inchisa -> auto. */
@@ -75,7 +110,10 @@ export function cicleazaTema() {
 if (typeof window !== 'undefined' && window.matchMedia) {
   window.matchMedia(MQ_DARK).addEventListener?.('change', (e) => {
     tema.sistem = e.matches ? 'dark' : 'light'
-    if (tema.mod === 'auto') aplica()
+    // Si schimbarea VENITA DE LA SISTEM (programul de noapte) trece lin: e
+    // acelasi salt de lumina, doar ca nu l-ai cerut tu — motiv in plus sa nu
+    // pocneasca.
+    if (tema.mod === 'auto') aplica(true)
   })
 }
 

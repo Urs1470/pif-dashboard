@@ -1213,3 +1213,50 @@ html.prima-incarcare.splash-a-lucrat .cell-in { animation: none; }
   body.plan-printing .app-main,
   body.plan-printing .content-width { display: block !important; height: auto !important; overflow: visible !important; }
 }
+
+/* ===== LUMINA SE SCHIMBA, NU SE COMUTA =====
+   Toate suprafetele isi iau culoarea din tokenuri, iar tokenurile se schimba
+   intr-un singur cadru: pana acum ecranul POCNEA dintr-o tema in alta. Pe telefon,
+   in hala, comutarea e deasa — si un pocnet pe tot ecranul e cel mai violent lucru
+   pe care il face aplicatia, tocmai la o actiune care nu schimba nicio informatie.
+
+   Clasa o pune si o scoate `lib/tema.svelte.js`, pentru ~320ms. NU e permanenta:
+   asa, fiecare hover si fiecare stare ar trage dupa ea 300ms si raspunsul la
+   atingere s-ar simti moale peste tot.
+
+   `!important` fiindca regula trebuie sa bata `--transition-colors` si toate
+   tranzitiile locale ale componentelor CAT TINE trecerea — altfel jumatate din
+   ecran ar trece in 300ms si cealalta in 120, adica exact incoerenta pe care o
+   repara.
+
+   DOAR proprietati de CULOARE. Miscarea e lasata afara cu bunastiinta: o tranzitie
+   de `transform` fortata pe tot arborele ar prinde, in cele 320ms, obiecte care se
+   misca din alt motiv (pastila din dock, foaia trasa de deget) si le-ar da alta
+   durata decat au. Tranzitiile Svelte nu sunt atinse deloc — ele merg pe
+   `animation`, nu pe `transition`. */
+html.tema-trece,
+html.tema-trece *,
+html.tema-trece *::before,
+html.tema-trece *::after {
+  /* `--dur-slow`, adica treapta de SUPRAFATA: o schimbare de tema repicteaza tot
+     ecranul, deci e cat o suprafata, nu cat un element. `--dur-fast` („vopsea")
+     ar fi fost prea scurta ca sa se citeasca altfel decat un pocnet.
+     `linear`, nu `--ease`: o culoare care accelereaza si franeaza se vede ca o
+     palpaire — aceeasi regula ca la arc, unde `effects` n-au voie sa depaseasca. */
+  transition:
+    background-color var(--dur-slow) linear,
+    color var(--dur-slow) linear,
+    border-color var(--dur-slow) linear,
+    box-shadow var(--dur-slow) linear,
+    fill var(--dur-slow) linear,
+    stroke var(--dur-slow) linear !important;
+}
+/* Cine a cerut mai putina miscare a cerut si mai putin din asta: schimbarea de
+   tema ramane instantanee, fiindca ea NU e miscare — e vopsea, si nu se pierde
+   nicio informatie daca vine dintr-un cadru. */
+@media (prefers-reduced-motion: reduce) {
+  html.tema-trece,
+  html.tema-trece *,
+  html.tema-trece *::before,
+  html.tema-trece *::after { transition: none !important; }
+}

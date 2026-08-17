@@ -85,7 +85,7 @@
   import { tick, untrack } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, ARC } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, EASE_IESIRE, ARC } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   // Foaia si voalul ies in `body`: pagina din spate se RETRAGE (un `transform`
   // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
@@ -223,17 +223,27 @@
   function intra(node, _params, opts) {
     const laIntrare = opts?.direction !== 'out'
     const duration = motionDuration(sheet && laIntrare ? DUR_SLOW : DUR_BASE)
-    if (sheet) return { duration, easing: EASE, css: (t, u) => `transform: translateY(${u * 100}%)` }
+    // SOSIREA FRANEAZA, PLECAREA ACCELEREAZA. Pana acum amandoua mergeau pe
+    // `--ease`, deci foaia se retragea ca si cum s-ar razgandi: incetinea exact
+    // in intervalul in care trebuia sa fie deja plecata. Vezi `--ease-iesire`.
+    const curba = laIntrare ? EASE : EASE_IESIRE
+    if (sheet) return { duration, easing: curba, css: (t, u) => `transform: translateY(${u * 100}%)` }
     // PANOUL SOSESTE CU 8px, NU CU O SCALARE. Scalarea spune „fereastra care se
     // deschide din centru"; panoul vine dinspre marginea de care se lipeste, deci
     // o deplasare mica, pe axa lui. Distanta e mica cu bunastiinta: obiectul e
     // deja la locul lui, miscarea doar spune din ce parte a venit.
-    if (panou) return { duration, easing: EASE, css: (t, u) => `opacity: ${t}; transform: translateX(${u * 8}px)` }
+    if (panou) return { duration, easing: curba, css: (t, u) => `opacity: ${t}; transform: translateX(${u * 8}px)` }
     // Caseta: creste din declansator daca exista unul, altfel din centru.
     // ARC pe scalare (se misca in spatiu), `--ease` pe opacitate — regula
     // `spatial` / `effects` din tokens.
     const org = origineaCasetei(node)
     if (org) node.style.transformOrigin = org
+    // La INCHIDERE caseta nu mai are de ce sa creasca pe arc: arcul e pentru un
+    // obiect care soseste si se aseaza. Pleaca pe durata de element, cu curba de
+    // iesire pe amandoua canalele.
+    if (!laIntrare) {
+      return { duration, easing: EASE_IESIRE, css: (t) => `opacity: ${t}; transform: scale(${0.98 + 0.02 * t});` }
+    }
     return {
       duration: motionDuration(DUR_ARC),
       easing: (t) => t,
@@ -746,7 +756,7 @@
   <div class="backdrop" class:varf class:trage use:portal bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
        style:--nivel={nivel} style:--voal-p={voalP} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
        in:fade={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
-       out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
+       out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE_IESIRE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
          class:acoperit class:gest={hFoaie !== null} class:mijloc={sheet && inalt && !intins}
          class:se-trage={trageManer}
