@@ -1,5 +1,5 @@
 import { apiJson } from '../lib/api.js'
-import { updateTask, updateGlobalTask } from './tasks.svelte.js'
+import { updateTask, updateGlobalTask, stergeTask } from './tasks.svelte.js'
 import { localToday, tomorrowISO } from '../lib/planDates.js'
 import { preia, dinCache, uita } from '../lib/cache.js'
 
@@ -115,6 +115,15 @@ export async function setTaskDates(tip, id, body) {
 export async function scheduleBacklog(tip, id, date) {
   if (!date) return
   await patch(tip, id, { data_scadenta: date })
+  await loadPlan()
+}
+
+// Stergerea unui task DIN Planificator. Randul e scos optimist din `plan.lanes`
+// de catre pagina (ca sa poata fi pus la loc din „Anulează"), iar asta e ce se
+// intampla cand toastul expira: scrierea adevarata, apoi o reincarcare care aduce
+// si numerele din capetele de grupa la starea nouă.
+export async function deleteTaskPlan(tip, id) {
+  await stergeTask(tip, id)
   await loadPlan()
 }
 

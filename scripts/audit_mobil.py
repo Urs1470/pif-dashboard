@@ -361,34 +361,53 @@ def gesturi(ctx, baza):
     else:
         out('  OK    glisare stanga: pista creste pe parcurs, apoi pragul')
 
-    # Calendarul chiar s-a deschis — si ca SHEET, nu ca popup agatat de un
-    # declansator care pe telefon nici nu e randat.
+    # ALEGEREA ZILEI CHIAR S-A DESCHIS — si e ACELASI set ca in celelalte trei
+    # liste.
+    #
+    # CE S-A SCHIMBAT (2026-08-17, handoff „Rafinare aplicație mobilă TORQA", P4):
+    # gestul deschidea DIRECT calendarul (`.dp-pop.sheet`), printr-un `DatePicker`
+    # ascuns intr-un invelis de 0×0 — deci pe „Astăzi" alegerea zilei era o grila de
+    # luna, in /tasks era `SelectorZi` (Azi · Mâine · Alege · Scoate), iar in pagina
+    # proiectului un formular de editare. Trei raspunsuri la aceeasi intrebare, pe
+    # drumul aceluiasi gest. Acum toate patru deschid `components/FoaieTask.svelte`.
+    # Verificarea NU s-a slabit: se cere in plus ca setul comun sa fie acolo, iar
+    # calendarul rămâne verificat — doar c-a coborat o atingere mai jos, la „Alege".
     page.wait_for_timeout(900)
-    if page.locator('.dp-pop.sheet').count() == 0:
-        out('  PICA  glisare stanga: calendarul nu s-a deschis'); probleme += 1
+    optiuni = page.locator('.modal .sz-optiune')
+    if optiuni.count() == 0:
+        out('  PICA  glisare stanga: foaia cu zilele nu s-a deschis'); probleme += 1
     else:
         out('  OK    glisare stanga deschide alegerea zilei')
-        # Si ziua aleasa chiar muta taskul: pica de pe boardul de azi.
-        #
-        # Ziua trebuie sa fie in VIITOR, si de aceea nu se ia „ultima din grila":
-        # calendarul se deschide pe luna TERMENULUI, iar pe board taskurile sunt
-        # scadente azi sau restante — deci grila e adesea o luna trecuta, si o zi
-        # din trecut lasa taskul pe board ca restant. Corect, dar nu ce masuram.
-        # Se avanseaza pana strict dupa luna curenta, apoi se ia ziua 15.
-        azi = datetime.date.today()
-        for _ in range(6):
-            titlu_luna = page.locator('.dp-pop .dp-title').inner_text().split()
-            if len(titlu_luna) != 2:
+        # Setul comun, intreg: Azi · Mâine · Alege. Daca vreuna lipseste, foaia s-a
+        # deschis dar nu e `SelectorZi` — adica exact divergenta pe care o reparam.
+        etichete = [(optiuni.nth(i).text_content() or '').strip().lower()
+                    for i in range(optiuni.count())]
+        for cerut in ('azi', 'mâine', 'alege'):
+            if not any(cerut in e for e in etichete):
+                out('  PICA  foaia nu are „%s" (are: %s)' % (cerut, etichete)); probleme += 1
                 break
-            an = int(titlu_luna[1])
-            luna = LUNI_DP.index(titlu_luna[0]) + 1 if titlu_luna[0] in LUNI_DP else azi.month
-            if (an, luna) > (azi.year, azi.month):
-                break
-            page.locator('.dp-pop .dp-nav').nth(1).click()
-            page.wait_for_timeout(280)
-        z = page.locator('.dp-pop.sheet .dp-day', has_text='15').first
-        if z.count():
-            z.click()
+        else:
+            out('  OK    foaia poarta setul comun de zile (Azi · Mâine · Alege)')
+
+        # CALENDARUL, ACOPERIT IN CONTINUARE: „Alege" trebuie sa-l deschida tot ca
+        # SHEET, nu ca popup agatat de un declansator care pe telefon nu e randat.
+        page.locator('.modal .sz-dp').first.click()
+        page.wait_for_timeout(900)
+        if page.locator('.dp-pop.sheet').count() == 0:
+            out('  PICA  „Alege" nu deschide calendarul ca foaie'); probleme += 1
+        else:
+            out('  OK    „Alege" deschide calendarul ca foaie')
+            page.keyboard.press('Escape')
+            page.wait_for_timeout(700)
+
+        # Si ziua aleasa chiar muta taskul: pica de pe boardul de azi. „Mâine" e o
+        # zi din VIITOR prin definitie, deci nu mai e nevoie de plimbarea prin luni
+        # de care avea nevoie grila (calendarul se deschidea pe luna TERMENULUI, iar
+        # pe board taskurile sunt scadente azi sau restante — deci adesea o luna
+        # trecuta, iar o zi din trecut lasa taskul pe board ca restant).
+        maine = page.locator('.modal .sz-optiune', has_text='Mâine').first
+        if maine.count():
+            maine.click()
             page.wait_for_timeout(1800)
             if titlu_inainte and titlu_inainte in (titluri() or []):
                 out('  PICA  ziua aleasa n-a mutat taskul (%r)' % titlu_inainte); probleme += 1
@@ -495,7 +514,18 @@ def lista_de_facut(ctx, baza):
     # — linia cu Enter pe desktop, butonul cu plus pe telefon. Compozitorul
     # inline de pe /tasks a plecat de pe latimea asta (pe „Astăzi" ramane, e al
     # boardului). Deci aici se verifica: butonul EXISTA, e o tinta adevarata, si
-    # duce la formularul din care poti pune si termenul din prima.
+    # duce la locul din care poti pune si termenul din prima.
+    #
+    # CE S-A SCHIMBAT (2026-08-17, handoff „Rafinare aplicație mobilă TORQA"):
+    # butonul deschidea un FORMULAR de patru campuri, cu bara de actiuni jos
+    # („Anulează" / „Creează") — de aceea testul cauta `.modal-actions button`.
+    # Acum deschide FOAIA DE ADAUGARE (`components/FoaieAdauga.svelte`): un singur
+    # camp, iar crearea e PRIMUL RAND al listei („Creează «…»", `.fa-creeaza`),
+    # fiindca acelasi camp e in acelasi timp si cautare — sub randul de creare stau
+    # taskurile care exista deja, ca sa nu naști al doilea.
+    # Verificarea nu s-a slabit, s-a mutat si a CRESCUT: pe langa „taskul s-a
+    # creat" se verifica acum si ca foaia isi arata singura ce a inteles din text
+    # (chipul de zi) — adica exact mecanismul nou care putea sa se strice tacut.
     MARCA = 'Audit — task de proba'
     n0 = page.eval_on_selector_all('.trow', 'e => e.length')
     zi(page.locator('.quick-add').count() == 0,
@@ -507,17 +537,49 @@ def lista_de_facut(ctx, baza):
         zi(c and c['width'] >= 44 and c['height'] >= 44,
            'butonul de adaugare e o tinta de deget', c)
         fab.click()
-        page.wait_for_timeout(700)
-        camp = page.locator('.modal input[type="text"], .modal-body input[type="text"]').first
-        zi(camp.count() > 0, 'butonul deschide formularul de task nou')
+        page.wait_for_timeout(900)
+        camp = page.locator('.fa-cauta input').first
+        zi(camp.count() > 0, 'butonul deschide foaia de adaugare')
         if camp.count():
+            # PARSERUL, INAINTE DE CREARE: ce se scrie in text trebuie sa apara ca
+            # CHIP, altfel ziua ar fi extrasa in tacere (sau deloc) si n-ai cum sa
+            # stii pe ce zi cade taskul pana nu-l vezi in lista.
+            camp.fill('mâine ' + MARCA)
+            page.wait_for_timeout(400)
+            chip = page.locator('.fa-chip.zi')
+            zi(chip.count() > 0, 'ziua scrisa in text devine chip')
+            if chip.count():
+                zi('mâine' in (chip.first.text_content() or '').lower(),
+                   'chipul spune ziua inteleasa', chip.first.text_content())
+            # Titlul de pe randul de creare NU mai are ziua in el: ce a devenit chip
+            # a plecat din titlu, altfel taskul s-ar numi „mâine revizie…".
+            #
+            # Se citeste `.fa-ct` — spanul TITLULUI —, nu textul intregului rand:
+            # randul poarta la dreapta si ziua citita din text (`.fa-cz`, in coloana
+            # de 46px a termenelor), deci textul lui CONTINE „mâine" cu bunastiinta.
+            # Prima versiune a testului se uita la tot randul si picase pe exact
+            # asta: raporta ca bug ce era, de fapt, chipul cerut de handoff.
+            creeaza = page.locator('.fa-creeaza').first
+            zi(creeaza.count() > 0, 'primul rand al listei e „Creează”')
+            if creeaza.count():
+                titlu_de_salvat = page.locator('.fa-creeaza .fa-ct').first.text_content() or ''
+                zi('mâine' not in titlu_de_salvat.lower(),
+                   'ziua a plecat din titlul care se va salva', titlu_de_salvat.strip())
+                zi(MARCA.split('—')[-1].strip() in titlu_de_salvat,
+                   'titlul pastreaza restul textului', titlu_de_salvat.strip())
+                # Ziua rămâne vizibila pe rand, in coloana termenului.
+                zi('mâine' in (page.locator('.fa-creeaza .fa-cz').first.text_content() or '').lower(),
+                   'randul de creare arata ziua la dreapta')
+
+            # Crearea propriu-zisa se face FARA zi, ca testul de glisare de mai jos
+            # sa aiba ce muta: daca taskul s-ar naste deja pe mâine, verificarea
+            # „ziua aleasa din foaie muta taskul" ar trece fara sa mute nimic.
             camp.fill(MARCA)
-            page.wait_for_timeout(200)
-            trimite = page.locator('.modal-actions button', has_text='Adaugă').first
-            if trimite.count() == 0:
-                trimite = page.locator('.modal-actions button').last
-            trimite.click()
-            page.wait_for_timeout(1600)
+            page.wait_for_timeout(400)
+            zi(page.locator('.fa-chip.zi').count() == 0,
+               'fara zi in text nu apare chip de zi')
+            page.locator('.fa-creeaza').first.click()
+            page.wait_for_timeout(1800)
             zi(page.eval_on_selector_all('.trow', 'e => e.length') == n0 + 1, 'taskul s-a creat')
 
     # mutare din gest: glisarea spre stanga deschide FOAIA cu panoul de termen

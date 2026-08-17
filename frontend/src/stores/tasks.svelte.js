@@ -149,6 +149,17 @@ export async function deleteGlobalTask(taskId) {
   uitaLista()
 }
 
+// STERGEREA CARE NU-L OBLIGA PE APELANT SA STIE UNDE TRAIESTE TASKUL.
+//
+// Un task global si unul de proiect stau pe doua rute (`/api/global-tasks/:id` si
+// `/api/tasks/:id`), dar listele care le arata amestecate — „Astăzi",
+// Planificatorul — le primesc pe amandoua cu un `tip` langa id si nu au de ce sa
+// tina minte care e care. Aceeasi forma ca `patch` din `stores/plan.svelte.js`,
+// care rezolva deja dispecerizarea pentru scriere: `tip` intai, apoi id.
+export function stergeTask(tip, id) {
+  return tip === 'global' ? deleteGlobalTask(id) : deleteTask(id)
+}
+
 export async function loadSubtasks(taskId) {
   return apiJson(`/api/tasks/${taskId}/subtasks`)
 }

@@ -163,13 +163,21 @@ MASOARA = """() => {
 }"""
 
 
+# `.fa-rand` = randul unui task EXISTENT din foaia de adaugare
+# (`components/FoaieAdauga.svelte`). Era `.pk-rand`, din `TaskPickerModal`, care a
+# fost inlocuit pe 2026-08-17 (handoff „Rafinare aplicație mobilă TORQA", P3): cele
+# trei drumuri de adaugare — cautarea din „Astăzi", formularul din /tasks si linia
+# inline din proiect — au devenit o singura foaie. Contractul verificat aici NU s-a
+# schimbat: foaia se ridica cu lista deja in mana si nu-si cheama singura tastatura.
+# Randul de CREARE (`.fa-creeaza`) nu se numara: el exista si cand nu s-a incarcat
+# nimic, deci l-ar face testul sa treaca degeaba.
 STARE_ALEGERE = """() => {
   const a = document.activeElement;
   const f = document.querySelector('.modal.sheet');
   return {
     tag: a ? a.tagName : null,
     editabil: !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable),
-    randuri: document.querySelectorAll('.pk-rand').length,
+    randuri: document.querySelectorAll('.fa-rand').length,
     sus: f ? Math.round(f.getBoundingClientRect().top) : null,
   };
 }"""

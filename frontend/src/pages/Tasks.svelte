@@ -16,7 +16,6 @@
 
 <script>
   import { ecran } from '../lib/ecran.svelte.js'
-  import { flushSync } from 'svelte'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { motionDuration, DUR_BASE, plecare, sosire, desfacere, alunecare, DUR_FAST, EASE } from '../lib/motion.svelte.js'
@@ -31,6 +30,9 @@
   import { router, navigate } from '../lib/router.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
+  import { apasareLunga } from '../lib/apasareLunga.js'
+  import FoaieTask from '../components/FoaieTask.svelte'
+  import FoaieAdauga from '../components/FoaieAdauga.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ContorPasi from '../components/ui/ContorPasi.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -81,7 +83,7 @@
   let showArchive = $state(router.query.arhiva === '1')
   let taskDeleteId = $state(null)
   let showTaskDelete = $state(false)
-  let showNewModal = $state(false)
+  let showAdauga = $state(false)
   let creating = $state(false)
 
   let formTitle = $state('')
@@ -249,29 +251,6 @@
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
-  function resetForm() {
-    formTitle = ''; formDesc = ''
-    formCategory = 'General'; formDeadline = ''; formRecurenta = ''
-  }
-
-  // TITLUL PRIMESTE FOCUSUL LA DESCHIDERE, nu butonul de inchidere — si il
-  // primeste IN ACELASI TASK cu atingerea care a deschis formularul.
-  //
-  // `flushSync` randeaza modalul acum, sincron, deci campul exista si poate fi
-  // focalizat inainte ca browserul sa considere incheiat gestul utilizatorului.
-  // Asta nu e o subtilitate: pe Android tastatura se ridica doar la un focus
-  // venit dintr-o interactiune reala. Prin `tick().then(...)` — adica un
-  // microtask mai tarziu — campul chiar primea cursorul, dar tastatura nu se mai
-  // deschidea, deci tot o atingere mai aveai de facut. Iar `Modal` nu mai muta
-  // focusul cand il gaseste deja inauntru (vezi efectul lui de focus).
-  let campTitlu = $state(null)
-  function openNewModal() {
-    resetForm()
-    showNewModal = true
-    flushSync()
-    campTitlu?.focus()
-  }
-
   function openEditModal(t) {
     editingTask = t
     formTitle = t.titlu || ''
@@ -282,25 +261,13 @@
     showEditModal = true
   }
 
-  async function handleCreate() {
-    if (!formTitle.trim()) return
-    creating = true
-    try {
-      await createGlobalTask({
-        titlu: formTitle.trim(),
-        descriere: formDesc.trim() || undefined,
-        categorie: formCategory,
-        sfera: sferaActiva,
-        data_scadenta: formDeadline || undefined,
-        recurenta: formRecurenta || undefined,
-        status: 'to_do',
-      }, { arhiva: showArchive, sfera: 'toate' })
-      resetForm()
-      showNewModal = false
-    } catch (e) {
-      toast(`Eroare: ${e.message}`, 'error')
-    } finally { creating = false }
-  }
+  // `handleCreate` si modalul „Task Nou" au plecat in `components/FoaieAdauga.svelte`.
+  // Aici mai raman DOUA cai de adaugare, si niciuna nu e un formular: linia rapida
+  // de mai jos (desktop) si butonul plutitor care deschide foaia (telefon).
+  // `resetForm` si `campTitlu` au plecat cu el — al doilea exista doar ca sa dea
+  // focusul campului „Titlu" prin `flushSync`, iar foaia isi gestioneaza singura
+  // focusul (si pe telefon dinadins NU-l ia, ca sa nu cheme tastatura peste
+  // sosirea foii). Starea `form*` rămâne: o foloseste modalul de EDITARE.
 
   // Adaugarea si planificarea sunt ACELASI gest, nu doua.
   // Inainte: scriai titlul, Enter, si taskul cadea in „fara termen"; ca sa-i pui o
@@ -406,6 +373,44 @@
     // arata ca doua evenimente pentru un singur gest.
     await incarcaSubtaskuri(taskId)
     showSheet = true
+  }
+
+  // ===== FOAIA DE ACTIUNI (apasare lunga pe rand) =====
+  //
+  // GLISAREA nu se schimba: ea deschide foaia taskului cu panoul de termen deja
+  // desfacut, adica ACELASI `SelectorZi` pe care il arata foaia de actiuni in
+  // celelalte trei liste — doar intr-o gazda mai bogata, fiindca aici exista una.
+  // Apasarea lunga aduce ce lipsea de tot pe telefon: „Șterge" (randul isi ascunde
+  // actiunile sub 768px, iar foaia taskului n-are buton de stergere), plus
+  // „Deschide" si „Mută pe mâine" fara sa treci prin foaia mare.
+  let foaieTask = $state(null)
+  let foaieDeschisa = $state(false)
+
+  function deschideFoaiaActiuni(t) {
+    foaieTask = t
+    foaieDeschisa = true
+  }
+
+  // Stergere reversibila, aceeasi mecanica ca la `removeSubtask` de mai jos.
+  // Butonul „Șterge" de pe desktop pastreaza `ConfirmDialog`-ul lui: acolo apesi
+  // un buton anume, deci intrebarea are sens; aici actiunea vine dintr-un gest si
+  // plasa e undo-ul, nu o confirmare in plus.
+  function stergeDinLista(t) {
+    const idx = globalTasks.items.findIndex(x => x.id === t.id)
+    if (idx === -1) return
+    const scos = globalTasks.items[idx]
+    globalTasks.items = globalTasks.items.filter(x => x.id !== t.id)
+    toastUndo('Task șters', {
+      onUndo: () => {
+        const cur = [...globalTasks.items]
+        cur.splice(Math.min(idx, cur.length), 0, scos)
+        globalTasks.items = cur
+      },
+      onCommit: async () => {
+        try { await deleteGlobalTask(t.id); await reload() }
+        catch (e) { toast(`Eroare: ${e.message}`, 'error'); await reload() }
+      },
+    })
   }
 
   // Cererile in zbor, ca sa nu plece doua pentru acelasi task: cu preincarcarea
@@ -545,51 +550,17 @@
   // rescrii randul, nu adaugi la el.
   function focalizeaza(node) { node.focus(); node.select() }
 
-  // APASARE LUNGA, pentru actiunea rara de pe o tinta mare (redenumirea unui
-  // subtask). Aceleasi 300ms ca la `lib/tragere.js`, si aceeasi conditie de
-  // anulare: prima miscare peste 8px o opreste — altfel o glisare pornita din
-  // greseala pe titlu ar declansa si redenumirea, si pista de stergere.
-  // Doar pe pointer nu-mouse: cu mouse, clicul simplu redenumeste deja.
-  const PRAG_LUNG = 300
-  const PRAG_MISCARE = 8
-  function apasareLunga(node, actiune) {
-    let t = null, x0 = 0, y0 = 0, pornit = false
-    const stop = () => { if (t) { clearTimeout(t); t = null } }
-    const jos = (e) => {
-      if (e.pointerType === 'mouse') return
-      x0 = e.clientX; y0 = e.clientY; pornit = false
-      stop()
-      t = setTimeout(() => {
-        t = null
-        pornit = true
-        try { navigator.vibrate?.(12) } catch (_) {}
-        actiune?.()
-      }, PRAG_LUNG)
-    }
-    const misca = (e) => {
-      if (!t) return
-      if (Math.abs(e.clientX - x0) > PRAG_MISCARE || Math.abs(e.clientY - y0) > PRAG_MISCARE) stop()
-    }
-    // Dupa o apasare lunga, clicul care urmeaza ridicarii degetului ar bifa —
-    // deci se inghite, exact ca in `glisare` dupa un gest.
-    const clic = (e) => { if (pornit) { e.preventDefault(); e.stopPropagation(); pornit = false } }
-    node.addEventListener('pointerdown', jos)
-    node.addEventListener('pointermove', misca)
-    node.addEventListener('pointerup', stop)
-    node.addEventListener('pointercancel', stop)
-    node.addEventListener('click', clic, true)
-    return {
-      update: (a) => { actiune = a },
-      destroy: () => {
-        stop()
-        node.removeEventListener('pointerdown', jos)
-        node.removeEventListener('pointermove', misca)
-        node.removeEventListener('pointerup', stop)
-        node.removeEventListener('pointercancel', stop)
-        node.removeEventListener('click', clic, true)
-      },
-    }
-  }
+  // APASAREA LUNGA A PLECAT IN `lib/apasareLunga.js`.
+  //
+  // Era scrisa aici, cu doua constante proprii (`PRAG_LUNG = 300`,
+  // `PRAG_MISCARE = 8`) care erau copii ale lui `APASARE_LUNGA` si
+  // `PRAG_DIRECTIE` din `gesturi.js`, si cu un `navigator.vibrate?.(12)` inline
+  // in loc de `puls()`. Cand acelasi gest a fost cerut si pe RANDUL de task (foaia
+  // de actiuni), copierea ar fi ajuns la trei perechi de valori pentru acelasi
+  // „cat de mult tin apasat" — exact ce previne `gesturi.js`.
+  // Semnatura s-a schimbat: obiect (`{ actiune, activ, ignora }`), nu functie
+  // simpla, fiindca randul are nevoie si de „doar pe telefon" si de o zona
+  // exclusa (manerul de reordonare).
 
   // ACELASI OBIECT, ACEEASI ATINGERE, ACELASI COMPORTAMENT. Aceeasi functie din
   // ProjectDetail sterge optimist si ofera `toastUndo` cu commit intarziat; aici
@@ -989,7 +960,7 @@
                    else if (e.key === 'Escape') { e.stopPropagation(); editSubId = '' }
                  }} />
         {:else}
-          <button class="sub-title" use:apasareLunga={() => incepeRedenumirea(sub)}
+          <button class="sub-title" use:apasareLunga={{ actiune: () => incepeRedenumirea(sub) }}
                   onclick={() => { if (ecran.telefon) toggleSubtaskDone(sub); else incepeRedenumirea(sub) }}
                   title={ecran.telefon ? 'Atinge ca să bifezi · ține apăsat ca să redenumești' : 'Atinge ca să redenumești'}>{sub.titlu}</button>
         {/if}
@@ -1189,7 +1160,8 @@
              onpointerenter={() => preincarca(t.id)}
              in:sosire|local out:plecare>
           <div class="trow" class:done={t.status === 'done'} class:bifare={bifatAcum === t.id} use:focusOnLand={focusKey('global', t.id)}
-               use:glisare={{ activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t, true), onAmana: () => { deschideFoaia(t.id); termenDeschis = true } }}>
+               use:glisare={{ activ: ecran.telefon, onBifa: t.status === 'done' ? null : () => toggleStatus(t, true), onAmana: () => { deschideFoaia(t.id); termenDeschis = true } }}
+               use:apasareLunga={{ activ: ecran.telefon, actiune: () => deschideFoaiaActiuni(t) }}>
             <!-- Actiunile de intretinere (notita / editare / stergere) stau in
                  panoul de sub rand: sunt rare fata de „bifat" si „deschis", si
                  tocmai ele umflau randul cu o linie intreaga. -->
@@ -1270,11 +1242,14 @@
 
   <!-- BUTONUL MARE CU PLUS — singura cale de adaugare de pe telefon.
        Sta peste dock, la aceeasi distanta de margine ca el, in dreapta: acolo
-       ajunge degetul mare fara sa muti telefonul in mana. Deschide formularul
-       complet, fiindca pe telefon scrii mai rar si atunci vrei sa pui si
-       termenul din prima. -->
+       ajunge degetul mare fara sa muti telefonul in mana.
+       Deschidea un formular de patru campuri („Task Nou": Titlu, Categorie,
+       Termen, Recurență), cu motivul scris aici: „pe telefon scrii mai rar si
+       atunci vrei sa pui si termenul din prima". Termenul se pune tot din prima,
+       dar SCRIS — „mâine revizie pompa" — iar Categoria si Recurenta au intrat in
+       foaie, unde nu mai ocupa doua randuri din patru pentru ceva folosit rar. -->
   {#if ecran.telefon && !showArchive}
-    <button class="fab" onclick={openNewModal} aria-label="Task nou">
+    <button class="fab" onclick={() => showAdauga = true} aria-label="Task nou">
       <Plus size={25} strokeWidth={1.5} />
     </button>
   {/if}
@@ -1341,35 +1316,20 @@
   </Modal>
 {/if}
 
-<Modal bind:open={showNewModal} title="Task Nou" size="md">
-  <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleCreate() }}>
-    <!-- Titlul e un camp ca oricare altul — a fost o vreme unul mare, care isi
-         crestea inaltimea, si a plecat la cererea lui Ion („poti sa faci campul
-         titlu task cum era inainte"). Ce ramane castigat: focusul cade pe el la
-         deschidere (`campTitlu`, mai jos), deci pe telefon, unde „+ Nou" E calea
-         de adaugare, nu mai sta o atingere intre gand si prima litera.
-         DESCRIEREA A PLECAT DE AICI (Ion: „nu folosesc niciodata acel camp").
-         Nu s-a pierdut nimic: nota unui task se scrie din randul lui, la
-         „Adaugă notă", unde ai si editorul intreg, nu trei randuri intr-un
-         formular de creare. -->
-    <Input label="Titlu" bind:value={formTitle} bind:ref={campTitlu} placeholder="Ce ai de făcut?" />
-    <div class="form-row-2">
-      <!-- Componentele librariei, nu campuri de mana: regula din CLAUDE.md
-           („NU <input> brut in formulare"). Categoria era singurul camp brut
-           din modal — fara focus-ring-ul si fara fontul de 16px pe telefon pe
-           care Input le aduce singur. -->
-      <Input label="Categorie" bind:value={formCategory} placeholder="General" />
-      <DatePicker label="Termen" bind:value={formDeadline} />
-    </div>
-    <Select label="Recurență" size="sm" bind:value={formRecurenta} options={[{ value: '', label: 'Fără' }, { value: 'zilnic', label: 'Zilnic' }, { value: 'saptamanal', label: 'Săptămânal' }, { value: 'lunar', label: 'Lunar' }]} />
-  </form>
-  {#snippet footer()}
-    <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showNewModal = false}>Anulează</Button>
-      <Button loading={creating} disabled={!formTitle.trim()} onclick={handleCreate}>Creează</Button>
-    </div>
-  {/snippet}
-</Modal>
+<!-- Foaia de actiuni (apasare lunga pe rand). „Deschide" e foaia taskului — aceeasi
+     pe care o deschide si atingerea randului. -->
+<FoaieTask bind:open={foaieDeschisa} task={foaieTask} mod="actiuni"
+           onZi={(v) => setTermenData(foaieTask, v)}
+           onMaine={() => setTermen(foaieTask, 1)}
+           onBifa={() => toggleStatus(foaieTask)}
+           onDeschide={() => deschideFoaia(foaieTask.id)}
+           onSterge={() => stergeDinLista(foaieTask)} />
+
+<!-- FOAIA DE ADAUGARE — aceeasi in /tasks, pe „Astăzi" si in tabul Taskuri al unui
+     proiect. Aici a inlocuit modalul „Task Nou" (patru campuri peste tastatura),
+     care nu putea spune daca taskul exista deja: scriai „revizie pompa", apasai
+     Creează, si se năștea al doilea. -->
+<FoaieAdauga bind:open={showAdauga} sfera={sferaActiva} onSchimbare={reload} />
 
 <Modal bind:open={showEditModal} title="Editează Task" size="md">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>

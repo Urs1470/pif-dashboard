@@ -10,12 +10,15 @@
   import { etichetaTermenScurt } from '../lib/grupare.js'
   import ContorPasi from './ui/ContorPasi.svelte'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
+  import { apasareLunga } from '../lib/apasareLunga.js'
   import { reordonare } from '../lib/reordonare.js'
+  import { stergeTask } from '../stores/tasks.svelte.js'
+  import FoaieTask from './FoaieTask.svelte'
   import { ecran } from '../lib/ecran.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
-  import TaskPickerModal from './TaskPickerModal.svelte'
+  import FoaieAdauga from './FoaieAdauga.svelte'
   import EmptyState from './ui/EmptyState.svelte'
   import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
@@ -29,7 +32,7 @@
 
   let quickTitle = $state('')
   let quickAdding = $state(false)
-  let showPicker = $state(false)
+  let showAdauga = $state(false)
 
   let dragIndex = $state(null)
   let overIndex = $state(null)
@@ -182,19 +185,54 @@
   // GESTUL DUCE LA ALEGEREA ZILEI, NU LA O ZI ALEASA DE APLICATIE.
   // Stanga executa „Mâine" — pe boardul de azi mâine parea verbul potrivit,
   // fiindca tot ce vezi e scadent azi. Dar amanarea nu e „inca o zi": muti un
-  // task cand stii CAND il faci, iar ziua aia e rareori mâine. Acum gestul
-  // deschide acelasi calendar ca butonul „Planifică" de pe desktop si ca foaia
-  // din /tasks — un singur raspuns la aceeasi intrebare, pe toate suprafetele.
+  // task cand stii CAND il faci, iar ziua aia e rareori mâine.
   //
-  // Calendarul e UNUL PE BOARD, nu unul pe rand: pe telefon `.arow-actions` nu se
-  // randeaza, deci nu exista declansator de apasat. Instanta traieste intr-un
-  // invelis de 0×0 (`.dp-gest`), iar sheet-ul ei se muta oricum in `body`
-  // (`use:portal`), deci nu are ce sa taie invelisul.
-  let dpGest = $state(null)
-  let tintaGest = $state(null)
-  function planificaDinGest(it) {
-    tintaGest = it
-    dpGest?.deschideCalendarul()
+  // ===== FOAIA RANDULUI DE PE TELEFON =====
+  //
+  // Gestul deschidea DIRECT calendarul (`dpGest.deschideCalendarul()`) — deci pe
+  // „Astăzi" alegerea zilei era o grila de luna, in /tasks era `SelectorZi`
+  // (Azi · Mâine · Alege · Scoate), iar in pagina proiectului un formular. Trei
+  // raspunsuri la aceeasi intrebare — exact cele trei pe care le numeste ca bug
+  // antetul lui `SelectorZi`, si care pe drumul GESTULUI nu fusesera unificate.
+  // Acum toate patru listele deschid aceeasi foaie.
+  //
+  // Odata cu gestul a plecat si `.dp-gest` — invelisul de 0×0 care tinea un
+  // `DatePicker` fara declansator vizibil, doar ca sa aiba gestul ce calendar sa
+  // deschida. Calendarul e acum al foii, iar pe desktop randul isi are propriul
+  // declansator la vedere (`.arow-actions`, „Altă zi"), care n-a fost atins.
+  let foaieTask = $state(null)
+  let foaieMod = $state('actiuni')
+  let foaieDeschisa = $state(false)
+
+  function deschideFoaia(it, mod) {
+    foaieTask = it
+    foaieMod = mod
+    foaieDeschisa = true
+  }
+
+  // Stergere reversibila din boardul de azi. Randul pleaca pe loc, scrierea pe
+  // server abia la expirarea toastului — aceeasi mecanica ca la subtaskuri.
+  function stergeDinBoard(it) {
+    const lista = it.sfera === 'personal' ? agenda.personale : agenda.items
+    const cheie = it.tip + ':' + it.id
+    const idx = lista.findIndex(x => x.tip + ':' + x.id === cheie)
+    if (idx === -1) return
+    const scos = lista[idx]
+    if (it.sfera === 'personal') agenda.personale = lista.filter(x => x.tip + ':' + x.id !== cheie)
+    else agenda.items = lista.filter(x => x.tip + ':' + x.id !== cheie)
+    toastUndo('Task șters', {
+      onUndo: () => {
+        const cur = [...(it.sfera === 'personal' ? agenda.personale : agenda.items)]
+        cur.splice(Math.min(idx, cur.length), 0, scos)
+        if (it.sfera === 'personal') agenda.personale = cur
+        else agenda.items = cur
+      },
+      onCommit: async () => {
+        try { await stergeTask(it.tip, it.id) }
+        catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+        onchange()
+      },
+    })
   }
 
   // Reschedule via the shared DatePicker (inline, same calendar as global/project
@@ -287,8 +325,11 @@
         <span class="bh-restante"><span class="bh-punct"></span>{restanteCount} {restanteCount === 1 ? 'restant' : 'restante'}</span>
       {/if}
     </div>
-    <button class="bh-add" onclick={() => showPicker = true} aria-label="Adaugă task existent">
-      <ListPlus size={15} /> <span class="bh-add-txt">Adaugă task existent</span>
+    <!-- „Adaugă task", nu „Adaugă task EXISTENT": foaia nu mai e doar o cautare.
+         Scrii, si primul rand e „Creează «…»" — cine scria aici un titlu care nu
+         exista primea inainte „Niciun task găsit" si un drum inchis. -->
+    <button class="bh-add" onclick={() => showAdauga = true} aria-label="Adaugă task">
+      <ListPlus size={15} /> <span class="bh-add-txt">Adaugă task</span>
     </button>
   </div>
 
@@ -347,7 +388,8 @@
           animate:flip={{ duration: flipDur }}
           in:sosire|local
           out:plecare
-          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it, true), onAmana: () => planificaDinGest(it) }}
+          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it, true), onAmana: () => deschideFoaia(it, 'plan') }}
+          use:apasareLunga={{ activ: peTelefon, actiune: () => deschideFoaia(it, 'actiuni'), ignora: '.gl-maner' }}
         >
           <!-- UN GEST = UN VERB, IN AMBELE SENSURI (vezi lib/glisare.js).
                Dreapta = „Făcut", stanga = „Mâine", amandoua cu pista care se
@@ -447,7 +489,8 @@
           role="listitem"
           in:sosire|local
           out:plecare
-          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it, true), onAmana: () => planificaDinGest(it) }}
+          use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it, true), onAmana: () => deschideFoaia(it, 'plan') }}
+          use:apasareLunga={{ activ: peTelefon, actiune: () => deschideFoaia(it, 'actiuni'), ignora: '.gl-maner' }}
         >
           <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
           <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>
@@ -490,18 +533,18 @@
 
 </section>
 
-<TaskPickerModal bind:open={showPicker} />
+<!-- ACEEASI foaie de adaugare ca in /tasks si ca in tabul Taskuri al unui proiect.
+     Aici a inlocuit `TaskPickerModal`, care putea doar sa CAUTE. -->
+<FoaieAdauga bind:open={showAdauga} onSchimbare={() => { loadAgendaToday(); onchange() }} />
 
-<!-- Calendarul pe care il deschide glisarea spre stanga. Nu se vede niciodata ca
-     declansator (invelis de 0×0): pe telefon randul nu are `.arow-actions`, deci
-     n-are unde sta un buton. Sheet-ul lui iese in `body` prin `use:portal`, asa
-     ca invelisul strans nu-l taie. -->
-{#if peTelefon}
-  <span class="dp-gest" aria-hidden="true">
-    <DatePicker bind:this={dpGest} value={tintaGest?.data_scadenta || ''}
-                onchange={(v) => { if (tintaGest) onMoveDate(tintaGest, v) }} />
-  </span>
-{/if}
+<!-- Foaia randului de pe telefon. „Deschide" duce taskul in lista lui, exact unde
+     ducea si atingerea titlului (`openItem`). -->
+<FoaieTask bind:open={foaieDeschisa} task={foaieTask} mod={foaieMod}
+           onZi={(v) => onMoveDate(foaieTask, v)}
+           onMaine={() => onTomorrow(foaieTask)}
+           onBifa={() => onToggle(foaieTask)}
+           onDeschide={() => openItem(null, foaieTask)}
+           onSterge={() => stergeDinBoard(foaieTask)} />
 
 <style>
   /* Suprafata se desprinde prin umbra. Padding-ul lateral scade la 8, fiindca
@@ -773,7 +816,6 @@
      comentariul din markup: fara regula asta, DatePicker-ul isi randa
      declansatorul „Selectează data" pe toata latimea, sub board. Sheet-ul lui
      iese in body prin use:portal, deci decuparea nu-l atinge. */
-  .dp-gest { display: block; width: 0; height: 0; overflow: hidden; }
 
   @media (max-width: 768px) {
     /* UN RAND = O LINIE, ca in orice aplicatie de to-do de pe telefon.

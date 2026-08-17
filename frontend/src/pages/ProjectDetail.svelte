@@ -38,6 +38,9 @@
   import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, desfacere, alunecare, EASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
+  import { apasareLunga } from '../lib/apasareLunga.js'
+  import FoaieTask from '../components/FoaieTask.svelte'
+  import FoaieAdauga from '../components/FoaieAdauga.svelte'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
   import Card from '../components/ui/Card.svelte'
@@ -500,6 +503,47 @@
     }
   }
 
+  // ===== FOAIA RANDULUI DE PE TELEFON =====
+  //
+  // Aceeasi foaie ca in Planificator (`components/FoaieTask.svelte`): glisarea la
+  // stanga o deschide pe „Planifică", apasarea lunga pe actiuni.
+  //
+  // Glisarea la stanga deschidea pana acum FORMULARUL DE EDITARE — cu Titlu,
+  // Descriere, Categorie si Termen — desi pista de sub deget scria „Planifică".
+  // Comentariul de la gest o si recunostea („aici nu exista foaie, deci deschide
+  // modalul de editare, care are campul Termen"). Acum exista foaie. Formularul
+  // rămâne, dar la „Deschide" — adica exact acolo unde ceri mai mult decat o zi.
+  let foaieTask = $state(null)
+  let foaieMod = $state('actiuni')
+  let foaieDeschisa = $state(false)
+  let showAdauga = $state(false)
+
+  function deschideFoaia(t, mod) {
+    foaieTask = t
+    foaieMod = mod
+    foaieDeschisa = true
+  }
+
+  // Stergere reversibila, aceeasi mecanica ca la subtaskuri mai jos: randul pleaca
+  // din lista pe loc, scrierea pe server abia la expirarea toastului.
+  function stergeTaskDinLista(t) {
+    const idx = tasks.findIndex(x => x.id === t.id)
+    if (idx === -1) return
+    const scos = tasks[idx]
+    tasks = tasks.filter(x => x.id !== t.id)
+    toastUndo('Task șters', {
+      onUndo: () => {
+        const cur = [...tasks]
+        cur.splice(Math.min(idx, cur.length), 0, scos)
+        tasks = cur
+      },
+      onCommit: async () => {
+        try { await deleteTask(t.id); await reloadTasks() }
+        catch (e) { toast(`Eroare: ${e.message}`, 'error'); await reloadTasks() }
+      },
+    })
+  }
+
 
   // Subtask functions
   //
@@ -884,6 +928,12 @@
              taskul cade in „fara termen" — iar consecinta nu e estetica: un task
              fara termen NU apare in „Astăzi", nu apare in Planificator si nu
              ajunge in Google Calendar. Taskurile de proiect se nasteau invizibile. -->
+        <!-- LINIA RAPIDA A RAMAS DOAR PE DESKTOP. Pe telefon era a treia gramatica
+             de adaugare din aplicatie (dupa cautarea din „Astăzi" si formularul din
+             /tasks), si singura care cerea sa alegi ziua din CHIPURI. Acolo adaugarea
+             vine acum din butonul plutitor, care deschide aceeasi foaie ca celelalte
+             doua ecrane, cu proiectul deja pus. Pe desktop linia rămâne: acolo n-ai
+             buton plutitor, ai un camp la vedere, si e mai rapid decat o foaie. -->
         <form class="quick-add" onsubmit={(e) => { e.preventDefault(); handleCreateTask() }}>
           <div class="qa-rand">
             <input type="text" placeholder="Task rapid... Enter pentru a adăuga" bind:value={newTaskTitle} disabled={creatingTask} />
@@ -914,14 +964,18 @@
           {#snippet randTask(t)}
             {@const gata = t.status === 'done' || t.status === 'finalizat'}
                 <div class="trow" class:done={gata} use:focusOnLand={focusKey('task', t.id)}
-                     use:glisare={{ activ: ecran.telefon, onBifa: gata ? null : () => toggleTaskStatus(t), onAmana: () => openTaskEditModal(t) }}>
+                     use:glisare={{ activ: ecran.telefon, onBifa: gata ? null : () => toggleTaskStatus(t), onAmana: () => deschideFoaia(t, 'plan') }}
+                     use:apasareLunga={{ activ: ecran.telefon, actiune: () => deschideFoaia(t, 'actiuni') }}>
                   <!-- UN GEST = UN VERB, IN AMBELE SENSURI — exact ca in /tasks.
                        Doua liste de taskuri cu acelasi rand nu au voie sa raspunda
                        diferit la acelasi gest; aici era acelasi panou de patru
                        actiuni × 58px = 232px din 390, care acoperea taskul pe care
                        actionai si punea „Șterge" exact unde ajunge o glisare rapida.
-                       Stanga = „Planifică" (aici nu exista foaie, deci deschide
-                       modalul de editare, care are campul Termen), dreapta = „Făcut". -->
+                       Stanga = „Planifică", dreapta = „Făcut". Stanga deschidea
+                       FORMULARUL de editare, fiindca „aici nu exista foaie" — acum
+                       exista (`components/FoaieTask.svelte`), deci gestul da exact
+                       ce scrie pe pista: zilele. Formularul a ramas la „Deschide",
+                       in foaia de la apasare lunga. -->
 
                   <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
                   <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>
@@ -1225,6 +1279,28 @@
 <!-- `panou`, nu `md`: acelasi obiect (un task) trebuie sa se deschida in
      aceeasi gazda ca in /tasks. O caseta centrata iti pune editorul peste
      lista din care ai venit; panoul lateral o lasa la vedere. -->
+<!-- BUTONUL MARE CU PLUS, ca in /tasks — aceeasi geometrie si aceeasi poziţie
+     (58px, rază 20, peste dock, la dreapta), fiindca e acelasi obiect: singura cale
+     de adaugare de pe telefon. Doar in tabul Taskuri: in celelalte taburi n-ar avea
+     ce sa adauge. Proiectul intra precompletat din pagina curenta. -->
+{#if ecran.telefon && activeTab === 'tasks' && project}
+  <button class="fab" onclick={() => showAdauga = true} aria-label="Task nou în proiect">
+    <Plus size={25} strokeWidth={1.5} />
+  </button>
+{/if}
+
+<!-- ACEEASI foaie de adaugare ca in /tasks si pe „Astăzi". -->
+<FoaieAdauga bind:open={showAdauga} proiect={project} onSchimbare={reloadTasks} />
+
+<!-- Foaia randului de pe telefon. „Deschide" e formularul de editare: aici el E
+     detaliul taskului, nu exista alta pagina in care sa-l duci. -->
+<FoaieTask bind:open={foaieDeschisa} task={foaieTask} mod={foaieMod}
+           onZi={(v) => setTermenTaskData(foaieTask, v)}
+           onMaine={() => setTermenTask(foaieTask, 1)}
+           onBifa={() => toggleTaskStatus(foaieTask)}
+           onDeschide={() => openTaskEditModal(foaieTask)}
+           onSterge={() => stergeTaskDinLista(foaieTask)} />
+
 <Modal bind:open={showTaskEditModal} title="Editează Task" size="panou">
   <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
     <Input label="Titlu" bind:value={taskFormTitle} placeholder="Titlu task" />
@@ -1601,6 +1677,27 @@
   @media (max-width: 768px) {
     .page { padding: var(--space-md); }
     .header-top { flex-direction: column; }
+
+    /* LINIA RAPIDA pleaca de pe telefon: adaugarea vine din butonul plutitor, prin
+       aceeasi foaie ca in celelalte doua ecrane. Aici ea era a treia gramatica de
+       adaugare din aplicatie. */
+    .quick-add { display: none; }
+    /* Loc pentru butonul plutitor, ca ultimul rand din lista sa nu stea sub el.
+       Aceeasi rezerva ca in /tasks: inaltimea butonului plus distanta lui. */
+    .tab-pane { padding-bottom: calc(58px + var(--space-md)); }
+
+    /* BUTONUL MARE CU PLUS — copiat la valoare din /tasks, nu aproximat: e acelasi
+       obiect pe alt ecran, deci orice diferenta de pozitie s-ar citi ca doua
+       butoane diferite cand treci de la o pagina la alta. */
+    .fab { --fab-size: 58px;
+      position: fixed; right: calc(var(--space-md) + var(--safe-right));
+      bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
+      width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
+      border-radius: var(--radius-lg); border: none;
+      background: var(--accent); color: var(--accent-text);
+      box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
+      cursor: pointer; transition: var(--transition-pressable); }
+    .fab:active { transform: scale(var(--press-scale)); }
     /* O LINIE, cu actiunile in panoul de sub rand (vezi Taskuri / „Astazi").
        Randul avea titlul sus si actiunile pe o linie proprie dedesubt. */
     /* ACEEASI GEOMETRIE CA IN /tasks SI PE „Astăzi" — pana la pixel.

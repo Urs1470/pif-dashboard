@@ -20,9 +20,10 @@
   import {
     plan, loadPlan, moveTaskDate, moveTaskTomorrow, toggleTaskDone,
     setTaskDates, setHorizon, toggleShowDone, toggleWeekends, scheduleBacklog,
+    deleteTaskPlan,
   } from '../stores/plan.svelte.js'
   import { loadSubtasks, updateSubtask } from '../stores/tasks.svelte.js'
-  import { buildColumns, grupeazaColoane, numeLuna, ziLuna, spanRect, dayDiff, addDays, clampNum } from '../lib/planDates.js'
+  import { buildColumns, grupeazaColoane, numeLuna, ziLuna, spanRect, dayDiff, addDays, clampNum, buildDays, parseISO, localToday } from '../lib/planDates.js'
   import { formatDate, formatDateShort, dueRing, RING_NEUTRU } from '../lib/formatters.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { apiJson } from '../lib/api.js'
@@ -31,6 +32,8 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
+  import { apasareLunga } from '../lib/apasareLunga.js'
+  import FoaieTask from '../components/FoaieTask.svelte'
   import { motion, panou, motionDuration, aterizare } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -275,36 +278,10 @@
     })
   }
 
-  // Propozitia de context din capul pistei „Perioade" (desen 4c): cand doua sau
-  // mai multe perioade se suprapun in fereastra, spune CAND — „14–15 aug: două în
-  // paralel". E singurul lucru pe care pista nu-l poate arata singura: doua benzi
-  // pe randuri diferite se citesc ca doua fapte separate, nu ca o coliziune.
-  const mpContext = $derived.by(() => {
-    if (!plan.start) return ''
-    const n = plan.days
-    const cnt = new Array(n).fill(0)
-    for (const lane of views) {
-      for (const im of lane.impl) {
-        const i0 = Math.max(0, dayDiff(plan.start, im.a))
-        const i1 = Math.min(n - 1, dayDiff(plan.start, im.b))
-        for (let i = i0; i <= i1; i++) cnt[i]++
-      }
-    }
-    let i0 = -1
-    for (let i = 0; i < n; i++) if (cnt[i] >= 2) { i0 = i; break }
-    if (i0 < 0) return ''
-    let i1 = i0
-    let max = cnt[i0]
-    while (i1 + 1 < n && cnt[i1 + 1] >= 2) { i1++; max = Math.max(max, cnt[i1]) }
-    const z1 = addDays(plan.start, i0)
-    const z2 = addDays(plan.start, i1)
-    const cate = max === 2 ? 'două' : max === 3 ? 'trei' : String(max)
-    const l1 = numeLuna(z1)
-    const l2 = numeLuna(z2)
-    const cand = i0 === i1 ? `${ziLuna(z1)} ${l1}`
-      : (l1 === l2 ? `${ziLuna(z1)}–${ziLuna(z2)} ${l2}` : `${ziLuna(z1)} ${l1} – ${ziLuna(z2)} ${l2}`)
-    return `${cand}: ${cate} în paralel`
-  })
+  // `mpContext` a plecat odata cu pista de perioade: era propozitia din capul ei
+  // („14–15 aug: două în paralel"), si n-are gazda in grila de luna — acolo o zi
+  // spune cate TASKURI are, nu cate perioade se suprapun. Coliziunea de perioade
+  // rămâne vizibila pe swimlane-ul de desktop, unde benzile stau una sub alta.
 
   // CLIENTUL E SUFIXUL NUMELUI, SI E SINGURUL CARE SPUNE UNDE DUCE BANDA.
   // Proiectele se cheama „Migrare CU240S — Continental": partea dinaintea liniutei
@@ -531,18 +508,10 @@
   // NU folosim `grupeazaDupaTermen` din /tasks: acolo grupele sunt Azi / Mâine /
   // Zilele astea / Mai târziu, potrivite unei liste deschise. Aici fereastra e
   // aleasa de tine si poate fi de 6 luni — „Mai târziu" ar fi chiar fereastra.
-  function grupeazaBanda(lane) {
-    const dupaZi = (a, b) => String(a.data_scadenta || '').slice(0, 10)
-      .localeCompare(String(b.data_scadenta || '').slice(0, 10))
-    const azi = lane.tasks.filter(t => esteAzi(t.data_scadenta)).sort(dupaZi)
-    const restul = lane.tasks.filter(t => !esteAzi(t.data_scadenta)).sort(dupaZi)
-    const capAzi = plan.today ? `Azi · ${formatDateShort(plan.today)}` : 'Azi'
-    return [
-      { id: 'restant', titlu: 'Restante', ton: 'danger', items: lane.restante },
-      { id: 'azi', titlu: capAzi, ton: 'accent', items: azi },
-      { id: 'urmeaza', titlu: 'Zilele următoare', ton: 'normal', items: restul },
-    ].filter(g => g.items.length > 0)
-  }
+  // `grupeazaBanda` a plecat: imparțea fereastra in „Restante / Azi / Zilele
+  // următoare", iar lista mobila arata acum o SINGURA zi — deci n-ar avea ce sa
+  // imparta. Aceeasi grupare traieste in /tasks (`lib/grupare.js`), unde lista
+  // chiar acopera mai multe zile.
 
   // PERIOADA, SCRISA O SINGURA DATA.
   // Era desenata in banda (unde e decor) si repetata dedesubt ca `.mimpl` — un rand
@@ -681,6 +650,170 @@
     catch (e) { toast(`Eroare: ${e.message}`, 'error') }
     closePop()
   }
+  // ===== FOAIA RANDULUI DE PE TELEFON =====
+  //
+  // Doua guri, aceeasi foaie (`components/FoaieTask.svelte`): glisarea la stanga
+  // o deschide pe „Planifică" (verbul e deja scris pe pista, deci nu se mai
+  // repeta), apasarea lunga o deschide pe actiuni. Panoul de detaliu de pe
+  // DESKTOP (`.panou`, mai jos) ramane cum era — acolo exista loc pentru el si nu
+  // se acopera nimic.
+  let foaieTask = $state(null)
+  let foaieMod = $state('actiuni')
+  let foaieDeschisa = $state(false)
+
+  function deschideFoaia(t, mod) {
+    foaieTask = t
+    foaieMod = mod
+    foaieDeschisa = true
+  }
+
+  // `onMove` se opreste la o data goala (e scris pentru `DatePicker`, care nu
+  // trimite niciodata null). Foaia POATE trimite null — „Scoate din calendar" din
+  // `SelectorZi` — deci cazul are nevoie de propriul drum, altfel butonul acela
+  // ar fi mut exact aici.
+  async function planificaDinFoaie(t, v) {
+    if (!t) return
+    try {
+      if (v) { await moveTaskDate(t.tip, t.id, v); toast(`Mutat pe ${formatDate(v)}`, 'success') }
+      else { await setTaskDates(t.tip, t.id, { data_scadenta: null }); toast('Scos din calendar', 'success') }
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+    closePop()
+  }
+
+  // STERGEREA E REVERSIBILA, SI DE ASTA E ACCEPTABILA DINTR-UN GEST.
+  //
+  // Aceeasi mecanica ca la subtaskuri in /tasks si in pagina proiectului: randul
+  // pleaca din `plan.lanes` pe loc, iar scrierea pe server se face abia cand
+  // toastul expira (`onCommit`). „Anulează" nu cheama nimic pe server — pune
+  // randul la loc exact acolo unde era, fiindca nici n-a plecat vreodata.
+  function stergeDinPlan(t) {
+    const cheie = t.tip + ':' + t.id
+    let loc = null
+    for (const lane of plan.lanes) {
+      const i = (lane.tasks || []).findIndex(x => x.tip + ':' + x.id === cheie)
+      if (i !== -1) { loc = { lane, i, task: lane.tasks[i] }; break }
+    }
+    if (!loc) return
+    loc.lane.tasks = loc.lane.tasks.filter(x => x.tip + ':' + x.id !== cheie)
+    closePop()
+    toastUndo('Task șters', {
+      onUndo: () => {
+        const cur = [...(loc.lane.tasks || [])]
+        cur.splice(Math.min(loc.i, cur.length), 0, loc.task)
+        loc.lane.tasks = cur
+      },
+      onCommit: async () => {
+        try { await deleteTaskPlan(t.tip, t.id) }
+        catch (e) { toast(`Eroare: ${e.message}`, 'error'); await loadPlan() }
+      },
+    })
+  }
+
+  // ===== GRILA DE LUNA (telefon) =====
+  //
+  // A INLOCUIT PISTA DE PERIOADE (`.mpiste`). Pista raspundea la „cand sunt pe
+  // teren"; grila raspunde la „cat am de facut, si cand" — iar pe telefon a doua
+  // intrebare e cea cu care deschizi Planificatorul. Perioadele n-au dispărut din
+  // aplicatie: stau pe randul lor din fiecare card (`.mimpl`, cu interval si
+  // chevron catre Calendar) si pe swimlane-ul de desktop, unde au latime.
+  //
+  // PATRU SAPTAMANI, LUNI-PRIMA, incepand de LUNI SAPTAMANA ASTA — nu de azi.
+  // O grila care porneste de la ziua curenta are prima linie strambă si nu se mai
+  // citeste ca un calendar; iar zilele DINAINTE de azi din saptamana curenta sunt
+  // exact cele care pot avea restante, adica singurul lucru din grila care cere
+  // actiune imediata.
+  const gridStart = $derived.by(() => {
+    const azi = plan.today || localToday()
+    const d = parseISO(azi)
+    if (!d) return azi
+    // getDay(): 0 = duminica. Luni-prima => duminica e a 7-a zi, deci 6 in urma.
+    const inapoi = d.getDay() === 0 ? 6 : d.getDay() - 1
+    return addDays(azi, -inapoi)
+  })
+
+  const SAPT_GRILA = 4
+  const ZILE_GRILA = SAPT_GRILA * 7
+
+  // ORIZONTUL TREBUIE SA ACOPERE GRILA, altfel densitatea MINTE: `/api/plan`
+  // intoarce taskuri doar in fereastra cerută, iar la 14 zile ultimele doua
+  // saptamani ar arata goale — adica „n-ai nimic", cand de fapt „nu s-a cerut".
+  // 30 e o valoare care exista deja in `HORIZONS`, deci nu se inventeaza niciun
+  // mod nou; iar grila se termina cel mai tarziu la azi+27 (cand azi E luni).
+  // Segmentul de orizont e ascuns pe telefon (`.seg { display: none }`), deci
+  // nimeni nu se lupta cu alegerea asta.
+  $effect(() => {
+    if (ecran.telefon && plan.days < ZILE_GRILA + 2) setHorizon(30)
+  })
+
+  /** Toate taskurile ferestrei, cu restantele lor, intr-o singura lista plata. */
+  const toateTaskurile = $derived.by(() => {
+    const out = []
+    for (const lane of plan.lanes) {
+      for (const t of lane.tasks || []) out.push(t)
+      for (const t of lane.restante || []) out.push(t)
+    }
+    return out
+  })
+
+  /** Cate taskuri si cate restante cad pe fiecare zi. Se socoteste O DATA pentru
+   *  toata grila, nu per celula: 28 de celule × N taskuri ar fi o parcurgere
+   *  pentru fiecare zi, la fiecare randare. */
+  const perZi = $derived.by(() => {
+    const m = new Map()
+    for (const t of toateTaskurile) {
+      const zi = String(t.data_scadenta || '').slice(0, 10)
+      if (!zi) continue
+      const c = m.get(zi) || { n: 0, restante: 0 }
+      c.n++
+      if (esteRestant(t.data_scadenta)) c.restante++
+      m.set(zi, c)
+    }
+    return m
+  })
+
+  const celuleGrila = $derived.by(() =>
+    buildDays(gridStart, ZILE_GRILA).map(z => ({
+      ...z,
+      ...(perZi.get(z.iso) || { n: 0, restante: 0 }),
+    }))
+  )
+
+  /** Ziua aleasa din grila. Implicit AZI — deschizi pagina si vezi ce ai azi, nu
+   *  o lista goala care asteapta o atingere. */
+  let ziAleasa = $state('')
+  const ziActiva = $derived(ziAleasa || plan.today || localToday())
+
+  /** Lățimea barei de incarcare, in px: 10 la un task, +8 pe fiecare urmator,
+   *  plafonata la 28 — peste atat bara ar atinge muchiile celulei de 52 si n-ar
+   *  mai spune „mai mult", ar spune „plin". */
+  const latimeBara = (n) => Math.min(28, 10 + n * 8)
+
+  /** Capetele de zi ale grilei, luni-prima. Din ACELEASI initiale ca antetul de
+   *  coloane al swimlane-ului (`buildDays().wd`), ca sa nu existe doua tabele. */
+  const capeteZile = $derived.by(() => buildDays(gridStart, 7).map(z => z.wd))
+
+  /** Taskurile zilei alese, grupate pe proiecte — carduri, ca pana acum. */
+  const laneuriZiua = $derived.by(() => {
+    const zi = ziActiva
+    const out = []
+    for (const lane of plan.lanes) {
+      const ale = [...(lane.tasks || []), ...(lane.restante || [])]
+        .filter(t => String(t.data_scadenta || '').slice(0, 10) === zi)
+      if (ale.length) out.push({ ...lane, tasksZi: ale })
+    }
+    return out
+  })
+
+  const numarZiua = $derived(perZi.get(ziActiva)?.n || 0)
+  const restanteZiua = $derived(perZi.get(ziActiva)?.restante || 0)
+
+  /** „marți 18 august" — capul zilei alese. */
+  const etichetaZiua = $derived.by(() => {
+    const d = parseISO(ziActiva)
+    if (!d) return ''
+    return d.toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long' })
+  })
+
   // Randul care isi joaca stampila chiar acum (`.bifare`, reguli in global.css).
   let bifatAcum = $state('')
   async function onDone(t, dinGest = false) {
@@ -1301,107 +1434,74 @@
            randul perioadei si taskurile.
            Geometria vine din aceleasi `columns` / `antet` ca pe desktop, deci nu e
            o a doua socoteala care sa se poata contrazice cu prima. -->
-      <section class="mpiste">
-        <div class="mp-cap"><span>Perioade</span>{#if mpContext}<span class="mp-ctx">{mpContext}</span>{/if}</div>
-        <!-- ZILELE AU LATIME MINIMA, IAR PISTA DERULEAZA LA DREAPTA (cerinta lui
-             Ion, cu poza: cifrele erau inghesuite pana la necitibil la 14z pe
-             375px). Numele proiectelor stau intr-o COLOANA-FRATE, in afara
-             derulatorului — nu sticky peste piste: Ion a vazut cum benzile
-             treceau pe sub textul decupat („ramane fixa decupata, este urat").
-             Doua coloane cu inaltimi FIXE pe rand (antet 32, pista 34, gap 6),
-             deci randurile raman aliniate fara nicio socoteala comuna. -->
-        <div class="mp-corp">
-          <div class="mp-nume-col">
-            <span class="mp-gol" aria-hidden="true"></span>
-            {#each views as lane (lane.tip + ':' + lane.id)}
-              <span class="mp-nume">
-                <span class="mp-dot" style="--lane:{lane.color}"></span>
-                <span class="mp-n">{lane.nume}</span>
-              </span>
-            {/each}
-          </div>
-          <div class="mp-scroll">
-          <div class="mp-piste" style="--n-col:{columns.cols.length}; --col-min:{lung ? '44px' : '26px'}">
-          <div class="mp-antet">
-            <div class="mp-r-sapt">
-              {#each antet.grupe as g (g.key)}
-                <span class="mp-s" style="left:{g.leftPct}%; width:{g.widthPct}%">{g.eticheta}</span>
-              {/each}
-            </div>
-            {#if !lung}
-              <div class="mp-r-zile">
-                {#each columns.cols as c, i (c.key)}
-                  <!-- Azi = cifra in accent, semibold, cu o subliniere de 2px
-                       dedesubt. Fara pastila: pastila plina e a zilei SELECTATE
-                       din Calendar, iar doua obiecte cu aceeasi forma pe doua
-                       pagini ar insemna doua intelesuri. -->
-                  <span class="mp-z" class:we={plan.showWeekends && c.isWeekend}
-                        class:today={i === coloanaAzi} class:granita={antet.granite.has(i - 1)}
-                        style="left:{c.leftPct}%; width:{c.widthPct}%">{c.main}</span>
-                {/each}
-              </div>
-            {/if}
-          </div>
-
-          {#each views as lane, li (lane.tip + ':' + lane.id)}
-            <!-- Pista e DESEN, nu suprafata de lucru: perioada se deschide de pe
-                 randul ei din card (`.mimpl`), unde are latimea intreaga si un
-                 chevron care spune ca duce undeva. -->
-            <div class="mp-track" style="--rand:{li}">
-              {#each columns.cols as c, i (c.key)}
-                {#if antet.granite.has(i - 1)}<div class="mp-linie" style="left:{c.leftPct}%"></div>{/if}
-                <!-- Fara tenta de weekend in pista comuna: desenul (4c) tine pista
-                     curata — weekendul e treaba graficului de desktop. -->
-                {#if i === coloanaAzi}<div class="mp-azi" style="left:{c.leftPct}%; width:{c.widthPct}%"></div>{/if}
-              {/each}
-              {#each lane.impl as im (im.id)}
-                <div class="impl-band doar-ico loc-{im.locatie}" style="left:{im.rect.left}%; width:{im.rect.width}%"
-                     class:pregatire={im.faza === 'pregatire'}
-                     class:clipL={im.rect.clippedLeft} class:clipR={im.rect.clippedRight}
-                     aria-hidden="true">
-                  {#if im.locatie === 'sediu'}<Building2 size={12} class="ib-ico" />{:else}<MapPin size={12} class="ib-ico" />{/if}
-                </div>
-              {/each}
-            </div>
+      <!-- ===== GRILA DE LUNA + DENSITATE =====
+           Patru saptamani, luni-prima, celule de 52px. Cifra spune ZIUA, bara de
+           sub ea spune CAT ai in ea — deci incarcarea saptamanii se citeste din
+           forma, fara sa numeri nimic. Tenta spune STAREA: weekend (suprafata 2),
+           zi cu restante (tenta de danger), ziua aleasa (fill de accent).
+           A luat locul pistei de perioade: vezi nota de la `gridStart` in <script>. -->
+      <section class="mgrila">
+        <div class="mg-zile" aria-hidden="true">
+          {#each capeteZile as z}<span class="mg-zi-cap">{z}</span>{/each}
+        </div>
+        <div class="mg-celule" role="group" aria-label="Alege ziua">
+          {#each celuleGrila as c (c.iso)}
+            <button class="mg-cel"
+                    class:we={c.isWeekend}
+                    class:azi={c.iso === plan.today}
+                    class:rest={c.restante > 0}
+                    class:activa={c.iso === ziActiva}
+                    aria-pressed={c.iso === ziActiva}
+                    aria-label="{c.dayNum} {c.month} — {c.n} {c.n === 1 ? 'task' : 'taskuri'}{c.restante ? `, ${c.restante} restante` : ''}"
+                    onclick={() => ziAleasa = c.iso}>
+              <span class="mg-nr">{c.dayNum}</span>
+              <!-- Bara se randeaza DOAR cand exista ceva: o bara de lungime zero pe
+                   fiecare zi goala ar fi 28 de urme care nu spun nimic. -->
+              {#if c.n > 0}
+                <span class="mg-bara" style="width: {latimeBara(c.n)}px"></span>
+              {/if}
+            </button>
           {/each}
-          </div>
-          </div>
+        </div>
+        <!-- LEGENDA. Trei semne, si toate trei au nevoie de traducere: bara e o
+             lungime (nu un numar), iar cele doua tente sunt culori de stare. -->
+        <div class="mg-legenda">
+          <span class="mgl"><span class="mgl-bara"></span>încărcare</span>
+          <span class="mgl"><span class="mgl-p rest"></span>restant</span>
+          <span class="mgl"><span class="mgl-p we"></span>weekend</span>
         </div>
       </section>
 
-      <!-- `.impl-band` e aceeasi clasa ca pe desktop, deci pista mobila
-           mosteneste sosirea din 13e fara nicio regula in plus — ii trebuie doar
-           indicele randului, ca decalajul sa urmeze grupurile. -->
-      {#each views as lane, li (lane.tip + ':' + lane.id)}
+      <!-- CAPUL ZILEI ALESE. Tonul spune ce fel de zi e, cu aceeasi scara de
+           severitate ca inelele si termenele din liste: restante -> danger,
+           azi -> accent, altfel neutru. -->
+      <div class="mg-cap-zi" class:danger={restanteZiua > 0} class:accent={restanteZiua === 0 && ziActiva === plan.today}>
+        <span class="mg-cz-txt">{etichetaZiua}</span>
+        <span class="mg-cz-n">{numarZiua}</span>
+      </div>
+
+      <!-- Aici stateau `.mpiste` si antetul ei comun de saptamani/zile — pista de
+           perioade de pe telefon. A fost inlocuita de grila de luna de mai sus
+           (decizia lui Ion, 2026-08-17): pe telefon Planificatorul se deschide cu
+           intrebarea „cat am de facut si cand", nu „cand sunt pe teren".
+           PERIOADELE NU S-AU PIERDUT: fiecare card isi are randul lui de perioada
+           (`.mimpl`, cu interval si chevron catre Calendar), iar pe desktop
+           swimlane-ul le arata la latime intreaga. -->
+
+      <!-- TASKURILE ZILEI ALESE, GRUPATE PE PROIECTE, in cardurile existente.
+           Lista arata acum O ZI, nu toata fereastra: grila de sus e cea care spune
+           cat ai in fiecare zi, deci o lista care le-ar inșira pe toate ar fi a
+           doua data aceeasi informatie, in forma pe care ochiul o citeste mai
+           greu. Cine vrea alta zi o atinge in grila.
+           `laneuriZiua` ii da doar proiectele care AU ceva in ziua aleasa, deci
+           ramura „proiect gol" (`.mgol`) n-are ce sa mai acopere: un proiect fara
+           taskuri in ziua asta pur si simplu nu apare. -->
+      {#if laneuriZiua.length === 0}
+        <p class="mg-liber">Nicio sarcină în ziua asta.</p>
+      {/if}
+      {#each laneuriZiua as lane, li (lane.tip + ':' + lane.id)}
         {@const per = perioadaDeAratat(lane)}
-        {@const gol = !per && !lane.tasks.length && !lane.restante.length}
-        {#if gol}
-          <!-- PROIECTUL FARA NIMIC IN FEREASTRA STA PE UN RAND (desen 4c).
-               Primea cardul intreg — antet, apoi nimic: fara perioada, fara grupuri,
-               fara randuri. Adica exact „golul rezervat" pe care restul paginii il
-               scoate, si inca de doua-trei ori pe o lista de noua proiecte, intre
-               cardurile care chiar au ce spune. Ramane identitatea (punct + nume) si
-               drumul: atingerea duce la proiect, unde sunt taskurile lui din afara
-               ferestrei. Numarul NU se mai scrie — in fereastra e zero prin chiar
-               conditia care aduce randul aici, iar un „0" langa nume nu e informatie.
-               Banda generala („Taskuri generale") n-are proiect in spate, deci n-are
-               unde duce: acolo randul ramane text, fara chevron. Chevronul e o
-               promisiune, nu un ornament. -->
-          {#if lane.tip === 'proiect'}
-            <button class="mgol" style="--lane:{lane.color}" title={lane.numeIntreg}
-                    onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)}>
-              <span class="lane-dot"></span>
-              <span class="mgol-n">{lane.nume}</span>
-              {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
-              <ChevronRight size={16} class="mgol-chev" />
-            </button>
-          {:else}
-            <div class="mgol static" style="--lane:{lane.color}">
-              <span class="lane-dot"></span>
-              <span class="mgol-n">{lane.nume}</span>
-            </div>
-          {/if}
-        {:else}
+        {@const restZi = lane.tasksZi.filter(t => esteRestant(t.data_scadenta)).length}
         <section class="mgroup" style="--lane:{lane.color}; --rand:{li}">
           <header class="mg-head">
             <span class="lane-dot"></span>
@@ -1410,8 +1510,11 @@
             <!-- Doua pastile, nu un sir „5 · 2": tonul spune care e care, ca peste tot.
                  Zero nu se scrie (raportat de Ion): un „0" langa nume nu decide nimic,
                  iar langa pastila rosie de restante chiar deruteaza. -->
-            {#if lane.tasks.length}<span class="count" title="{lane.tasks.length} taskuri">{lane.tasks.length}</span>{/if}
-            {#if lane.restante.length}<span class="count danger" title="{lane.restante.length} restante">{lane.restante.length}</span>{/if}
+            <!-- Numerele sunt ale ZILEI ALESE, nu ale ferestrei: cardul arata o zi,
+                 deci pastilele lui trebuie sa numere aceeasi multime pe care o vezi
+                 dedesubt. Altfel un card cu doua randuri ar purta pastila „7". -->
+            {#if lane.tasksZi.length}<span class="count" title="{lane.tasksZi.length} taskuri">{lane.tasksZi.length}</span>{/if}
+            {#if restZi}<span class="count danger" title="{restZi} restante">{restZi}</span>{/if}
           </header>
 
           <!-- Pista proprie a plecat de aici (V11): era aceeasi informatie ca in
@@ -1437,25 +1540,32 @@
             </button>
           {/if}
 
-          {#each grupeazaBanda(lane) as g (g.id)}
-            <div class="mgrup-cap ton-{g.ton}"><span>{g.titlu}</span><span class="grup-n">{g.items.length}</span></div>
-            {#each g.items as t (t.tip + ':' + t.id)}
-            <!-- Acelasi rand ca pe „Astazi": o linie, bifa in stanga, actiunile
-                 in panoul de sub el (glisare spre stanga). Doua liste care arata
-                 acelasi lucru trebuie sa se poarte la fel — altfel inveti gestul
-                 de doua ori. -->
+          <!-- FARA CAPETE DE GRUPA. `grupeazaBanda` imparte fereastra in
+               „Restante / Azi / Zilele următoare" — trei categorii care descriu
+               CAND. Aici toate randurile sunt din aceeasi zi, deci cele trei capete
+               ar fi ori toate goale in afara de unul, ori un titlu care repeta ce
+               scrie deja capul zilei de deasupra grilei. Severitatea rămâne pe
+               fiecare rand, in `--ring`, unde e si in celelalte trei liste. -->
+            {#each lane.tasksZi as t (t.tip + ':' + t.id)}
+            <!-- Acelasi rand ca pe „Astazi" SI ca in /tasks: o linie, bifa in
+                 stanga, si DOUA piste — dreapta „Făcut", stanga „Planifică".
+                 Aici era ultimul panou de actiuni din aplicatie (`latime: 118`,
+                 doua butoane de 58px): 118px din 390 acopereau taskul pe care
+                 actionai, iar celelalte trei liste trecuseră deja pe piste (vezi
+                 nota lunga de la `.gl-pista-s` in global.css). Doua liste care
+                 arata acelasi lucru trebuie sa se poarte la fel — altfel inveti
+                 gestul de doua ori; cu patru liste il invatai de patru ori.
+                 `activ: ecran.telefon`, nu `true`: era singurul `use:glisare` din
+                 aplicatie care pornea si pe desktop. Cu mouse `glisare` iese
+                 oricum din `onDown`, deci nu se vedea — dar pe un laptop cu ecran
+                 tactil randul se lasa tras desi are butoanele la vedere. -->
             <div class="mrow" data-rand="{t.tip}:{t.id}" style="--ring: {dueRing(t.data_scadenta)}"
                  class:done={isDone(t.status)}
                  class:bifare={bifatAcum === t.tip + ':' + t.id}
-                 use:glisare={{ latime: 118, activ: true, onBifa: isDone(t.status) ? null : () => onDone(t, true) }}>
+                 use:glisare={{ activ: ecran.telefon, onBifa: isDone(t.status) ? null : () => onDone(t, true), onAmana: () => deschideFoaia(t, 'plan') }}
+                 use:apasareLunga={{ activ: ecran.telefon, actiune: () => deschideFoaia(t, 'actiuni') }}>
               <div class="gl-pista" aria-hidden="true"><span class="gl-ico"><Check size={17} strokeWidth={3} /></span><span class="gl-et">Făcut</span></div>
-              <div class="gl-actiuni">
-                <button class="glb" onclick={() => onTomorrow(t)} title="Mută pe mâine"><ArrowRight size={17} /><span>Mâine</span></button>
-                <span class="glb datewrap" title="Mută pe altă zi">
-                  <DatePicker value={t.data_scadenta} placeholder="Dată" onchange={(v) => onMove(t, v)} />
-                  <span>Dată</span>
-                </span>
-              </div>
+              <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Planifică</span><span class="gl-ico-s"><CalendarDays size={17} strokeWidth={2.4} /></span></div>
               <div class="gl-fata">
                 <button class="mcheck" onclick={() => onDone(t)} title="Bifează">
                   {#if isDone(t.status)}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
@@ -1504,9 +1614,7 @@
               </div>
             </div>
             {/each}
-          {/each}
         </section>
-        {/if}
       {/each}
     </div>
   {/if}
@@ -1517,6 +1625,15 @@
 {#if dragLabel}
   <div class="drag-label" style="left:{pozLabel.x + 14}px; top:{pozLabel.y - 34}px">{dragLabel.text}</div>
 {/if}
+
+<!-- Foaia randului de pe telefon. „Deschide" duce unde ducea si atingerea randului
+     (`openTask`): in /tasks sau in pagina proiectului, pe taskul lui. -->
+<FoaieTask bind:open={foaieDeschisa} task={foaieTask} mod={foaieMod}
+           onZi={(v) => planificaDinFoaie(foaieTask, v)}
+           onMaine={() => onTomorrow(foaieTask)}
+           onBifa={() => onDone(foaieTask)}
+           onDeschide={() => openTask(foaieTask)}
+           onSterge={() => stergeDinPlan(foaieTask)} />
 
 <Modal bind:open={showExport} title="Export PDF" size="sm">
   <div class="exp">
@@ -1962,23 +2079,16 @@
   .mimpl-plus { padding: 0 5px; border-radius: var(--radius-full);
     background: var(--accent-subtle); color: var(--accent-on-subtle); }
 
-  /* Capetele de grup din lista mobila. Aceeasi haina si acelasi limbaj de culoare
-     ca `.grup-cap` din /tasks — o singura gramatica pentru „ce urmeaza". */
-  /* Eticheta („RESTANTE") e cuvant — fontul paginii; DOAR cifra de langa e mono.
-     Tonul scrie cu cerneala ADANCA, nu cu valoarea plina (regula -deep). */
-  .mgrup-cap { display: flex; align-items: center; gap: var(--space-xs);
-    padding: 10px 4px 5px; font-size: var(--font-label);
-    font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-label); color: var(--text-dim); }
-  /* Cifra e TEXT mono, nu pastila (desen 4c): pastila cu inel e a capului de
-     card (`.count.danger`), unde cifra cere actiune; aici doar numara. */
-  .grup-n { color: var(--text-dim);
-    font-family: var(--font-mono); font-size: var(--font-label); line-height: 1;
-    font-variant-numeric: tabular-nums; letter-spacing: var(--tracking-normal); }
-  .mgrup-cap.ton-danger { color: var(--danger-deep); }
-  .mgrup-cap.ton-danger .grup-n { color: var(--danger-deep); }
-  .mgrup-cap.ton-accent { color: var(--accent-deep); }
-  .mgrup-cap.ton-accent .grup-n { color: var(--accent-deep); }
+  /* Aici stateau `.mgrup-cap` / `.grup-n` — capetele „RESTANTE / AZI / ZILELE
+     URMĂTOARE" din lista mobila. Au plecat odata cu ele: lista arata acum O ZI,
+     deci nu mai are ce sa imparta pe categorii de timp. Nu s-a lasat CSS-ul in
+     urma: o regula fara consumator arata ca o unealta gata de folosit.
+     `.grup-cap` din /tasks, de la care venea haina, e neatins. */
+
+  /* Ziua fara nimic in ea. Nu `EmptyState`: acela e pentru o PAGINA goala, cu
+     iconita si indemn; aici pagina e plina (grila e deasupra), doar celula pe care
+     ai atins-o e libera — deci o propozitie, la treapta de metadata. */
+  .mg-liber { padding: var(--space-md) 4px; font-size: var(--font-small); color: var(--text-dim); }
   /* UN TASK E UN REPER, NU O CUTIE.
      Din v33 `rect.single` e mereu adevarat, deci regulile de cutie (`.bar.todo`,
      `.bar.active` cu fundal si rama, animatia `barIn` care scala o latime) erau
@@ -2077,112 +2187,132 @@
   /* ===== mobile grouped list ===== */
   .mlist { display: none; flex-direction: column; gap: var(--space-md); }
 
-  /* ===== PISTA COMUNA „PERIOADE" (turul 4c) =====
-     UNA SINGURA, SUS, cu antetul deasupra ei. Inainte erau doua obiecte pentru
-     aceeasi informatie: o scara proprie de 26px (cifra + initiala) si cate o
-     pista de 26px in FIECARE card. Antetul de saptamani lipsea cu totul, desi
-     „o singura structura, grosier peste fin" e regula antetului de timp peste
-     tot in aplicatie.
-     Coloana de nume are 96px fixi, ca toate pistele sa inceapa la acelasi x —
-     asta e chiar conditia ca doua benzi de pe randuri diferite sa insemne
-     aceeasi zi. Restul geometriei vine din `columns` / `antet`, aceleasi obiecte
-     ca pe desktop: o singura socoteala pentru amandoua ecranele. */
-  .mpiste { background: var(--bg-surface); border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm); padding: var(--space-12); display: flex;
-    flex-direction: column; gap: 8px; }
-  .mp-cap { display: flex; align-items: baseline; gap: 8px;
-    font-size: var(--font-label); font-weight: var(--fw-semibold);
-    letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-secondary); }
-  /* Propozitia de context: text obisnuit la 13, nu eticheta — spune un fapt. */
-  .mp-ctx { font-size: var(--font-small); font-weight: var(--fw-normal);
-    letter-spacing: var(--tracking-normal); text-transform: none; color: var(--text-secondary); }
-  /* DOUA COLOANE-FRATE, NU STICKY (Ion, cu poza: numele „ramane fixa decupata,
-     este urat" — benzile treceau pe sub textul lipit). Numele stau in coloana
-     lor, IN AFARA derulatorului; deruleaza doar pistele. Alinierea vine din
-     inaltimi FIXE pe rand (antet 32, pista 34), acelasi row-gap pe ambele
-     coloane — nu dintr-o grila comuna. */
-  .mp-corp { display: flex; gap: 8px; align-items: flex-start; }
-  .mp-nume-col { flex: none; width: 96px; display: flex; flex-direction: column; row-gap: 6px; }
-  .mp-gol { height: 32px; flex: none; }
-  .mp-scroll { flex: 1; min-width: 0; overflow-x: auto;
-    -webkit-overflow-scrolling: touch; }
-  .mp-piste { display: flex; flex-direction: column; row-gap: 6px;
-    min-width: calc(var(--n-col, 14) * var(--col-min, 26px)); }
-  /* 32 = 13 + 2 gap + 13 + 4 sub — aceeasi cifra ca `.mp-gol` din coloana de
-     nume; cele doua se schimba IMPREUNA, altfel randurile se dezaliniaza. */
-  .mp-antet { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px;
-    height: 32px; box-sizing: border-box; flex: none; }
-  .mp-r-sapt, .mp-r-zile { position: relative; height: 13px; }
-  .mp-s, .mp-z { position: absolute; top: 0; bottom: 0; display: flex;
-    align-items: center; justify-content: center; box-sizing: border-box;
-    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-    white-space: nowrap; overflow: hidden; }
-  /* Treptele din desen sunt 10/11; scara se opreste la 12, deci amandoua stau pe
-     `--font-label` — aceeasi abatere asumata ca la P9, si aceeasi cerneala
-     (`--text-dim`) pe ambele randuri. */
-  .mp-s { font-size: var(--font-label); color: var(--text-dim); }
-  .mp-z { font-size: var(--font-label); color: var(--text-dim); }
-  /* Aceeasi muchie ca `.mp-linie` din pista: granita de saptamana coboara din
-     antet prin toate pistele, altfel randul de saptamani ar fi o eticheta care
-     nu imparte nimic. */
-  /* Granita de saptamana e muchia GROASA (--border-strong), ca pe desktop:
-     subtila n-ar imparti nimic intr-o pista de 34px. */
-  .mp-z.granita { border-left: 1px solid var(--border-strong); }
-  .mp-z.we { color: var(--text-dim); }
-  /* AZI = CIFRA IN ACCENT, CU O SUBLINIERE DE 2px. Fara pastila plina: aceea e
-     ziua SELECTATA din Calendar, si un obiect nu poate avea doua intelesuri.
-     Sublinierea coboara 4px SUB rand (desen) — deci celula de azi isi ridica
-     `overflow`, altfel ar fi taiata de `overflow: hidden`-ul de trunchiere. */
-  .mp-z.today { color: var(--accent-deep); font-weight: var(--fw-semibold); overflow: visible; }
-  .mp-z.today::after { content: ''; position: absolute; left: 2px; right: 2px;
-    bottom: -4px; height: 2px; background: var(--accent); }
+  /* ===== GRILA DE LUNA + DENSITATE (telefon) =====
+     A luat locul blocului `.mpiste` (pista comuna de perioade) — vezi nota din
+     markup. Ce era acolo: doua coloane-frate, un antet comun de saptamani peste
+     zile, si cate o sina per proiect.
 
-  /* 34 = inaltimea pistei de vizavi. Numele se TRUNCHIAZA, randul nu creste:
-     alinierea intre cele doua coloane e contractul intregii asezari. */
-  .mp-nume { display: flex; align-items: center; gap: 7px; min-width: 0;
-    height: 34px; flex: none; }
-  /* Punctul de identitate — 7px, PLAT. Singurul loc in care culoarea proiectului
-     mai are voie sa apara (vezi comentariul de la `culoareProiect`). */
-  .mp-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lane, var(--accent)); flex: none; }
-  .mp-n { font-size: var(--font-small); color: var(--text-secondary);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mp-track { position: relative; height: 34px; border-radius: var(--radius-sm);
-    background: var(--bg-elevated); overflow: hidden; }
-  .mp-linie { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -1px; background: var(--border-strong); z-index: 1; }
-  /* Azi e o COLOANA tentata, ca peste tot — nu o linie de 2px. */
-  .mp-azi { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 8%, transparent); }
-  /* Benzile refolosesc clasele de pe desktop, deci si gramatica: pregatirea e
-     spalatura neutra, implementarea singura pe accent. Se schimba doar insetul,
-     fiindca pista are 34px, nu 42. */
-  /* Raza 6; spalatura la 14% (mocheta A, aleasa de Ion — la 10% abia se vedea
-     pe tema intunecata). Cand proiectul n-are nicio perioada in fereastra,
-     stingerea e la ambele capete pe PROCENTE (22/78), nu pe distanta fixa de
-     desktop: pe o pista ingusta 56px de fiecare parte ar inghiti aproape tot. */
-  /* PISTA MOBILA NU E O SINA — acolo perioada ramane blocul de 34px pe care il
-     desenau turele vechi: e singurul obiect din pista, n-are eticheta si nu
-     concureaza cu niciun task, deci n-avea de ce sa coboare. Trebuie insa sa-si
-     ANULEZE explicit `height` si `top` din baza noua, altfel ramane sina de 4px:
-     cu `top`, `bottom` si `height` puse toate trei, `height` castiga. */
-  .mp-track .impl-band { height: auto; }
-  .mp-track .impl-band::before, .mp-track .impl-band::after { display: none; }
-  /* DOAR ICONITA, CENTRATA: eticheta se scrie pe randul perioadei din card,
-     unde are latimea intreaga. Aici perioada e DESEN, nu buton — cine vrea s-o
-     deschida atinge randul (`.mimpl`), care are si chevron. */
-  /* `display: flex` se REAFIRMA aici: baza noua e o sina, care n-are copii de
-     asezat, deci nu mai e flex — iar fara el `align-items`/`justify-content` de
-     mai jos n-ar centra nimic si iconita ar cadea in coltul din stanga-sus. */
-  .mp-track .impl-band { top: 5px; bottom: 5px; padding: 0; gap: 0; z-index: 2;
-    display: flex; align-items: center; justify-content: center; border-radius: 6px;
-    background: color-mix(in srgb, var(--accent) 18%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 36%, transparent);
-    pointer-events: none; cursor: default; }
-  /* Perioada inca in PREGATIRE, in pista: mai palida si cu iconita neutra
-     (mocheta A) — „plin vs palid" se citeste si aici, nu doar pe desktop. */
-  .mp-track .impl-band.pregatire {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
-    color: var(--text-secondary); }
-  .mp-track .impl-band :global(.ib-ico) { margin-top: 0; opacity: 1; }
+     PATRU SAPTAMANI × SAPTE COLOANE, celule de 52px cu gap 4 si raza 10. 52 e
+     `--row-h-mobile`: aceeasi inaltime ca un rand de lista, deci grila si lista
+     de dedesubt se citesc pe acelasi pas vertical. Raza 10 e treapta de „control
+     si rand" — celula E un control, nu o suprafata.
+     `grid-template-columns: repeat(7, 1fr)`: latimea o da ecranul, deci nu exista
+     nicio valoare de latime scrisa aici care sa se rupa pe alt telefon. */
+  .mgrila {
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-12);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  /* Capetele de zi: treapta de eticheta a sistemului (12/600/majuscule/ls .05em).
+     Aceeasi grila ca celulele, deci fiecare cap sta exact peste coloana lui. */
+  .mg-zile { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .mg-zi-cap {
+    text-align: center;
+    font-size: var(--font-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .mg-celule { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .mg-cel {
+    position: relative;
+    height: var(--row-h-mobile);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    cursor: pointer;
+    transition: var(--transition-pressable);
+  }
+  .mg-cel:active { transform: scale(var(--press-scale)); }
+  /* CIFRA E MONO: cele 28 de zile stau in coloane si se citesc pe verticala —
+     exact cazul pentru care DM Mono e in sistem. `tabular-nums` ca „9" si „28"
+     sa nu mute bara de sub ele. */
+  .mg-nr {
+    font-family: var(--font-mono);
+    font-size: var(--font-small);
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  /* BARA DE INCARCARE: 3px, latimea scrisa inline din `latimeBara(n)`. E o
+     LUNGIME, nu o culoare — deci pe o zi obisnuita rămâne neutra si nu adauga un
+     al doilea canal cromatic peste tentele de stare. */
+  .mg-bara {
+    height: 3px;
+    border-radius: var(--radius-full);
+    background: var(--border-strong);
+  }
+
+  /* WEEKENDUL e suprafata 2: nu e o stare, e un fel de zi. */
+  .mg-cel.we { background: var(--bg-elevated); }
+  /* AZI: cifra in accent adanc si 500, ca in antetul swimlane-ului — acolo azi e
+     deja „cifra accentuata cu subliniere", deci nu se inventeaza alt semn. */
+  .mg-cel.azi .mg-nr { color: var(--accent-deep); font-weight: var(--fw-medium); }
+  /* ZI CU RESTANTE: tenta de danger, si bara trece pe danger — restantele sunt
+     singurul lucru din grila care cere actiune, deci se vad si din forma si din
+     culoare. */
+  .mg-cel.rest { background: var(--danger-subtle); }
+  .mg-cel.rest .mg-nr { color: var(--danger-deep); }
+  .mg-cel.rest .mg-bara { background: var(--danger); }
+  /* ZIUA ALEASA: fill saturat de accent cu cerneala pe el. Ultima regula, deci
+     bate weekendul si restantele — ce ai atins tu e mai important decat ce e ziua
+     de fel, si trebuie sa se vada dintr-o privire unde eşti in grila. */
+  .mg-cel.activa { background: var(--accent); }
+  .mg-cel.activa .mg-nr { color: var(--accent-text); font-weight: var(--fw-semibold); }
+  .mg-cel.activa .mg-bara { background: var(--accent-text); opacity: .85; }
+
+  .mg-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-12);
+    padding-top: 2px;
+    font-size: var(--font-label);
+    color: var(--text-dim);
+  }
+  .mgl { display: inline-flex; align-items: center; gap: 6px; }
+  .mgl-bara { width: 16px; height: 3px; border-radius: var(--radius-full); background: var(--border-strong); }
+  .mgl-p { width: 10px; height: 10px; border-radius: var(--radius-xs); }
+  .mgl-p.rest { background: var(--danger-subtle); box-shadow: inset 0 0 0 1px var(--danger); }
+  .mgl-p.we { background: var(--bg-elevated); box-shadow: inset 0 0 0 1px var(--border-strong); }
+
+  /* CAPUL ZILEI ALESE. `baseline`, ca numarul si textul sa stea pe aceeasi linie
+     de scris — la fel ca in capul boardului „Astăzi" si al paginii Taskuri. */
+  .mg-cap-zi {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    padding: var(--space-12) 2px 2px;
+  }
+  .mg-cz-txt {
+    font-size: var(--font-h3);
+    font-weight: var(--fw-semibold);
+    color: var(--text-secondary);
+    /* Ziua vine din `toLocaleDateString`, deci „marți" incepe cu litera mica —
+       in romana ziua saptamanii chiar se scrie asa in mijlocul unei propozitii,
+       dar asta e un TITLU. `capitalize` e sigur aici: prinde doar prima litera a
+       fiecarui cuvant, iar „18 august" nu are ce sa strice ca cifra. */
+    text-transform: capitalize;
+  }
+  .mg-cap-zi.danger .mg-cz-txt { color: var(--danger-deep); }
+  .mg-cap-zi.accent .mg-cz-txt { color: var(--accent-deep); }
+  /* Numarul e mono: e o cifra, si sta langa alte cifre de aceeasi clasa in pagina. */
+  .mg-cz-n {
+    font-family: var(--font-mono);
+    font-size: var(--font-small);
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
 
   .mgroup { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-sm) var(--space-sm) var(--space-xs); }
   /* Pastila de restante din capul cardului poarta inelul de 34% din desen (M6):
@@ -2190,19 +2320,11 @@
      global.css — restul `.count.danger` din aplicatie raman fara muchie. */
   .mgroup .mg-head :global(.count.danger) {
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 34%, transparent); }
-  /* Cardul strans: aceeasi suprafata si aceeasi raza ca `.mgroup`, ca sa se citeasca
-     drept acelasi obiect in stare mica — nu un al doilea fel de card. Inaltimea o da
-     continutul (un rand), deci lista nu mai are goluri intre proiectele active. */
-  .mgol { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
-    padding: var(--space-sm); border: none; cursor: pointer;
-    background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
-    transition: var(--transition-pressable); }
-  .mgol:active { transform: scale(var(--press-scale)); }
-  .mgol.static { cursor: default; }
-  .mgol.static:active { transform: none; }
-  .mgol-n { flex: 1; min-width: 0; font-size: var(--font-rand); font-weight: var(--fw-semibold);
-    color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mgol :global(.mgol-chev) { flex: none; color: var(--text-dim); }
+  /* Aici stateau `.mgol*` — „cardul strans", randul unui proiect care n-avea nimic
+     in fereastra. Nu mai are cine sa-l randeze: lista arata taskurile UNEI ZILE, iar
+     un proiect fara nimic in ziua aleasa nu mai apare deloc (vezi `laneuriZiua`).
+     Svelte NU avertizeaza pentru el — `:global(.mgol-chev)` din interior il tine
+     „viu" in ochii compilatorului — deci ar fi rămas CSS mort fara nicio alarma. */
   .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
   /* --font-rand (15 fix): capul cardului e un titlu de RAND, nu corp — pe
      telefon corpul urca la 16, capul nu (mocheta A / desen 4c: nume 15/600). */
@@ -2252,7 +2374,6 @@
   /* Pe desktop invelisul de glisare nu exista pentru layout, iar panoul lui e
      ascuns: acolo actiunile stau la vedere in rand. */
   .gl-fata { display: contents; }
-  .gl-actiuni { display: none; }
   .mcheck { display: none; }
   .mbtn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; background: none; border: none; }
   .mbtn:hover { background: var(--bg-hover); color: var(--text); }
@@ -2508,17 +2629,14 @@
     .mrow.done .mcheck { color: var(--success); }
     .mcheck { display: flex; }
 
-    .gl-actiuni { display: flex; position: absolute; top: 0; right: 0; bottom: 0; z-index: 0; align-items: stretch; }
-    .glb { width: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-           gap: 3px; border: none; background: var(--bg-elevated); color: var(--text-secondary);
-           font-size: var(--font-small); cursor: pointer; }
-    .glb span { line-height: 1; }
-    .glb.datewrap { position: relative; }
-    .glb.datewrap :global(.dp) { position: absolute; inset: 0; width: auto; }
-    .glb.datewrap :global(.dp-trigger) { width: 100%; height: 100%; min-height: 0; padding: 0 0 14px;
-      justify-content: center; background: none; border: none; box-shadow: none; color: inherit; }
-    .glb.datewrap :global(.dp-value) { display: none; }
-    .glb.datewrap > span { position: absolute; left: 0; right: 0; bottom: 11px; text-align: center; pointer-events: none; }
+    /* Aici stateau `.gl-actiuni` si `.glb` — panoul de doua butoane de 58px pe
+       care il descoperea glisarea la stanga. A plecat odata cu `latime: 118` de
+       pe rand: randul poarta acum ACELEASI doua piste ca in celelalte trei liste
+       (`.gl-pista` / `.gl-pista-s`, in global.css), iar data exacta si stergerea
+       trec prin foaia randului. Nu se sterg doar apelurile si se lasa stilurile:
+       o regula fara consumator arata ca o unealta gata de folosit si cheama la loc
+       exact ce s-a hotarat sa nu mai existe (aceeasi nota ca la pragurile
+       gestului de comutare, in `lib/gesturi.js`). */
     .mrow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
 
     .bl-head { min-height: var(--tap-min); }
