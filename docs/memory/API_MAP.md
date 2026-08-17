@@ -83,23 +83,23 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 109 |
-| POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 156 |
-| PUT | `/api/tasks/<task_id>` | `update_task` | 200 |
-| DELETE | `/api/tasks/<task_id>` | `delete_task` | 270 |
-| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 291 |
-| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 302 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 325 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 340 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 371 |
-| POST | `/api/global-tasks` | `create_global_task` | 451 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 490 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 505 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 575 |
-| GET | `/api/agenda/today` | `get_agenda_today` | 652 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 713 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 763 |
-| GET | `/api/plan` | `get_plan` | 804 |
+| GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 117 |
+| POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 164 |
+| PUT | `/api/tasks/<task_id>` | `update_task` | 208 |
+| DELETE | `/api/tasks/<task_id>` | `delete_task` | 278 |
+| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 299 |
+| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 310 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 333 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 348 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 411 |
+| POST | `/api/global-tasks` | `create_global_task` | 491 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 535 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 550 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 626 |
+| GET | `/api/agenda/today` | `get_agenda_today` | 703 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 764 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 814 |
+| GET | `/api/plan` | `get_plan` | 855 |
 
 ## app.py (16 rute)
 

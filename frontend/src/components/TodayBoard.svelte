@@ -12,7 +12,7 @@
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { apasareLunga } from '../lib/apasareLunga.js'
   import { reordonare } from '../lib/reordonare.js'
-  import { stergeTask } from '../stores/tasks.svelte.js'
+  import { stergeTask, updateGlobalTask } from '../stores/tasks.svelte.js'
   import FoaieTask from './FoaieTask.svelte'
   import { ecran } from '../lib/ecran.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
@@ -52,9 +52,17 @@
   }
 
   /** Coloana pironita din dreapta. Un task recurent isi spune CADENTA: pentru el
-   *  „când" nu e o zi, e un ritm. */
+   *  „când" nu e o zi, e un ritm.
+   *
+   *  IAR PE „AZI", DACA ARE ORA, SCRIE ORA (v41). Acelasi raţionament care e deja
+   *  scris in Planificator pentru chipul de termen: „data de azi o stii; ce vrei sa
+   *  vezi e ca a ajuns scadenta". Duse pana la capat: pe boardul de AZI, unde tot
+   *  ce vezi e scadent azi, cuvantul „azi" in coloana nu deosebeste niciun rand de
+   *  vecinul lui — ora, da. Coloana rămâne de 46px si mono, deci „09:00" incape si
+   *  se citeste pe verticala cu termenele celorlalte randuri. */
   function termenScurt(it) {
     if (it.recurenta && !it.data_scadenta) return it.recurenta
+    if (it.ora && isToday(it.data_scadenta)) return it.ora
     return etichetaTermenScurt(it.data_scadenta)
   }
 
@@ -172,6 +180,17 @@
       toastUndo('Termen scos', {
         onUndo: async () => { await setTermen(it, inainte); onchange() },
       })
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  /** Ora unui task personal (v41). `''` o scoate. Vezi nota din `pages/Tasks.svelte`
+   *  pentru de ce n-are toast: controlul din care vine ARATA valoarea. */
+  async function setOra(it, v) {
+    if (!it) return
+    try {
+      await updateGlobalTask(it.id, { ora: v || '' })
+      await loadAgendaToday()
+      onchange()
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
@@ -542,6 +561,7 @@
 <FoaieTask bind:open={foaieDeschisa} task={foaieTask} mod={foaieMod}
            onZi={(v) => onMoveDate(foaieTask, v)}
            onMaine={() => onTomorrow(foaieTask)}
+           onOra={(v) => setOra(foaieTask, v)}
            onBifa={() => onToggle(foaieTask)}
            onDeschide={() => openItem(null, foaieTask)}
            onSterge={() => stergeDinBoard(foaieTask)} />

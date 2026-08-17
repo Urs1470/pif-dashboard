@@ -64,6 +64,7 @@
   /** Chipul de zi/proiect scos de utilizator rămâne scos cat timp foaia e deschisa. */
   let refuzZi = $state(false)
   let refuzProiect = $state(false)
+  let refuzOra = $state(false)
 
   // Aceeasi mecanica de deschidere ca la vechiul TaskPicker: foaia se ridica DOAR
   // cu lista in mana, altfel se dimensioneaza dupa o linie de text si SARE la
@@ -82,13 +83,28 @@
     if (open && !projects.incarcat) loadProjects().catch(() => {})
   })
 
-  // CE A INTELES DIN TEXT. Se recalculeaza la fiecare tasta — e ieftin (regex pe
-  // un titlu) si trebuie sa fie in pas cu ce vezi in camp.
-  const citit = $derived(parseTask(q, { proiecte: projects.items }))
-  const ziAleasa = $derived(refuzZi ? null : citit.zi)
+  // CE A INTELES DIN TEXT, IN DOUA TRECERI.
+  //
+  // De ce doua, si nu una: ora se poate SALVA doar pe un task personal fara proiect
+  // (v41 a adus `global_tasks.ora`; taskurile de proiect n-au coloana, iar pentru
+  // sfera de munca Ion n-a cerut-o — „pana cand doar pentru cele personale").
+  // Deci decizia „tai ora din titlu?" depinde de daca s-a recunoscut un proiect, iar
+  // proiectul se afla din parsare. O singura trecere ar fi circulara: `cuOra` ->
+  // `proiectAles` -> `citit` -> `cuOra`. Svelte ar semnala-o, dar mai important e ca
+  // n-ar exista ordine corecta — intrebarea chiar depinde de propriul raspuns.
+  //
+  // Deci: prima trecere afla proiectul si NU atinge ora; a doua taie ora, dar numai
+  // cand exista unde s-o punem. Doua regexuri pe un titlu, la fiecare tasta —
+  // nimic, si ne scapa de o stare intermediara pe care ar trebui s-o sincronizam.
+  const brut = $derived(parseTask(q, { proiecte: projects.items }))
   // Proiectul paginii curente e implicit; unul scris in text il bate, fiindca e
   // mai recent si mai explicit decat contextul.
-  const proiectAles = $derived(refuzProiect ? null : (citit.proiect || proiect))
+  const proiectAles = $derived(refuzProiect ? null : (brut.proiect || proiect))
+  const oraSePoate = $derived(sfera === 'personal' && !proiectAles)
+  const citit = $derived(oraSePoate ? parseTask(q, { proiecte: projects.items, cuOra: true }) : brut)
+
+  const ziAleasa = $derived(refuzZi ? null : citit.zi)
+  const oraAleasa = $derived(refuzOra ? null : (oraSePoate ? citit.ora : null))
   const titluCurat = $derived(citit.titlu)
 
   async function runSearch() {
@@ -122,6 +138,7 @@
       recurenta = ''
       refuzZi = false
       refuzProiect = false
+      refuzOra = false
       return
     }
     const ceas = setTimeout(() => { deschis = true }, PLAFON_DESCHIDERE)
@@ -181,8 +198,16 @@
         data_scadenta: ziAleasa || undefined,
         recurenta: recurenta || undefined,
       }
+      // `ora` merge DOAR pe ramura globala, si numai cand `oraSePoate` — coloana
+      // exista pe `global_tasks`, nu pe `tasks`. Pe ramura de proiect nici nu se
+      // trimite: un câmp pe care ruta il ignora arata ca o promisiune.
       if (proiectAles?.id) await createTask(proiectAles.id, comun)
-      else await createGlobalTask({ ...comun, categorie: categorie || 'General', sfera }, { sfera: 'toate' })
+      else await createGlobalTask({
+        ...comun,
+        categorie: categorie || 'General',
+        sfera,
+        ...(oraAleasa ? { ora: oraAleasa } : {}),
+      }, { sfera: 'toate' })
       open = false
       onSchimbare()
       toast(ziAleasa ? `Adăugat pe ${citit.etichetaZi || ziAleasa}` : 'Adăugat', 'success')
@@ -275,12 +300,21 @@
          cu punctul lui de culoare — deci se deosebesc dintr-o privire, fara sa
          citesti. Fiecare are `×`: ce a ghicit aplicaţia trebuie sa se poata
          refuza, altfel parserul devine o surpriza. -->
-    {#if (ziAleasa && citit.etichetaZi) || proiectAles}
+    {#if (ziAleasa && citit.etichetaZi) || oraAleasa || proiectAles}
       <div class="fa-chipuri">
         {#if ziAleasa && citit.etichetaZi}
           <span class="fa-chip zi">
             {citit.etichetaZi}
             <button onclick={() => refuzZi = true} aria-label="Scoate ziua"><X size={12} strokeWidth={2.5} /></button>
+          </span>
+        {/if}
+        <!-- Ora, pe aceeasi tenta ca ziua: sunt acelasi fel de fapt („cand"), deci
+             n-au voie sa se citeasca drept doua clase de informatie. Cifrele sunt
+             mono — se compara pe verticala cu termenele din lista de dedesubt. -->
+        {#if oraAleasa}
+          <span class="fa-chip zi">
+            <span class="fa-ora">{oraAleasa}</span>
+            <button onclick={() => refuzOra = true} aria-label="Scoate ora"><X size={12} strokeWidth={2.5} /></button>
           </span>
         {/if}
         {#if proiectAles}
@@ -434,6 +468,9 @@
   }
   /* Text pe tenta ia varianta adanca — regula scrisa in tokens.css. */
   .fa-chip.zi { background: var(--accent-subtle); color: var(--accent-deep); }
+  /* Cifrele orei sunt mono si tabulare: se compara pe verticala cu coloana de
+     termene din lista, si nu au voie sa-si schimbe latimea la fiecare tasta. */
+  .fa-ora { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .fa-chip.proj { background: var(--bg-elevated); color: var(--text-secondary); }
   .fa-dot { width: 7px; height: 7px; border-radius: var(--radius-full); flex: none; }
   .fa-chip button {

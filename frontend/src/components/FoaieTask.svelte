@@ -24,7 +24,7 @@
   //               intre gest si rezultat.
   //   'actiuni' — cele cinci actiuni din handoff. Aici ajunge APASAREA LUNGA: ea
   //               nu declara dinainte ce vrei, deci are dreptul sa intrebe.
-  import { ExternalLink, CalendarSearch, Sunrise } from '@lucide/svelte'
+  import { ExternalLink, CalendarSearch, Sunrise, Clock, X } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import SelectorZi from './ui/SelectorZi.svelte'
   import DatePicker from './ui/DatePicker.svelte'
@@ -39,6 +39,8 @@
     /** (iso|null) — null inseamna „scoate din calendar" */
     onZi,
     onMaine,
+    /** ('HH:MM'|'') — '' scoate ora. Lipsa lui ASCUNDE randul de ora. */
+    onOra = null,
     onBifa,
     onDeschide,
     /** Lipsa lui ASCUNDE randul de stergere — o lista fara drum inapoi nu-l arata. */
@@ -46,6 +48,21 @@
   } = $props()
 
   const gata = $derived(task?.status === 'done' || task?.status === 'finalizat')
+
+  // ORA, DOAR PE TASKURILE PERSONALE (v41). Ion: „imi trebuie si ora sa pot seta
+  // pentru taskuri, pana cand doar pentru cele personale." Coloana e pe
+  // `global_tasks`, deci un task de proiect n-o are deloc; iar in sfera de munca
+  // n-a fost cerută. Randul se randeaza doar cand apelantul da `onOra` SI taskul e
+  // personal — doua conditii, fiindca ele spun lucruri diferite: prima „lista asta
+  // stie sa salveze o ora", a doua „taskul asta are unde s-o ţină".
+  const araOra = $derived(!!onOra && task?.sfera === 'personal')
+  // `<input type="time">` prin `Input`, nu un widget propriu: selectorul nativ de
+  // ora e cel pe care mana il stie deja din tot telefonul, iar `Input` aduce inelul
+  // de focus si fontul de 16px (sub el Safari mareste pagina la focus).
+  // Se scrie la `change`, nu la fiecare tasta: un `<input type="time">` gol trece
+  // prin valori partiale, si fiecare ar fi un PUT.
+  let oraLocal = $state('')
+  $effect(() => { oraLocal = task?.ora || '' })
 
   // Orice actiune INCHIDE foaia inainte sa lucreze. Invers (lucrezi, apoi inchizi)
   // se vede ca o foaie care sta o clipa peste lista deja schimbata — si la
@@ -63,6 +80,26 @@
      Titlul foii E TITLUL TASKULUI: foaia se deschide dintr-un gest facut pe un
      rand anume, deci primul lucru pe care trebuie sa-l confirme e PE CARE rand a
      prins gestul. -->
+<!-- Randul de ora, in AMBELE moduri: „la ce oră" e o intrebare despre CAND, exact
+     ca ziua, deci sta langa ea si acolo unde gestul a cerut doar ziua, si in meniu.
+     Foaia NU se inchide la alegerea orei (`apoi` nu se cheama): ora si ziua se pun
+     de obicei una dupa alta, iar o foaie care pleaca dupa prima te pune s-o
+     redeschizi pentru a doua. Se inchide cand alegi ZIUA — acolo gestul s-a
+     incheiat. -->
+{#snippet randOra()}
+  {#if araOra}
+    <label class="ft-ora">
+      <Clock size={16} strokeWidth={1.5} />
+      <span class="ft-ora-et">Ora</span>
+      <input type="time" bind:value={oraLocal} onchange={() => onOra?.(oraLocal || '')} />
+      {#if oraLocal}
+        <button type="button" class="ft-ora-x" onclick={() => { oraLocal = ''; onOra?.('') }}
+                aria-label="Scoate ora"><X size={14} strokeWidth={2.5} /></button>
+      {/if}
+    </label>
+  {/if}
+{/snippet}
+
 {#if task}
   <Modal bind:open size="panou" iesireGest title={task.titlu || 'Task'}>
     {#if mod === 'plan'}
@@ -72,6 +109,7 @@
       <div class="ft-plan">
         <span class="ft-sec">Planifică</span>
         <SelectorZi value={task.data_scadenta || ''} onalege={(v) => apoi(() => onZi?.(v))} />
+        {@render randOra()}
       </div>
     {:else}
       <!-- CELE CINCI ACTIUNI, in ordinea din handoff: Bifează · Mută pe mâine ·
@@ -98,6 +136,8 @@
           <DatePicker value={task.data_scadenta || ''} eticheta="Alege ziua"
                       onchange={(v) => apoi(() => onZi?.(v || null))} />
         </span>
+
+        {@render randOra()}
 
         {#if onDeschide}
           <button class="ft-rand" onclick={() => apoi(onDeschide)}>
@@ -137,8 +177,20 @@
     padding-bottom: 6px;
   }
 
+  /* NICI FOAIA ASTA NU E TEXT DE SELECTAT, si e a doua centura, nu prima: randul
+     din care vine gestul are deja `user-select: none` (vezi global.css), iar pragul
+     a urcat la 420ms. Ramane pentru cazul in care degetul ridicat pe foaie e
+     interpretat oricum ca long-press pe ea — foaia soseste SUB deget, deci e
+     singurul strat din aplicatie care primeste un gest pe care nu l-a pornit. */
   .ft-verbe,
-  .ft-plan { display: flex; flex-direction: column; gap: 6px; }
+  .ft-plan {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
 
   /* 48 = `--tap-sheet`, pragul de atingere DIN FOAIE (44 e podeaua de pe telefon,
      48 e cat cere o foaie — vezi tokens). Raza 10 = treapta de „control si rand",
@@ -184,6 +236,57 @@
   }
   .ft-dp :global(.dp-trigger svg) { display: none; }
   .ft-dp :global(.dp-trigger:hover) { background: none; color: inherit; }
+
+  /* RANDUL DE ORA. Aceeasi cutie ca `.ft-rand` — 48 inalt, raza 10, suprafata 2 —
+     fiindca e acelasi fel de obiect: un rand din foaie. Ce difera e ca el nu
+     EXECUTA, ci ţine o valoare, deci nu are `:active` care sa-l stranga.
+     `<input type="time">` brut, cu bunastiinta si contrar regulii „NU input brut in
+     formulare": aici nu e un formular, e un rand de control, iar `Input` ar aduce
+     eticheta si cutia LUI peste cea de aici. Ce trebuia luat de la `Input` — 16px,
+     ca Safari sa nu mareasca pagina la focus — se scrie explicit mai jos. */
+  .ft-ora {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: var(--tap-sheet);
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    color: var(--text);
+    font-size: var(--font-body);
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+  }
+  .ft-ora :global(svg) { flex: none; color: var(--text-dim); }
+  .ft-ora-et { flex: 1; min-width: 0; }
+  .ft-ora input {
+    flex: none;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    /* 16px: sub atat Safari mareste pagina la focus si foaia sare. */
+    font-size: var(--font-input-mobile);
+    text-align: right;
+  }
+  .ft-ora input:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-xs); }
+  /* Ora goala: WebView-ul deseneaza „--:--" palid, dar declansatorul de ceas al
+     lui poate lipsi — de asta randul intreg e `<label>`, deci atingerea oriunde pe
+     el deschide selectorul. */
+  .ft-ora-x {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: var(--transition-colors);
+  }
+  .ft-ora-x:hover { background: var(--danger-subtle); color: var(--danger-deep); }
 
   /* Un rand ca celelalte patru, deosebit DOAR de cerneala — nu de o linie sau de
      un spatiu in plus. Asa cere handoff-ul, si e si regula sistemului: cand doua

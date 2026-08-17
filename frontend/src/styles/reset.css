@@ -1,5 +1,22 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-text-size-adjust: 100%; -moz-text-size-adjust: 100%; }
+/* PATRATUL ALBASTRU DE LA ATINGERE SE STINGE O DATA, PE TOT DOCUMENTUL.
+   WebView-ul Android deseneaza un dreptunghi translucid albastru peste elementul
+   atins (`-webkit-tap-highlight-color`, implicit). Era stins in TREI locuri —
+   `button`, `a` si `.tab` (global.css) — deci pe CAMPURI rămânea aprins, si se
+   vedea exact acolo unde degetul sta cel mai mult: randul de scris al foii de
+   adaugare. Ion, 2026-08-17: „cand scriu in acea bara care este si cautare si
+   adaugare task se face o hasurare albastra patrata, nu-mi trebuie asta."
+   Proprietatea se MOSTENESTE, deci de pe `html` acopera tot; cele trei declaratii
+   vechi devin redundante, dar nu greșite, si nu se ating (una e intr-o
+   componenta).
+   Nu se pierde nicio confirmare: atingerea o confirma `:active` din global.css,
+   care scaleaza elementul si respecta forma lui — un dreptunghi desenat de
+   sistem peste un rand cu raza 10 arata oricum ca o scapare de randare. */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
 body { min-height: 100dvh; -webkit-font-smoothing: antialiased; }
 img, svg { display: block; max-width: 100%; }
 input, button, textarea, select { font: inherit; color: inherit; }

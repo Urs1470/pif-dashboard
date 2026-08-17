@@ -518,7 +518,11 @@
   // intreg de 44px per perioada, deci un proiect cu trei perioade primea trei
   // randuri INAINTEA primului task. Ramane cea in curs (sau urmatoarea), cu „+N".
   function perioadaDeAratat(lane) {
-    if (!lane.impl.length) return null
+    // `?? []`, nu `lane.impl.length` direct: functia se cheama acum si din lista
+    // de pe telefon, pe benzi care trec prin `laneuriZiua`. Cand aceea citea
+    // benzile brute (fara `impl`), linia asta arunca si BLOCA pagina — raportat de
+    // Ion. Sursa s-a reparat, dar garda rămâne: e o functie chemata din doua locuri.
+    if (!(lane.impl || []).length) return null
     const azi = plan.today || ''
     const inCurs = lane.impl.find(im => im.a <= azi && azi <= im.b)
     const urmatoarea = lane.impl.find(im => im.a > azi)
@@ -741,14 +745,37 @@
   // mod nou; iar grila se termina cel mai tarziu la azi+27 (cand azi E luni).
   // Segmentul de orizont e ascuns pe telefon (`.seg { display: none }`), deci
   // nimeni nu se lupta cu alegerea asta.
+  //
+  // O SINGURA DATA, prin steag, si nu doar din condiţie. Efectul CITESTE `plan.days`
+  // si cheama ceva care il SCRIE (`setHorizon` -> `loadPlan` -> `plan.days =
+  // data.days || plan.days`). Condiţia singura ar fi de ajuns cat timp serverul
+  // intoarce exact ce a primit — si chiar face asta, `days` e plafonat la [1, 370],
+  // deci 30 trece intreg. Dar asta e o proprietate a CELEILALTE parti, la un capat
+  // de care efectul n-are control: daca plafonul de acolo s-ar strange vreodata sub
+  // 30, efectul ar cere 30, ar primi mai putin, si ar cere din nou — la infinit,
+  // adica exact felul de blocare pe care pagina asta a avut-o deja o data astazi.
+  let orizontUrcat = false
   $effect(() => {
-    if (ecran.telefon && plan.days < ZILE_GRILA + 2) setHorizon(30)
+    if (orizontUrcat || !ecran.telefon) return
+    if (plan.days < ZILE_GRILA + 2) {
+      orizontUrcat = true
+      setHorizon(30)
+    }
   })
 
-  /** Toate taskurile ferestrei, cu restantele lor, intr-o singura lista plata. */
+  /** Toate taskurile ferestrei, cu restantele lor, intr-o singura lista plata.
+   *
+   *  DIN `views`, NU din `plan.lanes`. Prima versiune citea benzile BRUTE, si de
+   *  acolo venea o blocare a paginii raportata de Ion: `views` e cel care adauga
+   *  `color`, numele despartit de client si — critic — `impl` (perioadele contopite
+   *  si decupate pe fereastra). Pe o banda bruta `impl` nu exista, iar
+   *  `perioadaDeAratat` face `lane.impl.length` pe fiecare card: prima randare
+   *  arunca `TypeError`, iar pagina rămâne goala.
+   *  `views` e un superset, nu un filtru — mapeaza TOATE taskurile benzii si le
+   *  adauga geometrie — deci si numaratoarea din grila e completa. */
   const toateTaskurile = $derived.by(() => {
     const out = []
-    for (const lane of plan.lanes) {
+    for (const lane of views) {
       for (const t of lane.tasks || []) out.push(t)
       for (const t of lane.restante || []) out.push(t)
     }
@@ -796,7 +823,7 @@
   const laneuriZiua = $derived.by(() => {
     const zi = ziActiva
     const out = []
-    for (const lane of plan.lanes) {
+    for (const lane of views) {
       const ale = [...(lane.tasks || []), ...(lane.restante || [])]
         .filter(t => String(t.data_scadenta || '').slice(0, 10) === zi)
       if (ale.length) out.push({ ...lane, tasksZi: ale })

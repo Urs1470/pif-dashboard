@@ -87,13 +87,21 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
     # ordine_agenda deliberat necopiat (vezi _spawn_recurring_task). `sfera` se
     # copiaza OBLIGATORIU: altfel un task personal recurent ar migra in lista
     # de munca la prima bifare (INSERT-ul ar cadea pe default-ul 'munca').
+    # `ora` (v41) se copiaza din ACELASI motiv, si e cazul cel mai probabil sa se
+    # observe: un task personal recurent ARE ora tocmai pentru ca se repeta la
+    # aceeasi ora („zilnic la 7:30"). Necopiata, ea ar dispărea la prima bifare —
+    # adica exact atunci cand taskul isi dovedeste recurenta.
+    # `.keys()`, nu acces direct: randul vine dintr-un `SELECT *` facut inainte de
+    # migrare in bazele care n-au apucat-o (restaurare veche), si atunci cheia
+    # lipseste cu totul.
+    ora_veche = (existing['ora'] if 'ora' in existing.keys() else '') or ''
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,
-                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta)
-        VALUES (?, ?, ?, 'to_do', ?, ?, ?, '', ?, ?, ?)
+                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta, ora)
+        VALUES (?, ?, ?, 'to_do', ?, ?, ?, '', ?, ?, ?, ?)
     ''', (new_id, existing['titlu'], existing['descriere'] or '',
           existing['categorie'], existing['sfera'] or 'munca',
-          next_scad, now, now, recurenta))
+          next_scad, now, now, recurenta, ora_veche))
     cursor.execute('SELECT titlu, ordine FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (existing['id'],))
     for srow in cursor.fetchall():
         cursor.execute(
@@ -368,6 +376,38 @@ def _sfera_or_none(value):
     return value if value in SFERE else None
 
 
+# ORA UNUI TASK (v41). Acceptata la intrare in formele pe care le scrie mana —
+# „9:00", „09:00", „9.00" — si stocata INTOTDEAUNA ca 'HH:MM' pe 24 de ore.
+# Normalizarea e la SCRIERE, nu la citire, din acelasi motiv ca `utils.norm_date`:
+# o valoare pe care n-o poti citi cu o singura regula nu trebuie sa intre in baza.
+_RE_ORA = re.compile(r'^(\d{1,2})[:.](\d{2})$')
+
+
+def norm_ora(value):
+    """None = neatins (COALESCE il lasa cum era). '' = scoate ora. 'HH:MM' = pune-o.
+
+    TREI rezultate, nu doua, si de asta nu e un simplu validator: `PUT` foloseste
+    `COALESCE(?, ora)`, deci „nu trimite nimic" si „sterge ce era" trebuie sa arate
+    diferit — `None` si `''`. Aceeasi convenţie ca `data_scadenta`, care se goleste
+    tot cu `''` (vezi `setTermenData` in frontend).
+
+    Arunca `ValueError` pe orice altceva: o ora care nu se poate citi n-are voie sa
+    ajunga in coloana, fiindca de acolo o ia interfata ca text si o afiseaza ca atare.
+    """
+    if value is None:
+        return None
+    s = str(value).strip()
+    if not s:
+        return ''
+    m = _RE_ORA.match(s)
+    if not m:
+        raise ValueError('ora invalidă (format acceptat: HH:MM)')
+    h, mi = int(m.group(1)), int(m.group(2))
+    if h > 23 or mi > 59:
+        raise ValueError('ora invalidă (0–23 : 0–59)')
+    return '%02d:%02d' % (h, mi)
+
+
 @tasks_bp.route('/api/global-tasks', methods=['GET'])
 @login_required
 def get_global_tasks():
@@ -455,6 +495,10 @@ def create_global_task():
     sfera = data.get('sfera') or 'munca'
     if _sfera_or_none(sfera) is None:
         return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
+    try:
+        ora = norm_ora(data.get('ora')) or ''
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     conn = get_db()
     cursor = conn.cursor()
 
@@ -464,8 +508,8 @@ def create_global_task():
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,
                                   data_scadenta, data_finalizare, created_at, updated_at, recurenta,
-                                  ordine_agenda)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                  ordine_agenda, ora)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         data.get('titlu', ''),
@@ -478,7 +522,8 @@ def create_global_task():
         now,
         now,
         data.get('recurenta', ''),
-        data.get('ordine_agenda', 0)
+        data.get('ordine_agenda', 0),
+        ora
     ))
 
     conn.commit()
@@ -510,6 +555,10 @@ def update_global_task(task_id):
     # fara UI de mutare deocamdata. None = neatins (COALESCE).
     if data.get('sfera') is not None and _sfera_or_none(data.get('sfera')) is None:
         return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
+    try:
+        ora = norm_ora(data.get('ora'))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     conn = get_db()
     cursor = conn.cursor()
 
@@ -538,6 +587,7 @@ def update_global_task(task_id):
             recurenta = COALESCE(?, recurenta),
             ordine_agenda = COALESCE(?, ordine_agenda),
             sfera = COALESCE(?, sfera),
+            ora = COALESCE(?, ora),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -550,6 +600,7 @@ def update_global_task(task_id):
         data.get('recurenta'),
         data.get('ordine_agenda'),
         data.get('sfera'),
+        ora,
         now,
         task_id
     ))

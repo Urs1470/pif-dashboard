@@ -33,6 +33,28 @@ export const PRAG_ANULARE = 10
 /** ms de apasare fara miscare pana cand degetul „apuca" un obiect. */
 export const APASARE_LUNGA = 300
 
+/**
+ * ms de apasare pana cand se DESCHIDE ceva (foaia de actiuni a unui rand).
+ *
+ * DE CE NU E ACEEASI VALOARE CA `APASARE_LUNGA`, desi fisierul asta exista tocmai
+ * ca sa nu existe doua praguri pentru acelasi lucru: nu e acelasi lucru. Cele
+ * doua gesturi cer altceva de la mana:
+ *   APUCI un obiect (banda din Calendar, randul de reordonat) — degetul RAMANE jos
+ *     si continua sa lucreze, deci pragul trebuie sa fie scurt: pana simti c-ai
+ *     prins, ai si inceput sa tragi.
+ *   DESCHIZI un strat peste ecran — degetul trebuie sa se RIDICE, iar el are nevoie
+ *     de timp ca sa afle c-a reusit. La 300ms foaia sosea sub deget inainte sa-l
+ *     ridici, si atunci apasarea continua PE FOAIE: WebView-ul o citea ca long-press
+ *     pe textul din ea si pornea selectia. Ion, 2026-08-17: „aduce prea rapid
+ *     modalul incat nu reusesc sa iau degetul si deja incepe sa se selecteze textul
+ *     din modalul aparut."
+ * 420 e si valoarea din handoff-ul de design pentru exact gestul asta — doua
+ * semnale independente pe aceeasi cifra.
+ * Selectia de text e oprita separat, in `global.css` (`user-select: none` pe
+ * randurile care poarta gesturi): pragul singur o face improbabila, nu imposibila.
+ */
+export const APASARE_MENIU = 420
+
 /* Aici au stat pragurile gestului de comutare a taburilor: banda de jos, zona
    sigura masurata cu o sonda, viteza de aruncare. Au plecat odata cu gestul —
    vezi nota lunga „DE CE NU EXISTA UN GEST DE COMUTARE A SFEREI" din

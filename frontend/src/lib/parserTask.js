@@ -18,14 +18,16 @@
 //     pe telefon, deci „maine" si „mâine" trebuie sa fie acelasi lucru; dar ce
 //     scrie interfata inapoi e mereu forma corecta.
 //
-// DE CE ORA E RECUNOSCUTA DAR NU EXTRASA
-// Handoff-ul cere si ora („la 9", „9:00") ca chip. Nici `global_tasks` nici
-// `tasks` nu au coloana de ora — `data_scadenta` e o DATA, iar toata aplicatia o
-// citeste asa (`.slice(0, 10)`, comparatii pe zi). Un chip de ora ar promite o
-// valoare pe care salvarea o arunca; ora scoasa din titlu s-ar pierde de tot.
-// Deci: `ora` se RAPORTEAZA (ca sa se poata decide mai tarziu, cu o coloana
-// adevarata), dar nu se scoate din titlu si nu devine chip. Ce vede Ion in titlu
-// e ce se salveaza.
+// ORA SE TAIE DOAR ACOLO UNDE SE POATE SALVA (`cuOra`)
+// Prima versiune a parserului RECUNOSTEA ora dar n-o scotea din titlu, fiindca
+// nu exista coloana: un chip ar fi promis o valoare pe care salvarea o arunca.
+// De la v41 exista `global_tasks.ora` — dar numai acolo. Taskurile de PROIECT
+// (`tasks`) n-au coloana, iar Ion a cerut ora „pana cand doar pentru cele
+// personale". Deci decizia nu e a parserului, e a apelantului: `cuOra: true`
+// taie ora din titlu si o raporteaza ca valoare de salvat, `cuOra: false` (implicit)
+// o raporteaza dar LASA textul intact — mai bine ora rămâne in titlu decat sa
+// dispara la salvare.
+// `ora` se raporteaza in ambele cazuri: cine intreaba poate vrea doar s-o arate.
 
 import { localToday, addDays, parseISO, isoDate } from './planDates.js'
 
@@ -76,9 +78,20 @@ function urmatoareaZi(ziISO, deLa = localToday()) {
   return isoDate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + delta))
 }
 
+/** Ora, in formele pe care le scrie mana. DOUA treceri, fiecare cu grupul 2 =
+ *  EXPRESIA INTREAGA de tăiat (inclusiv „la ", cand e scris) — asa tăierea nu
+ *  trebuie sa ghiceasca unde incepe. Cu minute intai: „la 9:30" trebuie sa fie
+ *  9:30, nu 9 urmat de „:30" rămas in titlu. */
+const RE_ORA = (L) => [
+  new RegExp(`(^|[^${L}])((?:la\\s+)?(\\d{1,2})[:.](\\d{2}))(?![\\d${L}])`, 'i'),
+  new RegExp(`(^|[^${L}])(la\\s+(\\d{1,2}))(?![\\d${L}:.])`, 'i'),
+]
+
 /**
  * @param {string} text ce a scris Ion
- * @param {{ proiecte?: Array<{id: string, nume: string}> }} opt
+ * @param {{ proiecte?: Array<{id: string, nume: string}>, cuOra?: boolean }} opt
+ *        `cuOra` = ora se TAIE din titlu (apelantul o poate salva). Fara el, ora se
+ *        raporteaza dar textul rămâne intreg — vezi antetul fisierului.
  * @returns {{
  *   titlu: string,          // textul curatat de ce a devenit chip
  *   zi: string|null,        // ISO, daca s-a recunoscut o zi
@@ -88,7 +101,7 @@ function urmatoareaZi(ziISO, deLa = localToday()) {
  * }}
  */
 export function parseTask(text, opt = {}) {
-  const { proiecte = [] } = opt
+  const { proiecte = [], cuOra = false } = opt
   let rest = String(text || '')
   let zi = null
   let etichetaZi = null
@@ -146,13 +159,19 @@ export function parseTask(text, opt = {}) {
     break
   }
 
-  // --- ORA --- (recunoscuta, netaiata: vezi antetul fisierului)
+  // --- ORA ---
+  // Se VALIDEAZA inainte de a se tăia: „presiune 25:99 bar" se potriveste ca forma,
+  // dar 25:99 nu e o ora — iar un titlu ciuntit ar fi mai rau decat o ora nerecunoscuta.
   let ora = null
-  const mOra = String(rest).match(/(^|[^0-9])(?:la\s+)?([01]?\d|2[0-3])[:.]([0-5]\d)(?=[^0-9]|$)/)
-  if (mOra) ora = `${String(mOra[2]).padStart(2, '0')}:${mOra[3]}`
-  else {
-    const mLa = normalizeaza(rest).match(new RegExp(`(^|[^${L}])la\\s+([01]?\\d|2[0-3])(?=[^0-9]|$)`))
-    if (mLa) ora = `${String(mLa[2]).padStart(2, '0')}:00`
+  for (const re of RE_ORA(L)) {
+    const m = normalizeaza(rest).match(re)
+    if (!m) continue
+    const h = parseInt(m[3], 10)
+    const mi = m[4] === undefined ? 0 : parseInt(m[4], 10)
+    if (h > 23 || mi > 59) continue
+    ora = `${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}`
+    if (cuOra) rest = taieLa(rest, m.index + m[1].length, m[2].length)
+    break
   }
 
   return { titlu: curata(rest), zi, etichetaZi, proiect, ora }

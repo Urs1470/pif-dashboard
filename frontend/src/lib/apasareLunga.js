@@ -18,16 +18,19 @@
 // inainte sa treaca pragul de directie, si atunci ai avea deodata si foaia
 // deschisa si randul tras de sub ea.
 //
-// DE CE 300 SI NU 420. `APASARE_LUNGA` e deja pragul cu care se apuca o banda in
-// Calendar si cu care se redenumeste un subtask — adica singurul „cat de mult
-// tin apasat" pe care mana l-a invatat in aplicatia asta. O a doua valoare pe
-// acelasi gest, pe un obiect vecin, se simte ca doua aplicatii.
+// CAT DE MULT TII APASAT: `APASARE_MENIU` (420), nu `APASARE_LUNGA` (300).
+// Prima versiune folosea 300, cu argumentul c-ar fi „singurul prag de apasare din
+// aplicatie". Argumentul era greșit, si s-a vazut la prima folosire pe telefon:
+// la 300ms foaia soseste inainte ca degetul sa se ridice, apasarea continua PE EA,
+// iar WebView-ul o citeste ca long-press pe text si porneste selectia (raportat de
+// Ion). Un prag care APUCA un obiect si unul care DESCHIDE un strat nu cer acelasi
+// lucru de la mana — motivul intreg e scris la `APASARE_MENIU` in `gesturi.js`.
 //
 // DOAR PE ATINGERE. Cu mouse actiunile randului sunt la vedere (`.task-actions`
 // apare la hover), deci un meniu la apasare lunga ar fi un al doilea drum catre
 // ce e deja pe ecran.
 
-import { APASARE_LUNGA, PRAG_DIRECTIE, puls } from './gesturi.js'
+import { APASARE_MENIU, PRAG_DIRECTIE, puls } from './gesturi.js'
 
 /**
  * Actiune Svelte pentru un rand.
@@ -65,7 +68,7 @@ export function apasareLunga(node, opt = {}) {
       // glisare — e acelasi lucru: „de aici, ridicarea degetului face ceva".
       puls()
       actiune?.()
-    }, APASARE_LUNGA)
+    }, APASARE_MENIU)
   }
 
   function misca(e) {

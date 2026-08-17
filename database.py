@@ -97,7 +97,19 @@ def close_db(exc=None):
 #      (ar fi dublat recurenta, subtaskurile si CRUD-ul). Orice interogare pe
 #      global_tasks isi declara sfera explicit; lipsa parametrului = 'munca'
 #      (fail-closed: personalul nu se poate scurge in suprafetele de munca).
-SCHEMA_VERSION = 40
+# v41: `global_tasks.ora` ('HH:MM') — ora unui task, deocamdata numai pentru
+#      sfera PERSONALA (Ion, 2026-08-17: „imi trebuie si ora sa pot seta pentru
+#      taskuri, pana cand doar pentru cele personale"). Coloana e pe tabela
+#      intreaga, ca `sfera`: gardul e la SCRIERE, in interfata, nu in schema —
+#      asa, extinderea la taskurile de munca e o schimbare de interfata, nu o a
+#      doua migrare. `tasks` (taskurile de proiect) NU primeste coloana: acolo
+#      n-a fost cerut, si o coloana fara consumator arata ca o unealta gata de
+#      folosit.
+#      DE CE O COLOANA, si nu ora in `data_scadenta`: toata aplicatia citeste
+#      data cu `.slice(0, 10)` si compara zile ca text („restant" = `zi < today`).
+#      O data-cu-ora ar trece prin fiecare din comparatiile alea si le-ar strica
+#      pe cele care taie exact 10 caractere.
+SCHEMA_VERSION = 41
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1409,6 +1421,43 @@ def migrate_v39_to_v40():
     logger.info("Migration v39->v40 completed (Google Calendar scos; %s chei sterse)", sterse)
 
 
+def migrate_v40_to_v41():
+    """v40 -> v41: `global_tasks.ora` ('HH:MM').
+
+    Ion, 2026-08-17: „imi trebuie si ora sa pot seta pentru taskuri, pana cand
+    doar pentru cele personale."
+
+    Contextul: foaia de adaugare are un parser care CITEA deja ora din titlu
+    („mâine la 9 revizie pompa"), dar n-avea unde s-o pună — nici `global_tasks`
+    nici `tasks` n-aveau coloana. De aceea parserul o raporta si o LASA in titlu:
+    un chip de ora ar fi promis o valoare pe care salvarea o arunca. Acum are
+    unde, si de aici incolo o si scoate din titlu.
+
+    ORA E SEPARATA DE DATA, si asta e decizia care conteaza. Alternativa —
+    `data_scadenta` ca 'YYYY-MM-DD HH:MM' — ar fi trecut prin toate locurile care
+    taie primele 10 caractere si compara zile ca TEXT (`zi < today` = restant,
+    gruparea pe termen, coloanele Planificatorului). Ar fi mers in cele care taie,
+    si s-ar fi rupt tacut in cele care compara intreg.
+
+    NULL = fara ora, si asta NU e acelasi lucru cu '00:00' (miezul nopţii e o oră
+    aleasa). De aceea coloana n-are DEFAULT: un task fara ora trebuie sa se
+    citeasca drept „nu are", nu drept „are ora 0".
+
+    Idempotenta: `ADD COLUMN` doar cand lipseste. Fara `UPDATE` de curatare, ca la
+    `sfera` — acolo era nevoie fiindca valoarea implicita conta ('munca'); aici
+    NULL e chiar starea corecta pentru randurile vechi.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(global_tasks)")
+    cols = {row[1] for row in cursor.fetchall()}
+    if 'ora' not in cols:
+        cursor.execute("ALTER TABLE global_tasks ADD COLUMN ora TEXT")
+    conn.commit()
+    conn.close()
+    logger.info("Migration v40->v41 completed (global_tasks.ora, NULL = fara ora)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1608,6 +1657,11 @@ def run_migrations():
         set_schema_version(40)
         current_version = 40
 
+    if current_version < 41:
+        migrate_v40_to_v41()
+        set_schema_version(41)
+        current_version = 41
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1647,6 +1701,13 @@ def run_migrations():
     if 'sfera' not in gt_cols:
         logger.warning("Self-heal: re-running v37->v38 (global_tasks.sfera missing)")
         migrate_v37_to_v38()
+    # Acelasi motiv si aceeasi forma ca la `sfera`, si e nevoie de el aici cu atat
+    # mai mult: un backup luat inainte de v41 restaurat peste o baza cu
+    # `schema_version = 41` ar lasa coloana lipsa, iar CRUD-ul ar cadea pe fiecare
+    # scriere de task personal — nu la pornire, ci la prima folosire.
+    if 'ora' not in gt_cols:
+        logger.warning("Self-heal: re-running v40->v41 (global_tasks.ora missing)")
+        migrate_v40_to_v41()
     has_gantt_cols = {'data_start', 'progres', 'is_milestone'}.issubset(tasks_cols)
     has_deps_table = 'task_dependencies' in existing_tables
     if not has_gantt_cols or not has_deps_table:

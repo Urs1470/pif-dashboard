@@ -286,6 +286,32 @@ input:focus, select:focus, textarea:focus {
   :where(button, [role="button"], a.btn, .tab, .row, .zi):active { transform: none; }
 }
 
+/* ===== UN RAND CU GESTURI NU E TEXT DE SELECTAT =====
+   Ion, 2026-08-17: „apasarea lunga pe task aduce prea rapid modalul incat nu
+   reusesc sa iau degetul si deja incepe sa se selecteze textul din modalul
+   aparut."
+   Doua cauze, si amandoua trebuie reparate. Prima e durata (vezi `APASARE_MENIU`
+   in `lib/gesturi.js`, urcata la 420). A doua e AICI, si e cea care face problema
+   posibila: pe randul de task apasarea lunga are DOI ascultatori — al nostru, care
+   deschide foaia, si al WebView-ului, care porneste selectia de text. Al doilea se
+   declanseaza mai tarziu, cand foaia e deja ridicata, deci selectia cade pe TEXTUL
+   EI. Nu e o cursa pe care s-o poti castiga cu o durata: cat timp randul rămâne
+   selectabil, gestul sistemului exista.
+   Deci randurile care poarta gesturi nu mai sunt text de selectat. Nu se pierde
+   nimic: sunt randuri de LISTA, cu butoane inauntru — nimeni nu copiaza dintr-un
+   rand de task, iar cine vrea titlul intreg deschide taskul.
+   `-webkit-touch-callout` opreste si meniul „Copiază / Caută", care pe iOS vine din
+   acelasi gest si acopera exact foaia care tocmai a sosit.
+   DOAR PE ATINGERE: pe desktop selectia cu mouse-ul nu se bate cu nimic — acolo
+   apasarea lunga nici nu porneste (vezi garda `pointerType === 'mouse'`). */
+@media (hover: none) and (pointer: coarse) {
+  .arow, .trow, .mrow, .sub-row {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
 /* ===== PISTA DE BIFARE — ce vezi cand tragi randul spre dreapta =====
    Ion: „glisarea la dreapta (…) acum doar se coloreaza si nu e intuitiv ce face".
    Avea dreptate, si problema nu era culoarea, era MOMENTUL: singurul semnal

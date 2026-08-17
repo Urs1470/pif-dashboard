@@ -151,6 +151,10 @@
    *  regenereaza singura la fiecare bifare. */
   function termenScurt(t) {
     if (t.recurenta && !t.data_scadenta) return t.recurenta
+    // Pe „azi", ora bate cuvantul — vezi nota lunga din `TodayBoard.svelte`. Aici
+    // lista acopera mai multe zile, deci inlocuirea se face DOAR pe azi: pe „mâine"
+    // ziua e inca informatia care deosebeste randurile intre ele.
+    if (t.ora && isToday(t.data_scadenta)) return t.ora
     return etichetaTermenScurt(t.data_scadenta)
   }
 
@@ -234,6 +238,22 @@
           await reload()
         },
       })
+    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
+  }
+
+  /** Ora unui task personal (v41). `''` o scoate.
+   *
+   *  Fara `toastUndo`, si e o alegere, nu o omisiune: ora se pune din randul care o
+   *  ARATA, iar valoarea veche rămâne pe ecran pana o schimbi — deci „inapoi" e
+   *  chiar controlul din care ai venit. Un toast peste el ar acoperi exact randul
+   *  pe care te uiti. Termenul are toast fiindca acolo randul PLEACA din grupa lui
+   *  si nu mai ai de unde sa-l intorci.
+   */
+  async function setOra(t, v) {
+    if (!t) return
+    try {
+      await updateGlobalTask(t.id, { ora: v || '' })
+      await reload()
     } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
   }
 
@@ -1321,6 +1341,7 @@
 <FoaieTask bind:open={foaieDeschisa} task={foaieTask} mod="actiuni"
            onZi={(v) => setTermenData(foaieTask, v)}
            onMaine={() => setTermen(foaieTask, 1)}
+           onOra={(v) => setOra(foaieTask, v)}
            onBifa={() => toggleStatus(foaieTask)}
            onDeschide={() => deschideFoaia(foaieTask.id)}
            onSterge={() => stergeDinLista(foaieTask)} />

@@ -73,7 +73,9 @@ test('titlul pastreaza diacriticele scrise, desi potrivirea le ignora', () => {
   assert.equal(r.titlu, 'verificare tensiune și curent')
 })
 
-test('ora e RECUNOSCUTA dar nu se taie din titlu (nu are coloana in DB)', () => {
+test('fara `cuOra`, ora se raporteaza dar NU se taie din titlu', () => {
+  // Cazul taskurilor care n-au unde s-o salveze (proiect, sfera munca): mai bine
+  // ora rămâne in titlu decat sa dispara la salvare.
   for (const [text, ora] of [
     ['revizie la 9', '09:00'],
     ['revizie 14:30', '14:30'],
@@ -85,9 +87,45 @@ test('ora e RECUNOSCUTA dar nu se taie din titlu (nu are coloana in DB)', () => 
   }
 })
 
-test('ora invalida nu se inventeaza', () => {
-  assert.equal(parseTask('presiune 25:99 bar').ora, null)
-  assert.equal(parseTask('cablu 3x25').ora, null)
+test('cu `cuOra`, ora pleaca din titlu (are coloana: global_tasks.ora, v41)', () => {
+  for (const [text, ora, titlu] of [
+    ['revizie la 9', '09:00', 'revizie'],
+    ['revizie 14:30', '14:30', 'revizie'],
+    ['la 7.15 cafea', '07:15', 'cafea'],
+    ['mâine la 9 revizie pompa', '09:00', 'revizie pompa'],
+  ]) {
+    const r = parseTask(text, { cuOra: true })
+    assert.equal(r.ora, ora, text)
+    assert.equal(r.titlu, titlu, text)
+  }
+})
+
+test('„la 9:30" e 9:30, nu 9 cu „:30" rămas in titlu', () => {
+  const r = parseTask('sedinta la 9:30', { cuOra: true })
+  assert.equal(r.ora, '09:30')
+  assert.equal(r.titlu, 'sedinta')
+})
+
+test('ora invalida nu se inventeaza SI nu ciunteste titlul', () => {
+  for (const text of ['presiune 25:99 bar', 'cablu 3x25', 'tensiune 24:70 V']) {
+    const r = parseTask(text, { cuOra: true })
+    assert.equal(r.ora, null, text)
+    assert.equal(r.titlu, text, 'titlul rămâne intreg cand ora nu e ora')
+  }
+})
+
+test('„la" dintr-un cuvant nu e ora („sala 9")', () => {
+  const r = parseTask('verificat sala 9', { cuOra: true })
+  assert.equal(r.ora, null)
+  assert.equal(r.titlu, 'verificat sala 9')
+})
+
+test('zi + ora + proiect deodata', () => {
+  const r = parseTask('mâine la 8:30 parametrizare IMSAT', { proiecte: PROIECTE, cuOra: true })
+  assert.equal(r.etichetaZi, 'mâine')
+  assert.equal(r.ora, '08:30')
+  assert.equal(r.proiect?.id, 'p3')
+  assert.equal(r.titlu, 'parametrizare')
 })
 
 test('text fara nimic de extras trece neatins', () => {
