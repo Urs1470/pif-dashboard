@@ -16,7 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-08-17
 
-- [2026-08-17 Handoff „Rafinare mobil": ce s-a luat, ce s-a respins](2026-08-17-handoff-rafinare-mobil-triaj.md) — auditul de 31 de interacțiuni descria PROTOTIPUL: 10 din 17 „rupturi" erau deja reparate în cod. Luat: `--ease-iesire` (ieșirea accelerează, nu frânează) + trecerea lină de temă. Respins: pragul fix de 118px, apăsarea lungă (e ocupată de reordonare), două curbe în plus.
+- [2026-08-17 Handoff „Rafinare mobil": ce s-a luat, ce s-a respins](2026-08-17-handoff-rafinare-mobil-triaj.md) — auditul de 31 de interacțiuni descria PROTOTIPUL: 10 din 17 „rupturi" erau deja reparate în cod. Luat: `--ease-iesire` (ieșirea accelerează, nu frânează) + trecerea lină de temă. Respins: pragul fix de 118px și două curbe în plus. Apăsarea lungă, respinsă întâi, a fost livrată în paralel de altă sesiune — cu obiecția rezolvată, nu ignorată.
 
 ## 2026-08-15
 

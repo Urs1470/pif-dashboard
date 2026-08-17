@@ -513,9 +513,25 @@ def planificator_pe_telefon(ctx, baza):
         if not cond:
             probleme += 1
 
+    # BAZA GOALA NU E O CADERE. Cu nimic planificat, Planificatorul arata (corect)
+    # starea goala, iar `.mlist` — deci si grila — nu se randeaza deloc. Fara
+    # distinctia asta proba pica pe orice masina care n-a tras inca baza de pe
+    # server (`scripts/sync_db_from_server.sh`), adica raporteaza „stricat" pentru
+    # un ecran care se poarta exact cum trebuie.
+    #
+    # Distinctia e cea din docstring, doar aplicata invers: nu „s-a randat ceva?",
+    # ci „daca AVEM ce planifica, apare grila?". Cand n-avem, se SARE si se spune
+    # de ce — un verde tacut pe o baza goala ar fi exact esecul de care se teme
+    # fisierul asta.
     try:
         page.wait_for_selector('.mgrila', timeout=15000)
     except Exception as e:
+        gol = page.query_selector('.mlist') is None and page.query_selector('.empty-state, [class*="empty"]') is not None
+        if gol:
+            out('  SARI  nimic planificat in fereastra — grila nici nu se randeaza (baza goala)')
+            page.close()
+            out()
+            return probleme
         zi(False, 'grila de luna se randeaza', str(e).split('\n')[0])
         page.close()
         out()

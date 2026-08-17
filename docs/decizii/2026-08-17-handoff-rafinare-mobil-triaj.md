@@ -63,7 +63,18 @@ fix nu înseamnă același lucru pe două obiecte de mărimi diferite. Rămâne 
 
 **Apăsare lungă 420 ms → foaie de acțiuni (P1).** Apăsarea lungă e deja ocupată:
 `lib/reordonare.js` o folosește pentru apucarea rândului, la 300 ms (`APASARE_LUNGA`). Două
-gesturi pe aceeași apăsare înseamnă că niciunul nu e sigur. Ar trebui întâi decis care pleacă.
+gesturi pe aceeași apăsare înseamnă că niciunul nu e sigur.
+
+> **Corecție, câteva ore mai târziu.** Obiecția era bună, concluzia („se respinge") nu.
+> O altă sesiune a livrat gestul între timp (`lib/apasareLunga.js`), rezolvând exact conflictul
+> pe care îl semnalam: cele două nu sunt același gest, deci nu împart pragul. `APASARE_LUNGA`
+> (300 ms) rămâne pentru **apucare** — degetul rămâne jos și continuă să lucreze, deci pragul
+> trebuie să fie scurt. `APASARE_MENIU` (420 ms) e pentru **deschidere** — degetul trebuie să
+> se ridice, și are nevoie de timp ca să afle că a reușit; la 300 ms foaia sosea sub deget
+> înainte să-l ridici și WebView-ul pornea selecția de text.
+> Am tras concluzia greșită fiindcă am citit conflictul ca pe o coliziune de resursă („o
+> singură apăsare lungă"), când era o distincție de intenție. Handoff-ul avea dreptate, și
+> chiar cu cifra lui.
 
 **Cele trei curbe suplimentare** („pocnet" `.34,1.5,.42,1`, „ieșire rapidă pe gest"
 `.36,0,.86,.28`, plus cea de ieșire). Sistemul are un set închis de curbe, fiecare cu motivul
@@ -72,9 +83,9 @@ descriau un sens, ci un accent — și pentru asta există deja `--ease-arc` / `
 
 ## Amânat, nu respins
 
-- **P3 — o singură foaie de adăugare**, cu parser de limbaj natural și dictare. Cea mai
-  valoroasă propunere din handoff (azi sunt trei drumuri pentru „adaugă un task"), și cea mai
-  mare: e o funcție, nu o rafinare.
+- ~~**P3 — o singură foaie de adăugare**~~ — **livrat** între timp de altă sesiune
+  (`components/FoaieAdauga.svelte`, `lib/parserTask.js` + teste). Cele trei drumuri de
+  adăugare au devenit unul singur. Era, cum scriam, cea mai valoroasă propunere din handoff.
 - **P5 — Planificator ca lună + densitate.** Redesign de pagină.
 - **P6 — splash varianta B.** Contained, dar atinge `index.html` + `lib/splash.js` + regulile
   de sosire din `global.css`, adică fix zona unde `audit_navigare` are cele mai multe
@@ -93,3 +104,23 @@ fiecărei afirmații înainte de a scrie o linie a costat mai puțin decât ar f
 Și invers: singura observație care ERA reală — o singură curbă pentru amândouă sensurile —
 n-ar fi fost găsită uitându-te la cod, fiindcă acolo totul e coerent. Se vedea doar
 întrebând „de ce iese la fel cum intră".
+
+
+## Post-scriptum: două sesiuni pe același master
+
+Commitul ăsta a plecat după un rebase peste șase commituri venite din altă sesiune, care
+lucra în paralel pe același handoff. Merită notat ce s-a întâmplat la întâlnire, fiindcă e
+argumentul pentru regula din `CLAUDE.md` („pull FIRST"):
+
+- **Nu s-a pierdut nimic și nu s-a suprapus nimic.** Ei au luat funcțiile (P3, apăsarea lungă,
+  ceasul, Planificatorul), eu am luat sistemul de mișcare (curba de ieșire, trecerea de temă).
+  Conflictele au fost exclusiv în fișiere generate — `static/dist`, `service-worker.js`.
+- **Munca lor s-a așezat peste a mea fără să știe:** `urmaritor()` din `gesturi.js`, scris
+  dimineață pentru viteza foii, e folosit acum și de gesturile lor.
+- **O reparație de-a mea a fost înlocuită cu una mai bună.** Diagnosticasem „foaia de adăugare
+  pare că reîncarcă pagina" ca două sosiri suprapuse (foaia urcă, apoi tastatura o smulge) și
+  o rezolvasem scoțând focusul automat pe telefon. Ei au rezolvat cauza, nu simptomul:
+  tastatura urcă ACUM ODATĂ cu foaia, deci sunt tot două mișcări dar o singură sosire — și
+  câmpul își păstrează focusul. Contractul din `audit_foaie.py` a fost rescris în consecință
+  („câmpul are focusul, deci tastatura urcă odată cu foaia"), și e mai bun decât al meu.
+  Diagnosticul a ținut; leacul a fost depășit.
