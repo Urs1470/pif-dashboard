@@ -6,6 +6,7 @@
   import { loadCandidates, scheduleForToday, moveToDate, removeFromToday } from '../stores/agenda.svelte.js'
   import { grupeazaDupaTermen, ORDINE_GRUPE, etichetaTermenScurt } from '../lib/grupare.js'
   import { dueRing } from '../lib/formatters.js'
+  import { ecran } from '../lib/ecran.svelte.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
 
   let { open = $bindable(false) } = $props()
@@ -76,7 +77,20 @@
   })
 
   // RANDUL DE SUS E CAMPUL, deci el ia focusul: ai deschis o cautare, nu o lista.
-  $effect(() => { if (deschis) tick().then(() => campEl?.focus()) })
+  //
+  // DAR NUMAI PE DESKTOP. Pe telefon focusul nu e gratuit — el CHEAMA TASTATURA,
+  // si ea intra exact in clipa in care foaia tocmai s-a asezat. Masurat pe
+  // 390x844: foaia soseste la 340px de sus in ~250ms, apoi tastatura o smulge la
+  // 30 in urmatoarele 160. Doua miscari una dupa alta pe acelasi obiect, din doua
+  // cauze fara legatura intre ele — si exact asa se citeste „parca se reincarca
+  // pagina" (Ion, 2026-08-17). Nu e o animatie prea lunga sau o curba gresita:
+  // sunt doua sosiri acolo unde ochiul asteapta una.
+  //
+  // Si nu cumpara nimic. Lista e plafonata la 46dvh, deci se vad TOT 5 randuri cu
+  // tastatura sus sau jos: pretul e jumatate de ecran acoperit plus a doua
+  // miscare, castigul e zero. Campul ramane primul rand al foii, la indemana —
+  // cine vrea sa caute il atinge, si atunci saltul e raspunsul la gestul lui.
+  $effect(() => { if (deschis && !ecran.telefon) tick().then(() => campEl?.focus()) })
 
   // ACELEASI GRUPE CA IN PAGINA TASKURI, in aceeasi ordine. Erau „Taskuri
   // globale" + cate una per proiect — o a doua taxonomie, care raspundea la

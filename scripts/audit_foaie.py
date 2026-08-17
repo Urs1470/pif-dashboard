@@ -99,6 +99,16 @@ def seamana(cale):
         db.execute("INSERT INTO global_tasks (id, titlu, status, categorie, data_scadenta)"
                    " VALUES (?,?,?,?,?)",
                    (str(uuid.uuid4()), t, 'to_do', 'General', '2026-08-16'))
+    # Candidati pentru „Adauga task existent": `/api/agenda/candidates` intoarce
+    # doar taskuri FARA termen sau cu termen in VIITOR. Fara ei foaia se deschide
+    # goala, si proba de la capat n-ar masura nimic.
+    for i, t in enumerate(['Revizuie oferta Siemens', 'Curata panoul de comanda',
+                           'Comanda senzori PT100', 'Scrie procedura de pornire',
+                           'Verifica stocul de sigurante', 'Programeaza service anual']):
+        db.execute("INSERT INTO global_tasks (id, titlu, status, categorie, data_scadenta)"
+                   " VALUES (?,?,?,?,?)",
+                   (str(uuid.uuid4()), t, 'to_do', 'General',
+                    None if i % 2 else '2026-09-%02d' % (i + 3)))
     db.commit()
     db.close()
 
@@ -150,6 +160,23 @@ MASOARA = """() => {
     voal: st.backgroundColor,
     voalP: parseFloat(getComputedStyle(v).getPropertyValue('--voal-p') || '1'),
   };
+}"""
+
+
+STARE_ALEGERE = """() => {
+  const a = document.activeElement;
+  const f = document.querySelector('.modal.sheet');
+  return {
+    tag: a ? a.tagName : null,
+    editabil: !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable),
+    randuri: document.querySelectorAll('.pk-rand').length,
+    sus: f ? Math.round(f.getBoundingClientRect().top) : null,
+  };
+}"""
+
+SUS_FOAIE = """() => {
+  const f = document.querySelector('.modal.sheet');
+  return f ? Math.round(f.getBoundingClientRect().top) : null;
 }"""
 
 
@@ -413,6 +440,45 @@ def main():
                          'alegerea inchide foaia', 'a ramas deschisa')
                     bifa(page.evaluate("() => document.documentElement.getAttribute('data-theme')") == 'dark',
                          'alegerea chiar schimba tema', 'data-theme n-a devenit dark')
+
+            # ===== 6. O FOAIE DE ALES NU-SI CHEAMA SINGURA TASTATURA =====
+            # Ion, 2026-08-17, despre „Adauga task existent": „parca se reincarca
+            # pagina". Nu era animatia — erau DOUA sosiri. Foaia urca la 340px in
+            # ~250ms, apoi focusul pus automat pe campul de cautare chema
+            # tastatura, iar ea o smulgea la 30px in urmatoarele 160. Doua miscari
+            # pe acelasi obiect, din doua cauze fara legatura intre ele.
+            # Regula NU e „niciun focus automat": intr-un formular de creare
+            # („Task Nou") tastatura E scopul. E despre foile din care ALEGI —
+            # acolo campul e o unealta optionala, iar lista e plafonata oricum la
+            # 46dvh, deci tastatura nu descopera niciun rand in plus. Masurat:
+            # cinci randuri vizibile si cu ea, si fara ea.
+            out('\n--- foaia de ales nu cheama tastatura ---')
+            page.goto(baza + '/#/tasks', wait_until='load')
+            page.wait_for_timeout(1000)
+            # Acasa se cere prin hash: pe telefon aterizarea implicita duce la
+            # taskurile personale, deci un `goto` direct n-ar ajunge niciodata.
+            page.evaluate("() => { location.hash = '#/' }")
+            page.wait_for_timeout(1600)
+            adauga = page.query_selector('.bh-add')
+            if adauga is None:
+                note.append('boardul „Astazi" n-are butonul „Adauga task existent"')
+            else:
+                adauga.click()
+                page.wait_for_timeout(900)
+                stare = page.evaluate(STARE_ALEGERE)
+                bifa(stare['randuri'] > 0, 'foaia se deschide cu lista in mana',
+                     'niciun rand — nu s-au randat candidatii')
+                bifa(not stare['editabil'],
+                     'nu pune focusul intr-un camp de text pe telefon',
+                     'focus pe %s — tastatura urca peste foaia abia sosita' % stare['tag'],
+                     'focus pe %s' % stare['tag'])
+                # ...si foaia sta pe loc dupa ce s-a asezat: o a doua masuratoare,
+                # la distanta, prinde orice miscare intarziata.
+                page.wait_for_timeout(500)
+                dupa = page.evaluate(SUS_FOAIE)
+                bifa(dupa is not None and stare['sus'] is not None and abs(dupa - stare['sus']) <= 2,
+                     'dupa ce s-a asezat, foaia nu mai pleaca nicaieri',
+                     '%s -> %s px' % (stare['sus'], dupa), 'ramane la %s px' % dupa)
 
             b.close()
     finally:
