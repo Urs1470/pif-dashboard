@@ -80,11 +80,18 @@
   let refuzProiect = $state(false)
   let refuzOra = $state(false)
 
-  // Aceeasi mecanica de deschidere ca la vechiul TaskPicker: foaia se ridica DOAR
-  // cu lista in mana, altfel se dimensioneaza dupa o linie de text si SARE la
-  // inaltimea reala cat e inca pe la opacitate 0,2 (masurat: 228 -> 374px).
+  // FOAIA SE RIDICA IMEDIAT — si asta e o schimbare de contract, nu o scurtatura.
+  //
+  // Pana acum aștepta lista („se ridica DOAR cu lista in mana"), fiindca altfel se
+  // dimensiona dupa o linie de text si SAREA la inaltimea reala cat era inca la
+  // opacitate 0,2 — masurat: 228 -> 374px. Motivul ala a DISPARUT: de cand corpul
+  // are inaltime fixa (`.fa { height: 58dvh }`), nu exista salt de dimensionat,
+  // fiindca nu exista dimensionare dupa conţinut.
+  // Ce a rămas era doar o intarziere de pana la 250ms intre atingere si foaie, si
+  // ea se vedea: Ion, 2026-08-17: „animatia de adaugare task mai fluida, acum e
+  // sacadata." O foaie care porneste tarziu si peste care mai vine si tastatura nu
+  // se citeste ca o miscare, se citeste ca doua care se calca.
   let deschis = $state(false)
-  const PLAFON_DESCHIDERE = 250
 
   // NUMELE PROIECTELOR, PENTRU PARSER. Foaia si le aduce singura: altfel fiecare
   // dintre cele trei pagini care o deschid ar trebui sa tina minte sa incarce
@@ -131,7 +138,6 @@
       toast(`Eroare: ${e.message}`, 'error')
     } finally {
       loading = false
-      deschis = true
     }
   }
 
@@ -158,19 +164,25 @@
     // La EDITARE campul porneste cu titlul curent — asta e tot rostul randului
     // „Editează": rescrii ce era, nu scrii de la zero.
     if (editeaza) q = editeaza.titlu || ''
-    const ceas = setTimeout(() => { deschis = true }, PLAFON_DESCHIDERE)
-    return () => clearTimeout(ceas)
+    deschis = true
   })
 
-  // FOCUSUL NU CHEAMA TASTATURA SINGUR PE TELEFON — aceeasi decizie ca la vechea
-  // foaie de cautare, si din acelasi motiv masurat: foaia se aseaza in ~250ms,
-  // apoi tastatura o smulge in urmatoarele 160. Doua sosiri pentru un singur gest,
-  // si exact asa se citeste „parca se reincarca pagina" (Ion, 2026-08-17).
+  // TASTATURA URCA ODATA CU FOAIA, NU DUPA EA — inclusiv pe telefon.
   //
-  // DAR AICI E ALTFEL DECAT LA CAUTARE, si merita spus: foaia asta e in primul
-  // rand pentru SCRIS (butonul din care vine se numeste „+"), deci pe DESKTOP
-  // focusul cade in camp. Pe telefon randul de sus rămâne la indemana: cine vrea
-  // sa scrie il atinge, si atunci saltul e raspunsul la gestul lui.
+  // Regula de dinainte era „o foaie din care ALEGI nu-si cheama singura tastatura",
+  // si era corecta pentru ce era foaia atunci: o CAUTARE prin taskuri existente.
+  // Foaia de acum e in primul rand pentru SCRIS — vine din butonul „+" — iar Ion a
+  // masurat consecinta cu degetul: „cand dau adaugare task si vreau sa tastez,
+  // tastatura ridica mai sus, dar animatia nu este fluida deloc; mai bine fa direct
+  // cu tastatura deschisa."
+  //
+  // Si e acelasi defect ca inainte, doar mutat: DOUA sosiri. Inainte veneau foaia
+  // apoi tastatura chemata automat; dupa ce am scos focusul, veneau foaia, apoi
+  // atingerea ta, apoi tastatura — trei. Cand tastatura urca in acelasi timp cu
+  // foaia, ele se termina impreuna si se citesc ca o singura miscare.
+  // Focusul se pune la primul cadru in care campul exista (`tick`), nu pe un
+  // cronometru: un `setTimeout` ar nimeri mereu putin dupa, si exact decalajul ala
+  // se vede ca sacadare.
   // LA EDITARE, FOCUS SI SELECTIE — INCLUSIV PE TELEFON.
   //
   // Regula „o foaie din care ALEGI nu-si cheama singura tastatura" rămâne pentru
@@ -181,13 +193,16 @@
   // Deci un `select()`, nu doar `focus()`.
   $effect(() => {
     if (!deschis) return
-    if (editeaza) tick().then(() => { campEl?.focus(); campEl?.select() })
-    else if (!esteTelefon()) tick().then(() => campEl?.focus())
+    tick().then(() => {
+      campEl?.focus()
+      // La editare textul e si SELECTAT: de cele mai multe ori rescrii randul, nu
+      // adaugi la el (cerut de Ion).
+      if (editeaza) campEl?.select()
+    })
   })
 
-  function esteTelefon() {
-    try { return window.matchMedia('(max-width: 768px)').matches } catch { return false }
-  }
+  // `esteTelefon()` a plecat odata cu excepţia pe care o pazea: focusul se pune
+  // acum pe orice latime, deci nu mai exista doua comportamente de deosebit.
 
   const grupe = $derived(grupeazaDupaTermen(items))
 
@@ -471,6 +486,18 @@
     /* 16px: sub atat Safari mareste pagina la focus si foaia sare. */
     font-size: var(--font-input-mobile);
   }
+  /* FARA CHENAR LA FOCUS. Ion: „este un chenar la campul «ce ai de făcut»? albastru,
+     nu-mi place, nu trebuie sa fie vreun chenar."
+     Venea din regula globala `input:focus { box-shadow: var(--focus-ring) }` —
+     un inel de 3px in accent, potrivit pentru un camp care ARE cutie (acolo inelul
+     urmareste o muchie care exista deja). Randul asta n-are cutie: e prima linie a
+     foii, lipita de muchii, cu un separator dedesubt. Un inel in jurul unui rand
+     fara chenar deseneaza o cutie care nu exista — de aceea se citea ca un chenar
+     aparut din nimic.
+     `outline: none` singur nu era de ajuns: inelul e `box-shadow`, nu `outline`.
+     Nu se pierde niciun semnal de focus: cand campul e focalizat, tastatura e pe
+     ecran si cursorul clipeste in el. */
+  .fa-cauta input:focus { box-shadow: none; border-color: transparent; }
   .fa-cauta input::placeholder { color: var(--text-dim); }
   /* Cifre care se compara — singurul caz pentru mono pe randul asta. */
   .fa-nr {

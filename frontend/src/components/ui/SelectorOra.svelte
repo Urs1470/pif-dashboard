@@ -65,8 +65,35 @@
 
   const afisat = $derived(despica(value) ? value : '')
 
+  // ===== CEASUL DESCHIS PESTE O FOAIE NU MAI STINGE PAGINA A DOUA OARA =====
+  //
+  // Ion, 2026-08-17: „selectorul ora e ok, dar cand il deschid parca pagina se
+  // stinge si se aprinde, la fel si la inchidere."
+  //
+  // Exact asta se intampla, si se poate socoti: ceasul isi picta voalul lui
+  // (`--scrim`, 0,6) PESTE voalul foii de sub el, care e tot 0,6. Doua straturi de
+  // 0,6 nu dau 0,6, dau ~0,84 — deci fondul se INTUNECA. Apoi `nivelNou()` ii ia
+  // foii de dedesubt titlul de „varf", ea isi stinge voalul pe `--dur-base`, si
+  // fondul se LUMINEAZA inapoi la 0,6. Doua treceri de opacitate pe aceiasi pixeli,
+  // in ordine inversa: exact „se stinge si se aprinde". La inchidere, invers.
+  //
+  // Reparatia nu e o durata mai mica, e sa nu existe a doua stingere. Cand ceasul
+  // vine PESTE un strat care are deja voal, voalul lui doar SEPARA — si tokenul
+  // pentru asta exista deja, cu motivul scris in `tokens.css`: „`--scrim-slab` e
+  // pentru cazul in care peste val vine si un panou opac — atunci valul doar
+  // separa, nu stinge."
+  // Fara tranzitie in cazul asta: orice fade ar fi tot o trecere de opacitate peste
+  // fondul deja stins, adica exact ce reparam.
+  //
+  // Se citeste din DOM, nu din stiva: `are-modal` e pusa de `Modal` si e deja
+  // adevarata in clipa atingerii, INAINTE ca `nivelNou()` al nostru sa se cheme.
+  // Un `$derived` pe stiva ar da 0 la primul cadru si ar picta voalul intreg
+  // exact atunci — adica ar produce chiar palpaitul.
+  let pesteFoaie = $state(false)
+
   function deschideCeasul() {
     if (disabled) return
+    try { pesteFoaie = document.documentElement.classList.contains('are-modal') } catch (_) { pesteFoaie = false }
     const p = despica(value)
     if (p) { h = p.h; m = p.m }
     else {
@@ -255,8 +282,10 @@
   </button>
 
   {#if open && sheet}
-    <div class="so-voal" use:portal onclick={close} role="presentation"
-         transition:fade={{ duration: motionDuration(DUR_FAST), easing: EASE }}></div>
+    <!-- Peste o foaie: voal SLAB si fara fade (vezi nota de la `pesteFoaie`).
+         Singur pe pagina: voalul intreg, cu fade, ca la calendar. -->
+    <div class="so-voal" class:slab={pesteFoaie} use:portal onclick={close} role="presentation"
+         transition:fade={{ duration: motionDuration(pesteFoaie ? 0 : DUR_FAST), easing: EASE }}></div>
   {/if}
 
   {#if open}
@@ -344,6 +373,9 @@
   .so-trigger:not(.placeholder) .so-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
   .so-voal { position: fixed; inset: 0; background: var(--scrim); z-index: calc(var(--z-modal) + 40); }
+  /* Peste o foaie care are deja voal: doar separa. Vezi `--scrim-slab` in tokens.css
+     si nota de la `pesteFoaie` in <script>. */
+  .so-voal.slab { background: var(--scrim-slab); }
 
   .so-pop {
     position: fixed; z-index: var(--z-dropdown);

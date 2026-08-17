@@ -449,18 +449,28 @@ def main():
                     bifa(page.evaluate("() => document.documentElement.getAttribute('data-theme')") == 'dark',
                          'alegerea chiar schimba tema', 'data-theme n-a devenit dark')
 
-            # ===== 6. O FOAIE DE ALES NU-SI CHEAMA SINGURA TASTATURA =====
-            # Ion, 2026-08-17, despre „Adauga task existent": „parca se reincarca
-            # pagina". Nu era animatia — erau DOUA sosiri. Foaia urca la 340px in
-            # ~250ms, apoi focusul pus automat pe campul de cautare chema
-            # tastatura, iar ea o smulgea la 30px in urmatoarele 160. Doua miscari
-            # pe acelasi obiect, din doua cauze fara legatura intre ele.
-            # Regula NU e „niciun focus automat": intr-un formular de creare
-            # („Task Nou") tastatura E scopul. E despre foile din care ALEGI —
-            # acolo campul e o unealta optionala, iar lista e plafonata oricum la
-            # 46dvh, deci tastatura nu descopera niciun rand in plus. Masurat:
-            # cinci randuri vizibile si cu ea, si fara ea.
-            out('\n--- foaia de ales nu cheama tastatura ---')
+            # ===== 6. FOAIA DE ADAUGARE VINE CU TASTATURA, INTR-O SINGURA MISCARE =====
+            #
+            # CONTRACTUL S-A INVERSAT PE 2026-08-17, si merita citit de ce, fiindca
+            # aici a fost verificat inainte EXACT contrariul.
+            #
+            # Prima regula: „o foaie din care ALEGI nu-si cheama singura tastatura".
+            # Ion, despre „Adauga task existent": „parca se reincarca pagina" — erau
+            # DOUA sosiri, foaia la 340px in ~250ms, apoi tastatura o smulgea la 30 in
+            # urmatoarele 160.
+            # Numai ca foaia aceea era o CAUTARE prin taskuri existente. Cea de acum
+            # (`components/FoaieAdauga.svelte`) e in primul rand pentru SCRIS — vine din
+            # butonul „+" — iar fara focus automat sosirile au devenit TREI: foaia, apoi
+            # atingerea ta, apoi tastatura. Ion, dupa proba: „cand dau adaugare task si
+            # vreau sa tastez, tastatura ridica mai sus, dar animatia nu este fluida
+            # deloc; mai bine fa direct cu tastatura deschisa."
+            # Deci nu s-a renunţat la principiu — principiul era „o singura miscare", si
+            # el se respecta acum invers: tastatura urca ODATA cu foaia.
+            #
+            # Ce rămâne verificat neschimbat, si e partea care conteaza: dupa ce s-a
+            # asezat, foaia NU MAI PLEACA NICAIERI. Aia prinde a doua sosire, oricare ar
+            # fi cauza ei.
+            out('\n--- foaia de adaugare vine cu tastatura ---')
             page.goto(baza + '/#/tasks', wait_until='load')
             page.wait_for_timeout(1000)
             # Acasa se cere prin hash: pe telefon aterizarea implicita duce la
@@ -476,9 +486,9 @@ def main():
                 stare = page.evaluate(STARE_ALEGERE)
                 bifa(stare['randuri'] > 0, 'foaia se deschide cu lista in mana',
                      'niciun rand — nu s-au randat candidatii')
-                bifa(not stare['editabil'],
-                     'nu pune focusul intr-un camp de text pe telefon',
-                     'focus pe %s — tastatura urca peste foaia abia sosita' % stare['tag'],
+                bifa(stare['editabil'],
+                     'campul are focusul, deci tastatura urca odata cu foaia',
+                     'focus pe %s — ai nevoie de o atingere in plus ca sa scrii' % stare['tag'],
                      'focus pe %s' % stare['tag'])
                 # ...si foaia sta pe loc dupa ce s-a asezat: o a doua masuratoare,
                 # la distanta, prinde orice miscare intarziata.
@@ -487,6 +497,93 @@ def main():
                 bifa(dupa is not None and stare['sus'] is not None and abs(dupa - stare['sus']) <= 2,
                      'dupa ce s-a asezat, foaia nu mai pleaca nicaieri',
                      '%s -> %s px' % (stare['sus'], dupa), 'ramane la %s px' % dupa)
+
+                # FARA CHENAR PE CAMPUL FOCALIZAT. Ion: „este un chenar la campul «ce
+                # ai de făcut»? albastru, nu-mi place." Venea din regula globala
+                # `input:focus { box-shadow: var(--focus-ring) }` — corecta pentru un
+                # camp CU cutie, greșita pe primul rand al unei foi, care n-are
+                # niciuna. Se masoara `box-shadow` calculat, nu clasa: regula globala
+                # se poate reintoarce din orice alt fisier.
+                umbra = page.evaluate("""() => {
+                  const i = document.querySelector('.fa-cauta input');
+                  if (!i) return null;
+                  i.focus();
+                  const s = getComputedStyle(i).boxShadow;
+                  return s;
+                }""")
+                bifa(umbra in (None, 'none'),
+                     'campul focalizat nu deseneaza un chenar',
+                     'box-shadow: %s' % umbra, 'fara box-shadow')
+
+                # ===== CEASUL NU STINGE PAGINA A DOUA OARA =====
+                # Ion: „cand il deschid parca pagina se stinge si se aprinde."
+                # Doua voaluri de 0,6 peste aceiasi pixeli dau ~0,84, apoi foaia de
+                # dedesubt si-l stinge pe al ei si revine la 0,6 — de aici trecerea.
+                # Peste o foaie, voalul ceasului trebuie sa fie cel SLAB.
+                # Proba are nevoie de un task PERSONAL (randul de ora exista doar
+                # acolo — `global_tasks.ora`, v41) si de foaia de la apasare lunga.
+                # Isi face singura cazul: altfel verificarea ar depinde de ce se
+                # intampla sa fie in baza, adica ar tacea exact cand baza e goala.
+                page.evaluate("() => { location.hash = '#/tasks?sfera=personal' }")
+                page.wait_for_timeout(1800)
+                MARCA_P = 'Audit — ora de proba'
+                if page.locator('.trow', has_text=MARCA_P).count() == 0:
+                    fab = page.locator('.fab').first
+                    if fab.count():
+                        fab.click()
+                        page.wait_for_timeout(900)
+                        camp = page.locator('.fa-cauta input').first
+                        if camp.count():
+                            camp.fill('azi ' + MARCA_P)
+                            page.wait_for_timeout(500)
+                            page.locator('.fa-creeaza').first.click()
+                            page.wait_for_timeout(1800)
+                if page.locator('.trow', has_text=MARCA_P).count() == 0:
+                    note.append('n-am putut crea un task personal pentru proba ceasului')
+                else:
+                    # Apasare lunga pe randul lui, ca sa vina foaia cu randul de ora.
+                    r = page.evaluate("""(marca) => {
+                      const randuri = [...document.querySelectorAll('.trow')];
+                      const el = randuri.find(x => x.textContent.includes(marca));
+                      if (!el) return null;
+                      const b = el.getBoundingClientRect();
+                      return [b.left + b.width * 0.5, b.top + b.height / 2];
+                    }""", MARCA_P)
+                    ok = 'fara-ceas'
+                    if r:
+                        page.evaluate("""([x, y]) => {
+                          const el = document.elementFromPoint(x, y);
+                          const ev = (t) => el.dispatchEvent(new PointerEvent(t, {
+                            pointerId: 11, pointerType: 'touch', isPrimary: true,
+                            clientX: x, clientY: y, bubbles: true, cancelable: true }));
+                          ev('pointerdown');
+                          window.__sus = () => ev('pointerup');
+                        }""", r)
+                        page.wait_for_timeout(700)
+                        page.evaluate('() => window.__sus && window.__sus()')
+                        page.wait_for_timeout(800)
+                        ok = page.evaluate("""() => {
+                          const so = document.querySelector('.so-trigger');
+                          if (!so) return 'fara-ceas';
+                          so.click();
+                          return 'deschis';
+                        }""")
+                    if ok == 'fara-ceas':
+                        note.append('foaia de actiuni n-a adus randul de ora')
+                    else:
+                        page.wait_for_timeout(700)
+                        v = page.evaluate("""() => {
+                          const el = document.querySelector('.so-voal');
+                          if (!el) return null;
+                          return { slab: el.classList.contains('slab'),
+                                   bg: getComputedStyle(el).backgroundColor };
+                        }""")
+                        if v is None:
+                            note.append('ceasul nu s-a deschis ca foaie')
+                        else:
+                            bifa(v['slab'], 'peste o foaie, voalul ceasului doar separa',
+                                 'voal INTREG peste unul existent: %s' % v['bg'],
+                                 v['bg'])
 
             b.close()
     finally:
