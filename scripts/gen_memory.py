@@ -139,7 +139,10 @@ def gen_api_map():
         if not routes:
             continue
         total += len(routes)
-        rel = path.relative_to(ROOT)
+        # `.as_posix()`, nu `str()`: pe Windows separatorul de sistem ar scrie
+        # `blueprints\admin.py` in fisier, deci fiecare regenerare pe alta masina
+        # ar produce un diff pe toate titlurile, fara nicio schimbare reala (E-082).
+        rel = path.relative_to(ROOT).as_posix()
         out += [f'## {rel} ({len(routes)} rute)', '',
                 '| Metode | Path | Functie | Linie |', '|---|---|---|---|']
         for ln, methods, rule, func in routes:
