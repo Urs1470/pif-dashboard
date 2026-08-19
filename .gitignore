@@ -77,3 +77,6 @@ AUDIT_*.md
 .assistant_config
 
 .venv-sandbox/
+
+# Plansele generate de scripts/filmstrip.py — se refac la cerere, nu se versioneaza
+docs/filmstrip/
