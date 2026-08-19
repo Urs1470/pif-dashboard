@@ -606,17 +606,52 @@ input:focus, select:focus, textarea:focus {
 }
 /* Pagina care VINE merge pe arc si pe drumul lat (Ion: „drum lat"). Cea care
    PLEACA ramane pe curba de azi: un obiect care iese n-are voie sa depaseasca,
-   altfel pare ca se razgandeste. */
-::view-transition-new(root) {
-  animation-duration: var(--dur-arc);
-  animation-timing-function: var(--ease-arc, ease);
+   altfel pare ca se razgandeste.
+
+   CERNEALA NU MERGE PE ACELASI CEAS CU DRUMUL — si asta era greseala.
+   Amandoua paginile isi faceau opacitatea pe toata durata: cea veche 1->0 pe
+   240ms, cea noua 0->1 pe `--dur-arc`. Deci pe la jumatate amandoua stateau in
+   jurul lui 0,5 — adica AMBELE TEXTE LIZIBILE IN ACELASI TIMP. Pe doua ecrane
+   pline de randuri iese o mazgaleala, si se vede in cadrele de la 147-181ms
+   din `scripts/filmstrip.py` (scena `dock-schimba-tab`).
+   Un cross-fade simetric nu se poate acorda: orice durata alegi, mijlocul lui
+   are doua pagini la jumatate. Se rupe in doua ceasuri:
+     - vechea pleaca REPEDE si a plecat de tot pana la 140ms;
+     - noua isi aduce cerneala ABIA de la 50ms, in 170ms.
+   Cele doua ceasuri se aleg dintr-o conditie, nu din gust: doua texte se citesc
+   unul peste altul cand amandoua trec de ~0,35. Cu ceasurile astea, „vechea
+   inca peste 0,35" tine pana la 91ms, iar „noua deja peste 0,35" incepe dupa
+   110ms — deci ferestrele NU se ating, oricat ai incetini ceasul.
+   Intarzierea e 50, nu 80, tot dintr-un motiv masurat: la 80 vechea ajungea la
+   zero inainte ca noua sa porneasca, si pe la 197ms ecranul cadea aproape gol
+   (se vede in plansa dinainte). La 50 cerneala totala nu mai scade sub ~0,58,
+   deci nu mai exista clipa alba — si conditia de lizibilitate de mai sus tine
+   in continuare.
+   DRUMUL ramane neatins: alunecarea pastreaza `--dur-arc` si arcul ei. Se
+   schimba doar cand se pune cerneala, nu cum se misca pagina. */
+::view-transition-old(root) {
+  animation-name: vt-pagina-veche;
+  animation-duration: 140ms;
+  animation-fill-mode: both;
+}
+@keyframes vt-pagina-veche {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 ::view-transition-new(root) {
-  animation-name: vt-pagina-noua;
+  animation-name: vt-pagina-noua-drum, vt-pagina-noua-cerneala;
+  animation-duration: var(--dur-arc), 170ms;
+  animation-delay: 0s, 50ms;
+  animation-timing-function: var(--ease-arc, ease), var(--ease, ease);
+  animation-fill-mode: both, both;
 }
-@keyframes vt-pagina-noua {
-  from { opacity: 0; transform: translateX(calc(var(--nav-sens, 0) * 30px)); }
-  to { opacity: 1; transform: none; }
+@keyframes vt-pagina-noua-drum {
+  from { transform: translateX(calc(var(--nav-sens, 0) * 30px)); }
+  to { transform: none; }
+}
+@keyframes vt-pagina-noua-cerneala {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* CADRUL: acelasi ceas ca pagina, ca sa nu existe doua durate pe ecran.

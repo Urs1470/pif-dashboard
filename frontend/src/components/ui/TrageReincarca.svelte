@@ -50,13 +50,39 @@
      pe pagina, nu un strat peste ea. */
   .ptr {
     position: fixed;
-    top: calc(var(--safe-top) + 6px);
+    /* PORNESTE ASCUNS SUB ANTET, nu peste el.
+       Statea la `--safe-top + 6px`, adica INAUNTRUL antetului: pe toata prima
+       jumatate a cursei discul traversa titlul si contorul („13 deschise •
+       7 restante"). Un obiect care trece peste un text viu se citeste ca
+       defect, nu ca raspuns la gest. Masurat: degetul facea 132px, discul
+       cobora din y=15 in y=74, iar antetul tine 0..56+.
+       Acum marginea lui de JOS incepe exact la marginea de jos a antetului,
+       deci discul IESE DE SUB el — ca pe Android — si primul milimetru de
+       deget se vede imediat.
+       `--h-antet` vine din `Header.svelte`: pe telefon inaltimea nu e o
+       constanta (`height: auto` + `flex-wrap` + decupajul ecranului), deci nu
+       se poate calcula aici din tokenuri fara sa gresesti. */
+    top: calc(var(--h-antet, var(--header-height)) - 34px);
     left: 50%;
-    z-index: var(--z-sticky);
+    /* SUB antet, nu la egalitate cu el. Amandoua erau pe `--z-sticky`, si la
+       egalitate castiga ultimul din DOM — adica discul, care ajungea astfel sa
+       se picteze peste bara. O treapta mai jos si antetul (opac, fara blur) il
+       ascunde singur cat timp e in dreptul lui. */
+    z-index: calc(var(--z-sticky) - 1);
     pointer-events: none;
     /* Coboara odata cu degetul. `translate`, nu `transform`: aceeasi impartire ca
-       la foaie — o proprietate, un stapan. */
-    translate: -50% var(--tras, 0px);
+       la foaie — o proprietate, un stapan.
+       FACTORUL 1,5 NU E PODOABA. `--tras` vine deja inmultit cu `FRECARE` (0,55)
+       din `lib/reincarcare.svelte.js`, deci discul se misca la ceva peste
+       JUMATATE din viteza degetului: tragi 132px si el face 59. Asta e motivul
+       pentru care gestul parea mort — nu lipsa lui, ci lentoarea lui.
+       Frecarea ramane insa acolo unde trebuie: ea decide CAT TRAGI ca sa se
+       intample (`tras >= PRAG`), adica contractul gestului, si nu se atinge.
+       Aici se corecteaza doar cat de departe se DUCE semnul: 0,55 * 1,5 = 0,83
+       din deget, destul cat sa se simta legat de el. Cursa maxima ramane
+       marginita (96 * 1,5 = 144px), deci discul nu ajunge niciodata peste
+       primul rand din lista. */
+    translate: -50% calc(var(--tras, 0px) * 1.5);
     /* Cat timp degetul trage NU exista tranzitie, altfel arcul ramane in urma lui
        si se simte ca lag. La ridicare, revenirea e animata (vezi `.ptr:not(...)`). */
     transition: none;

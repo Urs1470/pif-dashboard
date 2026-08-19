@@ -7,6 +7,24 @@
 
   let { deschideCautarea = () => {} } = $props()
 
+  // CAT E DE INALT ANTETUL, ca fapt disponibil in CSS.
+  //
+  // Pe telefon nu e o constanta: regula are `height: auto`, `min-height` si
+  // `flex-wrap: wrap`, deci bara se poate rupe pe doua randuri, iar decupajul
+  // ecranului (`--safe-top`) intra si el in padding. Cine are nevoie de
+  // marginea ei de JOS nu o poate calcula din tokenuri fara sa se insele.
+  //
+  // Are nevoie arcul de trage-sa-reincarci: el porneste ascuns exact sub
+  // antet si iese de acolo odata cu degetul. Inainte pornea de la 6px si urca
+  // PESTE titlu — un disc care traverseaza un text viu.
+  //
+  // Se scrie pe <html>, ca `--nav-sens` (App) si `--kb` (Modal): acelasi tipar,
+  // un singur scriitor per variabila.
+  let inaltime = $state(0)
+  $effect(() => {
+    document.documentElement.style.setProperty('--h-antet', inaltime + 'px')
+  })
+
   // TREI STARI, TREI RANDURI — nu un buton care cicleaza.
   //
   // Cu doua stari, un comutator care „arata unde ajungi" mergea. Cu trei nu se
@@ -77,7 +95,7 @@
   }
 </script>
 
-<header class="header">
+<header class="header" bind:clientHeight={inaltime}>
   <a href="/" class="brand" title="TORQA">
     <!-- Marca „Unda" — semnal dreptunghiular (PWM). Aceleasi coordonate ca
          `frontend/public/favicon.svg`, dar aici tila ia `--accent` si cerneala
