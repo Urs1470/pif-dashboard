@@ -314,6 +314,14 @@
   // „Revizie - hala 3" ar pierde jumatate de nume si ar castiga un client inventat.
   // Fara liniuta, proiectul n-are client scris in nume si randul al doilea ramane
   // doar numarul („2 taskuri", ca banda generala din desen).
+  /** Ce scrie eticheta benzii, INTREG — pentru `title`. Pe ecran se taie.
+      `numeIntreg` CONTINE deja si `client` (sunt cele doua jumatati ale lui, vezi
+      despartirea de mai jos), deci clientul nu se mai adauga o data. */
+  const etichetaLane = (lane) => {
+    const cate = `${lane.tasks.length} ${lane.tasks.length === 1 ? 'task' : 'taskuri'}`
+    return `${lane.numeIntreg || lane.nume || ''} · ${cate}`.replace(/^ · /, '')
+  }
+
   // `numeIntreg` ramane pentru `title` si pentru cautare: pe ecran numele se scurteaza,
   // in tooltip nu — altfel doua proiecte cu acelasi inceput devin imposibil de deosebit
   // fara sa le deschizi.
@@ -1251,7 +1259,9 @@
               <div class="lane" style="--lane:{lane.color}; --rand:{li}; --h-lane:{lane.geo.inaltime}px; --h-stiva:{lane.geo.stiva}px" class:print-hide={exportSel.size > 0 && !exportSel.has(lane.id)}>
                 <div class="lane-label">
                   {#if lane.tip === 'proiect'}
-                    <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={lane.numeIntreg}>
+                    <!-- `title` acopera SI randul al doilea: el se taia („linia de extrudare 3
+                           · 4 tas…"), iar `numeIntreg` singur raspundea doar pentru primul. -->
+                    <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={etichetaLane(lane)}>
                       <span class="lane-dot"></span>
                       <span class="lane-col">
                         <span class="lane-txt">{lane.nume}</span>
@@ -1267,7 +1277,7 @@
                     </button>
                     {#if lane.tip_proiect}<span class="tip-chip" class:svc={lane.tip_proiect === 'Service'}>{lane.tip_proiect}</span>{/if}
                   {:else}
-                    <span class="lane-name static">
+                    <span class="lane-name static" title={etichetaLane(lane)}>
                       <span class="lane-dot"></span>
                       <span class="lane-col">
                         <span class="lane-txt">{lane.nume}</span>

@@ -40,7 +40,7 @@
      taburi se deschideau taiat si jumatate lin — raportat de Ion („nu
      toate taburile au animatii de deschidere"). Regula traieste in
      global.css, deci aici nu se adauga niciun CSS. -->
-<div class="page ruta-in">
+<div class="page lista-ingusta ruta-in">
   <UrmatoareaIesire />
   <TodayBoard />
 </div>

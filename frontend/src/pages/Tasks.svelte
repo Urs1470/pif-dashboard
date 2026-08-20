@@ -89,6 +89,11 @@
   let creating = $state(false)
 
   let formTitle = $state('')
+  /** Ce lipseste, scris pe camp — vezi nota de la formularul de editare. */
+  let eroareTitlu = $state('')
+  // Muchia de restant pleaca in clipa in care incepi sa repari, nu la urmatoarea
+  // apasare pe „Salvează".
+  $effect(() => { if (formTitle.trim() && eroareTitlu) eroareTitlu = '' })
   let formDesc = $state('')
   let formCategory = $state('General')
   let formDeadline = $state('')
@@ -280,6 +285,7 @@
     formCategory = t.categorie || 'General'
     formDeadline = t.data_scadenta || ''
     formRecurenta = t.recurenta || ''
+    eroareTitlu = ''
     showEditModal = true
   }
 
@@ -348,7 +354,9 @@
   }
 
   async function handleEdit() {
-    if (!editingTask || !formTitle.trim()) return
+    if (!editingTask) return
+    if (!formTitle.trim()) { eroareTitlu = 'Un task are nevoie de un titlu.'; return }
+    eroareTitlu = ''
     creating = true
     try {
       await updateGlobalTask(editingTask.id, {
@@ -1052,7 +1060,7 @@
   </div>
 {/snippet}
 
-<div class="page">
+<div class="page lista-ingusta">
   <!-- O SINGURA CALE DE ADAUGARE PER ECRAN.
        Erau doua, mereu amandoua pe ecran: butonul „+ Nou" din cap (deschide un
        formular cu patru campuri) si linia de scriere rapida din lista. Doua usi
@@ -1375,12 +1383,20 @@
              onSalveaza={async (d) => { await updateGlobalTask(taskEditat.id, d) }} />
 
 <Modal bind:open={showEditModal} title="Editează Task" size="md">
-  <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>
+  <!--
+      ENTER SALVEAZA. Butonul din subsolul lui `Modal` sta in AFARA elementului
+      `<form>`, deci formularul ramanea fara `type="submit"` si HTML bloca
+      trimiterea implicita (mai multe campuri) — masurat: zero cereri catre API.
+      `form="<id>"` leaga butonul de forma oriunde ar sta el in pagina.
+      Si nu mai e stins cand titlul lipseste: un buton stins nu spune de ce e
+      stins. Acum afli pe CAMPUL care trebuie reparat (`<Input error>`), nu
+      intr-un toast care pleaca in patru secunde. -->
+  <form class="task-form" id="task-edit-form" onsubmit={(e) => { e.preventDefault(); handleEdit() }}>
     <!-- ACELASI camp ca la creare, dinadins: doua ferestre vecine care cer
          acelasi lucru n-au voie sa-l ceara in doua feluri. Descrierea RAMANE
          doar aici — la creare nu se scrie niciodata (Ion), la editare e singura
          cale scurta catre nota unui task deja existent. -->
-    <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" />
+    <Input label="Titlu" bind:value={formTitle} placeholder="Titlu task" error={eroareTitlu} />
     <Textarea label="Descriere" bind:value={formDesc} placeholder="Detalii (opțional)" rows={3} />
     <div class="form-row-2">
       <!-- Componentele librariei, nu campuri de mana: regula din CLAUDE.md
@@ -1394,8 +1410,8 @@
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showEditModal = false}>Anulează</Button>
-      <Button loading={creating} disabled={!formTitle.trim()} onclick={handleEdit}>Salvează</Button>
+      <Button type="button" variant="secondary" onclick={() => showEditModal = false}>Anulează</Button>
+      <Button type="submit" form="task-edit-form" loading={creating}>Salvează</Button>
     </div>
   {/snippet}
 </Modal>

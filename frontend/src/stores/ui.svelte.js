@@ -2,6 +2,7 @@
 // Aici raman doar re-exporturile, ca importurile existente sa nu se rupa.
 import { tema, setMod, cicleazaTema } from '../lib/tema.svelte.js'
 import { facut, refuzat } from '../lib/gesturi.js'
+import { umanizeaza } from '../lib/erori.js'
 
 export { tema, setMod }
 export const toggleTheme = cicleazaTema
@@ -54,7 +55,10 @@ export function toast(message, type = 'info', duration = DURATA_TOAST) {
   if (type === 'error') refuzat()
   faceLoc()
   const id = ++toastId
-  ui.toasts.push({ id, message, type })
+  // TRADUCEREA SE FACE AICI, NU LA APELANT. Cele 71 de locuri care scriu
+  // `Eroare: ${e.message}` trimit mai departe sirul browserului, in engleza;
+  // singurul punct prin care trec toate e asta. Vezi `lib/erori.js`.
+  ui.toasts.push({ id, message: type === 'error' ? umanizeaza(message) : message, type })
   if (duration > 0) {
     setTimeout(() => dismissToast(id), duration)
   }

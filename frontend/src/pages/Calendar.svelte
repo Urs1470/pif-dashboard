@@ -2001,6 +2001,20 @@
      Opacitatea inmulteste peste tokenuri deja la limita — si stingea si benzile,
      nu doar cifra, desi lucrarile din ele sunt la fel de reale. */
   .zi.alta .n { color: var(--text-dim); }
+  /* …DAR CIFRA SINGURA NU AJUNGE. Masurat pe pixeli, in grila randata:
+     31 iulie = rgb(134,143,153), 1 august = rgb(155,163,173) — adica `--text-dim`
+     langa `--text-secondary`, un raport de 1,29:1 intre ele. Diferenta exista in
+     cod si nu se vede pe ecran: pe grila care scrie „august 2026", primul rand e
+     5/7 iulie fara niciun semn.
+     Al doilea canal nu poate fi cerneala (`--text-dim` E podeaua pentru text mic,
+     si nici opacitatea nu are voie, vezi mai sus) — deci e SUPRAFATA, singurul
+     canal ramas liber, si tocmai cel care spune lucrul corect: foaia lunii e
+     `--bg-surface`, iar ziua din alta luna nu e pe foaie, e fondul de dedesubt.
+     Weekendul urca la `--bg-elevated`, deci cele doua semne nu se calca.
+     `:not(.azi)` in loc de ordine in fisier: exact felul de dependenta de ordine
+     care a produs bugul cu pastila lui azi (vezi `.zi.azi.sel .n`). */
+  .zi.alta:not(.azi) { background: var(--bg); }
+  .zi.alta:not(.azi):hover { background: var(--bg-hover); }
   /* Liniile sunt SEPARATOARE, deci nu au ce cauta pe marginea de afara: acolo n-au
      ce desparti, si impreuna ar desena inapoi chiar chenarul scos de R1 — doar cu
      un pas mai incolo, pe cardul intreg. */
@@ -2058,6 +2072,16 @@
      la fel ca in orice alta zi. Cuvantul de langa ea sta pe aceeasi linie de baza,
      nu centrat — doua marimi centrate una langa alta plutesc. */
   .zi.azi .n { color: var(--accent-deep); font-weight: var(--fw-semibold); }
+  /* AZI SI SELECTAT IN ACELASI TIMP — starea implicita a paginii, nu un caz rar.
+     Cele doua reguli de deasupra sunt corecte fiecare in parte: `.zi.sel .n` pune
+     cerneala pe FILLUL saturat, `.zi.azi .n` pune cerneala adanca pe TENTA
+     celulei. Au aceeasi specificitate (0,2,1), iar `.azi` e scrisa mai jos — deci
+     castiga ea, si pe pastila plina ajungea `--accent-deep` peste `--accent`:
+     masurat 1,32:1, cand pragul e 4,5. Calendarul se deschide cu ziua de azi
+     selectata, deci exact cifra pe care o cauti prima era cea mai greu de citit.
+     Selectorul de mai jos e EXPLICIT (0,3,1), nu asezat mai jos in fisier: o
+     regula care depinde de ordine e chiar felul in care s-a rupt asta. */
+  .zi.azi.sel .n { color: var(--accent-text); }
   .zi.azi .zi-h { align-items: baseline; }
   /* Fara tracking de eticheta: „azi" e mono, iar mono cu litere rarite se citeste
      ca un cod. Desenul il are strans (11px; scara se opreste la 12). */

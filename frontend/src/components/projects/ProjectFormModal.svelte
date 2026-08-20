@@ -20,6 +20,13 @@
   let saving = $state(false)
   let clients = $state([])
   let numeEl = $state(null)
+  // EROAREA STA PE CAMP, NU INTR-UN TOAST DIN COLT.
+  // `<Input>` are de la inceput prop `error` cu tot desenul lui (muchie de
+  // restant, mesaj sub camp, `aria-invalid`) — si nu-l folosea nimeni, nicaieri.
+  // Un toast se stinge in patru secunde, apare in coltul opus (pe telefon:
+  // PESTE foaia formularului) si nu lasa niciun semn pe campul care trebuie
+  // reparat. Aici lasa.
+  let eroareNume = $state('')
 
   function emptyForm() {
     return {
@@ -30,6 +37,12 @@
   }
 
   const isEdit = $derived(!!project?.id)
+
+  // Muchia de restant pleaca in clipa in care incepi sa repari, nu la urmatoarea
+  // apasare pe „Creează": altfel scrii numele si campul ramane rosu sub degete.
+  $effect(() => {
+    if (form.nume.trim() && eroareNume) eroareNume = ''
+  })
 
   $effect(() => {
     if (open) {
@@ -50,6 +63,7 @@
       } else {
         form = emptyForm()
       }
+      eroareNume = ''
       loadClients().then(c => { clients = Array.isArray(c) ? c : c.clienti || [] }).catch(() => {})
       // NUMELE PRIMESTE FOCUSUL, nu primul buton. Modal focalizeaza singur primul
       // element focalizabil, iar acela e acum „PIF" — deci deschiderea ar fi
@@ -60,7 +74,12 @@
   })
 
   async function save() {
-    if (!form.nume.trim()) { toast('Numele e obligatoriu', 'error'); return }
+    if (!form.nume.trim()) {
+      eroareNume = 'Scrie un nume — restul se poate completa mai târziu.'
+      numeEl?.focus()
+      return
+    }
+    eroareNume = ''
     saving = true
     try {
       if (isEdit) {
@@ -79,7 +98,16 @@
 </script>
 
 <Modal bind:open title={isEdit ? 'Editează proiectul' : 'Proiect nou'} size="md">
-  <form class="pf" onsubmit={(e) => { e.preventDefault(); save() }}>
+  <!-- `id` + `form="pf-form"` pe butonul din subsol: ENTER TREBUIE SA SALVEZE.
+       Butonul de salvare e randat de `Modal` in slotul `footer`, deci in AFARA
+       elementului `<form>`. Fara el, formularul ramane fara `type="submit"`, iar
+       HTML blocheaza trimiterea implicita cand sunt mai multe campuri — masurat:
+       Enter in „Nume" dadea ZERO cereri catre API, modalul ramanea deschis si nu
+       aparea niciun mesaj. Iar aplicatia te invata exact gestul care nu mergea:
+       campul rapid de pe Acasa scrie „Task rapid pentru azi, apoi Enter".
+       Atributul `form` leaga un buton de un formular oriunde ar sta el in pagina;
+       asa nu trebuie mutat subsolul in interiorul formei. -->
+  <form class="pf" id="pf-form" onsubmit={(e) => { e.preventDefault(); save() }}>
     <span class="pf-titlu">{isEdit ? 'Editează proiectul' : 'Proiect nou'}</span>
 
     <!-- TIPUL NU E O ETICHETA, E O RAMIFICATIE: PIF si Service au sectiuni de
@@ -97,7 +125,8 @@
       </button>
     </div>
 
-    <Input label="Nume" bind:value={form.nume} placeholder="ex. CU240S linia 3" bind:ref={numeEl} />
+    <Input label="Nume" bind:value={form.nume} placeholder="ex. CU240S linia 3" bind:ref={numeEl}
+           error={eroareNume} />
 
     <div class="pf-doua">
       <Input label="Client" bind:value={form.client} placeholder="ex. Continental" list="clients-list" />
@@ -138,10 +167,15 @@
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <button class="pf-b pf-renunta" onclick={() => open = false}>Renunță</button>
+      <button type="button" class="pf-b pf-renunta" onclick={() => open = false}>Renunță</button>
       <!-- ACTIUNEA PRINCIPALA SPUNE CE FACE. „Creează" singur e un verb fara
-           obiect; pe un buton citit intr-o secunda, obiectul e jumatate din sens. -->
-      <button class="pf-b pf-creeaza" disabled={saving || !form.nume.trim()} onclick={save}>
+           obiect; pe un buton citit intr-o secunda, obiectul e jumatate din sens.
+           NU MAI E STINS CAND LIPSESTE NUMELE. Un buton stins nu spune de ce e
+           stins: te uitai la el, la formular, si nu scria nicaieri ca numele e
+           obligatoriu. Acum apesi (sau dai Enter) si afli — pe campul care
+           trebuie reparat, nu intr-un toast care pleaca. `disabled` ramane doar
+           cat tine salvarea, unde chiar previne o a doua trimitere. -->
+      <button type="submit" form="pf-form" class="pf-b pf-creeaza" disabled={saving}>
         {isEdit ? 'Salvează proiectul' : 'Creează proiectul'}
       </button>
     </div>

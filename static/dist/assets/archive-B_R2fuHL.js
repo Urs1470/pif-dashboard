@@ -1,1 +1,0 @@
-import{B as e,X as t,Y as n}from"./Select-BbZs5_WJ.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=n(a,r),s=[[`rect`,{width:`20`,height:`5`,x:`2`,y:`3`,rx:`1`}],[`path`,{d:`M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8`}],[`path`,{d:`M10 12h4`}]];e(i,t({name:`archive`},()=>o,{get iconNode(){return s}}))}export{i as t};

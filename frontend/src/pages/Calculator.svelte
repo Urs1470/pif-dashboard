@@ -880,6 +880,21 @@
     </div>
   {:else}
     <!-- Viewport ingust: acordeonul existent, neschimbat -->
+    <!-- LEGENDA BULINELOR EXISTA DOAR AICI, SI DOAR CAND E CEVA DE EXPLICAT.
+         Bulina de verdict isi spune numele prin `title`/`aria-label` — pe desktop
+         il vezi la hover. Pe telefon hover NU EXISTA, deci punctul verde de langa
+         „NPSH (cavitație)" ramanea o culoare fara nume: stiai ca inseamna ceva,
+         nu si ce. Randul de mai jos e singurul loc din pagina in care cele trei
+         forme se vad una langa alta cu numele lor, iar cand niciun modul n-are
+         verdict nu se randeaza deloc — o legenda pentru nimic e chiar zgomotul
+         pe care il repara. -->
+    {#if stariModule.size}
+      <div class="vd-legenda">
+        {#each ['ok', 'atentie', 'critic'] as st}
+          <span class="vd-l"><span class="vd-dot {st}"></span>{VERDICT_TITLU[st]}</span>
+        {/each}
+      </div>
+    {/if}
     <div class="acc-list">
       {#each rows as row (row.kind === 'head' ? row.key : row.m.id)}
         {#if row.kind === 'head'}
@@ -1146,13 +1161,25 @@
   .intreb-nev { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-snug); }
   .intreb-mod { font-size: var(--font-small); color: var(--accent); }
   .intreb-foot { grid-column: 1 / -1; font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); padding-top: 4px; }
+  /* AL DOILEA NIVEL NU ARE VOIE SA ARATE CA PRIMUL.
+     Randul asta e o SUBCATEGORIE a chipului activ de deasupra („Aplicații" ->
+     Pompe, Compresoare, Macarale…), dar se desena cu aceeasi reteta: acelasi
+     fill (`--bg-input`), aceeasi raza, aceeasi stare activa cu tenta SI inel.
+     Diferenta era 1px de padding si 4px de inaltime — iar pe telefon nici atat,
+     fiindca amandoua urca la `--tap-min`. Deci pe 844px de ecran vedeai
+     paisprezece chipuri identice pe doua randuri, ~300px inainte de primul
+     calcul, si singurul lucru care spunea ca unul e copilul celuilalt era un
+     hairline de 1px.
+     Nivelul se citeste din CANTITATEA DE CERNEALA, nu dintr-o culoare noua:
+     parintele e un chip PLIN cu inel cand e activ; copilul e text gol, iar cand
+     e activ primeste doar tenta — fara inel. Doua trepte, aceleasi tokenuri. */
   .subfam-tab {
-    padding: 3px 13px; min-height: 26px; border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-medium);
-    color: var(--text-secondary); border: 1px solid transparent; background: var(--bg-input);
+    padding: 3px 11px; min-height: 26px; border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-medium);
+    color: var(--text-dim); border: 1px solid transparent; background: transparent;
     cursor: pointer; transition: var(--transition-pressable);
   }
   .subfam-tab:hover { background: var(--bg-hover); color: var(--text); }
-  .subfam-tab.active { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
+  .subfam-tab.active { background: var(--accent-subtle); color: var(--accent-on-subtle); font-weight: var(--fw-semibold); }
   .subfam-tab:active { transform: scale(var(--press-scale)); }
 
   /* caseta de cautare */
@@ -1419,6 +1446,11 @@
   .vd-dot.atentie { background: transparent; border: 1.5px solid var(--danger); }
   .vd-dot.critic { background: var(--danger); }
   .vd-dot.nav-dot { margin-right: 6px; vertical-align: middle; }
+  /* Legenda: text mic, gri, o singura linie care se poate rupe. Fara cadru si
+     fara fond — e o nota de subsol pusa deasupra, nu inca o caseta. */
+  .vd-legenda { display: flex; flex-wrap: wrap; gap: var(--space-12); margin: 0 0 var(--space-sm); }
+  .vd-l { display: inline-flex; align-items: center; gap: 6px;
+          font-size: var(--font-label); color: var(--text-dim); }
   .acc-title .vd-dot { margin-right: 7px; vertical-align: middle; }
 
   /* Muchia colorata de pe randul de rezultat a plecat: buleta si textul de

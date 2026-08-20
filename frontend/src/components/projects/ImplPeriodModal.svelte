@@ -23,6 +23,8 @@
   let eticheta = $state('')
   let busy = $state(false)
   let confirmSterge = $state(false)
+  /** Ce lipseste din interval — se scrie sub el, nu intr-un toast. */
+  let eroareInterval = $state('')
 
   // ===== CONTEXTUL DIN CARE SE CITESC REGULILE =====
   // Modalul nu poate raspunde la „ce se intampla daca salvez" doar cu perioadele
@@ -71,7 +73,14 @@
       loc = period?.locatie || 'site'
       faza = period?.faza || 'implementare'
       eticheta = period?.eticheta || ''
+      eroareInterval = ''
     }
+  })
+
+  // Mesajul pleaca in clipa in care intervalul devine bun — locul lui il ia
+  // inapoi nota cu zilele lucratoare.
+  $effect(() => {
+    if (intervalOk && eroareInterval) eroareInterval = ''
   })
 
   // `untrack`: altfel efectul ar depinde de `fereastra`/`vecini`, pe care tot el
@@ -144,8 +153,11 @@
 
   async function save() {
     if (busy) return
-    if (!dStart || !dEnd) { toast('Alege început și sfârșit', 'error'); return }
-    if (dEnd < dStart) { toast('Sfârșitul e înainte de început', 'error'); return }
+    // REGULA SE SPUNE SUB CAMPURILE EI, nu intr-un toast in coltul opus care se
+    // stinge in patru secunde. Panoul are deja locul: `.ip-nota`, sub interval.
+    if (!dStart || !dEnd) { eroareInterval = 'Alege și începutul, și sfârșitul.'; return }
+    if (dEnd < dStart) { eroareInterval = 'Sfârșitul e înaintea începutului.'; return }
+    eroareInterval = ''
     busy = true
     const body = { data_start: dStart, data_sfarsit: dEnd, locatie: loc, faza, eticheta: eticheta.trim() }
     try {
@@ -185,7 +197,11 @@
      listei din care ai deschis-o, iar o caseta centrata ar acoperi tocmai lista
      fata de care decizi. Vezi `size="panou"` in Modal.svelte. -->
 <Modal bind:open title={period ? 'Editează perioada' : 'Perioadă nouă'} size="panou">
-  <div class="ip">
+  <!-- FORMULAR, ca ENTER SA SALVEZE. Panoul era un `<div>` cu un buton cu
+       `onclick`, deci Enter nu facea nimic — masurat: zero cereri catre API.
+       Toate celelalte butoane din el sunt `type="button"` (si la fel cele din
+       `DatePicker`, `Select`, `Input`), deci singurul care trimite e „Salvează". -->
+  <form class="ip" onsubmit={(e) => { e.preventDefault(); save() }}>
     <div class="ip-cap">
       <span class="ip-titlu">Perioadă de implementare</span>
       {#if proiect}<span class="ip-sub">{proiect.client ? `${proiect.client} · ` : ''}{proiect.nume}</span>{/if}
@@ -194,8 +210,8 @@
     <div class="ip-grup">
       <span class="ip-h">Unde</span>
       <div class="ip-doua">
-        <button class="ip-opt" class:on={loc === 'site'} onclick={() => loc = 'site'}><MapPin size={15} strokeWidth={1.5} />Site</button>
-        <button class="ip-opt" class:on={loc === 'sediu'} onclick={() => loc = 'sediu'}><Building2 size={15} strokeWidth={1.5} />Sediu EGB</button>
+        <button type="button" class="ip-opt" class:on={loc === 'site'} onclick={() => loc = 'site'}><MapPin size={15} strokeWidth={1.5} />Site</button>
+        <button type="button" class="ip-opt" class:on={loc === 'sediu'} onclick={() => loc = 'sediu'}><Building2 size={15} strokeWidth={1.5} />Sediu EGB</button>
       </div>
     </div>
 
@@ -210,6 +226,11 @@
            interval, nu cate casute a acoperit. -->
       {#if intervalOk}
         <span class="ip-nota"><span class="ip-n">{nLucratoare}</span>&nbsp;{nLucratoare === 1 ? 'zi lucrătoare' : 'zile lucrătoare'} · {saptamana}</span>
+      {:else if eroareInterval}
+        <!-- Acelasi rand ca nota de zile lucratoare, in tonul de restant: cand
+             intervalul e bun iti spune cat tine, cand nu e iti spune ce lipseste.
+             Un singur loc, doua raspunsuri — nu o caseta noua sub formular. -->
+        <span class="ip-nota ip-lipsa" role="alert">{eroareInterval}</span>
       {/if}
     </div>
 
@@ -221,8 +242,8 @@
     <div class="ip-grup">
       <span class="ip-h">Ce fază</span>
       <div class="ip-doua">
-        <button class="ip-opt" class:on={faza === 'pregatire'} onclick={() => faza = 'pregatire'}><Wrench size={15} strokeWidth={1.5} />Pregătire</button>
-        <button class="ip-opt" class:on={faza === 'implementare'} onclick={() => faza = 'implementare'}><Hammer size={15} strokeWidth={1.5} />Implementare</button>
+        <button type="button" class="ip-opt" class:on={faza === 'pregatire'} onclick={() => faza = 'pregatire'}><Wrench size={15} strokeWidth={1.5} />Pregătire</button>
+        <button type="button" class="ip-opt" class:on={faza === 'implementare'} onclick={() => faza = 'implementare'}><Hammer size={15} strokeWidth={1.5} />Implementare</button>
       </div>
     </div>
 
@@ -259,17 +280,17 @@
       </div>
     {/if}
 
-    <button class="ip-salveaza" onclick={save} disabled={busy || !intervalOk}>Salvează</button>
+    <button type="submit" class="ip-salveaza" disabled={busy}>Salvează</button>
 
     {#if period?.id}
       <div class="ip-rar">
         <span class="ip-linie"></span>
-        <button class="ip-sterge" onclick={() => confirmSterge = true} disabled={busy}>
+        <button type="button" class="ip-sterge" onclick={() => confirmSterge = true} disabled={busy}>
           <Trash2 size={15} strokeWidth={1.5} />Șterge perioada
         </button>
       </div>
     {/if}
-  </div>
+  </form>
 </Modal>
 
 <ConfirmDialog bind:open={confirmSterge}
@@ -345,6 +366,9 @@
 
   .ip-nota { font-size: var(--font-small); color: var(--text-dim); }
   .ip-n { font-family: var(--font-mono); color: var(--text-secondary); }
+  /* Cerneala de restant, fara tenta si fara iconita: sta sub campurile ei, deci
+     n-are nevoie sa se prezinte. Culoarea e stare, nu decor. */
+  .ip-lipsa { color: var(--danger); }
 
   .ip-casa {
     display: flex;

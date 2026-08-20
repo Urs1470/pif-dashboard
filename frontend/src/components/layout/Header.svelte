@@ -1,8 +1,9 @@
 <script>
-  import { Sun, Moon, Monitor, Check, Search } from '@lucide/svelte'
+  import { Sun, Moon, Monitor, Check, Search, CloudOff } from '@lucide/svelte'
   import { fly } from 'svelte/transition'
   import { ecran } from '../../lib/ecran.svelte.js'
   import { tema, setMod } from '../../lib/tema.svelte.js'
+  import { reteaua } from '../../lib/retea.svelte.js'
   import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
 
   let { deschideCautarea = () => {} } = $props()
@@ -117,6 +118,21 @@
        in aceeasi pozitie; bara tine doar marca si actiunile globale. -->
   <span class="h-spacer"></span>
 
+  <!-- „FARA RETEA" STA IN BARA, NU INTR-UN TOAST.
+       Un toast confirma o actiune si pleaca dupa patru secunde; asta e o STARE
+       care tine pana se schimba semnalul, si care schimba intelesul a tot ce
+       vezi sub ea (listele vin din cache, salvarile nu pleaca). Deci sta acolo
+       unde stau faptele permanente ale aplicatiei, langa marca.
+       `role="status"` + `aria-live` fiindca apare fara ca tu sa fi facut ceva. -->
+  {#if !reteaua.online}
+    <span class="fara-retea" role="status" aria-live="polite"
+          title="Ce vezi vine din memoria telefonului. Ce salvezi nu pleacă până revine semnalul."
+          transition:fly={{ y: -6, duration: motionDuration(DUR_BASE), easing: EASE }}>
+      <CloudOff size={15} strokeWidth={1.5} />
+      <span class="fr-text">Fără rețea</span>
+    </span>
+  {/if}
+
   <div class="header-actions">
     <!-- CAUTAREA TRAIESTE INTR-UN SINGUR LOC: in dock.
          Pe telefon dock-ul nu o are (cele patru sloturi plus „Mai mult" sunt
@@ -212,6 +228,25 @@
     gap: var(--space-sm);
   }
 
+  /* Chip de STARE, deci in tenta de restant cu cerneala adanca — nu fill plin:
+     nu e o eroare care tocmai s-a intamplat, e o conditie in care lucrezi.
+     Treapta de control (13/600), ca orice altceva asezat in rand cu marca. */
+  .fara-retea {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    height: 28px;
+    padding: 0 10px;
+    margin-right: var(--space-sm);
+    border-radius: var(--radius-xs);
+    background: var(--danger-subtle);
+    color: var(--danger-deep);
+    font-size: var(--font-control);
+    font-weight: var(--fw-semibold);
+    white-space: nowrap;
+  }
+
   .h-btn {
     width: 36px;
     height: 36px;
@@ -286,5 +321,11 @@
     .brand { min-height: var(--tap-min); }
     .h-btn { width: var(--tap-min); height: var(--tap-min); }
     .tema-rand { height: var(--tap-sheet); }
+    /* Chipul NU se scurteaza la iconita pe telefon: telefonul e exact locul in
+       care ramai fara semnal, deci acolo cuvintele conteaza cel mai mult. Daca
+       nu incape pe un rand, bara are voie sa se rupa — asta si face
+       (`flex-wrap: wrap` mai sus), iar o bara mai inalta e un semn in plus, nu
+       o problema. */
+    .fara-retea { height: 32px; }
   }
 </style>

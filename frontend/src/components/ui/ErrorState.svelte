@@ -1,5 +1,6 @@
 <script>
   import { TriangleAlert, RotateCcw } from '@lucide/svelte'
+  import { umanizeaza } from '../../lib/erori.js'
 
   // DOUA MARIMI, fiindca sunt doua situatii diferite.
   //
@@ -20,22 +21,10 @@
     children,
   } = $props()
 
-  // CE SCRIE BROWSERUL NU E CE CITESTE OMUL.
-  // Cand pica reteaua, `fetch` respinge cu un mesaj propriu, in engleza si
-  // diferit de la un browser la altul: „Failed to fetch" (Chrome), „Load failed"
-  // (Safari), „NetworkError when attempting to fetch resource." (Firefox). El
-  // ajungea ca atare sub „Ceva n-a mers" — singurul sir netradus ramas la vedere
-  // in aplicatie, si tocmai in ecranul in care omul e deja contrariat.
-  // Se traduce AICI, nu la fiecare apelant: toate cele cinci pagini trec pe aici.
-  const RETEA = /failed to fetch|load failed|networkerror|network request failed|err_internet_disconnected/i
-  const mesajRo = (m) => {
-    const s = (m || '').toString().trim()
-    if (!s) return ''
-    if (RETEA.test(s)) return 'Pare că nu e rețea. Verifică semnalul și încearcă din nou.'
-    if (/^unauthorized$/i.test(s)) return 'Sesiunea a expirat. Intră din nou cu PIN-ul.'
-    return s
-  }
-  const mesaj = $derived(mesajRo(message))
+  // Traducerea sirurilor browserului sta in `lib/erori.js` — acelasi modul din
+  // care o ia si `toast()`. Era scrisa aici, deci acoperea doar CITIRILE (ecranul
+  // gol); scrierile ajungeau pe ecran in engleza. Un fapt, un loc.
+  const mesaj = $derived(umanizeaza(message))
 
   function ora(v) {
     if (!v) return ''

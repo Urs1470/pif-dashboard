@@ -137,6 +137,11 @@
   let showTaskEditModal = $state(false)
   let editingTask = $state(null)
   let taskFormTitle = $state('')
+  /** Ce lipseste, scris pe camp — vezi nota de la formularul de editare. */
+  let eroareTitluTask = $state('')
+  // Muchia de restant pleaca in clipa in care incepi sa repari, nu la urmatoarea
+  // apasare pe „Salvează".
+  $effect(() => { if (taskFormTitle.trim() && eroareTitluTask) eroareTitluTask = '' })
   let taskFormDesc = $state('')
   let taskFormDeadline = $state('')
   let taskFormRecurenta = $state('')
@@ -448,11 +453,14 @@
     taskFormDesc = t.descriere || ''
     taskFormDeadline = (t.data_scadenta || '').slice(0, 10)
     taskFormRecurenta = t.recurenta || ''
+    eroareTitluTask = ''
     showTaskEditModal = true
   }
 
   async function handleTaskEdit() {
-    if (!editingTask || !taskFormTitle.trim() || taskFormSaving) return
+    if (!editingTask || taskFormSaving) return
+    if (!taskFormTitle.trim()) { eroareTitluTask = 'Un task are nevoie de un titlu.'; return }
+    eroareTitluTask = ''
     taskFormSaving = true
     try {
       await updateTask(editingTask.id, {
@@ -737,6 +745,19 @@
     ['Nr. comandă', project?.nr_comanda],
     // „Nr. contract" (1/18), „PM" (4/18) si „Început" (5/18) au plecat in v36.
     // Începutul se citeste din perioade — Ganttul de mai jos il arata.
+    //
+    // ZIUA ULTIMEI MODIFICARI STA AICI, O SINGURA DATA.
+    // Era scrisa in antetul FIECAREIA dintre cele trei sectiuni de notite
+    // („Observații tehnice", „Constatări", „Acțiuni"), ca „actualizat <data>" —
+    // dar valoarea e `proiecte.updated_at`, adica data ultimei modificari a
+    // PROIECTULUI. Consecinta: un proiect gol scria „actualizat azi" pe toate
+    // trei; redenumeai proiectul si se „actualizau" constatarile; scriai
+    // observatiile si se „actualiza" si rezultatul interventiei.
+    // „Cand am scris ultima data constatarile" e o intrebare cu greutate la un
+    // protocol de PIF, iar interfata raspundea cu incredere si gresit. Baza nu
+    // tine data pe camp, deci raspunsul corect nu e sa-l scrii de trei ori mai
+    // bine, ci sa-l scrii o data, acolo unde e adevarat: proiectul.
+    ['Actualizat', project?.updated_at ? formatDate(project.updated_at) : ''],
   ]).filter(([, v]) => String(v ?? '').trim()))
 
   const tasksDone = $derived(tasks.filter(t => t.status === 'done' || t.status === 'finalizat').length)
@@ -850,7 +871,6 @@
         <div class="field-header">
           <span class="f-ico"><SolidIcon name="file" size={13} /></span>
           <span class="field-label">Observații Tehnice</span>
-          {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
         </div>
         {#if project.observatii}
           <div class="field-body">
@@ -868,8 +888,7 @@
           <div class="field-header">
             <span class="f-ico f-red"><AlertCircle size={13} /></span>
             <span class="field-label">Constatări înainte de intervenție</span>
-            {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
-          </div>
+            </div>
           {#if project.service_before}
             <div class="field-body">
               <RichText value={project.service_before} collapsible noToggle maxHeight={240} />
@@ -885,8 +904,7 @@
           <div class="field-header">
             <span class="f-ico f-green"><CheckCircle2 size={13} /></span>
             <span class="field-label">Acțiuni și rezultat</span>
-            {#if project.updated_at}<span class="f-meta">actualizat {formatDate(project.updated_at)}</span>{/if}
-          </div>
+            </div>
           {#if project.service_after}
             <div class="field-body">
               <RichText value={project.service_after} collapsible noToggle maxHeight={240} />
@@ -1310,8 +1328,16 @@
            onSterge={() => stergeTaskDinLista(foaieTask)} />
 
 <Modal bind:open={showTaskEditModal} title="Editează Task" size="panou">
-  <form class="task-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
-    <Input label="Titlu" bind:value={taskFormTitle} placeholder="Titlu task" />
+  <!--
+      ENTER SALVEAZA. Butonul din subsolul lui `Modal` sta in AFARA elementului
+      `<form>`, deci formularul ramanea fara `type="submit"` si HTML bloca
+      trimiterea implicita (mai multe campuri) — masurat: zero cereri catre API.
+      `form="<id>"` leaga butonul de forma oriunde ar sta el in pagina.
+      Si nu mai e stins cand titlul lipseste: un buton stins nu spune de ce e
+      stins. Acum afli pe CAMPUL care trebuie reparat (`<Input error>`), nu
+      intr-un toast care pleaca in patru secunde. -->
+  <form class="task-form" id="proj-task-edit-form" onsubmit={(e) => { e.preventDefault(); handleTaskEdit() }}>
+    <Input label="Titlu" bind:value={taskFormTitle} placeholder="Titlu task" error={eroareTitluTask} />
     <!-- Componentele librariei, ca in modalul din /tasks — acelasi formular,
          acelasi desen. Aici mai statea si un `mf-field` GOL: perechea campului
          de prioritate, plecat in v34, care impingea Termenul in dreapta ca sa
@@ -1322,8 +1348,8 @@
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <Button variant="secondary" onclick={() => showTaskEditModal = false}>Anulează</Button>
-      <Button loading={taskFormSaving} disabled={!taskFormTitle.trim()} onclick={handleTaskEdit}>Salvează</Button>
+      <Button type="button" variant="secondary" onclick={() => showTaskEditModal = false}>Anulează</Button>
+      <Button type="submit" form="proj-task-edit-form" loading={taskFormSaving}>Salvează</Button>
     </div>
   {/snippet}
 </Modal>
@@ -1385,7 +1411,6 @@
   .f-ico { width: 24px; height: 24px; border-radius: 8px; background: var(--accent-subtle); color: var(--accent-on-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .f-ico.f-red { background: var(--danger-subtle); color: var(--danger); }
   .f-ico.f-green { background: var(--success-subtle); color: var(--success); }
-  .f-meta { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
   .field-label { flex: 1; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
   .field-body { font-size: var(--font-small); color: var(--text); line-height: var(--lh-relaxed); padding: var(--space-sm) var(--space-lg) var(--space-sm); overflow-x: auto; --rt-fade: var(--bg-surface); }
   .field-empty { padding: var(--space-sm) var(--space-lg) var(--space-md); font-size: var(--font-small); color: var(--text-dim); font-style: italic; cursor: pointer; width: 100%; text-align: left; }
@@ -1464,6 +1489,14 @@
   .empty { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-lg) 0; text-align: center; }
 
   /* Task list */
+  /* Lista se opreste la latimea de lista (vezi `--content-lista`), nu la cat e
+     coloana principala: si aici titlul statea la ~250px iar termenul lipit de
+     marginea din dreapta, la ~1046 — 795px de gol intre un task si scadenta lui.
+     Randurile stau direct pe fondul paginii, fara card, deci coloana care se
+     opreste mai devreme nu lasa nicio cutie pe jumatate goala. Linia rapida de
+     deasupra ia aceeasi latime, ca sa inceapa si sa se termine pe aceeasi
+     margine ca lista pe care o alimenteaza. */
+  .task-list, .quick-add { max-width: var(--content-lista); }
   .task-list { display: flex; flex-direction: column; }
 
   /* CAPUL DE GRUPA — acelasi obiect ca in /tasks, aceleasi tonuri: nu inveti doua

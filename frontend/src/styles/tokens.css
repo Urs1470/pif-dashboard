@@ -291,6 +291,19 @@
   /* ---- Layout ---- */
   --header-height: 56px;
   --content-max: 1400px;
+  /* DOUA LATIMI, FIINDCA SUNT DOUA FELURI DE PAGINA.
+     1400 e latimea HARTILOR — Planificatorul (30 de zile in coloane) si
+     Calendarul (sapte zile in coloane) chiar au nevoie de fiecare pixel.
+     O LISTA nu. Masurat pe randurile de pe Acasa si /tasks, la 1440 si la 1920:
+     de la capatul titlului pana la termenul lipit de marginea din dreapta erau
+     965-1046px de gol, fara linie de ghidaj si fara alternanta de fond, cu
+     randurile la 46px unul de altul. Ca sa afli cand e scadent un task, ochiul
+     traversa o mie de pixeli; trei randuri mai jos pierdeai randul.
+     920 pastreaza AMANDOUA lucrurile bune: termenele raman aliniate intr-o
+     coloana pe care o citesti pe verticala (de-aia sunt mono), iar drumul de la
+     titlu la termen scade sub jumatate. Pe telefon nu schimba nimic — acolo
+     randul e oricum ingust, si acolo problema nu exista. */
+  --content-lista: 920px;
   /* DOAR VALOAREA IMPLICITA — se rescrie la rulare din `Dock.svelte`, care
      masoara bara cu un `ResizeObserver`. 68 e inaltimea pastilei de pe desktop;
      pe telefon bara are 72+ si difera cu safe-area, deci nimeni nu mai scrie

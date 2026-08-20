@@ -174,7 +174,13 @@
       {#if apoi.length}
         <span class="apoi">
           apoi
-          {#each apoi as d, i (d.start + d.cheie)}{#if i}<span class="pt">·</span>{/if}<span class="ap">{interval(d)}</span>{#if undeApoi(d)}<span class="apc">{undeApoi(d)}</span>{/if}{/each}
+          <!-- ACEEASI ORDINE CA IN CHIPUL „ACUM": UNDE, apoi CAND.
+               Chipul din stanga scrie [Acum] [Continental] · [Deplasare Timișoara]
+               [18 aug–21 aug] — cine, ce, cand. Randul asta scria invers, [23
+               aug–25 aug] [Aquatim] — cand, cine. Aceeasi linie, patruzeci de
+               pixeli distanta, doua gramatici: ca sa citesti a doua ieșire
+               trebuia sa intorci propozitia in cap. -->
+          {#each apoi as d, i (d.start + d.cheie)}{#if i}<span class="pt">·</span>{/if}{#if undeApoi(d)}<span class="apc">{undeApoi(d)}</span>{/if}<span class="ap">{interval(d)}</span>{/each}
         </span>
       {/if}
     {:else}
@@ -264,10 +270,11 @@
   .apoi { font-size: var(--font-small); color: var(--text-dim); white-space: nowrap; }
   /* Intervalul e informatie (dim); cuvantul de legatura „apoi" ramane faint. */
   .ap { font-family: var(--font-mono); color: var(--text-dim); }
-  /* Spatiul dintre interval si loc vine din CSS, nu dintr-un caracter scris in
-     markup: acolo era `<span class="apc"> {…}</span>`, iar spatiul de dinaintea
-     expresiei se pierdea la compilare — pe ecran scria „31 iulsediu". */
-  .apc { color: var(--text-dim); margin-left: 5px; }
+  /* Spatiul dintre loc si interval vine din CSS, nu dintr-un caracter scris in
+     markup: un spatiu scris langa o expresie se pierde la compilare — asa
+     scria odata „31 iulsediu". Marginea e acum la DREAPTA, fiindca locul a
+     trecut inaintea intervalului (vezi nota din markup). */
+  .apc { color: var(--text-dim); margin-right: 5px; }
   .pt { margin: 0 5px; }
 
   .gol { display: inline-flex; align-items: center; gap: 7px;

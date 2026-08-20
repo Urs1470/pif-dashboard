@@ -443,7 +443,11 @@
             {#if it.status === 'done'}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
           </button>
 
-          <button class="amain" onclick={(e) => openItem(e, it)}>
+          <!-- `title`: TITLUL TAIAT TREBUIE SA SE POATA CITI UNDEVA.
+               Randul scurteaza cu ellipsis („Citire log alarme AL-4 supratensiu…")
+               si nu exista niciun alt loc in ecran care sa arate restul — masurat,
+               6 elemente taiate fara `title` pe Acasa si in Planificator. -->
+          <button class="amain" title={it.titlu} onclick={(e) => openItem(e, it)}>
             <!-- CONTORUL DE PASI STA LANGA TITLU, ca in /tasks si in pagina de
                  proiect — un singur loc pentru aceeasi informatie. Statea pe
                  linia a doua, si acolo avea un bug tacut: intreaga linie era
@@ -533,7 +537,7 @@
             {#if it.status === 'done'}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
           </button>
 
-          <button class="amain" onclick={(e) => openItem(e, it)}>
+          <button class="amain" title={it.titlu} onclick={(e) => openItem(e, it)}>
             <span class="atitlu">
               <span class="atitle">{it.titlu}</span>
               <ContorPasi gata={it.subtask_done || 0} total={it.subtask_total || 0} />
