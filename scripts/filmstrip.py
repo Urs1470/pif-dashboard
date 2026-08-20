@@ -173,6 +173,87 @@ def _(page, cdp, baza):
     return act
 
 
+# ---- tastatura ----
+# Pe telefon foaia de adaugare vine INTOTDEAUNA cu tastatura: campul se
+# focalizeaza singur la deschidere. Deci a o filma fara tastatura inseamna a
+# filma o situatie care nu exista. Chromium n-are tastatura, dar aplicatia nu
+# vede o tastatura — vede `visualViewport` micsorandu-se, si de acolo isi scrie
+# `--kb` (`Modal.svelte`). Simulam exact acel semnal, deci codul care se joaca e
+# al aplicatiei, neatins. Banda desenata jos e o ADNOTARE pe film: fara ea foaia
+# pare ca pluteste peste gol, cand de fapt sta pe tastatura.
+KB = """
+window.__kb = (px) => {
+  const vv = window.visualViewport;
+  Object.defineProperty(vv, 'height', {configurable: true,
+    get: () => window.innerHeight - px});
+  vv.dispatchEvent(new Event('resize'));
+  let b = document.getElementById('kb-adnotare');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'kb-adnotare';
+    b.textContent = 'TASTATURA (simulata)';
+    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99999;'
+      + 'pointer-events:none;background:#20242a;color:#7a828c;font:600 11px/1 '
+      + 'system-ui;letter-spacing:.12em;display:flex;align-items:center;'
+      + 'justify-content:center;border-top:1px solid #333941';
+    document.body.appendChild(b);
+  }
+  b.style.height = px + 'px';
+  b.style.display = px > 0 ? 'flex' : 'none';
+};
+// Tastatura nu dispare instant, coboara. Un pas brusc ar filma o situatie mai
+// dura decat cea reala — si ar si ascunde defectul, fiindca la inchidere `--kb`
+// ar fi deja 0 cand porneste iesirea foii.
+window.__kbAnim = (de_la, la, ms) => {
+  const t0 = performance.now();
+  (function pas(){
+    const q = Math.min(1, (performance.now() - t0) / ms);
+    window.__kb(Math.round(de_la + (la - de_la) * q));
+    if (q < 1) requestAnimationFrame(pas);
+  })();
+};
+"""
+
+
+@scena('foaie-adauga-tastatura', 'Foaia de adaugare: vine tastatura sub ea')
+def _(page, cdp, baza):
+    mergi(page, baza, '/tasks')
+    page.evaluate(KB)
+    if page.query_selector('.fab') is None:
+        return None
+    page.click('.fab')
+    page.wait_for_timeout(900)
+    if page.query_selector('.modal') is None:
+        return None
+    return lambda: (page.evaluate('window.__kb(300)'), page.wait_for_timeout(700))
+
+
+@scena('foaie-adauga-inchide-kb', 'Foaia de adaugare se inchide CU tastatura sus')
+def _(page, cdp, baza):
+    mergi(page, baza, '/tasks')
+    page.evaluate(KB)
+    if page.query_selector('.fab') is None:
+        return None
+    page.click('.fab')
+    page.wait_for_timeout(900)
+    page.evaluate('window.__kb(300)')
+    page.wait_for_timeout(700)
+    if page.query_selector('.modal') is None:
+        return None
+
+    # Ca in viata reala: inchiderea ia focusul, deci tastatura pleaca ODATA cu
+    # foaia. Doua miscari pornite in aceeasi clipa — acolo se vede daca sunt una
+    # sau doua.
+    def act():
+        page.evaluate("""(() => {
+          document.querySelector('.backdrop')?.dispatchEvent(
+            new MouseEvent('click', {bubbles: true}));
+          window.__kbAnim(300, 0, 250);
+        })()""")
+        page.wait_for_timeout(800)
+    return act
+
+
 @scena('apasare-lunga', 'Apasarea lunga pe un rand de task')
 def _(page, cdp, baza):
     mergi(page, baza, '/tasks')

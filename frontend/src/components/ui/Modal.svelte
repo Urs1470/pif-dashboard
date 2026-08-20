@@ -71,6 +71,13 @@
     document.documentElement.style.setProperty('--kb', '0px')
   }
 
+  /** Cat tine tastatura foaia ridicata, ACUM, in px. */
+  function kbAcum() {
+    if (typeof document === 'undefined') return 0
+    return parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--kb')) || 0
+  }
+
   // Ultima apasare pe ecran — partajata de TOATE instantele. Fiecare modal o
   // citeste cand se deschide ca sa creasca din punctul unde ai atins.
   let ultimaApasare = { x: 0, y: 0, cand: 0 }
@@ -227,7 +234,43 @@
     // `--ease`, deci foaia se retragea ca si cum s-ar razgandi: incetinea exact
     // in intervalul in care trebuia sa fie deja plecata. Vezi `--ease-iesire`.
     const curba = laIntrare ? EASE : EASE_IESIRE
-    if (sheet) return { duration, easing: curba, css: (t, u) => `transform: translateY(${u * 100}%)` }
+    if (sheet) {
+      // CAT PLEACA, FOAIA NU MAI ASCULTA DE TASTATURA.
+      //
+      // Foaia de adaugare vine intotdeauna cu tastatura (campul se focalizeaza
+      // singur), iar inchiderea ia focusul — deci tastatura pleaca in ACEEASI
+      // clipa cu foaia. Pana aici, doua lucruri se intamplau atunci deodata:
+      //   1. `--kb` cadea la 0, iar `max-height`-ul foii (care il scade) NU e
+      //      tranzitionat — deci foaia se INTINDEA instant (masurat: 520 -> 550
+      //      intr-un cadru), fix in clipa in care trebuia sa plece;
+      //   2. voalul isi anima `padding-bottom` 300 -> 0, adica IMPINGEA foaia in
+      //      jos pe curba LUI, peste plecarea ei, pe curba EI.
+      // Rezultatul: o plecare care se intinde si accelereaza, si care arata
+      // altfel cu tastatura decat fara — acelasi gest, alta miscare.
+      //
+      // Se citeste inaltimea tastaturii O SINGURA DATA, la plecare, si se
+      // ingheata pe voal. Fiind proprietate custom, valoarea se mosteneste in
+      // tot subarborele modalului, deci si `max-height`-ul foii ramane pe loc.
+      // Voalul se recreeaza la fiecare deschidere (e sub `{#if open}`), deci
+      // inghetul nu supravietuieste in deschiderea urmatoare.
+      //
+      // Si atunci plecarea trebuie sa duca singura tot drumul: `100%` e exact
+      // distanta pana jos DOAR cand foaia sta pe marginea de jos a ecranului. Cu
+      // tastatura sus e cu `--kb` mai sus, deci ii lipseau exact atatia pixeli —
+      // pe care ii lua din voal. Acum si-i ia din propria miscare.
+      // Se citeste de la INCHIDERE, nu de la pornirea iesirii: intre ele trec
+      // cateva cadre, si daca aparatul raporteaza plecarea tastaturii mai
+      // devreme (unele o raporteaza dintr-o data, altele treptat), aici ar
+      // ajunge deja 0 si n-ar mai fi nimic de inghetat. `kbAcum()` ramane
+      // rezerva pentru inchiderile venite din afara, care nu trec prin
+      // `inchide()`.
+      const kb = laIntrare ? 0 : (kbLaInchidere ?? kbAcum())
+      if (kb && backdropEl) backdropEl.style.setProperty('--kb', kb + 'px')
+      return {
+        duration, easing: curba,
+        css: (t, u) => `transform: translateY(calc(${u * 100}% + ${u * kb}px))`,
+      }
+    }
     // PANOUL SOSESTE CU 8px, NU CU O SCALARE. Scalarea spune „fereastra care se
     // deschide din centru"; panoul vine dinspre marginea de care se lipeste, deci
     // o deplasare mica, pe axa lui. Distanta e mica cu bunastiinta: obiectul e
@@ -644,11 +687,18 @@
     }
   })
 
+  /** Cat tinea tastatura foaia in clipa in care s-a cerut inchiderea. Vezi nota
+   *  lunga din `intra`. Se sterge la redeschidere, in `$effect`-ul de mai jos. */
+  let kbLaInchidere = null
+
   /** Singurul drum de inchidere pornit de utilizator. */
   function inchide() {
+    kbLaInchidere = kbAcum()
     open = false
     onclose?.()
   }
+
+  $effect(() => { if (open) kbLaInchidere = null })
 
   function onBackdrop(e) {
     // Doar varful stivei raspunde: cu doua foi deschise, un clic pe fundal
