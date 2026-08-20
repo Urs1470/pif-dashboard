@@ -992,7 +992,7 @@
   }
   .modal-close {
     width: 32px;
-    height: 32px;
+    height: var(--ctrl-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1090,7 +1090,7 @@
     .sheet-grip {
       width: 38px;
       height: 4px;
-      margin: 8px auto 2px;
+      margin: var(--space-sm) auto var(--space-2xs);
       border-radius: var(--radius-full);
       background: var(--border-strong);
       transition: background-color var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
@@ -1152,7 +1152,7 @@
        JOS, iar pe telefonul lui Ion, cu edge-to-edge pornit, `--safe-top` e real
        (~50px) — scazut din inaltime, lasa o fasie de pagina vizibila sus. Exact
        „nu se urca pana sus". Coltul se indreapta: la marginea ecranului o raza
-       n-are ce rotunji si arata ca o scapare de 20px.
+       n-are ce rotunji si arata ca o scapare de var(--space-20).
        `100dvh` e VIEWPORT indiferent de parinte — de aceea inaltimea se cere asa
        si nu prin `position: fixed; inset: 0`, care se raporteaza la primul
        stramos cu transform (cat tine sosirea rutei, acela e `.page`: masurat,
@@ -1195,7 +1195,7 @@
        „📥 Inbox >" la Todoist. Inainte lua ~90px pe verticala pentru un singur
        cuvant („birou"), fix acolo unde continutul ar trebui sa inceapa. */
     .modal.sheet .modal-header {
-      padding: 2px var(--space-md) 0;
+      padding: var(--space-2xs) var(--space-md) 0;
       border-bottom: none;
       min-height: 0;
     }

@@ -185,7 +185,7 @@
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
     color: var(--text-dim);
-    padding-bottom: 6px;
+    padding-bottom: var(--space-6);
   }
 
   /* NICI FOAIA ASTA NU E TEXT DE SELECTAT, si e a doua centura, nu prima: randul
@@ -197,7 +197,7 @@
   .ft-plan {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--space-6);
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
@@ -211,7 +211,7 @@
     align-items: center;
     gap: 11px;
     min-height: var(--tap-sheet);
-    padding: 0 14px;
+    padding: 0 var(--space-14);
     border-radius: var(--radius-sm);
     background: var(--bg-elevated);
     color: var(--text);
@@ -230,7 +230,7 @@
      isi pierde haina proprie (are deja una de la `.ft-rand`). Aceeasi retusare ca
      `.sz-dp` din `SelectorZi` — inclusiv iconita lui, care ar fi al doilea
      calendar langa al nostru. */
-  .ft-dp { position: relative; padding: 0 14px; }
+  .ft-dp { position: relative; padding: 0 var(--space-14); }
   .ft-dp :global(.dp) { flex: 1; min-width: 0; }
   .ft-dp :global(.dp-trigger) {
     width: 100%;
@@ -253,7 +253,7 @@
      fara cutie, fara eticheta si fara iconita proprie — iconita si cuvantul „Ora"
      le pune randul, in aceeasi ordine ca la vecinii lui. Valoarea sta la dreapta,
      in mono, unde stau toate valorile din foaie. */
-  .ft-ora { padding: 0 14px; }
+  .ft-ora { padding: 0 var(--space-14); }
   .ft-ora-et { flex: 1; min-width: 0; }
   .ft-ora :global(.so) { width: auto; flex: none; gap: 0; }
   .ft-ora :global(.so-trigger) {

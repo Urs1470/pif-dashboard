@@ -246,7 +246,7 @@
 </div>
 
 <style>
-  .dp { position: relative; display: inline-flex; flex-direction: column; gap: 4px; width: 100%; }
+  .dp { position: relative; display: inline-flex; flex-direction: column; gap: var(--space-xs); width: 100%; }
   .dp-label { font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-label); }
 
   /* Al patrulea camp al sistemului: aceeasi reteta ca `.field-input` din
@@ -254,8 +254,8 @@
      46px, 48 in foaie · focus la 1,5px accent). Era 40px si raza 14 — adica
      singurul camp cu alta inaltime si alt colt decat celelalte trei. */
   .dp-trigger {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    min-height: 46px; padding: 10px 12px; width: 100%;
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
+    min-height: var(--ctrl-lg); padding: var(--space-10) var(--space-12); width: 100%;
     background: var(--bg-elevated); border: none; border-radius: var(--radius-sm);
     box-shadow: inset 0 0 0 1px var(--border);
     color: var(--text); font-size: var(--font-body); font-family: inherit; cursor: pointer; text-align: left;
@@ -271,22 +271,22 @@
   /* Suprafata flotanta: se desprinde prin UMBRA, nu si prin chenar. */
   .dp-pop {
     position: fixed; z-index: var(--z-dropdown);
-    width: 268px; padding: 12px;
+    width: 268px; padding: var(--space-12);
     background: var(--bg-overlay);
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);
   }
-  .dp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .dp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-10); }
   .dp-title { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
   .dp-nav {
-    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    width: var(--ctrl-sm); height: var(--ctrl-sm); display: flex; align-items: center; justify-content: center;
     border-radius: var(--radius-full); color: var(--text-secondary); cursor: pointer;
     transition: var(--transition-colors);
   }
   .dp-nav:hover { background: var(--bg-hover); color: var(--text); }
 
-  .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-  .dp-wd { margin-bottom: 4px; }
-  .dp-wdname { text-align: center; font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; padding: 2px 0; }
+  .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-2xs); }
+  .dp-wd { margin-bottom: var(--space-xs); }
+  .dp-wdname { text-align: center; font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; padding: var(--space-2xs) 0; }
   .dp-empty { aspect-ratio: 1; }
   .dp-day {
     aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
@@ -298,9 +298,9 @@
   .dp-day.selected { background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
   .dp-day.selected:hover { background: var(--accent); color: var(--accent-text); }
 
-  .dp-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-subtle); }
+  .dp-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--border-subtle); }
   .dp-foot-btn {
-    display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px;
+    display: inline-flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-12);
     border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-semibold);
     color: var(--accent); background: var(--accent-subtle); cursor: pointer;
     transition: opacity var(--dur-fast) var(--ease);
@@ -334,15 +334,15 @@
     box-shadow: var(--shadow-foaie);
   }
   .dp-grip {
-    display: block; width: 36px; height: 4px; margin: 8px auto 2px;
+    display: block; width: 36px; height: 4px; margin: var(--space-sm) auto var(--space-2xs);
     border-radius: var(--radius-full); background: var(--border-strong);
   }
   .dp-pop.sheet .dp-head { margin-bottom: var(--space-12); }
   .dp-pop.sheet .dp-title { font-size: var(--font-body); }
   .dp-pop.sheet .dp-nav { width: var(--tap-min); height: var(--tap-min); }
-  .dp-pop.sheet .dp-grid { gap: 4px; }
+  .dp-pop.sheet .dp-grid { gap: var(--space-xs); }
   .dp-pop.sheet .dp-day { font-size: var(--font-body); min-height: var(--tap-min); border-radius: var(--radius-md); }
-  .dp-pop.sheet .dp-wdname { font-size: var(--font-small); padding-bottom: 4px; }
+  .dp-pop.sheet .dp-wdname { font-size: var(--font-small); padding-bottom: var(--space-xs); }
   .dp-pop.sheet .dp-foot { margin-top: var(--space-12); padding-top: var(--space-12); gap: var(--space-sm); }
   .dp-pop.sheet .dp-foot-btn {
     flex: 1; justify-content: center; min-height: var(--tap-min);

@@ -31,6 +31,6 @@
   /* „small" inseamna doar mai stramt (padding si inaltime), nu alta treapta. */
   .badge.small {
     min-height: 22px;
-    padding: 0 8px;
+    padding: 0 var(--space-sm);
   }
 </style>

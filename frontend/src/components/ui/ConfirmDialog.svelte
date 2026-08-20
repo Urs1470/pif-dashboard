@@ -77,7 +77,7 @@
   .confirma {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: var(--space-10);
   }
 
   .c-titlu {
@@ -114,7 +114,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 44px;
+    height: var(--tap-min);
     padding: 0 18px;
     /* Raza de CONTROL (10), nu de suprafata. */
     border-radius: var(--radius-sm);

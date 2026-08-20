@@ -491,16 +491,16 @@
     display: flex;
     align-items: center;
     flex-wrap: wrap;   /* vezi nota de la blocul de telefon */
-    gap: 2px;
-    row-gap: 4px;
-    padding: 8px 10px;
+    gap: var(--space-2xs);
+    row-gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-10);
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
   }
 
   .tbtn {
     width: 32px;
-    height: 32px;
+    height: var(--ctrl-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -514,14 +514,14 @@
   .tbtn.on { background: var(--bg-elevated); color: var(--text-secondary); }
   .tbtn.tmath { font-weight: var(--fw-semibold); }
 
-  .tsep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; flex-shrink: 0; }
+  .tsep { width: 1px; height: 20px; background: var(--border); margin: 0 var(--space-6); flex-shrink: 0; }
 
   /* Impinge starea la dreapta. Cand `stare` e gol nu se randeaza nimic, deci
      spatiul nu ramane rezervat degeaba. */
   .tspatiu { flex: 1; min-width: 0; }
   .tstare {
     flex: none;
-    padding-right: 4px;
+    padding-right: var(--space-xs);
     font-family: var(--font-mono);
     font-size: var(--font-label);
     color: var(--text-dim);
@@ -532,8 +532,8 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    height: 32px;
-    padding: 0 10px;
+    height: var(--ctrl-sm);
+    padding: 0 var(--space-10);
     font-size: var(--font-control);
     font-weight: var(--fw-semibold);
     background: var(--bg-elevated);
@@ -558,7 +558,7 @@
     background: var(--bg-overlay);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
-    padding: 4px;
+    padding: var(--space-xs);
     animation: tstyle-intra var(--dur-fast) var(--ease);
   }
   @keyframes tstyle-intra {
@@ -573,7 +573,7 @@
     justify-content: space-between;
     gap: var(--space-sm);
     width: 100%;
-    padding: 7px 10px;
+    padding: 7px var(--space-10);
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
     background: transparent;
@@ -597,7 +597,7 @@
     top: 50px;
     z-index: 3;
     width: min(680px, calc(100% - 24px));
-    margin: 8px auto 0;
+    margin: var(--space-sm) auto 0;
     padding: var(--space-xs) var(--space-sm);
     display: flex;
     flex-direction: column;
@@ -611,8 +611,8 @@
   .math-inp {
     flex: 1;
     min-width: 160px;
-    min-height: 34px;
-    padding: 6px 10px;
+    min-height: var(--ctrl-md);
+    padding: var(--space-6) var(--space-10);
     font-family: var(--font-mono);
     font-size: var(--font-small);
     background: var(--bg-elevated);
@@ -636,9 +636,9 @@
   .math-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    min-height: 30px;
-    padding: 0 12px;
+    gap: var(--space-xs);
+    min-height: var(--ctrl-sm);
+    padding: 0 var(--space-12);
     font-size: var(--font-small);
     font-weight: var(--fw-semibold);
     border-radius: var(--radius-sm);
@@ -654,7 +654,7 @@
   .math-btn.primary:hover { background: var(--accent-hover); }
   .math-btn.danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-subtle); }
   .math-prev {
-    padding: 4px 10px;
+    padding: var(--space-xs) var(--space-10);
     color: var(--text);
     overflow-x: auto;
   }
@@ -680,7 +680,7 @@
     min-height: calc(100% - 50px);
     width: 100%;
     max-width: 82ch;
-    padding: 20px 32px 90px;
+    padding: var(--space-20) var(--space-xl) 90px;
     font-size: var(--font-body);
     color: var(--text);
     line-height: var(--lh-normal);
@@ -699,39 +699,39 @@
      ce citesti sunt acelasi text — daca se despart, editorul minte despre cum va
      arata. `h2` era pe `--accent`: culoarea e stare in sistemul asta, iar un
      subtitlu de notita nu e o stare. */
-  .rte-editor :global(h1) { color: var(--text); font-size: var(--font-h2); margin: 16px 0 8px; font-weight: var(--fw-semibold); letter-spacing: var(--tracking-tight); }
-  .rte-editor :global(h2) { color: var(--text); font-size: var(--font-h3); margin: 14px 0 8px; font-weight: var(--fw-semibold); }
-  .rte-editor :global(h3) { color: var(--text-secondary); font-size: var(--font-h3); margin: 12px 0 6px; font-weight: var(--fw-semibold); }
-  .rte-editor :global(p) { margin: 6px 0; }
+  .rte-editor :global(h1) { color: var(--text); font-size: var(--font-h2); margin: var(--space-md) 0 var(--space-sm); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-tight); }
+  .rte-editor :global(h2) { color: var(--text); font-size: var(--font-h3); margin: var(--space-14) 0 var(--space-sm); font-weight: var(--fw-semibold); }
+  .rte-editor :global(h3) { color: var(--text-secondary); font-size: var(--font-h3); margin: var(--space-12) 0 var(--space-6); font-weight: var(--fw-semibold); }
+  .rte-editor :global(p) { margin: var(--space-6) 0; }
   /* MARCATORII TREBUIE REAFIRMATI: `reset.css` sterge `list-style` de pe TOATE
      ul/ol din aplicatie. `insertUnorderedList` chiar insera lista — dar fara
      bulina/cifra si fara text pe rand, o `<li>` goala e invizibila, deci butonul
      parea ca nu face nimic („nu se pune, ramane doar gol"). */
-  .rte-editor :global(ul), .rte-editor :global(ol) { padding-left: 26px; margin: 6px 0; }
+  .rte-editor :global(ul), .rte-editor :global(ol) { padding-left: 26px; margin: var(--space-6) 0; }
   .rte-editor :global(ul) { list-style: disc outside; }
   .rte-editor :global(ul ul) { list-style: circle outside; }
   .rte-editor :global(ol) { list-style: decimal outside; }
   .rte-editor :global(li) { margin: 3px 0; }
   .rte-editor :global(a) { color: var(--accent); text-decoration: underline; }
-  .rte-editor :global(hr) { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .rte-editor :global(hr) { border: none; border-top: 1px solid var(--border); margin: var(--space-12) 0; }
   /* Muchia ramane, dar fara fond: un citat nu e o alta suprafata, e o alta voce. */
-  .rte-editor :global(blockquote) { border-left: 3px solid var(--border); padding: 2px 0 2px 14px; color: var(--text-secondary); margin: 8px 0; }
-  .rte-editor :global(table) { border-collapse: collapse; margin: 10px 0; max-width: 100%; }
-  .rte-editor :global(th), .rte-editor :global(td) { border-bottom: 1px solid var(--border); padding: 8px 2px; text-align: left; vertical-align: top; }
+  .rte-editor :global(blockquote) { border-left: 3px solid var(--border); padding: var(--space-2xs) 0 var(--space-2xs) var(--space-14); color: var(--text-secondary); margin: var(--space-sm) 0; }
+  .rte-editor :global(table) { border-collapse: collapse; margin: var(--space-10) 0; max-width: 100%; }
+  .rte-editor :global(th), .rte-editor :global(td) { border-bottom: 1px solid var(--border); padding: var(--space-sm) var(--space-2xs); text-align: left; vertical-align: top; }
   .rte-editor :global(th) {
     font-size: var(--font-label); font-weight: var(--fw-semibold);
     text-transform: uppercase; letter-spacing: var(--tracking-label);
     color: var(--text-dim); padding-bottom: 7px;
   }
   .rte-editor :global(code) {
-    background: var(--bg-elevated); padding: 1px 6px; border-radius: var(--radius-xs);
+    background: var(--bg-elevated); padding: 1px var(--space-6); border-radius: var(--radius-xs);
     font-family: var(--font-mono); font-size: var(--font-small); color: var(--accent-deep);
   }
 
   /* chip formula — click pentru editare */
   .rte-editor :global(.mchip) {
     display: inline-block;
-    padding: 0 4px;
+    padding: 0 var(--space-xs);
     border-radius: var(--radius-xs);
     cursor: pointer;
     transition: background-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
@@ -740,8 +740,8 @@
   .rte-editor :global(.mchip[data-display="1"]) {
     display: block;
     text-align: center;
-    margin: 10px 0;
-    padding: 6px 8px;
+    margin: var(--space-10) 0;
+    padding: var(--space-6) var(--space-sm);
   }
 
   @media (max-width: 768px) {
@@ -774,9 +774,9 @@
       /* Fara tastatura, insetul de siguranta tine butoanele deasupra barei de
          gesturi. Cu tastatura ridicata, ea acopera oricum zona aia, iar insetul
          ar fi 34px de bara moarta fix cand ai cel mai putin ecran. */
-      padding: 6px 10px calc(6px + var(--safe-bottom));
+      padding: var(--space-6) var(--space-10) calc(var(--space-6) + var(--safe-bottom));
     }
-    .rte-toolbar.cu-tastatura { padding-bottom: 6px; }
+    .rte-toolbar.cu-tastatura { padding-bottom: var(--space-6); }
     .rte-toolbar::-webkit-scrollbar { display: none; }
     /* Randul e o pista: separatoarele si eticheta de stare n-au voie sa se
        stranga sub degetul care deruleaza. */
@@ -789,7 +789,7 @@
     .math-inp { min-height: var(--tap-min); }
     .math-bar { top: 8px; width: calc(100% - 12px); }
     /* Padding-ul de jos tine ultimul rand deasupra barei, care acum e acolo. */
-    .rte-editor { padding: 16px 16px 96px; min-height: 100%; }
+    .rte-editor { padding: var(--space-md) var(--space-md) 96px; min-height: 100%; }
     /* Cu tastatura ridicata, peste bara de unelte mai sta si bara de salvare a
        shell-ului (`EditorLung`, `.ed-foot.ridicat`) — ultimul rand scris trebuie
        sa poata urca deasupra AMBELOR, altfel scrii sub bara pe care o vezi. */

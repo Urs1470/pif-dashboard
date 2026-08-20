@@ -211,7 +211,7 @@
   .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-10);
     font-weight: var(--fw-semibold);
     font-size: var(--font-brand);
     letter-spacing: var(--tracking-tight);
@@ -234,10 +234,10 @@
   .fara-retea {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-6);
     flex: none;
-    height: 28px;
-    padding: 0 10px;
+    height: var(--ctrl-xs);
+    padding: 0 var(--space-10);
     margin-right: var(--space-sm);
     border-radius: var(--radius-xs);
     background: var(--danger-subtle);
@@ -248,8 +248,8 @@
   }
 
   .h-btn {
-    width: 36px;
-    height: 36px;
+    width: var(--ctrl-md);
+    height: var(--ctrl-md);
     display: grid;
     place-items: center;
     border-radius: var(--radius-sm);
@@ -270,21 +270,21 @@
     top: calc(100% + 8px);
     right: 0;
     width: 190px;
-    padding: 6px;
+    padding: var(--space-6);
     border-radius: var(--radius-md);
     background: var(--bg-overlay);
     box-shadow: var(--shadow-md);
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-2xs);
     z-index: var(--z-dropdown);
   }
   .tema-rand {
     display: flex;
     align-items: center;
-    gap: 10px;
-    height: 38px;
-    padding: 0 10px;
+    gap: var(--space-10);
+    height: var(--ctrl-md);
+    padding: 0 var(--space-10);
     border-radius: var(--radius-sm);
     font-size: var(--font-body);
     font-weight: var(--fw-medium);
@@ -303,7 +303,7 @@
   /* Aceleasi trei randuri, pe foaie: 38px -> `--tap-sheet`, si de la o margine la
      alta (marginile negative anuleaza padding-ul lateral al foii). O tinta care
      se opreste la 16px de marginea ecranului rateaza degetul mare. */
-  .tema-foaie { display: flex; flex-direction: column; gap: 2px; margin: 0 calc(var(--space-md) * -1 + 4px); }
+  .tema-foaie { display: flex; flex-direction: column; gap: var(--space-2xs); margin: 0 calc(var(--space-md) * -1 + var(--space-xs)); }
   .tema-foaie .tema-rand { height: var(--tap-sheet); padding: 0 var(--space-12); }
   .tema-foaie .tema-rand:active { background: var(--bg-active); }
 
@@ -326,6 +326,6 @@
        nu incape pe un rand, bara are voie sa se rupa — asta si face
        (`flex-wrap: wrap` mai sus), iar o bara mai inalta e un semn in plus, nu
        o problema. */
-    .fara-retea { height: 32px; }
+    .fara-retea { height: var(--ctrl-sm); }
   }
 </style>

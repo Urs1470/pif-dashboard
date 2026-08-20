@@ -203,14 +203,14 @@
     color: var(--text);
   }
 
-  .pf-tip { display: flex; gap: 6px; }
+  .pf-tip { display: flex; gap: var(--space-6); }
   .pf-opt {
     flex: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 7px;
-    min-height: 46px;
+    min-height: var(--ctrl-lg);
     border-radius: var(--radius-sm);
     background: var(--bg-elevated);
     color: var(--text-secondary);
@@ -235,8 +235,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 46px;
-    padding: 0 20px;
+    min-height: var(--ctrl-lg);
+    padding: 0 var(--space-20);
     border-radius: var(--radius-sm);
     font-size: var(--font-body);
     font-weight: var(--fw-semibold);

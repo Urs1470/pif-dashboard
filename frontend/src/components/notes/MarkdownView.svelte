@@ -52,7 +52,7 @@
      din marimea randului in care se nimeresc (care dadea 12,75 in corp si 17,85
      intr-un titlu, adica doua marimi diferite pentru acelasi fel de lucru). */
   .md-rendered :global(code) {
-    background: var(--bg-elevated); padding: 1px 6px; border-radius: var(--radius-xs);
+    background: var(--bg-elevated); padding: 1px var(--space-6); border-radius: var(--radius-xs);
     font-size: var(--font-small); font-family: var(--font-mono); color: var(--accent-deep);
   }
   .md-rendered :global(pre) {
@@ -65,7 +65,7 @@
      linie de 3px — vezi si caseta de mai jos, care si-a pierdut dunga tocmai ca
      sa nu se confunde cu ea. */
   .md-rendered :global(blockquote) {
-    border-left: 3px solid var(--border); margin: 0.7em 0; padding: 2px 0 2px 14px;
+    border-left: 3px solid var(--border); margin: 0.7em 0; padding: var(--space-2xs) 0 var(--space-2xs) var(--space-14);
     color: var(--text-secondary);
   }
   .md-rendered :global(hr) { border: none; border-top: 1px solid var(--border-subtle); margin: 1.2em 0; }
@@ -76,7 +76,7 @@
      majuscula), nu prin fundal. */
   .md-rendered :global(table) { border-collapse: collapse; margin: 0.7em 0; width: 100%; }
   .md-rendered :global(th), .md-rendered :global(td) {
-    border-bottom: 1px solid var(--border); padding: 8px 2px; text-align: left;
+    border-bottom: 1px solid var(--border); padding: var(--space-sm) var(--space-2xs); text-align: left;
   }
   .md-rendered :global(td) { font-size: var(--font-body); }
   .md-rendered :global(th) {
@@ -86,8 +86,8 @@
   }
   .md-rendered :global(tr:last-child td) { border-bottom: none; }
   .md-rendered :global(img) { max-width: 100%; border-radius: var(--radius-xs); }
-  .md-rendered :global(mark) { background: var(--accent-subtle); color: var(--accent-deep); border-radius: 2px; padding: 0 2px; }
-  .md-rendered :global(input[type="checkbox"]) { margin-right: 4px; accent-color: var(--accent); }
+  .md-rendered :global(mark) { background: var(--accent-subtle); color: var(--accent-deep); border-radius: 2px; padding: 0 var(--space-2xs); }
+  .md-rendered :global(input[type="checkbox"]) { margin-right: var(--space-xs); accent-color: var(--accent); }
 
   .md-rendered :global(.md-wikilink) {
     color: var(--accent-deep); cursor: pointer; border-bottom: 1px dashed var(--accent);
@@ -103,10 +103,10 @@
      explicita, iar aici era chiar figura ei — tenta plus muchie colorata. */
   .md-rendered :global(.md-callout) {
     background: var(--accent-subtle);
-    border-radius: var(--radius-xs); padding: 10px 14px; margin: 0.7em 0;
+    border-radius: var(--radius-xs); padding: var(--space-10) var(--space-14); margin: 0.7em 0;
   }
   .md-rendered :global(.md-callout-title) { font-weight: var(--fw-semibold); font-size: var(--font-body); color: var(--accent-on-subtle); }
-  .md-rendered :global(.md-callout-body) { margin-top: 4px; }
+  .md-rendered :global(.md-callout-body) { margin-top: var(--space-xs); }
   .md-rendered :global(.md-callout-body > *:first-child) { margin-top: 0; }
   .md-rendered :global(.md-callout-body > *:last-child) { margin-bottom: 0; }
   /* CELE OPT VARIANTE: `border-left-color` fara `border-left` — declaratii moarte

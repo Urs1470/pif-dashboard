@@ -186,8 +186,8 @@
     max-width: min(340px, calc(100vw - 24px));
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 7px 10px;
+    gap: var(--space-2xs);
+    padding: 7px var(--space-10);
     border-radius: var(--radius-xs);
     background: var(--bg-overlay);
     box-shadow: var(--shadow-md);
@@ -205,7 +205,7 @@
   /* Un singur rand, cu scurtatura la dreapta. Randurile de dedesubt exista doar
      pentru tooltipurile multi-linie din Calendar („Deplasare · Continental" +
      lista lucrarilor), unde chiar e o listă, nu o a doua propozitie. */
-  .cap { display: flex; align-items: baseline; gap: 10px; }
+  .cap { display: flex; align-items: baseline; gap: var(--space-10); }
   .l { white-space: pre-wrap; overflow-wrap: anywhere; }
   .l.prima { flex: 1; min-width: 0; color: var(--text); font-weight: var(--fw-medium); }
   .sc { flex: none; font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-dim); }

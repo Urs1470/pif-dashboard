@@ -69,17 +69,26 @@
   const FAZA_SCURT = { pregatire: 'Pregătire', implementare: 'Implementare' }
   function urmatoarea(p) {
     const zi = p.urmatoarea
-    if (!zi) return { faza: '', cand: 'fără perioadă', data: '', urgent: false }
+    // ABSENTA ISI IA ETICHETA EI. Subsolul cardului e „ETICHETA · valoare" in
+    // cardurile cu perioada („IMPLEMENTARE peste 7 zile") si era doar „fără
+    // perioadă" in cele fara — acelasi slot, in acelasi stil, dar primul cuvant
+    // isi schimba rolul de la card la card: intr-unul e numele campului, in
+    // celalalt e raspunsul.
+    if (!zi) return { faza: 'PERIOADĂ', cand: 'neplanificată', data: '', urgent: false }
     const days = daysUntil(zi)
+    // `urmatoarea` e, prin definitia din API, prima perioada CARE NU S-A INCHEIAT
+    // INCA. Deci `days <= 0` nu inseamna „a trecut", ci „a inceput deja" — exact
+    // cuvantul folosit in pagina proiectului. „acum 2 zile" citea ca o restanta.
     const cand = days === null ? formatDate(zi)
-      : days === 0 ? 'azi'
+      : days <= 0 ? 'în desfășurare'
       : days === 1 ? 'mâine'
-      : days < 0 ? `acum ${-days} zile`
       : `peste ${days} zile`
     return {
-      faza: FAZA_SCURT[p.urmatoarea_faza] || '',
+      faza: FAZA_SCURT[p.urmatoarea_faza] || 'PERIOADĂ',
       cand, data: formatDate(zi),
-      urgent: days !== null && days <= 2,
+      // Rosu doar inainte de plecare, nu si in timpul ei: o deplasare in curs e
+      // starea normala, nu o alarma. Vezi aceeasi corectie in ProjectDetail.
+      urgent: days !== null && days > 0 && days <= 2,
     }
   }
 
@@ -330,7 +339,7 @@
           <div class="card-name">{p.nume || '—'}</div>
           <div class="card-client">{p.client || '—'}</div>
           <div class="card-foot" title={urm.data}>
-            {#if urm.faza}<span class="foot-faza">{urm.faza}</span>{/if}
+            <span class="foot-faza">{urm.faza}</span>
             <span class="foot-cand" class:urgent={urm.urgent}>{urm.cand}</span>
           </div>
         </div>
@@ -444,8 +453,8 @@
      insa NU se schimba pe desktop: e aceeasi cu „Arhivă" din /tasks, si daca se
      muta pe suprafata, se muta acolo, in amandoua locurile odata. Pe telefon
      primeste suprafata (vezi blocul de 768). */
-  .a-ico { display: inline-flex; align-items: center; gap: 6px;
-    min-height: 36px; padding: 0 10px; border-radius: var(--radius-sm);
+  .a-ico { display: inline-flex; align-items: center; gap: var(--space-6);
+    min-height: var(--ctrl-md); padding: 0 var(--space-10); border-radius: var(--radius-sm);
     background: transparent; border: 1px solid transparent;
     font-size: var(--font-small); font-weight: var(--fw-medium);
     color: var(--text-dim); cursor: pointer; transition: var(--transition-colors); }
@@ -461,7 +470,7 @@
      Departamentul (C2) au primit-o pe cea din sistem: 36px, fond de suprafata,
      `--shadow-sm`, raza de control (10). */
   .sort-box { position: relative; }
-  .sort-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; font-size: var(--font-control); font-weight: var(--fw-semibold); color: var(--text-secondary); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-colors); }
+  .sort-trigger { display: inline-flex; align-items: center; gap: var(--space-6); min-height: var(--ctrl-md); padding: 0 var(--space-12); font-size: var(--font-control); font-weight: var(--fw-semibold); color: var(--text-secondary); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition-colors); }
   .sort-trigger:hover { color: var(--text); background: var(--bg-hover); }
   /* Meniul deschis: tenta poarta cerneala ADANCA (`--accent-on-subtle` e literal
      `--accent-deep`), iar umbra pleaca — o suprafata tentata nu mai e ridicata. */
@@ -473,8 +482,8 @@
      statea peste `--shadow-lg` — doua semnale pentru acelasi lucru.
      `var(--z-dropdown)` fara rezerva: un `, 50` scris de mana mascheaza exact
      cazul in care tokenul lipseste, adica singurul in care ai vrea sa afli. */
-  .sort-menu { position: absolute; top: calc(100% + 5px); right: 0; z-index: var(--z-dropdown); min-width: 150px; background: var(--bg-overlay); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 4px; }
-  .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px 10px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
+  .sort-menu { position: absolute; top: calc(100% + 5px); right: 0; z-index: var(--z-dropdown); min-width: 150px; background: var(--bg-overlay); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: var(--space-xs); }
+  .sort-opt { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); width: 100%; padding: 7px var(--space-10); border-radius: var(--radius-sm); color: var(--text-secondary); font-size: var(--font-small); background: transparent; border: none; text-align: left; cursor: pointer; }
   .sort-opt:hover { background: var(--bg-hover); color: var(--text); }
   .sort-opt.sel { background: var(--accent-subtle); color: var(--accent-on-subtle); }
 
@@ -483,7 +492,7 @@
      lista principala a ecranului. Marginile negative anuleaza padding-ul foii pe
      laterale, ca randul atins sa mearga de la o margine la alta — pe telefon o
      tinta care se opreste la 16px de marginea ecranului rateaza degetul mare. */
-  .meniu-foaie { display: flex; flex-direction: column; gap: 2px; margin: 0 calc(var(--space-md) * -1 + 4px); }
+  .meniu-foaie { display: flex; flex-direction: column; gap: var(--space-2xs); margin: 0 calc(var(--space-md) * -1 + var(--space-xs)); }
   .meniu-foaie .sort-opt {
     min-height: var(--tap-sheet);
     padding: 0 var(--space-12);
@@ -507,6 +516,10 @@
       box-shadow: var(--shadow-md), 0 0 0 1px var(--border-strong);
     }
   }
+  /* Apasarea folosea o tranzitie care era deja declarata mai sus (`transform
+     var(--dur-press)`) si pe care n-o folosea nicio regula: cardul se pregatise
+     pentru apasare si nu se apasa. Masurat, zero pixeli schimbati. */
+  .pcard:active { transform: scale(var(--press-scale)); }
   .pcard:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* Conturul e SCRIS, nu mostenit: `.pcard` n-are bordura (suprafata se desprinde
      prin umbra), deci `border-style: dashed` singur cadea pe implicite — 3px in
@@ -514,13 +527,13 @@
      nu e o suprafata, e un loc gol conturat.
      Cerneala e `--text-secondary`, nu `--text-dim`: „Proiect nou" e o actiune de
      citit, la 15px, si e singurul text de pe card. */
-  .pcard.new-card { border: 1.5px dashed var(--border-strong); box-shadow: none; align-items: center; justify-content: center; gap: 6px; color: var(--text-secondary); background: transparent; }
+  .pcard.new-card { border: 1.5px dashed var(--border-strong); box-shadow: none; align-items: center; justify-content: center; gap: var(--space-6); color: var(--text-secondary); background: transparent; }
   .pcard.new-card:hover { color: var(--accent); border-color: var(--accent); box-shadow: none; }
   .new-label { font-size: var(--font-body); font-weight: var(--fw-semibold); }
   /* Regula era scrisa de doua ori la rand, a doua fara `gap` si fara marja — deci
      `gap` ramanea 4 (mostenit din prima) si `margin-bottom` 10. Una singura, cu
      valorile din desen: 7 intre iconita si cuvant, 12 pana la numele proiectului. */
-  .card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
+  .card-top { display: flex; align-items: center; gap: 7px; margin-bottom: var(--space-12); }
   .card-top .status-pill { margin-left: auto; }
   /* `.card-check` a plecat: era casuta de selectie a modului „Selectează", scos
      din Proiecte la feedbackul lui Ion (N7). Clasa nu mai apare in markup, deci
@@ -529,19 +542,24 @@
   /* Numele proiectului urca pe `--font-h2`: e numele unui lucru, deci poarta
      fontul de titlu la o treapta care EXISTA. Era la 1.05rem — o marime pe care
      n-o numea niciun token, intre h3 si body, aleasa o data si ramasa acolo. */
-  .card-name { font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-tight); color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; }
+  /* `text-wrap: balance` — titlurile de card au 2 randuri si rupeau lasand un
+     cuvant singur pe al doilea („frânare", „stație"): doua din patru carduri.
+     Proprietatea e folosita deja in cinci alte locuri din aplicatie; aici doar
+     lipsea. `balance`, nu `pretty`: pe doua-trei randuri balance egaleaza
+     randurile, pretty se ocupa doar de ultimul. */
+  .card-name { font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-tight); color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; text-wrap: balance; }
   /* --text-dim, nu faint: numele clientului e INFORMATIE, nu eticheta —
      iar faint e documentat „doar etichete/large" (3:1). Masurat: 3.18:1 la
      11.2px, sub pragul AA de 4.5 pentru text mic. */
-  .card-client { font-size: var(--font-small); color: var(--text-dim); margin-top: 2px; }
+  .card-client { font-size: var(--font-small); color: var(--text-dim); margin-top: var(--space-2xs); }
   /* Doua trepte, nu una: faza e ETICHETA (micro, uppercase, faint), socoteala e
      INFORMATIE (tiny, mono) si poarta singura culoarea. Data plina sta in
      `title` — nu ocupa un rand pentru ceva ce verifici cand cauti. */
-  .card-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: baseline; gap: 7px; }
+  .card-foot { margin-top: auto; padding-top: var(--space-14); display: flex; align-items: baseline; gap: 7px; }
   .foot-faza { font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); }
   .foot-cand { font-family: var(--font-mono); font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary); }
   .foot-cand.urgent { color: var(--danger); font-weight: var(--fw-semibold); }
-  .skeleton-card { gap: 8px; cursor: default; }
+  .skeleton-card { gap: var(--space-sm); cursor: default; }
 
   .dim { color: var(--text-secondary); }
   /* Tipul e o LINIE, nu un fill: aceeasi definitie pe card si in arhiva. */
@@ -557,7 +575,7 @@
   /* Cerneala din desen: eticheta pe `--text-secondary` (treapta a doua), nu pe
      faint — e titlul sectiunii, nu o nota. */
   .arch-cap { display: flex; align-items: center; gap: var(--space-xs);
-    padding: 0 2px var(--space-sm); color: var(--text-secondary);
+    padding: 0 var(--space-2xs) var(--space-sm); color: var(--text-secondary);
     font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
     letter-spacing: var(--tracking-label); }
@@ -578,7 +596,7 @@
      Randul e 44 (randul de lista pe desktop), nu 34, iar numele urca la treapta
      lui: la 13 era aceeasi marime ca metadatele de langa el. */
   .arch-row { position: relative; display: flex; align-items: center; gap: var(--space-md);
-    width: 100%; min-height: 44px; padding: 0 18px; font-size: var(--font-small);
+    width: 100%; min-height: var(--tap-min); padding: 0 18px; font-size: var(--font-small);
     color: var(--text); text-align: left; cursor: pointer; background: transparent;
     border: none; transition: background-color var(--dur-fast) var(--ease); }
   /* Separatorul e RETRAS 18px de fiecare parte, exact cat paddingul randului —
@@ -620,13 +638,13 @@
      Si cerneala: era `--st` PLIN peste propria tenta. Text pe tenta ia
      intotdeauna adancul — cum `--st` vine din `STATUS_COLORS` si nu are treapta
      `-deep`, adancul se DERIVA, aceeasi formula ca in `Badge.svelte`. */
-  .status-pill { display: inline-flex; align-items: center; gap: 4px;
+  .status-pill { display: inline-flex; align-items: center; gap: var(--space-xs);
     margin-left: auto; font-size: var(--font-small); font-weight: var(--fw-semibold);
-    padding: 0 10px; min-height: 24px; border-radius: var(--radius-xs);
+    padding: 0 var(--space-10); min-height: 24px; border-radius: var(--radius-xs);
     color: color-mix(in oklab, var(--st) 72%, var(--text));
     background: color-mix(in oklab, var(--st) 13%, transparent);
     border: 1px solid transparent; white-space: nowrap; }
-  .status-pill.act { padding: 0 8px 0 11px; cursor: pointer;
+  .status-pill.act { padding: 0 var(--space-sm) 0 11px; cursor: pointer;
     transition: border-color var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease); }
   .status-pill.act :global(svg) { opacity: .6; }
   @media (hover: hover) {
@@ -646,7 +664,7 @@
        37% din ecran, exact procentul pentru care /tasks a fost strans; pagina
        asta ramasese in urma. Nimic nu dispare, doar distantele. */
     .page { padding-top: var(--space-12); }
-    .page-header, .toolbar { margin-bottom: 10px; }
+    .page-header, .toolbar { margin-bottom: var(--space-10); }
     /* UN RAND DE BARA, NU TREI. Reparatia de dinainte a scazut doar marginile de
        la 16 la 10 — dar cei 37% pana la primul card erau ELEMENTELE, nu
        distantele: cautare, trei chipuri si sortare, fiecare pe randul lui, ~150px.
@@ -687,9 +705,9 @@
        sa se termine la aceeasi linie; pe o coloana umflau fiecare card pana la
        142 si lasau un gol intre client si picior. Piciorul primeste distanta lui
        (14) ca MARJA, si atunci `padding-top` ar dubla-o. */
-    .pcard { min-height: 0; padding: 16px 18px; }
-    .card-foot { margin-top: 14px; padding-top: 0; }
+    .pcard { min-height: 0; padding: var(--space-md) 18px; }
+    .card-foot { margin-top: var(--space-14); padding-top: 0; }
     /* Desenul 3c: capul cardului la 10 de nume pe telefon (12 pe desktop). */
-    .card-top { margin-bottom: 10px; }
+    .card-top { margin-bottom: var(--space-10); }
   }
 </style>

@@ -58,9 +58,9 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .btn-sm { padding: 6px 14px; font-size: var(--font-small); min-height: 38px; }
-  .btn-md { padding: 10px 20px; font-size: var(--font-body); min-height: 46px; }
-  .btn-lg { padding: 12px 24px; font-size: var(--font-body); min-height: 50px; }
+  .btn-sm { padding: var(--space-6) var(--space-14); font-size: var(--font-small); min-height: var(--ctrl-md); }
+  .btn-md { padding: var(--space-10) var(--space-20); font-size: var(--font-body); min-height: var(--ctrl-lg); }
+  .btn-lg { padding: var(--space-12) var(--space-lg); font-size: var(--font-body); min-height: 50px; }
 
   .btn-primary {
     background: var(--accent);

@@ -25,7 +25,17 @@
      `--text-dim` e MINIMUL pentru text mic, verificat pe FOND (nu doar pe
      suprafata): ~5,6:1 aici, ~4,7:1 pe tema deschisa. Nu se mai deschide. */
   --text: #e9ecef;
-  --text-secondary: #9ba3ad;
+  /* TREI TREPTE CARE CHIAR SUNT TREI. Masurat pe randare: `--text-secondary` si
+     `--text-dim` se deosebeau intre ELE cu 1,29:1 pe tema inchisa si 1,16:1 pe cea
+     deschisa — sub pragul de 3:1 la care doua suprafete se deosebesc, deci
+     ierarhia declarata de trei niveluri se citea ca doua. Si conteaza: doar 13-21%
+     din nodurile de text ale unei pagini sunt in `--text`; restul statea in cele
+     doua trepte identice, deci pagina nu spunea unde sa te uiti intai.
+     S-a ridicat SECONDARY, nu s-a coborat dim: dim e deja minimul verificat, iar
+     pe tema deschisa mai jos ar fi cazut sub AA pe suprafata (4,98 acum).
+     Dupa: fond 15,56 / 8,62 / 5,63 (inchis), 15,32 / 7,23 / 4,85 (deschis) —
+     trepte de 1,81 si 1,53, respectiv 2,12 si 1,49. Inainte: 1,29 si 1,16. */
+  --text-secondary: #abb2ba;
   --text-dim: #868f99;
 
   /* ---- Accent (otel) ----
@@ -129,10 +139,25 @@
   --chart-3: #b04a38;
 
   /* ---- Spatiere (t-shirt + puntile 12/20/40) ---- */
+  /* SCARA AVEA O GAURA EXACT UNDE SE LUCREAZA.
+     Masurat pe randare: 47% din spatierile desenate pe desktop cadeau in afara
+     scarii, si nicio pagina sub 29% (Calendar 65%, Acasa 52%). Valorile scrise de
+     mana nu erau intamplatoare — erau aproape toate JUMATATI DE TREAPTA in
+     intervalul 4-16, unde scara avea doar trei trepte (4, 8, 12, 16) si unde
+     incape aproape toata spatierea de interfata: 6px de 336 de ori, 10px de 88,
+     14px de 60. Adica 484 de locuri in care cineva a avut nevoie de o treapta
+     care nu exista si a scris-o de mana.
+     Cele trei trepte de mai jos nu schimba NICIUN pixel — sunt exact valorile
+     deja folosite, doar ca acum au nume si pot fi verificate. 3, 5, 7, 9 si 11
+     raman in afara: acolo nu e o treapta lipsa, sunt reglaje optice de un pixel
+     si valori derivate (jumatatea unui gap, `calc(--radius-sm - 3px)`). */
   --space-2xs: 2px;
   --space-xs: 4px;
+  --space-6: 6px;
   --space-sm: 8px;
+  --space-10: 10px;
   --space-12: 12px;
+  --space-14: 14px;
   --space-md: 16px;
   --space-20: 20px;
   --space-lg: 24px;
@@ -201,6 +226,28 @@
   /* ---- Atingere ----
      44px minim pe telefon, 48 in foaie, randul de lista 52. */
   --tap-min: 44px;
+
+  /* ---- INALTIMEA CONTROALELOR: TREI TREPTE ----
+     Masurat pe randare: pe desktop existau 25 de inaltimi distincte de buton sau
+     camp, 13 dintre ele inghesuite in banda 28-46px — patru cutii diferite pentru
+     acelasi fel de buton secundar (32 `.abtn`/`.dp-trigger`, 34 `.bh-add`, 36
+     `.h-btn`/`.pr`, 38 `.btn-ghost`). Pe telefon nu se intampla, fiindca acolo
+     exista un prag (`--tap-min`) — deci nu e neglijenta, e lipsa unei scari.
+     Treptele nu sunt inventate: sunt cele pe care librarie proprie le declara
+     deja. `Button.btn-sm` era 38, `Button.btn-md`/`Input`/`Select`/`DatePicker`
+     erau 46, iar 32 e cea mai folosita valoare din aplicatie. Migrarea inseamna
+     ca 30, 34, 36 si 40 se aliniaza, nu ca se muta tot.
+     `--tap-min` ramane separat: e un PRAG de atingere, nu o treapta de scara. */
+  --ctrl-xs: 28px;   /* chip de stare, iconita de stergere din subtask */
+  --ctrl-sm: 32px;   /* chip, segment, comutator inline */
+  --ctrl-md: 38px;   /* buton secundar, buton-iconita */
+  --ctrl-lg: 46px;   /* camp de text si buton principal */
+
+  /* Randul de lista nu e un control — inaltimea lui vine din continut, nu dintr-o
+     treapta de scara — dar era scrisa in cifre in TREI locuri (Acasa, /tasks,
+     pagina proiectului), adica exact tiparul care produce divergenta. Perechea
+     desktop/telefon sta impreuna: daca se schimba unul, se vede si celalalt. */
+  --row-h: 46px;
   --tap-sheet: 48px;
   --row-h-mobile: 52px;
 
@@ -390,7 +437,9 @@
   --border-strong: #d2d6dc;
 
   --text: #1b1e23;
-  --text-secondary: #5a6270;
+  /* Aceeasi corectie ca pe tema inchisa, vezi nota de acolo: separarea dintre
+     secondary si dim era 1,16:1, adica inexistenta. Acum 1,49:1. */
+  --text-secondary: #4b525d;
   --text-dim: #656c78;
 
   /* ACCENTUL DE TEMA DESCHISA E MAI INCHIS DECAT PARE, SI ARE UN MOTIV MASURAT.

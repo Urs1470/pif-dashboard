@@ -195,7 +195,15 @@
          prin TON: rosu pentru ce e gresit acum, neutru pentru ce lipseste.
          „Fara perioada" aparea doar in ramura goala — adica exact cand n-aveai
          nimic de facut. Dar un proiect fara nicio zi planificata e o scapare mai
-         ales cand ai altele in derulare: atunci se pierde, nu cand ecranul e gol. -->
+         ales cand ai altele in derulare: atunci se pierde, nu cand ecranul e gol.
+
+         GRUPUL EXISTA CA SA NU SE RUPA. „Impreuna" era o consecinta a latimii, nu
+         o regula: la 920px (coloana de lista) linia se infasoara intre ele si
+         contoarele ajung in colturi opuse, pe randuri diferite — doua obiecte de
+         acelasi fel care nu mai arata ca o pereche. In grup se infasoara amandoua
+         odata. Pe telefon grupul se face `display: contents`, ca sa ramana copii
+         directi ai liniei si sa se poata intinde fiecare pe jumatate de rand. -->
+    <span class="ct-grup">
     {#if faraPerioada}
       <button class="ct-nr" onclick={() => navigate('/calendar')}
               title="{faraPerioada} {faraPerioada === 1 ? 'proiect activ fără nicio zi planificată' : 'proiecte active fără nicio zi planificată'}">
@@ -215,6 +223,7 @@
         <ChevronRight size={13} />
       </button>
     {/if}
+    </span>
   </div>
 {:else if eroare}
   <div class="ctx">
@@ -237,7 +246,7 @@
 <style>
   .ctx {
     display: flex; align-items: center; gap: var(--space-md);
-    padding: 0 2px var(--space-md); flex-wrap: wrap;
+    padding: 0 var(--space-2xs) var(--space-md); flex-wrap: wrap;
   }
   .spatiu { flex: 1; }
 
@@ -245,7 +254,7 @@
   /* Haina din desen (3a): pastila de 36, padding 0 14, gap 9, iconita pe accent. */
   .pr {
     display: inline-flex; align-items: center; gap: 9px; min-width: 0;
-    min-height: 36px; padding: 0 14px; border-radius: var(--radius-sm);
+    min-height: var(--ctrl-md); padding: 0 var(--space-14); border-radius: var(--radius-sm);
     background: var(--bg-surface); box-shadow: var(--shadow-sm);
     cursor: pointer; text-align: left;
     transition: var(--transition-pressable);
@@ -282,19 +291,23 @@
   /* Eroarea foloseste limbajul semantic, nu pe cel de „gol": danger pe semn,
      ca sa nu se citeasca drept o zi libera. */
   .gol.eroare :global(svg) { color: var(--danger); }
-  .reinc { padding: 3px 12px; border-radius: var(--radius-xs);
+  .reinc { padding: 3px var(--space-12); border-radius: var(--radius-xs);
     border: 1px solid var(--border); background: var(--bg-surface);
     color: var(--text-secondary); font-size: var(--font-small);
     font-weight: var(--fw-medium); cursor: pointer;
     transition: var(--transition-colors); min-height: var(--tap-min); }
   .reinc:hover { border-color: var(--accent); color: var(--accent); }
 
+  /* Perechea de contoare se infasoara ca un obiect, nu ca doua. `margin-left:
+     auto` o tine la dreapta si cand ramane singura pe randul al doilea. */
+  .ct-grup { display: inline-flex; align-items: center; gap: var(--space-sm); margin-left: auto; }
+
   /* Doua contoare, aceeasi haina, tonul e singura diferenta: neutru = ce
      lipseste, rosu = ce e gresit acum. Cifra e mono si tabulara — se compara de
      la o zi la alta. */
   .ct-nr {
-    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-    font-size: var(--font-small); padding: 4px 8px 4px 10px; border-radius: var(--radius-xs);
+    display: inline-flex; align-items: center; gap: var(--space-6); white-space: nowrap;
+    font-size: var(--font-small); padding: var(--space-xs) var(--space-sm) var(--space-xs) var(--space-10); border-radius: var(--radius-xs);
     background: var(--bg-surface); box-shadow: var(--shadow-sm);
     color: var(--text-dim); cursor: pointer;
     transition: var(--transition-pressable);
@@ -311,7 +324,7 @@
   /* Casuta care tine locul liniei cat timp se incarca — aceeasi inaltime, fara
      chenar si fara puls: nu anunta continut, doar nu lasa pagina sa sara. */
   .pr.fantoma {
-    background: transparent; box-shadow: none; min-height: 30px; width: 220px;
+    background: transparent; box-shadow: none; min-height: var(--ctrl-md); width: 220px;
     pointer-events: none;
   }
 
@@ -328,9 +341,9 @@
       display: grid;
       grid-template-columns: auto auto minmax(0, 1fr) auto;
       align-items: center;
-      row-gap: 2px; column-gap: 7px;
+      row-gap: var(--space-2xs); column-gap: 7px;
       width: 100%; min-height: var(--tap-min);
-      padding: 8px 12px 8px 10px;
+      padding: var(--space-sm) var(--space-12) var(--space-sm) var(--space-10);
       border-radius: var(--radius-sm);
     }
     .sep { display: none; }
@@ -356,7 +369,10 @@
        boardului. Contorul ramas isi ia randul intreg, centrat. */
     .ct-nr:not(.rau) { display: none; }
     .spatiu { display: none; }
-    .ct-nr { min-height: var(--tap-min); padding: 4px 12px; flex: 1 1 0;
+    /* Grupul se desface: pe telefon contorul trebuie sa fie copil DIRECT al
+       liniei ca sa-i poata lua randul intreg (`flex: 1 1 0` de mai jos). */
+    .ct-grup { display: contents; }
+    .ct-nr { min-height: var(--tap-min); padding: var(--space-xs) var(--space-12); flex: 1 1 0;
              justify-content: center; }
     .gol { min-height: var(--tap-min); }
     .pr.fantoma { min-height: var(--tap-min); width: 100%; }

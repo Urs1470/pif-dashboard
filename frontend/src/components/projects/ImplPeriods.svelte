@@ -115,13 +115,13 @@
 <ImplPeriodModal bind:open {projectId} period={editing} onsaved={() => { uitaPerioadele(); load() }} />
 
 <style>
-  .ip-sec { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--card-pad, 16px); }
+  .ip-sec { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--card-pad, var(--space-md)); }
   .ip-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
-  .ip-title { display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .ip-title { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); }
   .ip-title h3 { font-size: var(--font-h3); font-weight: var(--fw-semibold); }
   .ip-add {
     display: inline-flex; align-items: center; gap: 5px;
-    height: 34px; padding: 0 12px;
+    height: var(--ctrl-md); padding: 0 var(--space-12);
     border-radius: var(--radius-sm);
     background: var(--accent); color: var(--accent-text);
     font-size: var(--font-control); font-weight: var(--fw-semibold);
@@ -129,16 +129,16 @@
   }
   .ip-add:hover { background: var(--accent-deep); }
   .ip-add:active { transform: scale(var(--press-scale)); }
-  .ip-muted { color: var(--text-dim); font-size: var(--font-small); padding: 6px 2px; text-wrap: pretty; }
+  .ip-muted { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-6) var(--space-2xs); text-wrap: pretty; }
   .ip-eroare { color: var(--danger); }
   .ip-reinc { color: var(--accent); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; background: none; border: none; padding: 0; text-decoration: underline; }
 
   .ip-list { display: flex; flex-direction: column; }
-  .ip-sep { height: 1px; background: var(--border); margin: 0 10px; }
+  .ip-sep { height: 1px; background: var(--border); margin: 0 var(--space-10); }
 
   .ip-rand {
     display: flex; align-items: center; gap: var(--space-12);
-    min-height: 46px; padding: 0 10px;
+    min-height: var(--ctrl-lg); padding: 0 var(--space-10);
     border-radius: var(--radius-sm);
     color: var(--text); cursor: pointer; text-align: left;
     transition: var(--transition-colors);
@@ -162,7 +162,7 @@
   .ip-fac {
     flex: none; display: inline-flex; align-items: center; gap: 3px;
     font-size: var(--font-small); color: var(--success-deep);
-    padding: 1px 8px; border-radius: var(--radius-full);
+    padding: 1px var(--space-sm); border-radius: var(--radius-full);
     background: var(--success-subtle);
   }
 
@@ -170,7 +170,7 @@
   .ip-rand:hover :global(.ip-edit) { color: var(--text-dim); }
 
   @media (max-width: 768px) {
-    .ip-add { min-height: var(--tap-min); padding: 0 16px; }
+    .ip-add { min-height: var(--tap-min); padding: 0 var(--space-md); }
     /* Randul de lista pe telefon: 52px. Locatia si intervalul incap unul sub
        altul in cele doua coloane, deci nu se mai rupe pe doua randuri. */
     .ip-rand { min-height: var(--row-h-mobile); }

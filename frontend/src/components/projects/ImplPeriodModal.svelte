@@ -332,7 +332,7 @@
   /* DOUA BUTOANE EGALE, nu un selector: sunt doua, se vad amandoua, iar alegerea
      se face dintr-o atingere. Alesul poarta tenta + muchie de 1,5px + cerneala
      ADANCA — text pe tenta nu ia niciodata culoarea plina. */
-  .ip-doua { display: flex; gap: 6px; }
+  .ip-doua { display: flex; gap: var(--space-6); }
   .ip-opt {
     flex: 1;
     display: inline-flex;
@@ -379,7 +379,7 @@
     line-height: var(--lh-snug);
     text-wrap: pretty;
   }
-  .ip-casa :global(svg) { flex: none; margin-top: 2px; }
+  .ip-casa :global(svg) { flex: none; margin-top: var(--space-2xs); }
   .ip-casa strong { font-weight: var(--fw-semibold); }
   .ip-m { font-family: var(--font-mono); }
   .ip-lipire { background: var(--accent-subtle); color: var(--accent-deep); }
@@ -405,14 +405,14 @@
   /* Stergerea sta sub o linie, ca orice actiune rara: text + iconita, cerneala
      adanca de restant, fara fill. Un buton plin rosu langa „Salvează" ar fi doua
      actiuni la fel de tari pentru doua lucruri de importanta foarte diferita. */
-  .ip-rar { display: flex; flex-direction: column; gap: 10px; }
+  .ip-rar { display: flex; flex-direction: column; gap: var(--space-10); }
   .ip-linie { height: 1px; background: var(--border); }
   .ip-sterge {
     display: inline-flex;
     align-items: center;
     align-self: flex-start;
     gap: 7px;
-    height: 38px;
+    height: var(--ctrl-md);
     color: var(--danger-deep);
     font-size: var(--font-control);
     font-weight: var(--fw-semibold);

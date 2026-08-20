@@ -31,7 +31,7 @@
   .sa-theme {
     position: fixed; top: 12px; right: 14px; z-index: var(--z-dropdown);
     display: inline-flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px; border-radius: var(--radius-sm);
+    width: var(--ctrl-md); height: var(--ctrl-md); border-radius: var(--radius-sm);
     border: none; color: var(--text-dim); background: var(--bg-surface);
     box-shadow: var(--shadow-sm); cursor: pointer;
     transition: var(--transition-pressable);

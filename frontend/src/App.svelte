@@ -286,14 +286,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-12);
   }
   .nf-adresa {
     font-family: var(--font-mono);
     font-size: var(--font-small);
     color: var(--text-secondary);
     background: var(--bg-elevated);
-    padding: 3px 10px;
+    padding: 3px var(--space-10);
     border-radius: var(--radius-xs);
     max-width: 100%;
     overflow-wrap: anywhere;
@@ -302,8 +302,8 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    height: 44px;
-    padding: 0 16px;
+    height: var(--tap-min);
+    padding: 0 var(--space-md);
     border-radius: var(--radius-sm);
     background: var(--bg-surface);
     box-shadow: var(--shadow-sm);

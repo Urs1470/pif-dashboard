@@ -74,9 +74,9 @@
   .toast {
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-height: 44px;
-    padding: 0 8px 0 14px;
+    gap: var(--space-10);
+    min-height: var(--tap-min);
+    padding: 0 var(--space-sm) 0 var(--space-14);
     background: var(--bg-overlay);
     border-radius: var(--radius-sm);
     /* Se desprinde prin UMBRA, nu prin chenar — ca orice suprafata flotanta. */
@@ -106,8 +106,8 @@
     flex: none;
     display: inline-flex;
     align-items: center;
-    height: 32px;
-    padding: 0 12px;
+    height: var(--ctrl-sm);
+    padding: 0 var(--space-12);
     border-radius: var(--radius-xs);
     font-size: var(--font-control);
     font-weight: var(--fw-semibold);
@@ -137,7 +137,7 @@
   .toast-close {
     flex: none;
     width: 32px;
-    height: 32px;
+    height: var(--ctrl-sm);
     display: grid;
     place-items: center;
     border-radius: var(--radius-xs);
@@ -158,8 +158,8 @@
       left: var(--space-md);
       right: var(--space-md);
     }
-    .toast { min-height: 56px; max-width: 100%; padding: 0 8px 0 16px; font-size: var(--font-body); }
-    .toast-action { height: var(--tap-min); padding: 0 16px; }
+    .toast { min-height: 56px; max-width: 100%; padding: 0 var(--space-sm) 0 var(--space-md); font-size: var(--font-body); }
+    .toast-action { height: var(--tap-min); padding: 0 var(--space-md); }
     .toast-progres { min-width: 66px; }
     .toast-close { width: var(--tap-min); height: var(--tap-min); }
   }

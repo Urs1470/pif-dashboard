@@ -585,7 +585,7 @@
      randul isi aduce propriii 12 — separatorul iese la 20 de la marginea
      cardului, adica marja laterala ceruta, fara s-o scrie nimeni a doua oara. */
   .board { background: var(--bg-surface); border: 0; border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md); padding: var(--space-20) var(--space-sm) 6px;
+    box-shadow: var(--shadow-md); padding: var(--space-20) var(--space-sm) var(--space-6);
     margin-bottom: var(--space-lg); }
 
   .board-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); margin: 0 var(--space-sm) var(--space-md); }
@@ -597,7 +597,7 @@
                 letter-spacing: var(--tracking-tight); }
   .bh-zi { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim);
            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .bh-restante { display: inline-flex; align-items: center; gap: 6px; flex: none;
+  .bh-restante { display: inline-flex; align-items: center; gap: var(--space-6); flex: none;
     font-size: var(--font-small); font-weight: var(--fw-semibold);
     color: var(--danger); white-space: nowrap; }
   .bh-punct { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); }
@@ -608,7 +608,7 @@
      un drum secundar catre acelasi board. Hoverul ridica fondul, atat. (Aceeasi
      reteta ca la Calendar M3 si Departament C2.) `border-color` de la hover a
      plecat odata cu ea: butonul n-are chenar din care sa se schimbe ceva. */
-  .bh-add { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px; font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-elevated); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); flex-shrink: 0; }
+  .bh-add { display: inline-flex; align-items: center; gap: 7px; height: var(--ctrl-md); padding: 0 var(--space-14); font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-elevated); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); flex-shrink: 0; }
   .bh-add:hover { background: var(--bg-hover); color: var(--text); }
 
   /* Campul e UN obiect, iar plusul e semnul lui dinauntru — nu un al doilea
@@ -617,8 +617,8 @@
      ramane text gol pe fondul invelisului. Focusul se muta odata cu ele:
      `:focus-within`, fiindca ce primeste focusul e copilul. */
   .quick-add { display: flex; margin: 0 var(--space-sm) var(--space-md); }
-  .qa-camp { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
-    min-height: 44px; padding: 0 14px; background: var(--bg-elevated);
+  .qa-camp { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-10);
+    min-height: var(--tap-min); padding: 0 var(--space-14); background: var(--bg-elevated);
     border: 1px solid var(--border); border-radius: var(--radius-sm);
     transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   .qa-camp:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
@@ -641,7 +641,7 @@
      „PERSONAL" e un cuvant — se poate traduce, deci nu e mono. */
   /* Haina din desen (3a): padding 14px 12px 4px — 12 lateral, cat paddingul
      randului, ca eticheta sa inceapa pe aceeasi verticala cu titlurile. */
-  .pers-cap { display: flex; align-items: center; gap: 8px; padding: 14px var(--space-12) 4px; font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-secondary); }
+  .pers-cap { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-14) var(--space-12) var(--space-xs); font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-secondary); }
   /* Doar grupa a doua poarta separatorul de sectiune; „Muncă" sta sub compozitor. */
   .pers-cap:not(.munca) { margin-top: var(--space-sm); border-top: 1px solid var(--border); }
   /* Semn, nu bulina — acelasi desen ca pe comutatorul de sfera din /tasks, ca cele
@@ -683,7 +683,7 @@
      Pe telefon revine la 0 (vezi blocul de jos): acolo `overflow: hidden` ar
      decupa fata de glisare intr-un card, exact ce a scos V13. */
   .arow { position: relative; display: flex; align-items: center; gap: var(--space-12);
-    min-height: 46px; padding: 0 var(--space-12); background: none; border: 0;
+    min-height: var(--row-h); padding: 0 var(--space-12); background: none; border: 0;
     border-radius: var(--radius-sm);
     transition: background-color var(--dur-base) var(--ease), opacity var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
   /* SEPARATORUL ARE MARJA LATERALA, iar randul in repaus n-are colturi.
@@ -701,6 +701,15 @@
   @media (hover: hover) {
     .arow:hover { background: var(--bg-elevated); }
   }
+  /* APASAREA, IN AFARA MEDIA QUERY-ULUI. Masurat cu apasare de maus, izolata de
+     hover: randul schimba ZERO pixeli cand il apesi. Pe desktop se salva prin
+     hover; pe telefon nu exista nici hover, nici apasare, deci o atingere pe un
+     rand nu da niciun semn pana nu se schimba datele. `--bg-active` (10%) e cu o
+     treapta peste hover (6%) si e exact rolul pentru care exista in tokens.
+     `transition-duration` pe starea de intrare: cu cele 220ms de baza, apasarea
+     abia apuca sa apara inainte sa ridici degetul. Fond, nu `scale`: randul e cat
+     pagina, iar un rand care se strange arata ca un defect de layout. */
+  .arow:active { background: var(--bg-active); transition-duration: var(--dur-press); }
   /* ===== O SINGURA AXA DE CULOARE PE RAND =====
      Randul avea TREI sisteme de culoare care se bateau: severitatea (bordura din
      stanga + indexul), mov (categoria) si amber (subtaskuri, recurenta, numele
@@ -757,7 +766,7 @@
   .a-list:global(.reord-activ) .arow:not(:global(.reord-tras)) { pointer-events: none; }
   .a-list:global(.reord-activ) { user-select: none; }
 
-  .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; display: flex; }
+  .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: var(--space-2xs); display: flex; }
   .check:hover { color: var(--accent); }
   .arow.done .check { color: var(--success); }
   /* `.check-empty` traieste acum in global.css, o singura data pentru toate
@@ -783,7 +792,7 @@
      (termen, pasi, recurenta, proiect, categorie) — trei au urcat in coloana
      pironita sau au plecat, iar celelalte doua nu au nevoie de fundal ca sa se
      citeasca: sunt SUB titlu, deci deja subordonate prin pozitie. */
-  .ainfo { display: flex; align-items: center; gap: 10px; min-width: 0; overflow: hidden;
+  .ainfo { display: flex; align-items: center; gap: var(--space-10); min-width: 0; overflow: hidden;
     font-size: var(--font-small); color: var(--text-dim); }
   /* `flex: 0 1 auto` + `min-width: 0`: fara ele, un copil de flex se dimensioneaza
      dupa continut si IESE din parinte in loc sa se taie — deci `text-overflow`
@@ -822,7 +831,7 @@
      invizibil dar apasabil e mai rau decat unul vizibil.
      `focus-within` pe ACTIUNI, nu pe rand: la tastatura conteaza sa se vada ce
      ai focalizat, nu sa se aprinda randul cand ajungi pe titlu. */
-  .arow-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .arow-actions { display: flex; align-items: center; gap: var(--space-6); flex-shrink: 0; }
   /* Intra 8px spre interior, pe 220 (contract miscare) — ca in /tasks. */
   @media (hover: hover) {
     .arow-actions { opacity: 0; pointer-events: none; transform: translateX(8px);
@@ -831,7 +840,7 @@
     .arow-actions:focus-within { opacity: 1; pointer-events: auto; transform: none; }
   }
   .abtn, .row-date :global(.dp-trigger) {
-    display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px;
+    display: inline-flex; align-items: center; gap: var(--space-6); height: var(--ctrl-sm); padding: 0 11px;
     border-radius: var(--radius-xs); background: var(--bg-surface); box-shadow: var(--shadow-sm);
     border: none; color: var(--text-secondary); font-family: inherit;
     font-size: var(--font-control); font-weight: var(--fw-semibold);
@@ -875,7 +884,7 @@
     /* Desenul 3c: gap 12, padding lateral 10 — separatorul de mai jos coboara
        si el la 10, ca linia sa se termine exact unde incepe textul. */
     .gl-fata { display: flex; align-items: center; gap: var(--space-12); width: 100%;
-               min-height: var(--row-h-mobile); padding: 0 10px;
+               min-height: var(--row-h-mobile); padding: 0 var(--space-10);
                background: var(--bg-surface);
                border-radius: 0; position: relative; z-index: 1;
                will-change: transform; }
@@ -909,7 +918,7 @@
     .qa-camp { min-height: var(--tap-sheet); }
     /* „Adaugă task existent" ramane doar iconita pe telefon — deci iconita trebuie
        sa aiba caseta unui buton. Desenul 3c o cere patrata, la 48. */
-    .bh-add { min-width: var(--tap-sheet); min-height: var(--tap-sheet); justify-content: center; padding: 0 10px; }
+    .bh-add { min-width: var(--tap-sheet); min-height: var(--tap-sheet); justify-content: center; padding: 0 var(--space-10); }
 
     /* Indexul pleaca: pe un rand de o linie, doua cifre in fata titlului nu spun
        nimic ce nu spune deja ordinea de sus in jos, si mananca 28px din titlu. */
@@ -935,7 +944,7 @@
        reordonarea. Restul stau in panoul de sub rand. */
     .arow-tools { display: contents; }
     .arow-actions { display: none; }
-    .abtn { width: 34px; height: 34px; }
+    .abtn { width: var(--ctrl-sm); height: var(--ctrl-sm); }
 
     /* MANER, NU SAGETI.
        Aici erau doua sageti de 40×22 pe fiecare rand — 76 de tinte sub prag pe

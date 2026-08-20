@@ -106,8 +106,8 @@
   .er-linie {
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-height: 44px;
+    gap: var(--space-10);
+    min-height: var(--tap-min);
     padding: 0 var(--space-12);
     border-radius: var(--radius-sm);
     background: var(--danger-subtle);
@@ -115,7 +115,7 @@
     font-size: var(--font-small);
   }
   .er-ico-mic { display: inline-flex; flex: none; }
-  .er-text { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+  .er-text { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-10); align-items: baseline; }
   .er-vechi { color: var(--text-dim); }
   .er-linie .er-vechi { color: inherit; opacity: 0.85; }
 
@@ -123,9 +123,9 @@
     flex: none;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 32px;
-    padding: 0 12px;
+    gap: var(--space-6);
+    height: var(--ctrl-sm);
+    padding: 0 var(--space-12);
     border: none;
     border-radius: var(--radius-xs);
     background: var(--bg-surface);
@@ -141,7 +141,7 @@
   .er-btn:active { transform: scale(var(--press-scale)); }
 
   @media (max-width: 768px) {
-    .er-btn { height: var(--tap-min); padding: 0 14px; }
-    .er-linie { min-height: 56px; padding: 8px var(--space-12); }
+    .er-btn { height: var(--tap-min); padding: 0 var(--space-14); }
+    .er-linie { min-height: 56px; padding: var(--space-sm) var(--space-12); }
   }
 </style>

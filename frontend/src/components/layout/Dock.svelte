@@ -446,8 +446,8 @@
     transform: translateX(-50%) translateY(var(--dock-shift, 0px));
     transition: transform var(--dur-base) var(--ease);
     display: flex;
-    gap: 4px;
-    padding: 12px 8px 8px;
+    gap: var(--space-xs);
+    padding: var(--space-12) var(--space-sm) var(--space-sm);
     border-radius: var(--radius-md);
     z-index: var(--z-sticky);
     /* OPAC, cu umbra. Era semi-transparent cu `blur(18px)`, deci continutul
@@ -554,7 +554,7 @@
   .sep {
     width: 1px;
     background: var(--border-strong);
-    margin: 10px 6px;
+    margin: var(--space-10) var(--space-6);
   }
 
   /* ===== Foaia „Mai mult" (doar telefon) =====
@@ -583,7 +583,7 @@
     width: min(320px, calc(100vw - 24px));
     display: flex;
     flex-direction: column;
-    padding: 6px;
+    padding: var(--space-6);
     border-radius: var(--radius-md);
     background: var(--bg-overlay);
     box-shadow: var(--shadow-md);
@@ -592,9 +592,9 @@
   .mm-rand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-12);
     min-height: var(--tap-min);
-    padding: 0 12px;
+    padding: 0 var(--space-12);
     border: none;
     background: none;
     border-radius: var(--radius-sm);
@@ -612,7 +612,7 @@
     background: var(--accent-subtle);
     font-weight: var(--fw-semibold);
   }
-  .mm-linie { height: 1px; background: var(--border); margin: 5px 8px; }
+  .mm-linie { height: 1px; background: var(--border); margin: 5px var(--space-sm); }
 
   /* Manerul-linie (prezenta dock-ului). Absolut pe dock -> se misca cu dock-ul. */
   .dock-grip {
@@ -650,7 +650,7 @@
      ea, acolo dock-ul era fix dar manerul continua sa se ofere sa-l arate. */
   @media (pointer: coarse), (max-width: 768px) {
     .dock-grip { display: none; }
-    .dock { padding-top: 8px; }
+    .dock { padding-top: var(--space-sm); }
   }
 
   /* CINCI TINTE, NU OPT — deci spatiul se duce in TINTA.
@@ -675,8 +675,8 @@
       transform: translateY(var(--dock-shift, 0px));
       width: 100%;
       max-width: 100%;
-      gap: 4px;
-      padding: 8px 6px calc(8px + var(--safe-bottom));
+      gap: var(--space-xs);
+      padding: var(--space-sm) var(--space-6) calc(var(--space-sm) + var(--safe-bottom));
       border-radius: var(--radius-md) var(--radius-md) 0 0;
       justify-content: space-around;
     }
@@ -694,7 +694,7 @@
       align-items: center;
       justify-content: center;
       gap: 3px;
-      padding: 6px 2px;
+      padding: var(--space-6) var(--space-2xs);
     }
     .dock-et {
       display: block;

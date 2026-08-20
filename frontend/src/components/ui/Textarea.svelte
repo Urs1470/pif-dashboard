@@ -37,7 +37,7 @@
   /* Aceeasi reteta ca `.field-input` (vezi nota din Input.svelte): suprafata a
      doua, muchie interioara de 1px, raza de control, focus la 1,5px accent. */
   .field-textarea {
-    padding: 10px 12px;
+    padding: var(--space-10) var(--space-12);
     background: var(--bg-elevated);
     border: none;
     border-radius: var(--radius-sm);

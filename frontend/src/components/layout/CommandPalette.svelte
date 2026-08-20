@@ -416,16 +416,16 @@
   .palette-list {
     max-height: 400px;
     overflow-y: auto;
-    padding: 6px;
+    padding: var(--space-6);
   }
 
   .palette-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-10);
     width: 100%;
-    min-height: 40px;
-    padding: 0 10px;
+    min-height: var(--ctrl-md);
+    padding: 0 var(--space-10);
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
     font-size: var(--font-body);
@@ -451,7 +451,7 @@
     font-family: var(--font-mono);
     font-size: var(--font-small);
     color: var(--accent-deep);
-    margin-left: 8px;
+    margin-left: var(--space-sm);
   }
 
   /* „curent" e o eticheta, nu un accent: pe o suprafata neutra, cu text estompat.
@@ -459,7 +459,7 @@
      (nu mai are contrastul lui) nici neutru (isi pastreaza nuanta). */
   .current {
     flex: none;
-    padding: 2px 8px;
+    padding: var(--space-2xs) var(--space-sm);
     border-radius: var(--radius-xs);
     background: var(--bg-elevated);
     color: var(--text-dim);
@@ -472,21 +472,21 @@
   .group-label {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-6);
     font-size: var(--font-label);
     font-weight: var(--fw-semibold);
     color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
-    padding: var(--space-sm) 10px 2px;
+    padding: var(--space-sm) var(--space-10) var(--space-2xs);
     margin-top: var(--space-xs);
   }
   .group-label:first-child { margin-top: 0; }
 
   .palette-item.result {
     align-items: flex-start;
-    gap: 8px;
-    padding: 7px 10px;
+    gap: var(--space-sm);
+    padding: 7px var(--space-10);
   }
   .result-body {
     display: flex;

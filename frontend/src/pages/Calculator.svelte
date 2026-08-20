@@ -1010,7 +1010,7 @@
   .page-head {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-2xs);
     margin-bottom: var(--space-lg);
   }
   .head-row {
@@ -1023,51 +1023,51 @@
   .sub {
     font-size: var(--font-small);
     color: var(--text-dim);
-    margin-top: 2px;
+    margin-top: var(--space-2xs);
     max-width: 70ch;
   }
   .head-actions { margin-left: auto; display: flex; align-items: center; gap: var(--space-xs); flex-shrink: 0; }
   .surse-btn {
-    display: inline-flex; align-items: center; gap: 6px;
+    display: inline-flex; align-items: center; gap: var(--space-6);
     font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary);
-    padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: var(--space-6) var(--space-12); border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg-surface); cursor: pointer; transition: var(--transition-colors);
   }
   .surse-btn:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
   .surse { display: flex; flex-direction: column; gap: var(--space-md); }
   .surse-intro { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); }
-  .surse-sec h3 { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); margin-bottom: 4px; }
+  .surse-sec h3 { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); margin-bottom: var(--space-xs); }
   .surse-sec ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
-  .surse-sec li { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); padding-left: 12px; position: relative; }
+  .surse-sec li { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); padding-left: var(--space-12); position: relative; }
   .surse-sec li::before { content: '·'; position: absolute; left: 2px; color: var(--text-dim); }
   .ghid-sec { display: flex; flex-direction: column; gap: 5px; }
   .ghid-p { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); }
   .ghid-p :global(b) { color: var(--text); font-weight: var(--fw-semibold); }
 
   /* === Date echipament partajate === */
-  .equip-panel { border-radius: var(--radius-md); box-shadow: var(--shadow-sm); background: var(--bg-surface); margin-bottom: var(--space-md); padding: 10px 12px; }
-  .equip-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
+  .equip-panel { border-radius: var(--radius-md); box-shadow: var(--shadow-sm); background: var(--bg-surface); margin-bottom: var(--space-md); padding: var(--space-10) var(--space-12); }
+  .equip-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-10); justify-content: space-between; }
   .equip-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: var(--font-small); color: var(--text); cursor: pointer; }
   .equip-sub { font-size: var(--font-small); font-weight: var(--fw-normal); color: var(--text-dim); }
   .equip-chev { display: flex; color: var(--text-dim); transition: transform var(--dur-press) var(--ease); }
   .equip-chev.open { transform: rotate(90deg); color: var(--accent); }
   .equip-switch { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; }
-  .equip-body { margin-top: 4px; }
+  .equip-body { margin-top: var(--space-xs); }
   /* toolbar de actiuni: stanga = intrare (import backup / salveaza), dreapta = iesire (export / reset) */
-  .equip-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 11px; border-top: 1px solid var(--border); }
-  .equip-foot-grp { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .equip-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-10); margin-top: var(--space-14); padding-top: 11px; border-top: 1px solid var(--border); }
+  .equip-foot-grp { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); }
   .equip-foot button {
     font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary);
-    padding: 6px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-    background: var(--bg-elevated); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    padding: var(--space-6) 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg-elevated); cursor: pointer; display: inline-flex; align-items: center; gap: var(--space-xs);
     transition: var(--transition-colors);
   }
   .equip-foot button:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
   .equip-foot .ef-import { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .equip-foot .ef-import:hover { filter: brightness(1.07); }
-  .equip-name { font-size: var(--font-small); padding: 6px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text); width: 130px; }
+  .equip-name { font-size: var(--font-small); padding: var(--space-6) 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text); width: 130px; }
   /* align-items:end -> inputurile se aliniaza la baza chiar daca o eticheta se rupe pe 2 randuri */
-  .equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 8px 10px; margin-top: 6px; align-items: end; }
+  .equip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: var(--space-sm) var(--space-10); margin-top: var(--space-6); align-items: end; }
   .equip-field { display: flex; flex-direction: column; gap: 3px; }
   /* min-height = 2 randuri -> etichetele scurte si cele care se rup pe 2 randuri rezerva aceeasi zona,
      deci inputurile se aliniaza uniform (impreuna cu align-items:end pe grid) */
@@ -1075,31 +1075,31 @@
   .equip-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .equip-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
   .equip-field input:disabled { opacity: 0.45; }
-  .equip-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+  .equip-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); margin-top: var(--space-10); }
   .equip-chips-h { font-size: var(--font-small); color: var(--text-dim); }
   .equip-chip { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: var(--radius-full); overflow: hidden; }
-  .equip-chip > button { font-size: var(--font-small); padding: 3px 10px; color: var(--text-secondary); cursor: pointer; background: var(--bg-surface); }
+  .equip-chip > button { font-size: var(--font-small); padding: 3px var(--space-10); color: var(--text-secondary); cursor: pointer; background: var(--bg-surface); }
   .equip-chip > button:hover { background: var(--accent-subtle); color: var(--accent); }
-  .equip-chip .chip-x { padding: 3px 8px; color: var(--text-dim); border-left: 1px solid var(--border); }
-  .equip-msg { font-size: var(--font-small); color: var(--accent); margin-top: 8px; }
+  .equip-chip .chip-x { padding: 3px var(--space-sm); color: var(--text-dim); border-left: 1px solid var(--border); }
+  .equip-msg { font-size: var(--font-small); color: var(--accent); margin-top: var(--space-sm); }
   /* input cu buton de legare la datele partajate */
-  .inp-row { display: flex; align-items: stretch; gap: 4px; margin-top: auto; }
+  .inp-row { display: flex; align-items: stretch; gap: var(--space-xs); margin-top: auto; }
   .inp-row .inp-field { flex: 1; min-width: 0; margin-top: 0; }
   .link-btn { display: flex; align-items: center; justify-content: center; width: 28px; flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); cursor: pointer; background: var(--bg-surface); }
   .link-btn.on { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .link-btn:hover { color: var(--text); border-color: var(--text-dim); }
-  .equip-group { margin-top: 12px; }
-  .equip-group-h { display: block; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-label); margin-bottom: 6px; }
+  .equip-group { margin-top: var(--space-12); }
+  .equip-group-h { display: block; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-label); margin-bottom: var(--space-6); }
   .equip-sec-h { display: block; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); margin: 9px 0 0; }
-  .equip-sec-h:first-of-type { margin-top: 2px; }
+  .equip-sec-h:first-of-type { margin-top: var(--space-2xs); }
 
   /* sub-antet de sectiune in accordion */
-  .acc-section-head { font-size: var(--font-small); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); padding: 12px 2px 3px; }
+  .acc-section-head { font-size: var(--font-small); font-weight: var(--fw-semibold); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); padding: var(--space-12) var(--space-2xs) 3px; }
 
   /* modal import */
   .imp { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .imp-equip { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow: auto; }
-  .imp-eq { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 11px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; }
+  .imp-equip { display: flex; flex-direction: column; gap: var(--space-6); max-height: 240px; overflow: auto; }
+  .imp-eq { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2xs); text-align: left; padding: var(--space-sm) 11px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-surface); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); cursor: pointer; }
   .imp-eq:hover { background: var(--accent-subtle); border-color: var(--accent); }
   .imp-eq span { font-size: var(--font-small); font-weight: var(--fw-normal); color: var(--text-dim); }
   .imp-eq .imp-eq-name { display: flex; align-items: center; gap: 7px; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); }
@@ -1107,9 +1107,9 @@
   .imp-eq-tag.warn { background: var(--danger-subtle); color: var(--danger-deep); }
   .imp input[type=file] { font-size: var(--font-small); color: var(--text-secondary); }
   .imp-hint { font-size: var(--font-small); color: var(--text-dim); }
-  .imp-hint code { font-family: var(--font-mono); background: var(--bg-hover); padding: 0 4px; border-radius: 3px; }
+  .imp-hint code { font-family: var(--font-mono); background: var(--bg-hover); padding: 0 var(--space-xs); border-radius: 3px; }
   .imp-msg { font-size: var(--font-small); color: var(--accent); font-weight: var(--fw-semibold); }
-  .imp-note { font-size: var(--font-small); color: var(--text-dim); border-top: 1px dashed var(--border); padding-top: 8px; }
+  .imp-note { font-size: var(--font-small); color: var(--text-dim); border-top: 1px dashed var(--border); padding-top: var(--space-sm); }
 
   .fam-tabs {
     display: flex;
@@ -1121,7 +1121,7 @@
   }
   /* aceeasi reteta .chip ca filtrele din Proiecte/Taskuri */
   .fam-tab {
-    padding: 4px 14px; min-height: 30px;
+    padding: var(--space-xs) var(--space-14); min-height: var(--ctrl-sm);
     border-radius: var(--radius-full);
     font-size: var(--font-small);
     font-weight: var(--fw-medium);
@@ -1149,7 +1149,7 @@
   .intreb-card {
     display: flex; flex-direction: column; gap: 5px;
     text-align: left;
-    padding: 12px 14px;
+    padding: var(--space-12) var(--space-14);
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -1160,7 +1160,7 @@
   .intreb-q { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text); line-height: var(--lh-snug); }
   .intreb-nev { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-snug); }
   .intreb-mod { font-size: var(--font-small); color: var(--accent); }
-  .intreb-foot { grid-column: 1 / -1; font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); padding-top: 4px; }
+  .intreb-foot { grid-column: 1 / -1; font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); padding-top: var(--space-xs); }
   /* AL DOILEA NIVEL NU ARE VOIE SA ARATE CA PRIMUL.
      Randul asta e o SUBCATEGORIE a chipului activ de deasupra („Aplicații" ->
      Pompe, Compresoare, Macarale…), dar se desena cu aceeasi reteta: acelasi
@@ -1193,33 +1193,33 @@
   .search-inp:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
   .search-clear { position: absolute; right: 8px; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
   .search-clear:hover { background: var(--bg-hover); color: var(--text); }
-  .cat-badge { display: inline-block; margin-top: 4px; width: fit-content; font-size: var(--font-small); color: var(--text-dim); background: var(--bg-hover); border-radius: var(--radius-full); padding: 1px 9px; }
+  .cat-badge { display: inline-block; margin-top: var(--space-xs); width: fit-content; font-size: var(--font-small); color: var(--text-dim); background: var(--bg-hover); border-radius: var(--radius-full); padding: 1px 9px; }
 
   /* === Acordeon === */
-  .acc-list { display: flex; flex-direction: column; gap: 8px; }
+  .acc-list { display: flex; flex-direction: column; gap: var(--space-sm); }
   .acc-item {
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     overflow: hidden;
     transition: border-color var(--dur-fast) var(--ease);
-    scroll-margin-top: 16px; /* la navigare cardul incepe de sus, cu putin spatiu */
+    scroll-margin-top: var(--space-md); /* la navigare cardul incepe de sus, cu putin spatiu */
   }
   .acc-item.open { border-color: var(--accent); }
   .acc-head {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 14px; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: var(--space-10);
+    padding: var(--space-10) var(--space-14); cursor: pointer; user-select: none;
     transition: background-color var(--dur-fast) var(--ease);
   }
   .acc-head:hover { background: var(--bg-hover); }
   .acc-chev { display: flex; flex-shrink: 0; color: var(--text-dim); transition: transform var(--dur-press) var(--ease); }
   .acc-chev.open { transform: rotate(90deg); color: var(--accent); }
   .acc-title {
-    flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px;
+    flex: 1; min-width: 0; display: flex; align-items: baseline; gap: var(--space-sm);
     font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text);
   }
   .acc-sub { font-size: var(--font-small); font-weight: var(--fw-normal); color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .star-btn { display: flex; flex-shrink: 0; padding: 4px; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
+  .star-btn { display: flex; flex-shrink: 0; padding: var(--space-xs); border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; }
   .star-btn:hover { background: var(--bg-hover); color: var(--text); }
   .star-btn.on { color: var(--accent); }
   .star-btn.on :global(svg) { fill: var(--accent); }
@@ -1231,7 +1231,7 @@
   .acc-nav { display: flex; justify-content: space-between; gap: var(--space-sm); border-top: 1px dashed var(--border); padding-top: var(--space-sm); }
   .nav-btn {
     font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary);
-    padding: 5px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 5px var(--space-12); border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg-surface); cursor: pointer; transition: var(--transition-colors);
   }
   .nav-btn:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); border-color: var(--text-dim); }
@@ -1239,45 +1239,45 @@
   .acc-status { text-align: center; font-size: var(--font-small); color: var(--text-dim); padding-top: var(--space-sm); }
 
   /* === V2 (desktop >=940px): navigator sticky + modulul activ === */
-  .calc-grid { display: grid; grid-template-columns: 270px 1fr; gap: 14px; align-items: start; }
+  .calc-grid { display: grid; grid-template-columns: 270px 1fr; gap: var(--space-14); align-items: start; }
   .calc-nav {
     position: sticky; top: calc(var(--header-height) + 16px);
     max-height: calc(100dvh - var(--header-height) - var(--dock-h) - 48px);
     overflow-y: auto;
     background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);
-    padding: 12px; display: flex; flex-direction: column; gap: 2px;
+    padding: var(--space-12); display: flex; flex-direction: column; gap: var(--space-2xs);
   }
   .nav-equip {
     display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%;
-    padding: 8px 10px; margin-bottom: 6px; text-align: left;
+    padding: var(--space-sm) var(--space-10); margin-bottom: var(--space-6); text-align: left;
     border: 1px dashed var(--border); border-radius: var(--radius-md);
     background: var(--bg-elevated); cursor: pointer; transition: var(--transition-colors);
   }
   .nav-equip:hover { border-color: var(--accent); background: var(--accent-subtle); }
-  .nav-equip-h { display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-label); }
+  .nav-equip-h { display: inline-flex; align-items: center; gap: var(--space-6); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary); text-transform: uppercase; letter-spacing: var(--tracking-label); }
   .nav-equip-sum { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-dim); overflow-wrap: anywhere; }
   /* aceeasi reteta de grup ca nav-ul din Parametri: separator dashed + punct de accent */
   .nav-sec {
     font-size: var(--font-label); font-weight: var(--fw-semibold); text-transform: uppercase;
-    letter-spacing: var(--tracking-label); color: var(--text-dim); padding: 14px 10px 6px;
-    margin-top: 10px; border-top: 1px dashed var(--border);
-    display: flex; align-items: center; gap: 8px;
+    letter-spacing: var(--tracking-label); color: var(--text-dim); padding: var(--space-14) var(--space-10) var(--space-6);
+    margin-top: var(--space-10); border-top: 1px dashed var(--border);
+    display: flex; align-items: center; gap: var(--space-sm);
   }
   .nav-sec::before {
     content: ''; width: 7px; height: 7px; border-radius: 3px;
     background: var(--accent-subtle); border: 1px solid var(--accent-ring); flex-shrink: 0;
   }
-  .nav-sec:first-of-type { padding-top: 4px; margin-top: 4px; }
-  .nav-item { display: flex; align-items: center; gap: 2px; border-radius: var(--radius-md); transition: background-color var(--dur-fast) var(--ease); }
+  .nav-sec:first-of-type { padding-top: var(--space-xs); margin-top: var(--space-xs); }
+  .nav-item { display: flex; align-items: center; gap: var(--space-2xs); border-radius: var(--radius-md); transition: background-color var(--dur-fast) var(--ease); }
   .nav-item:hover { background: var(--bg-hover); }
   .nav-item.on { background: var(--accent-subtle); }
   .nav-item.on .nav-item-btn { color: var(--accent); font-weight: var(--fw-semibold); }
   .nav-item-btn {
     flex: 1; min-width: 0; text-align: left; font-size: var(--font-small); color: var(--text-secondary);
-    padding: 7px 4px 7px 10px; border-radius: var(--radius-md); cursor: pointer; overflow-wrap: anywhere;
+    padding: 7px var(--space-xs) 7px var(--space-10); border-radius: var(--radius-md); cursor: pointer; overflow-wrap: anywhere;
     transition: color var(--dur-fast) var(--ease);
   }
-  .nav-star { opacity: 0; margin-right: 4px; }
+  .nav-star { opacity: 0; margin-right: var(--space-xs); }
   .nav-item:hover .nav-star, .nav-star.on { opacity: 1; }
   /* PE TELEFON STEAUA SE VEDE MEREU (regula R11 din `audit_design.py`).
      Ascunsa pana la `:hover`, ea era vizibila doar cand modulul era DEJA
@@ -1288,7 +1288,7 @@
     .nav-star { opacity: 1; }
   }
   .mod-cell { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; min-width: 0; }
-  .mod-cell-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+  .mod-cell-head { display: flex; align-items: center; gap: var(--space-10); padding: var(--space-12) var(--space-md); }
   .mod-cell-empty { padding: var(--space-lg); }
 
   /* === Autocomplete cautare === */
@@ -1297,22 +1297,22 @@
   .ac-list {
     position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; right: 0;
     background: var(--bg-overlay); border: 1px solid var(--border); border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg); padding: 4px;
+    box-shadow: var(--shadow-lg); padding: var(--space-xs);
   }
   .ac-item {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
-    padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; text-align: left;
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-10); width: 100%;
+    padding: var(--space-sm) var(--space-10); border-radius: var(--radius-sm); cursor: pointer; text-align: left;
   }
   .ac-item.active { background: var(--accent-subtle); }
   .ac-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--font-small); color: var(--text); }
   .ac-sub { color: var(--text-dim); }
   .ac-item .cat-badge { margin-top: 0; flex-shrink: 0; }
-  .ac-title :global(mark) { background: var(--accent-subtle); color: var(--accent-on-subtle); border-radius: 3px; padding: 0 2px; }
+  .ac-title :global(mark) { background: var(--accent-subtle); color: var(--accent-on-subtle); border-radius: 3px; padding: 0 var(--space-2xs); }
 
   /* === Favorite / Recente === */
-  .quick-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-md); }
-  .quick-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .quick-h { display: inline-flex; align-items: center; gap: 4px; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-dim); margin-right: 2px; }
+  .quick-rows { display: flex; flex-direction: column; gap: var(--space-6); margin-bottom: var(--space-md); }
+  .quick-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); }
+  .quick-h { display: inline-flex; align-items: center; gap: var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-dim); margin-right: var(--space-2xs); }
   .chip {
     font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-secondary);
     padding: 3px 11px; border-radius: var(--radius-full); border: 1px solid var(--border); background: var(--bg-surface);
@@ -1322,7 +1322,7 @@
   .reset-btn {
     font-size: var(--font-small);
     color: var(--text-dim);
-    padding: 4px 8px;
+    padding: var(--space-xs) var(--space-sm);
     border-radius: var(--radius-sm);
     flex-shrink: 0;
     transition: var(--transition-colors);
@@ -1334,7 +1334,7 @@
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: var(--space-sm);
   }
-  .inp { display: flex; flex-direction: column; gap: 4px; }
+  .inp { display: flex; flex-direction: column; gap: var(--space-xs); }
   .inp-label {
     font-size: var(--font-small);
     font-weight: var(--fw-medium);
@@ -1354,8 +1354,8 @@
   /* titlul = un singur link uniform: simbol, [u.m.], text — acelasi font si culoare */
   .inp-field {
     margin-top: auto;
-    padding: 8px 10px;
-    min-height: 40px;
+    padding: var(--space-sm) var(--space-10);
+    min-height: var(--ctrl-md);
     background: var(--bg-elevated);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -1403,7 +1403,7 @@
   .res-right {
     display: flex;
     align-items: baseline;
-    gap: 4px;
+    gap: var(--space-xs);
     flex-shrink: 0;
     white-space: nowrap;
   }
@@ -1445,24 +1445,24 @@
   .vd-dot.ok { background: var(--success); }
   .vd-dot.atentie { background: transparent; border: 1.5px solid var(--danger); }
   .vd-dot.critic { background: var(--danger); }
-  .vd-dot.nav-dot { margin-right: 6px; vertical-align: middle; }
+  .vd-dot.nav-dot { margin-right: var(--space-6); vertical-align: middle; }
   /* Legenda: text mic, gri, o singura linie care se poate rupe. Fara cadru si
      fara fond — e o nota de subsol pusa deasupra, nu inca o caseta. */
   .vd-legenda { display: flex; flex-wrap: wrap; gap: var(--space-12); margin: 0 0 var(--space-sm); }
-  .vd-l { display: inline-flex; align-items: center; gap: 6px;
+  .vd-l { display: inline-flex; align-items: center; gap: var(--space-6);
           font-size: var(--font-label); color: var(--text-dim); }
   .acc-title .vd-dot { margin-right: 7px; vertical-align: middle; }
 
   /* Muchia colorata de pe randul de rezultat a plecat: buleta si textul de
      dedesubt spun deja acelasi lucru, de doua ori, in aceeasi culoare. */
-  .res-row.has-vd { padding-left: 8px; margin-left: -10px; }
+  .res-row.has-vd { padding-left: var(--space-sm); margin-left: -10px; }
 
   .vd-text {
     font-size: var(--font-small);
     line-height: var(--lh-normal);
     padding: 5px 7px;
     border-radius: var(--radius-sm);
-    margin: 1px 0 2px;
+    margin: 1px 0 var(--space-2xs);
   }
   /* Amandoua pe tenta de restant, cu cerneala adanca. Deosebirea dintre ele o
      face bulina de pe rand (contur vs plin), nu inca o culoare. */
@@ -1470,7 +1470,7 @@
   .vd-text.critic { color: var(--danger-deep); background: var(--danger-subtle); font-weight: var(--fw-medium); }
   .vd-src {
     display: block;
-    margin-top: 2px;
+    margin-top: var(--space-2xs);
     color: var(--text-dim);
     font-size: var(--font-small);
     opacity: 0.85;
@@ -1479,7 +1479,7 @@
   .mod-note {
     display: flex;
     align-items: flex-start;
-    gap: 6px;
+    gap: var(--space-6);
     font-size: var(--font-small);
     color: var(--text-dim);
   }
@@ -1487,7 +1487,7 @@
   .mod-note > :global(svg),
   .mod-source > :global(svg) {
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: var(--space-2xs);
   }
   .note-body {
     flex: 1;
@@ -1513,15 +1513,15 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
-    margin-top: 6px;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
   }
   .docs-h { font-size: var(--font-small); color: var(--text-dim); }
   .doc-link {
     display: inline-flex;
     align-items: center;
     font-size: var(--font-small);
-    padding: 2px 8px;
+    padding: var(--space-2xs) var(--space-sm);
     border-radius: var(--radius-sm);
     background: var(--bg-hover);
     border: 1px solid var(--border);
@@ -1531,14 +1531,14 @@
   }
   .doc-link:hover { background: var(--bg-surface); border-color: var(--accent); }
   .fig-link {
-    display: inline-flex; align-items: center; gap: 6px;
+    display: inline-flex; align-items: center; gap: var(--space-6);
     font-size: var(--font-small); font-weight: var(--fw-semibold);
-    padding: 7px 12px; border-radius: var(--radius-md);
+    padding: 7px var(--space-12); border-radius: var(--radius-md);
     background: var(--accent-subtle); border: 1px solid var(--accent);
     color: var(--accent); text-decoration: none; width: fit-content;
   }
   .fig-link:hover { filter: brightness(1.07); }
-  .term-docs { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .term-docs { display: flex; flex-direction: column; gap: var(--space-6); align-items: flex-start; }
 
   .charts { display: flex; flex-wrap: wrap; gap: var(--space-md); }
   .chart-zoom {
@@ -1569,7 +1569,7 @@
   .term { display: flex; flex-direction: column; gap: var(--space-md); }
   .term-unit { font-size: var(--font-small); color: var(--text-secondary); }
   .term-unit b { font-family: var(--font-mono); color: var(--text); }
-  .term-sec { display: flex; flex-direction: column; gap: 4px; }
+  .term-sec { display: flex; flex-direction: column; gap: var(--space-xs); }
   .term-h {
     font-size: var(--font-small);
     font-weight: var(--fw-semibold);
@@ -1583,24 +1583,24 @@
 
   @media (max-width: 768px) {
     .acc-sub { display: none; }
-    .acc-head { padding: 10px 12px; gap: 8px; }
+    .acc-head { padding: var(--space-10) var(--space-12); gap: var(--space-sm); }
     /* Calculatorul se foloseste EXACT acolo unde e greu: langa un dulap, cu
        telefonul intr-o mana. Taburile de familie (30px) si cele de subfamilie
        (26px) erau cele mai mici tinte de aici — si sunt primul lucru pe care il
        atingi la fiecare intrare in pagina.
        Randurile de acordeon si campurile de calcul cresc si ele: `.acc-head` e ce
        deschizi ca sa ajungi la formula. */
-    .fam-tab { min-height: var(--tap-min); padding: 4px 16px; }
+    .fam-tab { min-height: var(--tap-min); padding: var(--space-xs) var(--space-md); }
     /* Subfamiliile raman vizual mai usoare (font mai mic), dar la fel de usor de
        atins — ierarhia se citeste din greutate, nu din cat de greu nimeresti. */
-    .subfam-tab { min-height: var(--tap-min); padding: 3px 14px; }
+    .subfam-tab { min-height: var(--tap-min); padding: 3px var(--space-14); }
     /* Antetul paginii, pe telefon: titlul se rupe pe doua randuri, iar
        `align-items: center` lasa iconita plutind la mijlocul lor, langa nimic.
        Se aliniaza la PRIMUL rand, ca un semn de titlu, nu ca un vecin.
        „Surse & standarde" coboara pe randul lui: langa un titlu de doua randuri
        se ingusta pana isi rupea si el eticheta in doua. */
     .head-row { flex-wrap: wrap; align-items: flex-start; }
-    .head-row :global(svg) { margin-top: 2px; flex-shrink: 0; }
+    .head-row :global(svg) { margin-top: var(--space-2xs); flex-shrink: 0; }
     /* `flex-basis: 0`, nu `auto`: cu `auto` titlul isi cerea latimea intreaga
        (~320px), nu incapea langa iconita si se ducea el pe randul urmator —
        ramanea iconita singura pe un rand, ca un cap de lista fara lista. Cu
@@ -1614,7 +1614,7 @@
     .head-actions { flex: 0 0 100%; margin-left: 0; }
     .surse-btn { flex: 1 1 auto; min-height: var(--tap-min);
                  justify-content: center; white-space: nowrap; }
-    .fam-tabs, .subfam-tabs { gap: 6px; }
+    .fam-tabs, .subfam-tabs { gap: var(--space-6); }
     .acc-head { min-height: var(--tap-min); }
     /* Steaua sta lipita de titlul modulului, in acelasi rand. Umflata la 44px ar
        impinge titlul; asa ramane de 23px la vedere si de 44 la atingere. */

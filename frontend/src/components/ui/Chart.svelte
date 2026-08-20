@@ -173,7 +173,7 @@
 
 <style>
   .chart { margin-top: var(--space-sm); border-top: 1px solid var(--border); padding-top: var(--space-sm); }
-  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: var(--font-small); color: var(--text-secondary); margin-bottom: 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: var(--space-10); font-size: var(--font-small); color: var(--text-secondary); margin-bottom: var(--space-xs); }
   .lg { display: flex; align-items: center; gap: 5px; }
   .sw { width: 14px; height: 3px; border-radius: 2px; background: var(--c); }
   .sw.dash { background: repeating-linear-gradient(90deg, var(--c) 0 5px, transparent 5px 9px); }
@@ -197,7 +197,7 @@
   .tip-bg { fill: var(--bg-overlay); }
   .tip-x { fill: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); font-family: var(--font-mono); }
   .tip-v { fill: var(--text-secondary); font-size: var(--font-small); font-family: var(--font-mono); }
-  .chart-desc { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); margin-top: 6px; }
+  .chart-desc { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); margin-top: var(--space-6); }
   .cd-l { font-weight: var(--fw-semibold); color: var(--text); }
-  .cd-w { color: var(--accent); margin-left: 2px; }
+  .cd-w { color: var(--accent); margin-left: var(--space-2xs); }
 </style>

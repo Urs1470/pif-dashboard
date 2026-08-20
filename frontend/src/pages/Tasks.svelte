@@ -1614,7 +1614,7 @@
      titlului. Nu e un contor de umplutura — „cate deschise" spune daca ai timp,
      „cate restante" spune daca te apuci de altceva. */
   .ph-sub { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim); }
-  .ph-restante { display: inline-flex; align-items: center; gap: 6px;
+  .ph-restante { display: inline-flex; align-items: center; gap: var(--space-6);
     font-size: var(--font-small); font-weight: var(--fw-semibold);
     color: var(--danger); white-space: nowrap; }
   .ph-punct { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); }
@@ -1651,19 +1651,19 @@
      Cat timp era `flex-direction: row`, chipurile se asezau LANGA camp, ieseau
      din ecran, iar campul se intindea pe inaltimea lor. */
   .quick-add { display: flex; flex-direction: column; margin-bottom: var(--space-md); }
-  .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
+  .quick-add input { flex: 1; min-height: var(--ctrl-md); padding: var(--space-sm) var(--space-12); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .quick-add-btn { width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .quick-add-btn { width: var(--ctrl-md); min-height: var(--ctrl-md); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .filters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .filters { display: flex; gap: var(--space-xs); flex-wrap: wrap; align-items: center; }
   /* ARHIVA — ACTIUNE-FANTOMA, NU CHIP. Aici erau doua chipuri („Active"/„Arhivă"),
      din care unul era mereu pornit. Ramane un singur buton, cu haina iconitei
      Google de langa el: si aceea e o setare, nu un filtru. Activ = tinta amber,
      ca sa se vada din bara in ce lista te uiti. */
-  .a-ico { display: inline-flex; align-items: center; gap: 6px; min-height: 30px;
-    padding: 0 10px; border: none; background: none; border-radius: var(--radius-sm);
+  .a-ico { display: inline-flex; align-items: center; gap: var(--space-6); min-height: var(--ctrl-sm);
+    padding: 0 var(--space-10); border: none; background: none; border-radius: var(--radius-sm);
     color: var(--text-dim); font-size: var(--font-small); font-weight: var(--fw-medium);
     cursor: pointer; transition: var(--transition-colors); }
   .a-ico:hover { color: var(--text); background: var(--bg-hover); }
@@ -1688,8 +1688,8 @@
      de pe un segment pe celalalt. */
   .sfere { display: grid; grid-template-columns: 1fr 1fr; position: relative;
     background: var(--bg-elevated); border: none;
-           border-radius: var(--radius-sm); padding: 3px; flex-shrink: 0; margin-right: 4px; }
-  .seg { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 14px; min-height: 30px; border: none; background: none; cursor: pointer;
+           border-radius: var(--radius-sm); padding: 3px; flex-shrink: 0; margin-right: var(--space-xs); }
+  .seg { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-6); padding: 0 var(--space-14); min-height: var(--ctrl-sm); border: none; background: none; cursor: pointer;
          position: relative; z-index: 1;
          border-radius: calc(var(--radius-sm) - 3px); font-size: var(--font-small); font-weight: var(--fw-medium);
          color: var(--text-secondary); transition: color var(--dur-base) var(--ease); }
@@ -1718,13 +1718,13 @@
      Prefixul `g-` e mostenit de la modalul Google (sters 2026-08-10); clasele
      au ramas ale ferestrei de notificari, care le folosea deja pe toate. */
   .g-ico { position: relative; display: flex; align-items: center; justify-content: center;
-           width: 30px; min-height: 30px; background: none; border: none; cursor: pointer;
+           width: var(--ctrl-sm); min-height: var(--ctrl-sm); background: none; border: none; cursor: pointer;
            color: var(--text-dim); border-radius: var(--radius-sm);
            transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .g-ico:hover { color: var(--text); background: var(--bg-hover); }
   /* Acelasi punct ca pe clopotel, pe segmentul de sfera. */
   .seg-punct { width: 6px; height: 6px; border-radius: 50%; background: var(--danger);
-    flex: none; margin-left: 2px; }
+    flex: none; margin-left: var(--space-2xs); }
   .g-punct { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px;
              border-radius: 50%; background: var(--danger); }
 
@@ -1740,7 +1740,7 @@
      de notificari, care folosea deja aceleasi clase de stare. */
   .g-stare { display: flex; flex-direction: column; }
   .g-rand { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
-    min-height: 38px; font-size: var(--font-body); color: var(--text-secondary); }
+    min-height: var(--ctrl-md); font-size: var(--font-body); color: var(--text-secondary); }
   .g-et { color: var(--text-secondary); }
   .g-val { color: var(--text); text-align: right; }
 
@@ -1748,7 +1748,7 @@
     background: var(--danger-subtle); color: var(--danger-deep);
     font-family: var(--font-mono); font-size: var(--font-small); line-height: var(--lh-snug);
     overflow-wrap: anywhere; }
-  .g-eroare :global(svg) { flex: none; margin-top: 2px; }
+  .g-eroare :global(svg) { flex: none; margin-top: var(--space-2xs); }
 
   .g-link { font-size: var(--font-small); color: var(--text-dim); background: none; border: none;
             cursor: pointer; text-decoration: underline; padding: 0; align-self: center; }
@@ -1770,7 +1770,7 @@
      ca o fraza, ca sa se vada CE se opreste, nu doar ca exista un buton. */
   .n-comutator { display: flex; align-items: center; gap: var(--space-12);
                  font-size: var(--font-body); color: var(--text);
-                 min-height: 48px; padding: 0 2px; cursor: pointer; }
+                 min-height: 48px; padding: 0 var(--space-2xs); cursor: pointer; }
   .n-comutator input { width: 18px; height: 18px; flex: none; accent-color: var(--accent);
                        cursor: pointer; }
   /* Ora plecarii sta CHIAR PE RANDUL ei, nu intr-un al treilea camp sus: e ora
@@ -1783,11 +1783,11 @@
   .n-alarma { display: flex; gap: var(--space-12); margin-top: var(--space-12);
               padding: var(--space-12); border-radius: var(--radius-md);
               background: var(--danger-subtle); }
-  .n-alarma :global(svg) { flex: none; margin-top: 2px; color: var(--danger-deep); }
+  .n-alarma :global(svg) { flex: none; margin-top: var(--space-2xs); color: var(--danger-deep); }
   .n-alarma strong { display: block; font-size: var(--font-body); font-weight: var(--fw-semibold);
                      color: var(--text); }
-  .n-alarma p { margin-top: 4px; font-size: var(--font-small); color: var(--text-secondary); }
-  .n-alarma-b { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--space-sm);
+  .n-alarma p { margin-top: var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); }
+  .n-alarma-b { display: inline-flex; align-items: center; gap: var(--space-6); margin-top: var(--space-sm);
                 min-height: var(--tap-min); padding: 0 var(--space-12);
                 border: 1px solid var(--border); border-radius: var(--radius-md);
                 background: var(--bg-surface); color: var(--text);
@@ -1840,14 +1840,14 @@
      Regula de telefon o avea deja corect; acum o are si desktopul. */
   .grup-cap { position: sticky; top: var(--header-height); z-index: 2;
     display: flex; align-items: center; gap: var(--space-sm);
-    padding: 20px 12px 8px; margin-top: 0;
+    padding: var(--space-20) var(--space-12) var(--space-sm); margin-top: 0;
     background: linear-gradient(var(--bg-surface) 72%, transparent);
     font-size: var(--font-label);
     font-weight: var(--fw-semibold); text-transform: uppercase;
     letter-spacing: var(--tracking-label); color: var(--text-secondary); }
   .grup-cap::before { content: ''; width: 7px; height: 7px; border-radius: 50%;
     background: var(--border-strong); flex: none; }
-  .grup-cap:first-child { padding-top: 4px; }
+  .grup-cap:first-child { padding-top: var(--space-xs); }
   /* Numarul se randeaza doar la „Restante" (vezi markup), deci si culoarea lui e
      una singura. Regula pentru `ton-accent` a plecat cu el: fara rand care s-o
      poarte, era vopsea pentru un element care nu mai exista. */
@@ -1865,14 +1865,14 @@
 
   /* ===== compozitorul ===== */
   .qa-rand { display: flex; gap: var(--space-sm); }
-  .qa-cand { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 2px 0; }
-  .qa-chip { padding: 5px 14px; border-radius: var(--radius-full);
+  .qa-cand { display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap; padding: var(--space-sm) var(--space-2xs) 0; }
+  .qa-chip { padding: 5px var(--space-14); border-radius: var(--radius-full);
     background: var(--bg-elevated); border: 1px solid var(--border);
     color: var(--text-secondary); font-size: var(--font-small);
     font-weight: var(--fw-medium); cursor: pointer;
     transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .qa-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
-  .qa-dp :global(.dp-trigger) { min-height: 30px; padding: 4px 12px;
+  .qa-dp :global(.dp-trigger) { min-height: var(--ctrl-sm); padding: var(--space-xs) var(--space-12);
     border-radius: var(--radius-full); font-size: var(--font-small); }
   .qa-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: auto; }
 
@@ -1898,7 +1898,7 @@
     padding-bottom: var(--space-md);
     background: var(--bg-overlay);
   }
-  .td-link { display: inline-flex; align-items: center; gap: 6px; padding: 0;
+  .td-link { display: inline-flex; align-items: center; gap: var(--space-6); padding: 0;
     background: none; border: none; color: var(--text-dim);
     font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }
   .td-link:hover { color: var(--accent); }
@@ -1906,7 +1906,7 @@
   /* DatePicker-ul isi aduce caseta de camp; aici trebuie sa arate ca vecinul lui —
      un link, nu un input. */
   .td-dp :global(.dp) { width: auto; }
-  .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: 6px;
+  .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: var(--space-6);
     background: none; border: none; box-shadow: none; border-radius: 0;
     color: var(--text-dim); font-size: var(--font-small); }
   .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
@@ -1956,16 +1956,19 @@
   /* Fondul de hover pe 220 (contract miscare: „randul sub cursor — 220ms"),
      acelasi ceas cu actiunile care intra. */
   .trow { position: relative; display: flex; align-items: center; gap: var(--space-12);
-    min-height: 46px; padding: 0 var(--space-12); background: none; border: 0;
+    min-height: var(--row-h); padding: 0 var(--space-12); background: none; border: 0;
     transition: background-color var(--dur-base) var(--ease), opacity var(--dur-base) var(--ease); }
   @media (hover: hover) {
     .trow:hover { background: var(--bg-elevated); }
   }
+  /* Apasarea, in afara media query-ului — vezi nota din TodayBoard: pe telefon
+     randul nu dadea niciun semn ca a fost atins. */
+  .trow:active { background: var(--bg-active); transition-duration: var(--dur-press); }
   /* Un rand bifat nu se stinge cu `opacity`: opacitatea se inmulteste peste
      tokenuri deja la limita de contrast, deci textul ajunge sub prag. Ce e facut
      o spun tăietura si culoarea rolului. */
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
-  .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: 2px; display: inline-flex; }
+  .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: var(--space-2xs); display: inline-flex; }
   .check:hover { color: var(--accent); }
   .trow.done .check { color: var(--success); }
   /* `.check-empty` (toate cele trei marimi) traieste in global.css, o singura
@@ -1981,7 +1984,7 @@
   /* ACTIUNILE: chipuri cu TEXT, nu iconite mute.
      Se sting cand cursorul nu e pe rand — `opacity`, nu `display`, ca sa nu-si
      mute locul cand apar si ca titlul sa cedeze latimea o singura data. */
-  .task-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .task-actions { display: flex; align-items: center; gap: var(--space-6); flex-shrink: 0; }
   /* Actiunile INTRA 8px spre interior (dinspre dreapta, spre titlu), pe 220 —
      contractul de miscare. Termenul, pironit la dreapta lor, nu se misca. */
   @media (hover: hover) {
@@ -1991,7 +1994,7 @@
     .task-actions:focus-within { opacity: 1; pointer-events: auto; transform: none; }
   }
   .ta-chip, .ta-dp :global(.dp-trigger) {
-    display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px;
+    display: inline-flex; align-items: center; gap: var(--space-6); height: var(--ctrl-sm); padding: 0 11px;
     border-radius: var(--radius-xs); background: var(--bg-surface); box-shadow: var(--shadow-sm);
     border: none; color: var(--text-secondary); font-family: inherit;
     font-size: var(--font-control); font-weight: var(--fw-semibold);
@@ -2024,16 +2027,16 @@
      (randul isi pierde colturile de jos si marginea), preia bordura de severitate
      din stanga si sta pe acelasi fundal. Inainte pareau doua obiecte fara legatura. */
   /* Extinderea: continut in acelasi card, separat doar de o linie subtire. */
-  .subtask-body { margin: 0; padding: 6px var(--space-12) var(--space-12) 34px;
+  .subtask-body { margin: 0; padding: var(--space-6) var(--space-12) var(--space-12) 34px;
     border-top: 1px solid var(--border-subtle);
-    display: flex; flex-direction: column; gap: 4px; }
+    display: flex; flex-direction: column; gap: var(--space-xs); }
 
   /* Actiuni discrete: chip-uri "+ Descriere / + Fisier" in loc de link-uri italic plutinde */
   /* Fara rand propriu pentru un singur buton: se aliniaza la stanga, discret. */
 
 
   /* ===== Foaia taskului ===== */
-  .sub-cap { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 6px; }
+  .sub-cap { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-6); }
   .sub-cap-t { font-size: var(--font-label); text-transform: uppercase;
     letter-spacing: var(--tracking-label); font-weight: var(--fw-semibold); color: var(--text-dim); flex: none; }
   .sub-gol { font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm) 0; }
@@ -2044,15 +2047,15 @@
      si rescria TACUT padding-ul cardului la `3px 0` — adica un card desenat cu
      rama la 0px de text. Masurat inainte: padding calculat `3px 0` pe desktop,
      `2px 0` in foaie. Exact felul de abatere care nu arunca nicio eroare. */
-  .sub-row { display: flex; align-items: center; gap: 9px; min-height: 32px;
-    padding: 0 6px; border-radius: var(--radius-xs); }
+  .sub-row { display: flex; align-items: center; gap: 9px; min-height: var(--ctrl-sm);
+    padding: 0 var(--space-6); border-radius: var(--radius-xs); }
   .sub-row:hover { background: var(--bg-hover); }
   /* ULTIMUL RAND AL LISTEI, nu un obiect mai tare decat ea. Dreptunghiul punctat
      de 44px era cel mai puternic lucru din panou, desi „mai adaug un pas" e ultima
      intentie cu care deschizi un task. Bifa lipsa e inlocuita de „+", pe aceeasi
      coloana, ca randul sa se alinieze cu subtaskurile de deasupra. */
   .sub-nou { display: flex; align-items: center; gap: 9px; width: 100%;
-    min-height: 32px; padding: 0 6px; border: none; border-radius: var(--radius-xs);
+    min-height: var(--ctrl-sm); padding: 0 var(--space-6); border: none; border-radius: var(--radius-xs);
     background: none; color: var(--text-dim); font-size: var(--font-small);
     cursor: pointer; transition: var(--transition-colors); }
   .sub-nou:hover { background: var(--accent-subtle); color: var(--accent); }
@@ -2087,7 +2090,7 @@
   .ts-zile { margin: -2px 0 var(--space-sm); }
 
   /* Sectiunea de subtaskuri: eticheta micro + progres X/Y */
-  .sub-section { display: flex; flex-direction: column; gap: 2px; }
+  .sub-section { display: flex; flex-direction: column; gap: var(--space-2xs); }
   .sub-row.sub-done .sub-title { text-decoration: line-through; color: var(--text-dim); }
   /* Titlul e BUTON (atingi = redenumesti), dar trebuie sa arate ca text: fara
      fundal, aliniat la stanga, pe toata latimea ramasa. */
@@ -2105,11 +2108,11 @@
     box-shadow: 0 1px 0 var(--accent); }
   .sub-edit:focus { border: none; box-shadow: 0 1px 0 var(--accent); outline: none; }
   /* Bara de progres: subtire, aceeasi latime cu randurile de sub ea. */
-  .sub-del { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
+  .sub-del { width: var(--ctrl-xs); height: var(--ctrl-xs); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity var(--dur-fast); }
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
   .sub-add { display: flex; gap: var(--space-xs); margin-top: 0; }
-  .sub-add input { flex: 1; padding: 6px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
+  .sub-add input { flex: 1; padding: var(--space-6) var(--space-10); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
   /* `flex-shrink: 0`: fara el butonul se strangea la 12px (masurat) — inputul de
      langa are `flex: 1` si il storcea, iar „+" ajungea o dunga netastabila. */
   .sub-add-btn { width: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
@@ -2134,7 +2137,7 @@
      scria alaturi, si tocmai de aceea era deja `display: none` pe telefon: o
      coloana care nu-si plateste locul pe 390px nu si-l plateste nici pe 1440,
      doar ca acolo e loc sa nu se observe. Lista ia toata latimea. */
-  .v3grid { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; }
+  .v3grid { display: grid; grid-template-columns: 1fr; gap: var(--space-14); align-items: start; }
   /* Suprafata se desprinde prin UMBRA, nu prin chenar (doua niveluri, vezi
      tokens.css). Padding-ul lateral scade la 8: cei 12px ai randului sunt ai
      CONTINUTULUI lui, deci textul incepe la 20 de la marginea cardului.
@@ -2166,7 +2169,7 @@
          si nici nu se mai putea atinge. 58 + 16 acopera banda cu 12px de scapare. */
       padding-bottom: calc(58px + var(--space-md)); }
     .toolbar { flex-direction: column; align-items: stretch; }
-      .quick-add input, .quick-add-btn { min-height: 44px; }
+      .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
     .quick-add-btn { width: 44px; }
     .form-row-2 { grid-template-columns: 1fr; }
     /* O LINIE, ca in aplicatiile de to-do.
@@ -2221,7 +2224,7 @@
        chipurile 30. */
     /* Ca la Proiecte: caseta are 44px, dar inputul dinauntru avea 25 si doar el
        primeste focus. */
-        .a-ico { min-height: var(--tap-min); padding: 0 12px; font-size: var(--font-small); }
+        .a-ico { min-height: var(--tap-min); padding: 0 var(--space-12); font-size: var(--font-small); }
     .filters { gap: var(--space-xs); }
     .g-ico { width: var(--tap-min); min-height: var(--tap-min); }
     /* Capsula creste ODATA cu segmentele: tinta de 44 vine din segment, nu din
@@ -2229,13 +2232,13 @@
        Pe telefon capsula sta pe suprafata cu umbra, iar segmentele urca la 15 —
        haina din desenul 3c, unde comutatorul e o tinta principala, nu un accesoriu. */
     .sfere { background: var(--bg-surface); box-shadow: var(--shadow-sm); }
-    .seg { min-height: calc(var(--tap-min) - 4px); padding: 2px 14px; font-size: var(--font-rand); }
+    .seg { min-height: calc(var(--tap-min) - 4px); padding: var(--space-2xs) var(--space-14); font-size: var(--font-rand); }
     .tmain { min-height: var(--tap-min); }
     .page-header :global(.btn) { min-height: var(--tap-min); }
 
     /* Capul de grupa se lipeste SUB antetul paginii, nu de marginea ferestrei:
        altfel prima grupa ar sta pe jumatate ascunsa dupa bara de sus. */
-    .grup-cap { top: var(--header-height); padding-top: 12px; }
+    .grup-cap { top: var(--header-height); padding-top: var(--space-12); }
 
     /* Eticheta cartonasului („LISTA TASKURI 5") pleaca: antetul paginii scrie deja
        „Taskuri 5" la 40px deasupra. Doua titluri pentru aceeasi lista inseamna un
@@ -2253,8 +2256,8 @@
        16px, plus 16 de la marginea paginii. Nimic nu dispare, doar se strang
        distantele: aceleasi elemente, ~30px mai sus. Pe desktop raman cele 16. */
     .page { padding-top: var(--space-12); }
-    .page-header, .toolbar, .quick-add { margin-bottom: 10px; }
-    .grup-cap:first-child { padding-top: 4px; }
+    .page-header, .toolbar, .quick-add { margin-bottom: var(--space-10); }
+    .grup-cap:first-child { padding-top: var(--space-xs); }
     .list-cell { background: none; border: none; border-radius: 0;
       padding: var(--space-sm) 0 0; }
     /* Capul lipit se estompeaza peste fundalul PAGINII acum, nu peste al cutiei. */
@@ -2292,7 +2295,7 @@
     /* Cardul isi pastreaza padding-ul orizontal si pe telefon — `2px 0` de aici
        anula (a doua oara) rama-la-0px reparata mai sus. Vertical ramane strans:
        inaltimea o da oricum bifa de 40px. */
-    .sub-row { padding: 0 6px; min-height: var(--tap-sheet); }
+    .sub-row { padding: 0 var(--space-6); min-height: var(--tap-sheet); }
     .sub-nou { min-height: var(--tap-sheet); font-size: var(--font-small); }
     .sub-nou-p { width: 26px; }
     /* ACEEASI SOCOTEALA CA LA RANDUL PARINTE, care a coborat de la 96px la 66px
@@ -2319,7 +2322,7 @@
     /* Randul devine pista: invelisul se translateaza peste fundalul colorat.
        Aceeasi mecanica exacta ca la `.trow`, doar cu metricile subtaskului. */
     .sub-row { position: relative; overflow: hidden; touch-action: pan-y; padding: 0; }
-    .sub-row .gl-fata { padding: 0 6px; gap: 9px; min-height: var(--tap-sheet);
+    .sub-row .gl-fata { padding: 0 var(--space-6); gap: 9px; min-height: var(--tap-sheet);
       background: var(--bg-overlay); border-radius: var(--radius-xs); }
     .sub-row:global(.gl-tras) .gl-fata { box-shadow: var(--shadow-glisare); }
     /* Titlul e tinta cea mai mare si face lucrul cel mai des: bifeaza. */
@@ -2329,7 +2332,7 @@
        titlul la `--font-body` (14.4px) textul crestea cu 1.6px fix cand incepeai
        sa-l editezi. Egalarea se face in sus, nu in jos — sub 16 nu se poate. */
     .sub-title, .sub-edit { font-size: var(--font-input-mobile); }
-    .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-sheet); padding: 0 16px;
+    .qa-chip, .qa-dp :global(.dp-trigger) { min-height: var(--tap-sheet); padding: 0 var(--space-md);
       font-size: var(--font-small); }
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */
     .qa-hint { display: none; }

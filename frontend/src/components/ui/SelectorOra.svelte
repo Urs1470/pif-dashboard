@@ -346,7 +346,7 @@
 </div>
 
 <style>
-  .so { position: relative; display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .so { position: relative; display: flex; flex-direction: column; gap: var(--space-6); width: 100%; }
   .so-label {
     font-size: var(--font-label); font-weight: var(--fw-semibold); color: var(--text-dim);
     text-transform: uppercase; letter-spacing: var(--tracking-label);
@@ -356,8 +356,8 @@
      Cine o gazduieste intr-un rand de foaie o dezbraca, exact ca la `DatePicker`
      (vezi `.ft-ora` in `FoaieTask.svelte`). */
   .so-trigger {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    min-height: 46px; padding: 10px 12px; width: 100%;
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
+    min-height: var(--ctrl-lg); padding: var(--space-10) var(--space-12); width: 100%;
     background: var(--bg-elevated); border: none; border-radius: var(--radius-sm);
     box-shadow: inset 0 0 0 1px var(--border);
     color: var(--text); font-size: var(--font-body); font-family: inherit;
@@ -379,7 +379,7 @@
 
   .so-pop {
     position: fixed; z-index: var(--z-dropdown);
-    width: 268px; padding: 12px;
+    width: 268px; padding: var(--space-12);
     background: var(--bg-overlay);
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);
   }
@@ -387,12 +387,12 @@
   /* Antetul: treapta de PANOU (21), fiindca cifrele astea sunt titlul foii — ce ai
      ales. Mono si tabular: doua cifre care se schimba sub deget n-au voie sa mute
      doua puncte. */
-  .so-head { display: flex; align-items: baseline; justify-content: center; gap: 2px; padding: 2px 0 10px; }
+  .so-head { display: flex; align-items: baseline; justify-content: center; gap: var(--space-2xs); padding: var(--space-2xs) 0 var(--space-10); }
   .so-h {
     font-family: var(--font-mono); font-size: var(--font-h2); font-weight: var(--fw-semibold);
     font-variant-numeric: tabular-nums;
     color: var(--text-dim); background: none; border: none; cursor: pointer;
-    padding: 2px 6px; border-radius: var(--radius-xs);
+    padding: var(--space-2xs) var(--space-6); border-radius: var(--radius-xs);
     transition: var(--transition-colors);
   }
   .so-h:hover { color: var(--text-secondary); }
@@ -434,11 +434,11 @@
   .so-nr.sel { fill: var(--accent-text); font-weight: var(--fw-semibold); }
 
   .so-foot {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
+    margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--border-subtle);
   }
   .so-foot-btn {
-    display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px;
+    display: inline-flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-12);
     border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-semibold);
     color: var(--accent); background: var(--accent-subtle); cursor: pointer;
     transition: opacity var(--dur-fast) var(--ease);
@@ -450,7 +450,7 @@
   .so-pop.sheet {
     position: fixed; left: 0; right: 0; bottom: 0; top: auto;
     width: auto; max-height: 92dvh; overflow-y: auto;
-    padding: 6px var(--space-lg) calc(var(--space-md) + var(--safe-bottom));
+    padding: var(--space-6) var(--space-lg) calc(var(--space-md) + var(--safe-bottom));
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow: var(--shadow-foaie);
     background: var(--bg-surface);
@@ -458,7 +458,7 @@
   }
   /* Manerul: acelasi obiect ca al foii din `Modal` — 38×4, `--border-strong`. */
   .so-grip {
-    display: block; width: 38px; height: 4px; margin: 8px auto 2px;
+    display: block; width: 38px; height: 4px; margin: var(--space-sm) auto var(--space-2xs);
     border-radius: var(--radius-full); background: var(--border-strong);
   }
   @media (max-width: 768px) {

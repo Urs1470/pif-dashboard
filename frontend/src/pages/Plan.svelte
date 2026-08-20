@@ -1854,10 +1854,10 @@
   .seg { display: inline-flex; background: var(--bg-elevated); border: none; border-radius: var(--radius-sm); padding: 3px; }
   /* Raza segmentului = raza capsulei minus paddingul ei (10 − 3 = 7), aceeasi
      formula ca la comutatorul de sfera din /tasks. */
-  .seg-btn { height: 32px; padding: 0 11px; border-radius: calc(var(--radius-sm) - 3px); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
+  .seg-btn { height: var(--ctrl-sm); padding: 0 11px; border-radius: calc(var(--radius-sm) - 3px); font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-dim); background: none; border: none; cursor: pointer; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
   .seg-btn:hover { color: var(--text); }
   .seg-btn.active { background: var(--accent); color: var(--accent-text); }
-  .toggle { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 12px; font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); }
+  .toggle { display: inline-flex; align-items: center; gap: 7px; height: var(--ctrl-md); padding: 0 var(--space-12); font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-surface); box-shadow: var(--shadow-sm); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); }
   .toggle:hover { background: var(--bg-hover); color: var(--text); }
   .toggle:active { transform: scale(var(--press-scale)); }
   /* Activul e TENTA CU CERNEALA ADANCA (regula sistemului: pe tenta se scrie
@@ -1889,14 +1889,14 @@
      sa stea pe aceeasi linie cu randul de zile, nu la mijlocul a doua randuri. */
   .p-head { display: flex; border-bottom: 1px solid var(--border); background: var(--bg-overlay); position: sticky; top: 0; z-index: 3; }
   .lane-label { width: var(--lane-w); flex-shrink: 0; box-sizing: border-box; }
-  .lane-label.head { padding: 0 14px 8px; font-size: var(--font-label); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: flex-end; }
+  .lane-label.head { padding: 0 var(--space-14) var(--space-sm); font-size: var(--font-label); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-dim); display: flex; align-items: flex-end; }
   /* Coloana restantelor: lipita la stanga pistei, latime fixa, nu costa zile.
      Antetul ei e singurul loc din grafic unde a mai ramas rosu. */
   /* „Restante" e un cuvant, nu o cifra — fontul paginii, la 12/600, ca orice
      eticheta majuscula. Mono era o abatere: DM Mono e doar pentru cifre. */
   .rest-head { width: var(--rest-w); flex: none; box-sizing: border-box;
     display: flex; align-items: flex-end; justify-content: center;
-    padding: 0 6px 8px; border-left: 1px solid var(--border);
+    padding: 0 var(--space-6) var(--space-sm); border-left: 1px solid var(--border);
     background: var(--danger-subtle); color: var(--danger-deep);
     font-size: var(--font-label); font-weight: var(--fw-semibold);
     letter-spacing: var(--tracking-label); text-transform: uppercase; }
@@ -1917,7 +1917,7 @@
      numele de luna e un cuvant care s-ar putea traduce, deci nu. */
   .days:not(.lung) .hd-g { font-family: var(--font-mono); }
   .hd-fine { position: relative; flex: 1; min-height: 0; }
-  .col-head { position: absolute; top: 0; bottom: 0; box-sizing: border-box; padding: 0 2px;
+  .col-head { position: absolute; top: 0; bottom: 0; box-sizing: border-box; padding: 0 var(--space-2xs);
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
     border-right: 1px solid var(--border); overflow: hidden; }
   .col-head.granita { border-right-color: var(--border-strong); }
@@ -1978,11 +1978,11 @@
      CU240S…", „Contrapanou A12…", „Parametrizare 3WA…"), iar partea care se
      repeta e SUFIXUL de client („— Continental"), adica exact ce pierde o
      trunchiere la dreapta. */
-  .lane-label { padding: 0 12px; display: flex; align-items: center; gap: 8px; border-right: 1px solid var(--border); background: var(--bg-surface); z-index: 1; }
-  .lane-name { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--text); cursor: pointer; background: none; border: none; text-align: left; font-size: var(--font-body); font-weight: var(--fw-medium); }
+  .lane-label { padding: 0 var(--space-12); display: flex; align-items: center; gap: var(--space-sm); border-right: 1px solid var(--border); background: var(--bg-surface); z-index: 1; }
+  .lane-name { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; color: var(--text); cursor: pointer; background: none; border: none; text-align: left; font-size: var(--font-body); font-weight: var(--fw-medium); }
   .lane-name.static { cursor: default; }
   .lane-name:not(.static):hover .lane-txt { color: var(--accent); }
-  .lane-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .lane-col { display: flex; flex-direction: column; gap: var(--space-2xs); min-width: 0; flex: 1; }
   /* Clientul si cate taskuri are banda in fereastra. Desenat (5a): 13, `--tx2`,
      pe UN rand cu trunchiere — coloana are 240px si titlul e deasupra. Mono e doar
      cifra, fiindca doar ea se compara pe verticala cu vecinele ei; clientul e un
@@ -2003,14 +2003,14 @@
   /* Chipul de tip, ca in desen: 20px, 12/600, tracking usor — o eticheta, nu text. */
   .tip-chip { display: inline-flex; align-items: center; height: 20px;
     font-size: var(--font-label); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-label);
-    padding: 0 6px; border-radius: var(--radius-xs); background: var(--bg-elevated);
+    padding: 0 var(--space-6); border-radius: var(--radius-xs); background: var(--bg-elevated);
     color: var(--text-secondary); flex-shrink: 0; }
 
   /* Jgheabul restantelor. Reperele stau centrate si se inghesuie cand sunt multe:
      numarul exact e scris in coloana de nume, aici conteaza ca EXISTA. */
   .rest-col { width: var(--rest-w); flex: none; box-sizing: border-box;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    flex-wrap: wrap; padding: 6px 8px; border-right: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; gap: var(--space-6);
+    flex-wrap: wrap; padding: var(--space-6) var(--space-sm); border-right: 1px solid var(--border);
     background: var(--bg-surface); z-index: 1; }
   .rest-col.are { background: color-mix(in srgb, var(--danger) 6%, var(--bg-surface)); }
   /* Data scrisa, ca un chip de termen — nu un romb care o ascunde in tooltip.
@@ -2033,7 +2033,7 @@
      fasia sinei — masurat, exact asa aparea o suprapunere intre eticheta unei
      perioade si titlul unui task. Ancorata sus, fasia de jos ramane a sinei
      orice s-ar intampla in stanga. */
-  .lane-track { flex: 1; position: relative; min-width: 0; padding: 6px 0 20px;
+  .lane-track { flex: 1; position: relative; min-width: 0; padding: var(--space-6) 0 var(--space-20);
     display: flex; flex-direction: column; justify-content: flex-start; }
 
   /* ===== SOSIREA PISTEI (tura 13e) =====
@@ -2090,7 +2090,7 @@
      nesigur raman peste el, pe distanta fixa. */
   /* Taskurile stau peste benzi, deci randurile lasa clickul sa treaca prin golul
      dintre bare pana la banda de dedesubt. */
-  .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+  .rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: var(--space-xs); pointer-events: none; }
   .t-row { position: relative; height: var(--row-h); }
   /* Perioada de implementare (Site / Sediu EGB) — banda pe toata inaltimea randului,
      exact insetul benzii de pregatire, ca cele doua sa se imbine fara decalaj.
@@ -2151,7 +2151,7 @@
      INTREAGA pana la perioada urmatoare (vezi `pastila` in `views`), deci n-are
      nevoie de trunchiere si nu exista stare in care se taie. */
   .ib-pastila { position: absolute; left: -2px; bottom: -6px; height: 16px;
-    display: inline-flex; align-items: center; gap: 3px; padding: 0 6px 0 4px;
+    display: inline-flex; align-items: center; gap: 3px; padding: 0 var(--space-6) 0 var(--space-xs);
     border-radius: var(--radius-full); background: var(--accent-subtle);
     color: var(--accent-on-subtle); font-size: var(--font-label);
     font-weight: var(--fw-semibold); line-height: 1; white-space: nowrap;
@@ -2219,9 +2219,9 @@
      miscare, mai nou, interzice pulsurile („fara glow, puls pe puncte, inele
      care respira") si a castigat arbitrajul. Ca randul duce undeva o spun
      chevronul si fondul de suprafata a doua — aceeasi afordanta ca `.mgol`. */
-  .mimpl { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-    border: none; cursor: pointer; padding: 0 10px; border-radius: var(--radius-sm);
-    background: var(--bg-elevated); margin-bottom: 6px; }
+  .mimpl { display: flex; align-items: center; gap: var(--space-10); width: 100%; text-align: left;
+    border: none; cursor: pointer; padding: 0 var(--space-10); border-radius: var(--radius-sm);
+    background: var(--bg-elevated); margin-bottom: var(--space-6); }
   /* Pregatirea ramane mai palida decat implementarea — doar ca acum diferenta e
      de CERNEALA, nu de procent de accent: randul e acelasi obiect, cu alt ton. */
   .mimpl.pregatire .mimpl-loc { color: var(--text-secondary); font-weight: var(--fw-medium); }
@@ -2232,7 +2232,7 @@
   /* Chevronul spune ca randul DUCE undeva (in Calendar) — inainte nu se vedea
      din nimic ca perioada e o tinta. */
   .mimpl :global(.mimpl-chev) { flex: none; color: var(--text-dim); }
-  .mimpl-range { display: inline-flex; align-items: center; gap: 6px; flex: none; font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-secondary); }
+  .mimpl-range { display: inline-flex; align-items: center; gap: var(--space-6); flex: none; font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-secondary); }
   /* „+N" = restul perioadelor din fereastra, care inainte ocupau cate un rand de
      44px fiecare, inaintea primului task. Duc toate in acelasi loc — Calendar. */
   .mimpl-plus { padding: 0 5px; border-radius: var(--radius-full);
@@ -2247,7 +2247,7 @@
   /* Ziua fara nimic in ea. Nu `EmptyState`: acela e pentru o PAGINA goala, cu
      iconita si indemn; aici pagina e plina (grila e deasupra), doar celula pe care
      ai atins-o e libera — deci o propozitie, la treapta de metadata. */
-  .mg-liber { padding: var(--space-md) 4px; font-size: var(--font-small); color: var(--text-dim); }
+  .mg-liber { padding: var(--space-md) var(--space-xs); font-size: var(--font-small); color: var(--text-dim); }
   /* UN TASK E UN REPER, NU O CUTIE.
      Din v33 `rect.single` e mereu adevarat, deci regulile de cutie (`.bar.todo`,
      `.bar.active` cu fundal si rama, animatia `barIn` care scala o latime) erau
@@ -2318,7 +2318,7 @@
      neutra, nu un bloc saturat. Cu P2 aplicat, cauza a plecat; haloul ramas doar
      ingrosa scrisul si il facea sa pluteasca. */
   .bar-txt { position: absolute; left: 100%; top: 0; bottom: 0;
-    display: inline-flex; align-items: center; gap: 4px; max-width: 220px;
+    display: inline-flex; align-items: center; gap: var(--space-xs); max-width: 220px;
     padding-left: 7px; overflow: hidden; color: var(--text); pointer-events: auto;
     transition: var(--transition-colors); }
   .bar.flip .bar-txt { left: auto; right: 100%; padding-left: 0; padding-right: 7px; justify-content: flex-end; }
@@ -2337,10 +2337,10 @@
 
   /* dim, nu faint: indicatiile de gest sunt text de citit (masurat 3.18:1 la
      10.4px, sub AA) — faint e doar pentru etichete/large. */
-  .hint { text-align: center; font-size: var(--font-small); color: var(--text-dim); padding: 8px; border-top: 1px solid var(--border-subtle); }
+  .hint { text-align: center; font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm); border-top: 1px solid var(--border-subtle); }
 
   .drag-label { position: fixed; z-index: var(--z-tooltip); pointer-events: none; background: var(--bg-overlay);
-    border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 3px 8px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 3px var(--space-sm);
     font-family: var(--font-mono); font-size: var(--font-small); color: var(--text); box-shadow: var(--shadow-md); white-space: nowrap; }
 
   /* ===== mobile grouped list ===== */
@@ -2368,7 +2368,7 @@
   }
   /* Capetele de zi: treapta de eticheta a sistemului (12/600/majuscule/ls .05em).
      Aceeasi grila ca celulele, deci fiecare cap sta exact peste coloana lui. */
-  .mg-zile { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .mg-zile { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-xs); }
   .mg-zi-cap {
     text-align: center;
     font-size: var(--font-label);
@@ -2378,7 +2378,7 @@
     color: var(--text-dim);
   }
 
-  .mg-celule { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .mg-celule { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-xs); }
   .mg-cel {
     position: relative;
     height: var(--row-h-mobile);
@@ -2479,11 +2479,11 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-12);
-    padding-top: 2px;
+    padding-top: var(--space-2xs);
     font-size: var(--font-label);
     color: var(--text-dim);
   }
-  .mgl { display: inline-flex; align-items: center; gap: 6px; }
+  .mgl { display: inline-flex; align-items: center; gap: var(--space-6); }
   /* Semnele din legenda sunt ACELEASI obiecte ca in celula, la aceeasi marime — o
      legenda cu semne „aproximative" te pune sa faci potrivirea in cap. */
   .mgl-seg { width: 7px; height: 3px; border-radius: var(--radius-full); background: var(--border-strong); }
@@ -2497,7 +2497,7 @@
     display: flex;
     align-items: baseline;
     gap: var(--space-sm);
-    padding: var(--space-12) 2px 2px;
+    padding: var(--space-12) var(--space-2xs) var(--space-2xs);
   }
   .mg-cz-txt {
     font-size: var(--font-h3);
@@ -2530,7 +2530,7 @@
      un proiect fara nimic in ziua aleasa nu mai apare deloc (vezi `laneuriZiua`).
      Svelte NU avertizeaza pentru el — `:global(.mgol-chev)` din interior il tine
      „viu" in ochii compilatorului — deci ar fi rămas CSS mort fara nicio alarma. */
-  .mg-head { display: flex; align-items: center; gap: 7px; padding: 4px 6px 8px; }
+  .mg-head { display: flex; align-items: center; gap: 7px; padding: var(--space-xs) var(--space-6) var(--space-sm); }
   /* --font-rand (15 fix): capul cardului e un titlu de RAND, nu corp — pe
      telefon corpul urca la 16, capul nu (mocheta A / desen 4c: nume 15/600). */
   .mg-head h2 { font-size: var(--font-rand); font-weight: var(--fw-semibold); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2542,7 +2542,7 @@
      un rand restant isi PIERDEA identitatea ca sa arate severitatea. Acum sunt
      doua canale separate: identitatea e un fill tentat din culoarea benzii (ca la
      vecinii ei din aceeasi pagina), severitatea e pe inelul bifei si pe chip. */
-  .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: 8px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; }
+  .mrow { position: relative; display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: var(--space-6); }
   /* NICIO OPACITATE PE UN RAND DE TEXT. „Facut" se spune prin taierea titlului si
      prin rolul de culoare, nu prin `opacity: .6` — care se inmulteste peste tokenuri
      deja la limita de contrast si scoate randul sub AA. */
@@ -2557,16 +2557,16 @@
      `flex: none` (global.css). */
   .mrow-titlu { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; }
   .mrow-title { font-size: var(--font-rand); line-height: var(--lh-snug); color: var(--text); font-weight: var(--fw-medium); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .mrow-meta { display: flex; flex-wrap: wrap; gap: 4px; }
+  .mrow-meta { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
   /* CHIPUL DE TERMEN E O CUTIE DE 22px CU CIFRE MONO (desen 4c).
-     Avea `padding: 1px 6px` — deci inaltimea o dadea textul, si atat chipul cat si
+     Avea `padding: 1px var(--space-6)` — deci inaltimea o dadea textul, si atat chipul cat si
      vecinul lui de recurenta ieseau cu 2-3px diferiti de la un rand la altul,
      langa un titlu de 15 care nu se misca. Data e o CIFRA care se compara pe
      verticala cu data randului urmator: mono, tabular, la treapta de 12. */
   .chip { height: 22px; padding: 0 7px; border-radius: var(--radius-xs);
     font-family: var(--font-mono); font-size: var(--font-label); font-weight: var(--fw-medium);
     font-variant-numeric: tabular-nums; background: var(--bg-elevated); color: var(--text-dim);
-    display: inline-flex; align-items: center; gap: 4px; flex: none; white-space: nowrap; }
+    display: inline-flex; align-items: center; gap: var(--space-xs); flex: none; white-space: nowrap; }
   .chip.due { color: var(--text-secondary); background: var(--bg-elevated); }
   /* O SINGURA GRAMATICA PENTRU „AZI". Erau doua clase („azi", „restant") cu doua
      harti de culoare proprii, pe langa inca una pe muchia randului. Acum chipul
@@ -2575,15 +2575,15 @@
      (reteta din `Badge.svelte`): pe tenta se scrie mereu cu adancul, iar aici rolul e
      dinamic — accent sau restant — deci se deriva, nu se numeste. */
   .chip.due.sev { color: color-mix(in oklab, var(--ring) 72%, var(--text)); background: color-mix(in srgb, var(--ring) 14%, transparent); }
-  .mrow-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+  .mrow-actions { display: flex; align-items: center; gap: var(--space-2xs); flex-shrink: 0; }
   /* Pe desktop invelisul de glisare nu exista pentru layout, iar panoul lui e
      ascuns: acolo actiunile stau la vedere in rand. */
   .gl-fata { display: contents; }
   .mcheck { display: none; }
-  .mbtn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; background: none; border: none; }
+  .mbtn { width: var(--ctrl-sm); height: var(--ctrl-sm); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--text-dim); cursor: pointer; background: none; border: none; }
   .mbtn:hover { background: var(--bg-hover); color: var(--text); }
   .mrow-date { width: 34px; flex-shrink: 0; }
-  .mrow-date :global(.dp-trigger) { width: 34px; min-height: 34px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-dim); }
+  .mrow-date :global(.dp-trigger) { width: var(--ctrl-sm); min-height: var(--ctrl-sm); padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-dim); }
   .mrow-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--text); }
   .mrow-date :global(.dp-value) { display: none; }
 
@@ -2621,17 +2621,17 @@
     position: sticky; top: calc(var(--header-height) + var(--space-md));
     max-height: calc(100dvh - var(--header-height) - var(--space-lg)); }
   .pan-cap { display: flex; align-items: center; gap: var(--space-xs);
-    padding: 10px 8px 10px 14px; border-bottom: 1px solid var(--border); }
-  .pan-proiect { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;
+    padding: var(--space-10) var(--space-sm) var(--space-10) var(--space-14); border-bottom: 1px solid var(--border); }
+  .pan-proiect { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; flex: 1;
     font-size: var(--font-small); color: var(--text-secondary);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pan-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lane); flex: none; }
-  .pan-x { width: 32px; height: 32px; flex: none; display: flex; align-items: center; justify-content: center;
+  .pan-x { width: var(--ctrl-sm); height: var(--ctrl-sm); flex: none; display: flex; align-items: center; justify-content: center;
     border-radius: var(--radius-sm); background: none; border: none; color: var(--text-dim); cursor: pointer;
     transition: var(--transition-colors); }
   .pan-x:hover { background: var(--bg-hover); color: var(--text); }
 
-  .pan-corp { padding: 14px; overflow-y: auto; flex: 1; min-height: 0; }
+  .pan-corp { padding: var(--space-14); overflow-y: auto; flex: 1; min-height: 0; }
   .pan-titlu { font-size: var(--font-h2); font-weight: var(--fw-semibold);
     line-height: var(--lh-tight); color: var(--text); margin-bottom: var(--space-md); overflow-wrap: anywhere; }
 
@@ -2639,7 +2639,7 @@
      Randul care DUCE undeva e buton si poarta chevron; celelalte sunt text. */
   .pan-fapte { display: flex; flex-direction: column; }
   .fapt { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
-    padding: 9px 2px; border-bottom: 1px solid var(--border); text-align: left;
+    padding: 9px var(--space-2xs); border-bottom: 1px solid var(--border); text-align: left;
     background: none; border-left: 0; border-right: 0; border-top: 0; color: var(--text); }
   .fapt:last-child { border-bottom: 0; }
   .fapt.link { cursor: pointer; transition: var(--transition-colors); }
@@ -2662,7 +2662,7 @@
 
   .pasi { display: flex; flex-direction: column; list-style: none; }
   .pas { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
-    padding: 7px 2px; background: none; border: none; text-align: left; cursor: pointer;
+    padding: 7px var(--space-2xs); background: none; border: none; text-align: left; cursor: pointer;
     font-size: var(--font-small); color: var(--text); transition: var(--transition-colors); }
   .pas-bifa { flex: none; width: 18px; height: 18px; display: flex; align-items: center;
     justify-content: center; border-radius: 50%; color: var(--success-deep); }
@@ -2671,14 +2671,14 @@
   .pas.gata .pas-txt { color: var(--text-dim); text-decoration: line-through; }
   .pas-txt { min-width: 0; overflow-wrap: anywhere; }
 
-  .pan-plan { padding: 0 14px 12px; }
+  .pan-plan { padding: 0 var(--space-14) var(--space-12); }
   .pan-plan .pan-sec { margin-top: 0; }
-  .pan-actiuni { display: flex; gap: var(--space-xs); padding: 10px 14px;
+  .pan-actiuni { display: flex; gap: var(--space-xs); padding: var(--space-10) var(--space-14);
     border-top: 1px solid var(--border); background: var(--bg-elevated); }
   /* Aceeasi haina ca in capul paginii: suprafata + umbra, fara chenar, hoverul
      pe fond. `.prim` ramane fill de accent — el nu e o suprafata, e actiunea. */
-  .pan-b { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    min-height: 38px; padding: 0 12px; border-radius: var(--radius-sm);
+  .pan-b { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-6);
+    min-height: var(--ctrl-md); padding: 0 var(--space-12); border-radius: var(--radius-sm);
     background: var(--bg-surface); border: none; box-shadow: var(--shadow-sm); color: var(--text-secondary);
     font-size: var(--font-body); font-weight: var(--fw-semibold); cursor: pointer;
     transition: var(--transition-pressable); }
@@ -2700,53 +2700,53 @@
   /* ===== drop indicator (backlog -> timeline) ===== */
   .p-body.drop-active { outline: 2px dashed color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: -2px; border-radius: var(--radius-sm); }
   .drop-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); z-index: 6; }
-  .drop-tag { position: absolute; top: 2px; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); font-size: var(--font-small); padding: 1px 6px; border-radius: var(--radius-xs); z-index: 7; white-space: nowrap; }
+  .drop-tag { position: absolute; top: 2px; transform: translateX(-50%); background: var(--accent); color: var(--accent-text); font-size: var(--font-small); padding: 1px var(--space-6); border-radius: var(--radius-xs); z-index: 7; white-space: nowrap; }
 
   /* ===== backlog rail ===== */
   .backlog { margin-top: var(--space-md); background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; }
-  .bl-head { width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 12px 16px; background: none; border: none; cursor: pointer; color: var(--text); }
+  .bl-head { width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-12) var(--space-md); background: none; border: none; cursor: pointer; color: var(--text); }
   .bl-head h2 { font-size: var(--font-body); font-weight: var(--fw-semibold); }
   /* `.bl-count` a plecat — e `.count accent` din global.css. */
-  .bl-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: 4px; }
+  .bl-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: var(--space-xs); }
   .bl-head :global(.bl-chev) { margin-left: auto; color: var(--text-dim); transition: transform var(--dur-press) var(--ease); }
   .backlog.open .bl-head :global(.bl-chev) { transform: rotate(90deg); }
-  .bl-items { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 16px 16px; }
+  .bl-items { display: flex; flex-wrap: wrap; gap: var(--space-sm); padding: var(--space-xs) var(--space-md) var(--space-md); }
   /* Dunga era `var(--text-dim)` — o linie gri care nu codifica nimic. Se sterge
      fara inlocuitor; severitatea acestui chip o poarta chipul lui de termen. */
-  .bl-chip { display: flex; align-items: center; gap: 6px; padding: 6px 8px 6px 7px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: grab; max-width: 320px; }
+  .bl-chip { display: flex; align-items: center; gap: var(--space-6); padding: var(--space-6) var(--space-sm) var(--space-6) 7px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: grab; max-width: 320px; }
   .bl-chip:hover { border-color: var(--border-strong); }
   .bl-chip:active { cursor: grabbing; }
   .bl-chip :global(.bl-grip) { color: var(--text-dim); flex-shrink: 0; }
   .bl-sev { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .bl-txt { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-  .bl-proj { font-size: var(--font-small); color: var(--accent-on-subtle); background: var(--accent-subtle); padding: 1px 6px; border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  .bl-proj { font-size: var(--font-small); color: var(--accent-on-subtle); background: var(--accent-subtle); padding: 1px var(--space-6); border-radius: var(--radius-xs); white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
   .bl-proj.glob { color: var(--text-dim); background: var(--bg-elevated); }
   .bl-date { width: 30px; flex-shrink: 0; }
-  .bl-date :global(.dp-trigger) { width: 30px; min-height: 30px; padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-dim); }
+  .bl-date :global(.dp-trigger) { width: var(--ctrl-sm); min-height: var(--ctrl-sm); padding: 0; justify-content: center; background: transparent; border: none; box-shadow: none; color: var(--text-dim); }
   .bl-date :global(.dp-trigger:hover) { background: var(--bg-hover); color: var(--accent); }
   .bl-date :global(.dp-value) { display: none; }
 
   /* ===== export modal ===== */
-  .exp { display: flex; flex-direction: column; gap: 14px; }
+  .exp { display: flex; flex-direction: column; gap: var(--space-14); }
   .exp-note { font-size: var(--font-small); color: var(--text-secondary); margin: 0; }
   .exp-note b { color: var(--text); }
-  .exp-scope-head { display: flex; align-items: center; justify-content: space-between; font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); font-family: var(--font-mono); margin-bottom: 6px; }
+  .exp-scope-head { display: flex; align-items: center; justify-content: space-between; font-size: var(--font-label); text-transform: uppercase; letter-spacing: var(--tracking-label); color: var(--text-dim); font-family: var(--font-mono); margin-bottom: var(--space-6); }
   .exp-all { background: none; border: none; color: var(--accent); font-size: var(--font-small); cursor: pointer; }
-  .exp-list { display: flex; flex-direction: column; gap: 2px; max-height: 240px; overflow-y: auto; }
-  .exp-row { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--radius-sm); cursor: pointer; }
+  .exp-list { display: flex; flex-direction: column; gap: var(--space-2xs); max-height: 240px; overflow-y: auto; }
+  .exp-row { display: flex; align-items: center; gap: 9px; padding: 7px var(--space-sm); border-radius: var(--radius-sm); cursor: pointer; }
   .exp-row:hover { background: var(--bg-hover); }
   .exp-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
   .exp-name { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .exp-opt { display: flex; align-items: center; gap: 9px; font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; padding-top: 6px; border-top: 1px solid var(--border); }
+  .exp-opt { display: flex; align-items: center; gap: 9px; font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; padding-top: var(--space-6); border-top: 1px solid var(--border); }
   .modal-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); }
   /* Aceeasi haina de control ca in capul paginii si in panou. */
-  .btn-ghost { display: inline-flex; align-items: center; justify-content: center; height: 38px; padding: 0 16px;
+  .btn-ghost { display: inline-flex; align-items: center; justify-content: center; height: var(--ctrl-md); padding: 0 var(--space-md);
     border-radius: var(--radius-sm); background: var(--bg-surface); border: none; box-shadow: var(--shadow-sm);
     color: var(--text-secondary); cursor: pointer; font-size: var(--font-body); font-weight: var(--fw-semibold);
     transition: var(--transition-pressable); }
   .btn-ghost:hover { background: var(--bg-hover); color: var(--text); }
   .btn-ghost:active { transform: scale(var(--press-scale)); }
-  .btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); cursor: pointer; font-size: var(--font-small); font-weight: var(--fw-semibold); }
+  .btn-primary { display: inline-flex; align-items: center; gap: var(--space-6); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); cursor: pointer; font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* ===== telefon =====
@@ -2778,21 +2778,21 @@
     .page-header { align-items: stretch; }
     .controls { flex-wrap: wrap; width: 100%; }
     /* Orizontul e alegerea principala — ia randul lui, cu treptele impartite egal. */
-    /* `gap: 2px` (desen 4c): pe desktop treptele stau lipite, fiindca fillul
+    /* `gap: var(--space-2xs)` (desen 4c): pe desktop treptele stau lipite, fiindca fillul
        activului e singurul lucru care le desparte si latimea o da textul. Aici sunt
        intinse egal pe toata latimea, deci doua trepte vecine ar fi un dreptunghi de
        340px taiat de o culoare — golul le face din nou butoane.
        Treapta ramane la `--tap-min` (deci cutia 50, nu 48 ca in desen): 44 e pragul
-       de atins al sistemului, iar 2px de inaltime nu-l cumpara.
+       de atins al sistemului, iar var(--space-2xs) de inaltime nu-l cumpara.
        PATRU trepte, nu cinci (desen 4c): 6L nu incape pe telefon — la 180 de zile
        coloanele oricum n-ar mai avea latime de citit pe 390px. Fillul activ ia
        raza 8 (desen), nu 7 ca pe desktop. */
-    .seg { display: flex; width: 100%; gap: 2px; }
+    .seg { display: flex; width: 100%; gap: var(--space-2xs); }
     .seg-btn { flex: 1; min-height: var(--tap-min); font-size: var(--font-rand); border-radius: var(--radius-xs); }
     .seg-btn.seg-6l { display: none; }
     /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
        butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
-    .toggle { display: inline-flex; flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: 6px 8px; }
+    .toggle { display: inline-flex; flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: var(--space-6) var(--space-sm); }
     .tg-lung { display: none; }
 
     /* Randurile listei: butoanele erau de 34px, adica sub pragul la care nimeresti
@@ -2805,7 +2805,7 @@
        noua proiecte asta inseamna sa derulezi mult ca sa vezi putin. */
     .mrow { padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
     .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
-               min-height: var(--row-h-mobile); padding: 5px 8px;
+               min-height: var(--row-h-mobile); padding: 5px var(--space-sm);
                background: var(--bg-panel); position: relative; z-index: 1;
                border-radius: var(--radius-md); will-change: transform; }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
@@ -2854,9 +2854,9 @@
        aici numele intreg valoreaza mai mult decat inaltimea economisita.
        Titlul ia tot randul, proiectul sta dedesubt, manerul si data prind
        amandoua randurile. */
-    .bl-chip { max-width: none; width: 100%; padding: 4px 6px 4px 4px;
+    .bl-chip { max-width: none; width: 100%; padding: var(--space-xs) var(--space-6) var(--space-xs) var(--space-xs);
                display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-               column-gap: 6px; row-gap: 1px; align-items: center; }
+               column-gap: var(--space-6); row-gap: 1px; align-items: center; }
     .bl-chip :global(.bl-grip) { grid-row: 1 / -1; }
     .bl-txt { max-width: none; grid-column: 2; }
     .bl-proj { grid-column: 2; justify-self: start; max-width: 100%; }
@@ -2886,7 +2886,7 @@
        paleta veche: singura culoare scrisa de mana ramasa pe iesirea tiparita,
        si tocmai pe titlu. Ramane scrisa literal (nu ca token) fiindca hartia e
        mereu tema deschisa, indiferent de tema din care tiparesti. */
-    .print-title { display: block; font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); color: #1b1e23; margin-bottom: 8px; }
+    .print-title { display: block; font-family: var(--font-heading); font-size: var(--font-h2); font-weight: var(--fw-semibold); color: #1b1e23; margin-bottom: var(--space-sm); }
     /* Force the swimlane on: A4 portrait (~794px) is under the 820px mobile
        breakpoint, which would otherwise hide .chart and blank the page. */
     .chart { display: block !important; overflow: visible !important; border: none !important; box-shadow: none !important; background: #fff !important; }

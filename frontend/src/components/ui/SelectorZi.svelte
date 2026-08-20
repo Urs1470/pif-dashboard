@@ -52,8 +52,8 @@
 </div>
 
 <style>
-  .sz { display: flex; flex-direction: column; gap: 6px; }
-  .sz-rand { display: flex; gap: 6px; }
+  .sz { display: flex; flex-direction: column; gap: var(--space-6); }
+  .sz-rand { display: flex; gap: var(--space-6); }
 
   .sz-optiune {
     flex: 1;
@@ -62,7 +62,7 @@
     justify-content: center;
     gap: 7px;
     min-height: var(--tap-min);
-    padding: 0 10px;
+    padding: 0 var(--space-10);
     border-radius: var(--radius-sm);
     background: var(--bg-elevated);
     color: var(--text-secondary);
@@ -82,7 +82,7 @@
   .sz-dp :global(.dp) { width: auto; }
   .sz-dp :global(.dp-trigger) {
     min-height: var(--tap-min);
-    padding: 0 10px 0 4px;
+    padding: 0 var(--space-10) 0 var(--space-xs);
     gap: 0;
     background: none;
     border: none;
@@ -102,7 +102,7 @@
     align-items: center;
     justify-content: center;
     gap: 7px;
-    min-height: 38px;
+    min-height: var(--ctrl-md);
     border-radius: var(--radius-sm);
     background: none;
     color: var(--text-dim);

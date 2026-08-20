@@ -515,7 +515,7 @@
     place-items: center;
     width: var(--tap-sheet);
     height: var(--tap-sheet);
-    margin-right: calc(var(--space-20) * -1 + 4px);
+    margin-right: calc(var(--space-20) * -1 + var(--space-xs));
     border-radius: var(--radius-sm);
     color: var(--text-dim);
     cursor: pointer;
@@ -529,17 +529,17 @@
   .fa-chipuri {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 10px var(--space-20);
+    gap: var(--space-6);
+    padding: var(--space-10) var(--space-20);
     border-bottom: 1px solid var(--border);
   }
   /* Raza 8 = treapta de chip. */
   .fa-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-6);
     height: 26px;
-    padding: 0 4px 0 9px;
+    padding: 0 var(--space-xs) 0 9px;
     border-radius: var(--radius-xs);
     font-size: var(--font-small);
     font-weight: var(--fw-medium);
@@ -566,7 +566,7 @@
   /* Si pe desktop lista are inaltime FIXA, din acelasi motiv: caseta e centrata,
      deci cand se scurteaza se muta si sus si jos — de doua ori mai mult decat pe
      telefon, unde foaia e lipita de baza si creste doar intr-o directie. */
-  .fa-list { overflow-y: auto; height: 340px; padding: 6px; }
+  .fa-list { overflow-y: auto; height: 340px; padding: var(--space-6); }
 
   /* CREAREA: 52 = `--row-h-mobile`, aceeasi inaltime ca randurile de dedesubt.
      Tenta de accent plus cerneala adanca — nu fill saturat: un rand de lista
@@ -577,7 +577,7 @@
     gap: 11px;
     width: 100%;
     min-height: var(--row-h-mobile);
-    padding: 0 12px;
+    padding: 0 var(--space-12);
     border-radius: var(--radius-sm);
     background: var(--accent-subtle);
     color: var(--accent-deep);
@@ -610,7 +610,7 @@
     text-transform: uppercase;
     letter-spacing: var(--tracking-label);
     color: var(--text-secondary);
-    padding: 14px 12px 4px;
+    padding: var(--space-14) var(--space-12) var(--space-xs);
   }
 
   /* ACELASI RAND CA IN LISTE: bifa la stanga, titlu plus contor de pasi, termen
@@ -619,10 +619,10 @@
   .fa-rand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-12);
     width: 100%;
     min-height: var(--row-h-mobile);
-    padding: 0 12px;
+    padding: 0 var(--space-12);
     border-radius: var(--radius-sm);
     background: none;
     text-align: left;
@@ -652,12 +652,12 @@
     color: var(--ring, var(--text-dim));
     font-variant-numeric: tabular-nums;
   }
-  .fa-sep { display: block; height: 1px; background: var(--border); margin: 0 12px; }
+  .fa-sep { display: block; height: 1px; background: var(--border); margin: 0 var(--space-12); }
 
-  .fa-hint { padding: 18px 12px; font-size: var(--font-small); color: var(--text-dim); }
-  .fa-schelet { padding: 8px 12px; }
+  .fa-hint { padding: 18px var(--space-12); font-size: var(--font-small); color: var(--text-dim); }
+  .fa-schelet { padding: var(--space-sm) var(--space-12); }
 
-  .fa-jos { border-top: 1px solid var(--border); padding: 6px var(--space-md) var(--space-12); flex: none; }
+  .fa-jos { border-top: 1px solid var(--border); padding: var(--space-6) var(--space-md) var(--space-12); flex: none; }
   .fa-mai {
     display: inline-flex;
     align-items: center;
@@ -672,7 +672,7 @@
   .fa-mai:hover { color: var(--text-secondary); }
   .fa-mai :global(.fa-chev) { transition: transform var(--dur-fast) var(--ease); }
   .fa-mai :global(.fa-chev.deschis) { transform: rotate(180deg); }
-  .fa-extra { display: flex; flex-direction: column; gap: var(--space-12); padding-top: 4px; }
+  .fa-extra { display: flex; flex-direction: column; gap: var(--space-12); padding-top: var(--space-xs); }
 
   @media (max-width: 768px) {
     /* ===== FOAIA NU-SI SCHIMBA INALTIMEA CAT TIMP SCRII =====

@@ -181,12 +181,12 @@
   .page-sub { font-size: var(--font-small); font-weight: var(--fw-medium);
     color: var(--text-secondary); white-space: nowrap; }
 
-  .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: 38px; }
+  .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: var(--ctrl-md); }
   .spatiu { flex: 1; }
 
   /* Controlul in rand: 38px, 15/600, suprafata cu umbra fina — fara chenar, ca
      peste tot dupa redesign. Erau 28px si 13px fara greutate. */
-  .b { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 13px;
+  .b { display: inline-flex; align-items: center; gap: var(--space-6); height: var(--ctrl-md); padding: 0 13px;
        font-size: var(--font-body); font-weight: var(--fw-semibold); border: none;
        background: var(--bg-surface); box-shadow: var(--shadow-sm);
        color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer;
@@ -207,16 +207,19 @@
   .config { max-width: 640px; background: var(--bg-surface); border: 0;
             border-radius: var(--radius-md); box-shadow: var(--shadow-md);
             padding: var(--space-lg); }
-  .config h2 { font-size: var(--font-h2); margin-bottom: var(--space-sm); }
+  /* Greutatea, nu doar marimea: fara ea supravietuia `bold`-ul din foaia
+     browserului, iar asta era singurul 700 randat din toata aplicatia — scara
+     are 400, 500 si 600, si nimeni nu scrisese 700 nicaieri. */
+  .config h2 { font-size: var(--font-h2); font-weight: var(--fw-semibold); margin-bottom: var(--space-sm); }
   .config p { font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-sm); line-height: var(--lh-normal); }
   .config code { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); }
-  .atentie { display: flex; gap: 10px; align-items: flex-start;
+  .atentie { display: flex; gap: var(--space-10); align-items: flex-start;
              background: var(--danger-subtle); color: var(--danger-deep);
-             border-radius: var(--radius-xs); padding: 10px 12px; }
+             border-radius: var(--radius-xs); padding: var(--space-10) var(--space-12); }
   .atentie :global(svg) { flex: none; margin-top: 1px; }
 
   .rand { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-md); }
-  .rand input { flex: 1; min-width: 260px; height: 32px; padding: 0 10px; font-family: var(--font-mono);
+  .rand input { flex: 1; min-width: 260px; height: var(--ctrl-sm); padding: 0 var(--space-10); font-family: var(--font-mono);
                 font-size: var(--font-small); color: var(--text); background: var(--bg-elevated);
                 border: 1px solid var(--border); border-radius: var(--radius-sm); }
   .rand input:focus { outline: none; border-color: var(--accent); }
@@ -225,7 +228,7 @@
     /* Pe telefon dock-ul e fix si mereu vizibil — ii lasam tot locul. */
     .page { --rezerva: calc(var(--dock-h) + var(--space-sm) + var(--safe-bottom));
             padding: var(--space-md); }
-    .b { height: var(--tap-min); padding: 0 14px; font-size: var(--font-small); }
+    .b { height: var(--tap-min); padding: 0 var(--space-14); font-size: var(--font-small); }
     .bara { min-height: var(--tap-min); }
     /* Campul primeste linkul de partajare — se lipeste, deci trebuie sa fie usor
        de atins si de golit; 32px inaltime cu font de 16px taia si textul. */

@@ -59,6 +59,17 @@ SCUTITE_HEX = {
     'pages/Departament.svelte',
 }
 
+# Selectoare care cad in banda 28-46px si NU sunt controale — vezi R12.
+SCUTITE_INALTIME = (
+    '.rt-fade',        # degradeul care stinge textul lung, nu un obiect apasabil
+    '.sk',             # scheletul de incarcare: tine locul, nu se apasa
+    '.ptr-disc',       # discul indicatorului de „trage ca sa reincarci"
+    '.wd span',        # capul de coloana al Calendarului (LU, MA, MI...)
+    '.gl-ico',         # cercul din pista de glisare, decorativ
+    '.gl-ico-s',
+    '.sub-row .check', # tinta de atingere a subtaskului pe telefon, sub --tap-min cu intentie
+)
+
 
 def fisiere():
     for p in sorted(SRC.rglob('*.svelte')):
@@ -235,6 +246,76 @@ class Audit:
 
     # -- R9 -----------------------------------------------------------------
     # -- R11 ----------------------------------------------------------------
+    def r12_inaltime_control_bruta(self, p, text, curat):
+        """`height`/`min-height` scris in cifre in banda controalelor (28-46px).
+
+        Regula asta exista fiindca auditul de UI din 2026-08-20 a numarat, PE
+        RANDARE, 25 de inaltimi distincte de buton sau camp pe desktop — 13 in
+        banda asta. Patru cutii diferite pentru acelasi fel de buton secundar:
+        32 (`.abtn`, `.dp-trigger`), 34 (`.bh-add`), 36 (`.h-btn`, `.pr`),
+        38 (`.btn-ghost`). Niciuna gresita singura; impreuna, o bara de actiuni
+        nu se aseaza pe o linie.
+
+        Pe TELEFON nu se intamplase, si asta e dovada: acolo exista un prag
+        (`--tap-min`) pe care il verifica `audit_mobil.py`. Deci nu e neglijenta,
+        e lipsa unei scari care sa poata fi verificata. Scara e `--ctrl-sm/md/lg`.
+
+        Banda, nu toata gama: sub 28px sunt iconite si insigne, peste 46 sunt
+        randuri si carduri — acolo inaltimea vine din continut, nu dintr-o
+        alegere de control.
+
+        Scutirile de mai jos NU sunt controale, desi cad in banda: un degrade de
+        stingere, un schelet, indicatorul de tras, capul de coloana al
+        Calendarului si doua cercuri decorative din pista de glisare. Se recunosc
+        dupa SELECTOR, nu dupa numarul liniei — o scutire legata de linie moare la
+        primul rand adaugat deasupra ei."""
+        if p.name == 'tokens.css':
+            return
+        printuri = blocuri_print(curat)
+        for m in re.finditer(r'(?:min-)?height:\s*(\d+)px', curat):
+            if not (28 <= int(m.group(1)) <= 46):
+                continue
+            if in_span(m.start(), printuri):
+                continue
+            # Selectorul blocului curent: de la ultimul `}` sau `{` inainte.
+            taiat = curat[:m.start()]
+            desch = taiat.rfind('{')
+            inainte = taiat[:desch] if desch >= 0 else ''
+            taie = max(inainte.rfind('}'), inainte.rfind('{'), inainte.rfind(';'))
+            sel = inainte[taie + 1:]
+            if any(c in sel for c in SCUTITE_INALTIME):
+                continue
+            self.abatere('R12 inaltime de control bruta', p, curat, m.start(), m.group(0))
+
+    def r13_spatiere_bruta(self, p, text, curat):
+        """Spatiere scrisa in cifre acolo unde scara are deja treapta.
+
+        Acelasi audit: 47% din spatierile randate pe desktop cadeau in afara
+        scarii, si nicio pagina sub 29%. Nu era intamplator — valorile erau
+        aproape toate JUMATATI DE TREAPTA in intervalul 4-16, unde scara avea
+        doar patru trepte si unde incape aproape toata spatierea de interfata:
+        6px de 336 de ori, 10px de 88, 14px de 60. Treptele au fost adaugate
+        (`--space-6/10/14`), cele 293 de locuri migrate, si de aici incolo se
+        verifica.
+
+        Se prind DOAR valorile care au token. 3, 5, 7, 9 si 11 raman libere:
+        acolo nu lipseste o treapta, sunt reglaje optice de un pixel si valori
+        derivate (jumatatea unui gap). O regula care le-ar cere tokenizate ar
+        produce doar zgomot — vezi nota de la `line-height` din R11."""
+        if p.name == 'tokens.css':
+            return
+        printuri = blocuri_print(curat)
+        prop = (r'\b(?:padding|margin|gap|row-gap|column-gap|padding-top|padding-right|'
+                r'padding-bottom|padding-left|margin-top|margin-right|margin-bottom|'
+                r'margin-left)\s*:\s*[^;{}]*')
+        for m in re.finditer(prop, curat):
+            if in_span(m.start(), printuri):
+                continue
+            for mm in re.finditer(r'(?<![\w.\-])(2|4|6|8|10|12|14|16|20|24|32|40|48)px(?![\w-])',
+                                  m.group(0)):
+                self.abatere('R13 spatiere bruta (are token)', p, curat,
+                             m.start() + mm.start(), m.group(0)[:70])
+
     def r11_tipografie_bruta(self, p, text, curat):
         """`letter-spacing` scris in cifre. Scara are trei valori, atat.
 
@@ -396,6 +477,8 @@ def main():
         a.r11_tipografie_bruta(p, text, curat)
         a.r10_zindex_literal(p, text, curat)
         a.r11_hover_only(p, text, curat)
+        a.r12_inaltime_control_bruta(p, text, curat)
+        a.r13_spatiere_bruta(p, text, curat)
 
     # -- R6: tokenuri folosite dar nedefinite -------------------------------
     tk = TOKENS.read_text(encoding='utf-8')

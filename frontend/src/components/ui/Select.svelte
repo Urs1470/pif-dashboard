@@ -150,7 +150,7 @@
   .field {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-xs);
     position: relative;
     min-width: 0;
   }
@@ -169,8 +169,8 @@
     justify-content: space-between;
     gap: var(--space-sm);
     width: 100%;
-    padding: 10px 12px;
-    min-height: 46px;
+    padding: var(--space-10) var(--space-12);
+    min-height: var(--ctrl-lg);
     background: var(--bg-elevated);
     border: none;
     border-radius: var(--radius-sm);
@@ -183,8 +183,8 @@
     cursor: pointer;
   }
   .field-select.sm {
-    min-height: 38px;
-    padding: 6px 10px;
+    min-height: var(--ctrl-md);
+    padding: var(--space-6) var(--space-10);
     font-size: var(--font-control);
     font-weight: var(--fw-semibold);
   }
@@ -214,7 +214,7 @@
     background: var(--bg-overlay);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
-    padding: 4px;
+    padding: var(--space-xs);
     overflow-y: auto;
     scrollbar-width: thin;
   }
@@ -224,7 +224,7 @@
     justify-content: space-between;
     gap: var(--space-sm);
     width: 100%;
-    padding: 8px 10px;
+    padding: var(--space-sm) var(--space-10);
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
     font-size: var(--font-small);
@@ -246,7 +246,7 @@
     /* In foaie, 48 — aceeasi regula ca la Input. */
     .field-select { min-height: var(--tap-sheet); }
     .field-select.sm { min-height: var(--tap-min); }
-    .opt { min-height: var(--tap-min); font-size: var(--font-body); padding: 8px 12px; }
+    .opt { min-height: var(--tap-min); font-size: var(--font-body); padding: var(--space-sm) var(--space-12); }
     .menu { max-width: none; overscroll-behavior: contain; }
   }
 </style>

@@ -28,7 +28,7 @@
   .field {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-xs);
   }
   /* Eticheta e treapta MICRO: 12/600 majuscule cu .05em. Era la 13/500 — adica
      aceeasi marime ca metadatele din randuri, dar in majuscule, deci concura cu
@@ -51,8 +51,8 @@
      Pe telefon textul e la 16px din `--font-body`, deci Safari nu mai mareste
      pagina la focus — nu e nevoie de o a doua valoare scrisa de mana. */
   .field-input {
-    padding: 10px 12px;
-    min-height: 46px;
+    padding: var(--space-10) var(--space-12);
+    min-height: var(--ctrl-lg);
     background: var(--bg-elevated);
     border: none;
     border-radius: var(--radius-sm);
