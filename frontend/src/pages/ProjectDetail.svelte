@@ -1100,7 +1100,13 @@
                  iesirea. Capul gol se ascunde; un cap n-are nevoie de tranzitie. -->
             {#each ORDINE_GRUPE as gid (gid)}
               {#if grupe[gid].titlu && grupe[gid].items.length}
-                <div class="grup-cap ton-{grupe[gid].ton}"><span class="grup-t">{grupe[gid].titlu}</span><span class="grup-n">{grupe[gid].items.length}</span></div>
+                <!-- PE TELEFON, NUMARUL DOAR LA „RESTANTE" — ca in /tasks, unde
+                     regula scrisa e ca un numar apare doar daca DECIDE o actiune.
+                     Aici aparea pe toate grupele, deci „Mai tarziu 3" cerea o
+                     citire pentru un fapt care nu cere nimic. Pe desktop ramane
+                     cum era: acolo lista sta langa restul paginii, nu singura pe
+                     ecran, si numarul e reperul care spune cat de lunga e grupa. -->
+                <div class="grup-cap ton-{grupe[gid].ton}"><span class="grup-t">{grupe[gid].titlu}</span>{#if !ecran.telefon || grupe[gid].ton === 'danger'}<span class="grup-n">{grupe[gid].items.length}</span>{/if}</div>
               {/if}
               {#each grupe[gid].items as t (t.id)}
                 <div class="trow-wrap" style="--ring: {dueRing(t.data_scadenta)}"
@@ -1479,6 +1485,51 @@
   .grup-cap.ton-danger .grup-n { background: var(--danger-subtle); color: var(--danger); }
   .grup-cap.ton-accent { color: var(--accent); }
   .grup-cap.ton-accent .grup-n { background: var(--accent-subtle); color: var(--accent-on-subtle); }
+
+  /* ===== PE TELEFON, ACELASI CAP DE GRUPA CA IN /tasks =====
+     Randul era DEJA acelasi obiect — masurat rand cu rand: aceeasi inaltime
+     (52px), aceleasi stiluri calculate, aceeasi structura, acelasi gest de
+     glisare. Capul de grupa nu era: aceeasi clasa `.grup-cap`, dar doua definitii
+     scrise separat, care au divergat. Aici: text mono rosu, numarul intr-o
+     pastila, fara banda. In /tasks: punct colorat + eticheta NEUTRA pe o banda
+     lipita de ecran, si numarul singur poarta urgenta.
+     Doua coduri de citire pentru acelasi fapt, la doua atingeri distanta.
+     Se aliniaza pe cel din /tasks fiindca acolo e lista citita cel mai des, si
+     fiindca regula lui e cea argumentata: un rand intreg de text rosu peste o
+     lista de randuri rosii nu mai selecteaza nimic.
+     `--header-height`, nu `--h-antet`: aceeasi valoare ca in /tasks, ca cele
+     doua sa se lipeasca la fel. Daca se schimba, se schimba in amandoua.
+     Doar pe telefon (cerut): pe desktop lista sta langa restul paginii, tabul
+     are alta geometrie, si un al doilea rand lipit s-ar aseza peste bara lui. */
+  @media (max-width: 768px) {
+    .grup-cap { position: sticky; top: var(--header-height); z-index: 2;
+      gap: var(--space-sm); padding: 20px 12px 8px; margin-top: 0;
+      /* `--bg`, nu `--bg-surface`: degradeul exista ca sa stinga randurile care
+         trec pe sub banda, deci trebuie sa fie culoarea DIN SPATELE listei.
+         Masurat, amandoua listele stau pe `--bg` (rgb(244,245,247) pe tema
+         deschisa) — cu `--bg-surface` banda iesea alba pe gri. Regula de telefon
+         din /tasks foloseste tot `--bg`, din acelasi motiv. */
+      background: linear-gradient(var(--bg) 72%, transparent);
+      font-family: var(--font-sans); color: var(--text-secondary); }
+    /* Punctul poarta tonul; eticheta ramane neutra in toate grupele. */
+    .grup-cap::before { content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border-strong); flex: none; }
+    .grup-cap:first-child { padding-top: 4px; }
+    .grup-cap.ton-danger, .grup-cap.ton-accent { color: var(--text-secondary); }
+    .grup-cap.ton-danger::before { background: var(--danger); }
+    .grup-cap.ton-accent::before { background: var(--accent); }
+    /* „Fara termen" e INEL, nu punct plin — absenta termenului se spune prin
+       absenta fillului, ca in /tasks. */
+    .grup-cap.ton-sters::before { background: none;
+      box-shadow: inset 0 0 0 1.5px var(--border-strong); }
+    /* Pastila dispare: numarul e cifra, nu insigna. */
+    .grup-n { display: inline; min-width: 0; height: auto; padding: 0;
+      border-radius: 0; background: none; line-height: inherit;
+      font-family: var(--font-mono); font-size: var(--font-label);
+      color: var(--danger); text-transform: none;
+      letter-spacing: var(--tracking-normal); }
+    .grup-cap.ton-danger .grup-n { background: none; color: var(--danger); }
+  }
   /* UN SINGUR OBIECT: rama, fundalul si colturile stau pe WRAPPER, iar randul si
      extinderea sunt continutul lui. Aici extinderea era un card SEPARAT (fundal
      propriu, rama proprie, indentat 26px), deci un task deschis se citea ca doua
