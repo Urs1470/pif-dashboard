@@ -130,13 +130,18 @@ if ('serviceWorker' in navigator && !import.meta.env.DEV) {
 
       // (1) Un worker poate fi DEJA in asteptare, instalat intr-o sesiune trecuta.
       // Atunci `updatefound` nu mai apare niciodata, deci bannerul nu s-ar arata.
-      if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner(reg)
+      oferaDacaAsteapta(reg)
 
       // (2) Browserul verifica singur doar la navigare si cam o data pe zi.
       // Dashboard-ul sta deschis zile intregi (si ca PWA pe telefon, niciodata
       // inchis complet), deci intrebam noi: la revenirea pe fila si din 15 in 15
       // minute. Fara asta, un deploy putea sa nu ajunga la utilizator DELOC.
-      const verificaActualizari = () => { reg.update().catch(() => {}) }
+      //
+      // Si RE-OFERIM, nu doar verificam: vezi `oferaDacaAsteapta`.
+      const verificaActualizari = () => {
+        reg.update().catch(() => {})
+        oferaDacaAsteapta(reg)
+      }
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) verificaActualizari()
       })
@@ -147,7 +152,9 @@ if ('serviceWorker' in navigator && !import.meta.env.DEV) {
         if (!newSW) return
         newSW.addEventListener('statechange', () => {
           if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateBanner(reg)
+            // Un worker CHIAR nou merita anuntat imediat, nu dupa rasuflare.
+            ultimaOferta = 0
+            oferaDacaAsteapta(reg)
           }
         })
       })
@@ -185,7 +192,32 @@ if ('serviceWorker' in navigator && !import.meta.env.DEV) {
 const PRIO_INTERFATA = 1
 const PRIO_CARCASA = 2       // carcasa cere o INSTALARE; interfata doar o reincarcare
 
+// UN WORKER CARE ASTEAPTA NU ARE VOIE SA FIE UITAT.
+//
+// `updatefound` se declanseaza O SINGURA DATA per worker nou. Daca inchizi
+// toastul — din greseala sau fiindca erai in mijlocul a ceva — workerul ramane in
+// `waiting` si NIMIC nu-l mai anunta: `reg.update()` de la 15 minute nu gaseste
+// nimic nou de instalat (cel instalat deja E cel mai recent), deci nu mai vine
+// niciun `updatefound`. Iar pe telefon aplicatia nu se inchide niciodata complet,
+// deci nici `load` nu mai ruleaza si nici punctul (1) nu te mai salveaza: ramai
+// pe versiunea veche la nesfarsit, fara sa stii. (Ion, 2026-08-21: „am inchis
+// intamplator pentru actualizare service worker si nu mai vine.")
+//
+// Deci re-oferim la fiecare verificare, dar numai daca chiar exista ceva de
+// aplicat. `RASUFLARE` il tine sa nu devina un toast care sare la fiecare
+// comutare de aplicatie: dupa ce l-ai inchis, revine peste cateva minute.
+// NU se aplica singur — asta ramane decizia ta (vezi nota din service-worker.js).
+const RASUFLARE = 3 * 60 * 1000
+let ultimaOferta = 0
+
+function oferaDacaAsteapta(reg) {
+  if (!reg?.waiting || !navigator.serviceWorker.controller) return
+  if (Date.now() - ultimaOferta < RASUFLARE) return
+  showUpdateBanner(reg)
+}
+
 function showUpdateBanner(reg) {
+  ultimaOferta = Date.now()
   toastFix('actualizare', {
     message: 'Versiune nouă a interfeței',
     ico: 'reload',
