@@ -158,28 +158,47 @@
   //   * in BROWSER `innerHeight` NU se schimba la sosirea tastaturii (doar
   //     viewportul vizual se strange) -> nu se amana nimic, `--kb` se scrie pe loc.
   // Deci amanarea atinge exact cazul stricat si niciun altul.
-  let ihUltim = typeof window !== 'undefined' ? window.innerHeight : 0
+  // ZERO SE CREDE PE LOC; O VALOARE NENULA TREBUIE SA SE TINA.
+  //
+  // Amanarea cu un cadru a fost incercata si masurata: nu ajunge. `vv.height`
+  // ramane pe valoarea gresita ~25ms (doua-trei cadre), deci recalculul de la
+  // cadrul urmator scria tot 306 — si, mai rau, foaia ajungea sa clipeasca
+  // dus-intors (147 -> 64 -> 147) in loc de o singura data. Orice prag pe numar
+  // de cadre e o cursa cu un aparat, nu o regula.
+  //
+  // Regula care nu depinde de viteza aparatului: o tastatura ADEVARATA sta pe
+  // ecran cat o tii deschisa — secunde. Cadrul fantoma tine zeci de milisecunde.
+  // Deci o valoare nenula se scrie doar dupa ce s-a TINUT, si se recalculeaza in
+  // clipa aia (nu se refoloseste masuratoarea veche). Zero se scrie imediat: el
+  // nu poate produce niciun salt — doar readuce foaia la geometria containerului.
+  //
+  // In BROWSER asta nu intarzie nimic vizibil: acolo tastatura isi face si ea
+  // animatia de aparitie ~250ms, iar `vv.height` inca urca in intervalul asta.
+  const PRAG_KB = 120
+
   let ceasKb = 0
+  // `-1`, nu `0`: prima masuratoare trebuie sa SCRIE, chiar daca da zero. Altfel
+  // starea din JS ar depinde tacit de faptul ca `tokens.css` are `--kb: 0px` —
+  // adevarat azi, dar nescris nicaieri ca fiind o legatura intre cele doua.
+  let kbScris = -1
+
+  function masoaraKb() {
+    return Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
+  }
+
+  function aplicaKb(kb) {
+    if (kb === kbScris) return
+    kbScris = kb
+    scrieKb(kb)
+  }
 
   function scrie(e) {
     if (!vv) return
-    const ih = window.innerHeight
-    // `|| ceasKb`: la aceeasi redimensionare sosesc DOUA evenimente — `vv.resize`
-    // si `window.resize`. Fara a doua conditie, primul apel amana si muta reperul,
-    // iar al doilea trece de garda tocmai fiindca reperul e deja cel nou — si scrie
-    // exact valoarea falsa pe care amanarea trebuia s-o opreasca. (Masurat: prima
-    // versiune a reparatiei n-a schimbat nimic pe telefon, cadrul fantoma a ramas
-    // identic.) Cat o amanare e in curs, orice apel nou o reprogrameaza.
-    if (ih !== ihUltim || ceasKb) {
-      ihUltim = ih
-      if (ceasKb) cancelAnimationFrame(ceasKb)
-      // Nu se scrie NIMIC acum: valoarea veche e mai buna decat una falsa.
-      ceasKb = requestAnimationFrame(() => { ceasKb = 0; scrie(e) })
-      return
-    }
-    const kb = Math.max(0, Math.round(ih - vv.height - vv.offsetTop))
+    const kb = masoaraKb()
     urmaEvent('vv', { tip: e?.type || 'init', h: Math.round(vv.height), kb })
-    scrieKb(kb)
+    if (ceasKb) { clearTimeout(ceasKb); ceasKb = 0 }
+    if (kb === 0) { aplicaKb(0); return }
+    ceasKb = setTimeout(() => { ceasKb = 0; aplicaKb(masoaraKb()) }, PRAG_KB)
   }
 
   if (vv) {
