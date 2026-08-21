@@ -714,10 +714,16 @@ def get_agenda_today():
         {'today': today})
     items = [_agenda_item(row_to_dict(r), 'global', today) for r in cursor.fetchall()]
 
+    # UN PROIECT INCHIS NU MAI TRIMITE NIMIC PE ACASA. Filtrul scria
+    # `p.status != 'anulat'` — un status care NU MAI EXISTA din v31 (doua stari:
+    # `pregatire` si `finalizat`), deci nu excludea absolut nimic. Aceeasi
+    # conditie ca in `/api/plan`, cuvant cu cuvant: Planificatorul decisese deja
+    # ca lucrarile incheiate ies din lumea planificarii, si nu se poate ca aceeasi
+    # intrebare sa aiba doua raspunsuri pe doua rute care hranesc acelasi ecran.
     cursor.execute(
         '''SELECT t.*, p.nume AS proiect_nume
            FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
-           WHERE p.status != 'anulat' AND ''' + _AGENDA_WHERE.format(alias='t'),
+           WHERE p.status NOT IN ('anulat', 'finalizat') AND ''' + _AGENDA_WHERE.format(alias='t'),
         {'today': today})
     items += [_agenda_item(row_to_dict(r), 'proiect', today) for r in cursor.fetchall()]
 
@@ -790,9 +796,14 @@ def get_agenda_candidates():
     cursor.execute(gq, gp)
     items = [_agenda_item(row_to_dict(r), 'global', today) for r in cursor.fetchall()]
 
+    # Ion, 2026-08-21: „imi apar acasa ca optiune de adaugare si taskuri din
+    # proiecte finalizate." Cauza: `p.status != 'anulat'`, un status scos in v31 —
+    # deci filtrul se citea ca o precautie si nu excludea nimic. Un task ramas
+    # deschis intr-o lucrare incheiata nu e o optiune: nu-l poti PLANIFICA, e o
+    # urma de curatat din pagina proiectului.
     tq = '''SELECT t.*, p.nume AS proiect_nume
             FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
-            WHERE t.status != 'done' AND p.status != 'anulat'
+            WHERE t.status != 'done' AND p.status NOT IN ('anulat', 'finalizat')
               AND (t.data_scadenta IS NULL OR TRIM(t.data_scadenta) = ''
                    OR date(t.data_scadenta) > date(:today))
               AND NOT (
