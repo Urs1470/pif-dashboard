@@ -24,6 +24,7 @@ Ce da, si de ce fiecare:
 import json
 import os
 import sys
+import sqlite3
 import tempfile
 import time
 
@@ -81,16 +82,66 @@ PANDA = r"""
 """
 
 
+def goleste(cale):
+    """Baza cu schema, dar FARA niciun rand.
+
+    Starile goale sunt cele mai rar privite si cele mai usor de stricat: nimeni
+    nu ajunge la ele in timpul dezvoltarii, fiindca baza de proba are mereu date.
+    """
+    sys.path.insert(0, RADACINA)
+    os.environ['PIF_DB_PATH'] = cale
+    import database
+    database.init_db()
+
+
+def umple(cale, proiecte=24, taskuri=120):
+    """Cat sa nu incapa pe un ecran: liste lungi, multe carduri.
+
+    Baza obisnuita are UN proiect si sapte taskuri — adica exact cazul in care
+    orice problema de derulare, de aliniere pe randul al doilea sau de taiere la
+    marginea de jos e invizibila.
+    """
+    import uuid
+    seamana(cale)
+    db = sqlite3.connect(cale)
+    clienti = ['Fabrica 2', 'Uzina Nord', 'Depozit Vest', 'Hala 7', 'Statia de tratare']
+    tipuri = ['retrofit', 'extindere', 'mentenanta', 'automatizare']
+    for i in range(proiecte):
+        db.execute(
+            "INSERT INTO proiecte (id, nume, client, tip, status) VALUES (?,?,?,?,?)",
+            (str(uuid.uuid4()),
+             'Proiect %02d — linie de ambalare cu nume lung pentru rupere' % (i + 1),
+             clienti[i % len(clienti)], tipuri[i % len(tipuri)],
+             'finalizat' if i % 5 == 0 else 'pregatire'))
+    for i in range(taskuri):
+        db.execute(
+            "INSERT INTO global_tasks (id, titlu, status, categorie, data_scadenta)"
+            " VALUES (?,?,?,?,?)",
+            (str(uuid.uuid4()),
+             'Task %03d cu un titlu destul de lung cat sa treaca de o linie' % (i + 1),
+             'to_do', 'General', '2026-08-%02d' % (i % 28 + 1)))
+    db.commit()
+    db.close()
+
+
 class Banc:
-    def __init__(self, latime=None, inaltime=None):
+    """UN SINGUR BANC PER PROCES cand schimbi baza.
+
+    `database` retine calea de la primul import, iar `init_db()` chemat a doua
+    oara initializeaza tot baza DINTAI — al doilea `Banc` cu alte date cade cu
+    „no such table: proiecte". Doua volume de date = doua rulari de Python.
+    """
+
+    def __init__(self, latime=None, inaltime=None, date='normal'):
         self.lat = latime or TELEFON['width']
         self.inalt = inaltime or TELEFON['height']
+        self.date = date
 
     def __enter__(self):
         from playwright.sync_api import sync_playwright
         self.lucru = tempfile.mkdtemp(prefix='pif-proba-')
         db = os.path.join(self.lucru, 'proba.db')
-        seamana(db)
+        {'gol': goleste, 'mult': umple}.get(self.date, seamana)(db)
         port = port_liber()
         self.proc, self.baza = porneste_serverul(
             port, db, os.path.join(self.lucru, 'server.log'))
@@ -288,6 +339,41 @@ class Banc:
                  sub_dock: dr ? Math.max(0, Math.round(r.bottom - dr.top)) : 0,
                  sub_antet: ar ? Math.max(0, Math.round(ar.bottom - r.top)) : 0,
                }; }""", sel)
+
+    def iese_din_ecran(self):
+        """Ce depaseste latimea ecranului FARA sa fie intr-un derulator.
+
+        Verificarea trebuie sa urce pe stramosi, nu doar sa se uite la element:
+        Planificatorul isi tine grila intr-un `.chart-scroll` cu `overflow-x:
+        auto` (1338px de continut in 796 vizibili), deci TOT ce e inauntru
+        „depaseste" ecranul — corect, si tocmai asta e ideea. O verificare care
+        se uita doar la element raporta cinci defecte inexistente pe peisaj.
+        """
+        return self.page.evaluate("""() => {
+          const inDerulator = (el) => {
+            let n = el.parentElement;
+            while (n && n !== document.body) {
+              const cs = getComputedStyle(n);
+              if (cs.overflowX === 'auto' || cs.overflowX === 'scroll'
+                  || cs.overflow === 'auto' || cs.overflow === 'scroll'
+                  || cs.overflowX === 'hidden') return true;
+              n = n.parentElement;
+            }
+            return false;
+          };
+          const rele = [];
+          document.querySelectorAll('*').forEach(e => {
+            const r = e.getBoundingClientRect();
+            if (r.width < 8 || r.height < 8) return;
+            const cs = getComputedStyle(e);
+            if (cs.position === 'fixed') return;
+            const peste = Math.round(r.right - innerWidth);
+            if (peste <= 1 || inDerulator(e)) return;
+            rele.push('.' + (e.className || '').toString().split(' ')
+                      .filter(x => !x.startsWith('svelte-')).join('.') + ' +' + peste);
+          });
+          return [...new Set(rele)].slice(0, 6);
+        }""")
 
     def exista(self, sel):
         return self.page.evaluate('(s) => !!document.querySelector(s)', sel)
