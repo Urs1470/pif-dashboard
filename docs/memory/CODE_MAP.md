@@ -42,9 +42,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `33:_obsidian_vault`, `41:_obsidian_safe_path`, `55:_obsidian_walk`, `80:_obsidian_index`, `100:_obsidian_config_dict`, `127:obsidian_note_get`, `162:_scrub_secrets`, `167:_git_env`, `178:_git`, `184:_default_vault_repo`, `189:_maybe_refresh_vault`, `227:_dashboard_git_credentials`, `243:obsidian_vault_key`, `268:obsidian_vault_sync`, `324:_obsidian_safe_dir`, `340:project_wiki_notes`, `400:sync_project_frontmatter`, `472:obsidian_note_put`
 
-## blueprints/projects.py (1236 linii)
+## blueprints/projects.py (1258 linii)
 
-`30:get_proiecte`, `80:create_proiect`, `126:get_proiect`, `154:update_proiect`, `263:delete_proiect`, `304:get_clienti`, `322:_normalize_client_name`, `335:create_client`, `365:get_client`, `379:update_client`, `413:delete_client`, `432:get_project_snapshot`, `527:_familie_from_echipament`, `558:preview_import_abb_multi`, `659:_familie_param_meta`, `673:_equals_default`, `690:_is_zeroish`, `698:_filter_drive_params`, `767:preview_import_archive`, `816:import_debrief`, `1096:_impl_row`, `1116:get_implementari`, `1127:create_implementare`, `1153:update_implementare`, `1194:delete_implementare`, `1214:_calc_row`
+`30:get_proiecte`, `80:create_proiect`, `138:get_proiect`, `166:update_proiect`, `285:delete_proiect`, `326:get_clienti`, `344:_normalize_client_name`, `357:create_client`, `387:get_client`, `401:update_client`, `435:delete_client`, `454:get_project_snapshot`, `549:_familie_from_echipament`, `580:preview_import_abb_multi`, `681:_familie_param_meta`, `695:_equals_default`, `712:_is_zeroish`, `720:_filter_drive_params`, `789:preview_import_archive`, `838:import_debrief`, `1118:_impl_row`, `1138:get_implementari`, `1149:create_implementare`, `1175:update_implementare`, `1216:delete_implementare`, `1236:_calc_row`
 
 ## blueprints/push.py (784 linii)
 

@@ -48,22 +48,22 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 |---|---|---|---|
 | GET | `/api/proiecte` | `get_proiecte` | 28 |
 | POST | `/api/proiecte` | `create_proiect` | 78 |
-| GET | `/api/proiecte/<project_id>` | `get_proiect` | 124 |
-| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 152 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 261 |
-| GET | `/api/clienti` | `get_clienti` | 302 |
-| POST | `/api/clienti` | `create_client` | 333 |
-| GET | `/api/clienti/<client_id>` | `get_client` | 363 |
-| PUT | `/api/clienti/<client_id>` | `update_client` | 377 |
-| DELETE | `/api/clienti/<client_id>` | `delete_client` | 411 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 430 |
-| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 555 |
-| POST | `/api/import-archive/preview` | `preview_import_archive` | 765 |
-| POST | `/api/import/debrief` | `import_debrief` | 814 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1114 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1125 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1151 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1192 |
+| GET | `/api/proiecte/<project_id>` | `get_proiect` | 136 |
+| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 164 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 283 |
+| GET | `/api/clienti` | `get_clienti` | 324 |
+| POST | `/api/clienti` | `create_client` | 355 |
+| GET | `/api/clienti/<client_id>` | `get_client` | 385 |
+| PUT | `/api/clienti/<client_id>` | `update_client` | 399 |
+| DELETE | `/api/clienti/<client_id>` | `delete_client` | 433 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 452 |
+| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 577 |
+| POST | `/api/import-archive/preview` | `preview_import_archive` | 787 |
+| POST | `/api/import/debrief` | `import_debrief` | 836 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1136 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1147 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1173 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1214 |
 
 ## blueprints/push.py (9 rute)
 

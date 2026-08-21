@@ -85,13 +85,24 @@ def create_proiect():
     now = datetime.now().isoformat()
     project_id = data.get('id') or generate_uuid()
 
+    # Invariantul din CLAUDE.md: `data_finalizare` exista daca si numai daca
+    # statusul e `finalizat`. Crearea nu scria coloana DELOC, iar `status` vine din
+    # corpul cererii — deci un POST cu `status: 'finalizat'` (masinile o pot face:
+    # ruta accepta Bearer) nastea un proiect inchis fara ziua inchiderii. Efectul
+    # se vede abia in Calendar, unde taierea perioadelor cade pe `date('now')` cand
+    # data lipseste: deplasarea ramane afisata pana azi in loc sa se opreasca
+    # atunci. Aceeasi gaura fusese deja astupata pe drumul de import debrief; asta
+    # era celalalt capat al ei.
+    status_nou = data.get('status', 'pregatire')
+    data_final = (data.get('data_finalizare') or now[:10]) if status_nou == 'finalizat' else ''
+
     cursor.execute('''
         INSERT INTO proiecte (
             id, tip, nume, client, locatie, echipament_principal, producator,
             cod_proiect, folder_server, data_crearii,
-            status, observatii, nr_comanda, service_before, service_after,
+            status, data_finalizare, observatii, nr_comanda, service_before, service_after,
             confirmat_client, client_nume_confirmare, created_at, updated_at, vault_folder
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         project_id,
         data.get('tip', 'PIF'),
@@ -103,7 +114,8 @@ def create_proiect():
         data.get('cod_proiect', ''),
         data.get('folder_server', ''),
         data.get('data_crearii', now[:10]),
-        data.get('status', 'pregatire'),
+        status_nou,
+        data_final,
         data.get('observatii', ''),
         data.get('nr_comanda', ''),
         data.get('service_before', ''),
@@ -214,14 +226,24 @@ def update_proiect(project_id):
     # proiectul e finalizat. Altfel formularul o tine agatata cand redeschizi
     # (DatePicker-ul se ascunde, dar valoarea rămâne in form) si la o eventuala
     # re-inchidere ai reveni in tacere la ziua veche.
+    #
+    # Ramura de inchidere e scrisa ca o CONDITIE PE RAND, nu pe tranzitie: „e
+    # finalizat si n-are data -> pune azi". Varianta veche cerea in plus
+    # `old_status != 'finalizat'`, deci vindeca doar inchiderea de acum; un rand
+    # deja inchis dar cu data goala — venit dintr-un import, dintr-o restaurare,
+    # sau de dinainte de v35 — nu si-o mai lua niciodata, oricate salvari ar fi
+    # urmat. Garda `TRIM(data_finalizare) = ''` face ca datele existente sa nu
+    # poata fi calcate: nu e o suprascriere, e o completare.
     status_efectiv = data.get('status') or old_status
     if status_efectiv != 'finalizat':
         cursor.execute("UPDATE proiecte SET data_finalizare = '' WHERE id = ?",
                        (project_id,))
-    elif not data.get('data_finalizare') and old_status != 'finalizat':
-        # Se inchide acum si nu s-a trimis o data anume: azi.
-        cursor.execute('UPDATE proiecte SET data_finalizare = ? WHERE id = ?',
-                       (now[:10], project_id))
+    else:
+        cursor.execute(
+            """UPDATE proiecte SET data_finalizare = ?
+               WHERE id = ? AND status = 'finalizat'
+                 AND (data_finalizare IS NULL OR TRIM(data_finalizare) = '')""",
+            (now[:10], project_id))
 
     # LA INCHIDERE, PERIOADELE TRECUTE SE BIFEAZA SINGURE (cerut de Ion,
     # 2026-08-10). Motivul practic care a scos regula la iveala: doua proiecte
