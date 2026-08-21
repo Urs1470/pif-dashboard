@@ -225,9 +225,14 @@ code, pre {
     transform-origin: 50% 0;
     transition: transform var(--dur-base) var(--ease-iesire);
   }
+  /* ACELASI CEAS CA FOAIA. Ducerea mergea pe `--dur-arc` (420) cu arc, in timp
+     ce foaia soseste in 280: fundalul termina la 140ms dupa obiectul care l-a
+     acoperit, adica o a doua miscare pe care o vezi fara s-o poti numi. Acum
+     amandoua se opresc odata; intoarcerea ramane pe ceasul de plecare (regula de
+     mai sus). */
   html.are-modal .app-main {
     transform: scale(.93) translateY(6px);
-    transition: transform var(--dur-arc) var(--ease-arc);
+    transition: transform var(--dur-slow) var(--ease);
   }
 }
 
@@ -635,7 +640,7 @@ input:focus, select:focus, textarea:focus {
   content: ''; position: absolute; inset: 2px; pointer-events: none; z-index: 3;
   border-radius: var(--radius-sm);
   box-shadow: inset 0 0 0 2px var(--accent);
-  animation: inelPuls 1500ms var(--ease) both;
+  animation: inelPuls var(--dur-semn) var(--ease) both;
 }
 /* Pe telefon fata (`.gl-fata`) e opaca si poarta inelul; pe desktop fata e
    `display: contents` (fara cutie), deci il poarta randul. */
@@ -1147,7 +1152,7 @@ input[type="checkbox"].cbx:focus {
    aduna peste tranzitia browserului (bugul reparat pe 14 august). */
 html.prima-incarcare .cell-in {
   animation: cellIn var(--dur-arc) var(--ease-arc) backwards;
-  animation-delay: min(var(--celula, 0) * 45ms, 270ms);
+  animation-delay: min(var(--celula, 0) * var(--pas-scara), var(--pas-scara-max));
 }
 @media (prefers-reduced-motion: reduce) {
   html.prima-incarcare .cell-in { opacity: 1; animation: none; }

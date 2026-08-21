@@ -2127,7 +2127,7 @@
     cursor: pointer; pointer-events: auto; transition: var(--transition-colors);
     /* Se descopera de la stanga, dinspre ziua in care incepe — ca inainte. */
     animation: benziIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
+    animation-delay: min(var(--rand, 0) * var(--pas-scara), var(--pas-scara-max)); }
   /* Zona de atingere: sina are 4px, degetul si cursorul au nevoie de mai mult.
      Nu creste sina, creste doar tinta — si nu in sus peste ultimul reper. */
   .impl-band::after { content: ''; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }
@@ -2275,7 +2275,7 @@
     translate: var(--dx, 0px) 0;
     pointer-events: auto; transform-origin: left center;
     animation: reperIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
+    animation-delay: min(var(--rand, 0) * var(--pas-scara), var(--pas-scara-max)); }
   /* Reperul din ultima treime isi scrie titlul spre STANGA, deci si desfacerea
      merge intr-acolo — altfel jumatate din randuri cresc dinspre ziua lor, iar
      cealalta jumatate spre ea. */
@@ -2333,7 +2333,7 @@
   .wk { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center;
     pointer-events: auto;
     animation: reperIn var(--dur-base) var(--ease) backwards;
-    animation-delay: min(var(--rand, 0) * 40ms, 240ms); }
+    animation-delay: min(var(--rand, 0) * var(--pas-scara), var(--pas-scara-max)); }
 
   /* dim, nu faint: indicatiile de gest sunt text de citit (masurat 3.18:1 la
      10.4px, sub AA) — faint e doar pentru etichete/large. */

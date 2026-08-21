@@ -1197,15 +1197,19 @@
       user-select: none;
     }
     .modal.sheet.trage .modal-header { cursor: grabbing; }
+    /* Cresterea manerului la apucare se face din `scaleX`, nu din `width`:
+       acelasi 38 -> 52px (factor 1.37), dar pe compozitor, nu prin reasezarea
+       randului. E o bara de 4px cu colturi rotunde, deci scalarea nu deformeaza
+       nimic vizibil. */
     .sheet-grip {
       width: 38px;
       height: 4px;
       margin: var(--space-sm) auto var(--space-2xs);
       border-radius: var(--radius-full);
       background: var(--border-strong);
-      transition: background-color var(--dur-fast) var(--ease), width var(--dur-fast) var(--ease);
+      transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
     }
-    .modal.trage .sheet-grip { background: var(--accent); width: 52px; }
+    .modal.trage .sheet-grip { background: var(--accent); transform: scaleX(1.37); }
 
     /* Deplasarea din deget, pe `translate` (vezi nota din <script>). Cat timp
        tragi NU exista tranzitie — altfel sheet-ul ramane in urma degetului si se

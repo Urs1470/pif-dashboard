@@ -16,21 +16,29 @@ aplicatia o asculta (`Modal.svelte`, `<script module>`). Deci proba trece prin
 ACELASI cod ca telefonul, nu printr-o scurtatura.
 
 Contractele, fiecare cu modul de esec pe care l-a avut aplicatia:
-  1. DOUA MISCARI, NICIODATA DEODATA. Foaia de adaugare e o foaie normala de jos
-     (ca modalul de detalii task): aluneca o data, monoton, SE ASAZA — si abia
-     apoi vine tastatura si o ridica. Proba joaca doua latente si cere aceeasi
-     secventa. Formele „pagina ancorata sus" si „urcare coregrafiata cu
-     tastatura" au fost respinse: acolo cele doua miscari se calcau.
+  1. REGIMUL REAL: viewportul se micsoreaza INTR-UN PAS, iar foaia il urmeaza in
+     ACELASI cadru — nicio proprietate de layout nu ramane in urma cu o tranzitie.
+     Vezi nota lunga de mai jos: asta e ce face Capacitor pe aparat, si exact ce
+     emularea veche NU reproducea.
   2. NIMIC SUB TASTATURA. Campul focalizat, subsolul foii si corpul ei stau
      deasupra tastaturii; corpul nu deruleaza peste o lista care deruleaza si ea.
   3. EDITORUL DE NOTE urca intreg deasupra tastaturii (zona de scris ramanea de
-     55px), iar fara tastatura bara de unelte nu acopera „Salvează".
+     55px), iar fara tastatura bara de unelte nu acopera „Salveaza".
   4. UN CLIC E AL FOII DOAR DACA A INCEPUT PE EA. Ridicarea degetului dupa
      apasarea lunga nu inchide si nu apasa nimic in foaia care tocmai a sosit.
   5. FOAIA TASKULUI RASPUNDE IMEDIAT, cu schelet, nu dupa retea.
-  6. PAGINA PROIECTULUI deschide taskul in foaie (telefon) / panou (desktop),
-     ca /tasks — nu il mai desface in lista.
+  6. PAGINA PROIECTULUI deschide taskul in foaie (telefon) / panou (desktop).
   7. FOAIA ZILEI (`inalt`) soseste la inaltime constanta, nu crescand din mers.
+
+DE CE S-A RESCRIS SECTIUNEA 1 (2026-08-21). Varianta veche inlocuia
+`window.visualViewport` cu un obiect fals si tinea `window.innerHeight`
+CONSTANT. Pe aparat insa, Capacitor (`SystemBars`, in core) pune
+`setPadding(0,0,0,imeInsets.bottom)` pe parintele WebView-ului cand vine IME-ul:
+micsoreaza fizic WebView-ul, deci `innerHeight` scade ODATA cu `vv.height`, iar
+formula din `Modal.svelte` da corect `--kb` = 0. Adica emularea testa un aparat
+pe care `--kb` conducea totul, iar aparatul real nu foloseste `--kb` deloc.
+Trei runde de reglaje au trecut de auditul asta si n-au schimbat nimic pe
+telefon. Acum proba micsoreaza CHIAR viewportul, intr-un pas.
 
     python scripts/audit_tastatura.py
 """
@@ -51,27 +59,11 @@ KB = 312   # inaltimea tastaturii emulate, in px — cat are o tastatura Gboard 
 LAT = 420  # ms de la focus pana cand IME-ul e sus — masurat ca ordin de marime pe WebView
 KB_URCA = 200  # cat dureaza urcarea tastaturii insasi (vezi `KB_URCA` in Modal)
 
-# Tastatura falsa + urma per cadru. `__kbH` = cat urca la focus (0 = nu vine deloc,
-# pentru proba de expirare). `__urma` retine, la fiecare cadru, geometria foii.
+# NU se mai falsifica `visualViewport`. Pe aparat, ce se schimba e CHIAR
+# viewportul (Capacitor micsoreaza WebView-ul), iar Playwright poate face exact
+# asta cu `set_viewport_size`. Ce ramane de injectat e doar urma pe cadru.
 INIT = r"""
 (() => {
-  let kb = 0;
-  const L = { resize: new Set(), scroll: new Set() };
-  const fake = {
-    get height() { return window.innerHeight - kb }, get width() { return window.innerWidth },
-    get offsetTop() { return 0 }, get offsetLeft() { return 0 }, get pageTop() { return window.scrollY },
-    get pageLeft() { return 0 }, get scale() { return 1 },
-    addEventListener(t, f) { L[t]?.add(f) }, removeEventListener(t, f) { L[t]?.delete(f) },
-    dispatchEvent(e) { L[e.type]?.forEach(f => f(e)); return true },
-  };
-  Object.defineProperty(window, 'visualViewport', { value: fake, configurable: true });
-  window.__kbH = %d;
-  window.__kbLat = %d;
-  window.__tastatura = (h) => { kb = h; fake.dispatchEvent(new Event('resize')) };
-  window.__kb = () => kb;
-  const edit = (el) => !!el && !!el.matches && el.matches('input:not([type=checkbox]):not([type=radio]), textarea, [contenteditable="true"]');
-  document.addEventListener('focusin', e => { if (edit(e.target)) setTimeout(() => { if (edit(document.activeElement) && window.__kbH) window.__tastatura(window.__kbH) }, window.__kbLat) }, true);
-  document.addEventListener('focusout', () => { setTimeout(() => { if (!edit(document.activeElement)) window.__tastatura(0) }, 60) }, true);
   window.__urma = []; let pornita = false;
   window.__porneste = () => { window.__urma = []; pornita = true; window.__t0 = performance.now() };
   window.__opreste = () => { pornita = false; return window.__urma };
@@ -81,12 +73,17 @@ INIT = r"""
       const r = f ? f.getBoundingClientRect() : null;
       window.__urma.push({ t: Math.round(performance.now() - window.__t0),
         top: r ? Math.round(r.top) : null, h: r ? Math.round(r.height) : null,
-        pb: b ? Math.round(parseFloat(getComputedStyle(b).paddingBottom)) : null, kb });
+        ih: window.innerHeight,
+        pb: b ? Math.round(parseFloat(getComputedStyle(b).paddingBottom)) : null,
+        kb: Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kb')) || 0) });
     }
     requestAnimationFrame(s);
   })();
 })();
-""" % (KB, LAT)
+"""
+
+URMA_PORNESTE = 'window.__porneste()'
+URMA_OPRESTE = 'window.__go = false; window.__opreste()'
 
 # Telefonul lui Ion are edge-to-edge: safe-area reala. Pe emulator e 0, si exact
 # asa au trecut neobservate doua runde de reparatii la foaia zilei.
@@ -98,6 +95,24 @@ GEOM = """(sel) => {
   const r = el.getBoundingClientRect();
   return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right), h: Math.round(r.height) };
 }"""
+
+
+def ridica_tastatura(page, kb=None):
+    """Tastatura, ca pe aparat: viewportul se micsoreaza intr-un pas.
+    (Capacitor pune padding pe parintele WebView-ului — vezi antetul.)"""
+    page.set_viewport_size({'width': TELEFON['width'], 'height': TELEFON['height'] - (kb or KB)})
+    page.wait_for_timeout(350)
+
+
+def coboara_tastatura(page):
+    page.set_viewport_size({'width': TELEFON['width'], 'height': TELEFON['height']})
+    page.wait_for_timeout(350)
+
+
+def kb_acum(page):
+    """Cat acopera tastatura ACUM, in regimul real: diferenta dintre ecran si
+    viewportul ramas."""
+    return TELEFON['height'] - page.evaluate('window.innerHeight')
 
 
 def tap(cdp, page, x, y, pauza=400):
@@ -167,107 +182,102 @@ def main():
             page.press('#pin', 'Enter')
             page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
 
-            # ===== 1. DOUA MISCARI, NICIODATA IN ACELASI TIMP =====
-            # Foaia de adaugare e o FOAIE NORMALA de jos — aceeasi ca modalul de
-            # detalii task si ca foaia de la apasarea lunga (Ion, 2026-08-21:
-            # „vreau o animatie lina precum la modalul detalii task sau la
-            # atingere lunga"). Formele „pagina ancorata sus" si „urcare
-            # coregrafiata cu tastatura" au fost incercate si RESPINSE — de
-            # fiecare data pentru ca doua miscari se calcau: foaia si tastatura
-            # pe aceiasi pixeli, in acelasi interval („foarte haotica").
-            #
-            # Contractul de acum e o SECVENTA, si asta se masoara:
-            #   1. foaia aluneca de jos, o singura data, monoton, si SE ASAZA;
-            #   2. abia DUPA aceea vine tastatura si o ridica — a doua miscare,
-            #      curata, care nu se suprapune peste prima.
-            # Proba joaca doua latente de tastatura (devreme si tarziu): secventa
-            # trebuie sa fie aceeasi de fiecare data.
-            out('\n--- foaia de adaugare: doua miscari, niciodata deodata ---')
+            # ===== 1. REGIMUL REAL: UN PAS, SI FOAIA IL URMEAZA IN ACELASI CADRU =====
+            # Se micsoreaza CHIAR viewportul (ca `setPadding`-ul lui Capacitor),
+            # nu un `visualViewport` fals. Contractul: intre cadrul de dinainte si
+            # cel de dupa, foaia si-a luat deja geometria noua — fara sa mai ramana
+            # nimic care se anima 220ms in urma.
+            out('\n--- tastatura: un pas, iar foaia il urmeaza in acelasi cadru ---')
             mergi(page, baza, '/tasks')
             fab = page.query_selector('.fab')
             if fab is None:
                 bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .fab')
             else:
-                asezata = []
-                for lat in (900, LAT):
-                    page.evaluate('window.__kbLat = %d' % lat)
-                    fab = page.query_selector('.fab')
-                    x, y = centru(fab)
-                    u = urma(page, lambda: tap(cdp, page, x, y, 0), lat + 900)
-                    cu_foaie = [q for q in u if q['top'] is not None]
-                    if not cu_foaie:
-                        bifa(False, 'foaia se deschide (tastatura la %d ms)' % lat, 'niciun cadru cu foaie')
-                        continue
+                x, y = centru(fab)
+                tap(cdp, page, x, y, 900)
+                inainte = page.evaluate(GEOM, '.modal.sheet')
+                bifa(inainte is not None, 'foaia de adaugare e deschisa', 'nu s-a deschis')
 
-                    def kb_px(q):
-                        try:
-                            return float(str(q['kb']).replace('px', '') or 0)
-                        except ValueError:
-                            return 0.0
+                # Nicio proprietate de LAYOUT n-are voie sa fie tranzitionata pe
+                # foaie sau pe voal: ele depind de viewport, care sare intr-un pas.
+                tranzitii = page.evaluate("""() => {
+                  const rasp = [];
+                  for (const sel of ['.modal.sheet', '.backdrop', '.modal-body', '.modal-footer']) {
+                    const el = document.querySelector(sel);
+                    if (!el) continue;
+                    const cs = getComputedStyle(el);
+                    const props = (cs.transitionProperty || '').split(',').map(s => s.trim());
+                    const rele = props.filter(p => ['height','max-height','min-height','width',
+                      'padding','padding-bottom','padding-top','margin','margin-bottom','top','bottom'].includes(p));
+                    if (rele.length) rasp.push(sel + ': ' + rele.join('/'));
+                  }
+                  return rasp; }""")
+                bifa(not tranzitii,
+                     'nicio proprietate de layout nu e tranzitionata pe foaie sau voal',
+                     'gasite: %s' % '; '.join(tranzitii),
+                     'zero')
 
-                    # Faza 1: pana la primul cadru cu tastatura (sau tot filmul).
-                    idx_kb = next((i for i, q in enumerate(cu_foaie) if kb_px(q) > 0), None)
-                    faza1 = cu_foaie[:idx_kb] if idx_kb is not None else cu_foaie
-                    topuri1 = [q['top'] for q in faza1]
-                    urca = all(b_ <= a_ + 1 for a_, b_ in zip(topuri1, topuri1[1:]))
-                    bifa(urca, 'faza 1: foaia urca monoton, fara sa oscileze (tastatura la %d ms)' % lat,
-                         'topuri: %s' % topuri1[:30])
-                    # Se ASAZA: ultimele cadre ale fazei 1 stau pe loc.
-                    coada = [q['top'] for q in faza1[-6:]]
-                    bifa(len(coada) >= 3 and max(coada) - min(coada) <= 1,
-                         'faza 1: foaia se ASAZA inainte sa vina tastatura',
-                         'ultimele cadre: %s' % coada, 'asezata la %d px' % (coada[-1] if coada else -1))
-                    # Cat a durat urcarea (contract: ~280ms, ca la detalii task).
-                    t_asezat = faza1[-1]['t'] if faza1 else None
-                    prima = faza1[0]['t'] if faza1 else 0
-                    if faza1:
-                        stabil = faza1[-1]['top']
-                        t_asezat = next(q['t'] for q in faza1 if abs(q['top'] - stabil) <= 1)
-                        bifa(t_asezat - prima <= 420,
-                             'faza 1: urcarea tine ~280 ms (ca foaia de detalii task)',
-                             'a tinut %d ms' % (t_asezat - prima), '%d ms' % (t_asezat - prima))
-
-                    # Faza 2 exista si vine DUPA. Tastatura nu are voie sa urce cat
-                    # timp foaia inca aluneca — asta era „haotic".
-                    if idx_kb is not None:
-                        t_kb = cu_foaie[idx_kb]['t']
-                        bifa(t_kb >= t_asezat,
-                             'faza 2: tastatura vine DUPA ce foaia s-a asezat, nu peste ea',
-                             'tastatura la %d ms, foaia asezata la %d ms' % (t_kb, t_asezat),
-                             'tastatura la %d ms (asezata la %d)' % (t_kb, t_asezat))
-                        dupa_kb = [q['top'] for q in cu_foaie[idx_kb:]]
-                        coada2 = dupa_kb[-6:]
-                        bifa(max(coada2) - min(coada2) <= 1,
-                             'faza 2: dupa ce tastatura a urcat, foaia sta pe loc',
-                             'ultimele cadre: %s' % coada2)
-
+                # TASTATURA: viewportul se micsoreaza intr-un pas.
+                page.evaluate(URMA_PORNESTE)
+                page.set_viewport_size({'width': TELEFON['width'], 'height': TELEFON['height'] - KB})
+                page.wait_for_timeout(700)
+                u = page.evaluate(URMA_OPRESTE)
+                cu_foaie = [q for q in u if q['top'] is not None]
+                if not cu_foaie:
+                    bifa(False, 'foaia ramane pe ecran cand vine tastatura', 'a disparut')
+                else:
+                    # Cate cadre a durat pana s-a asezat: intr-un regim corect,
+                    # geometria noua e deja acolo la primul cadru de dupa.
+                    final = cu_foaie[-1]
+                    t_final = next(q['t'] for q in cu_foaie
+                                   if q['top'] == final['top'] and q['h'] == final['h'])
+                    bifa(t_final <= 50,
+                         'foaia isi ia geometria noua in acelasi cadru cu viewportul',
+                         'i-au trebuit %d ms (deci ceva inca se anima)' % t_final,
+                         '%d ms' % t_final)
+                    bifa(final['top'] + final['h'] <= TELEFON['height'] - KB + 1,
+                         'foaia se termina deasupra tastaturii',
+                         'jos la %d, tastatura de la %d' % (final['top'] + final['h'], TELEFON['height'] - KB))
                     camp = page.evaluate(GEOM, '.fa-cauta input')
                     bifa(camp is not None and camp['bottom'] <= TELEFON['height'] - KB,
-                         'campul „Ce ai de făcut?" ramane deasupra tastaturii',
-                         'jos la %s, tastatura de la %d' % (camp and camp['bottom'], TELEFON['height'] - KB))
-                    ultim = cu_foaie[-1]
-                    bifa(ultim['top'] + ultim['h'] <= TELEFON['height'] - KB + 1,
-                         'foaia se termina deasupra tastaturii',
-                         'jos la %s, tastatura de la %d' % (ultim['top'] + ultim['h'], TELEFON['height'] - KB))
-                    if lat == LAT:
-                        page.keyboard.type('Verifica')
-                        page.wait_for_timeout(400)
-                        camp2 = page.evaluate(GEOM, '.fa-cauta input')
-                        bifa(camp2 is not None and abs(camp2['top'] - camp['top']) <= 1,
-                             'nici cand scrii foaia nu se muta',
-                             '%s -> %s' % (camp and camp['top'], camp2 and camp2['top']))
-                        asezata = [ultim]
-                        break
-                    inchide_tot(page)
-                page.evaluate('window.__kbLat = %d' % LAT)
+                         'campul „Ce ai de facut?" ramane deasupra tastaturii',
+                         'jos la %s' % (camp and camp['bottom']))
+
+                # INCHIDEREA cu tastatura sus: foaia pleaca, iar viewportul creste
+                # inapoi in timpul iesirii. Foaia nu are voie sa sara sau sa creasca.
+                page.evaluate(URMA_PORNESTE)
+                inch = page.query_selector('.modal-close')
+                if inch:
+                    bb = inch.bounding_box()
+                    tap(cdp, page, bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2, 0)
+                page.wait_for_timeout(60)
+                page.set_viewport_size({'width': TELEFON['width'], 'height': TELEFON['height']})
+                page.wait_for_timeout(700)
+                u2 = [q for q in page.evaluate(URMA_OPRESTE) if q['top'] is not None]
+                if len(u2) > 3:
+                    inaltimi = set(q['h'] for q in u2)
+                    bifa(len(inaltimi) == 1,
+                         'cat coboara, foaia NU-si schimba inaltimea',
+                         'a avut inaltimile %s' % sorted(inaltimi),
+                         '%d px' % u2[0]['h'])
+                    salturi = [b_['top'] - a_['top'] for a_, b_ in zip(u2, u2[1:])]
+                    mari = [d for d in salturi if d > 90]
+                    bifa(not mari,
+                         'coborarea e continua, fara salt cand creste viewportul',
+                         'salturi de %s px' % mari,
+                         'cel mai mare pas: %d px' % (max(salturi) if salturi else 0))
+                inchide_tot(page)
 
                 # ===== 2. NIMIC SUB TASTATURA =====
                 out('\n--- nimic sub tastatura ---')
                 page.wait_for_timeout(300)
-                kb_sus = page.evaluate('window.__kb()')
-                bifa(kb_sus == KB, 'tastatura emulata e sus', 'kb=%s' % kb_sus)
-                bifa(page.evaluate("document.documentElement.classList.contains('are-tastatura')"),
-                     '<html> poarta `are-tastatura`', 'clasa lipseste')
+                fab = page.query_selector('.fab')
+                if fab is not None:
+                    fx, fy = centru(fab)
+                    tap(cdp, page, fx, fy, 800)
+                ridica_tastatura(page)
+                kb_sus = kb_acum(page)
+                bifa(kb_sus == KB, 'tastatura e sus (viewportul s-a micsorat)', 'kb=%s' % kb_sus)
                 camp = page.evaluate(GEOM, '.fa-cauta input')
                 bifa(camp is not None and camp['bottom'] <= TELEFON['height'] - KB,
                      'campul „Ce ai de făcut?" e deasupra tastaturii',
@@ -282,22 +292,21 @@ def main():
                 bifa(jos is not None and jos['bottom'] <= TELEFON['height'] - KB + 1,
                      'randul „Categorie și recurență" ramane la vedere',
                      'jos la %s' % (jos and jos['bottom']))
+                inainte_scris = page.evaluate(GEOM, '.modal.sheet')
                 page.keyboard.type('Verifica')
                 page.wait_for_timeout(400)
                 dupa = page.evaluate(GEOM, '.modal.sheet')
-                bifa(dupa is not None and dupa['h'] == asezata[-1]['h'] if asezata else False,
+                bifa(dupa is not None and inainte_scris is not None
+                     and dupa['h'] == inainte_scris['h'],
                      'foaia nu-si schimba inaltimea cand scrii',
-                     '%s -> %s px' % (asezata and asezata[-1]['h'], dupa and dupa['h']))
+                     '%s -> %s px' % (inainte_scris and inainte_scris['h'], dupa and dupa['h']))
 
                 # Tastatura coboara: foaia se aseaza la loc, jos.
-                page.evaluate('document.activeElement.blur()')
-                page.wait_for_timeout(600)
+                coboara_tastatura(page)
                 f = page.evaluate(GEOM, '.modal.sheet')
-                bifa(page.evaluate('window.__kb()') == 0 and f is not None and f['bottom'] >= TELEFON['height'] - 1,
+                bifa(kb_acum(page) == 0 and f is not None and f['bottom'] >= TELEFON['height'] - 1,
                      'cand tastatura coboara, foaia coboara cu ea pe marginea ecranului',
                      'jos la %s' % (f and f['bottom']))
-                bifa(not page.evaluate("document.documentElement.classList.contains('are-tastatura')"),
-                     '`are-tastatura` pleaca odata cu tastatura', 'clasa a ramas')
                 inchide_tot(page)
 
             # ===== 5. FOAIA TASKULUI RASPUNDE IMEDIAT =====
@@ -320,11 +329,13 @@ def main():
                     bifa(False, 'foaia are „Adaugă subtask"', 'lipseste .sub-nou')
                 else:
                     xx, yy = centru(btn)
-                    tap(cdp, page, xx, yy, 900)
+                    tap(cdp, page, xx, yy, 500)
+                    ridica_tastatura(page)
                     camp = page.evaluate(GEOM, '.modal.sheet .sub-add input')
-                    bifa(page.evaluate('window.__kb()') == KB and camp is not None and camp['bottom'] <= TELEFON['height'] - KB,
+                    bifa(camp is not None and camp['bottom'] <= TELEFON['height'] - KB,
                          'campul de subtask sta deasupra tastaturii',
-                         'jos la %s, kb=%s' % (camp and camp['bottom'], page.evaluate('window.__kb()')))
+                         'jos la %s, tastatura de la %d' % (camp and camp['bottom'], TELEFON['height'] - KB))
+                    coboara_tastatura(page)
                 inchide_tot(page)
 
             # ===== 4. APASAREA LUNGA NU APASA NIMIC IN FOAIE =====
@@ -398,8 +409,9 @@ def main():
                              'la centrul butonului raspunde %s' % (salv and salv['cine']))
                         ed = page.query_selector('.modal-doc [contenteditable="true"]')
                         ex, ey = centru(ed)
-                        tap(cdp, page, ex, ey, 900)
-                        kb_sus = page.evaluate('window.__kb()')
+                        tap(cdp, page, ex, ey, 500)
+                        ridica_tastatura(page)
+                        kb_sus = kb_acum(page)
                         doc2 = page.evaluate(GEOM, '.modal-doc')
                         zona = page.evaluate(GEOM, '.modal-doc .rte-editor')
                         bara = page.evaluate(GEOM, '.modal-doc .rte-toolbar')
@@ -414,6 +426,7 @@ def main():
                              and foot['bottom'] <= TELEFON['height'] - KB + 1,
                              'bara de unelte si „Salvează" stau una sub alta, deasupra tastaturii',
                              'bara jos %s, subsol %s..%s' % (bara and bara['bottom'], foot and foot['top'], foot and foot['bottom']))
+                coboara_tastatura(page)
                 inchide_tot(page)
 
             # ===== 7. FOAIA ZILEI =====

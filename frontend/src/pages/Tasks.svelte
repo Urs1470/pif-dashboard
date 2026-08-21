@@ -20,7 +20,7 @@
   import { uita } from '../lib/cache.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare, sosire, alunecare, DUR_FAST, EASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire, alunecare, DUR_FAST, EASE, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
   // Acelasi puls de prag ca la glisarea unui rand: doua gesturi diferite, dar
   // „ai trecut pragul" trebuie sa se simta la fel, altfel se invata separat.
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
@@ -197,7 +197,7 @@
       // aceiasi pixeli ar incalca „o singura animatie pe schimbare".
       if (next === 'done' && !dinGest) {
         bifatAcum = task.id
-        await new Promise(r => setTimeout(r, motionDuration(400)))
+        await new Promise(r => setTimeout(r, motionDuration(INTARZIERE_BIFA)))
         bifatAcum = ''
       }
       // OPTIMIST, ca randul sa plece IN CLIPA in care il atingi.

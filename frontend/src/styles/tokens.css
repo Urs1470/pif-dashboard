@@ -317,6 +317,22 @@
      trece dintr-un tab in altul. Ea traverseaza o distanta pe care o vezi, deci
      are voie sa arate ca a avut viteza. */
   --dur-arc-elan: 0.38s;
+
+  /* SEMNUL DE ATERIZARE — „pe asta ai apasat", dupa o navigare care duce la un
+     obiect anume (perioada gasita in Calendar, randul de task pe care aterizezi
+     de pe Acasa). NU e o treapta din scara: scara masoara cat ii ia unui obiect
+     sa AJUNGA undeva, iar asta e un semn care trebuie sa mai stea dupa ce
+     obiectul s-a asezat, ca sa fie prins din periferie.
+     Era scris de doua ori, cu doua valori diferite (1000ms pe banda, 1500ms pe
+     rand) — adica acelasi raspuns spus in doua ritmuri, dupa cum ajungeai la el. */
+  --dur-semn: 1200ms;
+  /* A doua bataie a semnului: nu adauga inteles, ii da primeia o a doua sansa. */
+  --pauza-semn: 380ms;
+
+  /* PASUL SCARII, cand un grup de obiecte soseste unul dupa altul (celulele din
+     Proiecte, benzile din Planificator). Era 45ms intr-un loc si 40 in alte trei. */
+  --pas-scara: 42ms;
+  --pas-scara-max: 250ms;
   --ease-arc-elan: linear(0, 0.0175, 0.0636, 0.1297, 0.2087, 0.2946, 0.3831, 0.4704, 0.5539, 0.6318, 0.7028, 0.7663, 0.822, 0.8699, 0.9104, 0.9439, 0.971, 0.9924, 1.0088, 1.0209, 1.0293, 1.0346, 1.0375, 1.0384, 1.0378, 1.0361, 1.0336, 1.0306, 1.0273, 1.0239, 1.0205, 1.0173, 1);
 
   /* Adancimea apasarii, tokenizata ca si durata: o singura valoare, ca nimic

@@ -2322,10 +2322,10 @@
   .banda.gasita::after {
     content: ''; position: absolute; inset: -3px; border-radius: var(--radius-sm);
     box-shadow: 0 0 0 2px var(--accent); pointer-events: none;
-    animation: gasitaInel 1000ms var(--ease) both;
+    animation: gasitaInel var(--dur-semn) var(--ease) both;
   }
   .banda.gasita::before { animation-delay: var(--dur-arc); }
-  .banda.gasita::after { animation-delay: calc(var(--dur-arc) + 380ms); }
+  .banda.gasita::after { animation-delay: calc(var(--dur-arc) + var(--pauza-semn)); }
   /* Fara miscare, semnul trebuie sa fie STATIC si sa stea — `stingeGasitele` ii
      da mai mult timp. Regula sta dupa cele de mai sus fiindca un `@media` nu
      adauga specificitate. Un singur inel: al doilea ar fi doar acelasi contur

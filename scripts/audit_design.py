@@ -57,6 +57,10 @@ SCUTITE_HEX = {
     'lib/culori.js',
     # Pagina embed-uita a planului de departament: iframe strain, fara tokenurile noastre.
     'pages/Departament.svelte',
+    # Culoarea barei de sistem (`<meta name="theme-color">`) se scrie in browser,
+    # nu in pagina: acolo nu exista tokenurile noastre, deci valoarea TREBUIE sa
+    # fie bruta. Sunt exact cele doua fonduri, unul per tema.
+    'lib/tema.svelte.js',
 }
 
 # Selectoare care cad in banda 28-46px si NU sunt controale — vezi R12.
@@ -71,10 +75,67 @@ SCUTITE_INALTIME = (
 )
 
 
+# Fragmente de `animation`/`transition` in care o durata scrisa in cifre e
+# ACCEPTATA, fiecare cu motivul ei. Rotatiile infinite n-au treapta in scara (nu
+# sunt sosiri, sunt asteptari), iar pulsul scheletului e o respiratie, nu o
+# miscare.
+SCUTITE_DURATA = (
+    # --- ASTEPTARI, nu sosiri. O rotatie infinita n-are treapta in scara:
+    #     scara masoara cat ii ia unui obiect sa ajunga undeva, iar astea nu ajung.
+    'spin',              # Button
+    'c-invarte',         # ConfirmDialog
+    'ptrRoti',           # TrageReincarca — inelul care se invarte
+    'animation-duration: 1.4s',   # TrageReincarca — al doilea inel, mai lent
+    'skel-puls',         # Skeleton — respiratia de asteptare
+
+    # --- PLASA DE REDUCED-MOTION. `120ms` e chiar `DUR_REDUSA` din
+    #     motion.svelte.js; scrisa aici ca `!important` fiindca trebuie sa bata
+    #     orice animatie, inclusiv pe cele care nu trec prin JS.
+    'animation-duration: 120ms !important',
+
+    # --- TRANZITIA DE RUTA. Cele patru numere (140 vechea pleaca / 170+50 cerneala
+    #     noua / 300 morph) sunt o exceptie MASURATA, cu motivul scris langa ele in
+    #     global.css: un cross-fade simetric are, la orice durata, un mijloc in care
+    #     ambele pagini sunt lizibile. Nu sunt trepte de scara, sunt doua ceasuri
+    #     acordate intre ele.
+    'animation-duration: 140ms',
+    'animation-duration: 240ms',   # ceasul de baza al tranzitiei de ruta
+    'animation-duration: var(--dur-slow), 170ms',
+    'animation-delay: 0s, 50ms',
+    'animation-duration: 300ms',
+
+    # --- A DOUA BATAIE a bifei: inelul se coloreaza intai, apoi se scrie in el.
+    'bifDesen',
+)
+
+# Fisiere in care o tranzitie pe layout e acceptata, cu motiv scris in cod.
+SCUTITE_LAYOUT = (
+    # Bara de progres a subtaskurilor si a proiectului: `width` E informatia
+    # (cat s-a facut), pe un element de 4px inaltime, nu pe o lista.
+    'styles/global.css',
+    'pages/ProjectDetail.svelte',
+    # Toast: `width` pe bara de timp a lui, un singur element pe ecran.
+    'components/ui/Toast.svelte',
+    # Skip-link (`top`, la focus) si coloana care face loc panoului pe desktop.
+    'App.svelte',
+    # Manerul foii (`width`, 38 -> 52px la apucare) si dock-ul.
+    'components/layout/Dock.svelte',
+)
+
+
 def fisiere():
     for p in sorted(SRC.rglob('*.svelte')):
         yield p
     for p in sorted(SRC.rglob('*.css')):
+        yield p
+    # SI `lib/*.js`. Acolo traiesc duratele de GEST (`DUR_ZBOR`, tranzitiile
+    # scrise inline din `glisare.js`/`reordonare.js`) si tranzitiile Svelte
+    # construite din JS. Cat timp auditul citea doar `.svelte` si `.css`, o
+    # durata bruta pusa in `lib/` nu era vazuta de nimeni — si chiar asa au
+    # aparut 130ms si 400ms in cod.
+    for p in sorted((SRC / 'lib').rglob('*.js')):
+        if p.name.endswith('.test.js'):
+            continue
         yield p
 
 
@@ -206,20 +267,65 @@ class Audit:
 
     # -- R3 -----------------------------------------------------------------
     def r3_durata_bruta(self, p, text, curat):
-        """Durata scrisa in cifre intr-o tranzitie: scara de miscare se
-        desincronizeaza pe tacute. Foloseste var(--dur-fast/base/slow/press)."""
+        """Durata scrisa in cifre intr-o tranzitie SAU intr-o animatie: scara de
+        miscare se desincronizeaza pe tacute. Foloseste var(--dur-*).
+
+        `animation` a fost adaugat dupa ce s-a masurat ca regula prindea DOAR
+        `transition:` — si ca de-aia trecusera neobservate ~18 durate brute
+        (1500ms la inelul de aterizare, 130ms la zborul din gest, 400ms la
+        stampila de bifare, delay-uri de 45/80ms). Auditul raporta `curat` exact
+        pe categoria in care sistemul alunecase."""
         if p.name == 'tokens.css':
             return
+        tipare = (r'transition:[^;{}]*', r'animation:[^;{}]*',
+                  r'animation-duration:[^;{}]*', r'animation-delay:[^;{}]*')
+        for tipar in tipare:
+            for m in re.finditer(tipar, curat):
+                frag = m.group(0)
+                if any(x in frag for x in SCUTITE_DURATA):
+                    continue
+                for d in re.finditer(r'(?<![\w-])\d*\.?\d+m?s\b', frag):
+                    self.abatere('R3 durata bruta', p, curat, m.start(), frag)
+                    break
+
+    # -- R3b ----------------------------------------------------------------
+    def r3b_tranzitie_pe_layout(self, p, text, curat):
+        """`transition` pe o proprietate care REASAZA pagina.
+
+        Regula scrisa a sistemului (`.claude/rules/design.md`) e „doar
+        `transform`/`opacity` in animatii", dar nimeni n-o verifica: `R1` cauta
+        doar prescurtarea `transition: all`, care nu apare nicaieri, deci era
+        inerta. Intre timp se animau `height`, `max-height`, `padding-bottom`,
+        `width` si `margin` — pe randuri de lista si pe foaia de pe telefon, adica
+        exact acolo unde un reflow pe cadru se vede ca sacadare.
+
+        Ce ramane permis, cu motiv, e in `SCUTITE_LAYOUT`."""
+        if p.name == 'tokens.css':
+            return
+        rele = ('height', 'max-height', 'min-height', 'width', 'max-width',
+                'padding', 'padding-bottom', 'padding-top', 'margin',
+                'margin-bottom', 'margin-top', 'top', 'left', 'right', 'bottom',
+                'flex-basis', 'border-width')
         for m in re.finditer(r'transition:[^;{}]*', curat):
             frag = m.group(0)
-            for d in re.finditer(r'(?<![\w-])\d*\.?\d+m?s\b', frag):
-                self.abatere('R3 durata bruta', p, curat, m.start(), frag)
-                break
+            if rel(p) in SCUTITE_LAYOUT:
+                continue
+            corp = frag.split(':', 1)[1]
+            for bucata in corp.split(','):
+                nume = bucata.strip().split(' ')[0].strip()
+                if nume in rele:
+                    self.abatere('R3b tranzitie pe layout', p, curat, m.start(),
+                                 frag.strip())
+                    break
 
     # -- R4 -----------------------------------------------------------------
     def r4_easing_brut(self, p, text, curat):
-        """cubic-bezier scris de mana in loc de var(--ease)."""
-        if p.name == 'tokens.css':
+        """cubic-bezier scris de mana in loc de var(--ease).
+
+        `motion.svelte.js` e scutit din acelasi motiv ca `tokens.css`: acolo se
+        DEFINESC curbele (perechile in JS ale tokenurilor din CSS), nu se
+        folosesc. O primitiva trebuie scrisa undeva."""
+        if p.name in ('tokens.css', 'motion.svelte.js'):
             return
         for m in re.finditer(r'cubic-bezier\(', curat):
             self.abatere('R4 easing brut', p, curat, m.start(), 'cubic-bezier(...)')
@@ -237,8 +343,12 @@ class Audit:
         """O tranzitie Svelte fara `easing` cade pe implicitul bibliotecii —
         `linear` la `fade`, `cubicOut` la `scale`. Adica a DOUA curba pe acelasi
         ecran, langa `--ease` pe care o respecta tot CSS-ul. Capcana e
-        documentata in `motion.svelte.js` si a fost reintrodusa de sase ori."""
-        tip = r'(?:transition|in|out):(?:slide|fly|fade|scale|blur|draw)(?:\|\w+)?='
+        documentata in `motion.svelte.js` si a fost reintrodusa de sase ori.
+
+        `animate:flip` a fost adaugat in tipar dupa ce s-a gasit ca toate cele
+        sapte flip-uri din aplicatie rulau pe `cubicOut` — adica exact modul de
+        esec pe care regula il descrie, dar pe directiva pe care n-o citea."""
+        tip = r'(?:transition|in|out|animate):(?:slide|fly|fade|scale|blur|draw|flip)(?:\|\w+)?='
         for m in re.finditer(tip + r'\{\{([^}]*)\}\}', curat):
             if 'easing' not in m.group(1):
                 self.abatere('R8 tranzitie fara easing', p, curat, m.start(),
@@ -470,6 +580,7 @@ def main():
         a.r10_prescurtare_in_tranzitie(p, text, curat)
         a.r2_hex_brut(p, text, curat)
         a.r3_durata_bruta(p, text, curat)
+        a.r3b_tranzitie_pe_layout(p, text, curat)
         a.r4_easing_brut(p, text, curat)
         a.r5_paleta_duplicata(p, text, curat)
         a.r8_tranzitie_fara_easing(p, text, curat)

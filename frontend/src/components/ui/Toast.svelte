@@ -2,7 +2,11 @@
   import { X, Info, CircleCheck, CircleAlert, ArrowDownToLine, RefreshCw } from '@lucide/svelte'
   import { fly } from 'svelte/transition'
   import { ui, closeToast, runToastAction } from '../../stores/ui.svelte.js'
-  import { motionDuration, EASE, ARC, DUR_ARC } from '../../lib/motion.svelte.js'
+  // `EASE_IESIRE` era FOLOSIT (la `out:fly`) fara sa fie importat. Mergea din
+  // intamplare: Rollup pune Toast si `motion` in acelasi chunk, deci
+  // identificatorul liber nimerea peste binding-ul hoistat. La o alta impartire
+  // in chunkuri, fiecare toast care pleaca ar fi aruncat.
+  import { motionDuration, EASE, EASE_IESIRE, ARC, DUR_ARC } from '../../lib/motion.svelte.js'
 
   // TREI ROLURI, NU PATRU TIPURI.
   //

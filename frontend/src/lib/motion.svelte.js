@@ -13,6 +13,19 @@ export const DUR_BASE = 220
 export const DUR_SLOW = 280
 export const DUR_PRESS = 90
 
+/** Cat tine STAMPILA DE BIFARE inainte ca randul sa plece din lista.
+ *
+ *  Nu e o treapta din scara — e o SUMA, si de-aia trebuie sa stea intr-un singur
+ *  loc: inelul se stampileaza (`bifStamp`, --dur-base), bifa se traseaza dupa
+ *  80ms (`bifDesen`, --dur-base), iar taietura merge in paralel (`bifTaie`).
+ *  Ultima se incheie la 80 + 220 = 300ms; peste ea, o rasuflare ca semnul sa
+ *  fie VAZUT, nu doar jucat.
+ *  Statea scrisa de mana ca `400` in doua fisiere (/tasks si Acasa), fara nicio
+ *  legatura cu duratele de mai sus: daca una dintre ele s-ar fi schimbat,
+ *  randul ar fi plecat peste o animatie neterminata, tacut si doar intr-unul
+ *  dintre ecrane. Vezi `@keyframes bifDesen` in global.css. */
+export const INTARZIERE_BIFA = 80 + DUR_BASE + 100
+
 // Cat tine o tranzitie cand utilizatorul a cerut mai putina miscare. NU zero:
 // vezi `motionDuration`.
 const DUR_REDUSA = 120

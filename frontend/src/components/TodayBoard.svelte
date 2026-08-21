@@ -26,7 +26,7 @@
   import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
-  import { motionDuration, DUR_BASE, EASE, plecare, sosire } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, EASE, plecare, sosire, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
 
   // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
   // "deadline-uri" dupa ce bifez / mut / scot un task (altfel ramaneau stale
@@ -122,7 +122,7 @@
     // verdele pistei si zborul sunt deja raspunsul (o animatie pe schimbare).
     if (!eraFacut && !dinGest) {
       bifatAcum = it.tip + ':' + it.id
-      await new Promise(r => setTimeout(r, motionDuration(400)))
+      await new Promise(r => setTimeout(r, motionDuration(INTARZIERE_BIFA)))
       bifatAcum = ''
     }
     try {
