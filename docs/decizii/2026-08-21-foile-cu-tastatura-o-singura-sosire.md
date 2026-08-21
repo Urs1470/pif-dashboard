@@ -118,3 +118,22 @@ Tot atunci:
   (măsurat: ruta se schimbă la 148 ms de la atingere).
 - În aplicația Android nu există bară de adresă, deci jurnalul se pornește cu **apăsare lungă
   pe marca TORQA** din antet (toast „Urmă pornită"); aceeași apăsare îl oprește.
+
+## Runda a cincea — „încă o dată, pentru ultima dată"
+
+Ion: „modalul pentru creare task nu e bine încă." Trei runde de ghicit (înălțimea, latența,
+coregrafia) n-au ajuns, fiindcă problema e nedeterminabilă de aici: nimeni nu știe când pornește
+Gboard pe un Honor. **Răspunsul nu e o ghicire mai bună, ci o foaie care n-are nevoie de ea.**
+
+`Modal` prop `pagina`: pe telefon foaia e o **pagină ancorată sus**, pe tot ecranul (ca editorul
+de notițe). Câmpul „Ce ai de făcut?" stă în capul ecranului și **nu se mișcă niciodată**;
+tastatura, când vine — devreme, târziu, dintr-o dată sau cadru cu cadru — acoperă doar coada
+listei (înălțimea scade cu `--kb`, dar marginea de jos e sub tastatură, deci nimic vizibil nu
+se mută). O singură mișcare: foaia urcă 280 ms. Folosită de „Adaugă task" și „Proiect nou".
+
+Toată mașinăria de prevedere/latență a fost **scoasă** din `Modal` (nu lăsată „la îndemână"):
+ar fi chemat înapoi exact problema. Rămân măsurătoarea `--kb`, `are-tastatura`, urmărirea
+tastaturii raportate în mers (`kb-in-mers`) și jurnalul de pe aparat.
+
+`audit_tastatura.py` joacă acum două latențe (420 și 900 ms) și cere același film: sus în
+~280 ms, apoi 0 px mișcare, câmpul pe loc și când vine tastatura și când scrii.

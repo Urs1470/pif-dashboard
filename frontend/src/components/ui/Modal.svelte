@@ -58,44 +58,14 @@
   // butoanele sub tastatura. Sursa de adevar e `visualViewport`.
   // Se scrie pe <html>, deci o pot citi si paleta, si orice alt strat.
   //
-  // ===== TASTATURA SE PREVEDE, NU DOAR SE MASOARA =====
-  // `visualViewport` spune cat acopera tastatura abia DUPA ce a urcat — pe
-  // Android la ~250-300ms dupa focus, adica exact cand foaia tocmai s-a asezat.
-  // Masurat cadru cu cadru pe „Adaugă task": foaia urca 280ms (844 -> 296),
-  // sta, apoi la 306ms soseste `--kb` si o mai impinge o data 224px in 220ms,
-  // timp in care i se si scurteaza inaltimea de jos. Doua sosiri pentru un
-  // singur gest — Ion: „cand se deschide tastatura sa fie frumos, nu rupt".
-  // Inaltimea tastaturii e insa aceeasi de fiecare data pe acelasi telefon.
-  // Deci se TINE MINTE (localStorage) si se pune pe <html> INAINTE ca foaia sa
-  // se randeze: voalul se naste cu podeaua ridicata, foaia urca o singura data,
-  // direct la locul ei, in acelasi timp cu tastatura care urca nativ dedesubt.
-  // Cand vine masuratoarea reala, ea bate prevederea (de obicei e identica).
-  // Daca tastatura NU vine deloc (tastatura fizica, focus pierdut), prevederea
-  // expira si adevarul se reia — o foaie ridicata deasupra unei tastaturi care
-  // nu exista ar fi mai rau decat saltul pe care il repara.
-  const CHEIE_KB = 'pif-kb'
-  let kbStiut = 0
-  try { kbStiut = parseInt(localStorage.getItem(CHEIE_KB) || '', 10) || 0 } catch (_) {}
-  let prevazut = false
-  let ceasPrevedere = null
+  // AICI AU STAT „PREVEDEREA" SI „LATENTA" TASTATURII (2026-08-21, trei runde):
+  // inaltimea si intarzierea IME-ului se invatau si foaia ancorata jos urca
+  // coregrafiat, ca sa ajunga sus odata cu tastatura. N-a fost de ajuns („nu e
+  // bine inca"): nimeni nu stie de aici CAND porneste Gboard pe un aparat anume.
+  // Raspunsul nu era o ghicire mai buna, ci o foaie care n-are nevoie de ea:
+  // `pagina` (ancorata SUS — vezi prop-ul din <script>). Ce ramane aici e doar
+  // masuratoarea, plus urmarirea tastaturii raportate cadru cu cadru.
   const vv = typeof window !== 'undefined' ? (window.visualViewport || null) : null
-
-  // ===== SI LATENTA TASTATURII SE INVATA, NU DOAR INALTIMEA =====
-  // Ion, pe telefon, cu prevederea in functiune: „modalul se ridica prea sus,
-  // apoi dupa cateva clipe apare tastatura android." Corect: foaia ajungea la
-  // locul ei final in 280ms si statea IN AER pana sosea tastatura — pe WebView
-  // IME-ul porneste la zeci-sute de ms dupa focus si mai urca el insusi ~200ms.
-  // Cat dureaza de la focus pana la tastatura e, ca si inaltimea, o constanta a
-  // aparatului: se masoara (de la prevedere la primul `resize` cu tastatura) si
-  // se tine minte, netezita. Cu ea, urcarea foii se COREGRAFIAZA (vezi `intra`):
-  // intai pana la marginea ecranului, apoi — exact cand porneste tastatura — cu
-  // ea, cei `kb` px. O singura miscare, in doi timpi, fara pauza in aer.
-  const CHEIE_LAT = 'pif-kb-lat'
-  /** Cat urca tastatura Android prin propria ei animatie, in ms. */
-  const KB_URCA = 200
-  let latStiuta = 0
-  try { latStiuta = parseInt(localStorage.getItem(CHEIE_LAT) || '', 10) || 0 } catch (_) {}
-  let tPrevedere = 0
 
   function scrieKb(kb) {
     const html = document.documentElement
@@ -106,61 +76,25 @@
     html.classList.toggle('are-tastatura', kb > 0)
   }
 
-  // TASTATURA CARE URCA CADRU CU CADRU. Chromium pe Android 11+ raporteaza
+  // TASTATURA CARE URCA CADRU CU CADRU. Chromium pe Android 11+ poate raporta
   // inaltimea tastaturii PROGRESIV, in timpul animatiei ei (zeci de `resize`
-  // cu valori crescatoare), nu o singura data la capat. Cu prevederea pusa la
-  // 312, primul `resize` de 30px ar fi „adevarul" si foaia ar cobori inapoi,
-  // apoi ar urca in trepte, fiecare cu o tranzitie de 220ms in urma degetului.
-  // Regula: cat timp prevederea e in vigoare, o valoare mai MICA decat cea
-  // stiuta inseamna „inca urca" si nu se scrie; se scrie cand ajunge, sau cand
-  // s-a oprit din crescut (150ms fara alt `resize`). Fara prevedere, valorile
-  // se scriu toate, dar FARA tranzitie pe podea: foaia urmeaza tastatura cadru
-  // cu cadru in loc sa o urmareasca de la 220ms distanta.
+  // cu valori crescatoare). Cat timp vin dese, podeaua le urmeaza FARA
+  // tranzitie (`html.kb-in-mers`): foaia merge cu tastatura, nu la 220ms in
+  // urma ei.
   let ultimResize = 0
   let ceasAsezare = null
 
   function scrie(e) {
     if (!vv) return
     const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
-    urmaEvent('vv', { tip: e?.type || 'init', h: Math.round(vv.height), kb, prevazut })
-    // Cat timp prevederea e in vigoare, un `scroll` al viewportului (focusul
-    // care aduce campul la vedere) nu o strica: tastatura inca urca. Doar un
-    // `resize` spune adevarul despre ea, in ambele sensuri.
-    if (prevazut && kb === 0 && e?.type !== 'resize') return
+    urmaEvent('vv', { tip: e?.type || 'init', h: Math.round(vv.height), kb })
     if (e?.type === 'resize') {
       const t = performance.now()
       const inMers = t - ultimResize < 100
       ultimResize = t
       document.documentElement.classList.toggle('kb-in-mers', inMers && kb > 0)
       clearTimeout(ceasAsezare)
-      if (prevazut && kb > 0 && kb < kbStiut - 4 && !e.asezare) {
-        // Inca urca: nu scriem valoarea, dar daca nu mai vine alta o scriem pe
-        // ultima — o tastatura mai SCUNDA decat cea stiuta e si ea un adevar.
-        ceasAsezare = setTimeout(() => {
-          document.documentElement.classList.remove('kb-in-mers')
-          if (prevazut) scrie({ type: 'resize', asezare: true })
-        }, 150)
-        return
-      }
       ceasAsezare = setTimeout(() => document.documentElement.classList.remove('kb-in-mers'), 150)
-    }
-    if (kb > 0 && prevazut && tPrevedere) {
-      // Prima masuratoare se ia intreaga; urmatoarele se netezesc (o deschidere
-      // cu telefonul ocupat n-are voie sa mute singura contractul).
-      const lat = Math.round(performance.now() - tPrevedere)
-      if (lat > 0 && lat < 2000) {
-        latStiuta = latStiuta ? Math.round(latStiuta * 0.6 + lat * 0.4) : lat
-        try { localStorage.setItem(CHEIE_LAT, String(latStiuta)) } catch (_) {}
-      }
-    }
-    if (kb > 0 || e?.type === 'resize') {
-      prevazut = false
-      tPrevedere = 0
-      clearTimeout(ceasPrevedere)
-    }
-    if (kb > 0 && kb !== kbStiut) {
-      kbStiut = kb
-      try { localStorage.setItem(CHEIE_KB, String(kb)) } catch (_) {}
     }
     scrieKb(kb)
   }
@@ -180,38 +114,6 @@
     if (typeof document === 'undefined') return 0
     return parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--kb')) || 0
-  }
-
-  /** Ridica podeaua la inaltimea STIUTA a tastaturii, inainte ca ea sa urce.
-   *  Intoarce cat a prevazut (0 = nimic de prevazut: nu stim inca inaltimea,
-   *  sau tastatura e deja sus). Expira singura daca masuratoarea nu vine. */
-  export function prevedeTastatura() {
-    if (!kbStiut || typeof document === 'undefined' || kbAcum() > 0) return 0
-    prevazut = true
-    tPrevedere = performance.now()
-    urmaEvent('prevedere', { kb: kbStiut, lat: latStiuta })
-    scrieKb(kbStiut)
-    clearTimeout(ceasPrevedere)
-    ceasPrevedere = setTimeout(() => {
-      if (!prevazut) return
-      prevazut = false
-      if (vv) scrie({ type: 'resize' })
-      else scrieKb(0)
-    }, 1200)
-    return kbStiut
-  }
-
-  /** Latenta stiuta a tastaturii (focus -> tastatura sus), sau 0. */
-  export function latentaTastaturii() { return latStiuta }
-
-  /** Prevederea se retrage cand foaia care a cerut-o pleaca fara ca tastatura
-   *  sa fi venit; altfel urmatoarea foaie s-ar naste ridicata degeaba. */
-  export function uitaPrevederea() {
-    if (!prevazut) return
-    prevazut = false
-    clearTimeout(ceasPrevedere)
-    if (vv) scrie({ type: 'resize' })
-    else scrieKb(0)
   }
 
   // Jurnalul de pe aparat vede si focusul: de la el porneste IME-ul.
@@ -279,18 +181,26 @@
   // gestul din continut e oprit dinadins (vezi `tastaturaSus`) si atunci `X`-ul
   // chiar e singura iesire vizibila. Pe desktop nu schimba nimic — acolo coltul
   // e la un centimetru de cursor, nu la celalalt capat al mainii.
-  // `cuTastatura`: foaia isi focalizeaza singura un camp la deschidere, deci
-  // tastatura VINE sigur. Atunci podeaua se ridica dinainte, la inaltimea stiuta
-  // a tastaturii (vezi `prevedeTastatura` in <script module>), ca foaia sa urce o
-  // singura data. Se cere explicit: o foaie din care doar alegi nu are de ce sa
-  // se nasca ridicata.
   // `inalt`: foaia are DOUA trepte oricare i-ar fi continutul — mijloc (unde se
   // deschide) si ecranul plin — pentru continut care nu incape niciodata intr-o
   // foaie dimensionata dupa el (panoul zilei din Calendar). A insemnat „se
   // deschide direct intinsa" (Ion, 2026-08-10); pe 2026-08-21 Ion a cerut invers:
   // „sa nu apara din prima pe toata pagina, dar sa nu fie text taiat" — deci
   // treapta de mijloc, cu corpul care deruleaza, si intinderea la un gest.
-  let { open = $bindable(false), title = '', size = 'md', inalt = false, iesireGest = false, cuTastatura = false, children, footer, onclose } = $props()
+  // `pagina`: PE TELEFON foaia e o PAGINA ancorata SUS, pe tot ecranul — pentru o
+  // foaie in care SCRII din prima clipa (adaugarea de task, proiectul nou).
+  //
+  // DE CE. O foaie ancorata jos, cu un camp care isi cheama tastatura, trebuie sa
+  // URCE cand vine tastatura — si nimeni nu stie CAND vine: Gboard pe un Honor
+  // porneste la o latenta pe care n-o putem masura de aici, o raporteaza cadru
+  // cu cadru sau dintr-o data. Trei runde de prevedere si coregrafie (vezi
+  // nota din <script module>) au ramas „nu e bine inca" (Ion, 2026-08-21). O pagina
+  // ancorata SUS nu are problema: campul sta in capul ecranului si nu se misca
+  // NICIODATA; tastatura, cand vine, acopera doar partea de jos a listei
+  // (inaltimea scade cu `--kb`, dar marginea de jos e sub tastatura, deci nimic
+  // vizibil nu se misca). O singura miscare — foaia urca 280ms — si gata.
+  // Fara trepte: o pagina nu se intinde; se inchide din antet / „inapoi".
+  let { open = $bindable(false), title = '', size = 'md', inalt = false, iesireGest = false, pagina = false, children, footer, onclose } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
   let corpEl = $state(null)
@@ -310,7 +220,7 @@
   // deruleaza, pagina dinauntru cu scroll propriu), deci nu intra in masinaria
   // treptelor — ar fi doua reguli peste aceeasi inaltime. Gestul de coborare il
   // are si el: `trasY` merge pe orice foaie.
-  const cuTrepte = $derived(sheet && size !== 'doc')
+  const cuTrepte = $derived(sheet && size !== 'doc' && !pagina)
 
   // Foaia de dedesubt, cand peste ea s-a deschis alta. Vezi `.acoperit` in CSS.
   const acoperit = $derived(nivel > 0 && nivel < stiva.varf)
@@ -421,40 +331,10 @@
       // ajunge deja 0 si n-ar mai fi nimic de inghetat. `kbAcum()` ramane
       // rezerva pentru inchiderile venite din afara, care nu trec prin
       // `inchide()`.
-      // LA INTRARE, daca podeaua e deja ridicata (tastatura prevazuta sau deja
-      // sus), drumul porneste tot de sub marginea ECRANULUI, nu de sub marginea
-      // podelei: foaia urca prin locul tastaturii care urca si ea, in acelasi
-      // timp — o singura miscare, nu doua. Nu se ingheata nimic la intrare:
-      // masuratoarea reala trebuie sa poata inca sa corecteze prevederea.
-      const kb = laIntrare ? kbAcum() : (kbLaInchidere ?? kbAcum())
-      if (!laIntrare && kb && backdropEl) backdropEl.style.setProperty('--kb', kb + 'px')
-      // URCAREA IN DOI TIMPI, cand tastatura e PREVAZUTA si ii stim latenta.
-      // Timpul 1 (0 .. 280): foaia urca de sub ecran pana pe marginea lui, pe
-      // curba si durata ei de sosire — ca orice foaie. Apoi STA pe margine,
-      // unde i-ar fi locul fara tastatura. Timpul 2 (L-200 .. L): urca cei `kb`
-      // px odata cu tastatura, care exact atunci isi face propria urcare
-      // (~200ms) — asa se poarta o foaie nativa peste un IME animat. Nicio
-      // asteptare in aer, nicio a doua sosire: cand `resize`-ul real ajunge,
-      // foaia e deja unde o lasa el. Un singur `css()` pe un ceas liniar, cu
-      // cate o curba pe fiecare timp.
-      if (laIntrare && kb && kbPrevazut) {
-        const L = latentaTastaturii() || 420
-        const total = Math.max(DUR_SLOW + KB_URCA, Math.min(L, 1200))
-        const a = DUR_SLOW / total
-        const b = (total - KB_URCA) / total
-        return {
-          duration: motionDuration(total), easing: (t) => t,
-          css: (t) => {
-            if (t <= a) {
-              const p = EASE(t / a)
-              return `transform: translateY(calc(${(1 - p) * 100}% + ${kb}px))`
-            }
-            if (t <= b) return `transform: translateY(${kb}px)`
-            const p = EASE((t - b) / (1 - b))
-            return `transform: translateY(${(1 - p) * kb}px)`
-          },
-        }
-      }
+      // La intrare `kb` e 0 (nicio foaie nu se mai naste cu tastatura sus);
+      // formula ramane una singura pentru ambele sensuri.
+      const kb = laIntrare ? 0 : (kbLaInchidere ?? kbAcum())
+      if (kb && backdropEl) backdropEl.style.setProperty('--kb', kb + 'px')
       return {
         duration, easing: curba,
         css: (t, u) => `transform: translateY(calc(${u * 100}% + ${u * kb}px))`,
@@ -694,9 +574,6 @@
   // citita de `reimprospateazaTrepte` si scrisa aici) — fara el efectul s-ar
   // re-porni singur, greseala pe care fisierul asta a facut-o deja o data la
   // stiva de niveluri si o are scrisa in `<script module>`.
-  /** Cat s-a prevazut pentru tastatura la deschiderea ASTEIA. */
-  let kbPrevazut = 0
-
   // ===== UN CLIC CONTEAZA DOAR DACA A INCEPUT PE FOAIE =====
   // Foaia de actiuni soseste SUB deget, la apasare lunga. Ridicarea degetului
   // produce un `click` — iar el aterizeaza pe ce e acum sub deget: un rand al
@@ -728,10 +605,10 @@
       voalP = 1
       hFoaie = null
       treapta = 0
-      intins = false
+      // `pagina` sta pe treapta de sus din primul cadru — e treapta ei unica.
+      intins = sheet && pagina
       apasatInauntru = false
       if (sheet) urmaStart(title || size)
-      if (sheet && cuTastatura) kbPrevazut = prevedeTastatura()
     })
   })
 
@@ -749,12 +626,7 @@
     })
     // Ceasul de predare a inaltimii nu are voie sa supravietuiasca foii: ar
     // scrie pe starea unei componente inchise.
-    return () => {
-      clearTimeout(ceasPredare)
-      // Foaia a plecat: daca tastatura prevazuta n-a venit intre timp,
-      // prevederea se retrage odata cu ea.
-      if (kbPrevazut) { kbPrevazut = 0; uitaPrevederea() }
-    }
+    return () => clearTimeout(ceasPredare)
   })
 
 

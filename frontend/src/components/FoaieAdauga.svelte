@@ -366,10 +366,11 @@
      pironit la 46 — deci latimea se duce toata in coloana din mijloc, unde stau
      exact cele doua lucruri lungi: titlul si numele lucrarii. La 560 se taiau
      amandoua pe un ecran care avea 1440. -->
-<!-- `cuTastatura`: campul se focalizeaza singur (vezi efectul de mai sus), deci
-     foaia se naste cu podeaua deja ridicata la inaltimea stiuta a tastaturii —
-     o singura urcare, odata cu ea, nu una pana jos si inca una cand soseste. -->
-<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="lg" cuTastatura>
+<!-- `pagina`: pe telefon foaia e o pagina ancorata SUS. Campul sta in capul
+     ecranului si nu se misca niciodata, oricand ar veni tastatura — ea acopera
+     doar coada listei. Vezi nota lunga de la `pagina` in Modal.svelte; e a patra
+     si ultima forma a foii asteia pe telefon, si singura care nu ghiceste nimic. -->
+<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="lg" pagina>
   <div class="fa">
     <!-- RANDUL DE SUS *ESTE* CAMPUL: 56px, lupa 17, text 16 (sub 16 Safari face
          zoom la focus), si contorul „N din M" in mono la dreapta — cifre care se
@@ -759,6 +760,9 @@
        vechiul plafon de 46dvh — iar fara ea foaia nu ajunge sa para un ecran plin.
        Regula e acum a foii, nu a telefonului (vezi `.fa` mai sus): aici ramane
        doar TREAPTA, fiindca pe telefon peste foaie mai vine si tastatura. */
-    .fa { flex-basis: 58dvh; }
+    /* Pagina: corpul umple tot ce ramane sub antet. Inaltimea foii o da
+       `.intins` (100dvh - kb), deci lista se scurteaza sub tastatura si
+       deruleaza; randul de jos ramane accesibil derulind, sub ea. */
+    .fa { flex: 1 1 auto; }
   }
 </style>

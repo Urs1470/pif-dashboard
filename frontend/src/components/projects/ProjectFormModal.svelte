@@ -97,9 +97,10 @@
   }
 </script>
 
-<!-- `cuTastatura`: numele primeste focusul la deschidere (mai sus), deci
-     tastatura vine sigur — foaia se naste deja ridicata deasupra ei. -->
-<Modal bind:open title={isEdit ? 'Editează proiectul' : 'Proiect nou'} size="md" cuTastatura>
+<!-- `pagina`: numele primeste focusul la deschidere (mai sus), deci tastatura
+     vine sigur — pe telefon formularul e o pagina ancorata sus, ca nimic sa nu
+     se mute cand vine ea (vezi `pagina` in Modal.svelte). -->
+<Modal bind:open title={isEdit ? 'Editează proiectul' : 'Proiect nou'} size="md" pagina>
   <!-- `id` + `form="pf-form"` pe butonul din subsol: ENTER TREBUIE SA SALVEZE.
        Butonul de salvare e randat de `Modal` in slotul `footer`, deci in AFARA
        elementului `<form>`. Fara el, formularul ramane fara `type="submit"`, iar
