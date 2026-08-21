@@ -1,0 +1,1 @@
+import{G as e,et as t,tt as n}from"./Select-C_pmqAw4.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=t(a,r),s=[[`path`,{d:`M9 14 4 9l5-5`}],[`path`,{d:`M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11`}]];e(i,n({name:`undo-2`},()=>o,{get iconNode(){return s}}))}export{i as t};

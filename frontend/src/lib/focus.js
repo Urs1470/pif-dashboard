@@ -71,22 +71,47 @@ export function morphNavigate(sourceEl, path, kind, id) {
 export function focusOnLand(node, key) {
   function maybe() {
     if (!key || router.query.focus !== key) return
-    // Consume: drop ?focus from the URL (no navigation) so re-renders don't re-fire.
-    // DOAR focus — restul query-ului (ex. sfera=personal) ramane in URL, altfel
-    // un refresh dupa aterizare ar schimba vederea.
-    try {
-      const rest = Object.entries(router.query)
-        .filter(([k, v]) => k !== 'focus' && v != null && v !== '')
-        .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
-        .join('&')
-      history.replaceState(null, '', '#' + router.path + (rest ? '?' + rest : ''))
-    } catch (_) {}
-    router.query = { ...router.query, focus: undefined }
+
+    // CHEIA SE CONSUMA CAND SE SI FOLOSESTE, NU CAND SE GASESTE.
+    //
+    // Aici statea, tacut, motivul pentru care „nu toate trimiterile de pe Acasa
+    // hasureaza" (Ion, 2026-08-21). Consumarea se facea AICI, la montarea
+    // randului, iar hasura se punea abia in `requestAnimationFrame` — un cadru
+    // mai tarziu. Intre cele doua, lista se re-randeaza: randurile sunt cheiate
+    // pe `t.id`, dar sunt GRUPATE, iar cand datele proaspete muta un task dintr-o
+    // grupa in alta, blocul lui e desfacut si refacut. Nodul vechi ramane
+    // detasat, clasa i se pune lui — invizibila — iar nodul NOU nu mai are ce
+    // potrivi, fiindca `?focus=` disparuse deja din URL.
+    //
+    // Masurat pe telefon (390x844): `classList.add('focus-flash')` chemat la
+    // 82ms, `.focus-flash` niciodata prezent in document, esantionat la 8ms timp
+    // de 2,5 secunde. De-aia mergea uneori — cand datele erau deja calde si lista
+    // nu se mai re-randa, nodul supravietuia cadrului.
+    //
+    // Acum se consuma in cadrul urmator, si DOAR daca nodul mai e in pagina.
+    // Daca a fost inlocuit, `?focus=` ramane in URL si randul nou il gaseste.
+    const consuma = () => {
+      // DOAR focus — restul query-ului (ex. sfera=personal) ramane in URL, altfel
+      // un refresh dupa aterizare ar schimba vederea.
+      try {
+        const rest = Object.entries(router.query)
+          .filter(([k, v]) => k !== 'focus' && v != null && v !== '')
+          .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+          .join('&')
+        history.replaceState(null, '', '#' + router.path + (rest ? '?' + rest : ''))
+      } catch (_) {}
+      router.query = { ...router.query, focus: undefined }
+    }
 
     const morphing = !!(morphPending && morphPending.key === key)
     const releaseMorph = morphing ? morphPending.resolve : null
 
     requestAnimationFrame(() => {
+      // Nodul poate fi INLOCUIT intre montare si cadrul asta (vezi nota de mai
+      // sus). Atunci nu se consuma si nu se marcheaza nimic: randul care ii ia
+      // locul gaseste `?focus=` intact si isi face el aterizarea.
+      if (!node.isConnected) return
+      consuma()
       // Keep the sticky header from covering the target near the top.
       node.style.scrollMarginTop = 'calc(var(--header-height) + var(--space-md))'
       node.style.scrollMarginBottom = 'var(--space-md)'
