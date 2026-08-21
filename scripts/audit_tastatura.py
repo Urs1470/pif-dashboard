@@ -47,6 +47,8 @@ from audit_foaie import (PIN_TEST, TELEFON, apuca, bifa, esecuri, misca, out,
 
 DESKTOP = {'width': 1280, 'height': 800}
 KB = 312   # inaltimea tastaturii emulate, in px — cat are o tastatura Gboard pe 844
+LAT = 420  # ms de la focus pana cand IME-ul e sus — masurat ca ordin de marime pe WebView
+KB_URCA = 200  # cat dureaza urcarea tastaturii insasi (vezi `KB_URCA` in Modal)
 
 # Tastatura falsa + urma per cadru. `__kbH` = cat urca la focus (0 = nu vine deloc,
 # pentru proba de expirare). `__urma` retine, la fiecare cadru, geometria foii.
@@ -66,7 +68,7 @@ INIT = r"""
   window.__tastatura = (h) => { kb = h; fake.dispatchEvent(new Event('resize')) };
   window.__kb = () => kb;
   const edit = (el) => !!el && !!el.matches && el.matches('input:not([type=checkbox]):not([type=radio]), textarea, [contenteditable="true"]');
-  document.addEventListener('focusin', e => { if (edit(e.target)) setTimeout(() => { if (edit(document.activeElement) && window.__kbH) window.__tastatura(window.__kbH) }, 250) }, true);
+  document.addEventListener('focusin', e => { if (edit(e.target)) setTimeout(() => { if (edit(document.activeElement) && window.__kbH) window.__tastatura(window.__kbH) }, %d) }, true);
   document.addEventListener('focusout', () => { setTimeout(() => { if (!edit(document.activeElement)) window.__tastatura(0) }, 60) }, true);
   window.__urma = []; let pornita = false;
   window.__porneste = () => { window.__urma = []; pornita = true; window.__t0 = performance.now() };
@@ -82,7 +84,7 @@ INIT = r"""
     requestAnimationFrame(s);
   })();
 })();
-""" % KB
+""" % (KB, LAT)
 
 # Telefonul lui Ion are edge-to-edge: safe-area reala. Pe emulator e 0, si exact
 # asa au trecut neobservate doua runde de reparatii la foaia zilei.
@@ -182,6 +184,15 @@ def main():
                      'a doua miscare a fost de %d px' % cadre_in_repaus(u1, 330),
                      'a doua miscare: %d px' % cadre_in_repaus(u1, 330))
                 inchide_tot(page)
+                # A doua deschidere invata LATENTA (prima a invatat doar inaltimea).
+                fab = page.query_selector('.fab')
+                x, y = centru(fab)
+                tap(cdp, page, x, y, 1100)
+                lat = page.evaluate("localStorage.getItem('pif-kb-lat')")
+                bifa(lat is not None and abs(int(lat) - LAT) <= 80,
+                     'latenta tastaturii se invata (focus -> tastatura sus)',
+                     'pif-kb-lat=%r, asteptat ~%d' % (lat, LAT), '%s ms' % lat)
+                inchide_tot(page)
 
                 fab = page.query_selector('.fab')
                 x, y = centru(fab)
@@ -198,12 +209,33 @@ def main():
                          '%d..%d px' % (min(inaltimi), max(inaltimi)), '%d px' % inaltimi[0])
                     topuri = [q['top'] for q in cu_foaie]
                     urca = all(b_ <= a_ + 1 for a_, b_ in zip(topuri, topuri[1:]))
-                    bifa(urca, 'foaia urca o singura data, fara sa coboare pe drum',
+                    bifa(urca, 'foaia urca fara sa coboare pe drum',
                          'topuri: %s' % topuri[:40])
-                    a_doua = cadre_in_repaus(u2, 330)
-                    bifa(a_doua <= 2, 'dupa ce s-a asezat, sosirea tastaturii n-o mai misca',
-                         'a mai urcat %d px dupa 330 ms' % a_doua, 'a doua miscare: %d px' % a_doua)
-                    asezata = [q for q in cu_foaie if q['t'] >= 330]
+                    # COREGRAFIA IN DOI TIMPI: pana la marginea ecranului in 280ms,
+                    # o ASEZARE pe margine (exact unde i-ar fi locul fara tastatura),
+                    # apoi cei KB px odata cu tastatura, terminand la latenta
+                    # invatata (~LAT). Ce NU are voie: sa stea in aer intre cele
+                    # doua pozitii, si sa mai urce dupa ce a ajuns sus.
+                    jos_ecran = TELEFON['height']
+                    pe_margine = [q for q in cu_foaie if abs(q['top'] + q['h'] - jos_ecran) <= 2]
+                    bifa(len(pe_margine) >= 2, 'se aseaza intai pe marginea ecranului (timpul 1)',
+                         'niciun cadru cu foaia pe margine; topuri: %s' % topuri[:30],
+                         '%d cadre pe margine' % len(pe_margine))
+                    final = cu_foaie[-1]['top']
+                    t_final = next(q['t'] for q in cu_foaie if q['top'] <= final + 1)
+                    bifa(LAT - 80 <= t_final <= max(LAT, 480) + 120,
+                         'ajunge sus ODATA cu tastatura (latenta invatata), nu inaintea ei',
+                         'sus la %d ms, tastatura la ~%d' % (t_final, LAT), '%d ms' % t_final)
+                    in_aer = [q for q in cu_foaie if 3 < (q['top'] + q['h']) - (jos_ecran - KB) < KB - 3]
+                    # cadrele „in aer" sunt doar cele in miscare: doua cadre consecutive
+                    # cu acelasi top ar fi o pauza intre pozitii.
+                    pauze = sum(1 for a_, b_ in zip(in_aer, in_aer[1:]) if a_['top'] == b_['top'])
+                    bifa(pauze == 0, 'nu se opreste in aer intre margine si tastatura',
+                         '%d cadre oprite intre pozitii' % pauze)
+                    a_doua = cadre_in_repaus(u2, t_final + 40)
+                    bifa(a_doua <= 2, 'odata ajunsa sus, nu se mai misca',
+                         'a mai urcat %d px dupa %d ms' % (a_doua, t_final))
+                    asezata = [q for q in cu_foaie if q['t'] >= t_final]
                     if asezata:
                         bifa(asezata[-1]['top'] + asezata[-1]['h'] <= TELEFON['height'] - KB + 1,
                              'foaia sta in intregime deasupra tastaturii',
@@ -299,6 +331,21 @@ def main():
             randuri = page.query_selector_all('.gl-fata')
             nr = len(randuri)
             if nr:
+                # PRIMA apasare lunga de pe pagina: foaia e creata odata cu
+                # componenta ei, si fara `|global` aparea instant (Ion: „prima
+                # data animatia este rupta"). Se masoara ca foaia URCA.
+                x, y = centru(randuri[1])
+                def lung():
+                    apuca(cdp, x, y)
+                    page.wait_for_timeout(470)
+                    ridica(cdp, page, 0)
+                u = urma(page, lung, 900)
+                topuri = [q['top'] for q in u if q['top'] is not None]
+                bifa(len(set(topuri)) >= 6 and topuri[0] > topuri[-1] + 150,
+                     'PRIMA foaie de actiuni urca de jos, nu apare instant',
+                     'topuri: %s' % topuri[:12], '%d cadre in miscare' % len(set(topuri)))
+                inchide_tot(page)
+                randuri = page.query_selector_all('.gl-fata')
                 # Randul de JOS: degetul ajunge exact peste foaia care soseste.
                 x, y = centru(randuri[min(nr - 1, 6)])
                 apuca(cdp, x, y)
@@ -411,6 +458,44 @@ def main():
                     bifa(page.query_selector('.subtask-body:not(.modal .subtask-body)') is None,
                          'nimic nu se mai desface in lista', 'a ramas un .subtask-body in lista')
                     inchide_tot(page)
+
+            # ===== 9. ATERIZAREA DE PE „ASTĂZI" =====
+            out('\n--- atingerea unui task de pe Acasa: aterizare hasurata ---')
+            mergi(page, baza, '/', 1800)
+            randuri = page.query_selector_all('.gl-fata')
+            if len(randuri) < 2:
+                bifa(False, 'boardul de azi are randuri', 'doar %d' % len(randuri))
+            else:
+                x, y = centru(randuri[1])
+                page.evaluate("""() => { window.__A = []; window.__ag = true; (function s() {
+                  if (window.__ag) window.__A.push({ t: Math.round(performance.now()), h: location.hash });
+                  requestAnimationFrame(s) })() }""")
+                tap(cdp, page, x, y, 2200)
+                A = page.evaluate('window.__ag = false; window.__A')
+                # Ecranul nu are voie sa inghete: intre doua cadre consecutive nu
+                # trec mai mult de ~160ms (morph-ul ingheta 600-750).
+                goluri = max((b_['t'] - a_['t']) for a_, b_ in zip(A, A[1:])) if len(A) > 1 else 0
+                bifa(goluri < 160, 'ecranul nu ingheata la atingere (fara morph pe telefon)',
+                     'cel mai lung gol intre cadre: %d ms' % goluri, 'gol maxim %d ms' % goluri)
+                ajuns = page.evaluate('location.hash')
+                bifa('/projects/' in ajuns or '/tasks' in ajuns, 'a ajuns la pagina taskului', ajuns)
+                rand = page.evaluate("""() => {
+                  const f = document.querySelector('.focus-flash');
+                  if (!f) return null;
+                  const r = f.getBoundingClientRect();
+                  const dock = document.querySelector('.dock');
+                  const jos = dock ? dock.getBoundingClientRect().top : window.innerHeight;
+                  const sus = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 0;
+                  const fata = f.querySelector('.gl-fata');
+                  const anim = fata ? getComputedStyle(fata, '::after').animationName : getComputedStyle(f).animationName;
+                  return { top: Math.round(r.top), bottom: Math.round(r.bottom), sus, jos: Math.round(jos), anim } }""")
+                bifa(rand is not None, 'randul-tinta e hasurat (`.focus-flash`) la 2 s dupa atingere', 'niciun .focus-flash')
+                if rand:
+                    bifa(rand['top'] >= rand['sus'] - 1 and rand['bottom'] <= rand['jos'] + 1,
+                         'randul-tinta sta intre antet si dock, nu sub ele',
+                         '%d..%d, vizibil %d..%d' % (rand['top'], rand['bottom'], rand['sus'], rand['jos']))
+                    bifa(rand['anim'] == 'focusFlash', 'hasura se vede pe fata randului (nu sub ea)',
+                         'animationName=%s' % rand['anim'])
 
             bifa(not erori, 'nicio eroare de pagina pe tot parcursul', ' | '.join(erori)[:300])
             ctx.close()

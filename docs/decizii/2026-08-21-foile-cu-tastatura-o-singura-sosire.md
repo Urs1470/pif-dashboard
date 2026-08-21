@@ -69,3 +69,25 @@ Ce NU acoperă: aparatul real. Emularea trece prin același cod ca telefonul, da
 WebView-ul Capacitor `visualViewport` nu raportează tastatura (edge-to-edge fără tratarea
 insetului IME), toată mașinăria primește 0 — atunci reparația e nativă (inset listener pe
 WebView), nu în CSS.
+
+## Runda a doua (aceeași zi), după proba pe telefon
+
+Ion, cu prevederea în funcțiune: „modalul se ridică prea sus, apoi după câteva clipe
+apare tastatura android." Corect — foaia ajungea la locul final în 280 ms și stătea în
+aer până sosea IME-ul. **Și latența se învață** (`pif-kb-lat`, de la prevedere la primul
+`resize` cu tastatura, netezită), iar urcarea e coregrafiată în doi timpi într-un singur
+`css()`: 280 ms până pe marginea ecranului (locul ei fără tastatură), așezare acolo, apoi
+cei `kb` px în ultimele 200 ms — exact cât urcă tastatura însăși. Nicio pauză în aer.
+
+Tot atunci:
+- **Prima apăsare lungă apărea instant** — `{#if task}<Modal>` creează componenta odată cu
+  `open`, iar Svelte nu joacă tranzițiile locale la prima randare. `|global` pe toate patru
+  tranzițiile din `Modal`: sosirea e a foii, oricine ar fi creat-o.
+- **Foaia zilei se deschide pe treapta de mijloc** (`inalt` = două trepte), nu pe tot ecranul;
+  sus e la un gest. Răstoarnă decizia din 2026-08-10, la cererea lui Ion.
+- **Aterizarea din Acasă/Planificator**: pe atingere nu mai există morph (îngheța ecranul
+  744 ms așteptând rândul-țintă); rândul e adus între antet și dock (nu doar „în fereastră"),
+  iar hașura e reală — 22 % accent + inel 2 px, pe fața rândului (`.gl-fata` e opacă),
+  2 s, pornită după ce derularea s-a așezat.
+- **Din foaia zilei către proiect**: foaia coboară întâi (220 ms, ruta se încălzește între
+  timp), pagina pleacă după ea — nu mai e dizolvată în instantaneul View Transition.

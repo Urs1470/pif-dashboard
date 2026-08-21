@@ -28,7 +28,16 @@ export function focusHref(path, kind, id) {
 // Navigate to a task and morph the clicked element into the destination row.
 export function morphNavigate(sourceEl, path, kind, id) {
   const href = focusHref(path, kind, id)
-  if (!sourceEl || !viewTransitionsOn()) { navigate(href); return }
+  // PE TELEFON NU EXISTA MORPH. Tranzitia cu element partajat INGHEATA ecranul
+  // pana cand pagina-tinta si-a montat randul — masurat: 744ms fara niciun cadru
+  // dupa atingerea unui task de pe „Astăzi" — si abia apoi joaca o alunecare de
+  // 300ms. Pe desktop, cu datele in cache si mouse-ul deja pe rand, e invizibil;
+  // cu degetul, prin tunel, e exact senzatia de „nu s-a intamplat nimic". Ion:
+  // „tranzitia de pe taskurile de acasa trebuie rafinata." Pe atingere se
+  // navigheaza ca oriunde (alunecarea de ruta), iar aterizarea face restul:
+  // randul vine in centru si se HASUREAZA (vezi `focusOnLand`).
+  const atingere = typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches
+  if (!sourceEl || !viewTransitionsOn() || atingere) { navigate(href); return }
 
   sourceEl.style.viewTransitionName = VT_NAME
   let resolveReady
@@ -83,7 +92,16 @@ export function focusOnLand(node, key) {
       node.style.scrollMarginBottom = 'var(--space-md)'
       const r = node.getBoundingClientRect()
       const vh = window.innerHeight || document.documentElement.clientHeight
-      const needsScroll = r.top < 0 || r.bottom > vh
+      // „LA VEDERE" INSEAMNA INTRE ANTET SI DOCK, nu oriunde in fereastra. Randul
+      // tinta cadea la 780px pe un ecran de 844 — „in fereastra", deci fara
+      // derulare — adica sub dock si sub butonul plutitor. Pe telefon zona
+      // vizibila se termina deasupra dockului; antetul lipicios o incepe mai jos.
+      const stil = getComputedStyle(document.documentElement)
+      const sus = parseFloat(stil.getPropertyValue('--header-height')) || 0
+      const dock = document.querySelector('.dock')
+      const jos = dock && dock.getBoundingClientRect().height && getComputedStyle(dock).position === 'fixed'
+        ? dock.getBoundingClientRect().top - 8 : vh
+      const needsScroll = r.top < sus || r.bottom > jos
 
       if (morphing) {
         // Land at the final position INSTANTLY so the morph animates the card to
@@ -98,10 +116,17 @@ export function focusOnLand(node, key) {
         try { node.scrollIntoView({ behavior: motion.reduced ? 'auto' : 'smooth', block: 'center' }) } catch (_) { node.scrollIntoView() }
       }
 
-      node.classList.add('focus-flash')
-      const clear = () => node.classList.remove('focus-flash')
-      node.addEventListener('animationend', clear, { once: true })
-      setTimeout(clear, 1700)
+      // HASURA PORNESTE DUPA CE DERULAREA S-A ASEZAT, nu in timpul ei: o
+      // evidentiere care ruleaza cat timp lista inca se misca se pierde —
+      // ochiul urmareste miscarea, nu culoarea. Cu derulare lina, ~320ms.
+      const porneste = () => {
+        node.classList.add('focus-flash')
+        const clear = () => node.classList.remove('focus-flash')
+        node.addEventListener('animationend', clear, { once: true })
+        setTimeout(clear, 2400)
+      }
+      if (needsScroll && !morphing && !motion.reduced) setTimeout(porneste, 320)
+      else porneste()
     })
   }
   maybe()

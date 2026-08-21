@@ -579,10 +579,32 @@ input:focus, select:focus, textarea:focus {
    duce la el (scroll smooth la centru) si il pulseaza scurt. Tine accentul, apoi se
    stinge lin — coerent cu restul micro-animatiilor (var(--ease)). */
 @keyframes focusFlash {
-  0%, 45% { background-color: var(--accent-subtle); box-shadow: inset 0 0 0 1.5px var(--accent); }
-  100%    { background-color: transparent; box-shadow: inset 0 0 0 1.5px transparent; }
+  /* APRINDERE SCURTA, TINERE LUNGA, STINGERE LINA. Tenta subtila de accent nu
+     se vedea („vreau sa-mi fie hasurat taskul pe care am dat click" — Ion):
+     pe fond deschis e aproape alb. Acum: 22% accent in oklab plus inel de 2px,
+     aprins in 10% din drum (~200ms), tinut pana la 60% (~1,2s), stins pana la
+     capat. Doua secunde, fiindca randul trebuie gasit si dupa ce ochiul a
+     terminat de urmarit derularea. */
+  0%        { background-color: transparent; box-shadow: inset 0 0 0 2px transparent; }
+  10%, 60%  { background-color: color-mix(in oklab, var(--accent) 22%, transparent); box-shadow: inset 0 0 0 2px var(--accent); }
+  100%      { background-color: transparent; box-shadow: inset 0 0 0 2px transparent; }
 }
-.focus-flash { animation: focusFlash 1.5s var(--ease); }
+.focus-flash { animation: focusFlash 2s var(--ease); }
+/* Pe telefon fata randului (`.gl-fata`, pista de glisare) e OPACA si sta peste
+   `.trow`, deci hasura de pe rand nu se vedea deloc. Hasura urca pe fata, ca
+   strat peste continut — nu ca fundal, fiindca fundalul ei e culoarea
+   suprafetei si trebuie sa ramana. */
+@media (max-width: 768px) {
+  .focus-flash > .gl-fata::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    border-radius: inherit;
+    animation: focusFlash 2s var(--ease);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .focus-flash { animation: none; background-color: var(--accent-subtle); }
 }

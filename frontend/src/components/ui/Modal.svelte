@@ -79,6 +79,23 @@
   let ceasPrevedere = null
   const vv = typeof window !== 'undefined' ? (window.visualViewport || null) : null
 
+  // ===== SI LATENTA TASTATURII SE INVATA, NU DOAR INALTIMEA =====
+  // Ion, pe telefon, cu prevederea in functiune: „modalul se ridica prea sus,
+  // apoi dupa cateva clipe apare tastatura android." Corect: foaia ajungea la
+  // locul ei final in 280ms si statea IN AER pana sosea tastatura — pe WebView
+  // IME-ul porneste la zeci-sute de ms dupa focus si mai urca el insusi ~200ms.
+  // Cat dureaza de la focus pana la tastatura e, ca si inaltimea, o constanta a
+  // aparatului: se masoara (de la prevedere la primul `resize` cu tastatura) si
+  // se tine minte, netezita. Cu ea, urcarea foii se COREGRAFIAZA (vezi `intra`):
+  // intai pana la marginea ecranului, apoi — exact cand porneste tastatura — cu
+  // ea, cei `kb` px. O singura miscare, in doi timpi, fara pauza in aer.
+  const CHEIE_LAT = 'pif-kb-lat'
+  /** Cat urca tastatura Android prin propria ei animatie, in ms. */
+  const KB_URCA = 200
+  let latStiuta = 0
+  try { latStiuta = parseInt(localStorage.getItem(CHEIE_LAT) || '', 10) || 0 } catch (_) {}
+  let tPrevedere = 0
+
   function scrieKb(kb) {
     const html = document.documentElement
     html.style.setProperty('--kb', kb + 'px')
@@ -95,8 +112,18 @@
     // care aduce campul la vedere) nu o strica: tastatura inca urca. Doar un
     // `resize` spune adevarul despre ea, in ambele sensuri.
     if (prevazut && kb === 0 && e?.type !== 'resize') return
+    if (kb > 0 && prevazut && tPrevedere) {
+      // Prima masuratoare se ia intreaga; urmatoarele se netezesc (o deschidere
+      // cu telefonul ocupat n-are voie sa mute singura contractul).
+      const lat = Math.round(performance.now() - tPrevedere)
+      if (lat > 0 && lat < 2000) {
+        latStiuta = latStiuta ? Math.round(latStiuta * 0.6 + lat * 0.4) : lat
+        try { localStorage.setItem(CHEIE_LAT, String(latStiuta)) } catch (_) {}
+      }
+    }
     if (kb > 0 || e?.type === 'resize') {
       prevazut = false
+      tPrevedere = 0
       clearTimeout(ceasPrevedere)
     }
     if (kb > 0 && kb !== kbStiut) {
@@ -129,6 +156,7 @@
   export function prevedeTastatura() {
     if (!kbStiut || typeof document === 'undefined' || kbAcum() > 0) return 0
     prevazut = true
+    tPrevedere = performance.now()
     scrieKb(kbStiut)
     clearTimeout(ceasPrevedere)
     ceasPrevedere = setTimeout(() => {
@@ -139,6 +167,9 @@
     }, 1200)
     return kbStiut
   }
+
+  /** Latenta stiuta a tastaturii (focus -> tastatura sus), sau 0. */
+  export function latentaTastaturii() { return latStiuta }
 
   /** Prevederea se retrage cand foaia care a cerut-o pleaca fara ca tastatura
    *  sa fi venit; altfel urmatoarea foaie s-ar naste ridicata degeaba. */
@@ -210,6 +241,12 @@
   // a tastaturii (vezi `prevedeTastatura` in <script module>), ca foaia sa urce o
   // singura data. Se cere explicit: o foaie din care doar alegi nu are de ce sa
   // se nasca ridicata.
+  // `inalt`: foaia are DOUA trepte oricare i-ar fi continutul — mijloc (unde se
+  // deschide) si ecranul plin — pentru continut care nu incape niciodata intr-o
+  // foaie dimensionata dupa el (panoul zilei din Calendar). A insemnat „se
+  // deschide direct intinsa" (Ion, 2026-08-10); pe 2026-08-21 Ion a cerut invers:
+  // „sa nu apara din prima pe toata pagina, dar sa nu fie text taiat" — deci
+  // treapta de mijloc, cu corpul care deruleaza, si intinderea la un gest.
   let { open = $bindable(false), title = '', size = 'md', inalt = false, iesireGest = false, cuTastatura = false, children, footer, onclose } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
@@ -348,6 +385,33 @@
       // masuratoarea reala trebuie sa poata inca sa corecteze prevederea.
       const kb = laIntrare ? kbAcum() : (kbLaInchidere ?? kbAcum())
       if (!laIntrare && kb && backdropEl) backdropEl.style.setProperty('--kb', kb + 'px')
+      // URCAREA IN DOI TIMPI, cand tastatura e PREVAZUTA si ii stim latenta.
+      // Timpul 1 (0 .. 280): foaia urca de sub ecran pana pe marginea lui, pe
+      // curba si durata ei de sosire — ca orice foaie. Apoi STA pe margine,
+      // unde i-ar fi locul fara tastatura. Timpul 2 (L-200 .. L): urca cei `kb`
+      // px odata cu tastatura, care exact atunci isi face propria urcare
+      // (~200ms) — asa se poarta o foaie nativa peste un IME animat. Nicio
+      // asteptare in aer, nicio a doua sosire: cand `resize`-ul real ajunge,
+      // foaia e deja unde o lasa el. Un singur `css()` pe un ceas liniar, cu
+      // cate o curba pe fiecare timp.
+      if (laIntrare && kb && kbPrevazut) {
+        const L = latentaTastaturii() || 420
+        const total = Math.max(DUR_SLOW + KB_URCA, Math.min(L, 1200))
+        const a = DUR_SLOW / total
+        const b = (total - KB_URCA) / total
+        return {
+          duration: motionDuration(total), easing: (t) => t,
+          css: (t) => {
+            if (t <= a) {
+              const p = EASE(t / a)
+              return `transform: translateY(calc(${(1 - p) * 100}% + ${kb}px))`
+            }
+            if (t <= b) return `transform: translateY(${kb}px)`
+            const p = EASE((t - b) / (1 - b))
+            return `transform: translateY(${(1 - p) * kb}px)`
+          },
+        }
+      }
       return {
         duration, easing: curba,
         css: (t, u) => `transform: translateY(calc(${u * 100}% + ${u * kb}px))`,
@@ -621,7 +685,7 @@
       voalP = 1
       hFoaie = null
       treapta = 0
-      intins = sheet && inalt
+      intins = false
       apasatInauntru = false
       if (sheet && cuTastatura) kbPrevazut = prevedeTastatura()
     })
@@ -632,9 +696,12 @@
     untrack(() => {
       if (!sheet) return
       reimprospateazaTrepte()
-      // `inalt` sta DIRECT pe treapta de sus — fara `hFoaie`, deci fara
-      // tranzitie: inaltimea vine din clasa, adica e buna din primul cadru.
-      if (inalt && trepte.length > 1) treapta = trepte.length - 1
+      // `inalt` PORNESTE DE PE TREAPTA DE MIJLOC (Ion, 2026-08-21: „nu se
+      // poate sa apara din prima pe toata pagina"): de acolo se vede si ce e
+      // dedesubt — ziua atinsa in grila — iar continutul deruleaza inauntru.
+      // Treapta de sus ramane la un gest distanta. Inaltimea vine din clasa
+      // (`.mijloc`, in dvh), deci e buna din primul cadru, fara tranzitie.
+      treapta = 0
     })
     // Ceasul de predare a inaltimii nu are voie sa supravietuiasca foii: ar
     // scrie pe starea unei componente inchise.
@@ -915,6 +982,12 @@
 <svelte:window onkeydown={peEscape} />
 
 {#if open}
+  <!-- `|global` PE TOATE PATRU: fara el, o foaie creata ODATA cu componenta ei
+       (`{#if task}<Modal>` in FoaieTask, `{#if sheetTask}<Modal>` in Tasks si in
+       pagina proiectului) aparea INSTANT la prima deschidere — Svelte nu joaca
+       tranzitiile locale la prima randare a unui bloc-parinte — si abia de la a
+       doua urca de jos. Ion: „prima data animatia este rupta, dupa alte apasari
+       e corecta." Sosirea e a foii, oricine ar fi creat-o. -->
   <!-- VOALUL PLEACA ODATA CU FOAIA, NU INAINTEA EI. Era stins in --dur-fast
        (120ms), cand foaia mai avea inca ~170px de coborat: ultimele doua treimi
        ale inchiderii se jucau peste o pagina deja limpede si nedimuita, ca si cum
@@ -926,13 +999,13 @@
   <div class="backdrop" class:varf class:trage use:portal bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
        onpointerdowncapture={() => { apasatInauntru = true }} onclickcapture={pazesteClic}
        style:--nivel={nivel} style:--voal-p={voalP} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
-       in:fade={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
-       out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE_IESIRE }}>
+       in:fade|global={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
+       out:fade|global={{ duration: motionDuration(DUR_BASE), easing: EASE_IESIRE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
          class:acoperit class:gest={hFoaie !== null} class:mijloc={sheet && inalt && !intins}
          class:se-trage={trageManer}
          bind:this={sheetEl} style:--trasY="{trasY}px" style:--h-foaie={hFoaie === null ? null : `${hFoaie}px`}
-         in:intra out:intra>
+         in:intra|global out:intra|global>
       {#if panou}
         <!-- Manerul de latime. `<button>`, nu `<div>`: e un control, deci se
              vede la Tab si spune ce e. Nu are actiune la clic — tragerea ii e

@@ -299,11 +299,26 @@ def main():
             else:
                 zi.click()
                 page.wait_for_timeout(800)
-                sus = page.evaluate(MASOARA)
-                bifa(sus is not None and sus['intins'],
-                     'se deschide direct pe treapta de sus (`inalt`)',
-                     'nu s-a deschis' if sus is None else 'intins=%s' % sus['intins'],
-                     '%s px' % (sus and sus['vizibil']))
+                mij0 = page.evaluate(MASOARA)
+                # Ion, 2026-08-21: „nu se poate sa apara din prima pe toata
+                # pagina" — `inalt` a ajuns sa insemne „doua trepte", iar
+                # deschiderea e pe cea de MIJLOC; sus se ajunge dintr-un gest.
+                bifa(mij0 is not None and not mij0['intins']
+                     and 0.45 * TELEFON['height'] < mij0['vizibil'] < 0.7 * TELEFON['height'],
+                     'se deschide pe treapta de MIJLOC (`inalt` = doua trepte)',
+                     'nu s-a deschis' if mij0 is None else 'intins=%s, %s px' % (mij0['intins'], mij0['vizibil']),
+                     '%s px' % (mij0 and mij0['vizibil']))
+                sus = None
+                if mij0:
+                    cap_ = page.query_selector('.modal-header').bounding_box()
+                    x = cap_['x'] + cap_['width'] / 2
+                    # In sus: foaia urca pe treapta de sus.
+                    trage(page, cdp, x, cap_['y'] + cap_['height'] / 2, [-25] * 8)
+                    sus = page.evaluate(MASOARA)
+                    bifa(sus is not None and sus['intins'],
+                         'trasa in sus, urca pe treapta de sus',
+                         'inchisa' if sus is None else 'intins=%s' % sus['intins'],
+                         '%s -> %s px' % (mij0['vizibil'], sus and sus['vizibil']))
 
                 if sus:
                     cap_ = page.query_selector('.modal-header').bounding_box()
@@ -318,7 +333,7 @@ def main():
                          'a ramas deschisa')
                     if mij:
                         bifa(not mij['intins'] and mij['vizibil'] < sus['vizibil'] - 100,
-                             'se aseaza pe treapta de MIJLOC',
+                             'se aseaza inapoi pe treapta de MIJLOC',
                              '%s -> %s px' % (sus['vizibil'], mij['vizibil']))
 
                         # ...si inapoi in sus. Drumul e continuu in ambele sensuri.

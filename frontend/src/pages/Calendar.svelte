@@ -40,7 +40,7 @@
   import { fade, slide } from 'svelte/transition'
   import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
-  import { navigate, router } from '../lib/router.svelte.js'
+  import { navigate, router, preincarca } from '../lib/router.svelte.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { motion, motionDuration, alunecare, sosire, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   // `PROJECT_STATUS_LABELS` a plecat cu C14: sertarul „fara perioada" contine prin
@@ -95,6 +95,21 @@
   // peste grila, de fiecare data, fara s-o fi cerut nimeni. Deci: ziua ramane
   // insemnata in grila, iar foaia se ridica doar cand chiar atingi o zi.
   let foaieZi = $state(false)
+
+  /** DRUMUL DIN FOAIE CATRE PROIECT, IN DOI TIMPI (Ion: „tranzitiile din
+   *  calendar catre proiecte trebuiesc fluidizate"). `navigate` direct pornea
+   *  View Transition-ul cu foaia INCA pe ecran: instantaneul o prindea, apoi o
+   *  dizolva odata cu pagina — un obiect care pleaca prin alt mecanism decat
+   *  cel prin care a venit. Acum foaia coboara intai (drumul ei de iesire,
+   *  220ms), iar pagina pleaca abia dupa ce a plecat ea. Ruta se incalzeste in
+   *  aceeasi clipa, deci cele 220ms nu se aduna la asteptare, o acopera. */
+  function mergiLaProiect(id) {
+    const cale = `/projects/${id}`
+    if (!foaieZi) { navigate(cale); return }
+    preincarca(cale)
+    foaieZi = false
+    setTimeout(() => navigate(cale), motionDuration(DUR_BASE))
+  }
   // Coloana panoului exista doar cand are ce arata. Cand nu, grila e pe toata
   // latimea — ceea ce inseamna 176px pe zi in loc de 127, adica exact pragul de
   // la care eticheta unei lucrari se poate citi in bara ei.
@@ -1302,7 +1317,7 @@
           <!-- Nimic nu dispare in tacere: o data pe care aplicatia nu o poate citi
                nu se aseaza pe nicio zi, deci randul lipseste din calendar fara
                niciun semn. Mai bine un semnal suparator decat o absenta tacuta. -->
-          <button class="sursa rau" onclick={() => navigate(`/projects/${data.probleme[0].proiect_id}`)}
+          <button class="sursa rau" onclick={() => mergiLaProiect(data.probleme[0].proiect_id)}
                   title={data.probleme.map(p => `${p.nume} — ${p.unde}, ${p.camp}: „${p.valoare}”`).join('\n')}>
             <TriangleAlert size={14} strokeWidth={1.5} />
             <span class="s-n">{data.probleme.length}</span>
@@ -1606,7 +1621,7 @@
                      castiga latimea.
                      In foaie (telefon) actiunile raman randuri de 48px, mai jos. -->
                 <div class="it-cap">
-                  <button class="it-t" onclick={() => navigate(`/projects/${p.proiect_id}`)}>
+                  <button class="it-t" onclick={() => mergiLaProiect(p.proiect_id)}>
                     {p.nume}<ExternalLink size={12} />
                   </button>
                 </div>
@@ -1820,10 +1835,10 @@
            `title` duce data zilei pe mânerul foii, deci `panouZi(false)` n-o mai
            scrie inca o data inauntru. -->
       {#if ecran.telefon}
-        <!-- `inalt`: foaia zilei se deschide direct aproape pe tot ecranul
-             (Ion, 2026-08-10) — detaliile unei zile nu incap intr-o jumatate
-             de foaie, iar intinderea manuala era un gest in plus de fiecare
-             data. -->
+        <!-- `inalt`: foaia zilei are doua trepte (mijloc si ecran plin) si se
+             deschide pe cea de MIJLOC (Ion, 2026-08-21: „nu se poate sa apara
+             din prima pe toata pagina") — ziua atinsa ramane la vedere in grila,
+             continutul deruleaza in foaie, iar intinderea e la un gest. -->
         <!-- `iesireGest`: fara `X` in colt (Ion: „pe mobil e incomod, nu l-am
              folosit niciodata"). Foaia zilei e continut curat — se citeste, nu
              se completeaza — deci tragerea in jos de oriunde si gestul „inapoi"
