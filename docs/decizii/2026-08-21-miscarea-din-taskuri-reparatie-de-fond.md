@@ -82,3 +82,36 @@ n-are suport verificabil în WebView. Deci plugin-ul de tastatură — pe care I
 Singura cale de a *anima* împreună cu IME-ul rămâne nativă:
 `ViewCompat.setWindowInsetsAnimationCallback` (API 30+), cu `onProgress` la fiecare cadru.
 Rămâne disponibilă dacă, după toate astea, mișcarea tot nu e destul de fină.
+
+## Runda următoare: saltul devine mișcare (fără să redevină layout)
+
+Ion, după ce a primit reparația: *„E mult mai bine. Ce mai arată rău e momentul când vine
+tastatura: modalul se ridică puțin și se face o animație bruscă. La închidere e ok."*
+
+Corect — scosesem lagul, dar rămăsese un **salt sec**: foaia își lua poziția nouă într-un
+cadru. Nu putem urmări animația IME-ului (insets-urile sosesc o dată, cu valoarea finală), dar
+putem să nu sărim: **FLIP**. Geometria nouă se aplică instant (deci zero layout animat), apoi
+foaia e desenată înapoi în locul vechi cu un `transform` și lăsată să gliseze la zero — un
+singur canal, pe compozitor.
+
+Trei capcane, toate măsurate, fiecare ar fi lăsat glisarea moartă sau urâtă:
+
+1. **Reper învechit.** Îl capturam o dată, la înregistrare — adică la *începutul* animației de
+   deschidere, când foaia e încă sub ecran. Reperul rămânea `top = 844`, deci diferența ieșea
+   681 px în loc de 131 și garda de rotație o respingea: nu pornea niciodată. Acum se
+   reîmprospătează la fiecare cadru, cât există foi deschise.
+2. **Cursă cu propriul reper.** Evenimentul de redimensionare sosește *după* ce layoutul s-a
+   schimbat. Dacă diferența s-ar calcula într-un `rAF`, reîmprospătarea de la (1) ar putea rula
+   între timp și ar șterge tocmai valoarea de dinainte.
+3. **Pâlpâire.** Cât timp glisarea era amânată pe `rAF`, foaia apuca să se deseneze 1–2 cadre în
+   poziția *nouă*, apoi sărea înapoi și de-abia atunci glisa. Acum transformul se pune **sincron**,
+   în același cadru cu schimbarea de layout; coalescența celor două evenimente (`visualViewport`
+   și `window`) se face prin steag, nu prin amânare.
+
+Gărzi: nu glisează cât foaia **pleacă** (`.iese` — acolo geometria e înghețată dinadins) și nici
+cât **degetul o trage** (`.trage` — ar fi a doua mână pe același obiect). Verificat: bucla `rAF`
+se oprește complet când nu mai e nicio foaie deschisă (0 cadre în 600 ms), iar în timpul
+gestului nu pornește nicio animație.
+
+Contractul din audit distinge acum cele două: **înălțimea (layout) în același cadru**, dar
+**poziția are voie să gliseze** — măsurat 16 cadre, într-un singur sens, fără pâlpâire.

@@ -229,12 +229,25 @@ def main():
                     # Cate cadre a durat pana s-a asezat: intr-un regim corect,
                     # geometria noua e deja acolo la primul cadru de dupa.
                     final = cu_foaie[-1]
-                    t_final = next(q['t'] for q in cu_foaie
-                                   if q['top'] == final['top'] and q['h'] == final['h'])
-                    bifa(t_final <= 50,
-                         'foaia isi ia geometria noua in acelasi cadru cu viewportul',
-                         'i-au trebuit %d ms (deci ceva inca se anima)' % t_final,
-                         '%d ms' % t_final)
+                    # INALTIMEA (layout) trebuie sa fie instantanee: ea urmeaza
+                    # viewportul, care sare intr-un pas. Daca s-ar anima, foaia ar
+                    # ramane in urma — defectul reparat in Faza 1.
+                    t_h = next(q['t'] for q in cu_foaie if q['h'] == final['h'])
+                    bifa(t_h <= 50,
+                         'inaltimea (layout) se ia in acelasi cadru cu viewportul',
+                         'i-au trebuit %d ms — deci se animeaza layout' % t_h,
+                         '%d ms' % t_h)
+                    # POZITIA, in schimb, are voie sa GLISEZE — dar numai pe
+                    # compozitor. Un salt sec se citea ca „animatie brusca"
+                    # (Ion, 2026-08-21), deci diferenta se plimba cu un `transform`.
+                    topuri = [q['top'] for q in cu_foaie]
+                    bifa(len(set(topuri)) >= 5,
+                         'pozitia gliseaza, nu sare',
+                         'doar %d pozitii distincte (deci a sarit)' % len(set(topuri)),
+                         '%d cadre' % len(set(topuri)))
+                    scade = all(b_ <= a_ + 1 for a_, b_ in zip(topuri, topuri[1:]))
+                    bifa(scade, 'glisarea merge intr-un singur sens, fara palpaire',
+                         'topuri: %s' % topuri[:14])
                     bifa(final['top'] + final['h'] <= TELEFON['height'] - KB + 1,
                          'foaia se termina deasupra tastaturii',
                          'jos la %d, tastatura de la %d' % (final['top'] + final['h'], TELEFON['height'] - KB))

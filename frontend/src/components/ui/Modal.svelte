@@ -1,6 +1,9 @@
 <script module>
   import { untrack as _untrack } from 'svelte'
   import { urmaStart, urmaEvent } from '../../lib/urma.js'
+  // `<script module>` are propriile importuri: nu vede ce importa scriptul de
+  // instanta. Astea sunt pentru glisarea de la redimensionare, de mai jos.
+  import { motionDuration as _dur, DUR_SLOW as _DUR_SLOW, easeCss as _easeCss } from '../../lib/motion.svelte.js'
 
   // Comune tuturor instantelor de Modal (vezi blocarea derularii mai jos).
   let blocari = 0
@@ -67,6 +70,10 @@
   // masuratoarea, plus urmarirea tastaturii raportate cadru cu cadru.
   const vv = typeof window !== 'undefined' ? (window.visualViewport || null) : null
 
+  // Foile deschise ACUM. Modulul are nevoie de ele ca sa poata muta geometria
+  // cand se schimba viewportul (vezi `gliseazaLaRedimensionare`).
+  const foiDeschise = new Set()
+
   function scrieKb(kb) {
     const html = document.documentElement
     html.style.setProperty('--kb', kb + 'px')
@@ -96,16 +103,115 @@
   // intamplare. Trei runde de reglaje pe `--kb` n-au schimbat nimic pe telefonul
   // lui Ion tocmai fiindca acolo `--kb` era (corect) 0, iar ce se misca era
   // altceva.
+  // ===== SALTUL DEVINE MISCARE, FARA SA REDEVINA LAYOUT =====
+  //
+  // Dupa ce am scos tranzitiile de pe `height`/`max-height`/`padding` (ele
+  // ramaneau 220ms in urma viewportului care sare intr-un pas), foaia isi ia
+  // geometria noua in ACELASI cadru — corect, dar sec: Ion, 2026-08-21, „cand
+  // vine tastatura modalul se ridica putin si se face o animatie brusca".
+  //
+  // Nu putem urmari animatia IME-ului: insets-urile sosesc o SINGURA data, cu
+  // valoarea finala (nimeni nu instaleaza `WindowInsetsAnimationCallback`), iar
+  // din web nu exista niciun progres pe care sa ne bazam. Ce putem face e sa nu
+  // sarim: FLIP. Geometria noua se aplica instant (deci zero layout animat),
+  // apoi foaia e DESENATA inapoi in locul vechi cu un `transform` si lasata sa
+  // gliseze la zero. Un singur canal, pe compozitor.
+  //
+  // `transform`, nu `translate`: `translate` e al gestului de tragere, iar
+  // `transform` al tranzitiilor Svelte de intrare/iesire — care nu ruleaza
+  // atunci. Trei proprietati, trei stapani, ca peste tot in fisierul asta.
+  // Se sare peste ea daca foaia tocmai pleaca (`.iese`): acolo geometria e
+  // inghetata dinadins si un al doilea transform ar lupta cu iesirea.
+  // ===== REPERUL SE TINE PROASPAT, SI SE FOTOGRAFIAZA SINCRON =====
+  //
+  // Doua capcane, amandoua masurate, amandoua ar fi lasat glisarea moarta:
+  //
+  // 1. REPER INVECHIT. Prima varianta il captura o singura data, la inregistrare
+  //    — adica exact cand `bind:this` leaga elementul, la INCEPUTUL animatiei de
+  //    deschidere, cand foaia e inca sub marginea ecranului. Masurat: reperul
+  //    ramanea `top = 844`, deci la sosirea tastaturii diferenta iesea 681px in
+  //    loc de 131, iar garda de rotatie o respingea. Deci reperul se
+  //    reimprospateaza la fiecare cadru, cat exista foi deschise: o citire de
+  //    geometrie pentru un singur element, oprita cand nu mai e nimic deschis.
+  //
+  // 2. CURSA CU PROPRIUL REPER. Evenimentul de redimensionare soseste DUPA ce
+  //    layoutul s-a schimbat, deci in clipa aia geometria e deja cea noua. Daca
+  //    diferenta s-ar calcula abia in `rAF`, reimprospatarea de la punctul 1 ar
+  //    putea rula intre timp si ar sterge tocmai valoarea de dinainte. De aceea
+  //    valoarea veche se FOTOGRAFIAZA sincron, in handler (`rectInainte`), si
+  //    abia miscarea se amana pe cadrul urmator.
+  let ceasReper = 0
+  function tineReperul() {
+    ceasReper = 0
+    for (const f of foiDeschise) {
+      if (f.el && f.el.isConnected && !f.el.classList.contains('iese')) {
+        f.rect = f.el.getBoundingClientRect()
+      }
+    }
+    if (foiDeschise.size) ceasReper = requestAnimationFrame(tineReperul)
+  }
+
+  // MISCAREA PORNESTE SINCRON, IN ACELASI CADRU CU REDIMENSIONAREA.
+  //
+  // A treia capcana masurata: cat timp glisarea era amanata pe `rAF`, foaia
+  // apuca sa se deseneze 1-2 cadre in pozitia NOUA, apoi sarea inapoi in cea
+  // veche si de-abia atunci gliseaza — o palpaire, adica exact ce trebuia sa
+  // repare. Transformul se pune acum in acelasi cadru in care s-a schimbat
+  // layoutul, deci ochiul nu vede niciodata pozitia finala inainte de drum.
+  //
+  // Coalescenta ramane (cele doua evenimente sosesc impreuna), dar prin steag,
+  // nu prin amanare: primul le face pe amandoua, al doilea nu mai are ce.
+  let glisatInCadru = false
+  function cereGlisare() {
+    if (glisatInCadru) return
+    glisatInCadru = true
+    requestAnimationFrame(() => { glisatInCadru = false })
+    gliseazaLaRedimensionare()
+  }
+
+  function gliseazaLaRedimensionare() {
+    for (const f of foiDeschise) {
+      // `f.rect` e inca reperul de dinainte: `tineReperul` ruleaza in `rAF`, deci
+      // dupa handlerul de redimensionare, nu inaintea lui.
+      const vechi = f.rect
+      const el = f.el
+      // `.trage` — cat degetul e pe foaie, ea urmareste degetul; o glisare pornita
+      // dintr-o redimensionare ar fi a doua mana pe acelasi obiect.
+      if (!el || !el.isConnected || !vechi) continue
+      if (el.classList.contains('iese') || el.classList.contains('trage')) continue
+      const nou = el.getBoundingClientRect()
+      const dy = Math.round(vechi.top - nou.top)
+      // Sub cativa pixeli nu e o mutare, e rotunjire; peste tot ecranul nu e o
+      // mutare, e o rotire de aparat — si aia n-are de ce sa gliseze.
+      if (Math.abs(dy) < 4 || Math.abs(dy) > window.innerHeight) continue
+      try {
+        el.animate(
+          [{ transform: `translateY(${dy}px)` }, { transform: 'none' }],
+          { duration: _dur(_DUR_SLOW), easing: _easeCss() },
+        )
+      } catch (_) {}
+    }
+  }
+
   function scrie(e) {
     if (!vv) return
     const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
     urmaEvent('vv', { tip: e?.type || 'init', h: Math.round(vv.height), kb })
     scrieKb(kb)
+    // Dupa ce noile valori sunt scrise, geometria e deja cea finala: de-abia
+    // acum are sens sa masuram cat s-a mutat foaia si s-o aducem inapoi.
+    if (e) cereGlisare()
   }
 
   if (vv) {
     vv.addEventListener('resize', scrie)
     vv.addEventListener('scroll', scrie)
+    // SI `window.resize`: in aplicatia Android ce se micsoreaza e CHIAR
+    // viewportul (Capacitor pune padding pe WebView), iar atunci `visualViewport`
+    // poate sa nu raporteze nicio schimbare — `vv.height` scade odata cu
+    // `innerHeight`, deci `--kb` ramane 0 si `scrie` n-ar avea ce anunta.
+    // Fara asta, tocmai regimul REAL ar fi ramas fara glisare.
+    window.addEventListener('resize', () => { scrie({ type: 'resize' }) })
     scrie()
   } else if (typeof document !== 'undefined') {
     // Fara `visualViewport` variabila trebuie sa EXISTE, altfel `calc()`-urile
@@ -312,6 +418,10 @@
       // miscare. Se masoara o data, la pornire, cat are foaia de coborat ca sa
       // iasa complet de sub marginea ecranului.
       if (!laIntrare) {
+        // Marcaj pentru `gliseazaLaRedimensionare`: cat pleaca, foaia are
+        // geometria inghetata dinadins, iar un al doilea `transform` peste
+        // iesire ar lupta cu ea.
+        node.classList.add('iese')
         const kbInghetat = kbLaInchidere ?? kbAcum()
         if (backdropEl) {
           if (kbInghetat) backdropEl.style.setProperty('--kb', kbInghetat + 'px')
@@ -636,6 +746,16 @@
     if (!open) return
     nivel = nivelNou()
     return () => { nivelInchis(); nivel = 0 }
+  })
+
+  // Cat e deschisa, foaia e in registrul modulului: de acolo o ia
+  // `gliseazaLaRedimensionare` cand se schimba viewportul (tastatura).
+  $effect(() => {
+    if (!open || !sheet || !sheetEl) return
+    const f = { el: sheetEl, rect: sheetEl.getBoundingClientRect() }
+    foiDeschise.add(f)
+    tineReperul()
+    return () => foiDeschise.delete(f)
   })
 
   // INTINDEREA VINE SI DIN CONTINUT, nu doar din antet (Ion, 2026-08-10, pe
