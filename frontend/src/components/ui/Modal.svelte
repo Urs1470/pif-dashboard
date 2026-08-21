@@ -3,7 +3,7 @@
   import { urmaStart, urmaEvent } from '../../lib/urma.js'
   // `<script module>` are propriile importuri: nu vede ce importa scriptul de
   // instanta. Astea sunt pentru glisarea de la redimensionare, de mai jos.
-  import { motionDuration as _dur, DUR_SLOW as _DUR_SLOW, easeCss as _easeCss } from '../../lib/motion.svelte.js'
+  import { motion as _motion, motionDuration as _dur, DUR_SLOW as _DUR_SLOW, easeCss as _easeCss } from '../../lib/motion.svelte.js'
 
   // Comune tuturor instantelor de Modal (vezi blocarea derularii mai jos).
   let blocari = 0
@@ -120,47 +120,82 @@
   // `transform`, nu `translate`: `translate` e al gestului de tragere, iar
   // `transform` al tranzitiilor Svelte de intrare/iesire — care nu ruleaza
   // atunci. Trei proprietati, trei stapani, ca peste tot in fisierul asta.
-  // Se sare peste ea daca foaia tocmai pleaca (`.iese`): acolo geometria e
-  // inghetata dinadins si un al doilea transform ar lupta cu iesirea.
-  // ===== REPERUL SE TINE PROASPAT, SI SE FOTOGRAFIAZA SINCRON =====
+  // ===== GLISAREA LA REDIMENSIONARE: REPER PROASPAT, UN SINGUR CEAS =====
   //
-  // Doua capcane, amandoua masurate, amandoua ar fi lasat glisarea moarta:
+  // Cand vine tastatura, Capacitor micsoreaza WebView-ul intr-un pas. Geometria
+  // noua se aplica instant (zero layout animat — vezi Faza 1), iar DIFERENTA DE
+  // POZITIE se plimba cu un `transform`, pe compozitor. Ce urmeaza sunt garzile,
+  // fiecare pusa dupa ce s-a masurat ce se strica fara ea.
   //
-  // 1. REPER INVECHIT. Prima varianta il captura o singura data, la inregistrare
-  //    — adica exact cand `bind:this` leaga elementul, la INCEPUTUL animatiei de
-  //    deschidere, cand foaia e inca sub marginea ecranului. Masurat: reperul
-  //    ramanea `top = 844`, deci la sosirea tastaturii diferenta iesea 681px in
-  //    loc de 131, iar garda de rotatie o respingea. Deci reperul se
-  //    reimprospateaza la fiecare cadru, cat exista foi deschise: o citire de
-  //    geometrie pentru un singur element, oprita cand nu mai e nimic deschis.
-  //
-  // 2. CURSA CU PROPRIUL REPER. Evenimentul de redimensionare soseste DUPA ce
-  //    layoutul s-a schimbat, deci in clipa aia geometria e deja cea noua. Daca
-  //    diferenta s-ar calcula abia in `rAF`, reimprospatarea de la punctul 1 ar
-  //    putea rula intre timp si ar sterge tocmai valoarea de dinainte. De aceea
-  //    valoarea veche se FOTOGRAFIAZA sincron, in handler (`rectInainte`), si
-  //    abia miscarea se amana pe cadrul urmator.
+  // 1. REPER INVECHIT. Capturat o singura data, la inregistrare, el ramanea de la
+  //    INCEPUTUL deschiderii (foaia inca sub ecran): diferenta iesea 681px in loc
+  //    de 131 si garda de rotatie o respingea. Deci se reimprospateaza pe cadru.
+  // 2. O SINGURA BUCLA PENTRU TOATE FOILE. `foiDeschise` e un Set de MODUL, deci
+  //    lantul care alearga deja vede si foaia inregistrata intre timp. Fara
+  //    steagul de re-intrare, fiecare foaie deschisa peste alta (foaia taskului
+  //    -> „Alege ziua", perioada -> confirmare) pornea inca un lant, iar lanturile
+  //    nu mureau decat cand se golea Set-ul — masurat: 11 apeluri rAF pe cadru
+  //    dupa zece deschideri imbricate.
+  // 3. POZITIA DE LAYOUT, NU CEA DESENATA. `getBoundingClientRect` include
+  //    transformul glisarii aflate in curs. La a doua redimensionare in aceeasi
+  //    fereastra, diferenta iesea din pozitia DESENATA si pornea un al doilea drum
+  //    peste primul — masurat: salturi de 93px intre cadre. Se scade `m42`.
+  // 4. O SINGURA GLISARE VIE. Fiecare drum nou o anuleaza pe cea dinainte
+  //    (`glisare-kb`), altfel se aduna zeci de animatii pe acelasi `transform`.
+  // 5. NU PESTE ALTA MISCARE A FOII. Daca foaia are deja o animatie proprie —
+  //    sosirea sau plecarea, pe care Svelte 5 le joaca tot prin WAAPI — glisarea
+  //    ar suprascrie-o si ar TAIA urcarea. Deci se sare cat timp ruleaza oricare
+  //    alta animatie pe element. (Asta inlocuieste vechiul marcaj `iese`, care se
+  //    punea si nu se mai scotea niciodata: la o inchidere intrerupta Svelte
+  //    refoloseste ACELASI nod, iar foaia ramanea fara glisare pentru totdeauna.)
+  // 6. NU PESTE DEGET (`.trage`), si nici pornita inainte de el: glisarea in curs
+  //    se anuleaza cand incepe gestul (vezi `apuca`).
+  // 7. NU SUB `reduced-motion`. Regula fisierului (`motionDuration`) e „preferinta
+  //    cere sa nu fie MISCARE, nu sa nu fie TIMP" — iar aici nu ramane niciun
+  //    canal de opacitate care sa poarte schimbarea, ca la `sosire`/`alunecare`.
+  //    Deci nu se comprima la 120ms: nu se joaca deloc, iar geometria noua e deja
+  //    la locul ei.
+  const ID_GLISARE = 'glisare-kb'
   let ceasReper = 0
-  function tineReperul() {
+  let bucla = false
+
+  function pasReper() {
     ceasReper = 0
     for (const f of foiDeschise) {
-      if (f.el && f.el.isConnected && !f.el.classList.contains('iese')) {
-        f.rect = f.el.getBoundingClientRect()
-      }
+      if (f.el && f.el.isConnected) f.rect = f.el.getBoundingClientRect()
     }
-    if (foiDeschise.size) ceasReper = requestAnimationFrame(tineReperul)
+    if (foiDeschise.size) ceasReper = requestAnimationFrame(pasReper)
+    else bucla = false
   }
 
-  // MISCAREA PORNESTE SINCRON, IN ACELASI CADRU CU REDIMENSIONAREA.
-  //
-  // A treia capcana masurata: cat timp glisarea era amanata pe `rAF`, foaia
-  // apuca sa se deseneze 1-2 cadre in pozitia NOUA, apoi sarea inapoi in cea
-  // veche si de-abia atunci gliseaza — o palpaire, adica exact ce trebuia sa
-  // repare. Transformul se pune acum in acelasi cadru in care s-a schimbat
-  // layoutul, deci ochiul nu vede niciodata pozitia finala inainte de drum.
-  //
-  // Coalescenta ramane (cele doua evenimente sosesc impreuna), dar prin steag,
-  // nu prin amanare: primul le face pe amandoua, al doilea nu mai are ce.
+  /** Porneste bucla de reper, daca nu alearga deja una. Steag, nu `ceasReper`:
+   *  inauntrul lui `pasReper` ceasul e 0 pana la re-programare, deci o garda pe
+   *  el ar lasa sa treaca o a doua pornire exact atunci. */
+  function tineReperul() {
+    if (bucla) return
+    bucla = true
+    pasReper()
+  }
+
+  function opresteReperul() {
+    if (foiDeschise.size) return
+    if (ceasReper) cancelAnimationFrame(ceasReper)
+    ceasReper = 0
+    bucla = false
+  }
+
+  /** Anuleaza glisarea in curs a unei foi (o cheama si gestul de tragere). */
+  export function opresteGlisarea(el) {
+    if (!el) return
+    try {
+      for (const a of el.getAnimations()) if (a.id === ID_GLISARE) a.cancel()
+    } catch (_) {}
+  }
+
+  // MISCAREA PORNESTE SINCRON, IN ACELASI CADRU CU REDIMENSIONAREA: amanata pe
+  // `rAF`, foaia apuca sa se deseneze 1-2 cadre in pozitia NOUA, apoi sarea inapoi
+  // si de-abia atunci glisa — o palpaire. Coalescenta celor doua evenimente
+  // (`visualViewport` si `window`) se face prin steag, nu prin amanare.
   let glisatInCadru = false
   function cereGlisare() {
     if (glisatInCadru) return
@@ -170,25 +205,38 @@
   }
 
   function gliseazaLaRedimensionare() {
+    if (_motion.reduced) return                    // (7)
     for (const f of foiDeschise) {
-      // `f.rect` e inca reperul de dinainte: `tineReperul` ruleaza in `rAF`, deci
+      // `f.rect` e inca reperul de dinainte: `pasReper` ruleaza in `rAF`, deci
       // dupa handlerul de redimensionare, nu inaintea lui.
       const vechi = f.rect
       const el = f.el
-      // `.trage` — cat degetul e pe foaie, ea urmareste degetul; o glisare pornita
-      // dintr-o redimensionare ar fi a doua mana pe acelasi obiect.
       if (!el || !el.isConnected || !vechi) continue
-      if (el.classList.contains('iese') || el.classList.contains('trage')) continue
+      if (el.classList.contains('trage')) continue            // (6)
+      let alteAnimatii = false
+      try {
+        alteAnimatii = el.getAnimations().some(
+          (a) => a.id !== ID_GLISARE && a.playState === 'running')
+      } catch (_) {}
+      if (alteAnimatii) continue                              // (5)
+
+      // (3) Pozitia de LAYOUT = dreptunghiul desenat minus translatia in curs.
+      let translatie = 0
+      try {
+        translatie = new DOMMatrixReadOnly(getComputedStyle(el).transform).m42 || 0
+      } catch (_) {}
       const nou = el.getBoundingClientRect()
-      const dy = Math.round(vechi.top - nou.top)
+      const dy = Math.round(vechi.top - (nou.top - translatie))
       // Sub cativa pixeli nu e o mutare, e rotunjire; peste tot ecranul nu e o
       // mutare, e o rotire de aparat — si aia n-are de ce sa gliseze.
       if (Math.abs(dy) < 4 || Math.abs(dy) > window.innerHeight) continue
+      opresteGlisarea(el)                                     // (4)
       try {
-        el.animate(
+        const an = el.animate(
           [{ transform: `translateY(${dy}px)` }, { transform: 'none' }],
           { duration: _dur(_DUR_SLOW), easing: _easeCss() },
         )
+        an.id = ID_GLISARE
       } catch (_) {}
     }
   }
@@ -200,7 +248,12 @@
     scrieKb(kb)
     // Dupa ce noile valori sunt scrise, geometria e deja cea finala: de-abia
     // acum are sens sa masuram cat s-a mutat foaia si s-o aducem inapoi.
-    if (e) cereGlisare()
+    // PINCH-UL NU E O TASTATURA. In browser (PWA), un pinch produce exact aceeasi
+    // forma in formula de mai sus — `vv.height` scade, `innerHeight` nu — deci
+    // `--kb` sarea la sute de px si porneau zeci de glisari, una pe cadrul
+    // gestului. Ce le deosebeste nu e `--kb`, ci SCALA: la tastatura ramane 1.
+    // (In aplicatia Android zoom-ul e oricum oprit, dar site-ul e acelasi.)
+    if (e && (!vv.scale || vv.scale <= 1.01)) cereGlisare()
   }
 
   if (vv) {
@@ -418,10 +471,6 @@
       // miscare. Se masoara o data, la pornire, cat are foaia de coborat ca sa
       // iasa complet de sub marginea ecranului.
       if (!laIntrare) {
-        // Marcaj pentru `gliseazaLaRedimensionare`: cat pleaca, foaia are
-        // geometria inghetata dinadins, iar un al doilea `transform` peste
-        // iesire ar lupta cu ea.
-        node.classList.add('iese')
         const kbInghetat = kbLaInchidere ?? kbAcum()
         if (backdropEl) {
           if (kbInghetat) backdropEl.style.setProperty('--kb', kbInghetat + 'px')
@@ -558,6 +607,10 @@
   }
 
   function apuca(clientY) {
+    // O glisare de la tastatura pornita inainte de gest n-are voie sa ramana vie
+    // sub deget: `transform` (glisarea) si `translate` (gestul) se compun, deci
+    // foaia ar aluneca singura in timp ce o tragi.
+    opresteGlisarea(sheetEl)
     untrack(reimprospateazaTrepte)
     hApucat = inaltimeVizibila()
     yApucat = clientY
@@ -755,7 +808,7 @@
     const f = { el: sheetEl, rect: sheetEl.getBoundingClientRect() }
     foiDeschise.add(f)
     tineReperul()
-    return () => foiDeschise.delete(f)
+    return () => { foiDeschise.delete(f); opresteReperul() }
   })
 
   // INTINDEREA VINE SI DIN CONTINUT, nu doar din antet (Ion, 2026-08-10, pe

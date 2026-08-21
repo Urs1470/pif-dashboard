@@ -115,3 +115,38 @@ gestului nu pornește nicio animație.
 
 Contractul din audit distinge acum cele două: **înălțimea (layout) în același cadru**, dar
 **poziția are voie să gliseze** — măsurat 16 cadre, într-un singur sens, fără pâlpâire.
+
+### Ce a găsit verificarea adversarială pe glisare (și de ce testele mele n-au prins-o)
+
+Probele mele au trecut: bucla se oprea, garda de gest funcționa, zero erori. Dar testasem
+doar cazurile simple — **o** foaie, un gest, o redimensionare. Verificarea (3 lentile + juriu,
+15 agenți) a găsit **șapte** defecte reale, toate în cazuri compuse:
+
+1. **Buclele rAF se înmulțeau.** `foiDeschise` e un Set de modul, dar `tineReperul()` n-avea
+   gardă de re-intrare: fiecare foaie deschisă *peste* alta (foaia taskului → „Alege ziua",
+   perioadă → confirmare) pornea încă un lanț, iar lanțurile nu mureau decât când se golea
+   Set-ul. Măsurat de agent: 11 apeluri rAF pe cadru după zece imbricări. `ceasReper` era
+   scris și niciodată citit — cod mort care ascundea exact lipsa pe care trebuia s-o acopere.
+   *Reparat: un steag de re-intrare + `cancelAnimationFrame` la golire. Verificat: 37 apeluri
+   în 600 ms după 6 imbricări = exact o buclă.*
+2. **Clasa `iese` se punea și nu se scotea niciodată.** La o închidere întreruptă, Svelte
+   reutilizează **același nod** (verificat în sursa Svelte 5.56.3), deci foaia rămânea fără
+   glisare pentru totdeauna. *Reparat prin ștergerea mecanismului: garda (5) de mai jos
+   acoperă și ieșirea, și intrarea.*
+3. **Glisarea tăia sosirea foii.** Svelte 5 joacă tranzițiile `css:` tot prin WAAPI, deci
+   `el.animate()` pe `transform` le **suprascrie**. O redimensionare venită cât foaia încă urcă
+   îi curma urcarea. *Reparat: nu se glisează cât rulează orice altă animație pe element.*
+4. **A doua redimensionare pornea din poziția desenată**, nu din cea de layout —
+   `getBoundingClientRect` include transformul propriei glisări în zbor. Măsurat de agent:
+   salturi de 93 px. *Reparat: se scade `m42` din matricea curentă.*
+5. **Se adunau glisări** peste același `transform`. *Reparat: fiecare drum nou o anulează pe
+   precedenta, prin `id`.*
+6. **Garda de gest era unidirecțională** — oprea pornirea, dar nu anula una deja pornită.
+   *Reparat: `apuca()` anulează glisarea în curs.*
+7. **Pinch-zoom pornea glisări** în regim browser: `vv.height` scade fără ca `innerHeight` să
+   scadă, deci formula dădea `--kb` = 483 px și 13 animații simultane. *Reparat: ce le
+   deosebește nu e `--kb`, ci `vv.scale` — la tastatură rămâne 1.*
+
+Și o corecție de metodă pentru mine: un test care confirmă cazul simplu nu spune nimic despre
+cel compus. Cele mai grave două (1 și 2) apar **doar** cu foi suprapuse și închideri întrerupte
+— exact ce nu încercasem.
