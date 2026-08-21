@@ -87,8 +87,10 @@
   // fizic WebView-ul, intr-o singura trecere de layout. Deci viewportul web e
   // deja mai mic, `100dvh` e deja corect, iar foaia ancorata jos e deja deasupra
   // tastaturii — fara ca noi sa facem nimic.
-  // In regimul asta `innerHeight` scade ODATA cu `vv.height`, deci formula de mai
-  // jos da 0. Nu e o scapare, e raspunsul CORECT: n-avem ce ridica.
+  // In regimul asta `innerHeight` scade impreuna cu `vv.height`, deci formula de
+  // mai jos da 0. Nu e o scapare, e raspunsul CORECT: n-avem ce ridica.
+  // („Impreuna", nu „in acelasi cadru": masurat pe aparat, exista un cadru in care
+  // au valori care nu se potrivesc — vezi „CADRUL FANTOMA" mai jos.)
   //
   // In BROWSER (PWA, desktop) containerul NU se micsoreaza: doar viewportul
   // vizual se strange sub tastatura. Acolo diferenta e reala si `--kb` chiar e
@@ -129,9 +131,47 @@
   // o singura data, cu valoarea finala — si atunci saltul e informatia corecta,
   // nu un defect de ascuns.
 
+  // ===== CADRUL FANTOMA: O MASURATOARE PE CARE N-AVEM VOIE S-O CREDEM =====
+  //
+  // Masurat pe telefonul lui Ion (Honor Magic 6 Pro, Android 16, WebView 150) prin
+  // CDP peste USB — `scripts/masoara_tastatura_reala.py`. La sosirea tastaturii,
+  // exact UN cadru arata asa:
+  //
+  //     t=113.8   ih=800  vv.h=800.0   --kb=0     foaie: top 276  h 524
+  //     t=229.4   ih=493  vv.h=187.4   --kb=306   foaie: top  64  h 123.7   <-- fals
+  //     t=247.3   ih=493  vv.h=493.7   --kb=0     foaie: top 147  h 346.4
+  //
+  // In cadrul in care Capacitor micsoreaza WebView-ul, `innerHeight` e DEJA 493,
+  // dar `vv.height` inca raporteaza 187 — adica tastatura scazuta A DOUA OARA
+  // dintr-un viewport din care fusese deja scoasa. Formula da `--kb` = 306, iar
+  // foaia (care isi ia geometria instant, fiindca am scos orice tranzitie de
+  // layout) se turteste la 123px si sare la `top=64`. Cadrul urmator isi revine.
+  //
+  // ASTA e ce vede Ion ca „se ridica putin si se face o animatie brusca": nu o
+  // animatie, ci o CLIPIRE de un cadru. Si de-asta „la inchidere este ok" —
+  // masurat, la coborare cadrul fantoma nu exista deloc, `--kb` ramane 0.
+  //
+  // Regula, valabila in amandoua regimurile: o valoare a lui `--kb` calculata in
+  // acelasi cadru in care s-a schimbat `innerHeight` NU e de incredere. Se pastreaza
+  // cea veche si se recalculeaza la cadrul urmator, cand cele doua sunt de acord.
+  //   * in APLICATIE `innerHeight` chiar se schimba -> se amana -> iese 0, corect;
+  //   * in BROWSER `innerHeight` NU se schimba la sosirea tastaturii (doar
+  //     viewportul vizual se strange) -> nu se amana nimic, `--kb` se scrie pe loc.
+  // Deci amanarea atinge exact cazul stricat si niciun altul.
+  let ihUltim = typeof window !== 'undefined' ? window.innerHeight : 0
+  let ceasKb = 0
+
   function scrie(e) {
     if (!vv) return
-    const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
+    const ih = window.innerHeight
+    if (ih !== ihUltim) {
+      ihUltim = ih
+      if (ceasKb) cancelAnimationFrame(ceasKb)
+      // Nu se scrie NIMIC acum: valoarea veche e mai buna decat una falsa.
+      ceasKb = requestAnimationFrame(() => { ceasKb = 0; scrie(e) })
+      return
+    }
+    const kb = Math.max(0, Math.round(ih - vv.height - vv.offsetTop))
     urmaEvent('vv', { tip: e?.type || 'init', h: Math.round(vv.height), kb })
     scrieKb(kb)
   }

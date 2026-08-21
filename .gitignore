@@ -80,3 +80,4 @@ AUDIT_*.md
 
 # Plansele generate de scripts/filmstrip.py — se refac la cerere, nu se versioneaza
 docs/filmstrip/
+urma_tastatura_reala.json
