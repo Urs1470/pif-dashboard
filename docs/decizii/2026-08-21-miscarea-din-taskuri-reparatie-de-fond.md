@@ -150,3 +150,32 @@ doar cazurile simple — **o** foaie, un gest, o redimensionare. Verificarea (3 
 Și o corecție de metodă pentru mine: un test care confirmă cazul simplu nu spune nimic despre
 cel compus. Cele mai grave două (1 și 2) apar **doar** cu foi suprapuse și închideri întrerupte
 — exact ce nu încercasem.
+
+### Glisarea scoasă: nu era reparabilă, era greșită din geometrie
+
+A stat o zi și a trecut șapte reparații. Ion, uitându-se la ea: *„modalul parcă este tăiat, de
+reușesc să văd și butonul de dedesubt de creare task."* Măsurat: **14 cadre în care foaia era
+desenată sub marginea viewportului, până la 131 px** — adică exact subsolul ei, cu butonul.
+
+Cauza nu e un defect de reglaj, ci imposibilitatea: **locul vechi al foii nu mai există pe
+ecran.** Capacitor a micșorat deja WebView-ul, deci tot ce era sub noua margine de jos e în
+afara suprafeței desenabile. Un FLIP desenează elementul în locul de dinainte — aici, în afara
+ecranului. Nici invers nu merge (să pornească mai sus și să coboare): atunci se deschide o fâșie
+între foaie și margine, prin care se vede pagina. Orice catch-up cere spațiu în afara foii, iar
+foaia e lipită de margine: spațiul acela nu există în niciun sens.
+
+Deci foaia se așază în același cadru cu viewportul, împreună cu voalul, cu butonul plutitor și
+cu tot restul — un singur pas, nimic în urmă, exact ce face o suprafață nativă când i se
+redimensionează fereastra. Contractul din `audit_tastatura.py` s-a inversat pe măsură: nu
+„poziția glisează", ci **„nicio foaie nu e desenată niciun cadru sub marginea viewportului"**.
+
+Singurul mod real de a face mișcarea lină e ca **redimensionarea însăși** să fie lină, iar asta
+se decide nativ: `ViewCompat.setWindowInsetsAnimationCallback` în `MainActivity.java` (API 30+)
+dă `onProgress` cu `interpolatedFraction` la fiecare cadru al IME-ului. Cât timp nimeni nu-l
+instalează, insets-urile sosesc o singură dată cu valoarea finală — și atunci saltul e
+informația corectă, nu un defect de ascuns.
+
+**Lecția, a doua oară în aceeași zi:** prima reparație a fost o *scoatere* (tranzițiile de
+layout) și a ținut. A doua a fost o *adăugare* (glisarea) și a produs un defect nou pe care
+șapte reparații nu l-au atins, fiindcă niciuna nu punea la îndoială premisa. Când repar
+adăugând un strat, întâi întreb dacă stratul poate exista.

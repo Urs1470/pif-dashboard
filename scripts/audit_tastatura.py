@@ -237,17 +237,24 @@ def main():
                          'inaltimea (layout) se ia in acelasi cadru cu viewportul',
                          'i-au trebuit %d ms — deci se animeaza layout' % t_h,
                          '%d ms' % t_h)
-                    # POZITIA, in schimb, are voie sa GLISEZE — dar numai pe
-                    # compozitor. Un salt sec se citea ca „animatie brusca"
-                    # (Ion, 2026-08-21), deci diferenta se plimba cu un `transform`.
-                    topuri = [q['top'] for q in cu_foaie]
-                    bifa(len(set(topuri)) >= 5,
-                         'pozitia gliseaza, nu sare',
-                         'doar %d pozitii distincte (deci a sarit)' % len(set(topuri)),
-                         '%d cadre' % len(set(topuri)))
-                    scade = all(b_ <= a_ + 1 for a_, b_ in zip(topuri, topuri[1:]))
-                    bifa(scade, 'glisarea merge intr-un singur sens, fara palpaire',
-                         'topuri: %s' % topuri[:14])
+                    # SI POZITIA e instantanee, si asta e CONTRACTUL, nu o scapare.
+                    # O zi a stat aici o glisare (FLIP): foaia se desena inapoi in
+                    # locul vechi si aluneca la zero. Locul vechi insa nu mai exista
+                    # — WebView-ul s-a micsorat deja — deci foaia se desena TAIATA.
+                    # De aceea proba de mai jos e cea care conteaza: nimic desenat
+                    # in afara viewportului, niciun cadru.
+                    t_top = next(q['t'] for q in cu_foaie if q['top'] == final['top'])
+                    bifa(t_top <= 50,
+                         'pozitia se ia in acelasi cadru cu viewportul',
+                         'i-au trebuit %d ms — deci ceva o plimba' % t_top,
+                         '%d ms' % t_top)
+                    afara = [q['top'] + q['h'] - q['ih'] for q in cu_foaie
+                             if q['top'] + q['h'] > q['ih'] + 1]
+                    bifa(not afara,
+                         'foaia nu e desenata NICIUN cadru sub marginea viewportului',
+                         '%d cadre taiate, pana la %d px (subsolul, cu butonul)'
+                         % (len(afara), max(afara) if afara else 0),
+                         'zero cadre taiate')
                     bifa(final['top'] + final['h'] <= TELEFON['height'] - KB + 1,
                          'foaia se termina deasupra tastaturii',
                          'jos la %d, tastatura de la %d' % (final['top'] + final['h'], TELEFON['height'] - KB))
