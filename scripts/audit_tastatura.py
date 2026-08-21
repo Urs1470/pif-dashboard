@@ -190,8 +190,12 @@ def main():
                     urca = all(b_ <= a_ + 1 for a_, b_ in zip(topuri, topuri[1:]))
                     bifa(urca and topuri[-1] <= 1, 'urca o singura data, pana in capul ecranului (tastatura la %d ms)' % lat,
                          'topuri: %s' % topuri[:40], 'top final %d' % topuri[-1])
+                    # Deschiderea e VASCOASA (DUR_PAGINA 400 + easeOutExpo): Ion,
+                    # 2026-08-21 „un pic prea agresiv, fa mai fluid, mai vascos".
+                    # easeOutExpo ajunge aproape de sus pe la ~330ms si se aseaza
+                    # incet; pragul lasa loc pana la 480ms. NU asteapta tastatura.
                     t_sus = next(q['t'] for q in cu_foaie if q['top'] <= 3)
-                    bifa(t_sus <= 380, 'ajunge sus in ~280 ms, fara sa astepte tastatura',
+                    bifa(t_sus <= 480, 'ajunge sus vascos (~400 ms), fara sa astepte tastatura',
                          'sus la %d ms' % t_sus, '%d ms' % t_sus)
                     dupa = [q for q in cu_foaie if q['t'] >= t_sus + 80]
                     bifa(max(q['top'] for q in dupa) - min(q['top'] for q in dupa) <= 1,
@@ -462,7 +466,7 @@ def main():
                     bifa(rand['top'] >= rand['sus'] - 1 and rand['bottom'] <= rand['jos'] + 1,
                          'randul-tinta sta intre antet si dock, nu sub ele',
                          '%d..%d, vizibil %d..%d' % (rand['top'], rand['bottom'], rand['sus'], rand['jos']))
-                    bifa(rand['anim'] == 'hasuraRand', 'hasura se vede pe fata randului (nu sub ea)',
+                    bifa(rand['anim'] == 'inelPuls', 'inelul care pulseaza se vede pe fata randului (ca la Calendar)',
                          'animationName=%s' % rand['anim'])
 
             bifa(not erori, 'nicio eroare de pagina pe tot parcursul', ' | '.join(erori)[:300])

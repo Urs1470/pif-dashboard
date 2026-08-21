@@ -223,16 +223,21 @@ code, pre {
     transform: scale(.93) translateY(6px);
     transition: transform var(--dur-arc) var(--ease-arc);
   }
-  /* O PAGINA PLINA (creare task, „Proiect nou", editorul de note) ACOPERA TOT
-     ecranul — deci retragerea paginii din spate NU se vede cat e deschisa, iar
-     revenirea ei se vede DOAR la inchidere, unde concureaza cu foaia care
-     coboara: doua liste pline peste aceiasi pixeli (masurat pe close — o
-     mazgaleala, aceeasi familie cu cross-fade-ul reparat la tranzitia de ruta).
-     Sub o pagina plina, fundalul STA pe loc: foaia aluneca deasupra unei pagini
-     asezate, si atat. Retragerea ramane pentru foile PARTIALE (foaia zilei la
-     mijloc, foaia taskului), unde chiar vezi fundalul dandu-se inapoi. */
-  html.are-modal:has(.modal.pagina) .app-main,
-  html.are-modal:has(.modal-doc) .app-main { transform: none; }
+  /* SUB O PAGINA PLINA, FUNDALUL SE RETRAGE SI RAMANE RETRAS PANA CAND FOAIA A
+     PLECAT DE TOT. Doua incercari gresite, ambele de la Ion, au dus aici:
+       1. fundalul se retragea si REVENEA la scale(1) chiar in timpul inchiderii,
+          crescand in urma foii care coboara — „fantoma";
+       2. l-am lasat STATIC (scale 1) — atunci pagina plina din spate se citea ca
+          un al doilea modal, la fel de aprins ca foaia: „parca sunt doua modale".
+     Raspunsul e adancimea, dar TINUTA pe tot drumul: `:has(.modal.pagina)` FARA
+     `are-modal`, deci potrivirea tine cat timp foaia e in DOM — inclusiv toata
+     iesirea ei. Fundalul sta retras (mai mic, si sub voal) cat coboara foaia —
+     clar „in spate", nu un al doilea modal — si se aseaza la loc ABIA dupa ce
+     foaia a disparut (`:has` nu mai potriveste), deci nimic nu creste in urma ei.
+     Foile PARTIALE (foaia zilei, foaia taskului) pastreaza retragerea de mai sus,
+     legata de `are-modal`. */
+  html:has(.modal.pagina) .app-main,
+  html:has(.modal-doc) .app-main { transform: scale(.92) translateY(8px); }
 }
 
 /* SI INVELISUL RUTEI ISI LASA TRANSFORMUL cat timp e un modal deschis.
@@ -366,7 +371,12 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   gap: var(--space-sm);
   padding-left: 18px;
-  border-radius: var(--radius-md);
+  /* FARA raza proprie: invelisul randului (`.trow-wrap`/`.arow`/`.mrow`, cu
+     `overflow: hidden` si raza `sm`) TAIE deja pista. O raza `md` mai mare decat
+     a lui lasa un colt de fundal descoperit exact cand treci pragul (Ion: „la
+     swipe, cand e trecut pragul, colturile parca se taie si nu mai e umplerea
+     cum trebuie"). Pista umple dreptunghiul intreg; wrapperul ii rotunjeste coltul. */
+  border-radius: 0;
   /* --gl-p (0..1) vine din lib/glisare.js: cat la suta din drumul pana la prag
      ai facut. Fondul se adanceste continuu, nu sare. */
   background: color-mix(in oklab, var(--success) calc(var(--gl-p, 0) * 55%), transparent);
@@ -443,7 +453,7 @@ input:focus, select:focus, textarea:focus {
   justify-content: flex-end;
   gap: var(--space-sm);
   padding-right: 18px;
-  border-radius: var(--radius-md);
+  border-radius: 0;
   background: color-mix(in oklab, var(--accent) calc(var(--gl-s, 0) * 55%), transparent);
 }
 .gl-pista-s .gl-ico-s {
@@ -616,20 +626,28 @@ input:focus, select:focus, textarea:focus {
    plina de accent care se aprinde IMEDIAT ce randul e pe ecran (in timp ce pagina
    inca soseste — cu atat mai bine, ochiul stie de la primul cadru unde sa se
    uite), tine cat sa fie gasita, si se stinge lin. Doar opacitate. */
-@keyframes hasuraRand {
-  0%       { opacity: 0; }
-  8%, 55%  { opacity: 1; }
-  100%     { opacity: 0; }
+/* INELUL CARE PULSEAZA — acelasi semn ca perioada gasita in Calendar (Ion:
+   „la planificator cand dau click pe perioada ma duce la calendar cu o animatie
+   de hasurare ring care pulseaza, vreau la fel de la acasa la task"). Pe o banda
+   mica inelul se DESFACE (scale), dar un rand e lat si taiat de pista de glisare,
+   deci aici pulseaza din OPACITATE, in doua batai — acelasi ritm, fara sa
+   blocheze orizontal. `inset: 2px`, ca sa se vada inauntrul randului taiat. */
+@keyframes inelPuls {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  40%  { opacity: 0.2; }
+  62%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 .focus-flash { position: relative; }
 .focus-flash::after, .focus-flash > .gl-fata::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
-  border-radius: inherit;
-  background: color-mix(in oklab, var(--accent) 24%, transparent);
-  animation: hasuraRand 1600ms var(--ease) both;
+  content: ''; position: absolute; inset: 2px; pointer-events: none; z-index: 3;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 2px var(--accent);
+  animation: inelPuls 1500ms var(--ease) both;
 }
-/* Pe telefon fata (`.gl-fata`) e opaca si poarta hasura; pe desktop fata e
-   `display: contents` (fara cutie), deci o poarta randul. */
+/* Pe telefon fata (`.gl-fata`) e opaca si poarta inelul; pe desktop fata e
+   `display: contents` (fara cutie), deci il poarta randul. */
 @media (max-width: 768px) { .focus-flash:has(> .gl-fata)::after { display: none; } }
 @media (min-width: 769px) { .focus-flash > .gl-fata::after { display: none; } }
 @media (prefers-reduced-motion: reduce) {

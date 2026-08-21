@@ -138,6 +138,15 @@ function arcCu(bounce) {
 export const ARC = arcCu(0.18)
 export const DUR_ARC = 420
 
+// SOSIREA UNEI PAGINI PLINE — vascoasa, nu tasnita. Ion: „un pic prea agresiv se
+// deschide modalul de creare, fa mai fluid, mai vascos." O foaie de jumatate de
+// ecran soseste pe DUR_SLOW (280) si e potrivit; o PAGINA plina strabate tot
+// ecranul in acelasi timp, deci aceeasi durata se citeste ca o tasnire. Mai
+// lunga (400) si cu franare puternica la final (easeOutExpo: porneste iute, se
+// aseaza incet, ca prin fluid) — asa distanta mare se termina moale, nu sec.
+export const DUR_PAGINA = 400
+export const EASE_PAGINA = bezier(0.16, 1, 0.3, 1)
+
 /** Elanul: acelasi arc, mai vioi. Un singur consumator — tenta din dock. */
 export const ARC_ELAN = arcCu(0.28)
 export const DUR_ARC_ELAN = 380

@@ -140,7 +140,7 @@
   import { tick, untrack } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, EASE_IESIRE, ARC } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, DUR_PAGINA, EASE, EASE_IESIRE, EASE_PAGINA, ARC } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   // Foaia si voalul ies in `body`: pagina din spate se RETRAGE (un `transform`
   // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
@@ -296,11 +296,13 @@
   // Svelte cheama functia cu `direction: 'in'`.
   function intra(node, _params, opts) {
     const laIntrare = opts?.direction !== 'out'
-    const duration = motionDuration(sheet && laIntrare ? DUR_SLOW : DUR_BASE)
+    // O PAGINA plina soseste vascos (DUR_PAGINA + EASE_PAGINA); pleaca insa iute,
+    // ca orice foaie (DUR_BASE + EASE_IESIRE) — ce iese nu se lasa asteptat.
+    const duration = motionDuration(pagina && laIntrare ? DUR_PAGINA : (sheet && laIntrare ? DUR_SLOW : DUR_BASE))
     // SOSIREA FRANEAZA, PLECAREA ACCELEREAZA. Pana acum amandoua mergeau pe
     // `--ease`, deci foaia se retragea ca si cum s-ar razgandi: incetinea exact
     // in intervalul in care trebuia sa fie deja plecata. Vezi `--ease-iesire`.
-    const curba = laIntrare ? EASE : EASE_IESIRE
+    const curba = laIntrare ? (pagina ? EASE_PAGINA : EASE) : EASE_IESIRE
     if (sheet) {
       // CAT PLEACA, FOAIA NU MAI ASCULTA DE TASTATURA.
       //
@@ -992,6 +994,11 @@
      mai ai pana pierzi ce ai deschis. In repaus e mereu 1, deci pe desktop (unde
      nu exista gest) regula da exact `--scrim`, ca pana acum. */
   .backdrop.varf { background: color-mix(in srgb, var(--scrim) calc(var(--voal-p, 1) * 100%), transparent); }
+  /* O PAGINA PLINA cere un voal mai adanc: fundalul se vede doar cat aluneca
+     foaia, si atunci trebuie sa fie clar „in spate", nu un al doilea modal la
+     fel de aprins (Ion). `--voal-p` il subtiaza tot la fel cand tragi foaia in jos. */
+  .backdrop.varf:has(.modal.pagina),
+  .backdrop.varf:has(.modal-doc) { background: color-mix(in srgb, var(--scrim-plin) calc(var(--voal-p, 1) * 100%), transparent); }
   /* Cat timp degetul e pe ecran, voalul n-are voie sa ramana in urma lui. */
   .backdrop.trage { transition: none; }
   /* Foaia de dedesubt nu-si mai arata iesirea: butonul ei ar inchide un obiect

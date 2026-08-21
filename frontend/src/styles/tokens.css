@@ -68,6 +68,10 @@
      decizii, nu patru: cat de tare stingi ce e dedesubt. Cel slab e pentru cazul
      in care peste val vine si un panou opac — atunci valul doar separa, nu stinge. */
   --scrim: rgba(0, 0, 0, .6);
+  /* Voal PUTERNIC — pentru o pagina plina, unde fundalul trebuie sa se citeasca
+     clar „in spate" in cele cateva sute de ms cat aluneca foaia, nu ca un al
+     doilea modal (Ion: „parca sunt doua modale"). */
+  --scrim-plin: rgba(0, 0, 0, .78);
   --scrim-slab: rgba(0, 0, 0, .18);
 
   /* ================================================================
@@ -469,6 +473,7 @@
   --shadow-glisare: -6px 0 12px -8px rgba(20, 24, 31, .18);
   --shadow-foaie: 0 -14px 40px -12px rgba(20, 24, 31, .16);
   --scrim: rgba(20, 24, 31, .32);
+  --scrim-plin: rgba(20, 24, 31, .58);
   --scrim-slab: rgba(20, 24, 31, .10);
 
   /* Toate alisurile de mai sus se rezolva prin `var()` la rolurile redefinite

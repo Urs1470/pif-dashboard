@@ -11,6 +11,7 @@
   import ContorPasi from './ui/ContorPasi.svelte'
   import { glisare, inchideGlisarea } from '../lib/glisare.js'
   import { apasareLunga } from '../lib/apasareLunga.js'
+  import { puls } from '../lib/gesturi.js'
   import { reordonare } from '../lib/reordonare.js'
   import { stergeTask, updateGlobalTask, actualizeazaTask } from '../stores/tasks.svelte.js'
   import FoaieTask from './FoaieTask.svelte'
@@ -355,7 +356,7 @@
     <!-- „Adaugă task", nu „Adaugă task EXISTENT": foaia nu mai e doar o cautare.
          Scrii, si primul rand e „Creează «…»" — cine scria aici un titlu care nu
          exista primea inainte „Niciun task găsit" si un drum inchis. -->
-    <button class="bh-add" onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Adaugă task">
+    <button class="bh-add" onpointerdown={() => puls()} onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Adaugă task">
       <ListPlus size={15} /> <span class="bh-add-txt">Adaugă task</span>
     </button>
   </div>
@@ -564,6 +565,17 @@
 
 </section>
 
+<!-- BUTONUL PLUTITOR DE ADAUGARE, pe telefon — acelasi ca in /tasks (58px, rază
+     20, peste dock, la dreapta). Ion, 2026-08-21: „butonul de adaugare de pe
+     Acasa nu e foarte reactiv si vreau sa-l faci mai proeminent pe mobil."
+     Butonul mic „Adaugă task" din capul boardului ramane doar pe desktop (vezi
+     `.bh-add { display: none }` in blocul de telefon). -->
+{#if peTelefon}
+  <button class="fab" onpointerdown={() => puls()} onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Adaugă task">
+    <Plus size={25} strokeWidth={1.5} />
+  </button>
+{/if}
+
 <!-- ACEEASI foaie de adaugare ca in /tasks si ca in tabul Taskuri al unui proiect.
      Aici a inlocuit `TaskPickerModal`, care putea doar sa CAUTE. -->
 <FoaieAdauga bind:open={showAdauga} onSchimbare={() => { loadAgendaToday(); onchange() }}
@@ -581,6 +593,18 @@
            onSterge={() => stergeDinBoard(foaieTask)} />
 
 <style>
+  /* BUTONUL PLUTITOR — identic cu cel din /tasks: 58px, rază 20, peste dock, la
+     dreapta, presiune imediata (scalare adanca + puls haptic). Doar pe telefon. */
+  .fab { --fab-size: 58px;
+    position: fixed; right: calc(var(--space-md) + var(--safe-right));
+    bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
+    width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
+    border-radius: var(--radius-lg); border: none;
+    background: var(--accent); color: var(--accent-text);
+    box-shadow: var(--shadow-lg); z-index: calc(var(--z-sticky) - 1);
+    cursor: pointer; transition: var(--transition-pressable); }
+  .fab:active { transform: scale(0.9); transition-duration: var(--dur-press); }
+
   /* Suprafata se desprinde prin umbra. Padding-ul lateral scade la 8, fiindca
      randul isi aduce propriii 12 — separatorul iese la 20 de la marginea
      cardului, adica marja laterala ceruta, fara s-o scrie nimeni a doua oara. */
@@ -916,9 +940,9 @@
        `--tap-sheet`, nu podeaua de 44 a tintelor obisnuite. Inaltimea o tine
        acum invelisul, fiindca el e cutia; inputul se intinde in ea. */
     .qa-camp { min-height: var(--tap-sheet); }
-    /* „Adaugă task existent" ramane doar iconita pe telefon — deci iconita trebuie
-       sa aiba caseta unui buton. Desenul 3c o cere patrata, la 48. */
-    .bh-add { min-width: var(--tap-sheet); min-height: var(--tap-sheet); justify-content: center; padding: 0 var(--space-10); }
+    /* Pe telefon adaugarea vine din butonul PLUTITOR (`.fab`, mai jos), proeminent
+       si peste dock — deci butonul mic din capul boardului nu mai are rost aici. */
+    .bh-add { display: none; }
 
     /* Indexul pleaca: pe un rand de o linie, doua cifre in fata titlului nu spun
        nimic ce nu spune deja ordinea de sus in jos, si mananca 28px din titlu. */

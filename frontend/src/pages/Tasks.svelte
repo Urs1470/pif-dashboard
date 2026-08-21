@@ -33,6 +33,7 @@
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { apasareLunga } from '../lib/apasareLunga.js'
+  import { puls } from '../lib/gesturi.js'
   import FoaieTask from '../components/FoaieTask.svelte'
   import FoaieAdauga from '../components/FoaieAdauga.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -1317,7 +1318,7 @@
        dar SCRIS — „mâine revizie pompa" — iar Categoria si Recurenta au intrat in
        foaie, unde nu mai ocupa doua randuri din patru pentru ceva folosit rar. -->
   {#if ecran.telefon && !showArchive}
-    <button class="fab" onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Task nou">
+    <button class="fab" onpointerdown={() => puls()} onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Task nou">
       <Plus size={25} strokeWidth={1.5} />
     </button>
   {/if}
@@ -1651,7 +1652,10 @@
     background: var(--accent); color: var(--accent-text);
     box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
     cursor: pointer; transition: var(--transition-pressable); }
-  .fab:active { transform: scale(var(--press-scale)); }
+  /* Presiunea se simte IMEDIAT: scalare mai adanca, pe durata de apasare (nu pe
+     tranzitia de vopsea), plus un puls haptic la atingere (Ion: „butonul de
+     creare parca reactioneaza prea greu, trebuie o presiune mai mare"). */
+  .fab:active { transform: scale(0.9); transition-duration: var(--dur-press); }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); min-width: 0; }
   .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); }
   /* `.count` a plecat in global.css. E NEUTRA acum, nu amber: numarul de langa

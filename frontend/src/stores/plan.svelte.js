@@ -29,14 +29,13 @@ export const plan = $state({
   lanes: [],
   backlog: [],
   start: '',
-  // 30, nu 14 (Ion, 2026-08-17: „din moment ce planificatorul arata 30 zile
-  // ramane asa by default"). Pe telefon grila de patru saptamani are nevoie de 28
-  // de zile de date, deci pana acum orizontul era urcat la 30 la RULARE, dintr-un
-  // efect — adica implicitul lucra impotriva ecranului si trebuia corectat de fiecare
-  // data. Acum implicitul E cel de care are nevoie grila, iar efectul de corectie
-  // rămâne doar ca plasa (vezi `Plan.svelte`).
-  // Pe desktop se poate alege in continuare 7z…6L; se schimba doar de unde pleci.
-  days: 30,
+  // IMPLICIT: 14 pe DESKTOP (Ion, 2026-08-21: „pe desktop perioada by default
+  // vreau sa fie cum a fost 14 zile, nu 30"), 30 pe TELEFON (grila de patru
+  // saptamani cere 28 de zile, iar pe telefon bara de orizont nici nu se mai
+  // arata). Se alege din latimea ecranului la initializare, ca sa nu existe un
+  // dublu-load pe telefon. Efectul de plasa din Plan.svelte ramane.
+  days: (typeof window !== 'undefined' && window.matchMedia
+    && window.matchMedia('(max-width: 768px)').matches) ? 30 : 14,
   today: '',
   showDone: readDone(),
   showWeekends: readWeekends(), // evidentiaza weekendurile (doar in modul pe zile)

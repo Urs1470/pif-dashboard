@@ -2787,9 +2787,9 @@
        PATRU trepte, nu cinci (desen 4c): 6L nu incape pe telefon — la 180 de zile
        coloanele oricum n-ar mai avea latime de citit pe 390px. Fillul activ ia
        raza 8 (desen), nu 7 ca pe desktop. */
-    .seg { display: flex; width: 100%; gap: var(--space-2xs); }
-    .seg-btn { flex: 1; min-height: var(--tap-min); font-size: var(--font-rand); border-radius: var(--radius-xs); }
-    .seg-btn.seg-6l { display: none; }
+    /* Bara de orizont NU se arata pe telefon (Ion, 2026-08-21: „nu are sens bara
+       de alegere perioada pe mobil"). Vizualizarea e fixa pe 30 de zile. */
+    .seg { display: none; }
     /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
        butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
     .toggle { display: inline-flex; flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: var(--space-6) var(--space-sm); }
