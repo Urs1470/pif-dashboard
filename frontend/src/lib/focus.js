@@ -116,17 +116,11 @@ export function focusOnLand(node, key) {
         try { node.scrollIntoView({ behavior: motion.reduced ? 'auto' : 'smooth', block: 'center' }) } catch (_) { node.scrollIntoView() }
       }
 
-      // HASURA PORNESTE DUPA CE DERULAREA S-A ASEZAT, nu in timpul ei: o
-      // evidentiere care ruleaza cat timp lista inca se misca se pierde —
-      // ochiul urmareste miscarea, nu culoarea. Cu derulare lina, ~320ms.
-      const porneste = () => {
-        node.classList.add('focus-flash')
-        const clear = () => node.classList.remove('focus-flash')
-        node.addEventListener('animationend', clear, { once: true })
-        setTimeout(clear, 2400)
-      }
-      if (needsScroll && !morphing && !motion.reduced) setTimeout(porneste, 320)
-      else porneste()
+      // SEMNUL (inelul in doua batai, global.css) porneste singur dupa
+      // `--dur-arc` — dupa ce pagina a sosit si derularea lina s-a asezat.
+      // 2400: decalaj + a doua bataie + inel, plus o rasuflare (ca in Calendar).
+      node.classList.add('focus-flash')
+      setTimeout(() => node.classList.remove('focus-flash'), motion.reduced ? 3200 : 2400)
     })
   }
   maybe()

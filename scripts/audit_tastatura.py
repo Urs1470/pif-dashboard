@@ -487,14 +487,14 @@ def main():
                   const jos = dock ? dock.getBoundingClientRect().top : window.innerHeight;
                   const sus = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 0;
                   const fata = f.querySelector('.gl-fata');
-                  const anim = fata ? getComputedStyle(fata, '::after').animationName : getComputedStyle(f).animationName;
+                  const anim = fata ? getComputedStyle(fata, '::before').animationName : getComputedStyle(f, '::before').animationName;
                   return { top: Math.round(r.top), bottom: Math.round(r.bottom), sus, jos: Math.round(jos), anim } }""")
                 bifa(rand is not None, 'randul-tinta e hasurat (`.focus-flash`) la 2 s dupa atingere', 'niciun .focus-flash')
                 if rand:
                     bifa(rand['top'] >= rand['sus'] - 1 and rand['bottom'] <= rand['jos'] + 1,
                          'randul-tinta sta intre antet si dock, nu sub ele',
                          '%d..%d, vizibil %d..%d' % (rand['top'], rand['bottom'], rand['sus'], rand['jos']))
-                    bifa(rand['anim'] == 'focusFlash', 'hasura se vede pe fata randului (nu sub ea)',
+                    bifa(rand['anim'] == 'gasitaInelRand', 'semnul e inelul din Calendar („pe asta ai apasat"), pe fata randului',
                          'animationName=%s' % rand['anim'])
 
             bifa(not erori, 'nicio eroare de pagina pe tot parcursul', ' | '.join(erori)[:300])

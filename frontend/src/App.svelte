@@ -5,6 +5,7 @@
   import Toast from './components/ui/Toast.svelte'
   import TrageReincarca from './components/ui/TrageReincarca.svelte'
   import Tooltip from './components/ui/Tooltip.svelte'
+  import Urma from './components/Urma.svelte'
   import CommandPalette from './components/layout/CommandPalette.svelte'
   import { setLucideProps, Compass, ArrowLeft } from '@lucide/svelte'
   import EmptyState from './components/ui/EmptyState.svelte'
@@ -231,6 +232,8 @@
   <TrageReincarca />
   <!-- Un singur tooltip pentru toata aplicatia; citeste atributele `title`. -->
   <Tooltip />
+  <!-- Jurnalul de pe aparat (`#/?urma=1`) — vezi lib/urma.js. -->
+  <Urma />
 </div>
 
 <style>

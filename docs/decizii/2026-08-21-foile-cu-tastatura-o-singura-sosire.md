@@ -91,3 +91,20 @@ Tot atunci:
   2 s, pornită după ce derularea s-a așezat.
 - **Din foaia zilei către proiect**: foaia coboară întâi (220 ms, ruta se încălzește între
   timp), pagina pleacă după ea — nu mai e dizolvată în instantaneul View Transition.
+
+## Runda a treia: semnul comun de aterizare și jurnalul de pe aparat
+
+- Ion: „de ce nu ai folosit hașurarea existentă?" — avea dreptate: semnul „pe asta ai apăsat"
+  exista deja în Calendar (inelul în două bătăi, pornit după `--dur-arc`). Acum e **unul singur**,
+  în `global.css` (`gasitaInel` pentru bandă, `gasitaInelRand` pentru rând — fără desfacere,
+  fiindcă rândul e lat, scund și tăiat de `overflow: hidden`; măsurat: scala lăsa o linie de 1 px).
+- **Tastatura nu se poate face „milisecundă cu milisecundă" fără aparat.** `lib/urma.js` +
+  `components/Urma.svelte`: cu `#/?urma=1` aplicația înregistrează, la fiecare deschidere de
+  foaie, focusul, fiecare `resize`/`scroll` al `visualViewport` cu valoarea lui și poziția foii
+  pe cadru; butonul „Urmă" copiază jurnalul. Se oprește cu `?urma=0`.
+- **Cauza probabilă pe Honor/Gboard**: Chromium pe Android 11+ raportează înălțimea tastaturii
+  progresiv, cadru cu cadru. Cu prevederea la 312, primul `resize` de 30 px devenea „adevărul"
+  și foaia cobora, apoi urca în trepte cu 220 ms întârziere. Acum, cât e prevederea în vigoare,
+  valorile mai mici decât cea știută înseamnă „încă urcă" (se scriu doar la așezare, 150 ms fără
+  alt `resize`), iar când tastatura e raportată în mers (`html.kb-in-mers`) podeaua o urmează
+  fără tranziție. Latența se învață la capătul urcării, nu la începutul ei.

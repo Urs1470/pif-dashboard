@@ -1,5 +1,6 @@
 <script module>
   import { untrack as _untrack } from 'svelte'
+  import { urmaStart, urmaEvent } from '../../lib/urma.js'
 
   // Comune tuturor instantelor de Modal (vezi blocarea derularii mai jos).
   let blocari = 0
@@ -105,13 +106,44 @@
     html.classList.toggle('are-tastatura', kb > 0)
   }
 
+  // TASTATURA CARE URCA CADRU CU CADRU. Chromium pe Android 11+ raporteaza
+  // inaltimea tastaturii PROGRESIV, in timpul animatiei ei (zeci de `resize`
+  // cu valori crescatoare), nu o singura data la capat. Cu prevederea pusa la
+  // 312, primul `resize` de 30px ar fi „adevarul" si foaia ar cobori inapoi,
+  // apoi ar urca in trepte, fiecare cu o tranzitie de 220ms in urma degetului.
+  // Regula: cat timp prevederea e in vigoare, o valoare mai MICA decat cea
+  // stiuta inseamna „inca urca" si nu se scrie; se scrie cand ajunge, sau cand
+  // s-a oprit din crescut (150ms fara alt `resize`). Fara prevedere, valorile
+  // se scriu toate, dar FARA tranzitie pe podea: foaia urmeaza tastatura cadru
+  // cu cadru in loc sa o urmareasca de la 220ms distanta.
+  let ultimResize = 0
+  let ceasAsezare = null
+
   function scrie(e) {
     if (!vv) return
     const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
+    urmaEvent('vv', { tip: e?.type || 'init', h: Math.round(vv.height), kb, prevazut })
     // Cat timp prevederea e in vigoare, un `scroll` al viewportului (focusul
     // care aduce campul la vedere) nu o strica: tastatura inca urca. Doar un
     // `resize` spune adevarul despre ea, in ambele sensuri.
     if (prevazut && kb === 0 && e?.type !== 'resize') return
+    if (e?.type === 'resize') {
+      const t = performance.now()
+      const inMers = t - ultimResize < 100
+      ultimResize = t
+      document.documentElement.classList.toggle('kb-in-mers', inMers && kb > 0)
+      clearTimeout(ceasAsezare)
+      if (prevazut && kb > 0 && kb < kbStiut - 4 && !e.asezare) {
+        // Inca urca: nu scriem valoarea, dar daca nu mai vine alta o scriem pe
+        // ultima — o tastatura mai SCUNDA decat cea stiuta e si ea un adevar.
+        ceasAsezare = setTimeout(() => {
+          document.documentElement.classList.remove('kb-in-mers')
+          if (prevazut) scrie({ type: 'resize', asezare: true })
+        }, 150)
+        return
+      }
+      ceasAsezare = setTimeout(() => document.documentElement.classList.remove('kb-in-mers'), 150)
+    }
     if (kb > 0 && prevazut && tPrevedere) {
       // Prima masuratoare se ia intreaga; urmatoarele se netezesc (o deschidere
       // cu telefonul ocupat n-are voie sa mute singura contractul).
@@ -157,6 +189,7 @@
     if (!kbStiut || typeof document === 'undefined' || kbAcum() > 0) return 0
     prevazut = true
     tPrevedere = performance.now()
+    urmaEvent('prevedere', { kb: kbStiut, lat: latStiuta })
     scrieKb(kbStiut)
     clearTimeout(ceasPrevedere)
     ceasPrevedere = setTimeout(() => {
@@ -179,6 +212,16 @@
     clearTimeout(ceasPrevedere)
     if (vv) scrie({ type: 'resize' })
     else scrieKb(0)
+  }
+
+  // Jurnalul de pe aparat vede si focusul: de la el porneste IME-ul.
+  if (typeof document !== 'undefined') {
+    document.addEventListener('focusin', (e) => {
+      const el = e.target
+      if (el && el.matches && el.matches('input, textarea, [contenteditable="true"]')) {
+        urmaEvent('focus', { ce: el.tagName + (el.placeholder ? ' ' + el.placeholder : '') })
+      }
+    }, true)
   }
 
   // Ultima apasare pe ecran — partajata de TOATE instantele. Fiecare modal o
@@ -687,6 +730,7 @@
       treapta = 0
       intins = false
       apasatInauntru = false
+      if (sheet) urmaStart(title || size)
       if (sheet && cuTastatura) kbPrevazut = prevedeTastatura()
     })
   })
@@ -1253,6 +1297,10 @@
       padding: 0 0 var(--kb, 0px);
       transition: padding-bottom var(--dur-base) var(--ease);
     }
+    /* Tastatura raportata cadru cu cadru: podeaua o urmeaza direct, nu la 220ms
+       in urma (vezi `kb-in-mers` in <script module>). */
+    :global(html.kb-in-mers) .backdrop { transition: none; }
+    :global(html.kb-in-mers) .modal.sheet { transition: none; }
     .modal {
       max-width: 100%;
       /* dvh urmareste bara de adresa; sheet-ul nu trebuie sa depaseasca ecranul

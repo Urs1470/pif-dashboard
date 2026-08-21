@@ -2296,17 +2296,8 @@
   /* Inelul TINE PLIN pe la mijloc, nu doar trece prin opacitate 1: un semn care
      creste si se stinge fara sa se opreasca nicaieri e greu de prins din
      periferie — masurat pe Ion, „de-abia sesizez". */
-  @keyframes gasitaInel {
-    0%   { opacity: 0; transform: scale(0.92); }
-    15%  { opacity: 1; transform: scale(1); }
-    45%  { opacity: 1; transform: scale(1.06); }
-    100% { opacity: 0; transform: scale(1.22); }
-  }
-  @keyframes gasitaBanda {
-    0%   { transform: scale(1); }
-    30%  { transform: scale(1.04); }
-    100% { transform: scale(1); }
-  }
+  /* `gasitaInel` / `gasitaBanda` stau in global.css: acelasi semn il poarta si
+     randul de task pe care aterizezi de pe „Astăzi" (`.focus-flash`). */
   /* SEMNUL PORNESTE DUPA CE PAGINA A TERMINAT DE VENIT.
      Prima versiune pornea odata cu ea, si de-aia „de-abia se sesiza": masurat pe
      aplicatie, tranzitia de ruta tine 82 -> 500ms, iar inelul isi consuma varful
