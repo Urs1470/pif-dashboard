@@ -45,3 +45,38 @@ dar apoi `scrollIntoView({behavior:'smooth'})` mai adăuga ~400 ms de listă car
 *după* ce pagina sosise. Acum derularea e `auto`: aterizarea se face în callbackul tranziției
 de rută, deci **pagina sosește cu rândul deja centrat**, iar semnalul „pe ăsta ai apăsat" îl
 dă inelul care pulsează.
+
+## Runda a doua: „apare tastatura și se rupe", „se închide în 3 etape"
+
+Măsurat cadru cu cadru toate straturile care se mișcă (foaie, voal, `max-height`, `.fa`,
+`--kb`, fundal). Trei cauze distincte, toate confirmate cu cifre:
+
+1. **`.fa { height: 58dvh }` era INERT.** `.fa` e element flex într-o coloană, iar
+   `flex-basis` (setat pe regula de bază) ia locul lui `height` pe axa principală — deci
+   declarația nu se citea niciodată. Revertul o restaurase din comentariul stale de la linia
+   89, nu din cod. Efect măsurat: foaia se deschidea la **591px** în loc de 489, deci când
+   venea tastatura se strângea **191px** în loc de ~90. Ăsta era „se rupe". `flex-basis`
+   restaurat; măsurat acum: deschidere 550, strângere 90px.
+2. **Un salt de 16px într-un singur cadru**, la comutarea clasei `are-tastatura` (insetul de
+   siguranță apărea/dispărea instant). Se vedea de două ori: la sosirea tastaturii și *în
+   plină coborâre* la închidere — a doua „etapă". Insetul e acum un `calc` peste `--kb`
+   (deci moștenește `--kb`-ul **înghețat** pe voal la închidere → zero schimbare cât coboară
+   foaia) și e și tranziționat, pe același ceas cu restul.
+3. **Fundalul termina după foaie.** Ceasul de revenire era `--dur-slow` + `--ease` peste o
+   foaie care pleacă în 220 accelerând: măsurat, fundalul încă se mărea la ~50ms după ce
+   foaia dispăruse — a treia „etapă". Acum `--dur-base` + `--ease-iesire`: termină împreună.
+
+## Tranziția Acasă → task, a doua oară: „tot greoaie"
+
+Măsurat pe pași: munca e gata la **90 ms** (rută schimbată, rând deja centrat), dar pagina
+rămânea un instantaneu înghețat până la **523 ms** — restul erau ultimii pixeli dintr-o
+alunecare de 30px. Drumul paginii noi trece de la `--dur-arc` (420) la `--dur-slow` (280),
+treapta de *suprafață* din contractul de mișcare. Măsurat după: **372 ms**.
+
+## Din verificarea adversarială
+
+Pe lângă `.fa` (găsit independent și de măsurătoare), a confirmat un defect real în
+`ProjectFormModal`: ceasul de focus citea `motion.reduced` în corpul efectului, ceea ce îl
+făcea **dependență reactivă** — o comutare a setării „reduce motion" cât timp foaia e
+deschisă re-rula efectul, iar el începe cu `form = emptyForm()`: pierdeai tot ce scriseseși.
+Rezolvat cu `untrack` + curățarea ceasului, în ambele foi.

@@ -25,7 +25,7 @@
   // (tokens.css), iar DM Mono e pentru cifre care se compara pe verticala. Ce
   // ramane din intentia handoff-ului e treapta: 12, majuscule, 600, ls .05em —
   // adica exact clasa de eticheta din propria lui secțiune de tipografie.
-  import { tick } from 'svelte'
+  import { tick, untrack } from 'svelte'
   import { motion, motionDuration, DUR_SLOW } from '../lib/motion.svelte.js'
   import { Search, Mic, Plus, X, ChevronDown, Check } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
@@ -86,7 +86,7 @@
   // Pana acum aștepta lista („se ridica DOAR cu lista in mana"), fiindca altfel se
   // dimensiona dupa o linie de text si SAREA la inaltimea reala cat era inca la
   // opacitate 0,2 — masurat: 228 -> 374px. Motivul ala a DISPARUT: de cand corpul
-  // are inaltime fixa (`.fa { height: 58dvh }`), nu exista salt de dimensionat,
+  // are inaltime fixa (`.fa { flex-basis: 58dvh }`), nu exista salt de dimensionat,
   // fiindca nu exista dimensionare dupa conţinut.
   // Ce a rămas era doar o intarziere de pana la 250ms intre atingere si foaie, si
   // ea se vedea: Ion, 2026-08-17: „animatia de adaugare task mai fluida, acum e
@@ -201,7 +201,9 @@
   // deci focusul e imediat.
   $effect(() => {
     if (!deschis) return
-    const dupaAsezare = motion.reduced ? 0 : motionDuration(DUR_SLOW) + 40
+    // `untrack`: `motion.reduced` e stare reactiva, iar ca dependenta ar re-porni
+    // efectul la orice comutare a setarii de sistem (vezi nota din ProjectFormModal).
+    const dupaAsezare = untrack(() => (motion.reduced ? 0 : motionDuration(DUR_SLOW) + 40))
     const t = setTimeout(() => {
       campEl?.focus()
       if (editeaza) campEl?.select()
@@ -776,9 +778,13 @@
        vechiul plafon de 46dvh — iar fara ea foaia nu ajunge sa para un ecran plin.
        Regula e acum a foii, nu a telefonului (vezi `.fa` mai sus): aici ramane
        doar TREAPTA, fiindca pe telefon peste foaie mai vine si tastatura. */
-    /* Pagina: corpul umple tot ce ramane sub antet. Inaltimea foii o da
-       `.intins` (100dvh - kb), deci lista se scurteaza sub tastatura si
-       deruleaza; randul de jos ramane accesibil derulind, sub ea. */
-    .fa { height: 58dvh; }
+    /* `flex-basis`, NU `height`. `.fa` e element flex intr-o coloana
+       (`.modal-body` e `display: flex; flex-direction: column`), iar cand
+       `flex-basis` e altceva decat `auto` el ia locul lui `height` pe axa
+       principala — deci `height: 58dvh` nu se citeste NICIODATA. Masurat:
+       foaia se deschidea la 591px in loc de 489, adica se stangea cu 207px
+       cand venea tastatura in loc de ~100. Exact asta se vedea ca „se rupe
+       animatia". Valoarea e cea dinainte de experimentul cu pagina. */
+    .fa { flex-basis: 58dvh; }
   }
 </style>

@@ -1,5 +1,5 @@
 <script>
-  import { tick } from 'svelte'
+  import { tick, untrack } from 'svelte'
   import { motion, motionDuration, DUR_SLOW } from '../../lib/motion.svelte.js'
   import { Zap, Wrench } from '@lucide/svelte'
   import Modal from '../ui/Modal.svelte'
@@ -69,7 +69,16 @@
       // NUMELE PRIMESTE FOCUSUL, dar DUPA ce foaia s-a asezat — altfel tastatura
       // ar urca peste alunecarea foii (vezi FoaieAdauga). Sub reduced-motion,
       // imediat.
-      setTimeout(() => numeEl?.focus(), motion.reduced ? 0 : motionDuration(DUR_SLOW) + 40)
+      //
+      // `untrack` pe citirea lui `motion`: `motion.reduced` e stare REACTIVA
+      // (un listener de `matchMedia` o rescrie), iar citita direct in corpul
+      // efectului ar deveni dependenta lui — o comutare a setarii „reduce
+      // motion" cat timp foaia e deschisa ar re-rula efectul, iar el incepe cu
+      // `form = emptyForm()`: ai fi pierdut tot ce scrisesesi. Ceasul se si
+      // curata, ca sa nu focalizeze un camp dintr-o foaie deja inchisa.
+      const pauza = untrack(() => (motion.reduced ? 0 : motionDuration(DUR_SLOW) + 40))
+      const ceas = setTimeout(() => numeEl?.focus(), pauza)
+      return () => clearTimeout(ceas)
     }
   })
 

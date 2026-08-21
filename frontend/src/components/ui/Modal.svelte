@@ -1319,14 +1319,13 @@
     .modal-header { padding-left: var(--space-md); padding-right: var(--space-md); }
     .modal-body {
       padding: var(--space-md);
-      /* Ultimul rand din corp nu trebuie sa cada sub bara de gesturi. Cand exista
-         footer, el poarta insetul si aici nu se mai adauga. */
-      padding-bottom: calc(var(--space-md) + var(--safe-bottom));
+      /* Insetul de jos il pune regula cu `--kb` de mai jos (se topeste cand vine
+         tastatura, si ramane inghetat la inchidere). */
       -webkit-overflow-scrolling: touch;
     }
     .modal:has(.modal-footer) .modal-body { padding-bottom: var(--space-md); }
     .modal-footer {
-      padding: var(--space-12) var(--space-md) calc(var(--space-12) + var(--safe-bottom));
+      padding: var(--space-12) var(--space-md);
     }
     /* Actiunile ocupa latimea si stau la indemana: pe telefon un buton de 100px
        intr-un colt e o tinta mai mica decat trebuie, iar ordinea inversata pune
@@ -1343,8 +1342,18 @@
     /* CU TASTATURA SUS, INSETUL DE JOS NU MAI EXISTA: e sub tastatura. Fara
        regula asta, footerul foii pastra 24-34px de spatiu mort exact cand
        ecranul e cel mai mic. */
-    :global(html.are-tastatura) .modal-body { padding-bottom: var(--space-md); }
-    :global(html.are-tastatura) .modal-footer { padding-bottom: var(--space-12); }
+    /* INSETUL DE JOS SE TOPESTE IN `--kb`, NU SE COMUTA DINTR-O CLASA.
+       Cat timp regula atarna de clasa `are-tastatura`, insetul de siguranta
+       (24-34px) aparea si disparea INTR-UN CADRU: masurat, foaia sarea 16px in
+       clipa in care sosea tastatura („se rupe animatia") si inca o data, in
+       plina coborare, la inchidere („parca se inchide in 3 etape").
+       Scris ca `calc` peste `--kb`, insetul dispare cat timp tastatura il
+       acopera si — critic — MOSTENESTE `--kb`-ul INGHETAT pe voal la inchidere
+       (vezi `intra`), deci in timpul coborarii nu se mai schimba nimic.
+       Tranzitia il face si continuu, pe acelasi ceas cu restul foii. */
+    .modal-body, .modal-footer { transition: padding-bottom var(--dur-base) var(--ease); }
+    .modal-body { padding-bottom: calc(var(--space-md) + max(0px, var(--safe-bottom) - var(--kb, 0px))); }
+    .modal-footer { padding-bottom: calc(var(--space-12) + max(0px, var(--safe-bottom) - var(--kb, 0px))); }
 
     /* doc = sheet pe tot ecranul pe mobil. PODEAUA URCA SI AICI: `padding: 0`
        batea regula generala (`padding: 0 0 var(--kb)`), deci documentul — inalt
