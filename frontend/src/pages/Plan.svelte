@@ -2790,6 +2790,14 @@
     /* Bara de orizont NU se arata pe telefon (Ion, 2026-08-21: „nu are sens bara
        de alegere perioada pe mobil"). Vizualizarea e fixa pe 30 de zile. */
     .seg { display: none; }
+    /* WEEKEND: comutatorul are sens doar in vederea pe ZILE, iar pe telefon
+       vederea e fixa pe 30 de zile — deci acolo nu controleaza nimic si e mereu
+       `disabled`. Marcajul lui exista din prima zi (`class="toggle doar-desktop"`,
+       cu un comentariu care spune „ascuns pe telefon, cu clasa lui"), dar REGULA
+       n-a fost scrisa niciodata: masurat, butonul iesea 114x44 pe 390px, deci se
+       vedea si se putea apasa degeaba. O clasa fara regula arata in cod ca o
+       treaba facuta. */
+    .toggle.doar-desktop { display: none; }
     /* `nowrap` + eticheta scurtata: „Export PDF" se rupea pe doua randuri si facea
        butonul cu 10px mai inalt decat vecinii lui, adica un rand strâmb. */
     .toggle { display: inline-flex; flex: 1 1 0; min-height: var(--tap-min); justify-content: center; white-space: nowrap; padding: var(--space-6) var(--space-sm); }
