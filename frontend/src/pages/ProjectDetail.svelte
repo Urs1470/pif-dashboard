@@ -1169,7 +1169,7 @@
               {/if}
               {#each grupe[gid].items as t (t.id)}
                 <div class="trow-wrap" style="--ring: {dueRing(t.data_scadenta)}"
-                     animate:flip={{ duration: motionDuration(DUR_BASE) }}
+                     animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
                      onpointerenter={() => preincarca(t.id)}
                      in:sosire|local out:plecare>
                   {@render randTask(t)}
@@ -1186,7 +1186,7 @@
                 <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
                 {#each doneTasks as t (t.id)}
                   <div class="trow-wrap" style="--ring: {dueRing(t.data_scadenta)}"
-                       animate:flip={{ duration: motionDuration(DUR_BASE) }}
+                       animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
                        onpointerenter={() => preincarca(t.id)}
                        in:sosire|local out:plecare>
                     {@render randTask(t)}
@@ -1590,7 +1590,8 @@
   /* Task list */
   /* Latimea vine de sus, de pe `.page` — vezi nota de acolo. Aici nu se mai
      ingusteaza nimic separat, altfel lista iese din marginile paginii ei. */
-  .task-list { display: flex; flex-direction: column; }
+  /* `relative` — vezi nota de la `plecare` (motion.svelte.js). */
+  .task-list { display: flex; flex-direction: column; position: relative; }
 
   /* ===== CAPUL DE GRUPA — ACELASI OBIECT CA IN /tasks, PE TOATE LATIMILE =====
      Comitul anterior a unificat DOAR blocul de sub 768px, si asa a ramas: pe
@@ -1903,7 +1904,11 @@
     .gl-fata { display: flex; align-items: center; gap: var(--space-12); width: 100%;
                min-height: var(--row-h-mobile); padding: 0 var(--space-12);
                background: var(--bg-surface); position: relative;
-               z-index: 1; border-radius: 0; will-change: transform; }
+               z-index: 1; border-radius: 0; }
+    /* FARA `will-change` PERMANENT. Il tinea fiecare rand din lista, deci pe 40 de
+       taskuri erau 40 de straturi de compozitare pastrate tot timpul, si cand nu
+       atingeai nimic. Regula casei o scrie chiar proiectul, in `lib/tragereTimeline.js`:
+       `will-change` DOAR cat tine gestul. Il pune si il scoate `lib/glisare.js`. */
     .trow-wrap.deschis .gl-fata { background: var(--bg-elevated); }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din

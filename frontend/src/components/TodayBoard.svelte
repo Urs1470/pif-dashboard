@@ -26,7 +26,7 @@
   import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
-  import { motionDuration, DUR_BASE, plecare, sosire } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, EASE, plecare, sosire } from '../lib/motion.svelte.js'
 
   // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
   // "deadline-uri" dupa ce bifez / mut / scot un task (altfel ramaneau stale
@@ -413,7 +413,7 @@
           role="listitem"
           ondragover={(e) => onDragOver(e, i)}
           ondrop={(e) => onDrop(e, i)}
-          animate:flip={{ duration: flipDur }}
+          animate:flip={{ duration: flipDur, easing: EASE }}
           in:sosire|local
           out:plecare
           use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it, true), onAmana: () => deschideFoaia(it, 'plan') }}
@@ -519,6 +519,7 @@
           class:bifare={bifatAcum === it.tip + ':' + it.id}
           style="--ring: {dueRing(it.data_scadenta)}"
           role="listitem"
+          animate:flip={{ duration: flipDur, easing: EASE }}
           in:sosire|local
           out:plecare
           use:glisare={{ activ: peTelefon, onBifa: it.status === 'done' ? null : () => onToggle(it, true), onAmana: () => deschideFoaia(it, 'plan') }}
@@ -675,7 +676,8 @@
   .pers-n { font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums;
     text-transform: none; letter-spacing: var(--tracking-normal); }
 
-  .a-list { display: flex; flex-direction: column; }
+  /* `relative` — vezi nota de la `plecare` (motion.svelte.js). */
+  .a-list { display: flex; flex-direction: column; position: relative; }
   /* SEVERITATEA = BORDURA DIN STANGA, ca in /tasks si cum o scrie documentatia
      (CLAUDE.md/MEMORY: „severitatea se citeste din bordura din stanga, dupa
      termen"). Aici supravietuia varianta veche — un underline scurt jos
@@ -911,7 +913,11 @@
                min-height: var(--row-h-mobile); padding: 0 var(--space-10);
                background: var(--bg-surface);
                border-radius: 0; position: relative; z-index: 1;
-               will-change: transform; }
+             }
+    /* FARA `will-change` PERMANENT. Il tinea fiecare rand din lista, deci pe 40 de
+       taskuri erau 40 de straturi de compozitare pastrate tot timpul, si cand nu
+       atingeai nimic. Regula casei o scrie chiar proiectul, in `lib/tragereTimeline.js`:
+       `will-change` DOAR cat tine gestul. Il pune si il scoate `lib/glisare.js`. */
     .arow + .arow::before { left: 10px; right: 10px; }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din

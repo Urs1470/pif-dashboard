@@ -302,7 +302,7 @@
              un card aparut pe pozitia a zecea astepta 240ms degeaba.
              `|local` — la deschiderea paginii blocul `{#each}` se creeaza
              intreg, iar acolo sosirea o face tranzitia de ruta. -->
-        <div class="pcard cell-in" style="--celula: {i}" role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE) }} in:sosire|local onclick={() => openProject(p)} onkeydown={(e) => cardKeydown(e, p)} onpointerenter={() => preincarca(`/projects/${p.id}`)} onpointerdown={() => preincarca(`/projects/${p.id}`)}>
+        <div class="pcard cell-in" style="--celula: {i}" role="button" tabindex="0" animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }} in:sosire|local onclick={() => openProject(p)} onkeydown={(e) => cardKeydown(e, p)} onpointerenter={() => preincarca(`/projects/${p.id}`)} onpointerdown={() => preincarca(`/projects/${p.id}`)}>
           <div class="card-top">
             <!-- TIPUL, SPUS O SINGURA DATA. Era un fulger amber intr-un chip
                  patrat PLUS cuvantul „PIF" — doua obiecte pentru un fapt care nu
@@ -366,7 +366,7 @@
         <div class="arch-cap"><Archive size={13} /><span>Arhivă · finalizate</span><span class="grup-n">{archivedItems.length}</span></div>
         <div class="arch-list">
           {#each archivedItems as p (p.id)}
-            <button class="arch-row archived" animate:flip={{ duration: motionDuration(DUR_BASE) }} onclick={() => openProject(p)}>
+            <button class="arch-row archived" animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }} onclick={() => openProject(p)}>
               <span class="arch-name">{p.nume || '—'}</span>
               <span class="dim arch-client">{p.client || '—'}</span>
               <!-- Acelasi tip, aceeasi haina ca pe card: linie subtire + cuvant.

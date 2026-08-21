@@ -20,7 +20,7 @@
   import { uita } from '../lib/cache.js'
   import { slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare, sosire, desfacere, alunecare, DUR_FAST, EASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, plecare, sosire, alunecare, DUR_FAST, EASE } from '../lib/motion.svelte.js'
   // Acelasi puls de prag ca la glisarea unui rand: doua gesturi diferite, dar
   // „ai trecut pragul" trebuie sa se simta la fel, altfel se invata separat.
   import { ListTodo, Plus, CheckCircle2, CalendarDays, ChevronDown, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
@@ -102,7 +102,6 @@
   let editingTask = $state(null)
   let showEditModal = $state(false)
 
-  let expandedTask = $state(null)
   let subtasksCache = $state({})
   let newSubtaskTitle = $state('')
   let adaugSubLa = $state('')   // id-ul taskului al carui compozitor de subtask e deschis
@@ -1005,7 +1004,8 @@
            apare la hover. Gestul e o solutie pentru absenta hover-ului, nu o
            imbunatatire universala. -->
       <div class="sub-row" class:sub-done={sub.done} class:gl-sub={ecran.telefon}
-           animate:flip={{ duration: motionDuration(DUR_BASE) }} transition:slide|local={{ duration: motionDuration(DUR_BASE), easing: EASE }}
+           animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
+           in:sosire|local out:plecare
            use:glisare={{ activ: ecran.telefon && editSubId !== sub.id, onAmana: () => removeSubtask(sub) }}>
         <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Șterge</span><span class="gl-ico-s"><SolidIcon name="trash" size={15} /></span></div>
         <div class="gl-fata">
@@ -1223,9 +1223,9 @@
       {#each grupe[gid].items as t (t.id)}
 <!-- Iesirea randului bifat: se stinge si se strange, in loc sa sara.
                Vezi `plecare` in lib/motion.svelte.js. -->
-                    <div class="trow-wrap" class:deschis={expandedTask === t.id || (showSheet && sheetTask?.id === t.id)}
+                    <div class="trow-wrap" class:deschis={showSheet && sheetTask?.id === t.id}
              style="--ring: {dueRing(t.data_scadenta)}"
-             animate:flip={{ duration: motionDuration(DUR_BASE) }}
+             animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
              onpointerenter={() => preincarca(t.id)}
              in:sosire|local out:plecare>
           <div class="trow" class:done={t.status === 'done'} class:bifare={bifatAcum === t.id} use:focusOnLand={focusKey('global', t.id)}
@@ -1290,14 +1290,11 @@
             <span class="ttermen" class:sev={isOverdue(t.data_scadenta)}
                   class:acum={isToday(t.data_scadenta)}>{termenScurt(t)}</span>            </div>
           </div>
-          <!-- Pe desktop taskul se desface AICI, in lista. Acelasi `taskDetail` ca
-               in foaia de pe telefon, deci designul e identic — se schimba doar
-               unde e asezat. -->
-          {#if expandedTask === t.id}
-            <div class="subtask-body" transition:desfacere={{ duration: motionDuration(DUR_BASE) }}>
-              {@render taskDetail(t)}
-            </div>
-          {/if}
+          <!-- Aici se desfacea taskul in lista, pe desktop. A ramas fara declansator
+               de cand taskul se deschide in PANOU lateral (`showSheet`): `expandedTask`
+               nu se mai asigneaza nicaieri, deci blocul nu s-a mai randat niciodata,
+               iar tranzitia lui (`desfacere`, sapte proprietati de layout pe cadru)
+               era cod mort. Sters cu tot cu starea. -->
         </div>
       {/each}
       {/if}
@@ -1935,7 +1932,9 @@
   .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
 
-  .task-list { display: flex; flex-direction: column; }
+  /* `relative`: randul care pleaca se scoate din flux fata de lista (vezi
+     `plecare` in motion.svelte.js), ca golul sa se inchida fara animatie de layout. */
+  .task-list { display: flex; flex-direction: column; position: relative; }
   /* MUCHIA DE SEVERITATE A PLECAT — severitatea e pe inelul bifei (`--ring`) si
      pe textul termenului. Cei 2px pierduti de la bordura se intorc in padding,
      ca lista sa nu se decaleze fata de capetele de grupa. */
@@ -2218,7 +2217,11 @@
     .gl-fata { display: flex; align-items: center; gap: var(--space-12); width: 100%;
                min-height: var(--row-h-mobile); padding: 0 var(--space-12);
                background: var(--bg-surface); position: relative;
-               z-index: 1; border-radius: 0; will-change: transform; }
+               z-index: 1; border-radius: 0; }
+    /* FARA `will-change` PERMANENT. Il tinea fiecare rand din lista, deci pe 40 de
+       taskuri erau 40 de straturi de compozitare pastrate tot timpul, si cand nu
+       atingeai nimic. Regula casei o scrie chiar proiectul, in `lib/tragereTimeline.js`:
+       `will-change` DOAR cat tine gestul. Il pune si il scoate `lib/glisare.js`. */
     .trow-wrap.deschis .gl-fata { background: var(--bg-elevated); }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din

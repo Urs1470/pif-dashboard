@@ -408,10 +408,28 @@
      WebView-ul Capacitor, de aceea nu ne putem baza pe el. */
   --kb: 0px;
 
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
+  /* INTAI VARIABILA INJECTATA DE CAPACITOR, APOI `env()`.
+     `SystemBars` (Capacitor core) injecteaza `--safe-area-inset-*` pe <html> si
+     le tine coerente cu redimensionarea WebView-ului — inclusiv cand vine
+     tastatura, cand insetul de jos devine 0 fiindca IME-ul acopera oricum bara.
+     `env()` singur vine pe alt drum si se poate schimba in alt cadru decat
+     redimensionarea, deci era o A DOUA sursa de miscare, necoordonata cu prima.
+     Tiparul e cel recomandat de ghidul Capacitor pentru edge-to-edge; in browser,
+     unde variabila nu exista, se cade curat pe `env()`. */
+  /* Implicitele vin din `env()`; in aplicatia Android le SUPRASCRIE Capacitor,
+     care scrie `--safe-area-inset-*` ca stil INLINE pe <html> (`SystemBars`,
+     `injectSafeAreaCSS`) — iar stilul inline bate o regula din `:root`. Deci in
+     aplicatie castiga valoarea nativa (coerenta cu redimensionarea WebView-ului,
+     inclusiv cand vine tastatura), iar in browser raman cele din `env()`. */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+
+  --safe-top: var(--safe-area-inset-top);
+  --safe-bottom: var(--safe-area-inset-bottom);
+  --safe-left: var(--safe-area-inset-left);
+  --safe-right: var(--safe-area-inset-right);
 }
 
 /* PE TELEFON TITLUL PAGINII CRESTE, CORPUL CRESTE, RANDUL RAMANE.

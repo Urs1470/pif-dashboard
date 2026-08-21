@@ -2807,7 +2807,11 @@
     .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
                min-height: var(--row-h-mobile); padding: 5px var(--space-sm);
                background: var(--bg-panel); position: relative; z-index: 1;
-               border-radius: var(--radius-md); will-change: transform; }
+               border-radius: var(--radius-md); }
+    /* FARA `will-change` PERMANENT. Il tinea fiecare rand din lista, deci pe 40 de
+       taskuri erau 40 de straturi de compozitare pastrate tot timpul, si cand nu
+       atingeai nimic. Regula casei o scrie chiar proiectul, in `lib/tragereTimeline.js`:
+       `will-change` DOAR cat tine gestul. Il pune si il scoate `lib/glisare.js`. */
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din
        build. Iar `gl-tras`/`gl-bifa` sunt puse la RULARE de `lib/glisare.js`, deci

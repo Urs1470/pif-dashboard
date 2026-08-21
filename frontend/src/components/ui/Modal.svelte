@@ -76,26 +76,30 @@
     html.classList.toggle('are-tastatura', kb > 0)
   }
 
-  // TASTATURA CARE URCA CADRU CU CADRU. Chromium pe Android 11+ poate raporta
-  // inaltimea tastaturii PROGRESIV, in timpul animatiei ei (zeci de `resize`
-  // cu valori crescatoare). Cat timp vin dese, podeaua le urmeaza FARA
-  // tranzitie (`html.kb-in-mers`): foaia merge cu tastatura, nu la 220ms in
-  // urma ei.
-  let ultimResize = 0
-  let ceasAsezare = null
-
+  // ===== DOUA REGIMURI, SI DOAR UNUL ARE NEVOIE DE `--kb` =====
+  //
+  // In APLICATIA ANDROID nu noi ridicam foaia deasupra tastaturii — o face
+  // Capacitor. Plugin-ul lui `SystemBars` (inregistrat automat in core) vede
+  // `viewport-fit=cover` din `index.html` si, la sosirea IME-ului, pune
+  // `setPadding(0,0,0, imeInsets.bottom)` pe PARINTELE WebView-ului: micsoreaza
+  // fizic WebView-ul, intr-o singura trecere de layout. Deci viewportul web e
+  // deja mai mic, `100dvh` e deja corect, iar foaia ancorata jos e deja deasupra
+  // tastaturii — fara ca noi sa facem nimic.
+  // In regimul asta `innerHeight` scade ODATA cu `vv.height`, deci formula de mai
+  // jos da 0. Nu e o scapare, e raspunsul CORECT: n-avem ce ridica.
+  //
+  // In BROWSER (PWA, desktop) containerul NU se micsoreaza: doar viewportul
+  // vizual se strange sub tastatura. Acolo diferenta e reala si `--kb` chiar e
+  // inaltimea pe care trebuie s-o compensam noi.
+  //
+  // Aceeasi formula raspunde corect in amandoua — dar acum din INTENTIE, nu din
+  // intamplare. Trei runde de reglaje pe `--kb` n-au schimbat nimic pe telefonul
+  // lui Ion tocmai fiindca acolo `--kb` era (corect) 0, iar ce se misca era
+  // altceva.
   function scrie(e) {
     if (!vv) return
     const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
     urmaEvent('vv', { tip: e?.type || 'init', h: Math.round(vv.height), kb })
-    if (e?.type === 'resize') {
-      const t = performance.now()
-      const inMers = t - ultimResize < 100
-      ultimResize = t
-      document.documentElement.classList.toggle('kb-in-mers', inMers && kb > 0)
-      clearTimeout(ceasAsezare)
-      ceasAsezare = setTimeout(() => document.documentElement.classList.remove('kb-in-mers'), 150)
-    }
     scrieKb(kb)
   }
 
@@ -289,42 +293,43 @@
     // in intervalul in care trebuia sa fie deja plecata. Vezi `--ease-iesire`.
     const curba = laIntrare ? EASE : EASE_IESIRE
     if (sheet) {
-      // CAT PLEACA, FOAIA NU MAI ASCULTA DE TASTATURA.
+      // ===== CAT PLEACA, FOAIA NU MAI ASCULTA DE NIMIC =====
       //
-      // Foaia de adaugare vine intotdeauna cu tastatura (campul se focalizeaza
-      // singur), iar inchiderea ia focusul — deci tastatura pleaca in ACEEASI
-      // clipa cu foaia. Pana aici, doua lucruri se intamplau atunci deodata:
-      //   1. `--kb` cadea la 0, iar `max-height`-ul foii (care il scade) NU e
-      //      tranzitionat — deci foaia se INTINDEA instant (masurat: 520 -> 550
-      //      intr-un cadru), fix in clipa in care trebuia sa plece;
-      //   2. voalul isi anima `padding-bottom` 300 -> 0, adica IMPINGEA foaia in
-      //      jos pe curba LUI, peste plecarea ei, pe curba EI.
-      // Rezultatul: o plecare care se intinde si accelereaza, si care arata
-      // altfel cu tastatura decat fara — acelasi gest, alta miscare.
+      // Inchiderea ia focusul, deci tastatura pleaca in ACEEASI clipa cu foaia.
+      // Iar cand tastatura pleaca, in aplicatia Android **viewportul creste
+      // inapoi intr-un singur cadru** (Capacitor scoate paddingul de pe WebView).
+      // Foaia, ancorata jos intr-un voal `inset: 0`, ar fi trasa in jos odata cu
+      // el SI si-ar recapata inaltimea — masurat: un salt de 192px si o crestere
+      // de 369 -> 550 in plina coborare. Exact „se inchide in doua etape".
       //
-      // Se citeste inaltimea tastaturii O SINGURA DATA, la plecare, si se
-      // ingheata pe voal. Fiind proprietate custom, valoarea se mosteneste in
-      // tot subarborele modalului, deci si `max-height`-ul foii ramane pe loc.
-      // Voalul se recreeaza la fiecare deschidere (e sub `{#if open}`), deci
-      // inghetul nu supravietuieste in deschiderea urmatoare.
+      // Deci la plecare ii INGHETAM geometria: inaltimea voalului si a foii, in
+      // px, plus `--kb`. Din clipa aia foaia e un obiect care coboara, si atat —
+      // orice s-ar intampla cu viewportul sub ea. Nu se curata nimic: si voalul,
+      // si foaia sunt distruse la sfarsitul tranzitiei (`{#if open}`).
       //
-      // Si atunci plecarea trebuie sa duca singura tot drumul: `100%` e exact
-      // distanta pana jos DOAR cand foaia sta pe marginea de jos a ecranului. Cu
-      // tastatura sus e cu `--kb` mai sus, deci ii lipseau exact atatia pixeli —
-      // pe care ii lua din voal. Acum si-i ia din propria miscare.
-      // Se citeste de la INCHIDERE, nu de la pornirea iesirii: intre ele trec
-      // cateva cadre, si daca aparatul raporteaza plecarea tastaturii mai
-      // devreme (unele o raporteaza dintr-o data, altele treptat), aici ar
-      // ajunge deja 0 si n-ar mai fi nimic de inghetat. `kbAcum()` ramane
-      // rezerva pentru inchiderile venite din afara, care nu trec prin
-      // `inchide()`.
-      // La intrare `kb` e 0 (nicio foaie nu se mai naste cu tastatura sus);
-      // formula ramane una singura pentru ambele sensuri.
-      const kb = laIntrare ? 0 : (kbLaInchidere ?? kbAcum())
-      if (kb && backdropEl) backdropEl.style.setProperty('--kb', kb + 'px')
+      // Si drumul e in PIXELI, nu `100%`: procentul se recalculeaza din inaltimea
+      // curenta, deci daca ea s-ar schimba in zbor, distanta s-ar schimba sub
+      // miscare. Se masoara o data, la pornire, cat are foaia de coborat ca sa
+      // iasa complet de sub marginea ecranului.
+      if (!laIntrare) {
+        const kbInghetat = kbLaInchidere ?? kbAcum()
+        if (backdropEl) {
+          if (kbInghetat) backdropEl.style.setProperty('--kb', kbInghetat + 'px')
+          backdropEl.style.height = backdropEl.clientHeight + 'px'
+        }
+        const r = node.getBoundingClientRect()
+        node.style.height = r.height + 'px'
+        node.style.maxHeight = r.height + 'px'
+        // Cat are de coborat: de la marginea ei de sus pana sub fundul ferestrei.
+        const drum = Math.max(1, Math.round(window.innerHeight - r.top))
+        return {
+          duration, easing: curba,
+          css: (t, u) => `transform: translateY(${u * drum}px)`,
+        }
+      }
       return {
         duration, easing: curba,
-        css: (t, u) => `transform: translateY(calc(${u * 100}% + ${u * kb}px))`,
+        css: (t, u) => `transform: translateY(${u * 100}%)`,
       }
     }
     // PANOUL SOSESTE CU 8px, NU CU O SCALARE. Scalarea spune „fereastra care se
@@ -1157,15 +1162,13 @@
        continutul si i-ar lasa marginea unde era — exact obiectia scrisa mai jos,
        si e corecta. Pe voal insa, `padding-bottom` MUTA copilul ancorat la capat.
        Fara tastatura `--kb` e 0, deci nu se schimba nimic. */
+    /* Podeaua urmeaza `--kb` fara tranzitie: in aplicatie `--kb` e 0 (containerul
+       s-a micsorat deja), iar in browser saltul e al tastaturii, care nu ne
+       asteapta. O tranzitie aici nu face decat sa ramana in urma. */
     .backdrop {
       align-items: flex-end;
       padding: 0 0 var(--kb, 0px);
-      transition: padding-bottom var(--dur-base) var(--ease);
     }
-    /* Tastatura raportata cadru cu cadru: podeaua o urmeaza direct, nu la 220ms
-       in urma (vezi `kb-in-mers` in <script module>). */
-    :global(html.kb-in-mers) .backdrop { transition: none; }
-    :global(html.kb-in-mers) .modal.sheet { transition: none; }
     .modal {
       max-width: 100%;
       /* dvh urmareste bara de adresa; sheet-ul nu trebuie sa depaseasca ecranul
@@ -1217,11 +1220,22 @@
        Rezerva pentru browserele fara `linear()` a plecat: `--ease-spring` e o
        `cubic-bezier` de cand arcul si-a luat token propriu, deci nu mai are de
        ce sa cada. */
+    /* INALTIMEA NU SE ANIMEAZA. NICIODATA.
+       `height`/`max-height` erau tranzitionate ca sa se vada schimbarea de
+       treapta a gestului — dar aceleasi doua proprietati depind si de
+       viewport (`dvh`) si de `--kb`. Iar viewportul, in aplicatia Android, se
+       micsoreaza INSTANTANEU cand vine tastatura (Capacitor redimensioneaza
+       WebView-ul, vezi nota din <script module>). Rezultatul: WebView-ul sarea
+       intr-un cadru, iar foaia il ajungea din urma in 220ms — exact „apare
+       brusc tastatura si se rupe animatia". La inchidere, simetric: foaia CRESTEA
+       inapoi in timp ce cobora, adica „se inchide in doua etape".
+       Acum inaltimea urmeaza viewportul in ACELASI cadru cu el, ca la o
+       aplicatie nativa. Schimbarea de treapta a gestului ramane vizibila: cat
+       tine gestul, inaltimea o scrie JS-ul cadru cu cadru (`--h-foaie`), iar la
+       ridicare `.gest` pleaca si valoarea e deja cea finala. */
     .modal.sheet {
       translate: 0 var(--trasY, 0px);
       transition: translate var(--dur-slow) var(--ease-spring),
-                  height var(--dur-base) var(--ease),
-                  max-height var(--dur-base) var(--ease),
                   scale var(--dur-slow) var(--ease),
                   border-radius var(--dur-slow) var(--ease);
       will-change: translate;
@@ -1351,7 +1365,8 @@
        acopera si — critic — MOSTENESTE `--kb`-ul INGHETAT pe voal la inchidere
        (vezi `intra`), deci in timpul coborarii nu se mai schimba nimic.
        Tranzitia il face si continuu, pe acelasi ceas cu restul foii. */
-    .modal-body, .modal-footer { transition: padding-bottom var(--dur-base) var(--ease); }
+    /* Fara tranzitie, din acelasi motiv ca podeaua: insetul de siguranta se
+       schimba in acelasi cadru cu viewportul, nu dupa el. */
     .modal-body { padding-bottom: calc(var(--space-md) + max(0px, var(--safe-bottom) - var(--kb, 0px))); }
     .modal-footer { padding-bottom: calc(var(--space-12) + max(0px, var(--safe-bottom) - var(--kb, 0px))); }
 

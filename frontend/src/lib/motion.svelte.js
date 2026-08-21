@@ -280,77 +280,61 @@ export function alunecare(node, { sens = 0, duration = 240 } = {}) {
   }
 }
 
-// DESFACEREA UNUI PANOU (taskul deschis in lista).
-//
-// `slide` din Svelte masoara inaltimea O SINGURA DATA, la primul cadru, si
-// animeaza spre ea cu `overflow: hidden`. Daca panoul se randeaza INAINTE ca
-// datele sa fie acolo, tinta e inaltimea starii de asteptare: continutul care
-// soseste dupa aceea nu incape si se vede TAIAT pana cand tranzitia se termina
-// si inaltimea sare la loc. De aceea panoul se deschide numai cu datele in
-// mana (vezi `toggleTaskExpand`) — iar aici masuram ansamblul final.
-//
-// Fata de `slide`: opacitatea urca pe prima jumatate a miscarii, nu in primele
-// 5% ca la Svelte. Inaltimea singura se citeste ca o stergere de sus in jos;
-// cu stingerea peste ea, panoul APARE, nu e descoperit.
-export function desfacere(node, { duration = DUR_SLOW } = {}) {
-  const d = motionDuration(duration)
-  const s = getComputedStyle(node)
-  const nr = (v) => parseFloat(v) || 0
-  // TOT ce ocupa spatiu pe verticala, nu doar inaltimea: panoul din pagina de
-  // proiect are rama pe patru laturi si margine jos, iar cel din /tasks doar
-  // linie sus. Daca marginea si ramele nu se strang odata cu inaltimea, raman
-  // ~13px care apar dintr-un cadru — adica exact saritura pe care o repara asta.
-  const h = nr(s.height)
-  const pt = nr(s.paddingTop)
-  const pb = nr(s.paddingBottom)
-  const mt = nr(s.marginTop)
-  const mb = nr(s.marginBottom)
-  const bt = nr(s.borderTopWidth)
-  const bb = nr(s.borderBottomWidth)
-  return {
-    duration: d,
-    // `--ease`, ca tot restul. Era `cubicOut` — a doua curba pe acelasi ecran:
-    // panoul se desfacea pe una si randurile din el soseau pe alta.
-    easing: EASE,
-    css: (t) => `
-      overflow: hidden;
-      height: ${t * h}px;
-      padding-top: ${t * pt}px;
-      padding-bottom: ${t * pb}px;
-      margin-top: ${t * mt}px;
-      margin-bottom: ${t * mb}px;
-      border-top-width: ${t * bt}px;
-      border-bottom-width: ${t * bb}px;
-      opacity: ${Math.min(1, t * 2)};
-    `,
-  }
-}
+// Aici a stat `desfacere` — o tranzitie care anima SAPTE proprietati de layout
+// (height, padding x2, margin x2, border-width x2) cadru cu cadru. Singurul ei
+// consumator era `Tasks.svelte`, pe un bloc gardat de `expandedTask`, o stare
+// care nu se mai asigneaza niciodata de cand taskul se deschide in foaie/panou.
+// Deci: cod mort care contrazicea regula „doar transform/opacity". Sters cu tot
+// cu consumatorul lui.
 
 export function plecare(node, { duration = DUR_BASE } = {}) {
   const d = motionDuration(duration)
-  const s = getComputedStyle(node)
-  const nr = (v) => parseFloat(v) || 0
-  const h = nr(s.height)
-  const mb = nr(s.marginBottom)
-  const bt = nr(s.borderTopWidth)
-  const bb = nr(s.borderBottomWidth)
+
+  // RANDUL CARE PLEACA IESE DIN FLUX, NU-SI ANIMEAZA INALTIMEA.
+  //
+  // Pana acum se strangea animand `height`, `margin-bottom` si cele doua
+  // `border-width` — patru proprietati de LAYOUT, interpolate din JS la fiecare
+  // cadru. Pe o lista de taskuri asta inseamna un reflow complet al listei de
+  // fiecare data, iar `animate:flip` de pe frati rula in acelasi timp: doua
+  // mecanisme pentru acelasi gol, unul pe layout si unul pe compozitor.
+  // Regula scrisa a casei (`.claude/rules/design.md`) cere de altfel exact
+  // invers: „Doar `transform`/`opacity` in animatii".
+  //
+  // Acum randul e scos din flux INSTANT (`position: absolute`, pe geometria lui
+  // de dinainte), deci golul se inchide in acelasi cadru, iar fratii aluneca in
+  // sus prin `animate:flip` — adica pe `transform`, pe compozitor. Randul care
+  // pleaca doar se stinge deasupra lor.
+  //
+  // Cere ca lista sa fie context de pozitionare (`position: relative`) — vezi
+  // `.task-list` / `.a-list`. Daca vreun apelant uita, `offsetParent` iese
+  // pagina si randul ar sari; de aceea masuram fata de parintele REAL si, daca
+  // el nu e pozitionat, ramanem pe stingere simpla, fara scoatere din flux.
+  const p = node.parentElement
+  let scos = false
+  if (p && getComputedStyle(p).position !== 'static') {
+    const r = node.getBoundingClientRect()
+    const pr = p.getBoundingClientRect()
+    node.style.position = 'absolute'
+    node.style.top = (r.top - pr.top + p.scrollTop) + 'px'
+    node.style.left = (r.left - pr.left) + 'px'
+    node.style.width = r.width + 'px'
+    node.style.height = r.height + 'px'
+    node.style.margin = '0'
+    node.style.zIndex = '0'
+    node.style.pointerEvents = 'none'
+    scos = true
+  }
+
   return {
     duration: d,
     easing: EASE,
-    // `translateX` a plecat. Pe telefon bifezi GLISAND spre dreapta, deci gestul
-    // a dat deja directia, iar impingerea de 10px se adauga peste ea ca o a doua
-    // miscare pe aceeasi axa. Pe desktop, unde bifezi din click, randul se stinge
-    // si se strange — atat; directia n-o mai imprumuta de la un gest care n-a
-    // avut loc. Inaltimea se strange in continuare cu patratul lui `t`: pleaca
-    // repede si se aseaza lin.
-    css: (t) => `
-      overflow: hidden;
-      opacity: ${t};
-      height: ${t * t * h}px;
-      margin-bottom: ${t * t * mb}px;
-      border-top-width: ${t * bt}px;
-      border-bottom-width: ${t * bb}px;
-    `,
+    // Cand randul e scos din flux, golul s-a inchis deja: ce ramane de spus e
+    // „obiectul asta pleaca", si o spune stingerea plus o retragere mica.
+    // Cand NU s-a putut scoate (parinte nepozitionat), ramane doar stingerea —
+    // niciodata o animatie de inaltime.
+    css: scos
+      ? (t) => `opacity: ${t}; transform: scale(${0.97 + 0.03 * t});`
+      : (t) => `opacity: ${t};`,
   }
 }
 
