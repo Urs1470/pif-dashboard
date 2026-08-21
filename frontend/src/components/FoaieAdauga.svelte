@@ -361,7 +361,12 @@
   }
 </script>
 
-<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="md">
+<!-- `lg` (720), nu `md` (560). Ion, 2026-08-21: „pe desktop nu are sens sa fie
+     atat de mic." Randul foii are trei coloane — bifa, titlu + proiect, termen
+     pironit la 46 — deci latimea se duce toata in coloana din mijloc, unde stau
+     exact cele doua lucruri lungi: titlul si numele lucrarii. La 560 se taiau
+     amandoua pe un ecran care avea 1440. -->
+<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="lg">
   <div class="fa">
     <!-- RANDUL DE SUS *ESTE* CAMPUL: 56px, lupa 17, text 16 (sub 16 Safari face
          zoom la focus), si contorul „N din M" in mono la dreapta — cifre care se
@@ -487,7 +492,14 @@
     :global(.modal:has(.fa) .modal-header) { display: none; }
   }
 
-  .fa { display: flex; flex-direction: column; min-height: 0; }
+  /* INALTIME FIXA SI PE DESKTOP, nu doar pe telefon — vezi nota lunga de la
+     `@media (max-width: 768px)` de mai jos: motivul (foaia nu se dimensioneaza
+     dupa continut cat timp scrii) n-a fost niciodata unul de telefon.
+     `min(680px, 70dvh)`: pe un ecran de 900 da 630px de foaie, adica ~10 randuri
+     in lista, fata de 6 cat incapeau in cei 340px scrisi de mana; pe un ecran
+     inalt se opreste la 680, ca foaia sa ramana o caseta, nu o pagina. Plafonul
+     `85dvh` de pe `.modal` ramane paza. */
+  .fa { display: flex; flex-direction: column; min-height: 0; height: min(680px, 70dvh); }
 
   .fa-cauta {
     display: flex;
@@ -553,6 +565,7 @@
 
   .fa-chipuri {
     display: flex;
+    flex: none;
     flex-wrap: wrap;
     gap: var(--space-6);
     padding: var(--space-10) var(--space-20);
@@ -591,7 +604,9 @@
   /* Si pe desktop lista are inaltime FIXA, din acelasi motiv: caseta e centrata,
      deci cand se scurteaza se muta si sus si jos — de doua ori mai mult decat pe
      telefon, unde foaia e lipita de baza si creste doar intr-o directie. */
-  .fa-list { overflow-y: auto; height: 340px; padding: var(--space-6); }
+  /* Lista ia ce ramane, pe orice ecran: cele trei benzi fixe (cautarea, chipurile,
+     subsolul) isi tin inaltimea, iar restul e lista si deruleaza inauntru. */
+  .fa-list { overflow-y: auto; flex: 1; min-height: 0; padding: var(--space-6); }
 
   /* CREAREA: 52 = `--row-h-mobile`, aceeasi inaltime ca randurile de dedesubt.
      Tenta de accent plus cerneala adanca — nu fill saturat: un rand de lista
@@ -733,9 +748,9 @@
        inauntru. De la deschidere pana la inchidere foaia are o singura dimensiune,
        si tot ce se schimba se schimba SUB ea.
        58dvh: cu tastatura sus rămân ~5 randuri vizibile — masurat la fel ca la
-       vechiul plafon de 46dvh — iar fara ea foaia nu ajunge sa para un ecran plin. */
+       vechiul plafon de 46dvh — iar fara ea foaia nu ajunge sa para un ecran plin.
+       Regula e acum a foii, nu a telefonului (vezi `.fa` mai sus): aici ramane
+       doar TREAPTA, fiindca pe telefon peste foaie mai vine si tastatura. */
     .fa { height: 58dvh; }
-    .fa-list { flex: 1; min-height: 0; }
-    .fa-cauta, .fa-chipuri, .fa-jos { flex: none; }
   }
 </style>
