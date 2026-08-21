@@ -20,6 +20,10 @@ Contractele, fiecare cu modul de esec pe care l-a avut aplicatia:
      ACELASI cadru — nicio proprietate de layout nu ramane in urma cu o tranzitie.
      Vezi nota lunga de mai jos: asta e ce face Capacitor pe aparat, si exact ce
      emularea veche NU reproducea.
+  1b. CELALALT REGIM (browser/PWA): acolo containerul NU se micsoreaza si `--kb`
+     chiar trebuie sa ridice foaia. A ramas neacoperit cand sectiunea 1 a trecut pe
+     regimul real — si tocmai atunci `--kb` a capatat un prag, deci o regresie
+     acolo n-ar fi fost vazuta de nimeni.
   2. NIMIC SUB TASTATURA. Campul focalizat, subsolul foii si corpul ei stau
      deasupra tastaturii; corpul nu deruleaza peste o lista care deruleaza si ea.
   3. EDITORUL DE NOTE urca intreg deasupra tastaturii (zona de scris ramanea de
@@ -34,11 +38,18 @@ DE CE S-A RESCRIS SECTIUNEA 1 (2026-08-21). Varianta veche inlocuia
 `window.visualViewport` cu un obiect fals si tinea `window.innerHeight`
 CONSTANT. Pe aparat insa, Capacitor (`SystemBars`, in core) pune
 `setPadding(0,0,0,imeInsets.bottom)` pe parintele WebView-ului cand vine IME-ul:
-micsoreaza fizic WebView-ul, deci `innerHeight` scade ODATA cu `vv.height`, iar
-formula din `Modal.svelte` da corect `--kb` = 0. Adica emularea testa un aparat
+micsoreaza fizic WebView-ul, deci `innerHeight` scade IMPREUNA cu `vv.height`,
+iar formula din `Modal.svelte` da corect `--kb` = 0. Adica emularea testa un aparat
 pe care `--kb` conducea totul, iar aparatul real nu foloseste `--kb` deloc.
 Trei runde de reglaje au trecut de auditul asta si n-au schimbat nimic pe
 telefon. Acum proba micsoreaza CHIAR viewportul, intr-un pas.
+
+CE A ARATAT APARATUL (2026-08-21, prin `scripts/masoara_tastatura_reala.py`):
+„impreuna" NU inseamna „in acelasi cadru". Exista exact un cadru in care
+`innerHeight` e deja 493 dar `vv.height` inca raporteaza 187 — tastatura scazuta
+a doua oara — si acolo `--kb` iesea 306, turtind foaia la 123px pentru ~17ms.
+De-aia `--kb` are acum un prag: zero se crede pe loc, o valoare nenula trebuie
+sa se tina. Sectiunea 1b pazeste celalalt capat al pragului.
 
     python scripts/audit_tastatura.py
 """
@@ -287,6 +298,67 @@ def main():
                          'salturi de %s px' % mari,
                          'cel mai mare pas: %d px' % (max(salturi) if salturi else 0))
                 inchide_tot(page)
+
+                # ===== 1b. CELALALT REGIM: IN BROWSER, `--kb` CHIAR COMPENSEAZA =====
+                #
+                # Sectiunea 1 acopera regimul APLICATIEI, unde containerul se
+                # micsoreaza singur si raspunsul corect e `--kb` = 0. Dar in browser
+                # (PWA, desktop) containerul NU se micsoreaza: doar viewportul vizual
+                # se strange, iar acolo `--kb` e singurul lucru care tine foaia
+                # deasupra tastaturii.
+                #
+                # Proba asta exista fiindca regimul ala a ramas NEACOPERIT cand
+                # sectiunea 1 a fost rescrisa pe regimul real (2026-08-21), si tot
+                # atunci `--kb` a capatat un prag: o valoare nenula se scrie doar dupa
+                # ce s-a tinut ~120ms, ca sa nu fie crezut cadrul fantoma masurat pe
+                # telefon. Un prag prea lung, sau o regresie in scriere, ar lasa foaia
+                # sub tastatura in browser FARA ca vreo alta proba sa observe.
+                out('\n--- regimul browser: `--kb` chiar ridica foaia ---')
+                mergi(page, baza, '/tasks')
+                fab = page.query_selector('.fab')
+                if fab is None:
+                    bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .fab')
+                else:
+                    fx, fy = centru(fab)
+                    tap(cdp, page, fx, fy, 900)
+                    inainte = page.evaluate(GEOM, '.modal.sheet')
+                    # Tastatura de BROWSER: `innerHeight` ramane pe loc, doar
+                    # `visualViewport.height` scade. Exact ce NU face Capacitor.
+                    page.evaluate("""(kb) => {
+                      const vv = window.visualViewport;
+                      Object.defineProperty(vv, 'height',
+                        {get: () => window.innerHeight - kb, configurable: true});
+                      vv.dispatchEvent(new Event('resize'));
+                    }""", KB)
+                    page.wait_for_timeout(60)
+                    devreme = page.evaluate(
+                        "parseFloat(getComputedStyle(document.documentElement)"
+                        ".getPropertyValue('--kb')) || 0")
+                    bifa(devreme == 0,
+                         'sub prag, `--kb` inca e 0 (cadrul fantoma nu e crezut)',
+                         'a sarit la %s px imediat' % devreme)
+                    page.wait_for_timeout(400)
+                    tarziu = page.evaluate(
+                        "parseFloat(getComputedStyle(document.documentElement)"
+                        ".getPropertyValue('--kb')) || 0")
+                    bifa(tarziu == KB,
+                         'dupa prag, `--kb` ia inaltimea tastaturii',
+                         'a ramas %s px in loc de %d' % (tarziu, KB),
+                         '%d px' % tarziu)
+                    dupa = page.evaluate(GEOM, '.modal.sheet')
+                    bifa(dupa is not None and dupa['bottom'] <= TELEFON['height'] - KB + 1,
+                         'foaia urca deasupra tastaturii de browser',
+                         'jos la %s, tastatura de la %d'
+                         % (dupa and dupa['bottom'], TELEFON['height'] - KB))
+                    bifa(inainte is not None and dupa is not None and dupa['h'] < inainte['h'],
+                         'foaia se scurteaza, nu doar se muta',
+                         '%s -> %s px' % (inainte and inainte['h'], dupa and dupa['h']))
+                    bifa(page.evaluate(
+                        "document.documentElement.classList.contains('are-tastatura')"),
+                         '`are-tastatura` se pune in regimul browser', 'clasa lipseste')
+                    inchide_tot(page)
+                    page.reload()          # scapa de `visualViewport` falsificat
+                    page.wait_for_timeout(1200)
 
                 # ===== 2. NIMIC SUB TASTATURA =====
                 out('\n--- nimic sub tastatura ---')
