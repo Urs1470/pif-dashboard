@@ -206,6 +206,26 @@
 
   const grupe = $derived(grupeazaDupaTermen(items))
 
+  /** UNDE traieste taskul, pentru randurile din „Există deja": proiectul, daca
+   *  vine dintr-unul; altfel categoria — dar niciodata „General", implicitul care
+   *  apare pe jumatate din randuri fara sa deosebeasca nimic de nimic.
+   *
+   *  ACEEASI REGULA SI ACELASI TEXT CA PE BOARD (`contextRand` in TodayBoard):
+   *  randul de aici si randul de acolo sunt acelasi task, deci nu au voie sa
+   *  raspunda diferit la „unde e?".
+   *
+   *  Ion, 2026-08-21: „cand adaug taskuri in pagina acasa nu stiu care task de la
+   *  ce proiect e." Lista de candidati aduna taskurile din TOATE proiectele plus
+   *  cele globale de munca, sortate alfabetic dupa titlu — deci doua „Verificare
+   *  protecţii" de la doua lucrari diferite cadeau una langa alta ca doua randuri
+   *  identice. Nu era o ambiguitate rara: fisele de punere in functiune au aceleasi
+   *  capitole la fiecare statie, deci titlurile SE REPETA prin constructie. */
+  function undeE(it) {
+    if (it.tip === 'proiect' && it.proiect_nume) return it.proiect_nume
+    if (it.categorie && it.categorie !== 'General') return it.categorie
+    return ''
+  }
+
   /** Titlul taiat in bucati, ca potrivirea sa se poata ingrosa fara sa se
    *  coloreze fundalul randului. Fara `q`, o singura bucata. */
   function bucati(titlu, cauta) {
@@ -416,8 +436,13 @@
               <button class="fa-rand" style="--ring: {dueRing(it.data_scadenta)}" onclick={() => alege(it)}>
                 <span class="check-empty"></span>
                 <span class="fa-titlu">
-                  <span class="fa-tx">{#each bucati(it.titlu, q) as b}{#if b.m}<mark>{b.text}</mark>{:else}{b.text}{/if}{/each}</span>
-                  <ContorPasi gata={it.subtask_done || 0} total={it.subtask_total || 0} />
+                  <span class="fa-t1">
+                    <span class="fa-tx">{#each bucati(it.titlu, q) as b}{#if b.m}<mark>{b.text}</mark>{:else}{b.text}{/if}{/each}</span>
+                    <ContorPasi gata={it.subtask_done || 0} total={it.subtask_total || 0} />
+                  </span>
+                  <!-- A doua linie, doar cand are ce spune — ca pe board: text gri
+                       sub titlu, nicio pastila. Subordonarea o da pozitia. -->
+                  {#if undeE(it)}<span class="fa-unde">{undeE(it)}</span>{/if}
                 </span>
                 <span class="fa-termen">{etichetaTermenScurt(it.data_scadenta)}</span>
               </button>
@@ -631,7 +656,24 @@
   }
   .fa-rand:hover { background: var(--bg-elevated); }
   .fa-rand:active { transform: scale(var(--press-scale)); }
-  .fa-titlu { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-sm); }
+  /* COLOANA, nu rand: titlul sus, „unde" dedesubt. `gap: 1px` si nu un token de
+     spatiu — aceeasi treapta ca `.amain` de pe board, unde cele doua linii trebuie
+     sa se citeasca drept UN bloc, nu doua randuri.
+     Randul NU creste: doua linii fac ~37px, sub cei 52 (`--row-h-mobile`) pe care
+     ii tine `min-height`. Deci lista are aceeasi geometrie ca inainte — conteaza,
+     fiindca foaia are inaltime fixa si numarul de randuri vizibile e masurat. */
+  .fa-titlu { flex: 1; min-width: 0; display: flex; flex-direction: column;
+    justify-content: center; gap: 1px; }
+  .fa-t1 { display: flex; align-items: center; gap: var(--space-sm);
+    min-width: 0; max-width: 100%; }
+  .fa-unde {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-small);
+    color: var(--text-dim);
+  }
   .fa-tx {
     min-width: 0;
     overflow: hidden;
