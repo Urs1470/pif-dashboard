@@ -57,13 +57,13 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | PUT | `/api/clienti/<client_id>` | `update_client` | 399 |
 | DELETE | `/api/clienti/<client_id>` | `delete_client` | 433 |
 | GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 452 |
-| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 577 |
-| POST | `/api/import-archive/preview` | `preview_import_archive` | 787 |
-| POST | `/api/import/debrief` | `import_debrief` | 836 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1136 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1147 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1173 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1214 |
+| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 583 |
+| POST | `/api/import-archive/preview` | `preview_import_archive` | 793 |
+| POST | `/api/import/debrief` | `import_debrief` | 842 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1142 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1153 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1179 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1220 |
 
 ## blueprints/push.py (9 rute)
 

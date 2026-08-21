@@ -516,6 +516,12 @@ def get_project_snapshot(project_id):
             'folder_server': p.get('folder_server', ''),
             'data_crearii': p.get('data_crearii', ''),
             'status': p.get('status', ''),
+            # Invariantul v35 (`data_finalizare` exista <=> status == 'finalizat') se
+            # VERIFICA din snapshot de catre debrief. Lipsea din lista asta, deci
+            # snapshotul raporta `null` pe un proiect care avea data in baza si in
+            # `GET /api/proiecte` — iar debrief-ul re-PUT-a degeaba, crezand ca repara
+            # o incalcare de invariant (E-100, 26_162).
+            'data_finalizare': p.get('data_finalizare') or '',
             'observatii': p.get('observatii', ''),
             'confirmat_client': p.get('confirmat_client', 0),
             'client_nume_confirmare': p.get('client_nume_confirmare', ''),
