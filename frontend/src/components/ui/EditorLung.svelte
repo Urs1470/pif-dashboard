@@ -105,43 +105,24 @@
     } finally { seSalveaza = false }
   }
 
-  // ===== BARA DE JOS STA DEASUPRA TASTATURII (telefon) =====
-  //
-  // Pe telefon modalul e foaie pe tot ecranul (100dvh), iar `dvh` urmareste bara
-  // de adresa, NU tastatura: cand tastatura se ridica, footerul cu „Salvează"
-  // ramane sub ea si nu poti salva fara sa inchizi intai tastatura.
-  //
-  // Aceeasi masuratoare ca bara de unelte din `RichTextEditor` (care se ridica
-  // deja): `visualViewport` e singura sursa care stie CAT acopera tastatura.
-  // Cele doua folosesc aceeasi formula, deci nu se pot desincroniza — iar bara
-  // de jos se aseaza DEASUPRA barei de unelte (ea vrea sa fie langa tastatura,
-  // langa deget), la `kb + inaltimea ei`. Inaltimea se MASOARA, nu se scrie de
-  // mana: paddingul barei se schimba cu tastatura (isi pierde `--safe-bottom`).
-  //
-  // Unde `visualViewport` lipseste (browsere vechi), `kb` ramane 0 si nu se
-  // schimba nimic fata de inainte.
-  let kb = $state(0)
-  let hBara = $state(0)
+  // ===== TASTATURA: O SINGURA SURSA =====
+  // Aici stateau a doua si a treia masuratoare a lui `visualViewport` (una in
+  // shell, una in `RichTextEditor`), fiecare cu bara ei fixata la `bottom: kb`.
+  // Trei ceasuri pentru acelasi lucru se dezacordau: foaia urca pe o regula,
+  // barele pe alta. Acum `Modal` e singurul care masoara si scrie `--kb` (si
+  // clasa `are-tastatura` pe <html>); foaia „doc" urca intreaga deasupra
+  // tastaturii, iar subsolul sta in flux. Ce mai trebuie aici e doar un bit:
+  // „e tastatura sus?" — ca sa ascundem indiciul cat timp scrii.
+  let tastatura = $state(false)
   let pagEl = $state(null)
   $effect(() => {
-    if (!open) { kb = 0; return }
-    const vv = window.visualViewport
-    if (!vv) return
-    const masoara = () => {
-      // Rotunjit si prins la 0: valoarea oscileaza cu subpixeli la derulare.
-      const acoperit = window.innerHeight - vv.height - vv.offsetTop
-      kb = acoperit > 24 ? Math.round(acoperit) : 0
-      // `.rte-toolbar` e fixata la `bottom: kb` (vezi RichTextEditor); bara de
-      // jos trebuie sa inceapa exact unde se termina ea.
-      if (kb > 0) hBara = pagEl?.querySelector('.rte-toolbar')?.offsetHeight || 0
-    }
-    masoara()
-    vv.addEventListener('resize', masoara)
-    vv.addEventListener('scroll', masoara)
-    return () => {
-      vv.removeEventListener('resize', masoara)
-      vv.removeEventListener('scroll', masoara)
-    }
+    if (!open) { tastatura = false; return }
+    const html = document.documentElement
+    const citeste = () => { tastatura = html.classList.contains('are-tastatura') }
+    citeste()
+    const obs = new MutationObserver(citeste)
+    obs.observe(html, { attributes: true, attributeFilter: ['class'] })
+    return () => obs.disconnect()
   })
 </script>
 
@@ -156,8 +137,7 @@
          editorului): fara el, atingerea pe „Salvează" ar lua intai focusul din
          editor — tastatura ar porni sa coboare si bara s-ar muta de sub deget
          inainte sa se inregistreze clicul. -->
-    <div class="ed-foot" class:ridicat={kb > 0}
-      style:--kb="{kb}px" style:--h-bara="{hBara}px"
+    <div class="ed-foot" class:ridicat={tastatura}
       onmousedown={(e) => e.preventDefault()} role="presentation">
       <!-- `&nbsp;` inainte de separator: Svelte taie spatiul de la inceputul unui
            element inline, deci „salvează· Ctrl+Enter" se lipea. -->
@@ -191,30 +171,14 @@
     .ed-foot { flex-direction: column; align-items: stretch; gap: var(--space-sm); }
     .ed-key { display: none; }
 
-    /* CU TASTATURA RIDICATA, „Salvează" vine deasupra ei — fix peste bara de
-       unelte a editorului (fixata la `bottom: --kb`), deci stiva de langa deget
-       e: tastatura, unelte, salvare. Bara isi aduce fundal si linie proprii:
-       iese din `.modal-footer` (care ramane sub tastatura) si altfel textul
-       editorului s-ar citi prin ea. Indiciul se ascunde: cat timp scrii, tot
-       ecranul ramas e al textului, iar „închiderea salvează" e lectia gestului
-       de tras foaia — gest pe care nu-l faci cu tastatura ridicata. */
-    .ed-foot.ridicat {
-      position: fixed;
-      left: 0;
-      right: 0;
-      /* --kb (inaltimea tastaturii) si --h-bara (bara de unelte a editorului)
-         vin din `style:` pe invelis, masurate la rulare; implicitele de aici
-         exista doar ca variabilele sa fie DEFINITE si in CSS, nu numai din JS
-         (auditul de design cere o definitie pentru orice token folosit). */
-      --kb: 0px;
-      --h-bara: 0px;
-      bottom: calc(var(--kb) + var(--h-bara));
-      z-index: 3;   /* acelasi strat ca `.rte-toolbar` — nu se suprapun */
-      margin: 0;
-      padding: var(--space-xs) var(--space-md);
-      background: var(--bg-surface);
-      border-top: 1px solid var(--border);
-    }
+    /* CU TASTATURA RIDICATA, subsolul NU se mai fixeaza nicaieri: foaia „doc"
+       urca intreaga deasupra tastaturii (`Modal` ii ridica podeaua cu `--kb`),
+       deci „Salvează" sta la locul lui, sub bara de unelte, in fluxul normal.
+       Aici era o a doua masinarie de tastatura (`position: fixed; bottom:
+       --kb + --h-bara`), care se batea cu prima. Ce ramane: indiciul se
+       ascunde cat scrii — tot ecranul ramas e al textului, iar „închiderea
+       salvează" e lectia gestului de tras foaia, gest pe care nu-l faci cu
+       tastatura ridicata. */
     .ed-foot.ridicat .ed-hint { display: none; }
   }
 </style>

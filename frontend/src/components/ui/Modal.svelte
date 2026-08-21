@@ -56,19 +56,64 @@
   // ruleaza cu `server.url` remote), deci o foaie „pe tot ecranul" isi tine
   // butoanele sub tastatura. Sursa de adevar e `visualViewport`.
   // Se scrie pe <html>, deci o pot citi si paleta, si orice alt strat.
-  if (typeof window !== 'undefined' && window.visualViewport) {
-    const vv = window.visualViewport
-    const scrie = () => {
-      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
-      document.documentElement.style.setProperty('--kb', kb + 'px')
+  //
+  // ===== TASTATURA SE PREVEDE, NU DOAR SE MASOARA =====
+  // `visualViewport` spune cat acopera tastatura abia DUPA ce a urcat — pe
+  // Android la ~250-300ms dupa focus, adica exact cand foaia tocmai s-a asezat.
+  // Masurat cadru cu cadru pe „Adaugă task": foaia urca 280ms (844 -> 296),
+  // sta, apoi la 306ms soseste `--kb` si o mai impinge o data 224px in 220ms,
+  // timp in care i se si scurteaza inaltimea de jos. Doua sosiri pentru un
+  // singur gest — Ion: „cand se deschide tastatura sa fie frumos, nu rupt".
+  // Inaltimea tastaturii e insa aceeasi de fiecare data pe acelasi telefon.
+  // Deci se TINE MINTE (localStorage) si se pune pe <html> INAINTE ca foaia sa
+  // se randeze: voalul se naste cu podeaua ridicata, foaia urca o singura data,
+  // direct la locul ei, in acelasi timp cu tastatura care urca nativ dedesubt.
+  // Cand vine masuratoarea reala, ea bate prevederea (de obicei e identica).
+  // Daca tastatura NU vine deloc (tastatura fizica, focus pierdut), prevederea
+  // expira si adevarul se reia — o foaie ridicata deasupra unei tastaturi care
+  // nu exista ar fi mai rau decat saltul pe care il repara.
+  const CHEIE_KB = 'pif-kb'
+  let kbStiut = 0
+  try { kbStiut = parseInt(localStorage.getItem(CHEIE_KB) || '', 10) || 0 } catch (_) {}
+  let prevazut = false
+  let ceasPrevedere = null
+  const vv = typeof window !== 'undefined' ? (window.visualViewport || null) : null
+
+  function scrieKb(kb) {
+    const html = document.documentElement
+    html.style.setProperty('--kb', kb + 'px')
+    // Clasa spune „tastatura e sus" acolo unde o variabila nu poate conditiona
+    // nimic: insetul de siguranta de jos nu mai are sens sub tastatura (ea il
+    // acopera), iar toastul trebuie sa urce deasupra ei.
+    html.classList.toggle('are-tastatura', kb > 0)
+  }
+
+  function scrie(e) {
+    if (!vv) return
+    const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
+    // Cat timp prevederea e in vigoare, un `scroll` al viewportului (focusul
+    // care aduce campul la vedere) nu o strica: tastatura inca urca. Doar un
+    // `resize` spune adevarul despre ea, in ambele sensuri.
+    if (prevazut && kb === 0 && e?.type !== 'resize') return
+    if (kb > 0 || e?.type === 'resize') {
+      prevazut = false
+      clearTimeout(ceasPrevedere)
     }
+    if (kb > 0 && kb !== kbStiut) {
+      kbStiut = kb
+      try { localStorage.setItem(CHEIE_KB, String(kb)) } catch (_) {}
+    }
+    scrieKb(kb)
+  }
+
+  if (vv) {
     vv.addEventListener('resize', scrie)
     vv.addEventListener('scroll', scrie)
     scrie()
   } else if (typeof document !== 'undefined') {
     // Fara `visualViewport` variabila trebuie sa EXISTE, altfel `calc()`-urile
     // care o scad cad pe invalid si inaltimea foii dispare cu totul.
-    document.documentElement.style.setProperty('--kb', '0px')
+    scrieKb(0)
   }
 
   /** Cat tine tastatura foaia ridicata, ACUM, in px. */
@@ -76,6 +121,33 @@
     if (typeof document === 'undefined') return 0
     return parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--kb')) || 0
+  }
+
+  /** Ridica podeaua la inaltimea STIUTA a tastaturii, inainte ca ea sa urce.
+   *  Intoarce cat a prevazut (0 = nimic de prevazut: nu stim inca inaltimea,
+   *  sau tastatura e deja sus). Expira singura daca masuratoarea nu vine. */
+  export function prevedeTastatura() {
+    if (!kbStiut || typeof document === 'undefined' || kbAcum() > 0) return 0
+    prevazut = true
+    scrieKb(kbStiut)
+    clearTimeout(ceasPrevedere)
+    ceasPrevedere = setTimeout(() => {
+      if (!prevazut) return
+      prevazut = false
+      if (vv) scrie({ type: 'resize' })
+      else scrieKb(0)
+    }, 1200)
+    return kbStiut
+  }
+
+  /** Prevederea se retrage cand foaia care a cerut-o pleaca fara ca tastatura
+   *  sa fi venit; altfel urmatoarea foaie s-ar naste ridicata degeaba. */
+  export function uitaPrevederea() {
+    if (!prevazut) return
+    prevazut = false
+    clearTimeout(ceasPrevedere)
+    if (vv) scrie({ type: 'resize' })
+    else scrieKb(0)
   }
 
   // Ultima apasare pe ecran — partajata de TOATE instantele. Fiecare modal o
@@ -133,7 +205,12 @@
   // gestul din continut e oprit dinadins (vezi `tastaturaSus`) si atunci `X`-ul
   // chiar e singura iesire vizibila. Pe desktop nu schimba nimic — acolo coltul
   // e la un centimetru de cursor, nu la celalalt capat al mainii.
-  let { open = $bindable(false), title = '', size = 'md', inalt = false, iesireGest = false, children, footer, onclose } = $props()
+  // `cuTastatura`: foaia isi focalizeaza singura un camp la deschidere, deci
+  // tastatura VINE sigur. Atunci podeaua se ridica dinainte, la inaltimea stiuta
+  // a tastaturii (vezi `prevedeTastatura` in <script module>), ca foaia sa urce o
+  // singura data. Se cere explicit: o foaie din care doar alegi nu are de ce sa
+  // se nasca ridicata.
+  let { open = $bindable(false), title = '', size = 'md', inalt = false, iesireGest = false, cuTastatura = false, children, footer, onclose } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
   let corpEl = $state(null)
@@ -264,8 +341,13 @@
       // ajunge deja 0 si n-ar mai fi nimic de inghetat. `kbAcum()` ramane
       // rezerva pentru inchiderile venite din afara, care nu trec prin
       // `inchide()`.
-      const kb = laIntrare ? 0 : (kbLaInchidere ?? kbAcum())
-      if (kb && backdropEl) backdropEl.style.setProperty('--kb', kb + 'px')
+      // LA INTRARE, daca podeaua e deja ridicata (tastatura prevazuta sau deja
+      // sus), drumul porneste tot de sub marginea ECRANULUI, nu de sub marginea
+      // podelei: foaia urca prin locul tastaturii care urca si ea, in acelasi
+      // timp — o singura miscare, nu doua. Nu se ingheata nimic la intrare:
+      // masuratoarea reala trebuie sa poata inca sa corecteze prevederea.
+      const kb = laIntrare ? kbAcum() : (kbLaInchidere ?? kbAcum())
+      if (!laIntrare && kb && backdropEl) backdropEl.style.setProperty('--kb', kb + 'px')
       return {
         duration, easing: curba,
         css: (t, u) => `transform: translateY(calc(${u * 100}% + ${u * kb}px))`,
@@ -505,27 +587,65 @@
   // citita de `reimprospateazaTrepte` si scrisa aici) — fara el efectul s-ar
   // re-porni singur, greseala pe care fisierul asta a facut-o deja o data la
   // stiva de niveluri si o are scrisa in `<script module>`.
-  $effect(() => {
+  /** Cat s-a prevazut pentru tastatura la deschiderea ASTEIA. */
+  let kbPrevazut = 0
+
+  // ===== UN CLIC CONTEAZA DOAR DACA A INCEPUT PE FOAIE =====
+  // Foaia de actiuni soseste SUB deget, la apasare lunga. Ridicarea degetului
+  // produce un `click` — iar el aterizeaza pe ce e acum sub deget: un rand al
+  // foii („Șterge" sta ultimul, exact unde se odihneste degetul pe un rand de
+  // jos) sau voalul (care inchide). Masurat: foaia se deschidea la 439ms si se
+  // inchidea singura la 657ms, la ridicare. Pe Android, clicul lipseste doar
+  // daca tii pana la pragul nativ de 500ms; intre pulsul de la 420 si 500 e un
+  // clic adevarat. Deci regula: un clic in foaie e al foii numai daca si
+  // apasarea a fost in foaie. Enter de la tastatura are `detail === 0` si trece.
+  let apasatInauntru = false
+  function pazesteClic(e) {
+    if (apasatInauntru || e.detail === 0) return
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  // `$effect.pre`, nu `$effect`: STAREA DE PORNIRE TREBUIE SA EXISTE INAINTE DE
+  // PRIMUL CADRU. Pusa dupa randare, clasa `intins` a foii `inalt` sosea un tact
+  // dupa ce tranzitia Svelte citise deja stilurile foii (ceea ce forteaza un
+  // recalcul) — deci `height` TRANZITIONA de la inaltimea continutului la ecranul
+  // plin, in acelasi timp cu urcarea. Masurat pe foaia zilei: 464 -> 844px in
+  // 300ms, sub o foaie care tocmai urca. Doua miscari pe acelasi obiect.
+  // Tot aici se ridica podeaua pentru tastatura: si ea trebuie sa fie la locul
+  // ei inainte ca voalul sa se nasca, altfel ar fi a doua sosire.
+  $effect.pre(() => {
     if (!open) return
     untrack(() => {
       trasY = 0
       voalP = 1
       hFoaie = null
-      intins = false
       treapta = 0
+      intins = sheet && inalt
+      apasatInauntru = false
+      if (sheet && cuTastatura) kbPrevazut = prevedeTastatura()
+    })
+  })
+
+  $effect(() => {
+    if (!open) return
+    untrack(() => {
       if (!sheet) return
       reimprospateazaTrepte()
-      // `inalt` se deschide DIRECT pe treapta de sus — fara `hFoaie`, deci fara
+      // `inalt` sta DIRECT pe treapta de sus — fara `hFoaie`, deci fara
       // tranzitie: inaltimea vine din clasa, adica e buna din primul cadru.
-      if (inalt && trepte.length > 1) {
-        treapta = trepte.length - 1
-        intins = true
-      }
+      if (inalt && trepte.length > 1) treapta = trepte.length - 1
     })
     // Ceasul de predare a inaltimii nu are voie sa supravietuiasca foii: ar
     // scrie pe starea unei componente inchise.
-    return () => clearTimeout(ceasPredare)
+    return () => {
+      clearTimeout(ceasPredare)
+      // Foaia a plecat: daca tastatura prevazuta n-a venit intre timp,
+      // prevederea se retrage odata cu ea.
+      if (kbPrevazut) { kbPrevazut = 0; uitaPrevederea() }
+    }
   })
+
 
   // Intrarea in stiva (si semnalul pentru dock) — cu curatare, deci si
   // inchiderea, si distrugerea componentei cu modalul deschis o scad corect.
@@ -804,6 +924,7 @@
        la restul 220. `in:`/`out:`, nu `transition:` — doar asa functia de
        tranzitie afla sensul (`direction`), ca sa aleaga durata. -->
   <div class="backdrop" class:varf class:trage use:portal bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
+       onpointerdowncapture={() => { apasatInauntru = true }} onclickcapture={pazesteClic}
        style:--nivel={nivel} style:--voal-p={voalP} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
        in:fade={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
        out:fade={{ duration: motionDuration(DUR_BASE), easing: EASE_IESIRE }}>
@@ -1233,8 +1354,17 @@
       justify-content: center;
     }
 
-    /* doc = sheet pe tot ecranul pe mobil */
-    .backdrop:has(.modal-doc) { padding: 0; }
+    /* CU TASTATURA SUS, INSETUL DE JOS NU MAI EXISTA: e sub tastatura. Fara
+       regula asta, footerul foii pastra 24-34px de spatiu mort exact cand
+       ecranul e cel mai mic. */
+    :global(html.are-tastatura) .modal-body { padding-bottom: var(--space-md); }
+    :global(html.are-tastatura) .modal-footer { padding-bottom: var(--space-12); }
+
+    /* doc = sheet pe tot ecranul pe mobil. PODEAUA URCA SI AICI: `padding: 0`
+       batea regula generala (`padding: 0 0 var(--kb)`), deci documentul — inalt
+       de `100dvh - kb`, ancorat jos — statea cu 312px sub tastatura si lasa
+       pagina la vedere deasupra. Masurat: zona de scris ramanea de 55px. */
+    .backdrop:has(.modal-doc) { padding: 0 0 var(--kb, 0px); }
     .modal-doc {
       height: calc(100dvh - var(--kb, 0px)); max-height: calc(100dvh - var(--kb, 0px));
       border-radius: 0; border: none;

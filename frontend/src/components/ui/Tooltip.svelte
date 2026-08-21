@@ -99,6 +99,12 @@
   }
 
   function porneste(nod, imediat = false) {
+    // REGULA, IMPUSA, NU DOAR SCRISA: pe un ecran fara hover tooltipul nu
+    // exista. `:focus-visible` de mai jos il lasa sa treaca dupa un focus pus
+    // din script cand ultima interactiune a fost de la tastatura — pe telefon
+    // asta inseamna bula „Marchează ca făcut" randata peste un rand de pe
+    // „Astăzi", din senin.
+    if (window.matchMedia?.('(hover: none)').matches) return
     const text = sursa(nod)
     if (!text) return
     ascunde()

@@ -228,6 +228,12 @@ def porti_pentru(atinse):
         porti.append(('audit_mobil',
                       [PYTHON, str(SCRIPTURI / 'audit_mobil.py')],
                       RADACINA, '%s scripts/audit_mobil.py' % PY_MANUAL))
+        # Foile cu tastatura: `audit_tastatura` emuleaza IME-ul (fals
+        # `visualViewport`) si masoara ce niciun alt audit nu vede — a doua sosire
+        # a foii, ce ramane sub tastatura, clicul de la ridicarea degetului.
+        porti.append(('audit_tastatura',
+                      [PYTHON, str(SCRIPTURI / 'audit_tastatura.py')],
+                      RADACINA, '%s scripts/audit_tastatura.py' % PY_MANUAL))
     return porti
 
 

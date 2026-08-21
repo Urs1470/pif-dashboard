@@ -17,6 +17,7 @@
   }
 </script>
 
+
 <script>
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
@@ -35,7 +36,7 @@
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate, router } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, desfacere, alunecare, EASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, alunecare, EASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { apasareLunga } from '../lib/apasareLunga.js'
@@ -53,6 +54,7 @@
   import Textarea from '../components/ui/Textarea.svelte'
   import Select from '../components/ui/Select.svelte'
   import DatePicker from '../components/ui/DatePicker.svelte'
+  import SelectorZi from '../components/ui/SelectorZi.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import MarkdownView from '../components/notes/MarkdownView.svelte'
@@ -181,9 +183,20 @@
   const subDeSters = $derived(taskDeleteId ? (subtasksCache[taskDeleteId] || null) : null)
   const taskDeSters = $derived(tasks.find((t) => t.id === taskDeleteId) || null)
 
-  // Subtask state
+  // ===== TASKUL DESCHIS: FOAIE PE TELEFON, PANOU PE DESKTOP =====
+  // Exact gazda din /tasks. Pana acum randul se DESFACEA in lista (singurul loc
+  // din aplicatie ramas pe modelul vechi): extinderea impingea tot ce era sub ea,
+  // un camp de subtask editat in rand putea ajunge sub tastatura, iar la
+  // intoarcere iti pierdeai locul. Ion, 2026-08-21: „taskurile din proiecte
+  // trebuie sa fie tot cu modale precum le avem peste tot acum."
+  // `expandedTask` a ramas numele: e taskul deschis, oriunde s-ar deschide.
   let expandedTask = $state(null)
+  let showSheet = $state(false)
+  let termenDeschis = $state(false)
   let subtasksCache = $state({})
+  // Derivat din lista, NU o copie: bifarea unui subtask sau schimbarea
+  // termenului din foaie trebuie sa se vada in capul ei.
+  const sheetTask = $derived(expandedTask ? (tasks.find(x => x.id === expandedTask) || null) : null)
 
   /** Contorul de pasi de pe rand („2/5"), sau `null` cand taskul n-are subtaskuri.
    *  Aceeasi regula ca in /tasks: cea mai proaspata sursa castiga. Aici lista se
@@ -561,18 +574,19 @@
   // spre ea, iar sectiunea de subtaskuri sosita dupa aceea aparea taiata peste
   // un panou deja terminat de animat.
   async function toggleTaskExpand(taskId) {
-    if (expandedTask === taskId) {
-      expandedTask = null
+    // Pe desktop al doilea clic pe acelasi rand inchide panoul, ca in /tasks.
+    if (!ecran.telefon && showSheet && expandedTask === taskId) {
+      showSheet = false
       return
     }
-    // Aici statea `loadAtt(taskId)` — fosila de la atasamente (sterse in v28).
-    // Functia NU mai exista, deci apelul arunca ReferenceError in mijlocul
-    // functiei async: extinderea se vedea (era setata mai sus), dar incarcarea
-    // subtaskurilor de sub apel NU se mai executa niciodata. Chipul spunea
-    // „0/1", lista era mereu goala, si nicio eroare nu ajungea in consola —
-    // respingerea promisiunii ramanea neascultata.
-    await incarcaSubtaskuri(taskId)
     expandedTask = taskId
+    termenDeschis = false
+    // Un tact scurt pentru date (cache-ul si reteaua locala intra in el), apoi
+    // foaia se ridica ORICUM, cu un schelet de exact atatea randuri cat spune
+    // contorul de pe rand — aceeasi regula ca `deschideFoaia` din /tasks.
+    const date = incarcaSubtaskuri(taskId)
+    await Promise.race([date, new Promise(r => setTimeout(r, 120))])
+    showSheet = true
   }
 
   // Cererile in zbor: cu preincarcarea pe hover, plimbatul mouse-ului peste
@@ -810,6 +824,104 @@
   }
 </script>
 
+<!-- INTERIORUL TASKULUI DESCHIS — acelasi desen ca `taskDetail` din /tasks:
+     nota, subtaskurile (cu schelet cat timp sosesc), actiunile rare dedesubt.
+     Un snippet, nu markup in rand: se randeaza in foaie pe telefon si in panou
+     pe desktop, din acelasi loc. -->
+{#snippet detaliuTask(t)}
+  {@const peDrum = !subtasksCache[t.id] && (t.subtask_total || 0) > 0}
+  {@const subs = subtasksCache[t.id] || []}
+  {@const doneCount = subs.filter(s => s.done).length}
+  <div class="subtask-body">
+    <!-- CONTINUTUL INAINTEA BUTOANELOR (ca in /tasks): nota, apoi
+         pasii. Butonul de editare a notei si chipul „Descriere" —
+         doua haine pentru aceeasi actiune, dupa cum era completata
+         nota — au fost inlocuite de UN singur link, jos. -->
+    {#if t.descriere}
+      <div class="td-nota"><RichText value={t.descriere} collapsible maxHeight={200} noToggle /></div>
+    {/if}
+
+    <div class="sub-section">
+      <!-- ACELASI ANTET CA IN /tasks: titlu + bara + „1/4" pe un
+           singur rand. Inainte numarul aparea de DOUA ori (o data
+           in cap, o data langa bara de pe randul urmator) — aceeasi
+           informatie, spusa de doua ori la 20px distanta. -->
+      <div class="sub-head">
+        <span class="sub-cap">Subtaskuri</span>
+        {#if peDrum}
+          <span class="sub-num">{t.subtask_done || 0}/{t.subtask_total}</span>
+        {:else if subs.length}
+          <div class="sub-bara" role="img"
+               aria-label="{doneCount} din {subs.length} subtaskuri făcute">
+            <span style="width: {(doneCount / subs.length) * 100}%"></span>
+          </div>
+          <span class="sub-num">{doneCount}/{subs.length}</span>
+        {/if}
+      </div>
+      <!-- Fara stare de asteptare: panoul se randeaza DOAR cu
+           subtaskurile deja in cache (vezi `toggleTaskExpand`). -->
+      {#if peDrum}
+        {#each Array(Math.min(t.subtask_total, 8)) as _, i (i)}
+          <div class="sub-row sub-schelet" aria-hidden="true">
+            <Skeleton width="14px" height="14px" rounded />
+            <Skeleton width={['62%', '78%', '48%', '70%'][i % 4]} height="12px" />
+          </div>
+        {/each}
+      {/if}
+      {#each subs as sub (sub.id)}
+        <!-- ACELASI RAND DE SUBTASK CA IN /tasks, si pe telefon
+             acelasi gest: stanga = „Șterge", cu „Anulează" in
+             toast. Pubela permanenta de 44px de pe fiecare rand
+             a plecat — era singura actiune distructiva din panou
+             si statea fix unde se odihneste degetul mare. -->
+        <div class="sub-row" class:sub-done={sub.done} class:gl-sub={ecran.telefon}
+             use:glisare={{ activ: ecran.telefon, onAmana: () => removeSubtask(sub.id, t.id) }}>
+          <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Șterge</span><span class="gl-ico-s"><SolidIcon name="trash" size={15} /></span></div>
+          <div class="gl-fata">
+          <!-- Bifa ROTUNDA, ca subtaskurile din /tasks si din
+               foaie: acelasi obiect, acelasi semn peste tot.
+               Patratul amber (cbx) e al selectiilor de lista
+               (batch pe /projects), nu al lui „făcut". -->
+          <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
+            {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
+          </button>
+          <!-- Zona mare face lucrul cel mai des: bifeaza. Aici nu
+               exista redenumire, deci nici apasare lunga. -->
+          <button class="sub-title" onclick={() => toggleSubtaskDone(sub)}>{sub.titlu}</button>
+          <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)} aria-label="Șterge subtaskul"><SolidIcon name="trash" size={12} /></button>
+          </div>
+        </div>
+      {/each}
+      <!-- Campul se deschide la atingere, ca in /tasks: pana atunci
+           randul e o INVITATIE, nu un formular care sta gol pe ecran. -->
+      {#if adaugSubLa === t.id}
+        <div class="sub-add">
+          <input type="text" placeholder="Ce pas urmează?" bind:value={newSubtaskTitle} use:focalizeaza
+                 onkeydown={(e) => {
+                   if (e.key === 'Enter') addSubtask(t.id)
+                   else if (e.key === 'Escape') { e.stopPropagation(); adaugSubLa = ''; newSubtaskTitle = '' }
+                 }} />
+          <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}><Plus size={16} /></button>
+        </div>
+      {:else}
+        <button class="sub-nou" onclick={() => { adaugSubLa = t.id; newSubtaskTitle = '' }}>
+          <span class="sub-nou-p"><Plus size={14} /></span> Adaugă subtask
+        </button>
+      {/if}
+    </div>
+
+    <!-- Actiunile rare, sub o linie — ca in /tasks. -->
+    <div class="td-jos">
+      <button class="td-link" class:areNota={!!t.descriere} onclick={() => openNoteModal(t)}>
+        <Text size={12} strokeWidth={2} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
+      </button>
+      <span class="td-link td-dp">
+        <DatePicker value={t.data_scadenta} placeholder="Schimbă termenul" onchange={(v) => setTermenTaskData(t, v)} />
+      </span>
+    </div>
+  </div>
+{/snippet}
+
 <!-- `ruta-in`: ecranul SOSESTE, nu apare intre doua cadre. Aveau
      animatia doar Calendar, Planificator si Taskuri, deci jumatate din
      taburi se deschideau taiat si jumatate lin — raportat de Ion („nu
@@ -1034,88 +1146,6 @@
                         class:acum={isToday(t.data_scadenta)}>{termenScurtTask(t)}</span>
                   </div>
                 </div>
-                {#if expandedTask === t.id}
-                  {@const subs = subtasksCache[t.id] || []}
-                  {@const doneCount = subs.filter(s => s.done).length}
-                  <div class="subtask-body" transition:desfacere={{ duration: motionDuration(DUR_BASE) }}>
-                    <!-- CONTINUTUL INAINTEA BUTOANELOR (ca in /tasks): nota, apoi
-                         pasii. Butonul de editare a notei si chipul „Descriere" —
-                         doua haine pentru aceeasi actiune, dupa cum era completata
-                         nota — au fost inlocuite de UN singur link, jos. -->
-                    {#if t.descriere}
-                      <div class="td-nota"><RichText value={t.descriere} collapsible maxHeight={200} noToggle /></div>
-                    {/if}
-
-                    <div class="sub-section">
-                      <!-- ACELASI ANTET CA IN /tasks: titlu + bara + „1/4" pe un
-                           singur rand. Inainte numarul aparea de DOUA ori (o data
-                           in cap, o data langa bara de pe randul urmator) — aceeasi
-                           informatie, spusa de doua ori la 20px distanta. -->
-                      <div class="sub-head">
-                        <span class="sub-cap">Subtaskuri</span>
-                        {#if subs.length}
-                          <div class="sub-bara" role="img"
-                               aria-label="{doneCount} din {subs.length} subtaskuri făcute">
-                            <span style="width: {(doneCount / subs.length) * 100}%"></span>
-                          </div>
-                          <span class="sub-num">{doneCount}/{subs.length}</span>
-                        {/if}
-                      </div>
-                      <!-- Fara stare de asteptare: panoul se randeaza DOAR cu
-                           subtaskurile deja in cache (vezi `toggleTaskExpand`). -->
-                      {#each subs as sub (sub.id)}
-                        <!-- ACELASI RAND DE SUBTASK CA IN /tasks, si pe telefon
-                             acelasi gest: stanga = „Șterge", cu „Anulează" in
-                             toast. Pubela permanenta de 44px de pe fiecare rand
-                             a plecat — era singura actiune distructiva din panou
-                             si statea fix unde se odihneste degetul mare. -->
-                        <div class="sub-row" class:sub-done={sub.done} class:gl-sub={ecran.telefon}
-                             use:glisare={{ activ: ecran.telefon, onAmana: () => removeSubtask(sub.id, t.id) }}>
-                          <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Șterge</span><span class="gl-ico-s"><SolidIcon name="trash" size={15} /></span></div>
-                          <div class="gl-fata">
-                          <!-- Bifa ROTUNDA, ca subtaskurile din /tasks si din
-                               foaie: acelasi obiect, acelasi semn peste tot.
-                               Patratul amber (cbx) e al selectiilor de lista
-                               (batch pe /projects), nu al lui „făcut". -->
-                          <button class="check" onclick={() => toggleSubtaskDone(sub)} title={sub.done ? 'Redeschide subtaskul' : 'Bifează subtaskul'}>
-                            {#if sub.done}<CheckCircle2 size={16} />{:else}<div class="check-empty small"></div>{/if}
-                          </button>
-                          <!-- Zona mare face lucrul cel mai des: bifeaza. Aici nu
-                               exista redenumire, deci nici apasare lunga. -->
-                          <button class="sub-title" onclick={() => toggleSubtaskDone(sub)}>{sub.titlu}</button>
-                          <button class="sub-del" onclick={() => removeSubtask(sub.id, t.id)} aria-label="Șterge subtaskul"><SolidIcon name="trash" size={12} /></button>
-                          </div>
-                        </div>
-                      {/each}
-                      <!-- Campul se deschide la atingere, ca in /tasks: pana atunci
-                           randul e o INVITATIE, nu un formular care sta gol pe ecran. -->
-                      {#if adaugSubLa === t.id}
-                        <div class="sub-add">
-                          <input type="text" placeholder="Ce pas urmează?" bind:value={newSubtaskTitle} use:focalizeaza
-                                 onkeydown={(e) => {
-                                   if (e.key === 'Enter') addSubtask(t.id)
-                                   else if (e.key === 'Escape') { e.stopPropagation(); adaugSubLa = ''; newSubtaskTitle = '' }
-                                 }} />
-                          <button class="sub-add-btn" disabled={!newSubtaskTitle.trim()} onclick={() => addSubtask(t.id)}><Plus size={16} /></button>
-                        </div>
-                      {:else}
-                        <button class="sub-nou" onclick={() => { adaugSubLa = t.id; newSubtaskTitle = '' }}>
-                          <span class="sub-nou-p"><Plus size={14} /></span> Adaugă subtask
-                        </button>
-                      {/if}
-                    </div>
-
-                    <!-- Actiunile rare, sub o linie — ca in /tasks. -->
-                    <div class="td-jos">
-                      <button class="td-link" class:areNota={!!t.descriere} onclick={() => openNoteModal(t)}>
-                        <Text size={12} strokeWidth={2} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
-                      </button>
-                      <span class="td-link td-dp">
-                        <DatePicker value={t.data_scadenta} placeholder="Schimbă termenul" onchange={(v) => setTermenTaskData(t, v)} />
-                      </span>
-                    </div>
-                  </div>
-                {/if}
           {/snippet}
 
           <div class="task-list">
@@ -1330,6 +1360,38 @@
   <button class="fab" onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Task nou în proiect">
     <Plus size={25} strokeWidth={1.5} />
   </button>
+{/if}
+
+<!-- TASKUL DESCHIS: foaie pe telefon, panou pe desktop — aceeasi gazda si
+     acelasi cap ca in /tasks (bifa mare cu inelul severitatii, titlul, randul
+     de termen care desface `SelectorZi`). `iesireGest`: foaia n-are camp de
+     text deschis la sosire, deci tragerea in jos si „inapoi" sunt iesirile. -->
+{#if sheetTask}
+  {@const gata = sheetTask.status === 'done' || sheetTask.status === 'finalizat'}
+  <Modal bind:open={showSheet} size="panou" iesireGest title={sheetTask.titlu || 'Task'}>
+    <div class="ts-cap" style="--ring: {dueRing(sheetTask.data_scadenta)}">
+      <button class="ts-check" onclick={() => { toggleTaskStatus(sheetTask); showSheet = false }}
+              aria-label={gata ? 'Redeschide' : 'Marchează ca făcut'}>
+        {#if gata}<CheckCircle2 size={24} />{:else}<div class="check-empty big"></div>{/if}
+      </button>
+      <h2 class="ts-titlu" class:gata>{sheetTask.titlu}</h2>
+    </div>
+    <button class="ts-rand" class:activ={termenDeschis} onclick={() => termenDeschis = !termenDeschis}>
+      <CalendarDays size={16} />
+      {#if sheetTask.data_scadenta}
+        <span class="ts-val" style="--ring: {dueRing(sheetTask.data_scadenta)}"
+              class:sev={isOverdue(sheetTask.data_scadenta) || isToday(sheetTask.data_scadenta)}>{etichetaTermen(sheetTask.data_scadenta)}</span>
+      {:else}<span class="ts-val ts-fara">Fără termen</span>{/if}
+      <ChevronDown size={15} class="ts-chev" />
+    </button>
+    {#if termenDeschis}
+      <div class="ts-zile" transition:slide|local={{ duration: motionDuration(DUR_FAST), easing: EASE }}>
+        <SelectorZi value={sheetTask.data_scadenta || ''}
+                    onalege={(v) => { setTermenTaskData(sheetTask, v || ''); termenDeschis = false }} />
+      </div>
+    {/if}
+    {@render detaliuTask(sheetTask)}
+  </Modal>
 {/if}
 
 <!-- ACEEASI foaie de adaugare ca in /tasks si pe „Astăzi". -->
@@ -1680,7 +1742,35 @@
   /* Corp expandat: panou inset (nu mai pluteste pe negru), continut grupat cu gap */
   /* Extinderea e CONTINUAREA randului, separata doar de o linie subtire — aceeasi
      reteta ca in /tasks, la aceleasi valori. */
-  .subtask-body { margin: 0; padding: var(--space-6) var(--space-12) var(--space-12) 34px;
+  /* ===== Antetul foii — acelasi ca in /tasks ===== */
+  .ts-cap { display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+  .ts-check { flex: none; min-width: var(--tap-min); min-height: var(--tap-min);
+    display: flex; align-items: center; justify-content: flex-start; color: var(--success);
+    background: none; border: none; cursor: pointer; padding: 0; }
+  .ts-titlu { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-semibold);
+    color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; padding-top: 9px; }
+  .ts-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
+  .ts-rand { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
+    min-height: var(--tap-min); padding: 0 var(--space-12); margin-bottom: var(--space-sm);
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md);
+    color: var(--text-dim); font-size: var(--font-small); text-align: left; cursor: pointer;
+    transition: var(--transition-pressable); }
+  .ts-rand:hover { border-color: var(--border-strong); }
+  .ts-rand:active { transform: scale(var(--press-scale)); }
+  .ts-rand.activ { border-color: var(--accent); }
+  .ts-val { flex: 1; color: var(--text); font-weight: var(--fw-medium); }
+  .ts-val.sev { color: var(--ring); }
+  .ts-fara { color: var(--text-dim); font-weight: var(--fw-normal); }
+  .ts-rand :global(.ts-chev) { flex: none; opacity: 0.5; transition: transform var(--dur-press) var(--ease); }
+  .ts-rand.activ :global(.ts-chev) { transform: rotate(180deg); }
+  .ts-zile { margin: -2px 0 var(--space-sm); }
+  /* Scheletul are forma randului real (vezi `Skeleton`): sosirea nu misca nimic. */
+  .sub-schelet { gap: 9px; padding-left: var(--space-12); }
+  .sub-schelet > :global(:first-child) { flex: none; }
+
+  /* Corpul taskului sta acum in foaie/panou, nu indentat sub un rand din lista:
+     fara cei 34px de spina din stanga. */
+  .subtask-body { margin: 0; padding: 0;
     border-top: 1px solid var(--border-subtle);
     display: flex; flex-direction: column; gap: var(--space-xs); }
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
@@ -1836,7 +1926,6 @@
 
     .trow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     .back { min-height: var(--tap-min); }
-    .subtask-body { padding-left: var(--space-12); }
     .td-link { min-height: var(--tap-min); font-size: var(--font-small); }
     .td-dp :global(.dp-trigger) { min-height: var(--tap-min); font-size: var(--font-small); }
     .td-jos { gap: var(--space-lg); }

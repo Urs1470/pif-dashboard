@@ -319,44 +319,16 @@
   // butoanele nu fura selectia din editor
   function keepSel(e) { e.preventDefault() }
 
-  // ===== BARA STA DEASUPRA TASTATURII (telefon) =====
-  //
-  // In capul suprafetei, bara e la 44px de degetul tau si la 400 de locul in care
-  // scrii: cat timp tastatura e ridicata, ea e in cealalta jumatate a ecranului.
-  // Pe telefon uneltele trebuie sa fie langa cursor, nu langa titlu.
-  //
-  // `visualViewport` e singura sursa care stie CAT acopera tastatura: `innerHeight`
-  // si `dvh` urmaresc bara de adresa, nu tastatura. Diferenta dintre viewportul
-  // de layout si cel vizual e exact inaltimea acoperita.
-  //
-  // Unde lipseste (browsere vechi), `--kb` ramane 0 si bara sta lipita de marginea
-  // de jos — adica exact unde era si inainte de tastatura. Nu se strica nimic,
-  // doar nu se ridica.
-  let kb = $state(0)
-  $effect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    const masoara = () => {
-      // Rotunjit si prins la 0: pe unele browsere valoarea oscileaza cu
-      // subpixeli cand se deruleaza, iar bara ar tremura.
-      const acoperit = window.innerHeight - vv.height - vv.offsetTop
-      kb = acoperit > 24 ? Math.round(acoperit) : 0
-    }
-    masoara()
-    vv.addEventListener('resize', masoara)
-    vv.addEventListener('scroll', masoara)
-    return () => {
-      vv.removeEventListener('resize', masoara)
-      vv.removeEventListener('scroll', masoara)
-    }
-  })
+  // Aici se masura `visualViewport` a doua oara (prima e in `Modal`), ca sa se
+  // fixeze bara de unelte la `bottom: kb`. A plecat: foaia „doc" urca intreaga
+  // deasupra tastaturii, iar bara sta sub text, in flux (vezi CSS-ul de telefon).
 </script>
 
 <svelte:document onclick={onDocClick} />
 <svelte:window onresize={() => styleOpen && asazaMeniu()} />
 
-<div class="rte" style:--kb="{kb}px">
-  <div class="rte-toolbar" class:cu-tastatura={kb > 0} role="toolbar" aria-label="Instrumente de formatare">
+<div class="rte">
+  <div class="rte-toolbar" role="toolbar" aria-label="Instrumente de formatare">
     {#if !compact}
     <button type="button" class="tbtn" title="Anulează (Ctrl+Z)" onmousedown={keepSel} onclick={() => cmd('undo')}><Undo2 size={15} /></button>
     <button type="button" class="tbtn" title="Refă (Ctrl+Y)" onmousedown={keepSel} onclick={() => cmd('redo')}><Redo2 size={15} /></button>
@@ -751,32 +723,30 @@
     .tbtn { width: var(--tap-min); height: var(--tap-min); }
     .tstyle { height: var(--tap-min); }
 
-    /* UN SINGUR RAND, CARE DERULEAZA, DEASUPRA TASTATURII.
-       `--kb` vine din `visualViewport` (vezi <script>): cat acopera tastatura.
-       Cand nu e ridicata, e 0 si bara sta pe marginea de jos.
-       `nowrap` + `overflow-x` se pot acum, fiindca meniul de stil s-a mutat in
+    /* UN SINGUR RAND, CARE DERULEAZA, SUB TEXT — NU PESTE EL.
+       Era `position: fixed; bottom: var(--kb)`: bara plutea peste ultimul rand
+       al textului, peste „Salvează" din subsolul foii (masurat: butonul statea
+       ASCUNS sub bara, la foaia deschisa fara tastatura) si isi masura singura
+       tastatura, a doua oara dupa `Modal`. Acum foaia „doc" urca deasupra
+       tastaturii cu totul (`Modal` ii ridica podeaua cu `--kb`), deci bara n-are
+       de ce sa se mai fixeze pe nimic: sta ULTIMA in coloana, textul deruleaza
+       deasupra ei, iar subsolul cu „Salvează" vine sub ea, in fluxul normal.
+       `nowrap` + `overflow-x` se pot, fiindca meniul de stil s-a mutat in
        `body` si nu mai e taiat de scroller. */
+    .rte { overflow: hidden; }
     .rte-toolbar {
-      position: fixed;
-      top: auto;
-      left: 0;
-      right: 0;
-      bottom: var(--kb, 0px);
+      position: static;
+      order: 2;
+      flex: none;
       gap: 3px;
       flex-wrap: nowrap;
       overflow-x: auto;
       overscroll-behavior-x: contain;
       scrollbar-width: none;
-      /* Bara pluteste peste text acum, deci se desprinde prin umbra — in sus,
-         fiindca ea e deasupra continutului. */
       border-bottom: none;
-      box-shadow: var(--shadow-foaie);
-      /* Fara tastatura, insetul de siguranta tine butoanele deasupra barei de
-         gesturi. Cu tastatura ridicata, ea acopera oricum zona aia, iar insetul
-         ar fi 34px de bara moarta fix cand ai cel mai putin ecran. */
-      padding: var(--space-6) var(--space-10) calc(var(--space-6) + var(--safe-bottom));
+      border-top: 1px solid var(--border);
+      padding: var(--space-6) var(--space-10);
     }
-    .rte-toolbar.cu-tastatura { padding-bottom: var(--space-6); }
     .rte-toolbar::-webkit-scrollbar { display: none; }
     /* Randul e o pista: separatoarele si eticheta de stare n-au voie sa se
        stranga sub degetul care deruleaza. */
@@ -788,11 +758,15 @@
     .math-btn { min-height: var(--tap-min); }
     .math-inp { min-height: var(--tap-min); }
     .math-bar { top: 8px; width: calc(100% - 12px); }
-    /* Padding-ul de jos tine ultimul rand deasupra barei, care acum e acolo. */
-    .rte-editor { padding: var(--space-md) var(--space-md) 96px; min-height: 100%; }
-    /* Cu tastatura ridicata, peste bara de unelte mai sta si bara de salvare a
-       shell-ului (`EditorLung`, `.ed-foot.ridicat`) — ultimul rand scris trebuie
-       sa poata urca deasupra AMBELOR, altfel scrii sub bara pe care o vezi. */
-    .rte-toolbar.cu-tastatura ~ .rte-editor { padding-bottom: 152px; }
+    /* Textul e scrollerul, bara sta sub el: nimic nu mai pluteste peste ultimul
+       rand, deci nici nu mai e nevoie de 96-152px de padding ca sa-l ridici. */
+    .rte-editor {
+      order: 1;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: var(--space-md) var(--space-md) var(--space-xl);
+    }
   }
 </style>

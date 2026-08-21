@@ -94,11 +94,17 @@ python scripts/audit_mobil.py       # geometrie si gesturi pe trei latimi de tel
 python scripts/audit_navigare.py    # ce se intampla, masurat, cand schimbi tabul
 python scripts/audit_foaie.py       # foaia de pe telefon: trepte, viteza, voal
 python scripts/audit_reactivitate.py # cat de repede raspunde si cat de neted curge
+python scripts/audit_tastatura.py   # foile CU tastatura (IME emulat): o sosire, nimic sub ea
 ```
 
 Fiecare exista fiindca prinde un mod de esec care trece de build: importul lipsa care lasa
 pagina pe schelet, butonul taiat de marginea ecranului, a doua paleta rotita cu doua pozitii,
 foaia care se intinde si nu se mai poate trage inapoi.
+
+**`audit_tastatura.py` emuleaza tastatura** printr-un `visualViewport` fals care urca la 250ms
+dupa focus — singurul mod de a vedea pe masina de dezvoltare ce face foaia sub IME-ul Android.
+Ce masoara nu se vede altfel: a doua sosire a foii, campul ramas sub tastatura, clicul de la
+ridicarea degetului dupa apasarea lunga.
 
 **`audit_foaie.py` cere atingere ADEVARATA** (`Input.dispatchTouchEvent`, ca `audit_mobil`):
 mouse-ul lui Playwright emite `pointerType: 'mouse'`, iar foaia iese exact pe conditia asta —

@@ -398,10 +398,17 @@
   async function deschideFoaia(taskId) {
     sheetTaskId = taskId
     termenDeschis = false
-    // Subtaskurile INAINTE de foaie, acelasi motiv ca la extinderea din lista:
-    // o foaie care se ridica pe jumatate goala si apoi creste sub degetul tau
-    // arata ca doua evenimente pentru un singur gest.
-    await incarcaSubtaskuri(taskId)
+    // Subtaskurile INAINTE de foaie, cand se poate: o foaie care se ridica pe
+    // jumatate goala si apoi creste sub degetul tau arata ca doua evenimente
+    // pentru un singur gest. Dar „inainte" nu poate insemna „oricat": prin tunel,
+    // prima deschidere a unui task costa 300-800ms in care atingerea nu primeste
+    // NIMIC inapoi — masurat: 900ms fara foaie, si gestul se repeta.
+    // Compromisul: un tact scurt (cache-ul si reteaua locala intra in el), apoi
+    // foaia se ridica ORICUM — cu un schelet de exact atatea randuri cate spune
+    // contorul de pe rand (`subtask_total`), la aceeasi inaltime ca randurile
+    // reale. Cand sosesc, iau locul scheletului fara ca foaia sa se miste.
+    const date = incarcaSubtaskuri(taskId)
+    await Promise.race([date, new Promise(r => setTimeout(r, 120))])
     showSheet = true
   }
 
@@ -940,6 +947,9 @@
 
 {#snippet taskDetail(t)}
   {@const subs = subtasksCache[t.id] || []}
+  <!-- `subtasksCache[t.id]` lipsa = inca pe drum; se randeaza scheletul, cu
+       atatea randuri cat stie contorul (vezi `deschideFoaia`). -->
+  {@const peDrum = !subtasksCache[t.id] && (t.subtask_total || 0) > 0}
 
   <!-- Inauntru raman DOAR subtaskurile (cerinta Ion). Descrierea se deschide din
        butonul de pe rand, langa editare — nu mai imparte extinderea in doua. -->
@@ -971,7 +981,9 @@
          progres sta pe acelasi rand: „1/4" da cifra, bara da distanta. -->
     <div class="sub-cap">
       <span class="sub-cap-t">Subtaskuri</span>
-      {#if subs.length}
+      {#if peDrum}
+        <span class="sub-num">{t.subtask_done || 0}/{t.subtask_total}</span>
+      {:else if subs.length}
         {@const gata = subs.filter(s => s.done).length}
         <div class="sub-bara" role="img"
              aria-label="{gata} din {subs.length} subtaskuri făcute">
@@ -1019,7 +1031,14 @@
       </div>
     {/each}
 
-    {#if !subs.length}
+    {#if peDrum}
+      {#each Array(Math.min(t.subtask_total, 8)) as _, i (i)}
+        <div class="sub-row sub-schelet" aria-hidden="true">
+          <Skeleton width="14px" height="14px" rounded />
+          <Skeleton width={['62%', '78%', '48%', '70%'][i % 4]} height="12px" />
+        </div>
+      {/each}
+    {:else if !subs.length}
       <p class="sub-gol">Niciun subtask. Împarte taskul în pași dacă e prea mare.</p>
     {/if}
 
@@ -2050,6 +2069,10 @@
   .sub-row { display: flex; align-items: center; gap: 9px; min-height: var(--ctrl-sm);
     padding: 0 var(--space-6); border-radius: var(--radius-xs); }
   .sub-row:hover { background: var(--bg-hover); }
+  /* Scheletul are FORMA randului real — aceeasi inaltime, aceeasi coloana a
+     bifei — ca sosirea subtaskurilor sa nu miste nimic (vezi `Skeleton`). */
+  .sub-schelet { gap: 9px; padding-left: var(--space-12); }
+  .sub-schelet > :global(:first-child) { flex: none; }
   /* ULTIMUL RAND AL LISTEI, nu un obiect mai tare decat ea. Dreptunghiul punctat
      de 44px era cel mai puternic lucru din panou, desi „mai adaug un pas" e ultima
      intentie cu care deschizi un task. Bifa lipsa e inlocuita de „+", pe aceeasi

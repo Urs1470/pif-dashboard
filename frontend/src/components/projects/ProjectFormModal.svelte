@@ -97,7 +97,9 @@
   }
 </script>
 
-<Modal bind:open title={isEdit ? 'Editează proiectul' : 'Proiect nou'} size="md">
+<!-- `cuTastatura`: numele primeste focusul la deschidere (mai sus), deci
+     tastatura vine sigur — foaia se naste deja ridicata deasupra ei. -->
+<Modal bind:open title={isEdit ? 'Editează proiectul' : 'Proiect nou'} size="md" cuTastatura>
   <!-- `id` + `form="pf-form"` pe butonul din subsol: ENTER TREBUIE SA SALVEZE.
        Butonul de salvare e randat de `Modal` in slotul `footer`, deci in AFARA
        elementului `<form>`. Fara el, formularul ramane fara `type="submit"`, iar

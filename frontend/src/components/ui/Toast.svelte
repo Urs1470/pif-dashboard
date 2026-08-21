@@ -158,6 +158,12 @@
       left: var(--space-md);
       right: var(--space-md);
     }
+    /* CU TASTATURA SUS, TOASTUL URCA DEASUPRA EI: dockul s-a ascuns, iar
+       „Anulează" ar fi altfel sub tastatura — exact butonul care nu are voie sa
+       fie ascuns. `--kb` si clasa vin din `Modal`. */
+    :global(html.are-tastatura) .toast-container {
+      bottom: calc(var(--kb, 0px) + var(--space-md));
+    }
     .toast { min-height: 56px; max-width: 100%; padding: 0 var(--space-sm) 0 var(--space-md); font-size: var(--font-body); }
     .toast-action { height: var(--tap-min); padding: 0 var(--space-md); }
     .toast-progres { min-width: 66px; }

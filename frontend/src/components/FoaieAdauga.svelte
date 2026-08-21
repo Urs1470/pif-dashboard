@@ -366,7 +366,10 @@
      pironit la 46 — deci latimea se duce toata in coloana din mijloc, unde stau
      exact cele doua lucruri lungi: titlul si numele lucrarii. La 560 se taiau
      amandoua pe un ecran care avea 1440. -->
-<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="lg">
+<!-- `cuTastatura`: campul se focalizeaza singur (vezi efectul de mai sus), deci
+     foaia se naste cu podeaua deja ridicata la inaltimea stiuta a tastaturii —
+     o singura urcare, odata cu ea, nu una pana jos si inca una cand soseste. -->
+<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="lg" cuTastatura>
   <div class="fa">
     <!-- RANDUL DE SUS *ESTE* CAMPUL: 56px, lupa 17, text 16 (sub 16 Safari face
          zoom la focus), si contorul „N din M" in mono la dreapta — cifre care se
@@ -486,7 +489,12 @@
      lipesc de muchii, ca in paleta de comenzi. Pe desktop titlul se ascunde
      (repeta ce spune butonul din care ai venit); pe telefon rămâne, fiindca
      antetul poarta gestul de tragere al foii. */
-  :global(.modal:has(.fa) .modal-body) { padding: 0; }
+  /* Corpul e coloana flex, ca `.fa` sa se poata STRANGE: cu tastatura sus foaia
+     e plafonata (`max-height` scade `--kb`) si, cu o inaltime fixa in `dvh`,
+     `.fa` iesea din corp — corpul derula, lista din el derula si ea, iar randul
+     „Categorie și recurență" cadea sub pliu. Masurat la 844 cu tastatura de
+     312: corp 424, `.fa` 490. */
+  :global(.modal:has(.fa) .modal-body) { padding: 0; display: flex; flex-direction: column; }
   :global(.modal:has(.fa) .modal-title) { display: none; }
   @media (min-width: 769px) {
     :global(.modal:has(.fa) .modal-header) { display: none; }
@@ -499,7 +507,7 @@
      in lista, fata de 6 cat incapeau in cei 340px scrisi de mana; pe un ecran
      inalt se opreste la 680, ca foaia sa ramana o caseta, nu o pagina. Plafonul
      `85dvh` de pe `.modal` ramane paza. */
-  .fa { display: flex; flex-direction: column; min-height: 0; height: min(680px, 70dvh); }
+  .fa { display: flex; flex-direction: column; min-height: 0; flex: 0 1 min(680px, 70dvh); }
 
   .fa-cauta {
     display: flex;
@@ -751,6 +759,6 @@
        vechiul plafon de 46dvh — iar fara ea foaia nu ajunge sa para un ecran plin.
        Regula e acum a foii, nu a telefonului (vezi `.fa` mai sus): aici ramane
        doar TREAPTA, fiindca pe telefon peste foaie mai vine si tastatura. */
-    .fa { height: 58dvh; }
+    .fa { flex-basis: 58dvh; }
   }
 </style>
