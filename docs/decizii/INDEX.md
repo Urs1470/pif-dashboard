@@ -16,6 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-08-21
 
+- [2026-08-21 Verifică instrumentul înainte de subiect](2026-08-21-verifica-instrumentul-inainte-de-subiect.md) — trei din patru „defecte" de pe mobil erau ale sondei; `:active` nu se vede prin atingere sintetică, orice regulă CSS are `cssRules` truthy, iar un control care răspunde sub 25 ms nu are nevoie de semn de apăsare.
 - [2026-08-21 Foile cu tastatura: o singură sosire](2026-08-21-foile-cu-tastatura-o-singura-sosire.md) — tastatura se PREVEDE (înălțimea știută, pusă pe `<html>` înainte de randare), o singură sursă `--kb` (editorul nu mai fixează bare), clicul de la ridicarea degetului nu e al foii, foaia taskului cu schelet în ≤120 ms, taskul din proiect în foaie/panou. Audit nou: `audit_tastatura.py`.
 
 ## 2026-08-17

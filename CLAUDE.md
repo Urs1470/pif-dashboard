@@ -95,6 +95,7 @@ python scripts/audit_navigare.py    # ce se intampla, masurat, cand schimbi tabu
 python scripts/audit_foaie.py       # foaia de pe telefon: trepte, viteza, voal
 python scripts/audit_reactivitate.py # cat de repede raspunde si cat de neted curge
 python scripts/audit_tastatura.py   # foile CU tastatura (IME emulat): o sosire, nimic sub ea
+python scripts/proba_mobil.py       # banc de lucru, nu verificator: ce face o pagina cand o atingi
 ```
 
 Fiecare exista fiindca prinde un mod de esec care trece de build: importul lipsa care lasa
@@ -105,6 +106,13 @@ foaia care se intinde si nu se mai poate trage inapoi.
 dupa focus — singurul mod de a vedea pe masina de dezvoltare ce face foaia sub IME-ul Android.
 Ce masoara nu se vede altfel: a doua sosire a foii, campul ramas sub tastatura, clicul de la
 ridicarea degetului dupa apasarea lunga.
+
+**`proba_mobil.py` nu e un verificator, e un banc**: nu are verdicte, are unelte —
+raspunsul in ms separat pe apasare si actiune, geometria pe cadru, si baze de proba goale sau
+cu 25 de proiecte si 133 de taskuri. Il folosesti cand nu stii inca ce cauti. **Citeste-i
+antetul inainte:** trei capcane de masurare l-au facut sa mearga (`:active` nu se vede prin
+atingere sintetica, `goto` la acelasi hash nu reincarca, elanul intentionat arata ca palpaire)
+— vezi `docs/decizii/2026-08-21-verifica-instrumentul-inainte-de-subiect.md`.
 
 **`audit_foaie.py` cere atingere ADEVARATA** (`Input.dispatchTouchEvent`, ca `audit_mobil`):
 mouse-ul lui Playwright emite `pointerType: 'mouse'`, iar foaia iese exact pe conditia asta —
