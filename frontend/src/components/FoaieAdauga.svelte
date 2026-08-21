@@ -25,6 +25,7 @@
   // (tokens.css), iar DM Mono e pentru cifre care se compara pe verticala. Ce
   // ramane din intentia handoff-ului e treapta: 12, majuscule, 600, ls .05em —
   // adica exact clasa de eticheta din propria lui secțiune de tipografie.
+  import { marcheazaAterizarea } from '../lib/focus.js'
   import { tick, untrack } from 'svelte'
   import { motion, motionDuration, DUR_SLOW } from '../lib/motion.svelte.js'
   import { Search, Mic, Plus, X, ChevronDown, Check } from '@lucide/svelte'
@@ -295,8 +296,9 @@
       // `ora` merge DOAR pe ramura globala, si numai cand `oraSePoate` — coloana
       // exista pe `global_tasks`, nu pe `tasks`. Pe ramura de proiect nici nu se
       // trimite: un câmp pe care ruta il ignora arata ca o promisiune.
-      if (proiectAles?.id) await createTask(proiectAles.id, comun)
-      else await createGlobalTask({
+      let facut
+      if (proiectAles?.id) facut = await createTask(proiectAles.id, comun)
+      else facut = await createGlobalTask({
         ...comun,
         categorie: categorie || 'General',
         sfera,
@@ -304,6 +306,15 @@
       }, { sfera: 'toate' })
       open = false
       onSchimbare()
+      // UNDE A CAZUT. Masurat: apesi „creeaza", randul apare la 1857ms, iar foaia
+      // se inchide abia la 2100ms — deci intrarea lui se joaca IN SPATELE foii, si
+      // cand foaia pleaca randul e deja asezat. Faci un task si nu vezi unde s-a
+      // dus; intr-o lista de 133 il cauti.
+      // Acelasi semn ca la aterizarea de pe Acasa (inelul in doua batai), fiindca
+      // e aceeasi intrebare: „pe care dintre ele". Cheia se pune ACUM, chiar daca
+      // randul inca nu s-a montat — actiunea si-o citeste la montare.
+      const idNou = facut?.id || facut?.task?.id
+      if (idNou) marcheazaAterizarea(proiectAles?.id ? 'task' : 'global', idNou)
       toast(ziAleasa ? `Adăugat pe ${citit.etichetaZi || ziAleasa}` : 'Adăugat', 'success')
     } catch (e) {
       toast(`Eroare: ${e.message}`, 'error')

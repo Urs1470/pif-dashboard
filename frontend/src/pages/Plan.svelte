@@ -36,7 +36,7 @@
   import FoaieTask from '../components/FoaieTask.svelte'
   import FoaieAdauga from '../components/FoaieAdauga.svelte'
   import { actualizeazaTask } from '../stores/tasks.svelte.js'
-  import { motion, panou, motionDuration, aterizare } from '../lib/motion.svelte.js'
+  import { motion, panou, motionDuration, aterizare, sosire, plecare } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ContorPasi from '../components/ui/ContorPasi.svelte'
@@ -1529,7 +1529,16 @@
           <ChevronRight size={16} class="bl-chev" />
         </button>
         {#if backlogOpen}
-          <div class="bl-items">
+          <!-- SERTARUL SE DESCHIDEA CA O TAIETURA. Masurat cu
+               `document.getAnimations()`: zero animatii la pliere si la depliere —
+               chipurile pur si simplu apareau. Era singura interactiune de pe
+               pagina fara nicio miscare, langa un chevron care se roteste
+               frumos.
+               `sosire`, nu `slide`: inaltimea containerului isi ia valoarea in
+               acelasi cadru (regula fisierului — nu se anima layout), iar ce se
+               misca e CONTINUTUL, pe compozitor. Deci spatiul se face dintr-o
+               data si chipurile sosesc in el, in loc sa creasca impreuna. -->
+          <div class="bl-items" in:sosire|local out:plecare|local>
             {#each plan.backlog as t (t.tip + ':' + t.id)}
               <div class="bl-chip"
                    draggable="true" ondragstart={(e) => backlogDragStart(e, t)} ondragend={backlogDragEnd}

@@ -67,6 +67,24 @@ export function morphNavigate(sourceEl, path, kind, id) {
   vt.finished.then(cleanup, cleanup)
 }
 
+// CINE ASTEAPTA O ATERIZARE. Actiunea isi verifica cheia la montare si la
+// schimbarea ei — dar nu si cand se schimba `router.query.focus` sub un rand deja
+// montat. Asta se intampla exact la CREARE: randul nou apare, si abia dupa aia
+// stim ce id are. Fara lista asta, semnul ar functiona doar cand vii dintr-o
+// navigare, nu cand tocmai ai facut lucrul.
+const asteptatori = new Set()
+
+/** Aprinde semnul pe randul cu cheia data, fara sa navigheze nicaieri.
+ *  Pentru cazurile in care aterizarea nu vine dintr-un drum, ci dintr-o fapta:
+ *  ai creat un task si trebuie sa vezi UNDE a cazut. */
+export function marcheazaAterizarea(kind, id) {
+  if (!id) return
+  router.query = { ...router.query, focus: focusKey(kind, id) }
+  for (const f of [...asteptatori]) {
+    try { f() } catch (_) {}
+  }
+}
+
 // Svelte action: use:focusOnLand={focusKey(...)} on the destination row.
 export function focusOnLand(node, key) {
   function maybe() {
@@ -155,7 +173,9 @@ export function focusOnLand(node, key) {
     })
   }
   maybe()
+  asteptatori.add(maybe)
   return {
     update(newKey) { key = newKey; maybe() },
+    destroy() { asteptatori.delete(maybe) },
   }
 }
