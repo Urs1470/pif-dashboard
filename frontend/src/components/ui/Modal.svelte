@@ -530,8 +530,15 @@
     treapta = i
     trasY = 0
     voalP = 1
-    intins = trepte.length > 1 && i === trepte.length - 1
+    // `intins` SE RECALCULEAZA DOAR PENTRU FOILE CU TREPTE. Pusa inaintea garzii,
+    // ea rula si pentru o PAGINA (`pagina`, `cuTrepte=false`): un simplu TAP pe
+    // antet trece prin apuca->lasa->duLaTreapta, iar aici `intins` cadea pe false
+    // (0 === lungime-1) — pagina plina isi pierdea clasa `.intins`, deci si
+    // inaltimea de 100dvh, si se prabusea intr-o foaie partiala din care nu mai
+    // exista drum inapoi (se reface doar la redeschidere). Acum garda o apara:
+    // pentru pagina/doc, `intins` ramane cum a fost pus la deschidere.
     if (!cuTrepte) return
+    intins = trepte.length > 1 && i === trepte.length - 1
     clearTimeout(ceasPredare)
     if (intins || inalt) {
       // Amandoua treptele astea au o clasa care le da inaltimea in `dvh`, deci
@@ -919,7 +926,7 @@
        out:fade|global={{ duration: motionDuration(DUR_BASE), easing: EASE_IESIRE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
          class:acoperit class:gest={hFoaie !== null} class:mijloc={sheet && inalt && !intins}
-         class:se-trage={trageManer}
+         class:pagina={sheet && pagina} class:se-trage={trageManer}
          bind:this={sheetEl} style:--trasY="{trasY}px" style:--h-foaie={hFoaie === null ? null : `${hFoaie}px`}
          in:intra|global out:intra|global>
       {#if panou}
@@ -1271,7 +1278,12 @@
        si nu prin `position: fixed; inset: 0`, care se raporteaza la primul
        stramos cu transform (cat tine sosirea rutei, acela e `.page`: masurat,
        foaia iesea 1596px in loc de 812). */
-    .modal.sheet.intins:not(.modal-doc) {
+    /* `.pagina` alaturi de `.intins`: o pagina plina isi ia inaltimea din PROPRIA
+       clasa, nu din starea tranzitorie `intins` — asa un tap pe antet n-o mai
+       poate prabusi vizual chiar daca `intins` ar clipi (vezi si garda din
+       `duLaTreapta`). */
+    .modal.sheet.intins:not(.modal-doc),
+    .modal.sheet.pagina:not(.modal-doc) {
       height: calc(100dvh - var(--kb, 0px));
       max-height: calc(100dvh - var(--kb, 0px));
       padding-top: var(--safe-top);

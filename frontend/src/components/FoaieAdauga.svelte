@@ -496,7 +496,14 @@
      „Categorie și recurență" cadea sub pliu. Masurat la 844 cu tastatura de
      312: corp 424, `.fa` 490. */
   :global(.modal:has(.fa) .modal-body) { padding: 0; display: flex; flex-direction: column; }
-  :global(.modal:has(.fa) .modal-title) { display: none; }
+  /* PE TELEFON TITLUL SE ARATA — „ADAUGĂ TASK" / „EDITEAZĂ TASK", eticheta mica
+     din capul foii, exact ca la editorul de note (`.modal-doc`). Fara el, cu
+     `justify-content: space-between` si un singur copil, `X`-ul ramanea singur in
+     coltul din STANGA-sus, cu spatiu mort deasupra campului (Ion: „x-ul asta din
+     sus stanga nu-mi place"). Cu titlul la stanga, `X`-ul trece la dreapta si
+     antetul redevine o bara, nu un buton ratacit.
+     Pe DESKTOP tot antetul se ascunde (titlul repeta butonul din care ai venit,
+     iar campul „Ce ai de făcut?" spune singur ce e). */
   @media (min-width: 769px) {
     :global(.modal:has(.fa) .modal-header) { display: none; }
   }

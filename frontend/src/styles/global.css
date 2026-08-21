@@ -223,6 +223,16 @@ code, pre {
     transform: scale(.93) translateY(6px);
     transition: transform var(--dur-arc) var(--ease-arc);
   }
+  /* O PAGINA PLINA (creare task, „Proiect nou", editorul de note) ACOPERA TOT
+     ecranul — deci retragerea paginii din spate NU se vede cat e deschisa, iar
+     revenirea ei se vede DOAR la inchidere, unde concureaza cu foaia care
+     coboara: doua liste pline peste aceiasi pixeli (masurat pe close — o
+     mazgaleala, aceeasi familie cu cross-fade-ul reparat la tranzitia de ruta).
+     Sub o pagina plina, fundalul STA pe loc: foaia aluneca deasupra unei pagini
+     asezate, si atat. Retragerea ramane pentru foile PARTIALE (foaia zilei la
+     mijloc, foaia taskului), unde chiar vezi fundalul dandu-se inapoi. */
+  html.are-modal:has(.modal.pagina) .app-main,
+  html.are-modal:has(.modal-doc) .app-main { transform: none; }
 }
 
 /* SI INVELISUL RUTEI ISI LASA TRANSFORMUL cat timp e un modal deschis.

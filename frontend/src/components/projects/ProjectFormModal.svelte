@@ -191,6 +191,12 @@
      — pe telefon — pentru gestul de tragere al foii; titlul lui se ascunde ca sa
      nu se scrie acelasi lucru de doua ori. */
   :global(.modal:has(.pf) .modal-title) { display: none; }
+  /* Titlul e in CORPUL formularului (`.pf-titlu`, „Proiect nou"), deci antetul
+     n-are titlu. Fara asta, cu `justify-content: space-between` si un singur copil,
+     `X`-ul cadea singur in coltul din STANGA-sus — exact aranjamentul pe care Ion
+     l-a respins la foaia de creare task. Il impingem la DREAPTA, ca la orice alta
+     foaie; titlul mare din corp ramane reperul. */
+  :global(.modal:has(.pf) .modal-header) { justify-content: flex-end; }
   @media (min-width: 769px) {
     :global(.modal:has(.pf)) { max-width: 480px; }
     :global(.modal:has(.pf) .modal-header) { border-bottom: none; padding-bottom: 0; }

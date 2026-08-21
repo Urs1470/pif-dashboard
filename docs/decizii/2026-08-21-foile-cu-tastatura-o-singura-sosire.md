@@ -137,3 +137,27 @@ tastaturii raportate în mers (`kb-in-mers`) și jurnalul de pe aparat.
 
 `audit_tastatura.py` joacă acum două latențe (420 și 900 ms) și cere același film: sus în
 ~280 ms, apoi 0 px mișcare, câmpul pe loc și când vine tastatura și când scrii.
+
+## Runda a șasea — animațiile paginii de creare + X-ul din colț
+
+Ion: „vezi te rog animațiile, la deschidere, închidere; x-ul ăsta din sus stânga nu-mi place."
+
+- **X-ul singur în colțul stânga-sus**: titlul foii de creare era ascuns la toate lățimile, deci
+  cu `justify-content: space-between` și un singur copil, X-ul cădea la flex-start (stânga). Acum
+  pe telefon se arată titlul („ADAUGĂ TASK", eticheta mică din capul foii, ca la editorul de note),
+  iar X-ul trece la dreapta. Pe desktop antetul rămâne ascuns.
+- **Fantoma de la închidere**: pagina din spate se mărea înapoi (scale .93→1) *în timp ce* foaia
+  plină încă aluneca — două liste peste aceiași pixeli. O pagină plină acoperă tot, deci retragerea
+  nu se vede cât e deschisă și doar concurează la închidere. Acum, sub o pagină plină (`.modal.pagina`
+  și `.modal-doc`), fundalul stă pe loc (`html.are-modal:has(...) .app-main { transform: none }`).
+  Retragerea rămâne la foile parțiale, unde chiar vezi fundalul. S-a păstrat alunecarea (foaia e
+  opacă → măturare curată; un fade ar amesteca două liste la 50% opacitate).
+
+Verificarea adversarială (workflow, 4 lentile + juriu) a prins două probleme reale, amândouă reparate:
+1. **Un TAP pe antetul paginii o prăbușea.** `duLaTreapta` seta `intins` ÎNAINTE de garda `!cuTrepte`,
+   deci un tap (apuca→lasa→duLaTreapta) pe o pagină (`cuTrepte=false`) ștergea `intins`, pagina își
+   pierdea înălțimea de 100dvh și cădea într-o foaie parțială ireversibilă. Reparat: `intins` se
+   recalculează doar după gardă (foile fără trepte păstrează valoarea de la deschidere), plus
+   `.modal.sheet.pagina` primește înălțimea plină din propria clasă, nu din starea tranzitorie.
+2. **„Proiect nou" avea același X singur în stânga-sus** (foaie soră, `pagina`). Titlul lui e în
+   corp (`.pf-titlu`), deci am împins doar X-ul la dreapta (`justify-content: flex-end`).
