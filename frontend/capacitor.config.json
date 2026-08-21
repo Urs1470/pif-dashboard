@@ -13,6 +13,9 @@
   "plugins": {
     "LocalNotifications": {
       "iconColor": "#8ab2d9"
+    },
+    "SystemBars": {
+      "insetsHandling": "disable"
     }
   }
 }

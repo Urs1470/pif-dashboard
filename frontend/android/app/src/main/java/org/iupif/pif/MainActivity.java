@@ -8,14 +8,23 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsAnimationCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.WebViewListener;
+
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends BridgeActivity {
 
@@ -29,6 +38,7 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
 
         bareDeSistem();
+        tastaturaPeCadre();
 
         // ULTIMA DATA CAND SITE-UL S-A INCARCAT.
         // Se scrie aici, nu din JS: cand ai nevoie de valoare (ecranul „fara
@@ -40,6 +50,18 @@ public class MainActivity extends BridgeActivity {
         getBridge().addWebViewListener(new WebViewListener() {
             @Override
             public void onPageLoaded(WebView webView) {
+                // SAFE-AREA SE REINJECTEAZA LA FIECARE INCARCARE.
+                // Variabilele sunt stil INLINE pe `<html>`, deci o pagina noua
+                // porneste fara ele. Prima scriere se face din `onCreate`, cand
+                // WebView-ul inca n-are document — si se pierde. Capacitor rezolva
+                // asta cu un `onDOMReady` propriu; noi, de aici. Cache-ul se
+                // goleste intai, altfel a doua scriere ar fi considerata identica
+                // si sarita. (Masurat: fara asta, `--safe-area-inset-*` raman
+                // GOALE pe telefon, iar dockul urca sub bara de navigatie.)
+                safeAreaScris = null;
+                if (webView.getParent() instanceof View) {
+                    ViewCompat.requestApplyInsets((View) webView.getParent());
+                }
                 String url = webView.getUrl();
                 if (server == null || url == null || !url.startsWith(server)) return;
                 Programator.prefs(MainActivity.this).edit()
@@ -81,6 +103,158 @@ public class MainActivity extends BridgeActivity {
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         c.setAppearanceLightStatusBars(!noapte);
         c.setAppearanceLightNavigationBars(!noapte);
+    }
+
+    /** Cat tine animatia IME-ului, paddingul e scris de cadre, nu de listener. */
+    private boolean animatieIme = false;
+    /** Ultimele `--safe-area-inset-*` trimise in pagina, ca sa nu le rescriem degeaba. */
+    private String safeAreaScris = null;
+
+    /**
+     * TASTATURA MISCA WEBVIEW-UL CADRU CU CADRU, NU DINTR-UN SALT.
+     *
+     * CE FACE CAPACITOR SINGUR. Plugin-ul `SystemBars` (in core, inregistrat
+     * automat) pune un `OnApplyWindowInsetsListener` pe PARINTELE WebView-ului si
+     * acolo face `setPadding(0,0,0, imeInsets.bottom)` — `SystemBars.java:208`.
+     * Listenerul ala primeste insets-urile o SINGURA data, cu valoarea FINALA.
+     * Deci WebView-ul se micsoreaza dintr-un pas, in timp ce tastatura insasi
+     * gliseaza ~250ms. Masurat prin USB pe telefonul lui Ion
+     * (`scripts/masoara_tastatura_reala.py`): viewportul face 800 -> 493 intr-un
+     * singur cadru, in amandoua sensurile.
+     *
+     * Din web nu se poate repara. Am incercat o zi: geometria veche a foii cade
+     * in afara suprafetei desenabile dupa micsorare, deci orice „catch-up" o
+     * deseneaza taiata (vezi nota lunga din `Modal.svelte`). Nu era o animatie
+     * proasta — era informatie care lipsea.
+     *
+     * CE ADAUGA ASTA. `WindowInsetsAnimationCompat` (API 30+) da, la FIECARE cadru
+     * al animatiei IME-ului, insetul INTERPOLAT. Punem paddingul din el, deci
+     * WebView-ul se micsoreaza si creste odata cu tastatura, nu inaintea ei.
+     * Layoutul web urmeaza singur: `100dvh` si foaia ancorata jos sunt deja
+     * corecte la orice inaltime.
+     *
+     * DE CE PRELUAM INSETS-URILE CU TOTUL. Nu se poate imparti paddingul cu
+     * Capacitor. Am incercat de doua ori si masuratoarea a aratat de fiecare data
+     * acelasi lucru: `setPadding`-ul nostru cere layout, layoutul re-livreaza
+     * insets-urile, listenerul lui scrie inapoi valoarea FINALA, iar cadrul
+     * urmator o scriem noi pe cea interpolata. Rezultatul, masurat pe telefon:
+     * 493 -> 800 -> 504 -> 800 -> 546 -> 800 ..., douazeci si una de trepte,
+     * fiecare anulata de urmatoarea. Palpaire, adica mai rau decat saltul de
+     * reparat. `DISPATCH_MODE_STOP` nu ajuta nici pe `parinte` (opreste
+     * subarborele, nu view-ul insusi), nici pe bunic (livrarea provocata de
+     * layout trece oricum).
+     *
+     * Deci `SystemBars` e pus pe `insetsHandling: "disable"` (vezi
+     * `capacitor.config.json`) si facem aici tot ce facea el:
+     *   1. paddingul de jos, din insetul IME (starea finala);
+     *   2. `--safe-area-inset-*` injectate in pagina, cu `bottom` = 0 cat timp
+     *      tastatura e sus, fiindca atunci insetul de jos e al ei, nu al barei;
+     *   3. insets-urile trimise mai departe cu `systemBars|displayCutout` puse pe
+     *      zero jos, ca sa nu se aplice de doua ori.
+     * Peste ele vine ce nu avea Capacitor: paddingul pe CADRU, din animatia IME.
+     *
+     * Referinta, ca sa se vada daca s-a stricat ceva: pe telefonul lui Ion, cu
+     * Capacitor la carma, iesea `--safe-area-inset-top: 40px`, `bottom: 22px`,
+     * stanga/dreapta 0. Aceleasi valori trebuie sa iasa si acum.
+     */
+    private void tastaturaPeCadre() {
+        final View parinte = (View) getBridge().getWebView().getParent();
+        if (parinte == null) return;
+
+        // (1) STAREA FINALA - la pornire, la rotire, si dupa fiecare animatie.
+        ViewCompat.setOnApplyWindowInsetsListener(parinte, (v, insets) -> {
+            boolean imeVizibil = insets.isVisible(WindowInsetsCompat.Type.ime());
+            // Cat tine animatia, CADRELE conduc paddingul. Livrarea asta vine
+            // chiar din layoutul provocat de ele, deci a o asculta ar insemna sa
+            // ne suprascriem singuri - exact bucla care palpaia cu Capacitor.
+            if (!animatieIme) {
+                v.setPadding(0, 0, 0,
+                        imeVizibil ? insets.getInsets(WindowInsetsCompat.Type.ime()).bottom : 0);
+            }
+            Insets bare = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            int jos = imeVizibil ? 0 : bare.bottom;
+            scrieSafeArea(bare.top, bare.right, jos, bare.left);
+            return new WindowInsetsCompat.Builder(insets)
+                    .setInsets(
+                        WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout(),
+                        Insets.of(bare.left, bare.top, bare.right, jos))
+                    .build();
+        });
+        ViewCompat.requestApplyInsets(parinte);
+
+        // (2) ANIMATIA IME - un padding pe cadru. Exista doar de la API 30.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return;
+        ViewCompat.setWindowInsetsAnimationCallback(
+            parinte,
+            new WindowInsetsAnimationCompat.Callback(
+                    WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+
+                @Override
+                public void onPrepare(@NonNull WindowInsetsAnimationCompat animatie) {
+                    if (esteIme(animatie)) animatieIme = true;
+                }
+
+                @NonNull
+                @Override
+                public WindowInsetsCompat onProgress(
+                        @NonNull WindowInsetsCompat insets,
+                        @NonNull List<WindowInsetsAnimationCompat> animatii) {
+                    boolean ime = false;
+                    for (WindowInsetsAnimationCompat a : animatii) {
+                        if (esteIme(a)) { ime = true; break; }
+                    }
+                    // Animatiile barelor de sistem nu ne privesc: daca am muta
+                    // WebView-ul la fiecare aparitie de bara, pagina ar tresari
+                    // la fiecare intrare in modul imersiv.
+                    if (ime) {
+                        parinte.setPadding(0, 0, 0,
+                                insets.getInsets(WindowInsetsCompat.Type.ime()).bottom);
+                    }
+                    return insets;
+                }
+
+                @Override
+                public void onEnd(@NonNull WindowInsetsAnimationCompat animatie) {
+                    if (!esteIme(animatie)) return;
+                    animatieIme = false;
+                    // Ultimul cadru interpolat e aproape valoarea finala, dar nu ea.
+                    // „Aproape" e cel mai prost fel de gresit: nu se vede si ramane.
+                    ViewCompat.requestApplyInsets(parinte);
+                }
+            });
+    }
+
+    private static boolean esteIme(WindowInsetsAnimationCompat a) {
+        return (a.getTypeMask() & WindowInsetsCompat.Type.ime()) != 0;
+    }
+
+    /**
+     * `--safe-area-inset-*` scrise in pagina, ca stil inline pe `<html>`.
+     *
+     * Acelasi lucru pe care-l facea `SystemBars.injectSafeAreaCSS`, cu aceeasi
+     * conversie px -> dp. Se scrie doar cand valorile CHIAR se schimba: in timpul
+     * animatiei IME layoutul se reface de zeci de ori, iar un `evaluateJavascript`
+     * pe cadru ar concura cu exact randarea pe care incercam s-o facem lina.
+     */
+    private void scrieSafeArea(int top, int right, int bottom, int left) {
+        float d = getResources().getDisplayMetrics().density;
+        final String val = String.format(Locale.US, "%d,%d,%d,%d",
+                (int) (top / d), (int) (right / d), (int) (bottom / d), (int) (left / d));
+        if (val.equals(safeAreaScris)) return;
+        safeAreaScris = val;
+        final String[] q = val.split(",");
+        final String js = String.format(Locale.US,
+                "try{var s=document.documentElement.style;"
+                + "s.setProperty('--safe-area-inset-top','%spx');"
+                + "s.setProperty('--safe-area-inset-right','%spx');"
+                + "s.setProperty('--safe-area-inset-bottom','%spx');"
+                + "s.setProperty('--safe-area-inset-left','%spx');}catch(e){}",
+                q[0], q[1], q[2], q[3]);
+        runOnUiThread(() -> {
+            WebView w = getBridge().getWebView();
+            if (w != null) w.evaluateJavascript(js, null);
+        });
     }
 
     /**

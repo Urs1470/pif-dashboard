@@ -134,9 +134,22 @@ def analiza(u, eticheta):
         print('  SENS: %s' % ('intr-o singura directie'
                               if len(semne) == 1 else 'SCHIMBA DIRECTIA — palpaire'))
 
-    hh = sorted(set(q['h'] for q in dupa))
-    print('  inaltimea dupa salt: %s -> %s'
-          % (hh, 'un singur pas, corect' if len(hh) <= 2 else 'SE ANIMEAZA (gresit)'))
+    # INALTIMEA: nu conteaza CATE valori ia, ci daca se misca ODATA cu viewportul.
+    #
+    # Prima varianta cerea „cel mult doua valori" — corect cand viewportul sarea
+    # intr-un pas, si complet gresit de cand `MainActivity` il misca pe cadre:
+    # atunci foaia TREBUIE sa ia treizeci de valori, cate una per cadru, si proba
+    # raporta drept defect exact comportamentul cerut.
+    #
+    # Ce ramane un defect adevarat: inaltimea care se mai schimba DUPA ce
+    # viewportul s-a asezat — aia e o tranzitie CSS ramasa in urma.
+    ultim_ih = max(t for t, _, _ in sch)
+    tarziu = [q for q in dupa if q['t'] > ultim_ih + 40]
+    hh_tarziu = sorted(set(q['h'] for q in tarziu))
+    print('  inaltimea: %d valori pe parcurs; dupa ce viewportul s-a asezat -> %s'
+          % (len(set(q['h'] for q in dupa)),
+             'nu se mai misca, corect' if len(hh_tarziu) <= 1
+             else 'INCA SE ANIMEAZA %s (tranzitie ramasa in urma)' % hh_tarziu))
 
     camp = [q for q in dupa if q['actJos'] is not None]
     if camp:
