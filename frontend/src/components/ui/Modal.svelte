@@ -687,7 +687,22 @@
   // clic adevarat. Deci regula: un clic in foaie e al foii numai daca si
   // apasarea a fost in foaie. Enter de la tastatura are `detail === 0` si trece.
   let apasatInauntru = false
+  // CAT TIMP FOAIA INCA SOSESTE, NU POTI FI TINTIT NIMIC.
+  //
+  // Masurat: doua atingeri rapide pe butonul „+" de pe Acasa lasau ecranul gol si
+  // ADAUGAU tacut un task existent in Astazi (14 randuri -> 15, cu mesajul
+  // „Adaugat în Astăzi"). A doua atingere cadea pe un rand din lista „exista deja"
+  // — lista care tocmai urcase peste locul butonului. Degetul nu tintise randul
+  // ala; el nici nu era acolo cand a inceput gestul.
+  //
+  // Pe telefon dublul tap e un reflex, tocmai cand prima atingere pare ca n-a
+  // prins. Deci: cat tine sosirea, clicurile se INGHIT — nu se lasa sa cada pe
+  // voal (aia ar inchide foaia, adica al doilea fel de a pierde gestul), ci pur
+  // si simplu nu fac nimic. Cine a apasat de doua ori ramane cu foaia deschisa,
+  // ceea ce e exact ce a cerut prima oara.
+  let sosind = $state(false)
   function pazesteClic(e) {
+    if (sosind) { e.preventDefault(); e.stopPropagation(); return }
     if (apasatInauntru || e.detail === 0) return
     e.preventDefault()
     e.stopPropagation()
@@ -1017,6 +1032,7 @@
   <div class="backdrop" class:varf class:trage use:portal bind:this={backdropEl} onclick={onBackdrop} onkeydown={onKey} role="dialog" aria-modal="true" aria-label={title} tabindex="-1"
        onpointerdowncapture={() => { apasatInauntru = true }} onclickcapture={pazesteClic}
        style:--nivel={nivel} style:--voal-p={voalP} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
+       onintrostart={() => { sosind = true }} onintroend={() => { sosind = false }}
        in:fade|global={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
        out:fade|global={{ duration: motionDuration(DUR_BASE), easing: EASE_IESIRE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
@@ -1067,6 +1083,9 @@
      `blur(7px)`, adica singurul loc din aplicatie unde fondul mai e sticla.
      Un voal nu are nevoie de el: opacitatea singura desprinde caseta, iar blurul
      costa un strat de compozitare cat ecranul, animat la fiecare deschidere. */
+  /* Cat se stinge, voalul nu mai e o suprafata — e o amintire. Vezi nota de la
+     `pleaca` din <script>: fara asta, ce e dedesubt ramane inaccesibil inca
+     200-300ms dupa ce ai inchis. */
   .backdrop {
     position: fixed;
     inset: 0;
@@ -1299,7 +1318,30 @@
       cursor: grab;
       -webkit-user-select: none;
       user-select: none;
+      /* Ancora pentru prelungirea de mai jos. */
+      position: relative;
     }
+    /* SI BARA, SI SPATIUL DE DEASUPRA EI. Comentariul din markup spune „se trage
+       de TOT ANTETUL, nu de bara de 4px" — dar `.sheet-grip` e FRATE cu antetul,
+       nu copil, deci tocmai bara ramasese in afara suprafetei care raspunde.
+       Masurat: foaia incepe la 468, bara sta la 476-480, iar antetul abia la 482
+       — deci primii 14px, cu tot cu singurul semn care spune „trage-ma", nu
+       faceau nimic. Un deget care tinteste bara (adica exact ce e ea acolo sa
+       ceara) nu primea niciun raspuns.
+       Se prelungeste zona de atins in sus cu un pseudo-element, in loc sa se mute
+       bara in antet: antetul e un rand de flex cu titlu si buton, iar bara ar fi
+       cerut sa devina coloana. Aici nu se schimba niciun layout.
+       Bara insasi trece pe `pointer-events: none`, ca atingerea sa cada pe
+       prelungire; ea ramane doar semn vizual, cum a fost mereu. */
+    .modal.sheet .modal-header::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      height: var(--space-md);
+    }
+    .modal.sheet .sheet-grip { pointer-events: none; }
     .modal.sheet.trage .modal-header { cursor: grabbing; }
     /* Cresterea manerului la apucare se face din `scaleX`, nu din `width`:
        acelasi 38 -> 52px (factor 1.37), dar pe compozitor, nu prin reasezarea

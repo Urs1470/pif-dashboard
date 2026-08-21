@@ -792,7 +792,17 @@
   .a-list:global(.reord-activ) .arow:not(:global(.reord-tras)) { pointer-events: none; }
   .a-list:global(.reord-activ) { user-select: none; }
 
-  .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: var(--space-2xs); display: flex; }
+  .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: var(--space-2xs); display: flex;
+           position: relative; }
+  /* Tinta de 44, desenul de 30 — aceeasi reparatie ca in `Tasks.svelte`, si
+     acelasi motiv: se largeste suprafata, nu cutia, ca randul sa nu se reaseze. */
+  .check::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: calc((var(--tap-min) - 30px) / -2);
+    right: calc((var(--tap-min) - 30px) / -2);
+  }
   .check:hover { color: var(--accent); }
   .arow.done .check { color: var(--success); }
   /* `.check-empty` traieste acum in global.css, o singura data pentru toate

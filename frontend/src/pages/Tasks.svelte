@@ -1990,7 +1990,20 @@
      tokenuri deja la limita de contrast, deci textul ajunge sub prag. Ce e facut
      o spun tăietura si culoarea rolului. */
   .trow.done .ttitle { text-decoration: line-through; color: var(--text-dim); }
-  .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: var(--space-2xs); display: inline-flex; }
+  .check { flex-shrink: 0; color: var(--text-dim); cursor: pointer; padding: var(--space-2xs); display: inline-flex;
+           position: relative; }
+  /* TINTA E DE 44, DESENUL RAMANE DE 30. Masurat: bifa iesea 30x44 — inalta cat
+     trebuie, dar prea ingusta, si e cel mai apasat lucru din aplicatie. Se
+     largeste SUPRAFATA, nu cutia: o latire reala ar fi impins titlul cu 14px si
+     ar fi schimbat ritmul randului, pentru un defect care nu e vizual.
+     (`--tap-min` = 44 exista deja ca prag; aici era aplicat doar pe inaltime.) */
+  .check::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: calc((var(--tap-min) - 30px) / -2);
+    right: calc((var(--tap-min) - 30px) / -2);
+  }
   .check:hover { color: var(--accent); }
   .trow.done .check { color: var(--success); }
   /* `.check-empty` (toate cele trei marimi) traieste in global.css, o singura
