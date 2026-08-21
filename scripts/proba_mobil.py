@@ -223,6 +223,12 @@ class Banc:
         binara raporta elanul ala ca defect — adica exact intentia, pe dos.
         O intoarcere mica, la sfarsit, e elan; mai multe, sau una mare, e
         palpaire.
+
+        CE NU POATE DEOSEBI, si de aceea verdictul se citeste, nu se crede:
+        doua animatii LEGITIME una dupa alta arata la fel ca una care palpaie.
+        Doua apasari rapide pe „luna urmatoare" dau doua alunecari — exact ce
+        cere comentariul de la `{#key anchor}` din Calendar — iar verdictul iese
+        „PALPAIE". Cand il vezi, uita-te intai daca n-au fost doua gesturi.
         """
         v = [q for q in u if q.get(camp) is not None]
         if len(v) < 3:
@@ -233,19 +239,34 @@ class Banc:
             return {'cadre': 0, 'pas_max': 0, 'de_la': round(v[0][camp], 1),
                     'la': round(v[-1][camp], 1)}
         intoarceri = sum(1 for a, b in zip(misca_, misca_[1:]) if a * b < 0)
-        drum = abs(v[-1][camp] - v[0][camp]) or 1
-        # Cat de departe a trecut DINCOLO de valoarea finala, ca procent din drum.
+        drum = abs(v[-1][camp] - v[0][camp])
         semn = 1 if v[-1][camp] >= v[0][camp] else -1
         extrem = max((q[camp] * semn for q in v), default=0)
-        depasire = round(max(0.0, (extrem - v[-1][camp] * semn)) / drum * 100, 1)
+        peste = max(0.0, extrem - v[-1][camp] * semn)
+        # DRUM APROAPE ZERO: o tranzitie `in:` pleaca dintr-un decalaj si se
+        # aseaza la locul ei, deci primul si ultimul esantion coincid. Impartind
+        # la un drum nul, procentul exploda si verdictul iesea „PALPAIE" pe o
+        # alunecare perfect sanatoasa (grila de luni: 8 cadre, pas maxim 10px,
+        # raportata 1000% depasire). Cand nu exista drum net, se raporteaza
+        # AMPLITUDINEA in pixeli, care acolo e singura marime cu inteles.
+        net = drum >= 4
+        depasire = round(peste / drum * 100, 1) if net else None
+        amplitudine = round(max(q[camp] for q in v) - min(q[camp] for q in v), 1)
+        if net:
+            verdict = ('curat' if intoarceri == 0 else
+                       'elan' if intoarceri == 1 and depasire <= 8 else 'PALPAIE')
+        else:
+            # Fara drum net, „intoarcere" inseamna dus-intors — adica exact ce
+            # face o alunecare `in:`. Palpaie doar daca se rasuceste de mai multe
+            # ori.
+            verdict = 'curat' if intoarceri <= 1 else 'PALPAIE'
         return {
             'cadre': len(misca_),
             'pas_max': round(max(abs(d) for d in misca_), 1),
             'intoarceri': intoarceri,
             'depasire%': depasire,
-            'verdict': ('curat' if intoarceri == 0 else
-                        'elan' if intoarceri == 1 and depasire <= 8 else
-                        'PALPAIE'),
+            'amplitudine': amplitudine,
+            'verdict': verdict,
             'de_la': round(v[0][camp], 1),
             'la': round(v[-1][camp], 1),
         }
