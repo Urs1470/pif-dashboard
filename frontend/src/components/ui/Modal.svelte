@@ -140,7 +140,7 @@
   import { tick, untrack } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, DUR_PAGINA, EASE, EASE_IESIRE, EASE_PAGINA, ARC } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, EASE_IESIRE, ARC } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   // Foaia si voalul ies in `body`: pagina din spate se RETRAGE (un `transform`
   // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
@@ -187,20 +187,7 @@
   // deschide direct intinsa" (Ion, 2026-08-10); pe 2026-08-21 Ion a cerut invers:
   // „sa nu apara din prima pe toata pagina, dar sa nu fie text taiat" — deci
   // treapta de mijloc, cu corpul care deruleaza, si intinderea la un gest.
-  // `pagina`: PE TELEFON foaia e o PAGINA ancorata SUS, pe tot ecranul — pentru o
-  // foaie in care SCRII din prima clipa (adaugarea de task, proiectul nou).
-  //
-  // DE CE. O foaie ancorata jos, cu un camp care isi cheama tastatura, trebuie sa
-  // URCE cand vine tastatura — si nimeni nu stie CAND vine: Gboard pe un Honor
-  // porneste la o latenta pe care n-o putem masura de aici, o raporteaza cadru
-  // cu cadru sau dintr-o data. Trei runde de prevedere si coregrafie (vezi
-  // nota din <script module>) au ramas „nu e bine inca" (Ion, 2026-08-21). O pagina
-  // ancorata SUS nu are problema: campul sta in capul ecranului si nu se misca
-  // NICIODATA; tastatura, cand vine, acopera doar partea de jos a listei
-  // (inaltimea scade cu `--kb`, dar marginea de jos e sub tastatura, deci nimic
-  // vizibil nu se misca). O singura miscare — foaia urca 280ms — si gata.
-  // Fara trepte: o pagina nu se intinde; se inchide din antet / „inapoi".
-  let { open = $bindable(false), title = '', size = 'md', inalt = false, iesireGest = false, pagina = false, children, footer, onclose } = $props()
+  let { open = $bindable(false), title = '', size = 'md', inalt = false, iesireGest = false, children, footer, onclose } = $props()
   let backdropEl = $state(null)
   let previousFocus = $state(null)
   let corpEl = $state(null)
@@ -220,7 +207,7 @@
   // deruleaza, pagina dinauntru cu scroll propriu), deci nu intra in masinaria
   // treptelor — ar fi doua reguli peste aceeasi inaltime. Gestul de coborare il
   // are si el: `trasY` merge pe orice foaie.
-  const cuTrepte = $derived(sheet && size !== 'doc' && !pagina)
+  const cuTrepte = $derived(sheet && size !== 'doc')
 
   // Foaia de dedesubt, cand peste ea s-a deschis alta. Vezi `.acoperit` in CSS.
   const acoperit = $derived(nivel > 0 && nivel < stiva.varf)
@@ -296,13 +283,11 @@
   // Svelte cheama functia cu `direction: 'in'`.
   function intra(node, _params, opts) {
     const laIntrare = opts?.direction !== 'out'
-    // O PAGINA plina soseste vascos (DUR_PAGINA + EASE_PAGINA); pleaca insa iute,
-    // ca orice foaie (DUR_BASE + EASE_IESIRE) — ce iese nu se lasa asteptat.
-    const duration = motionDuration(pagina && laIntrare ? DUR_PAGINA : (sheet && laIntrare ? DUR_SLOW : DUR_BASE))
+    const duration = motionDuration(sheet && laIntrare ? DUR_SLOW : DUR_BASE)
     // SOSIREA FRANEAZA, PLECAREA ACCELEREAZA. Pana acum amandoua mergeau pe
     // `--ease`, deci foaia se retragea ca si cum s-ar razgandi: incetinea exact
     // in intervalul in care trebuia sa fie deja plecata. Vezi `--ease-iesire`.
-    const curba = laIntrare ? (pagina ? EASE_PAGINA : EASE) : EASE_IESIRE
+    const curba = laIntrare ? EASE : EASE_IESIRE
     if (sheet) {
       // CAT PLEACA, FOAIA NU MAI ASCULTA DE TASTATURA.
       //
@@ -614,8 +599,7 @@
       voalP = 1
       hFoaie = null
       treapta = 0
-      // `pagina` sta pe treapta de sus din primul cadru — e treapta ei unica.
-      intins = sheet && pagina
+      intins = false
       apasatInauntru = false
       if (sheet) urmaStart(title || size)
     })
@@ -928,7 +912,7 @@
        out:fade|global={{ duration: motionDuration(DUR_BASE), easing: EASE_IESIRE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
          class:acoperit class:gest={hFoaie !== null} class:mijloc={sheet && inalt && !intins}
-         class:pagina={sheet && pagina} class:se-trage={trageManer}
+         class:se-trage={trageManer}
          bind:this={sheetEl} style:--trasY="{trasY}px" style:--h-foaie={hFoaie === null ? null : `${hFoaie}px`}
          in:intra|global out:intra|global>
       {#if panou}
@@ -994,11 +978,6 @@
      mai ai pana pierzi ce ai deschis. In repaus e mereu 1, deci pe desktop (unde
      nu exista gest) regula da exact `--scrim`, ca pana acum. */
   .backdrop.varf { background: color-mix(in srgb, var(--scrim) calc(var(--voal-p, 1) * 100%), transparent); }
-  /* O PAGINA PLINA cere un voal mai adanc: fundalul se vede doar cat aluneca
-     foaia, si atunci trebuie sa fie clar „in spate", nu un al doilea modal la
-     fel de aprins (Ion). `--voal-p` il subtiaza tot la fel cand tragi foaia in jos. */
-  .backdrop.varf:has(.modal.pagina),
-  .backdrop.varf:has(.modal-doc) { background: color-mix(in srgb, var(--scrim-plin) calc(var(--voal-p, 1) * 100%), transparent); }
   /* Cat timp degetul e pe ecran, voalul n-are voie sa ramana in urma lui. */
   .backdrop.trage { transition: none; }
   /* Foaia de dedesubt nu-si mai arata iesirea: butonul ei ar inchide un obiect
@@ -1285,12 +1264,7 @@
        si nu prin `position: fixed; inset: 0`, care se raporteaza la primul
        stramos cu transform (cat tine sosirea rutei, acela e `.page`: masurat,
        foaia iesea 1596px in loc de 812). */
-    /* `.pagina` alaturi de `.intins`: o pagina plina isi ia inaltimea din PROPRIA
-       clasa, nu din starea tranzitorie `intins` — asa un tap pe antet n-o mai
-       poate prabusi vizual chiar daca `intins` ar clipi (vezi si garda din
-       `duLaTreapta`). */
-    .modal.sheet.intins:not(.modal-doc),
-    .modal.sheet.pagina:not(.modal-doc) {
+    .modal.sheet.intins:not(.modal-doc) {
       height: calc(100dvh - var(--kb, 0px));
       max-height: calc(100dvh - var(--kb, 0px));
       padding-top: var(--safe-top);

@@ -223,21 +223,6 @@ code, pre {
     transform: scale(.93) translateY(6px);
     transition: transform var(--dur-arc) var(--ease-arc);
   }
-  /* SUB O PAGINA PLINA, FUNDALUL SE RETRAGE SI RAMANE RETRAS PANA CAND FOAIA A
-     PLECAT DE TOT. Doua incercari gresite, ambele de la Ion, au dus aici:
-       1. fundalul se retragea si REVENEA la scale(1) chiar in timpul inchiderii,
-          crescand in urma foii care coboara — „fantoma";
-       2. l-am lasat STATIC (scale 1) — atunci pagina plina din spate se citea ca
-          un al doilea modal, la fel de aprins ca foaia: „parca sunt doua modale".
-     Raspunsul e adancimea, dar TINUTA pe tot drumul: `:has(.modal.pagina)` FARA
-     `are-modal`, deci potrivirea tine cat timp foaia e in DOM — inclusiv toata
-     iesirea ei. Fundalul sta retras (mai mic, si sub voal) cat coboara foaia —
-     clar „in spate", nu un al doilea modal — si se aseaza la loc ABIA dupa ce
-     foaia a disparut (`:has` nu mai potriveste), deci nimic nu creste in urma ei.
-     Foile PARTIALE (foaia zilei, foaia taskului) pastreaza retragerea de mai sus,
-     legata de `are-modal`. */
-  html:has(.modal.pagina) .app-main,
-  html:has(.modal-doc) .app-main { transform: scale(.92) translateY(8px); }
 }
 
 /* SI INVELISUL RUTEI ISI LASA TRANSFORMUL cat timp e un modal deschis.

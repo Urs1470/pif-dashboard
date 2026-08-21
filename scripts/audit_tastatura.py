@@ -16,9 +16,11 @@ aplicatia o asculta (`Modal.svelte`, `<script module>`). Deci proba trece prin
 ACELASI cod ca telefonul, nu printr-o scurtatura.
 
 Contractele, fiecare cu modul de esec pe care l-a avut aplicatia:
-  1. PAGINA ANCORATA SUS. Foaia de adaugare urca o singura data, pana in capul
-     ecranului, si de acolo NU se mai misca — oricand ar veni tastatura (proba
-     joaca doua latente). Campul sta pe loc; tastatura acopera doar coada listei.
+  1. DOUA MISCARI, NICIODATA DEODATA. Foaia de adaugare e o foaie normala de jos
+     (ca modalul de detalii task): aluneca o data, monoton, SE ASAZA — si abia
+     apoi vine tastatura si o ridica. Proba joaca doua latente si cere aceeasi
+     secventa. Formele „pagina ancorata sus" si „urcare coregrafiata cu
+     tastatura" au fost respinse: acolo cele doua miscari se calcau.
   2. NIMIC SUB TASTATURA. Campul focalizat, subsolul foii si corpul ei stau
      deasupra tastaturii; corpul nu deruleaza peste o lista care deruleaza si ea.
   3. EDITORUL DE NOTE urca intreg deasupra tastaturii (zona de scris ramanea de
@@ -165,56 +167,94 @@ def main():
             page.press('#pin', 'Enter')
             page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
 
-            # ===== 1. PAGINA ANCORATA SUS: NIMIC NU SE MISCA CAND VINE TASTATURA =====
-            # Foaia de adaugare e, pe telefon, o PAGINA (vezi `pagina` in Modal):
-            # urca o singura data, pana sus, si de acolo nu se mai misca — oricand
-            # ar veni tastatura, oricum ar fi raportata. Proba joaca DOUA latente
-            # (tastatura devreme, tastatura tarziu) si cere acelasi film de fiecare
-            # data: campul sta pe loc din clipa in care a ajuns sus.
-            out('\n--- foaia de adaugare: pagina ancorata sus, tastatura oricand ---')
+            # ===== 1. DOUA MISCARI, NICIODATA IN ACELASI TIMP =====
+            # Foaia de adaugare e o FOAIE NORMALA de jos — aceeasi ca modalul de
+            # detalii task si ca foaia de la apasarea lunga (Ion, 2026-08-21:
+            # „vreau o animatie lina precum la modalul detalii task sau la
+            # atingere lunga"). Formele „pagina ancorata sus" si „urcare
+            # coregrafiata cu tastatura" au fost incercate si RESPINSE — de
+            # fiecare data pentru ca doua miscari se calcau: foaia si tastatura
+            # pe aceiasi pixeli, in acelasi interval („foarte haotica").
+            #
+            # Contractul de acum e o SECVENTA, si asta se masoara:
+            #   1. foaia aluneca de jos, o singura data, monoton, si SE ASAZA;
+            #   2. abia DUPA aceea vine tastatura si o ridica — a doua miscare,
+            #      curata, care nu se suprapune peste prima.
+            # Proba joaca doua latente de tastatura (devreme si tarziu): secventa
+            # trebuie sa fie aceeasi de fiecare data.
+            out('\n--- foaia de adaugare: doua miscari, niciodata deodata ---')
             mergi(page, baza, '/tasks')
             fab = page.query_selector('.fab')
             if fab is None:
                 bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .fab')
             else:
+                asezata = []
                 for lat in (900, LAT):
                     page.evaluate('window.__kbLat = %d' % lat)
                     fab = page.query_selector('.fab')
                     x, y = centru(fab)
-                    u = urma(page, lambda: tap(cdp, page, x, y, 0), lat + 700)
+                    u = urma(page, lambda: tap(cdp, page, x, y, 0), lat + 900)
                     cu_foaie = [q for q in u if q['top'] is not None]
                     if not cu_foaie:
                         bifa(False, 'foaia se deschide (tastatura la %d ms)' % lat, 'niciun cadru cu foaie')
                         continue
-                    topuri = [q['top'] for q in cu_foaie]
-                    urca = all(b_ <= a_ + 1 for a_, b_ in zip(topuri, topuri[1:]))
-                    bifa(urca and topuri[-1] <= 1, 'urca o singura data, pana in capul ecranului (tastatura la %d ms)' % lat,
-                         'topuri: %s' % topuri[:40], 'top final %d' % topuri[-1])
-                    # Deschiderea e VASCOASA (DUR_PAGINA 400 + easeOutExpo): Ion,
-                    # 2026-08-21 „un pic prea agresiv, fa mai fluid, mai vascos".
-                    # easeOutExpo ajunge aproape de sus pe la ~330ms si se aseaza
-                    # incet; pragul lasa loc pana la 480ms. NU asteapta tastatura.
-                    t_sus = next(q['t'] for q in cu_foaie if q['top'] <= 3)
-                    bifa(t_sus <= 480, 'ajunge sus vascos (~400 ms), fara sa astepte tastatura',
-                         'sus la %d ms' % t_sus, '%d ms' % t_sus)
-                    dupa = [q for q in cu_foaie if q['t'] >= t_sus + 80]
-                    bifa(max(q['top'] for q in dupa) - min(q['top'] for q in dupa) <= 1,
-                         'odata sus, nu se mai misca — nici cand vine tastatura',
-                         'top a variat %d..%d px' % (min(q['top'] for q in dupa), max(q['top'] for q in dupa)))
+
+                    def kb_px(q):
+                        try:
+                            return float(str(q['kb']).replace('px', '') or 0)
+                        except ValueError:
+                            return 0.0
+
+                    # Faza 1: pana la primul cadru cu tastatura (sau tot filmul).
+                    idx_kb = next((i for i, q in enumerate(cu_foaie) if kb_px(q) > 0), None)
+                    faza1 = cu_foaie[:idx_kb] if idx_kb is not None else cu_foaie
+                    topuri1 = [q['top'] for q in faza1]
+                    urca = all(b_ <= a_ + 1 for a_, b_ in zip(topuri1, topuri1[1:]))
+                    bifa(urca, 'faza 1: foaia urca monoton, fara sa oscileze (tastatura la %d ms)' % lat,
+                         'topuri: %s' % topuri1[:30])
+                    # Se ASAZA: ultimele cadre ale fazei 1 stau pe loc.
+                    coada = [q['top'] for q in faza1[-6:]]
+                    bifa(len(coada) >= 3 and max(coada) - min(coada) <= 1,
+                         'faza 1: foaia se ASAZA inainte sa vina tastatura',
+                         'ultimele cadre: %s' % coada, 'asezata la %d px' % (coada[-1] if coada else -1))
+                    # Cat a durat urcarea (contract: ~280ms, ca la detalii task).
+                    t_asezat = faza1[-1]['t'] if faza1 else None
+                    prima = faza1[0]['t'] if faza1 else 0
+                    if faza1:
+                        stabil = faza1[-1]['top']
+                        t_asezat = next(q['t'] for q in faza1 if abs(q['top'] - stabil) <= 1)
+                        bifa(t_asezat - prima <= 420,
+                             'faza 1: urcarea tine ~280 ms (ca foaia de detalii task)',
+                             'a tinut %d ms' % (t_asezat - prima), '%d ms' % (t_asezat - prima))
+
+                    # Faza 2 exista si vine DUPA. Tastatura nu are voie sa urce cat
+                    # timp foaia inca aluneca — asta era „haotic".
+                    if idx_kb is not None:
+                        t_kb = cu_foaie[idx_kb]['t']
+                        bifa(t_kb >= t_asezat,
+                             'faza 2: tastatura vine DUPA ce foaia s-a asezat, nu peste ea',
+                             'tastatura la %d ms, foaia asezata la %d ms' % (t_kb, t_asezat),
+                             'tastatura la %d ms (asezata la %d)' % (t_kb, t_asezat))
+                        dupa_kb = [q['top'] for q in cu_foaie[idx_kb:]]
+                        coada2 = dupa_kb[-6:]
+                        bifa(max(coada2) - min(coada2) <= 1,
+                             'faza 2: dupa ce tastatura a urcat, foaia sta pe loc',
+                             'ultimele cadre: %s' % coada2)
+
                     camp = page.evaluate(GEOM, '.fa-cauta input')
-                    sus_camp = page.evaluate("""() => { const i = document.querySelector('.fa-cauta input'); return i ? Math.round(i.getBoundingClientRect().top) : null }""")
-                    bifa(camp is not None and camp['top'] < 140,
-                         'campul „Ce ai de făcut?" sta in capul ecranului', 'top=%s' % (camp and camp['top']))
+                    bifa(camp is not None and camp['bottom'] <= TELEFON['height'] - KB,
+                         'campul „Ce ai de făcut?" ramane deasupra tastaturii',
+                         'jos la %s, tastatura de la %d' % (camp and camp['bottom'], TELEFON['height'] - KB))
                     ultim = cu_foaie[-1]
-                    bifa(ultim['h'] <= TELEFON['height'] - KB + 1 and page.evaluate('window.__kb()') == KB,
-                         'cu tastatura sus, pagina se termina deasupra ei (restul e sub tastatura, invizibil)',
-                         'h=%s, kb=%s' % (ultim['h'], page.evaluate('window.__kb()')))
+                    bifa(ultim['top'] + ultim['h'] <= TELEFON['height'] - KB + 1,
+                         'foaia se termina deasupra tastaturii',
+                         'jos la %s, tastatura de la %d' % (ultim['top'] + ultim['h'], TELEFON['height'] - KB))
                     if lat == LAT:
-                        # Cu tastatura sus, scrie; pagina nu se clinteste.
                         page.keyboard.type('Verifica')
                         page.wait_for_timeout(400)
                         camp2 = page.evaluate(GEOM, '.fa-cauta input')
-                        bifa(camp2 is not None and camp2['top'] == camp['top'], 'nici cand scrii campul nu se muta',
+                        bifa(camp2 is not None and abs(camp2['top'] - camp['top']) <= 1,
+                             'nici cand scrii foaia nu se muta',
                              '%s -> %s' % (camp and camp['top'], camp2 and camp2['top']))
                         asezata = [ultim]
                         break

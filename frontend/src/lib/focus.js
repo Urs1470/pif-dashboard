@@ -113,7 +113,14 @@ export function focusOnLand(node, key) {
         setTimeout(() => { try { node.style.viewTransitionName = '' } catch (_) {} }, 800)
         releaseMorph?.()
       } else if (needsScroll) {
-        try { node.scrollIntoView({ behavior: motion.reduced ? 'auto' : 'smooth', block: 'center' }) } catch (_) { node.scrollIntoView() }
+        // INSTANT, NU `smooth`. Derularea lina adauga ~400ms DUPA ce pagina a
+        // sosit: randul aluneca spre centru cat timp tu deja te uiti la lista, si
+        // exact asta se citeste ca „lent, intarziat" (Ion, 2026-08-21). Aterizarea
+        // se face INAINTE ca tranzitia de ruta sa picteze (actiunea ruleaza in
+        // callbackul ei), deci cu `auto` pagina SOSESTE cu randul deja in centru —
+        // zero asteptare, iar semnalul „pe asta ai apasat" il da inelul care
+        // pulseaza. Aceeasi alegere ca pe ramura cu morph, de deasupra.
+        try { node.scrollIntoView({ behavior: 'auto', block: 'center' }) } catch (_) { node.scrollIntoView() }
       }
 
       // HASURA PORNESTE IMEDIAT (`hasuraRand`, global.css): fara decalaj — Ion a

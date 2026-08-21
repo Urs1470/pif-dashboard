@@ -26,6 +26,7 @@
   // ramane din intentia handoff-ului e treapta: 12, majuscule, 600, ls .05em —
   // adica exact clasa de eticheta din propria lui secțiune de tipografie.
   import { tick } from 'svelte'
+  import { motion, motionDuration, DUR_SLOW } from '../lib/motion.svelte.js'
   import { Search, Mic, Plus, X, ChevronDown, Check } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import Skeleton from './ui/Skeleton.svelte'
@@ -191,14 +192,21 @@
   // explicit sa scrii, iar Ion a cerut si textul SELECTAT („selectat pentru
   // editare"), fiindca de cele mai multe ori rescrii randul, nu adaugi la el.
   // Deci un `select()`, nu doar `focus()`.
+  // FOCUSUL VINE DUPA CE FOAIA S-A ASEZAT, nu odata cu ea. Foaia e o foaie
+  // normala de jos (ca modalul de detalii task); daca am focaliza campul in
+  // aceeasi clipa cu deschiderea, tastatura ar urca PESTE alunecarea foii — doua
+  // miscari care se calca, exact „haotic". Asa, intai aluneca foaia (o singura
+  // miscare, lina), apoi — dupa ce s-a asezat — vine tastatura si o ridica lin
+  // deasupra ei (a doua miscare, curata). Sub reduced-motion nu exista alunecare,
+  // deci focusul e imediat.
   $effect(() => {
     if (!deschis) return
-    tick().then(() => {
+    const dupaAsezare = motion.reduced ? 0 : motionDuration(DUR_SLOW) + 40
+    const t = setTimeout(() => {
       campEl?.focus()
-      // La editare textul e si SELECTAT: de cele mai multe ori rescrii randul, nu
-      // adaugi la el (cerut de Ion).
       if (editeaza) campEl?.select()
-    })
+    }, dupaAsezare)
+    return () => clearTimeout(t)
   })
 
   // `esteTelefon()` a plecat odata cu excepţia pe care o pazea: focusul se pune
@@ -366,11 +374,12 @@
      pironit la 46 — deci latimea se duce toata in coloana din mijloc, unde stau
      exact cele doua lucruri lungi: titlul si numele lucrarii. La 560 se taiau
      amandoua pe un ecran care avea 1440. -->
-<!-- `pagina`: pe telefon foaia e o pagina ancorata SUS. Campul sta in capul
-     ecranului si nu se misca niciodata, oricand ar veni tastatura — ea acopera
-     doar coada listei. Vezi nota lunga de la `pagina` in Modal.svelte; e a patra
-     si ultima forma a foii asteia pe telefon, si singura care nu ghiceste nimic. -->
-<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="lg" pagina>
+<!-- Foaie NORMALA de jos (`size="lg"`), ca modalul de detalii task si ca foaia
+     de la apasarea lunga — Ion, 2026-08-21: „vreau o animatie lina precum la
+     modalul detalii task sau la atingere lunga." Deschiderea e o singura
+     alunecare de jos; tastatura vine DUPA ce foaia s-a asezat (vezi efectul de
+     focus, secventiat), deci nu concureaza cu deschiderea. -->
+<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="lg">
   <div class="fa">
     <!-- RANDUL DE SUS *ESTE* CAMPUL: 56px, lupa 17, text 16 (sub 16 Safari face
          zoom la focus), si contorul „N din M" in mono la dreapta — cifre care se
@@ -770,6 +779,6 @@
     /* Pagina: corpul umple tot ce ramane sub antet. Inaltimea foii o da
        `.intins` (100dvh - kb), deci lista se scurteaza sub tastatura si
        deruleaza; randul de jos ramane accesibil derulind, sub ea. */
-    .fa { flex: 1 1 auto; }
+    .fa { height: 58dvh; }
   }
 </style>

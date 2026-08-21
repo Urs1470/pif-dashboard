@@ -1,5 +1,6 @@
 <script>
   import { tick } from 'svelte'
+  import { motion, motionDuration, DUR_SLOW } from '../../lib/motion.svelte.js'
   import { Zap, Wrench } from '@lucide/svelte'
   import Modal from '../ui/Modal.svelte'
   import Input from '../ui/Input.svelte'
@@ -65,11 +66,10 @@
       }
       eroareNume = ''
       loadClients().then(c => { clients = Array.isArray(c) ? c : c.clienti || [] }).catch(() => {})
-      // NUMELE PRIMESTE FOCUSUL, nu primul buton. Modal focalizeaza singur primul
-      // element focalizabil, iar acela e acum „PIF" — deci deschiderea ar fi
-      // aterizat pe o alegere care are deja un raspuns bun, in loc sa te lase sa
-      // scrii. Tipul e sus fiindca e o RAMIFICATIE, nu fiindca e primul pas.
-      tick().then(() => numeEl?.focus())
+      // NUMELE PRIMESTE FOCUSUL, dar DUPA ce foaia s-a asezat — altfel tastatura
+      // ar urca peste alunecarea foii (vezi FoaieAdauga). Sub reduced-motion,
+      // imediat.
+      setTimeout(() => numeEl?.focus(), motion.reduced ? 0 : motionDuration(DUR_SLOW) + 40)
     }
   })
 
@@ -97,10 +97,11 @@
   }
 </script>
 
-<!-- `pagina`: numele primeste focusul la deschidere (mai sus), deci tastatura
-     vine sigur — pe telefon formularul e o pagina ancorata sus, ca nimic sa nu
-     se mute cand vine ea (vezi `pagina` in Modal.svelte). -->
-<Modal bind:open title={isEdit ? 'Editează proiectul' : 'Proiect nou'} size="md" pagina>
+<!-- Foaie NORMALA de jos (ca modalul de detalii task), nu pagina plina: Ion,
+     2026-08-21 „animatie lina precum detalii task". Focusul pe nume vine dupa ce
+     foaia s-a asezat (vezi efectul de mai sus), deci tastatura nu concureaza cu
+     deschiderea. -->
+<Modal bind:open title={isEdit ? 'Editează proiectul' : 'Proiect nou'} size="md">
   <!-- `id` + `form="pf-form"` pe butonul din subsol: ENTER TREBUIE SA SALVEZE.
        Butonul de salvare e randat de `Modal` in slotul `footer`, deci in AFARA
        elementului `<form>`. Fara el, formularul ramane fara `type="submit"`, iar
