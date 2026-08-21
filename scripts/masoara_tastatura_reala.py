@@ -217,6 +217,10 @@ def main():
             if h == plin:
                 break
             plin = h
+        # CE BUILD RULEAZA. Fara asta, o masuratoare pe o versiune veche servita
+        # din service worker arata identic cu una in care reparatia n-a mers.
+        print('Build pe telefon: %s' % page.evaluate(
+            "[...document.querySelectorAll('script[src]')].map(s=>s.src.split('/').pop())[0]"))
         print('Viewport fara tastatura: %d px' % plin)
         page.evaluate(URMA)
 

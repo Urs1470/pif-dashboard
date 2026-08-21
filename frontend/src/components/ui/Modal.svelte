@@ -164,7 +164,13 @@
   function scrie(e) {
     if (!vv) return
     const ih = window.innerHeight
-    if (ih !== ihUltim) {
+    // `|| ceasKb`: la aceeasi redimensionare sosesc DOUA evenimente — `vv.resize`
+    // si `window.resize`. Fara a doua conditie, primul apel amana si muta reperul,
+    // iar al doilea trece de garda tocmai fiindca reperul e deja cel nou — si scrie
+    // exact valoarea falsa pe care amanarea trebuia s-o opreasca. (Masurat: prima
+    // versiune a reparatiei n-a schimbat nimic pe telefon, cadrul fantoma a ramas
+    // identic.) Cat o amanare e in curs, orice apel nou o reprogrameaza.
+    if (ih !== ihUltim || ceasKb) {
       ihUltim = ih
       if (ceasKb) cancelAnimationFrame(ceasKb)
       // Nu se scrie NIMIC acum: valoarea veche e mai buna decat una falsa.
