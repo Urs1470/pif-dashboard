@@ -6,6 +6,12 @@
   import { toast } from '../stores/ui.svelte.js'
 
   let activ = $state(urmaActiva())
+  // Comutatorul de pe marca (Header) anunta printr-un eveniment.
+  $effect(() => {
+    const f = () => { activ = urmaActiva() }
+    window.addEventListener('pif-urma', f)
+    return () => window.removeEventListener('pif-urma', f)
+  })
 
   // `?urma=1` / `?urma=0` in adresa comuta starea si ramane in localStorage.
   $effect(() => {

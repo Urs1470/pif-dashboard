@@ -5,6 +5,21 @@
   import { tema, setMod } from '../../lib/tema.svelte.js'
   import { reteaua } from '../../lib/retea.svelte.js'
   import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
+  import { apasareLunga } from '../../lib/apasareLunga.js'
+  import { urmaActiva, porneste as pornesteUrma } from '../../lib/urma.js'
+  import { toast } from '../../stores/ui.svelte.js'
+
+  // JURNALUL DE PE APARAT SE PORNESTE DE PE MARCA, CU APASARE LUNGA. In aplicatia
+  // Android nu exista bara de adresa, deci `?urma=1` n-are unde fi scris (Ion:
+  // „pe aplicatia mobila nu pot pune adresa"). Marca e singurul obiect de pe
+  // toate ecranele care n-are alta apasare lunga. Vezi `lib/urma.js`.
+  function comutaUrma() {
+    const acum = !urmaActiva()
+    pornesteUrma(acum)
+    toast(acum ? 'Urmă pornită — deschide o foaie, apoi apasă „Urmă”' : 'Urmă oprită', 'success')
+    // Butonul „Urmă" citeste starea la montare; un eveniment il anunta.
+    window.dispatchEvent(new CustomEvent('pif-urma'))
+  }
 
   let { deschideCautarea = () => {} } = $props()
 
@@ -97,7 +112,7 @@
 </script>
 
 <header class="header" bind:clientHeight={inaltime}>
-  <a href="/" class="brand" title="TORQA">
+  <a href="/" class="brand" title="TORQA" use:apasareLunga={{ actiune: comutaUrma }} oncontextmenu={(e) => e.preventDefault()}>
     <!-- Marca „Unda" — semnal dreptunghiular (PWM). Aceleasi coordonate ca
          `frontend/public/favicon.svg`, dar aici tila ia `--accent` si cerneala
          `--accent-text`, deci marca URMEAZA TEMA; fisierul .svg e un asset si

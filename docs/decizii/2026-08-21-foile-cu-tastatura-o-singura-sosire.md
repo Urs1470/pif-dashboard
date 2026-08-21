@@ -108,3 +108,13 @@ Tot atunci:
   valorile mai mici decât cea știută înseamnă „încă urcă" (se scriu doar la așezare, 150 ms fără
   alt `resize`), iar când tastatura e raportată în mers (`html.kb-in-mers`) podeaua o urmează
   fără tranziție. Latența se învață la capătul urcării, nu la începutul ei.
+
+## Runda a patra
+
+- Ion: „e aiurea inelul acela, apoi are un delay de la click până se pornește tranziția."
+  Inelul rămâne pe bandă (Calendar); pe rând e **hașură**: tentă plină de accent (24 %),
+  aprinsă imediat ce rândul e pe ecran, 1,6 s, fără decalaj. Delay-ul: `navigate` aștepta
+  preîncărcarea până la 250 ms înainte să pornească tranziția — pe atingere plafonul e 100 ms
+  (măsurat: ruta se schimbă la 148 ms de la atingere).
+- În aplicația Android nu există bară de adresă, deci jurnalul se pornește cu **apăsare lungă
+  pe marca TORQA** din antet (toast „Urmă pornită"); aceeași apăsare îl oprește.

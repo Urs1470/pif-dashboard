@@ -217,6 +217,15 @@ const pauza = (ms) => new Promise((r) => setTimeout(r, ms))
 // asteapta — o retea moarta n-are voie sa blocheze navigarea; atunci ramane
 // scheletul paginii, care e exact ce era inainte peste tot.
 const PLAFON_INCARCARE = 250
+// PE ATINGERE, 100. Intre apasare si primul cadru care se misca nu au voie sa
+// treaca mai mult de ~100ms, altfel degetul nu primeste nimic inapoi si gestul
+// se citeste ca lag (Ion: „are un delay de la click pana se porneste tranzitia").
+// Pe o ruta vazuta deja, preincarcarea se rezolva din cache intr-un tact si nu
+// se asteapta nimic; pe una noua, ramane scheletul paginii, care se misca si el.
+const PLAFON_ATINGERE = 100
+const plafonIncarcare = () =>
+  (typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches)
+    ? PLAFON_ATINGERE : PLAFON_INCARCARE
 
 export function navigate(path) {
   // PREINCARCAREA STA SI AICI, nu doar in actiunea `link`.
@@ -255,7 +264,7 @@ export function navigate(path) {
       // Inainte de `applyPath`: asa cache-ul e deja cald cand efectul din App
       // citeste noua ruta, deci `LoadedComponent` nu mai trece prin `null`.
       if (preincarcaRuta) {
-        try { await Promise.race([preincarcaRuta(path), pauza(PLAFON_INCARCARE)]) } catch (_) {}
+        try { await Promise.race([preincarcaRuta(path), pauza(plafonIncarcare())]) } catch (_) {}
       }
       applyPath(path)
       await tick()

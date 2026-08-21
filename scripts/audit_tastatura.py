@@ -470,7 +470,7 @@ def main():
                 page.evaluate("""() => { window.__A = []; window.__ag = true; (function s() {
                   if (window.__ag) window.__A.push({ t: Math.round(performance.now()), h: location.hash });
                   requestAnimationFrame(s) })() }""")
-                tap(cdp, page, x, y, 2200)
+                tap(cdp, page, x, y, 1100)
                 A = page.evaluate('window.__ag = false; window.__A')
                 # Ecranul nu are voie sa inghete: intre doua cadre consecutive nu
                 # trec mai mult de ~160ms (morph-ul ingheta 600-750).
@@ -479,6 +479,13 @@ def main():
                      'cel mai lung gol intre cadre: %d ms' % goluri, 'gol maxim %d ms' % goluri)
                 ajuns = page.evaluate('location.hash')
                 bifa('/projects/' in ajuns or '/tasks' in ajuns, 'a ajuns la pagina taskului', ajuns)
+                # Intre apasare si schimbarea paginii (de unde porneste si tranzitia)
+                # nu au voie sa treaca mai mult de ~160ms pe atingere.
+                h0 = A[0]['h'] if A else None
+                schimb = next((q['t'] - A[0]['t'] for q in A if q['h'] != h0), None)
+                bifa(schimb is not None and schimb <= 160,
+                     'pagina porneste sa se schimbe in cel mult 160 ms de la atingere',
+                     'schimbarea rutei la %s ms' % schimb, '%s ms' % schimb)
                 rand = page.evaluate("""() => {
                   const f = document.querySelector('.focus-flash');
                   if (!f) return null;
@@ -487,14 +494,14 @@ def main():
                   const jos = dock ? dock.getBoundingClientRect().top : window.innerHeight;
                   const sus = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 0;
                   const fata = f.querySelector('.gl-fata');
-                  const anim = fata ? getComputedStyle(fata, '::before').animationName : getComputedStyle(f, '::before').animationName;
+                  const anim = fata ? getComputedStyle(fata, '::after').animationName : getComputedStyle(f, '::after').animationName;
                   return { top: Math.round(r.top), bottom: Math.round(r.bottom), sus, jos: Math.round(jos), anim } }""")
-                bifa(rand is not None, 'randul-tinta e hasurat (`.focus-flash`) la 2 s dupa atingere', 'niciun .focus-flash')
+                bifa(rand is not None, 'randul-tinta e hasurat (`.focus-flash`) la 1 s dupa atingere', 'niciun .focus-flash')
                 if rand:
                     bifa(rand['top'] >= rand['sus'] - 1 and rand['bottom'] <= rand['jos'] + 1,
                          'randul-tinta sta intre antet si dock, nu sub ele',
                          '%d..%d, vizibil %d..%d' % (rand['top'], rand['bottom'], rand['sus'], rand['jos']))
-                    bifa(rand['anim'] == 'gasitaInelRand', 'semnul e inelul din Calendar („pe asta ai apasat"), pe fata randului',
+                    bifa(rand['anim'] == 'hasuraRand', 'hasura se vede pe fata randului (nu sub ea)',
                          'animationName=%s' % rand['anim'])
 
             bifa(not erori, 'nicio eroare de pagina pe tot parcursul', ' | '.join(erori)[:300])

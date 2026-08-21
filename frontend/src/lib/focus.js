@@ -116,11 +116,10 @@ export function focusOnLand(node, key) {
         try { node.scrollIntoView({ behavior: motion.reduced ? 'auto' : 'smooth', block: 'center' }) } catch (_) { node.scrollIntoView() }
       }
 
-      // SEMNUL (inelul in doua batai, global.css) porneste singur dupa
-      // `--dur-arc` — dupa ce pagina a sosit si derularea lina s-a asezat.
-      // 2400: decalaj + a doua bataie + inel, plus o rasuflare (ca in Calendar).
+      // HASURA PORNESTE IMEDIAT (`hasuraRand`, global.css): fara decalaj — Ion a
+      // citit orice asteptare drept lag. 1800: animatia de 1600 plus o rasuflare.
       node.classList.add('focus-flash')
-      setTimeout(() => node.classList.remove('focus-flash'), motion.reduced ? 3200 : 2400)
+      setTimeout(() => node.classList.remove('focus-flash'), motion.reduced ? 3200 : 1800)
     })
   }
   maybe()

@@ -575,11 +575,11 @@ input:focus, select:focus, textarea:focus {
   font-variant-numeric: tabular-nums; flex: none; }
 
 /* ===== „ASTA E, PE ASTA AI APASAT" — UN SINGUR SEMN DE ATERIZARE =====
-   Raspunsul la o navigare care duce la un obiect anume: taskul de pe „Astăzi"
-   (`use:focusOnLand`, lib/focus.js), perioada de pe Planificator in Calendar
-   (`.banda.gasita`). Era scris de doua ori, diferit: pe rand o tenta palida care
-   nu se vedea (Ion: „vreau sa-mi fie hasurat taskul pe care am dat click"), pe
-   banda inelul asta. Ion l-a recunoscut pe al doilea — deci el e semnul, peste tot.
+   Raspunsul la o navigare care duce la un obiect anume. Pe BANDA din Calendar
+   (`.banda.gasita`, venita de pe Planificator) e inelul de mai jos; pe RANDUL de
+   task (`use:focusOnLand`, lib/focus.js) e hasura de mai departe — incercat si
+   inelul pe rand, Ion: „e aiurea inelul acela". Keyframe-urile stau aici, nu in
+   Calendar, ca sa fie un singur loc pentru semnul de aterizare.
    Ce spune: un inel care se desface O DATA si dispare, plus obiectul care se
    aseaza (o respiratie de 4%). DOUA BATAI, NU UN PULS: contractul interzice
    inelele care respira la nesfarsit; a doua bataie ii da primeia o a doua sansa
@@ -600,43 +600,30 @@ input:focus, select:focus, textarea:focus {
   30%  { transform: scale(1.04); }
   100% { transform: scale(1); }
 }
-/* PE UN RAND LAT SI SCUND INELUL NU SE DESFACE, DOAR SE APRINDE. `scale(1.22)`
-   pe o cutie de 360×52 iese din rand cu 40px pe laterale, iar randul e taiat
-   (`overflow: hidden`, pentru pista de glisare) — masurat: ramanea o linie de
-   1px sus. Aceleasi doua batai, acelasi ceas, fara desfacere; nici randul nu
-   „respira" cu 4%, din acelasi motiv. */
-@keyframes gasitaInelRand {
-  0%   { opacity: 0; transform: scale(0.985); }
-  15%  { opacity: 1; transform: scale(1); }
-  45%  { opacity: 1; }
-  100% { opacity: 0; transform: scale(1); }
+/* PE RAND, SEMNUL E O HASURA, NU INELUL. Inelul e bun pe banda (un obiect mic,
+   liber); pe un rand lat, scund si taiat de pista de glisare iese „aiurea" (Ion)
+   — si pornea cu 420ms intarziere, pe care el a citit-o ca lag. Aici: o tenta
+   plina de accent care se aprinde IMEDIAT ce randul e pe ecran (in timp ce pagina
+   inca soseste — cu atat mai bine, ochiul stie de la primul cadru unde sa se
+   uite), tine cat sa fie gasita, si se stinge lin. Doar opacitate. */
+@keyframes hasuraRand {
+  0%       { opacity: 0; }
+  8%, 55%  { opacity: 1; }
+  100%     { opacity: 0; }
 }
-/* Randul de task: semnul sta pe FATA lui (`.gl-fata`, opaca pe telefon, `display:
-   contents` pe desktop — acolo pe rand). `.focus-flash` o pune `use:focusOnLand`. */
 .focus-flash { position: relative; }
-.focus-flash::before, .focus-flash::after,
-.focus-flash > .gl-fata::before, .focus-flash > .gl-fata::after {
-  /* `inset: 2px`, nu -3 ca pe banda: randul e taiat (`overflow: hidden`, pentru
-     pista de glisare), deci un inel desenat IN AFARA lui n-ar exista deloc —
-     masurat: animatia rula, ecranul nu arata nimic. Aici inelul sta inauntru. */
-  content: ''; position: absolute; inset: 2px; border-radius: var(--radius-sm);
-  box-shadow: 0 0 0 2px var(--accent); pointer-events: none; z-index: 3;
-  animation: gasitaInelRand 1000ms var(--ease) both;
+.focus-flash::after, .focus-flash > .gl-fata::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  border-radius: inherit;
+  background: color-mix(in oklab, var(--accent) 24%, transparent);
+  animation: hasuraRand 1600ms var(--ease) both;
 }
-.focus-flash::before, .focus-flash > .gl-fata::before { animation-delay: var(--dur-arc); }
-.focus-flash::after,  .focus-flash > .gl-fata::after  { animation-delay: calc(var(--dur-arc) + 380ms); }
-/* Pe telefon fata e opaca si poarta semnul; randul nu-l mai dubleaza. */
-@media (max-width: 768px) {
-  .focus-flash:has(> .gl-fata)::before, .focus-flash:has(> .gl-fata)::after { display: none; }
-}
-/* Pe desktop fata e `display: contents`, deci pseudo-elementele ei n-au cutie;
-   semnul ramane pe rand. */
-@media (min-width: 769px) {
-  .focus-flash > .gl-fata::before, .focus-flash > .gl-fata::after { display: none; }
-}
+/* Pe telefon fata (`.gl-fata`) e opaca si poarta hasura; pe desktop fata e
+   `display: contents` (fara cutie), deci o poarta randul. */
+@media (max-width: 768px) { .focus-flash:has(> .gl-fata)::after { display: none; } }
+@media (min-width: 769px) { .focus-flash > .gl-fata::after { display: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .focus-flash::before, .focus-flash > .gl-fata::before { animation: none; opacity: 1; transform: none; }
-  .focus-flash::after, .focus-flash > .gl-fata::after { display: none; }
+  .focus-flash::after, .focus-flash > .gl-fata::after { animation: none; opacity: 1; }
 }
 
 /* Safety net: orice tranzitie/animatie CSS noua respecta automat reduced-motion,
