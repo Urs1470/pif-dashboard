@@ -31,11 +31,18 @@
         android:fillColor="@color/splash_placa"
         android:pathData="M127.125,114 H160.875 A13.125,13.125 0 0 1 174,127.125 V160.875 A13.125,13.125 0 0 1 160.875,174 H127.125 A13.125,13.125 0 0 1 114,160.875 V127.125 A13.125,13.125 0 0 1 127.125,114 Z" />
 
-    <!-- Unda, in cerneala pe placa. Desenata INTREAGA: aici nu se scrie, ea doar
-         asteapta. Scrierea ei e a paginii, si incepe exact de la forma asta. -->
+    <!-- Unda. Ea e SINGURA miscare a deschiderii, si se scrie NATIV
+         (`splash_marca_anim.xml`). Inainte se scria in pagina, deci venea dupa ce
+         marca fusese deja aratata o data de sistem — adica a doua etapa.
+
+         `trimPathEnd="1"`, nu 0: animatia porneste oricum de la `valueFrom="0"`,
+         deci desenarea se vede la fel. Dar daca sistemul NU joaca AVD-ul (alt
+         Android, alt producator, animatii oprite din setari), starea de baza e ce
+         ramane pe ecran. Cu 0 acolo, s-ar fi vazut o placa GOALA; asa, cel mai rau
+         caz e marca intreaga, statica. Esecul cade in plin, nu in gol. -->
     <path
         android:name="unda"
-        android:trimPathEnd="0"
+        android:trimPathEnd="1"
         android:strokeColor="@color/splash_unda"
         android:strokeWidth="6"
         android:strokeLineCap="round"
