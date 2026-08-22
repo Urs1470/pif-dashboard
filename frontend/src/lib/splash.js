@@ -62,6 +62,23 @@ function anuntaNativul() {
   } catch (_) {}
 }
 
+/** JURNALUL ULTIMEI PORNIRI, in `localStorage`.
+ *
+ *  DE CE. O pornire RECE nu se poate masura din afara: sondele injectate prin
+ *  CDP traiesc intr-un WebView care abia se naste, iar capturile de ecran prin
+ *  USB sosesc la ~1.8s — mai tarziu decat tot ce ne intereseaza. Singurul martor
+ *  care supravietuieste e pagina insasi, daca isi scrie jurnalul undeva.
+ *  Costa un `push` la cateva momente si o scriere la final. Se citeste cu
+ *  `localStorage.getItem('pif-pornire')`. */
+const CHEIE_PORNIRE = 'pif-pornire'
+const jurnalPornire = []
+function noteaza(ce) {
+  try {
+    jurnalPornire.push([Math.round(performance.now()), ce])
+    localStorage.setItem(CHEIE_PORNIRE, JSON.stringify(jurnalPornire))
+  } catch (_) {}
+}
+
 export function splashDupa(dateleAterizarii) {
   const val = /** @type {any} */ (window).__splash
   // IN APLICATIE NU EXISTA VAL WEB, dar exista unul NATIV care asteapta exact
@@ -70,6 +87,7 @@ export function splashDupa(dateleAterizarii) {
   const nativ = !!(/** @type {any} */ (window).Capacitor)
   if (!val && !nativ) return   // desktop, sau valul a fost deja scos
 
+  noteaza('splashDupa: pornit (nativ=' + nativ + ')')
   const pana = performance.now() + PLAFON
 
   const cadruPictat = () =>
@@ -85,12 +103,39 @@ export function splashDupa(dateleAterizarii) {
     requestAnimationFrame(verifica)
   })
 
+  // Fiecare conditie isi noteaza clipa in care s-a implinit: asa se vede care
+  // dintre ele TINE poarta, nu doar cat a durat totul.
+  const ceas = (nume, p) => Promise.resolve(p).then((v) => { noteaza(nume); return v })
+
   Promise.all([
-    dateleAterizarii || Promise.resolve(),
-    document.fonts?.ready || Promise.resolve(),
+    ceas('datele au sosit', dateleAterizarii || Promise.resolve()),
+    ceas('fonturile s-au asezat', document.fonts?.ready || Promise.resolve()),
   ])
     .catch(() => {})
     .then(cadruPictat)
+    .then(() => noteaza('cadrul s-a pictat'))
     .then(faraAsteptare)
-    .then(() => { anuntaNativul(); val?.gata?.() })
+    .then(() => {
+      noteaza('niciun schelet pe ecran')
+      // Ce se vede CHIAR ACUM, in clipa in care spunem „gata": daca aici sunt
+      // zero randuri si o stare goala, iar peste 300ms apar randuri, atunci
+      // poarta s-a deschis prea devreme — si aia se vede ca o reincarcare.
+      try {
+        noteaza('randuri=' + document.querySelectorAll('.trow, .arow').length
+          + ' schelete=' + document.querySelectorAll(SELECTOR_ASTEPTARE).length)
+      } catch (_) {}
+      anuntaNativul()
+      val?.gata?.()
+      // Inca doua fotografii, dupa. Daca ecranul se schimba ACUM, utilizatorul
+      // vede exact schimbarea pe care valul trebuia s-o acopere.
+      for (const dupa of [300, 900, 1800]) {
+        setTimeout(() => {
+          try {
+            noteaza('la +' + dupa + 'ms: randuri='
+              + document.querySelectorAll('.trow, .arow').length
+              + ' schelete=' + document.querySelectorAll(SELECTOR_ASTEPTARE).length)
+          } catch (_) {}
+        }, dupa)
+      }
+    })
 }
