@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MARCA DE PE SPLASHUL NATIV — aceeasi cu cea din `frontend/index.html`.
+
+  De ce exista: pe Android 12+ sistemul deseneaza INTOTDEAUNA un splash propriu
+  inainte ca WebView-ul sa apuce sa picteze ceva. Pana acum acolo aparea iconita
+  aplicatiei, cu animatia sistemului, iar imediat dupa venea pagina cu marca TORQA
+  si cu animatia ei — doua prezentari ale aceleiasi marci, una dupa alta. Ion,
+  2026-08-22: „e impartita in doua". Cusatura dispare doar daca ce arata sistemul
+  e ACELASI obiect, la aceeasi marime, pe acelasi fond.
+
+  GEOMETRIA, si de ce numerele astea. Panza e 288x288 — dimensiunea ceruta de
+  Android pentru `windowSplashScreenAnimatedIcon`. Marca insasi e desenata la
+  60x60, centrata (114..174 pe amandoua axele), fiindca 60px CSS e exact cat are
+  `.sp-logo` in `index.html`. Asa placa nu-si schimba marimea cand stafeta trece
+  de la sistem la pagina: sistemul o lasa unde pagina o ridica.
+
+  Traseul e cel din siglă, scalat cu 60/64 = 0.9375 si mutat cu +114:
+      placa  rx 14  -> 13.125
+      unda   M10 42 H21.5 V22 H32 V42 H42.5 V22 H54  (grosime 6.4 -> 6)
+  Culorile vin din `colors.xml` / `values-night`, ca sa urmeze tema aparatului.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+
+    <!-- Placa. -->
+    <path
+        android:fillColor="@color/splash_placa"
+        android:pathData="M127.125,114 H160.875 A13.125,13.125 0 0 1 174,127.125 V160.875 A13.125,13.125 0 0 1 160.875,174 H127.125 A13.125,13.125 0 0 1 114,160.875 V127.125 A13.125,13.125 0 0 1 127.125,114 Z" />
+
+    <!-- Unda, in cerneala pe placa. Desenata INTREAGA: aici nu se scrie, ea doar
+         asteapta. Scrierea ei e a paginii, si incepe exact de la forma asta. -->
+    <path
+        android:strokeColor="@color/splash_unda"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M123.375,153.375 H134.156 V134.625 H144 V153.375 H153.844 V134.625 H164.625" />
+</vector>

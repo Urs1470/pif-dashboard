@@ -90,8 +90,16 @@
          placa in accent, unda in cerneala pe fill, numele dedesubt. Login ->
          splash -> aplicatie trebuie sa fie acelasi obiect care se apropie, nu
          trei ecrane de la trei aplicatii. */
+      /* PLACA STA IN CENTRUL ECRANULUI, NUMELE ATARNA SUB EA.
+         Era o coloana (placa + nume, gap 14): coloana se centra, deci PLACA
+         ajungea cu 23px deasupra centrului — masurat pe telefon, 106.5px inaltime
+         de coloana, placa la -23.3 fata de mijloc.
+         Conteaza fiindca splashul NATIV isi centreaza iconita pe ecran. Cu placa
+         urcata, marca ar fi sarit exact in clipa in care sistemul preda pagina
+         — adica fix cusatura pe care venim s-o stergem. Numele iese din flux, si
+         atunci cele doua se aliniaza singure, fara niciun numar de potrivit. */
       #splash .sp-marca {
-        display: flex; flex-direction: column; align-items: center; gap: 14px;
+        position: relative; display: block; line-height: 0;
         will-change: transform, opacity;
       }
       #splash .sp-logo { width: 60px; height: 60px; }
@@ -105,6 +113,11 @@
         stroke-dasharray: 104; stroke-dashoffset: 104;
       }
       #splash .sp-nume {
+        /* Scos din flux (vezi `.sp-marca`): atarna sub placa, la aceeasi
+           distanta ca inainte (14px sub marginea ei de jos). */
+        position: absolute; top: calc(100% + 14px); left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap; line-height: 1.2;
         font-family: 'Gabarito', system-ui, sans-serif;
         font-size: 21px; font-weight: 600; letter-spacing: -0.01em;
         color: #e9ecef; color: var(--text);
@@ -116,9 +129,22 @@
          depinda de foaia care inca se incarca. */
       @keyframes spPlaca { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: none; } }
       @keyframes spUnda  { to { stroke-dashoffset: 0; } }
-      @keyframes spNume  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+      /* `translate(-50%, …)`, nu `translateY`: numele e acum centrat cu
+         `translateX(-50%)`, iar un `transform` de animatie l-ar sterge si l-ar
+         muta cu jumatate din latimea lui la dreapta. */
+      @keyframes spNume  { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
       html.splash-activ .sp-logo { animation: spPlaca .42s cubic-bezier(.32,.72,.28,1) backwards; }
       html.splash-activ .sp-unda { animation: spUnda .58s cubic-bezier(.32,.72,.28,1) .16s backwards; }
+      /* IN APLICATIE, MARCA E DEJA PE ECRAN. Splashul nativ (Android 12+) o
+         deseneaza inaintea noastra, la aceeasi marime si in acelasi loc — vezi
+         `res/drawable/splash_marca.xml`. Daca pagina ar re-juca sosirea placii si
+         scrierea undei, marca s-ar desena a DOUA oara peste ea insasi: exact
+         „doua bucati". Aici ea doar continua: numele urca, si apoi tot ansamblul
+         se ridica. In browser (PWA, desktop) nu exista splash nativ, deci acolo
+         sosirea completa ramane. */
+      html.din-nativ.splash-activ .sp-logo { animation: none; }
+      html.din-nativ.splash-activ .sp-unda { animation: none; stroke-dashoffset: 0; }
+      html.din-nativ.splash-activ .sp-nume { animation-delay: 0s; }
       html.splash-activ .sp-nume { animation: spNume .42s cubic-bezier(.32,.72,.28,1) .34s backwards; }
       /* PLECAREA: valul se stinge, marca se departeaza cu 4%. Nu invers (marca
          micsorata ar parea ca se retrage inapoi in ecran); asa se citeste ca o
@@ -170,6 +196,16 @@
         } catch (e) { potrivit = false }
         if (!potrivit) { el.remove(); return }
         document.documentElement.classList.add('splash-activ')
+        // IN CARCASA ANDROID, MARCA E DEJA DESENATA DE SISTEM.
+        // Splashul nativ (Android 12+) arata aceeasi placa, la aceeasi marime si
+        // in acelasi loc — `res/drawable/splash_marca.xml`. Deci pagina nu o mai
+        // deseneaza a doua oara: continua de unde a lasat-o sistemul.
+        // `Capacitor` e injectat de punte inaintea scripturilor paginii; daca
+        // lipseste (browser, PWA), nu exista splash nativ si sosirea completa
+        // ramane — acolo ea chiar e prima aparitie a marcii.
+        try {
+          if (window.Capacitor) document.documentElement.classList.add('din-nativ')
+        } catch (e) {}
 
         var t0 = Date.now()
         // MINIM: sub o treime de secunda un val nu se citeste ca un ecran, ci ca

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tema inchisa. Perechea din `values/colors.xml` — vezi comentariul de acolo. -->
+<resources>
+    <color name="splash_bg">#121417</color>
+    <color name="splash_placa">#8ab2d9</color>
+    <color name="splash_unda">#0e1114</color>
+</resources>

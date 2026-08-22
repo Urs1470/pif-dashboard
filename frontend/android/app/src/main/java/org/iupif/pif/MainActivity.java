@@ -14,6 +14,7 @@ import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsAnimationCompat;
@@ -35,6 +36,18 @@ public class MainActivity extends BridgeActivity {
         // JS si apelul cade cu „plugin not implemented".
         registerPlugin(InstalarePlugin.class);
         registerPlugin(NotificariPlugin.class);
+        // SPLASHUL, INAINTE DE `super.onCreate`.
+        //
+        // Pe Android 12+ platforma citeste singura `windowSplashScreen*` din tema
+        // de lansare, deci pe telefonul lui Ion (API 36) linia asta n-ar fi
+        // necesara. Sub API 31 insa atributele alea nu exista in platforma, si
+        // fara biblioteca de compatibilitate splashul ar fi doar un fond gol —
+        // adica tocmai aparatele mai vechi, unde pornirea dureaza mai mult si
+        // valul conteaza cel mai tare, ar ramane fara marca. `minSdk` e 24.
+        //
+        // Trebuie chemata INAINTE de `super.onCreate` si e cea care aplica
+        // `postSplashScreenTheme` (vezi `res/values/styles.xml`).
+        SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
 
         bareDeSistem();

@@ -16,7 +16,26 @@
     </style>
 
 
+    <!--
+      SPLASHUL NATIV ARATA ACEEASI MARCA CU PAGINA.
+
+      Era `android:background="@drawable/splash"` — un PNG pe tot ecranul, modul
+      vechi. Pe Android 12+ sistemul isi deseneaza oricum splashul LUI peste, cu
+      iconita aplicatiei si animatia lui; imediat dupa venea WebView-ul cu marca
+      TORQA si cu animatia ei. Doua prezentari ale aceleiasi marci, una dupa alta
+      (Ion, 2026-08-22: „e impartita in doua").
+
+      Acum sistemul deseneaza CHIAR marca, la 60dp, pe fondul aplicatiei — vezi
+      `res/drawable/splash_marca.xml` si `res/values/colors.xml`. Pagina o
+      gaseste acolo unde a lasat-o sistemul si doar continua: numele urca, apoi
+      tot ansamblul se ridica (`html.din-nativ` in `frontend/index.html`).
+
+      `postSplashScreenTheme` e obligatoriu: fara el aplicatia ramane pe tema de
+      lansare dupa ce splashul pleaca.
+    -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
+        <item name="windowSplashScreenBackground">@color/splash_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_marca</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>
