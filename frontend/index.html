@@ -214,10 +214,39 @@
         }
 
         window.__splash = {
+          // VALUL NU PLEACA PESTE O MARCA CARE INCA SE SCRIE.
+          //
+          // Ion, 2026-08-22: „acum e impartita in doua parca". Masurat pe
+          // telefon, la o pornire calda:
+          //     236 ms  valul se aprinde
+          //     271 ms  marca incepe sa se deseneze
+          //     660 ms  VALUL PLEACA        <- unda inca se scrie, numele urca
+          //    1080 ms  valul scos din DOM
+          // Sosirea marcii tine 760ms (unda se termina la 740, numele la 760),
+          // iar `MINIM` era 420 — deci pe o pornire calda poarta se deschidea la
+          // jumatatea desenului. Vedeai marca aparand SI stingandu-se in acelasi
+          // timp: doua miscari peste aceiasi pixeli, in sensuri opuse. Asta se
+          // citeste ca doua bucati, nu ca una.
+          //
+          // Se asteapta ANIMATIILE, nu un numar: `MINIM` ar fi trebuit crescut la
+          // 760 si tinut in acord cu CSS-ul de deasupra pentru totdeauna. Asa,
+          // daca cineva schimba `spUnda` maine, poarta afla singura.
+          // Sub `reduced-motion` nu exista animatii, deci lista e goala si
+          // ramane `MINIM` — acolo el chiar e pragul sub care un val se citeste
+          // ca o clipire.
           gata: function () {
-            var ramas = MINIM - (Date.now() - t0)
-            if (ramas > 0) setTimeout(stinge, ramas)
-            else stinge()
+            var marca = el.querySelector('.sp-marca')
+            var anims = []
+            try { anims = marca && marca.getAnimations ? marca.getAnimations({ subtree: true }) : [] }
+            catch (e) { anims = [] }
+            var scrise = anims.length
+              ? Promise.all(anims.map(function (a) { return a.finished.catch(function () {}) }))
+              : Promise.resolve()
+            scrise.then(function () {
+              var ramas = MINIM - (Date.now() - t0)
+              if (ramas > 0) setTimeout(stinge, ramas)
+              else stinge()
+            })
           },
         }
         // Plasa de siguranta, in afara bundle-ului — vezi comentariul de sus.
