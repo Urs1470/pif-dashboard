@@ -52,6 +52,16 @@ public class MainActivity extends BridgeActivity {
 
         bareDeSistem();
         tastaturaPeCadre();
+        // WEBVIEW-UL NU PORNESTE PE ALB.
+        //
+        // Fondul lui implicit e alb. Pagina e #f4f5f7 pe tema deschisa si #121417
+        // pe cea inchisa — deci in clipa in care splashul se scoate, orice cadru
+        // desenat inainte ca pagina sa fi compozitat arata alb peste ce urmeaza.
+        // Pe intuneric ar fi un flash orbitor; pe lumina e „o mica clipire", si
+        // exact asa a fost raportata.
+        // Aceeasi resursa cu splashul, deci se schimba impreuna cu tema.
+        getBridge().getWebView().setBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(this, R.color.splash_bg));
 
         // ULTIMA DATA CAND SITE-UL S-A INCARCAT.
         // Se scrie aici, nu din JS: cand ai nevoie de valoare (ecranul „fara
@@ -162,6 +172,10 @@ public class MainActivity extends BridgeActivity {
         //
         // Fara listenerul asta sistemul si-ar juca propria plecare, care e tot un
         // fondu-incrucisat; deci el ramane, doar ca nu mai anima nimic.
+        // SI CAND anume — vezi `SplashPlugin.gata`. Pe scurt: nu cand pagina se
+        // declara gata, ci cand WebView-ul confirma ca a pus-o intr-un cadru.
+        // Intre cele doua incapeau doua cadre de ecran gol, filmate pe aparat cu
+        // `scripts/filmeaza_pornirea.py`.
         splash.setOnExitAnimationListener(vedere -> vedere.remove());
     }
 

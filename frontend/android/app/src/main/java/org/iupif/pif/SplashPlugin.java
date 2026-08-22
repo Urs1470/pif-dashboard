@@ -41,10 +41,61 @@ public class SplashPlugin extends Plugin {
      */
     public static volatile boolean paginaGata = false;
 
-    /** Se cheama din JS cand pagina s-a asezat. Nu intoarce nimic de asteptat. */
+    /**
+     * Se cheama din JS cand pagina s-a asezat. Nu intoarce nimic de asteptat.
+     *
+     * NU RIDICA SPLASHUL IMEDIAT, si asta e tot rostul metodei.
+     *
+     * „Pagina s-a asezat" inseamna, in JS, ca datele au sosit si ca un `rAF` a
+     * trecut. Dar intre cadrul pe care JS-ul il considera pictat si cadrul care
+     * ajunge PE ECRAN mai e conducta de compozitare. Filmat pe telefon, la 60fps
+     * (`scripts/filmeaza_pornirea.py`), asta se vedea asa:
+     *
+     *     2.217s  marca, pe fond
+     *     2.233s  GOL — doar fondul
+     *     2.250s  GOL — doar fondul
+     *     2.267s  pagina, intreaga
+     *
+     * Doua cadre in care ecranul nu are nimic pe el. Ion, 2026-08-22: „tot cand
+     * apare pagina mai exista o mica clipire". Nu era o animatie si nu era o
+     * culoare gresita — era chiar golul dintre cele doua.
+     *
+     * `postVisualStateCallback` e API-ul facut pentru intrebarea asta: cheama
+     * inapoi cand starea DOM de la momentul apelului a intrat intr-un cadru gata
+     * de desenat. Mai asteptam un cadru dupa el, ca sa fie si pus pe ecran, si
+     * abia atunci lasam splashul sa plece. Ordinea devine: pagina e pe ecran,
+     * ACOPERITA de splash; splashul se scoate; dedesubt e deja tot.
+     *
+     * PLASA. Daca raportul nu vine niciodata (ecran stins, surprize de
+     * producator), ridicam oricum dupa `RABDARE`. Fara ea am atarna pana la
+     * plafonul din `MainActivity`, adica secunde bune de splash.
+     */
+    private static final long RABDARE = 500;
+
     @PluginMethod
     public void gata(PluginCall call) {
-        paginaGata = true;
         call.resolve();
+        final android.webkit.WebView web = getBridge().getWebView();
+        web.post(new Runnable() {
+            @Override
+            public void run() {
+                final Runnable ridica = new Runnable() {
+                    @Override
+                    public void run() {
+                        paginaGata = true;
+                    }
+                };
+                web.postDelayed(ridica, RABDARE);
+                web.postVisualStateCallback(1, new android.webkit.WebView.VisualStateCallback() {
+                    @Override
+                    public void onComplete(long id) {
+                        web.removeCallbacks(ridica);
+                        // Inca un cadru: raportul spune „gata de desenat", nu
+                        // „desenat". Diferenta dintre ele e chiar clipirea.
+                        web.postOnAnimation(ridica);
+                    }
+                });
+            }
+        });
     }
 }

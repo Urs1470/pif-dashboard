@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-08-22
+
+- [2026-08-22 Pornirea rece se filmează](2026-08-22-pornirea-rece-se-filmeaza.md) — `screenrecord` pe telefon, lansat prin atingere reală; două cadre de ecran gol pe care nicio deducție nu le-a găsit; regula: un cadru cu o stare care n-a existat e real.
+
 ## 2026-08-21
 
 - [2026-08-21 Verifică instrumentul înainte de subiect](2026-08-21-verifica-instrumentul-inainte-de-subiect.md) — trei din patru „defecte" de pe mobil erau ale sondei; `:active` nu se vede prin atingere sintetică, orice regulă CSS are `cssRules` truthy, iar un control care răspunde sub 25 ms nu are nevoie de semn de apăsare.

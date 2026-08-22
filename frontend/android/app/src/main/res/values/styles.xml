@@ -13,6 +13,16 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!--
+          FEREASTRA ARE CULOAREA SPLASHULUI, NU ALBUL IMPLICIT.
+          Cand splashul se scoate, orice cadru in care WebView-ul inca n-a
+          compozitat arata fondul FERESTREI. Implicit el e alb, iar pagina e
+          #f4f5f7 pe tema deschisa: un cadru de alb pe aproape-alb se vede ca o
+          clipire scurta. Ion, 2026-08-22: „tot cand apare pagina mai exista o
+          mica clipire". Cu aceeasi culoare de amandoua partile, cadrul ala nu mai
+          are ce sa arate diferit.
+        -->
+        <item name="android:windowBackground">@color/splash_bg</item>
     </style>
 
 
