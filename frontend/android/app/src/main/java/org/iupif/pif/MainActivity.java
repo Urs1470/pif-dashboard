@@ -128,12 +128,30 @@ public class MainActivity extends BridgeActivity {
         // (`#splash.pleaca`), ca miscarea sa ramana cea pe care Ion o stia.
         // Nu invers: o marca micsorata ar parea ca se retrage inapoi in ecran.
         splash.setOnExitAnimationListener(vedere -> {
-            final android.view.View v = vedere.getIconView() != null
-                    ? vedere.getIconView() : vedere.getView();
-            v.animate()
-                    .alpha(0f).scaleX(1.04f).scaleY(1.04f)
+            // SE RIDICA TOT, NU DOAR ICOANA.
+            //
+            // Prima varianta anima doar `getIconView()`: marca se stingea, dar
+            // FONDUL splashului ramanea opac in urma ei, si de-abia la `remove()`
+            // disparea dintr-o data. Deci se vedeau doua lucruri, unul dupa altul
+            // — Ion: „cand sa apara pagina taskuri personale parca se reincarca
+            // de 2 ori". Nu se reincarca nimic; pleca in doua etape.
+            //
+            // Acum radacina se stinge (ea poarta si fondul, si icoana), iar icoana
+            // se DEPARTEAZA cu 4% in acelasi timp — aceleasi valori ca vechiul val
+            // din pagina (`#splash.pleaca`), ca miscarea sa ramana cea stiuta.
+            // O marca micsorata ar parea ca se retrage inapoi in ecran; asa se
+            // citeste ca o ridicare de pe pagina care ramane dedesubt.
+            final android.view.animation.PathInterpolator curba =
+                    new android.view.animation.PathInterpolator(.32f, .72f, .28f, 1f);
+            final android.view.View icoana = vedere.getIconView();
+            if (icoana != null) {
+                icoana.animate().scaleX(1.04f).scaleY(1.04f)
+                        .setDuration(280).setInterpolator(curba).start();
+            }
+            vedere.getView().animate()
+                    .alpha(0f)
                     .setDuration(280)
-                    .setInterpolator(new android.view.animation.PathInterpolator(.32f, .72f, .28f, 1f))
+                    .setInterpolator(curba)
                     .withEndAction(vedere::remove)
                     .start();
         });
