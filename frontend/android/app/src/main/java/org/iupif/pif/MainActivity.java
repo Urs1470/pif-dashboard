@@ -143,34 +143,26 @@ public class MainActivity extends BridgeActivity {
         // DEPARTEAZA cu 4%, aceleasi valori ca vechiul val din pagina
         // (`#splash.pleaca`), ca miscarea sa ramana cea pe care Ion o stia.
         // Nu invers: o marca micsorata ar parea ca se retrage inapoi in ecran.
-        splash.setOnExitAnimationListener(vedere -> {
-            // SE RIDICA TOT, NU DOAR ICOANA.
-            //
-            // Prima varianta anima doar `getIconView()`: marca se stingea, dar
-            // FONDUL splashului ramanea opac in urma ei, si de-abia la `remove()`
-            // disparea dintr-o data. Deci se vedeau doua lucruri, unul dupa altul
-            // — Ion: „cand sa apara pagina taskuri personale parca se reincarca
-            // de 2 ori". Nu se reincarca nimic; pleca in doua etape.
-            //
-            // Acum radacina se stinge (ea poarta si fondul, si icoana), iar icoana
-            // se DEPARTEAZA cu 4% in acelasi timp — aceleasi valori ca vechiul val
-            // din pagina (`#splash.pleaca`), ca miscarea sa ramana cea stiuta.
-            // O marca micsorata ar parea ca se retrage inapoi in ecran; asa se
-            // citeste ca o ridicare de pe pagina care ramane dedesubt.
-            final android.view.animation.PathInterpolator curba =
-                    new android.view.animation.PathInterpolator(.32f, .72f, .28f, 1f);
-            final android.view.View icoana = vedere.getIconView();
-            if (icoana != null) {
-                icoana.animate().scaleX(1.04f).scaleY(1.04f)
-                        .setDuration(280).setInterpolator(curba).start();
-            }
-            vedere.getView().animate()
-                    .alpha(0f)
-                    .setDuration(280)
-                    .setInterpolator(curba)
-                    .withEndAction(vedere::remove)
-                    .start();
-        });
+        // SPLASHUL SE TERMINA, SI ABIA APOI APARE PAGINA.
+        //
+        // Ion, 2026-08-22: „ideal as vrea ca animatia splash sa se termine
+        // inainte sa apara pagina". Aici au fost, pe rand, doua iesiri gresite:
+        //   1. se stingea doar ICOANA, iar fondul ramanea si disparea dupa ea —
+        //      doua lucruri unul dupa altul;
+        //   2. se stingea TOT, in fondu-incrucisat — si atunci pagina aparea PRIN
+        //      splash cat timp marca inca se departa. Ion: „marca continua cand
+        //      pagina a aparut... parca se reincarca odata".
+        // Amandoua au aceeasi forma: doua lucruri se vad in acelasi timp.
+        //
+        // Deci nu mai exista nicio iesire. Unda se deseneaza intreaga (`splashUnic`
+        // tine splashul pana la `DESENUL_MARCII`), pagina de dedesubt e deja
+        // asezata si NU-si mai joaca sosirea (`splash-a-lucrat`, pus din
+        // `index.html`), iar splashul se scoate dintr-o data. Ce se vede e: marca
+        // se scrie, apoi aplicatia. Un lucru, apoi altul — niciodata amandoua.
+        //
+        // Fara listenerul asta sistemul si-ar juca propria plecare, care e tot un
+        // fondu-incrucisat; deci el ramane, doar ca nu mai anima nimic.
+        splash.setOnExitAnimationListener(vedere -> vedere.remove());
     }
 
     /**
