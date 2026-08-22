@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  MARCA DE PE SPLASHUL NATIV — aceeasi cu cea din `frontend/index.html`.
+  MARCA DE PE SPLASHUL NATIV — VARIANTA DE NOAPTE — aceeasi cu cea din `frontend/index.html`.
 
   De ce exista: pe Android 12+ sistemul deseneaza INTOTDEAUNA un splash propriu
   inainte ca WebView-ul sa apuce sa picteze ceva. Pana acum acolo aparea iconita
@@ -42,7 +42,7 @@
 
     <!-- Placa. -->
     <path
-        android:fillColor="#4e7192"
+        android:fillColor="#8ab2d9"
         android:pathData="M127.125,114 H160.875 A13.125,13.125 0 0 1 174,127.125 V160.875 A13.125,13.125 0 0 1 160.875,174 H127.125 A13.125,13.125 0 0 1 114,160.875 V127.125 A13.125,13.125 0 0 1 127.125,114 Z" />
 
     <!-- Unda. Ea e SINGURA miscare a deschiderii, si se scrie NATIV
@@ -57,7 +57,7 @@
     <path
         android:name="unda"
         android:trimPathEnd="1"
-        android:strokeColor="#ffffff"
+        android:strokeColor="#0e1114"
         android:strokeWidth="6"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"

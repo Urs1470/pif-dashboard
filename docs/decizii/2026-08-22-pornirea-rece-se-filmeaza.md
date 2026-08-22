@@ -51,12 +51,50 @@ măsurat. Ieșirea rămâne a noastră.
 fondul ferestrei și al WebView-ului au fost puse tot pe `@color/splash_bg`, fiindcă implicit sunt
 **albe**: pe temă închisă orice cadru fără conținut ar fi fost un flash orbitor.
 
-## Ce rămâne, și cum se citește
+## Greșeala de măsurare care a costat o rundă întreagă
 
-După reparație, filmul mai arată un cadru ciudat la tăietură — dar el conține **marca**, nu golul.
-Marca nu poate reveni pe ecran după ce vederea a fost scoasă: nimic n-o mai adaugă înapoi. Deci
-acel cadru e al camerei, nu al aplicației.
+Prima citire a filmului spunea „două cadre goale **înainte** de pagină", și pe ea am construit o
+reparație. Era falsă. Extrăgeam cadrele cu `ffmpeg -vf fps=60`, iar filmul nu are 60 de cadre pe
+secundă uniforme — are goluri. **`fps=N` umple golurile duplicând cadre**, și așa apar în analiză
+cadre care n-au existat niciodată pe ecran.
 
-Regula de citire, generală: **un cadru care arată o stare care a existat înainte poate fi artefact
-de captură; un cadru care arată o stare care n-a existat niciodată e real.** Cele două cadre goale
-erau reale exact pe criteriul ăsta — ecranul nu fusese gol în niciun moment anterior.
+Citite corect (`-vsync 0`, doar cadrele stocate, cu `pts_time`), ambele versiuni arătau aceeași
+formă: `pagina → un cadru străin → pagina`. Adică reparația nu rezolvase nimic, iar eu raportasem
+că da.
+
+**Regula:** la analiza unui film, extrage cadrele **stocate**, nu unele reeșantionate. Și verifică
+intervalele: dacă nu sunt uniforme, orice concluzie despre „un cadru" e despre unul inventat.
+
+A doua regulă, pentru cadre ciudate: **un cadru care arată o stare ce a existat înainte poate fi
+artefact; unul care arată o stare ce n-a existat niciodată e real.** Am folosit-o ca să resping
+o clipire — greșit, fiindcă mai întâi trebuia să am cadrele adevărate.
+
+## Unde era, de fapt
+
+Splash-ul de sistem nu e o vedere în fereastra aplicației. **Până la ieșire e o fereastră a
+sistemului, peste tot ce ai tu** — de aceea o acoperire proprie, oricât de identică, nu ajută cu
+nimic: e invizibilă sub ea. La ieșire sistemul îți *predă* conținutul ca vedere obișnuită, și
+atunci apar două cusături, una după alta:
+
+1. între „fereastra sistemului a plecat" și „vederea predată s-a desenat la tine" se vede pagina;
+2. vederea predată se desface pe bucăți — icoana pleacă cu un cadru înaintea fondului ei.
+
+Reglajele din `setOnExitAnimationListener` nu le pot prinde: prima bucată s-a întâmplat deja
+când ești chemat. Ce funcționează e să nu mai alergi cursa — voalul propriu, ridicat
+`bringToFront` peste vederea predată, ascunde toată desfacerea ei. Măsurat: 2/3 porniri clipeau
+cu voalul dedesubt, 1/4 cu `setVisibility(GONE)`, **0 din 11** cu voalul deasupra.
+
+## Capcana care a făcut două build-uri să pară că „nu se aplică"
+
+Am încercat, la un moment dat, să iau marca de la sistem cu totul, dându-i o icoană goală: un
+`<vector>` fără niciun `<path>`. Android nu o consideră validă și pune **pictograma aplicației**
+— 144dp, cu culorile ei fixe, deci și pe temă închisă arată paleta deschisă. Două build-uri la
+rând au părut că nu-și fac efectul: schimbam mărimea și culorile voalului, iar măsurătoarea nu se
+mișca, fiindcă ce măsuram nu era desenul nostru deloc.
+
+Semnul după care se recunoaște: **o măsurătoare care nu se schimbă când schimbi ceea ce ar trebui
+s-o schimbe nu e o valoare greșită, e alt obiect.**
+
+Și încă una, mai banală, care a dat o măsurătoare veche fără nicio eroare: în Git Bash pe Windows,
+`adb shell screencap -p /sdcard/x.png` primește calea **convertită** într-una Windows dacă nu pui
+`MSYS_NO_PATHCONV=1`. Captura eșuează, `pull` eșuează, și citești fișierul de data trecută.

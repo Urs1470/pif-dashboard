@@ -16,7 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-08-22
 
-- [2026-08-22 Pornirea rece se filmează](2026-08-22-pornirea-rece-se-filmeaza.md) — `screenrecord` pe telefon, lansat prin atingere reală; două cadre de ecran gol pe care nicio deducție nu le-a găsit; regula: un cadru cu o stare care n-a existat e real.
+- [2026-08-22 Pornirea rece se filmează](2026-08-22-pornirea-rece-se-filmeaza.md) — `screenrecord` pe telefon, lansat prin atingere reală; `-vf fps=N` inventează cadre (extrage cu `-vsync 0`); splashul e o FEREASTRĂ a sistemului până la ieșire, deci voalul propriu trebuie ridicat `bringToFront`; un `<vector>` gol face Android să pună pictograma aplicației.
 
 ## 2026-08-21
 

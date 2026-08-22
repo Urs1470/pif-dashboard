@@ -50,6 +50,7 @@ public class MainActivity extends BridgeActivity {
         splashUnic();
         super.onCreate(savedInstanceState);
 
+        voalulNostru();
         bareDeSistem();
         tastaturaPeCadre();
         // WEBVIEW-UL NU PORNESTE PE ALB.
@@ -127,6 +128,94 @@ public class MainActivity extends BridgeActivity {
      * mai ramane din aplicatie. Se numara de la `onCreate`, nu de la primul cadru:
      * asteptarea pe care o simte omul incepe cand a atins iconita.
      */
+    /** Acoperirea proprie: fondul splashului plus marca, desenate de noi. */
+    private View voal;
+
+
+    /**
+     * VOALUL NOSTRU — ce se vede in cadrele in care splashul sistemului se desface.
+     *
+     * CE AM MASURAT. Filmat pe aparat (`scripts/filmeaza_pornirea.py`) si citind
+     * cadrele STOCATE, nu unele reesantionate, cusatura arata asa:
+     *
+     *     2.204s  pagina      <- un singur cadru
+     *     2.220s  marca       <- un singur cadru
+     *     2.236s  pagina
+     *
+     * Pagina, marca, pagina. Ion, de patru ori: „tot mai exista o clipire scurta".
+     * Nu e a paginii (jurnalul de pornire arata ca ea nu se schimba dupa 742ms) si
+     * nu e a undei (ea se terminase de scris cu 500ms inainte).
+     *
+     * DE UNDE VINE. Pana la iesire, splashul e o FEREASTRA a sistemului, peste tot
+     * ce avem noi. La iesire, sistemul ne PREDA continutul ei ca vedere obisnuita,
+     * in fereastra aplicatiei — si intre „fereastra sistemului a plecat" si „vederea
+     * predata s-a desenat la noi" incape un cadru in care se vede pagina. Vederea
+     * predata se desface apoi ea insasi pe bucati: icoana pleaca CU UN CADRU
+     * inaintea fondului ei.
+     *
+     * Fara `setOnExitAnimationListener` cusatura asta nu exista, dar sistemul isi
+     * joaca propria plecare: 185ms de ecran gol, masurate. Deci listenerul ramane.
+     *
+     * SOLUTIA. Voalul asta sta in fereastra aplicatiei de la `onCreate`, cu exact
+     * ultimul cadru al splashului: fondul temei si marca intreaga, statica. Cat tine
+     * splashul, el e invizibil — fereastra sistemului il acopere. La iesire il
+     * ridicam DEASUPRA vederii predate (`bringToFront`), si de acolo incolo toata
+     * desfacerea ei se intampla ascunsa. Voalul pleaca ultimul. Singura schimbare
+     * vizibila din toata pornirea e plecarea lui.
+     *
+     * TREI INCERCARI MAI SLABE, pastrate ca sa nu se refaca:
+     *   1. Voal dedesubt, fara `bringToFront`: fondul opac al vederii predate il
+     *      acopera, deci cadrul fara icoana ramanea vizibil. 2 din 3 porniri clipeau.
+     *   2. `setVisibility(GONE)` pe vederea predata: 1 din 4. Mai bine, dar bucata
+     *      dintai se intamplase deja cand suntem chemati. O cursa nu se castiga
+     *      reglandu-i pasii, ci nemaialergand-o.
+     *   3. Marca mutata cu totul la noi, cu icoana sistemului facuta „goala": un
+     *      `<vector>` fara niciun `<path>` nu i se pare valid si pune PICTOGRAMA
+     *      APLICATIEI — 144dp, cu culorile ei fixe. Doua build-uri au parut ca „nu
+     *      se aplica" din cauza asta: ce masuram nu era desenul nostru deloc.
+     *
+     * PLASA. Daca ceva se strica, voalul s-ar transforma intr-un ecran mort. De aia
+     * are un ceas propriu care il ridica oricum.
+     */
+    private void voalulNostru() {
+        final android.widget.FrameLayout radacina = findViewById(android.R.id.content);
+        if (radacina == null) return;
+
+        final android.widget.FrameLayout strat = new android.widget.FrameLayout(this);
+        strat.setBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(this, R.color.splash_bg));
+        // Inghite atingerile cat e pe ecran: o apasare nimerita in ultimele cadre
+        // n-are voie sa ajunga la o pagina pe care omul inca n-o vede.
+        strat.setClickable(true);
+
+        // Marca, STATICA si intreaga: voalul nu joaca nimic, el doar tine imaginea
+        // pe care sistemul tocmai a terminat de desenat. Panza e 288dp, cu placa de
+        // 60 in ea — masurat pe aparat, o vedere de 120dp da o placa de 24dp, deci
+        // raportul e cel scris in vector si 288dp da exact cele 60dp ale sistemului.
+        final android.widget.ImageView marca = new android.widget.ImageView(this);
+        marca.setImageDrawable(androidx.appcompat.content.res.AppCompatResources
+                .getDrawable(this, R.drawable.splash_marca));
+        final int latura = Math.round(288 * getResources().getDisplayMetrics().density);
+        strat.addView(marca, new android.widget.FrameLayout.LayoutParams(
+                latura, latura, android.view.Gravity.CENTER));
+
+        radacina.addView(strat, new android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT));
+
+        voal = strat;
+        voal.postDelayed(this::ridicaVoalul, PLAFON_SPLASH + 1500);
+    }
+
+    /** Se poate chema de oricate ori; a doua oara nu face nimic. */
+    private void ridicaVoalul() {
+        final View v = voal;
+        if (v == null) return;
+        voal = null;
+        final android.view.ViewGroup p = (android.view.ViewGroup) v.getParent();
+        if (p != null) p.removeView(v);
+    }
+
     private void splashUnic() {
         final androidx.core.splashscreen.SplashScreen splash =
                 androidx.core.splashscreen.SplashScreen.installSplashScreen(this);
@@ -176,7 +265,39 @@ public class MainActivity extends BridgeActivity {
         // declara gata, ci cand WebView-ul confirma ca a pus-o intr-un cadru.
         // Intre cele doua incapeau doua cadre de ecran gol, filmate pe aparat cu
         // `scripts/filmeaza_pornirea.py`.
-        splash.setOnExitAnimationListener(vedere -> vedere.remove());
+        splash.setOnExitAnimationListener(vedere -> {
+            // VEDEREA SISTEMULUI DISPARE INTREAGA, DINTR-O DATA.
+            //
+            // `remove()` singur isi desface vederea pe bucati: filmat, marca pleaca
+            // cu UN CADRU inaintea fondului ei, si fiindca fondul e opac el imi
+            // acopera voalul — deci cadrul ala arata fond gol, exact clipirea.
+            //   2.015s  fond, fara marca   <- cadrul
+            //   2.033s  marca (voalul meu)
+            //   2.049s  pagina
+            // `GONE` opreste desenarea intregii vederi in acelasi cadru, deci
+            // dedesubt se vede voalul, care e aceeasi imagine. Scoaterea propriu-zisa
+            // vine dupa, cand oricum nu mai deseneaza nimic.
+            // VOALUL TRECE DEASUPRA, si abia apoi vederea sistemului se desface.
+            //
+            // Pana in clipa asta splashul e o FEREASTRA a sistemului, peste tot ce
+            // avem noi — de aia voalul, oricat de identic, nu-l putea acoperi
+            // (masurat: era invizibil, si aparea abia in ultimele doua cadre).
+            // Iesirea e insa momentul in care sistemul ne PREDA vederea, in
+            // fereastra noastra. De aici incolo e o vedere ca oricare alta, si
+            // `bringToFront` o pune sub voal.
+            //
+            // Ce castigam: desfacerea ei — care isi scoate icoana cu un cadru
+            // inaintea fondului — se intampla in intregime ASCUNSA. Singura
+            // schimbare vizibila din toata pornirea ramane plecarea voalului.
+            if (voal != null) voal.bringToFront();
+            vedere.getView().setVisibility(View.GONE);
+            vedere.getView().postOnAnimation(vedere::remove);
+            // Voalul pleaca ULTIMUL: inca doua cadre in care el tine imaginea, ca
+            // scoaterea splashului de sistem sa nu descopere nimic.
+            final View v = voal;
+            if (v == null) ridicaVoalul();
+            else v.postOnAnimation(() -> v.postOnAnimation(this::ridicaVoalul));
+        });
     }
 
     /**
