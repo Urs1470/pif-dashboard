@@ -142,15 +142,6 @@
          „doua bucati". Aici ea doar continua: numele urca, si apoi tot ansamblul
          se ridica. In browser (PWA, desktop) nu exista splash nativ, deci acolo
          sosirea completa ramane. */
-      /* IN APLICATIE NU EXISTA VAL WEB. Splashul sistemului ramane pe ecran
-         pana cand pagina anunta ca s-a asezat, si tot el pleaca — o singura
-         suprafata, o singura iesire (vezi `MainActivity.splashUnic`).
-         Doua incercari de a le CUSUTA au esuat, si merita spus de ce: chiar cu
-         aceeasi marca, la aceeasi marime si in acelasi loc, splashul de sistem
-         isi face iesirea LUI inainte ca pagina sa deseneze — deci raman doua
-         etape oricat de bine s-ar potrivi desenul. Ion: „tot se primeste in doua
-         parti". Ce se poate cusuta e o singura suprafata cu ea insasi. */
-      html.din-nativ #splash { display: none !important; }
       html.splash-activ .sp-nume { animation: spNume .42s cubic-bezier(.32,.72,.28,1) .34s backwards; }
       /* PLECAREA: valul se stinge, marca se departeaza cu 4%. Nu invers (marca
          micsorata ar parea ca se retrage inapoi in ecran); asa se citeste ca o
@@ -201,17 +192,32 @@
                      window.matchMedia('(max-width: 768px)').matches
         } catch (e) { potrivit = false }
         if (!potrivit) { el.remove(); return }
+
+        // IN CARCASA ANDROID NU EXISTA VAL WEB, SI NICI MASINARIA LUI.
+        //
+        // Splashul e unul singur, al sistemului, tinut pana cand pagina anunta ca
+        // s-a asezat (`MainActivity.splashUnic` + `SplashPlugin`). Aici nu se mai
+        // aprinde nimic.
+        //
+        // NU E DE AJUNS SA ASCUNZI VALUL. Prima varianta il facea `display: none`
+        // si lasa restul sa curga: `splash-activ` se punea si se scotea la timpul
+        // LUI, iar clasele alea comuta animatiile de intrare ale paginii
+        // (`.ruta-in`, `.cell-in` — vezi `global.css`). Deci pagina mai avea un
+        // final, nesincronizat cu al splashului nativ, si se vedea. Ion,
+        // 2026-08-22: „pagina parca se reincarca, adica clipeste odata".
+        //
+        // `splash-a-lucrat` se pune DIRECT: el spune paginii ca sosirea ei s-a
+        // jucat deja sub un val, deci `.ruta-in`/`.cell-in` nu mai au ce adauga.
+        // Aici valul a fost al sistemului, dar raspunsul e acelasi.
+        var nativ = false
+        try { nativ = !!window.Capacitor } catch (e) { nativ = false }
+        if (nativ) {
+          document.documentElement.classList.add('splash-a-lucrat')
+          el.remove()
+          return
+        }
+
         document.documentElement.classList.add('splash-activ')
-        // IN CARCASA ANDROID, MARCA E DEJA DESENATA DE SISTEM.
-        // Splashul nativ (Android 12+) arata aceeasi placa, la aceeasi marime si
-        // in acelasi loc — `res/drawable/splash_marca.xml`. Deci pagina nu o mai
-        // deseneaza a doua oara: continua de unde a lasat-o sistemul.
-        // `Capacitor` e injectat de punte inaintea scripturilor paginii; daca
-        // lipseste (browser, PWA), nu exista splash nativ si sosirea completa
-        // ramane — acolo ea chiar e prima aparitie a marcii.
-        try {
-          if (window.Capacitor) document.documentElement.classList.add('din-nativ')
-        } catch (e) {}
 
         var t0 = Date.now()
         // MINIM: sub o treime de secunda un val nu se citeste ca un ecran, ci ca

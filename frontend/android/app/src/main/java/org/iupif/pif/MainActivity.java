@@ -87,6 +87,12 @@ public class MainActivity extends BridgeActivity {
      *  aici marja e mai mare, ca poarta din pagina sa apuce sa se pronunte. */
     private static final long PLAFON_SPLASH = 6500;
 
+    /** Cat tine desenarea undei: `startOffset` 120 + `duration` 600 din
+     *  `splash_marca_anim.xml`, aceeasi valoare cu
+     *  `windowSplashScreenAnimationDuration` din tema. Splashul NU pleaca inainte
+     *  s-o termine — vezi `splashUnic`. */
+    private static final long DESENUL_MARCII = 720;
+
     /**
      * UN SINGUR SPLASH, AL SISTEMULUI, TINUT PANA E PAGINA GATA.
      *
@@ -116,9 +122,19 @@ public class MainActivity extends BridgeActivity {
                 androidx.core.splashscreen.SplashScreen.installSplashScreen(this);
         final long pornit = android.os.SystemClock.uptimeMillis();
 
-        splash.setKeepOnScreenCondition(() ->
-                !SplashPlugin.paginaGata
-                        && android.os.SystemClock.uptimeMillis() - pornit < PLAFON_SPLASH);
+        // DOUA CONDITII, NU UNA. Pagina gata nu e de ajuns: pe o pornire calda ea
+        // e gata inainte ca unda sa se termine de desenat, iar atunci iesirea
+        // incepe PESTE desen — marca se stinge in timp ce inca se scrie. Ion,
+        // 2026-08-22: „marca dupa cateva clipe se opreste". E exact defectul pe
+        // care l-am reparat in valul web cu cateva ore inainte (poarta pleca la
+        // 660ms peste o sosire de 760), refacut aici in nativ.
+        // Deci: si pagina asezata, SI desenul terminat. Plafonul le taie pe
+        // amandoua — o retea moarta n-are voie sa lase sigla pe ecran.
+        splash.setKeepOnScreenCondition(() -> {
+            final long trecut = android.os.SystemClock.uptimeMillis() - pornit;
+            if (trecut >= PLAFON_SPLASH) return false;
+            return !SplashPlugin.paginaGata || trecut < DESENUL_MARCII;
+        });
 
         // IESIREA E A NOASTRA, SI E UNA SINGURA.
         //
