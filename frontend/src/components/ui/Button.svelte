@@ -32,6 +32,13 @@
        desenele; la 14 avea aceeasi rotunjire ca un card, deci se citea ca o
        suprafata mica in loc de o tinta. */
     border-radius: var(--radius-sm);
+    /* CHENAR TRANSPARENT PE TOATE VARIANTELE, ca sa aiba aceeasi cutie.
+       Doar `.btn-secondary` are chenar vizibil. Fara linia asta, el iesea cu 2px
+       mai inalt decat perechea lui: masurat intr-un rand de actiuni, „Anulează"
+       46,80 si „Exportă" 46,00. Se vede ca o pereche usor nealiniata, si nu se
+       poate repara din `min-height` — continutul plus chenarul depaseau oricum
+       minimul. Vezi `audit_ferestre.py`, regula „acelasi rand, aceeasi inaltime". */
+    border: 1px solid transparent;
     transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-press) var(--ease), box-shadow var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
     white-space: nowrap;
     cursor: pointer;

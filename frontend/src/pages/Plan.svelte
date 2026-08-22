@@ -38,6 +38,7 @@
   import { actualizeazaTask } from '../stores/tasks.svelte.js'
   import { motion, panou, motionDuration, aterizare, sosire, plecare } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
+  import Button from '../components/ui/Button.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ContorPasi from '../components/ui/ContorPasi.svelte'
   import EmptyState from '../components/ui/EmptyState.svelte'
@@ -1827,9 +1828,14 @@
     </label>
   </div>
   {#snippet footer()}
+    <!-- `Button`, nu `<button class="btn-ghost">`: clasele alea sunt SCOPATE in
+         `Button.svelte`, deci pe un buton scris aici nu stilau nimic. Se vedea:
+         masurat, perechea iesea 93x38 si 97x36 — doua inaltimi diferite in acelasi
+         rand, si amandoua altele decat cele 46px din restul ferestrelor. Era
+         singurul loc din aplicatie care le folosea asa (`audit_ferestre.py`). -->
     <div class="modal-actions">
-      <button class="btn-ghost" onclick={() => showExport = false}>Anulează</button>
-      <button class="btn-primary" onclick={runExport} disabled={exportSel.size === 0}><FileDown size={14} /> Exportă</button>
+      <Button type="button" variant="secondary" onclick={() => showExport = false}>Anulează</Button>
+      <Button onclick={runExport} disabled={exportSel.size === 0}><FileDown size={14} /> Exportă</Button>
     </div>
   {/snippet}
 </Modal>
