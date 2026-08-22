@@ -34,6 +34,8 @@
     <!-- Unda, in cerneala pe placa. Desenata INTREAGA: aici nu se scrie, ea doar
          asteapta. Scrierea ei e a paginii, si incepe exact de la forma asta. -->
     <path
+        android:name="unda"
+        android:trimPathEnd="0"
         android:strokeColor="@color/splash_unda"
         android:strokeWidth="6"
         android:strokeLineCap="round"

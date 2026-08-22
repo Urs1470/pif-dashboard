@@ -52,9 +52,23 @@ const PLAFON = 5000
  * @param {Promise<any>|null} dateleAterizarii cererea rutei pe care se deschide
  *        aplicatia, daca exista una. Fara ea se asteapta doar fonturile.
  */
+/** Spune carcasei Android ca pagina s-a asezat, ca sa-si scoata splashul.
+ *  In browser nu exista punte si nu exista splash nativ — apelul cade tacut,
+ *  fiindca acolo n-are cui sa-i spuna nimic. */
+function anuntaNativul() {
+  try {
+    const cap = /** @type {any} */ (window).Capacitor
+    cap?.Plugins?.Splash?.gata?.()
+  } catch (_) {}
+}
+
 export function splashDupa(dateleAterizarii) {
   const val = /** @type {any} */ (window).__splash
-  if (!val) return   // desktop, sau valul a fost deja scos
+  // IN APLICATIE NU EXISTA VAL WEB, dar exista unul NATIV care asteapta exact
+  // acelasi raspuns. Deci intrebarea se pune la fel; se schimba doar cui i se
+  // raspunde. Vezi `MainActivity.splashUnic` si `SplashPlugin`.
+  const nativ = !!(/** @type {any} */ (window).Capacitor)
+  if (!val && !nativ) return   // desktop, sau valul a fost deja scos
 
   const pana = performance.now() + PLAFON
 
@@ -78,5 +92,5 @@ export function splashDupa(dateleAterizarii) {
     .catch(() => {})
     .then(cadruPictat)
     .then(faraAsteptare)
-    .then(() => val.gata())
+    .then(() => { anuntaNativul(); val?.gata?.() })
 }

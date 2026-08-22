@@ -14,7 +14,6 @@ import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.Insets;
-import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsAnimationCompat;
@@ -36,6 +35,7 @@ public class MainActivity extends BridgeActivity {
         // JS si apelul cade cu „plugin not implemented".
         registerPlugin(InstalarePlugin.class);
         registerPlugin(NotificariPlugin.class);
+        registerPlugin(SplashPlugin.class);
         // SPLASHUL, INAINTE DE `super.onCreate`.
         //
         // Pe Android 12+ platforma citeste singura `windowSplashScreen*` din tema
@@ -47,7 +47,7 @@ public class MainActivity extends BridgeActivity {
         //
         // Trebuie chemata INAINTE de `super.onCreate` si e cea care aplica
         // `postSplashScreenTheme` (vezi `res/values/styles.xml`).
-        SplashScreen.installSplashScreen(this);
+        splashUnic();
         super.onCreate(savedInstanceState);
 
         bareDeSistem();
@@ -80,6 +80,62 @@ public class MainActivity extends BridgeActivity {
                 Programator.prefs(MainActivity.this).edit()
                         .putLong("ultima_vizita", System.currentTimeMillis()).apply();
             }
+        });
+    }
+
+    /** Peste atat, valul pleaca oricum. Perechea lui din `lib/splash.js` e 5000;
+     *  aici marja e mai mare, ca poarta din pagina sa apuce sa se pronunte. */
+    private static final long PLAFON_SPLASH = 6500;
+
+    /**
+     * UN SINGUR SPLASH, AL SISTEMULUI, TINUT PANA E PAGINA GATA.
+     *
+     * Aici au fost, pe rand, doua incercari gresite. Intai marca nativa a fost
+     * facuta identica cu cea din pagina (aceeasi placa, 60dp, acelasi loc, aceeasi
+     * culoare) — si tot se vedeau doua etape. Apoi placa din pagina a fost oprita
+     * din a se re-desena — si tot doua. Ion, 2026-08-22: „mai intai porneste
+     * nativ apoi apare cea web, tot se primeste in doua parti".
+     *
+     * Motivul nu e ca marcile difera, ci ca splashul de sistem isi face IESIREA
+     * lui: o duce afara, si abia dupa aia pagina deseneaza. Doua suprafete care se
+     * schimba una pe alta nu se pot cusuta, oricat de bine s-ar potrivi la desen.
+     *
+     * Deci a ramas unul. Sistemul il tine pe ecran cat spunem noi
+     * (`setKeepOnScreenCondition`), iar cand pagina anunta ca s-a asezat
+     * (`SplashPlugin`, chemat din `lib/splash.js`) il scoatem NOI, cu o singura
+     * miscare — nu cu cea a sistemului, care era a doua etapa. In aplicatie
+     * pagina nu mai deseneaza niciun val: `html.din-nativ` in `index.html`.
+     *
+     * PLAFONUL nu e o eleganta, e o plasa: daca pagina nu apuca sa anunte nimic
+     * (retea moarta, eroare de import), un splash tinut la nesfarsit ar fi tot ce
+     * mai ramane din aplicatie. Se numara de la `onCreate`, nu de la primul cadru:
+     * asteptarea pe care o simte omul incepe cand a atins iconita.
+     */
+    private void splashUnic() {
+        final androidx.core.splashscreen.SplashScreen splash =
+                androidx.core.splashscreen.SplashScreen.installSplashScreen(this);
+        final long pornit = android.os.SystemClock.uptimeMillis();
+
+        splash.setKeepOnScreenCondition(() ->
+                !SplashPlugin.paginaGata
+                        && android.os.SystemClock.uptimeMillis() - pornit < PLAFON_SPLASH);
+
+        // IESIREA E A NOASTRA, SI E UNA SINGURA.
+        //
+        // Fara listenerul asta sistemul isi joaca propria plecare (ridica iconita
+        // si descopera fereastra) — exact a doua etapa. Aici marca se stinge si se
+        // DEPARTEAZA cu 4%, aceleasi valori ca vechiul val din pagina
+        // (`#splash.pleaca`), ca miscarea sa ramana cea pe care Ion o stia.
+        // Nu invers: o marca micsorata ar parea ca se retrage inapoi in ecran.
+        splash.setOnExitAnimationListener(vedere -> {
+            final android.view.View v = vedere.getIconView() != null
+                    ? vedere.getIconView() : vedere.getView();
+            v.animate()
+                    .alpha(0f).scaleX(1.04f).scaleY(1.04f)
+                    .setDuration(280)
+                    .setInterpolator(new android.view.animation.PathInterpolator(.32f, .72f, .28f, 1f))
+                    .withEndAction(vedere::remove)
+                    .start();
         });
     }
 

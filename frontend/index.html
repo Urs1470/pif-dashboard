@@ -142,14 +142,15 @@
          „doua bucati". Aici ea doar continua: numele urca, si apoi tot ansamblul
          se ridica. In browser (PWA, desktop) nu exista splash nativ, deci acolo
          sosirea completa ramane. */
-      /* `html.din-nativ #splash ...`, cu ID: regula de baza a undei sta pe
-         `#splash .sp-unda`, iar un id bate oricate clase. Prima varianta era
-         scrisa cu clase si NU a avut putere — masurat pe telefon,
-         `stroke-dashoffset` ramanea 104, adica placa aparea GOALA dupa ce
-         sistemul o predase desenata. Mai rau decat cusatura pe care o reparam. */
-      html.din-nativ #splash .sp-logo { animation: none; }
-      html.din-nativ #splash .sp-unda { animation: none; stroke-dashoffset: 0; }
-      html.din-nativ #splash .sp-nume { animation-delay: 0s; }
+      /* IN APLICATIE NU EXISTA VAL WEB. Splashul sistemului ramane pe ecran
+         pana cand pagina anunta ca s-a asezat, si tot el pleaca — o singura
+         suprafata, o singura iesire (vezi `MainActivity.splashUnic`).
+         Doua incercari de a le CUSUTA au esuat, si merita spus de ce: chiar cu
+         aceeasi marca, la aceeasi marime si in acelasi loc, splashul de sistem
+         isi face iesirea LUI inainte ca pagina sa deseneze — deci raman doua
+         etape oricat de bine s-ar potrivi desenul. Ion: „tot se primeste in doua
+         parti". Ce se poate cusuta e o singura suprafata cu ea insasi. */
+      html.din-nativ #splash { display: none !important; }
       html.splash-activ .sp-nume { animation: spNume .42s cubic-bezier(.32,.72,.28,1) .34s backwards; }
       /* PLECAREA: valul se stinge, marca se departeaza cu 4%. Nu invers (marca
          micsorata ar parea ca se retrage inapoi in ecran); asa se citeste ca o
