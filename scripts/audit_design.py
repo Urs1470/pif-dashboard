@@ -127,6 +127,14 @@ SCUTITE_LAYOUT = (
     'App.svelte',
     # Manerul foii (`width`, 38 -> 52px la apucare) si dock-ul.
     'components/layout/Dock.svelte',
+    # Pastila rutei active din bara de sus: `width`, fiindca etichetele au latimi
+    # DIFERITE („Acasa" 61px, „Planificator" 91px) — spre deosebire de dock, unde
+    # sloturile sunt fixe la 50px si pastila are nevoie doar de `translateX`.
+    # Ce face regula sa nu se aplice aici: `.pilula` e `position: absolute`, deci
+    # e in afara fluxului — latimea ei nu reaseaza nimic, repica un singur element
+    # decorativ. Rationamentul regulii („un reflow pe cadru se vede ca sacadare")
+    # e despre randuri de lista si foaia de pe telefon, nu despre asta.
+    'components/layout/BaraSus.svelte',
 )
 
 

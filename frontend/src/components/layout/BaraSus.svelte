@@ -216,11 +216,13 @@
   }
 
   .brand {
+    /* FARA inaltime scrisa: cutia o da SVG-ul de 40px dinauntru. 40 nu e o treapta
+       din scara de controale (28/32/38/46) si nici n-ar trebui sa fie — marca e
+       logotip, nu control, acelasi motiv pentru care `--font-brand` sta si el in
+       afara scarii de text. */
     flex: none;
     display: flex;
     align-items: center;
-    width: 40px;
-    height: 40px;
     color: var(--text);
     text-decoration: none;
   }
