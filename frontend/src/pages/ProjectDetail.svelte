@@ -22,7 +22,7 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, CalendarDays, ListChecks, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, Repeat, BookOpen, CalendarRange, Check, Text } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, CalendarDays, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, BookOpen, CalendarRange, Check, Text } from '@lucide/svelte'
   import ImplPeriods, { urlPerioade } from '../components/projects/ImplPeriods.svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
@@ -35,7 +35,7 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
-  import { navigate, router } from '../lib/router.svelte.js'
+  import { navigate } from '../lib/router.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE, plecare, sosire, alunecare, EASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
@@ -44,7 +44,6 @@
   import FoaieAdauga from '../components/FoaieAdauga.svelte'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
-  import Card from '../components/ui/Card.svelte'
   import Button from '../components/ui/Button.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
   import ContorPasi from '../components/ui/ContorPasi.svelte'
@@ -1168,7 +1167,8 @@
                 <div class="grup-cap ton-{grupe[gid].ton}"><span class="grup-t">{grupe[gid].titlu}</span>{#if grupe[gid].ton === 'danger'}<span class="grup-n">{grupe[gid].items.length}</span>{/if}</div>
               {/if}
               {#each grupe[gid].items as t (t.id)}
-                <div class="trow-wrap" style="--ring: {dueRing(t.data_scadenta)}"
+                <div class="trow-wrap" role="presentation" class:deschis={showSheet && sheetTask?.id === t.id}
+                     style="--ring: {dueRing(t.data_scadenta)}"
                      animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
                      onpointerenter={() => preincarca(t.id)}
                      in:sosire|local out:plecare>
@@ -1185,7 +1185,8 @@
               {#if showDoneTasks}
                 <div class="done-list" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
                 {#each doneTasks as t (t.id)}
-                  <div class="trow-wrap" style="--ring: {dueRing(t.data_scadenta)}"
+                  <div class="trow-wrap" role="presentation" class:deschis={showSheet && sheetTask?.id === t.id}
+                       style="--ring: {dueRing(t.data_scadenta)}"
                        animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
                        onpointerenter={() => preincarca(t.id)}
                        in:sosire|local out:plecare>

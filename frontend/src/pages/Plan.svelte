@@ -36,7 +36,7 @@
   import FoaieTask from '../components/FoaieTask.svelte'
   import FoaieAdauga from '../components/FoaieAdauga.svelte'
   import { actualizeazaTask } from '../stores/tasks.svelte.js'
-  import { motion, panou, motionDuration, aterizare, sosire, plecare } from '../lib/motion.svelte.js'
+  import { motion, panou, motionDuration, sosire, plecare } from '../lib/motion.svelte.js'
   import { navigate } from '../lib/router.svelte.js'
   import Button from '../components/ui/Button.svelte'
   import Skeleton from '../components/ui/Skeleton.svelte'
@@ -1025,7 +1025,7 @@
 
   // --- backlog rail + drag-to-schedule (HTML5 DnD onto the timeline) ---
   let backlogOpen = $state(true)
-  let dragTask = null
+  let dragTask = $state(null)
   let dropDay = $state(null) // {idx, pct, iso} live indicator while dragging
 
   function backlogDragStart(e, t) {
@@ -1541,7 +1541,7 @@
                data si chipurile sosesc in el, in loc sa creasca impreuna. -->
           <div class="bl-items" in:sosire|local out:plecare|local>
             {#each plan.backlog as t (t.tip + ':' + t.id)}
-              <div class="bl-chip"
+              <div class="bl-chip" role="presentation"
                    draggable="true" ondragstart={(e) => backlogDragStart(e, t)} ondragend={backlogDragEnd}
                    title={t.titlu}>
                 <GripVertical size={13} class="bl-grip" />

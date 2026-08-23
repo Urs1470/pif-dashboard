@@ -318,17 +318,25 @@
         <circle class="so-pivot" cx={C} cy={C} r="3.5" />
         <circle class="so-pastila" cx={ac.x} cy={ac.y} r={R_PASTILA} />
 
+        <!-- CADRANUL E UN INSTRUMENT DE DEGET, si numerele sunt tinte pe
+             aceeasi suprafata pe care se trage acul. Nu au drum de tastatura
+             si nu li se poate face unul cinstit: 24 de numere in ordinea de
+             tabulare ar ingropa butoanele reale de sub cadran. Cine scrie ora
+             de la tastatura o face din campul foii, nu de aici. -->
         {#if faza === 'ora'}
           {#each ORE_EXT as o (o.val)}
+            <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
             <text class="so-nr" class:sel={h === o.val} x={o.x} y={o.y}
                   onclick={() => alegeOra(o.val)}>{o.val}</text>
           {/each}
           {#each ORE_INT as o (o.val)}
+            <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
             <text class="so-nr mic" class:sel={h === o.val} x={o.x} y={o.y}
                   onclick={() => alegeOra(o.val)}>{p2(o.val)}</text>
           {/each}
         {:else}
           {#each MINUTE as o (o.val)}
+            <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
             <text class="so-nr" class:sel={m === o.val} x={o.x} y={o.y}
                   onclick={() => alegeMinut(o.val)}>{p2(o.val)}</text>
           {/each}

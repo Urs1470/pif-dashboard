@@ -11,6 +11,7 @@ ruleaza automat, pe fisierele atinse de sesiune, si NU lasa tura sa se incheie
 daca pica.
 
 Ce ruleaza, dupa ce s-a atins:
+    orice .py, orice frontend/src/**   -> lint (secunde; pyflakes + Svelte)
     frontend/src/**.svelte|.css        -> audit_design
     blueprints/*.py, database.py, ...  -> test_suite
     frontend/src/**                    -> BUILD + smoke_ui + audit_mobil
@@ -175,7 +176,7 @@ def relevante(atinse):
     """
     return [p for p in atinse
             if (p.startswith('frontend/src/') and p.endswith(('.svelte', '.css', '.js')))
-            or (p.startswith('blueprints/') and p.endswith('.py'))
+            or p.endswith('.py')
             or p in FISIERE_API]
 
 
@@ -194,6 +195,17 @@ def porti_pentru(atinse):
     # scrise mai jos in acelasi fisier, 30.07). Ca sa se acopere si aia, adauga
     # '.css' in `surse_spa`.
     surse_spa = any(p.endswith(('.svelte', '.js')) for p in frontend)
+
+    # PRIMA, fiindca e cea mai ieftina (secunde, fara Chromium) si fiindca
+    # prinde alta clasa de defect decat toate celelalte: nu ce crapa si nu ce
+    # nu incape, ci ce e SCRIS si nu ajunge sa se intample — regula CSS taiata
+    # din build, `let` citit in markup care nu redeseneaza, import care nu se
+    # rezolva. Vezi antetul lui scripts/lint.py pentru ce a gasit la prima
+    # rulare. Se declanseaza si de un .py din scripts/, care nu trece pe sub
+    # nicio alta poarta.
+    if frontend or any(p.endswith('.py') for p in atinse):
+        porti.append(('lint', [PYTHON, str(SCRIPTURI / 'lint.py')],
+                      RADACINA, '%s scripts/lint.py' % PY_MANUAL))
 
     if any(p.endswith(('.svelte', '.css')) for p in frontend):
         porti.append(('audit_design',

@@ -334,7 +334,6 @@ def parse_archive(zip_bytes: bytes) -> Dict:
 
 if __name__ == '__main__':
     import sys
-    import json
     path = sys.argv[1]
     with open(path, 'rb') as f:
         data = f.read()

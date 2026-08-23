@@ -38,7 +38,6 @@ bazei. Iese cu 0 daca nu a gasit nimic.
 """
 
 import argparse
-import datetime
 import os
 import shutil
 import sys
@@ -759,7 +758,7 @@ def lista_de_facut(ctx, baza):
             camp.fill('zzz' + MARCA); page.wait_for_timeout(700); h3 = h_foaie()
             stabila = max(h0, h1, h2, h3) - min(h0, h1, h2, h3) <= 2
             zi(stabila, 'foaia nu-si schimba inaltimea la tastare',
-               'inaltimi: %s' % [h0, h1, h2, h3])
+               f'inaltimi: {[h0, h1, h2, h3]}')
 
             camp.fill(MARCA)
             page.wait_for_timeout(500)

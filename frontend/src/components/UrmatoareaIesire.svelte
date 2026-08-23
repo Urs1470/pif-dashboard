@@ -13,7 +13,7 @@
   import { preia, dinCache } from '../lib/cache.js'
   import { navigate } from '../lib/router.svelte.js'
   import { ecran } from '../lib/ecran.svelte.js'
-  import { todayISO, addDays, diffDays, shortDate } from '../lib/calendarDates.js'
+  import { todayISO, diffDays, shortDate } from '../lib/calendarDates.js'
 
   let azi = $state(todayISO())
   const URL_IESIRI = $derived(`/api/calendar?start=${azi}&zile=120`)
@@ -21,6 +21,9 @@
   // PORNESTE PLINA, DACA STIM CEVA. `dinCache` raspunde SINCRON, la evaluarea
   // modulului, deci valoarea e aici inainte de primul cadru — nu dupa `onMount`,
   // cand pagina s-a desenat deja o data fara ea.
+  // svelte-ignore state_referenced_locally
+  // INTENTIONAT, si e chiar rostul liniei: citirea din cache trebuie sa se
+  // intample SINCRON, la evaluarea modulului (vezi comentariul de mai sus).
   let data = $state(dinCache(URL_IESIRI) ?? null)
   // EROAREA NU E ACELASI LUCRU CU „NIMIC PLANIFICAT". Inainte, orice esec de
   // retea lasa `data = null` si componenta disparea FARA NICIUN SEMN — adica

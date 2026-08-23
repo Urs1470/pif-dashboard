@@ -22,7 +22,7 @@
 
 // Pragurile traiesc in `lib/gesturi.js` — o singura definitie pentru toata
 // aplicatia. Se RE-exporta de aici doar ca importurile existente sa nu se rupa.
-import { PRAG_MOUSE, PRAG_ANULARE, APASARE_LUNGA, puls } from './gesturi.js'
+import { PRAG_MOUSE, PRAG_ANULARE, APASARE_LUNGA } from './gesturi.js'
 export { PRAG_MOUSE, PRAG_ANULARE, APASARE_LUNGA }
 
 /**

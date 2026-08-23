@@ -16,7 +16,6 @@
   import { stergeTask, updateGlobalTask, actualizeazaTask } from '../stores/tasks.svelte.js'
   import FoaieTask from './FoaieTask.svelte'
   import { ecran } from '../lib/ecran.svelte.js'
-  import { navigate } from '../lib/router.svelte.js'
   import { morphNavigate } from '../lib/focus.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import FoaieAdauga from './FoaieAdauga.svelte'

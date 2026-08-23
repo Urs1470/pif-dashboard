@@ -110,7 +110,7 @@
   let mathTex = $state('')
   let mathDisplay = $state(false)
   let mathInputEl = $state(null)
-  let editingChip = null
+  let editingChip = $state(null)
   let savedRange = null
 
   const mathPreview = $derived.by(() => {
@@ -423,6 +423,7 @@
     class="rte-editor"
     contenteditable="true"
     role="textbox"
+    tabindex="0"
     aria-multiline="true"
     aria-label="Conținut"
     spellcheck="true"

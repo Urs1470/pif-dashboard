@@ -55,7 +55,7 @@
   import DatePicker from '../components/ui/DatePicker.svelte'
   import Modal from '../components/ui/Modal.svelte'
   import {
-    WEEKDAYS, buildGrid, monthStart, addMonths, addDays, weekStart,
+    WEEKDAYS, buildGrid, monthStart, addMonths, addDays,
     diffDays, isWeekend, monthLabel, dayLabel, shortDate, todayISO, parseISO,
   } from '../lib/calendarDates.js'
 

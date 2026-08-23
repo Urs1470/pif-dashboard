@@ -385,7 +385,7 @@
            scrie `transform` inline, deci ar fi SUPRASCRIS un `translateX(-50%)`
            pus pentru centrare, si foaia ar fi plecat lateral cat tine animatia. -->
       <div class="mm-ancora">
-        <div class="mm-foaie" role="menu" aria-label="Mai mult"
+        <div class="mm-foaie" role="menu" aria-label="Mai mult" tabindex="-1"
              onkeydown={(e) => {
                const items = [...e.currentTarget.querySelectorAll('[role="menuitem"]')]
                const idx = items.indexOf(document.activeElement)

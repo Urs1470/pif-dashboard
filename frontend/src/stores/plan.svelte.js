@@ -1,4 +1,3 @@
-import { apiJson } from '../lib/api.js'
 import { updateTask, updateGlobalTask, stergeTask } from './tasks.svelte.js'
 import { localToday, tomorrowISO } from '../lib/planDates.js'
 import { preia, dinCache, uita } from '../lib/cache.js'

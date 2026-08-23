@@ -235,7 +235,7 @@ def gen_db_map():
                      or dict_name.startswith('TASK') and k == 'done']
             out.append(f'- `{dict_name}` — scrise de aplicatie: '
                        + ', '.join(f'`{k}`' for k in canon))
-            out.append(f'  (mai sunt mapate, doar la CITIRE, cheile vechi: '
+            out.append('  (mai sunt mapate, doar la CITIRE, cheile vechi: '
                        + ', '.join(f'`{k}`' for k in keys if k not in canon) + ')')
         out.append('')
     return '\n'.join(out) + '\n'

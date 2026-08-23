@@ -124,7 +124,7 @@
   </button>
 
   {#if open}
-    <div class="menu" role="listbox" use:portal bind:this={menuEl} style={stilMeniu}
+    <div class="menu" role="listbox" tabindex="-1" use:portal bind:this={menuEl} style={stilMeniu}
          onkeydown={onKey}
          transition:fly={{ y: -4, duration: motionDuration(DUR_FAST), easing: EASE }}>
       {#if placeholder}

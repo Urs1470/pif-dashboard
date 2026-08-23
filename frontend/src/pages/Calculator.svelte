@@ -3,15 +3,13 @@
   import { ecran } from '../lib/ecran.svelte.js'
   import { slide, fade } from 'svelte/transition'
   import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../lib/motion.svelte.js'
-  import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download, Trash2 } from '@lucide/svelte'
-  import { apiJson } from '../lib/api.js'
+  import { Info, BookOpen, Maximize2, Search, X, ChevronRight, Star, Link2, Download } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { MODULES, MODULE_ORDER, SOURCES, CATEGORIES, MOTOR_FAMS, APPLICATIONS, APP_OF, catOf, docsForModule, symTeX, descLabel, computeModule, computeCharts, fmtNum, FIG_LINKS, MODULE_FIG, LIMITS, computeVerdicts, worstVerdict, INTREBARI, ghidCalculator } from '../lib/driveCalc.js'
   import Formula from '../components/ui/Formula.svelte'
   import MathText from '../components/ui/MathText.svelte'
   import Chart from '../components/ui/Chart.svelte'
   import Modal from '../components/ui/Modal.svelte'
-  import Select from '../components/ui/Select.svelte'
   import { lookupTerm } from '../lib/driveGlossary.js'
   import { runtime } from '../lib/runtime.svelte.js'
 
@@ -643,8 +641,8 @@
               <div class="equip-grid">
                 {#each sec.items as c (c.key)}
                   <div class="equip-field">
-                    <label>{c.label}{c.unit ? ` [${c.unit}]` : ''}</label>
-                    <input type="number" step="any" bind:value={equip[g][c.key]} disabled={!sharedOn} />
+                    <label for="eq-{g}-{c.key}">{c.label}{c.unit ? ` [${c.unit}]` : ''}</label>
+                    <input id="eq-{g}-{c.key}" type="number" step="any" bind:value={equip[g][c.key]} disabled={!sharedOn} />
                   </div>
                 {/each}
               </div>
@@ -766,8 +764,6 @@
     {@const vd = LIMITS[m.id] ? computeVerdicts(m, ev, r) : {}}
     <div class="acc-body-head">
       <span class="cat-badge">{catLabel(catOf(m))}</span>
-      {#if authed && m.results.length}
-      {/if}
       <button class="reset-btn" title="Reseteaza valorile" onclick={() => resetModule(m)}>Reset</button>
     </div>
 

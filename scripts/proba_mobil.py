@@ -26,7 +26,6 @@ import os
 import sys
 import sqlite3
 import tempfile
-import time
 
 RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RADACINA, 'scripts'))

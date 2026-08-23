@@ -87,6 +87,7 @@ se încarcă singur când atingi `frontend/src/**`. Sursa valorilor rămâne
 ## Verificatoare
 
 ```bash
+python scripts/lint.py              # pyflakes + compilatorul Svelte (secunde, fara Chromium)
 python scripts/audit_design.py      # coerenta sistemului de design (sub o secunda)
 python scripts/test_suite.py        # API + verificari statice (44 de probe)
 python scripts/smoke_ui.py          # fiecare ruta in Chromium, desktop + mobil
@@ -101,6 +102,13 @@ python scripts/proba_mobil.py       # banc de lucru, nu verificator: ce face o p
 Fiecare exista fiindca prinde un mod de esec care trece de build: importul lipsa care lasa
 pagina pe schelet, butonul taiat de marginea ecranului, a doua paleta rotita cu doua pozitii,
 foaia care se intinde si nu se mai poate trage inapoi.
+
+**`lint.py` prinde ce e SCRIS si nu ajunge sa se intample.** Nu „ce crapa" (`smoke_ui`)
+si nu „ce nu incape" (`audit_mobil`): o regula CSS pe care compilatorul o TAIE din build
+fiindca nu poate verifica selectorul, un `let` citit in markup care in mod runes nu
+redeseneaza, un import care nu se rezolva, un `svelte-ignore` cu coduri separate prin
+spatiu (tace doar primul). Toate cinci existau in cod pe 2026-08-23, si niciun alt
+verificator nu le vedea. Linia de baza e CURATA, deci orice abatere e noua.
 
 **`audit_tastatura.py` emuleaza tastatura** printr-un `visualViewport` fals care urca la 250ms
 dupa focus — singurul mod de a vedea pe masina de dezvoltare ce face foaia sub IME-ul Android.
@@ -118,13 +126,14 @@ atingere sintetica, `goto` la acelasi hash nu reincarca, elanul intentionat arat
 mouse-ul lui Playwright emite `pointerType: 'mouse'`, iar foaia iese exact pe conditia asta —
 cu mouse-ul, gestul nu porneste deloc si proba ar raporta verde pe un gest inexistent.
 
-**Poarta** (`.claude/hooks/gate.py`, la Stop) le ruleaza singura, pe ce s-a atins: CSS/Svelte
-→ `audit_design`; backend → `test_suite`; surse SPA → build + `smoke_ui` + `audit_mobil`.
+**Poarta** (`.claude/hooks/gate.py`, la Stop) le ruleaza singura, pe ce s-a atins: orice `.py`
+sau sursa SPA → `lint` (prima, e cea mai ieftina); CSS/Svelte → `audit_design`; backend →
+`test_suite`; surse SPA → build + `smoke_ui` + `audit_mobil`.
 Nu blocheaza de mai mult de doua ori per sesiune. **O modificare doar in documentatie nu o
 declanseaza.** Supapa: `PIF_GATE=skip` — o si anunta in context, deci n-o poti folosi tacit.
 
 Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`):
-`pip install playwright && python -m playwright install chromium`.
+`pip install pyflakes playwright && python -m playwright install chromium`.
 
 ## Mediu, server, deploy
 

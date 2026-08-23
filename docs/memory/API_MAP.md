@@ -50,20 +50,20 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | POST | `/api/proiecte` | `create_proiect` | 78 |
 | GET | `/api/proiecte/<project_id>` | `get_proiect` | 136 |
 | PUT | `/api/proiecte/<project_id>` | `update_proiect` | 164 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 283 |
-| GET | `/api/clienti` | `get_clienti` | 324 |
-| POST | `/api/clienti` | `create_client` | 355 |
-| GET | `/api/clienti/<client_id>` | `get_client` | 385 |
-| PUT | `/api/clienti/<client_id>` | `update_client` | 399 |
-| DELETE | `/api/clienti/<client_id>` | `delete_client` | 433 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 452 |
-| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 583 |
-| POST | `/api/import-archive/preview` | `preview_import_archive` | 793 |
-| POST | `/api/import/debrief` | `import_debrief` | 842 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1142 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1153 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1179 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1220 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 282 |
+| GET | `/api/clienti` | `get_clienti` | 323 |
+| POST | `/api/clienti` | `create_client` | 354 |
+| GET | `/api/clienti/<client_id>` | `get_client` | 384 |
+| PUT | `/api/clienti/<client_id>` | `update_client` | 398 |
+| DELETE | `/api/clienti/<client_id>` | `delete_client` | 432 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 451 |
+| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 582 |
+| POST | `/api/import-archive/preview` | `preview_import_archive` | 792 |
+| POST | `/api/import/debrief` | `import_debrief` | 841 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1141 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1152 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1178 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1219 |
 
 ## blueprints/push.py (9 rute)
 

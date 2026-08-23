@@ -1,5 +1,5 @@
 <script>
-  import { tick, untrack } from 'svelte'
+  import { untrack } from 'svelte'
   import { motion, motionDuration, DUR_SLOW } from '../../lib/motion.svelte.js'
   import { Zap, Wrench } from '@lucide/svelte'
   import Modal from '../ui/Modal.svelte'

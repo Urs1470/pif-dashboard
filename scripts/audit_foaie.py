@@ -20,7 +20,6 @@ Porneste singur aplicatia, pe un port liber si pe o baza de unica folosinta —
 acelasi tipar ca `smoke_ui.py`, ca sa nu ceara nimic pregatit dinainte.
 """
 
-import json
 import os
 import shutil
 import socket

@@ -54,7 +54,6 @@ sa se tina. Sectiunea 1b pazeste celalalt capat al pragului.
     python scripts/audit_tastatura.py
 """
 
-import json
 import os
 import sys
 import tempfile
@@ -62,7 +61,7 @@ import tempfile
 RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RADACINA, 'scripts'))
 
-from audit_foaie import (PIN_TEST, TELEFON, apuca, bifa, esecuri, misca, out,
+from audit_foaie import (PIN_TEST, TELEFON, apuca, bifa, esecuri, out,
                          porneste_serverul, port_liber, ridica, seamana)
 
 DESKTOP = {'width': 1280, 'height': 800}

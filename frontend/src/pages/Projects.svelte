@@ -18,11 +18,11 @@
   import { onMount } from 'svelte'
   import { fly, slide } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { FolderKanban, Plus, ChevronDown, Archive, ArrowUpDown, Zap, Wrench, ArrowRightLeft } from '@lucide/svelte'
+  import { FolderKanban, Plus, Archive, ArrowUpDown, Zap, Wrench, ArrowRightLeft } from '@lucide/svelte'
   import { projects, loadProjects, updateProject } from '../stores/projects.svelte.js'
   import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate } from '../lib/formatters.js'
   import { navigate, preincarca } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, EASE, sosire } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, EASE, sosire } from '../lib/motion.svelte.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import Badge from '../components/ui/Badge.svelte'
@@ -239,7 +239,7 @@
            acopera ce citeste. `DatePicker` primise deja tratamentul asta; meniul
            ramasese singurul strat plutitor din aplicatie desenat pentru cursor. -->
       {#if sortOpen && !ecran.telefon}
-        <div class="sort-menu" role="listbox"
+        <div class="sort-menu" role="listbox" tabindex="-1"
              onkeydown={(e) => {
                const opts = [...e.currentTarget.querySelectorAll('[role="option"]')]
                const idx = opts.indexOf(document.activeElement)

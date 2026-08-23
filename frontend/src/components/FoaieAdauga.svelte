@@ -34,7 +34,7 @@
   import Select from './ui/Select.svelte'
   import Input from './ui/Input.svelte'
   import ContorPasi from './ui/ContorPasi.svelte'
-  import { loadCandidates, scheduleForToday, moveToDate, removeFromToday, loadAgendaToday } from '../stores/agenda.svelte.js'
+  import { loadCandidates, scheduleForToday, moveToDate, removeFromToday } from '../stores/agenda.svelte.js'
   import { createGlobalTask, createTask } from '../stores/tasks.svelte.js'
   import { projects, loadProjects } from '../stores/projects.svelte.js'
   import { grupeazaDupaTermen, ORDINE_GRUPE, etichetaTermenScurt } from '../lib/grupare.js'

@@ -36,7 +36,6 @@ import os
 import shutil
 import sys
 import tempfile
-import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 

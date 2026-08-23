@@ -171,10 +171,9 @@ def update_proiect(project_id):
     now = datetime.now().isoformat()
 
     # Get current project status
-    cursor.execute('SELECT status, nume FROM proiecte WHERE id = ?', (project_id,))
+    cursor.execute('SELECT status FROM proiecte WHERE id = ?', (project_id,))
     current = cursor.fetchone()
     old_status = current['status'] if current else None
-    project_name = current['nume'] if current else ''
 
     cursor.execute('''
         UPDATE proiecte SET

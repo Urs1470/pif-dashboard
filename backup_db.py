@@ -6,7 +6,7 @@ Creates timestamped backups, keeps last 30, logs to backup.log
 import os
 import shutil
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # Paths
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))

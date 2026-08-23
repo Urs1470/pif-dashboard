@@ -43,6 +43,10 @@
   //
   // Parametrul ramane pentru cazul in care un apelant stie ca asteptarea lui e
   // sub prag; niciunul nu-l foloseste azi.
+  // svelte-ignore state_referenced_locally
+  // INTENTIONAT: `intarziere` se citeste O DATA, la montare. E pragul de sub
+  // care nu se arata schelet deloc, nu o valoare care se schimba in viata
+  // componentei; un `$derived` l-ar reporni la fiecare schimbare de parametru.
   let vizibil = $state(intarziere === 0)
   $effect(() => {
     if (vizibil) return

@@ -16,7 +16,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from database import get_db, init_db, close_db
+from database import init_db, close_db
 from utils import login_required, get_json_or_400, PLAN_DEPT_HOST
 from csrf import init_csrf
 

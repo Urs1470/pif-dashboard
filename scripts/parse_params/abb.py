@@ -37,7 +37,6 @@ Filtre implicite:
 from __future__ import annotations
 
 import io
-import re
 import xml.etree.ElementTree as ET
 import zipfile
 from typing import Dict, List

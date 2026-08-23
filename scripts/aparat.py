@@ -19,7 +19,6 @@ CONDITII. WebView-ul trebuie sa fie inspectabil, adica APK-ul instalat sa aiba
 (`CapConfig.java:286` — implicit ia valoarea lui FLAG_DEBUGGABLE, care pe un
 release e 0). Se verifica cu `socket_devtools()`: fara socket, nu e inspectabil.
 """
-import json
 import os
 import re
 import subprocess

@@ -6,7 +6,7 @@
   // intamplare: Rollup pune Toast si `motion` in acelasi chunk, deci
   // identificatorul liber nimerea peste binding-ul hoistat. La o alta impartire
   // in chunkuri, fiecare toast care pleaca ar fi aruncat.
-  import { motionDuration, EASE, EASE_IESIRE, ARC, DUR_ARC } from '../../lib/motion.svelte.js'
+  import { motionDuration, EASE_IESIRE, ARC, DUR_ARC } from '../../lib/motion.svelte.js'
 
   // TREI ROLURI, NU PATRU TIPURI.
   //

@@ -248,7 +248,7 @@
   import { tick, untrack } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, EASE_IESIRE, ARC } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, EASE_IESIRE, ARC } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   // Foaia si voalul ies in `body`: pagina din spate se RETRAGE (un `transform`
   // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
@@ -1056,7 +1056,7 @@
            bara — adica vreo 80px inaltime in loc de 4. Butonul de inchidere isi
            opreste singur gestul (`onpointerdown|stopPropagation`), altfel apasarea
            pe `X` ar porni o tragere. -->
-      <div class="modal-header"
+      <div class="modal-header" role="presentation"
            onpointerdown={trageJos} onpointermove={trageMisca}
            onpointerup={trageSus} onpointercancel={trageSus}>
         <h2 class="modal-title">{title}</h2>
@@ -1064,7 +1064,7 @@
           <button class="modal-close" onpointerdown={(e) => e.stopPropagation()} onclick={inchide} aria-label="Închide"><X size={18} /></button>
         {/if}
       </div>
-      <div class="modal-body" bind:this={corpEl} ontouchstart={corpAtinge} ontouchmove={corpTrage}
+      <div class="modal-body" role="presentation" bind:this={corpEl} ontouchstart={corpAtinge} ontouchmove={corpTrage}
            ontouchend={corpRidica} ontouchcancel={corpRidica}>
         {@render children()}
       </div>

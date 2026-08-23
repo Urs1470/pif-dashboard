@@ -51,7 +51,7 @@
   }
 
   let hover = $state(null)
-  let svgEl
+  let svgEl = $state(null)
 
   const d = $derived.by(() => {
     const c = chart

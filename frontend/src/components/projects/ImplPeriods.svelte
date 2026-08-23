@@ -11,7 +11,6 @@
   import { fade } from 'svelte/transition'
   import { MapPin, Building2, Plus, CalendarRange, Pencil, Check } from '@lucide/svelte'
   import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
-  import { apiJson } from '../../lib/api.js'
   import { preia, dinCache, uita } from '../../lib/cache.js'
   import { shortDate } from '../../lib/calendarDates.js'
   import Skeleton from '../ui/Skeleton.svelte'

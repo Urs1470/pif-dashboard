@@ -1223,7 +1223,7 @@
       {#each grupe[gid].items as t (t.id)}
 <!-- Iesirea randului bifat: se stinge si se strange, in loc sa sara.
                Vezi `plecare` in lib/motion.svelte.js. -->
-                    <div class="trow-wrap" class:deschis={showSheet && sheetTask?.id === t.id}
+                    <div class="trow-wrap" role="presentation" class:deschis={showSheet && sheetTask?.id === t.id}
              style="--ring: {dueRing(t.data_scadenta)}"
              animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
              onpointerenter={() => preincarca(t.id)}
@@ -1907,10 +1907,17 @@
      `taskDetail` e acelasi snippet si in randul desfasurat de pe desktop, si in
      foaia de pe telefon — dar numai in foaie corpul deruleaza, deci numai acolo
      „Adaugă notă" si „Schimbă termenul" plecau de sub deget cand aveai zece
-     subtaskuri. `:global(.modal-body) >` tinteste exact gazda care deruleaza;
+     subtaskuri. `:global(.modal-body)` tinteste exact gazda care deruleaza;
      randul desfasurat nu are asa ceva, deci ramane cum era.
+     DESCENDENT, NU `>`: cu `>`, compilatorul nu poate verifica parintele
+     (`.td-jos` ajunge in `.modal-body` prin `{@render}`, nu prin markup) si
+     TAIA regula din build. Verificat in CSS-ul livrat: regula lipsea, deci
+     bara nu era lipita pe telefon de la scrierea ei. Ancora `.td-jos` ramane
+     scoped, deci regula nu scapa in ProjectDetail, care are si el un
+     `.td-jos`; `:global(...)` pe TOT selectorul ar fi scapat, fiindca
+     pierde clasa de scope.
      Fondul e obligatoriu: fara el subtaskurile s-ar citi prin bara lipita. */
-  :global(.modal-body) > .td-jos {
+  :global(.modal-body) .td-jos {
     position: sticky;
     bottom: calc(-1 * var(--space-md));
     z-index: 1;
