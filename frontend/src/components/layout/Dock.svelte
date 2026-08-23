@@ -398,13 +398,21 @@
          inregistreaza nimeni si butonul nu exista deloc.
          NU are clasa `.dock-item`: acela e un slot de NAVIGATIE, si `audit_mobil`
          numara exact cinci. Butonul asta e o actiune, nu un drum. -->
-    {#if actiune}
-      <span class="sep" aria-hidden="true"></span>
-      <button class="dock-fab" onclick={actiune.fa}
-              aria-label={actiune.eticheta} title={actiune.eticheta}>
-        <Plus size={22} strokeWidth={1.5} />
-      </button>
-    {/if}
+    <!-- COADA DE LATIME FIXA, MEREU. Butonul se randeaza doar unde exista ceva de
+         creat, dar LOCUL lui ramane — altfel cele cinci sloturi se latesc brusc pe
+         paginile fara actiune (Calendar), iar dockul isi schimba geometria de la o
+         pagina la alta. Ion, 2026-08-23: „se strica dockul".
+         Harta aplicatiei trebuie sa aiba aceeasi forma peste tot; ce se schimba e
+         doar ce scrie pe ea. -->
+    <span class="dock-coada">
+      {#if actiune}
+        <span class="sep" aria-hidden="true"></span>
+        <button class="dock-fab" onclick={actiune.fa}
+                aria-label={actiune.eticheta} title={actiune.eticheta}>
+          <Plus size={22} strokeWidth={1.5} />
+        </button>
+      {/if}
+    </span>
 
     {#if foaieDeschisa}
       <!-- Foaia celor trei rute ramase. Cautarea sta in CAP, nu la coada: e
@@ -600,6 +608,18 @@
     /* Jumatate: separa cele doua feluri de obiecte (drumuri | actiune) fara sa
        devina el insusi un obiect. */
     opacity: .5;
+  }
+
+  /* Locul actiunii: 1px separator + 2x5 margine + 48 buton = 59. Scris ca suma,
+     nu ca numar magic, ca sa se vada din ce e facut daca vreuna se schimba. */
+  .dock-coada {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    width: calc(1px + 2 * 5px + 48px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
 
   /* ACTIUNEA PRINCIPALA. Singurul obiect din aplicatie cu fill saturat de accent

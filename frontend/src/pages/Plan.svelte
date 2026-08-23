@@ -47,6 +47,7 @@
   import Modal from '../components/ui/Modal.svelte'
   import SelectorZi from '../components/ui/SelectorZi.svelte'
   import { culoareProiect, CULOARE_NEUTRA } from '../lib/culori.js'
+  import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
 
   // PERIOADA E O SINA LA BAZA RANDULUI, NU FUNDALUL LUI.
   //
@@ -1123,6 +1124,14 @@
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('afterprint', afterPrint)
     }
+  })
+
+  // „+" DIN DOCK, PE PLANIFICATOR. Fluxul exista deja (`FoaieAdauga`, aceeasi
+  // foaie ca pe Acasa si /tasks) — doar nu era legat la dock, si de-aia butonul
+  // disparea aici. Vezi `lib/actiuneNoua.svelte.js`.
+  $effect(() => {
+    if (!ecran.telefon) return
+    return inregistreazaActiune('Adaugă task', () => { taskEditat = null; showAdauga = true })
   })
 </script>
 
