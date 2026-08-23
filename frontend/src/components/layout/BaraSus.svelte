@@ -101,6 +101,14 @@
   let amMasurat = false   // NEreactiv: citit in efectul care scrie `pilula`
 
   function masoaraPilula() {
+    // CINE APASA ULTIMUL ARE DREPTATE. Garda sta AICI, nu la apelant, fiindca sunt
+    // doi apelanti: efectul pe `router.path` SI `ResizeObserver`-ul. Cat timp ai
+    // apasat o ruta la care routerul inca n-a ajuns, orice re-masurare ar citi
+    // slotul rutei VECHI si ar trage tenta inapoi la ea — masurat pe cadre: pleca
+    // spre tabul abandonat si se aseza acolo, ~200ms. Ruta veche aterizeaza dupa
+    // ce ai apasat deja alta, fiindca `startViewTransition` o tine in aer ~180ms.
+    if (intentia && rutaActiva !== intentia) return false
+    intentia = null
     const slot = barEl?.querySelector('[data-pilula]')
     if (!slot) { pilula.gata = false; return false }
     // `offsetLeft` se masoara fata de cutia de PADDING a lui `offsetParent` —
@@ -111,6 +119,34 @@
     pilula.r = getComputedStyle(slot).borderRadius
     pilula.gata = true
     return true
+  }
+
+  // TENTA URMEAZA INTENTIA, NU ATERIZAREA RUTEI.
+  //
+  // Masurat pe cadre: apesi un tab, iar la 206ms apesi altul — tenta CONTINUA spre
+  // primul, se aseaza acolo, si abia pe la 450ms pleaca inapoi. Doua sute de
+  // milisecunde in care ecranul se duce unde nu mai vrei.
+  // Cauza: pastila urmarea `router.path`, care se schimba abia cand se APLICA ruta
+  // — iar intre clic si aplicare sta `startViewTransition`, care ingheata pagina
+  // veche (vezi cursa de 180ms din `lib/router.svelte.js`).
+  // Unde te duci se stie insa din clipa apasarii. Deci tinta se pune ACUM, din
+  // elementul apasat; efectul de mai jos o re-masoara cand ruta chiar aterizeaza,
+  // pe aceleasi valori, deci nu se vede nicio a doua miscare.
+  // WWDC23 „Animate with springs": miscarea trebuie sa raspunda gestului, nu sa-l
+  // astepte. (Pasul urmator, daca-l vrem: si VITEZA sa se pastreze la retargetare —
+  // o tranzitie CSS reporneste de la zero, un arc adevarat nu.)
+  // `intentia` e ruta pe care ai APASAT-O ultima data, cat timp routerul inca n-a
+  // ajuns la ea. NEreactiva: o citeste efectul de mai jos, si daca ar fi reactiva
+  // l-ar reporni singura.
+  let intentia = null
+
+  function tinteste(el, cale) {
+    if (!el) return
+    intentia = cale
+    pilula.x = el.offsetLeft
+    pilula.w = el.offsetWidth
+    pilula.r = getComputedStyle(el).borderRadius
+    pilula.gata = true
   }
 
   $effect(() => {
@@ -172,7 +208,7 @@
       <a
         href={item.path}
         use:link
-        onclick={(e) => e.currentTarget.blur()}
+        onclick={(e) => { tinteste(e.currentTarget, item.path); e.currentTarget.blur() }}
         class="ruta"
         class:active={isActive(item.path)}
         data-pilula={rutaActiva === item.path ? '' : undefined}
