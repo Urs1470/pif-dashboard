@@ -257,8 +257,9 @@
   /* Haina din desen (3a): pastila de 36, padding 0 14, gap 9, iconita pe accent. */
   .pr {
     display: inline-flex; align-items: center; gap: 9px; min-width: 0;
-    min-height: var(--ctrl-md); padding: 0 var(--space-14); border-radius: var(--radius-sm);
-    background: var(--bg-surface); box-shadow: var(--shadow-sm);
+    /* PASTILA (`--radius-xs`), ca toate controalele mici din AURORA. */
+    min-height: var(--ctrl-md); padding: 0 var(--space-14); border-radius: var(--radius-xs);
+    background: var(--bg-surface); border: 1px solid var(--panel-line); box-shadow: var(--shadow-sm);
     cursor: pointer; text-align: left;
     transition: var(--transition-pressable);
   }

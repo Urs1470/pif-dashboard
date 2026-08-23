@@ -282,7 +282,11 @@
      randul de lista si controlul stau amandoua pe 500. Numele vin din handoff si
      raman ca atare, ca sa se poata urmari inapoi la el. */
   --w-title: 600;
-  --ls-title: -0.02em;
+  /* NUMELE E `--tracking-title`, nu `--ls-title` cum il scrie handoff-ul: familia
+     din sistem e `--tracking-*`, iar R11 din `audit_design.py` verifica anume ca
+     `letter-spacing` sa vina dintr-un token de-al ei. Un nume strain trece de
+     compilator si pica la audit — corect, fiindca asa incepe o a doua scara. */
+  --tracking-title: -0.02em;
   --w-row: 500;
   --w-ctrl: 500;
 

@@ -31,7 +31,7 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
   compara pe verticala). `--font-title` 25 · `--font-h2` 21 · `--font-h3`=`--font-body` 15 ·
   `--font-small` 13 · `--font-label` 12. **Nu exista 14px.** Nimic scris de mana:
   `font-size`, `letter-spacing`, `line-height` in afara `tokens.css` sunt abateri.
-  Greutatile au si nume de ROL, din AURORA: `--w-title` (600, cu `--ls-title` -0.02em),
+  Greutatile au si nume de ROL, din AURORA: `--w-title` (600, cu `--tracking-title` -0.02em),
   `--w-row` si `--w-ctrl` (500).
 - **Raza — patru trepte:** `--radius-xs` e **PASTILA** (999px: cip si control mic),
   `--radius-sm` 14 (rand si camp), `--radius-md` 24 (suprafata), `--radius-lg` 30 (dock si

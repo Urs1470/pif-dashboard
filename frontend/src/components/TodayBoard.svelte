@@ -604,7 +604,10 @@
   /* Suprafata se desprinde prin umbra. Padding-ul lateral scade la 8, fiindca
      randul isi aduce propriii 12 — separatorul iese la 20 de la marginea
      cardului, adica marja laterala ceruta, fara s-o scrie nimeni a doua oara. */
-  .board { background: var(--bg-surface); border: 0; border-radius: var(--radius-md);
+  /* `--panel-line`, nu `--border`: cardul se desprinde prin UMBRA, iar linia doar
+     ii inchide conturul. Cu `border: 0` (cum era) marginea se pierdea pe tema
+     deschisa, unde umbra e slaba si suprafata e alba pe un fond aproape alb. */
+  .board { background: var(--bg-surface); border: 1px solid var(--panel-line); border-radius: var(--radius-md);
     box-shadow: var(--shadow-md); padding: var(--space-20) var(--space-sm) var(--space-6);
     margin-bottom: var(--space-lg); }
 
@@ -613,8 +616,11 @@
      13, deci centrate ar pluti una fata de alta. Pe baza, se citesc ca o
      propozitie. */
   .bh-left { display: flex; align-items: baseline; gap: var(--space-12); color: var(--text); min-width: 0; }
-  .bh-left h2 { font-size: var(--font-title); font-weight: var(--fw-semibold);
-                letter-spacing: var(--tracking-tight); }
+  /* Perechea de TITLU din AURORA: greutatea si urmarirea au nume de rol
+     (`--w-title` / `--tracking-title`), nu trepte de scara — un titlu se strange mai
+     mult decat un rand de text obisnuit. */
+  .bh-left h2 { font-size: var(--font-title); font-family: var(--font-heading);
+                font-weight: var(--w-title); letter-spacing: var(--tracking-title); }
   .bh-zi { font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-dim);
            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .bh-restante { display: inline-flex; align-items: center; gap: var(--space-6); flex: none;
@@ -628,7 +634,7 @@
      un drum secundar catre acelasi board. Hoverul ridica fondul, atat. (Aceeasi
      reteta ca la Calendar M3 si Departament C2.) `border-color` de la hover a
      plecat odata cu ea: butonul n-are chenar din care sa se schimbe ceva. */
-  .bh-add { display: inline-flex; align-items: center; gap: 7px; height: var(--ctrl-md); padding: 0 var(--space-14); font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-elevated); border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); flex-shrink: 0; }
+  .bh-add { display: inline-flex; align-items: center; gap: 7px; height: var(--ctrl-md); padding: 0 var(--space-14); font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--panel-line); color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); flex-shrink: 0; }
   .bh-add:hover { background: var(--bg-hover); color: var(--text); }
 
   /* Campul e UN obiect, iar plusul e semnul lui dinauntru — nu un al doilea

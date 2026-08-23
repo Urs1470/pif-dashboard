@@ -71,6 +71,32 @@ body {
   line-height: var(--lh-normal);
 }
 
+/* HALOUL (AURORA) — si de ce nu incalca regula de mai sus.
+   Cele doua glowuri interzise erau doua CULORI IN PLUS (amber si verde), asezate
+   in colturi opuse, deci fondul isi schimba nuanta pe toata suprafata pe care stau
+   cardurile. Haloul asta e o singura sursa, in SINGURUL accent al sistemului,
+   sus de tot (`at 50% -12%`, adica centrul lui e deasupra marginii ecranului) si
+   la 14% pe intuneric / 24% pe lumina. Acolo, sus, sta bara de sticla — el ii da
+   ceva de refractat. Sub ea, unde chiar stau cardurile, fondul ramane uniform,
+   deci umbra isi pastreaza reperul.
+
+   `position: fixed`, nu `absolute`: e lumina ECRANULUI, nu a documentului — daca
+   ar derula cu pagina, ai vedea o pata care fuge in sus.
+
+   `z-index: -1` e ce tine stivuirea NEATINSA: un copil cu z negativ se picteaza
+   deasupra fondului parintelui si sub tot restul, fara sa creeze niciun context
+   de stivuire nou. Alternativa (un `<span>` in `App.svelte` plus `isolation` pe
+   invelis) ar fi inchis dockul, toastul si tooltipul intr-un context propriu —
+   adica exact scara de `--z-*` pe care se sprijina toate. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--halo);
+}
+
 /* TITLURILE NU MOSTENESC INTERLINIA DE PARAGRAF.
    Scala scrisa in tokens.css spune: `--lh-tight 1.15 (display/headings)`,
    `--lh-normal 1.55 (body)`. Dar reset-ul nu da titlurilor nicio interlinie,
