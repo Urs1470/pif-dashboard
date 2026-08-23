@@ -27,8 +27,8 @@
         })();
     </script>
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235980a6'/%3E%3Cpath d='M10 42 H21.5 V22 H32 V42 H42.5 V22 H54' fill='none' stroke='%23ffffff' stroke-width='5.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
-    <meta name="theme-color" content="#121417">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2363638f'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 32a18 18 0 1 0 36 0 18 18 0 1 0-36 0' stroke-width='5'/%3E%3Cpath d='M20 32c4-11.33 8-11.33 12 0s8 11.33 12 0' stroke-width='4.2'/%3E%3C/g%3E%3C/svg%3E"
+    <meta name="theme-color" content="#15151a">
 
     <link rel="stylesheet" href="/static/login.css?v={{ style_version }}">
 </head>
@@ -44,7 +44,10 @@
             <div class="login-logo">
                 <svg class="brand-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <rect width="64" height="64" rx="14" fill="var(--accent)"/>
-                    <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="var(--accent-text)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <g fill="none" stroke="var(--accent-text)" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 32a18 18 0 1 0 36 0 18 18 0 1 0-36 0" stroke-width="5"/>
+                      <path d="M20 32c4-11.33 8-11.33 12 0s8 11.33 12 0" stroke-width="4.2"/>
+                    </g>
                 </svg>
                 <span class="brand-wordmark">TORQA</span>
             </div>
@@ -93,7 +96,7 @@
             const efectiv = mod === 'auto' ? temaSistemului() : mod;
             document.documentElement.setAttribute('data-theme', efectiv);
             const mc = document.querySelector('meta[name="theme-color"]');
-            if (mc) mc.setAttribute('content', efectiv === 'dark' ? '#121417' : '#f4f5f7');
+            if (mc) mc.setAttribute('content', efectiv === 'dark' ? '#15151a' : '#f5f5f9');
             const icoane = { auto: 'theme-icon-auto', light: 'theme-icon-sun', dark: 'theme-icon-moon' };
             for (const [k, id] of Object.entries(icoane)) {
                 const el = document.getElementById(id);

@@ -10,7 +10,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#121417" />
+    <meta name="theme-color" content="#15151a" />
     <!-- TEMA, INAINTE DE PRIMUL PAINT.
          Trebuie sa fie inline si sincron: bundle-ul se incarca dupa ce pagina s-a
          desenat deja, deci un `data-theme` fix in <html> ar da o clipa de tema
@@ -31,7 +31,7 @@
             : m;
           document.documentElement.setAttribute('data-theme', t);
           var mc = document.querySelector('meta[name="theme-color"]');
-          if (mc) mc.setAttribute('content', t === 'dark' ? '#121417' : '#f4f5f7');
+          if (mc) mc.setAttribute('content', t === 'dark' ? '#15151a' : '#f5f5f9');
         } catch (e) {}
       })();
     </script>
@@ -40,7 +40,7 @@
     <meta name="apple-mobile-web-app-title" content="Torqa" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235980a6'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16 L50 48 Z' fill='%23ffffff' opacity='0.3'/%3E%3Cpath d='M14 48 C27 48 30 40 33 30 S42 16 50 16' fill='none' stroke='%23ffffff' stroke-width='5.5' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='16' r='5' fill='%23ffffff'/%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2363638f'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 32a18 18 0 1 0 36 0 18 18 0 1 0-36 0' stroke-width='5'/%3E%3Cpath d='M20 32c4-11.33 8-11.33 12 0s8 11.33 12 0' stroke-width='4.2'/%3E%3C/g%3E%3C/svg%3E" />
     <!-- FONTURILE, CERUTE DIN HTML — nu descoperite din foaia de stil.
          Gabarito era deja aici. DM Mono lipsea, si se vedea: masurat la prima
          deschidere pe telefon (4G, CPU 4x), `document.fonts.status` trecea prin
@@ -82,10 +82,10 @@
         position: fixed; inset: 0; z-index: 9000;
         /* Prima declaratie e plasa: daca foaia de stil intarzie, fondul e tot
            opac. A doua o inlocuieste imediat ce tokenii exista. */
-        background: #121417;
+        background: #15151a;
         background: var(--bg);
       }
-      html[data-theme="light"].splash-activ #splash { background: #f4f5f7; background: var(--bg); }
+      html[data-theme="light"].splash-activ #splash { background: #f5f5f9; background: var(--bg); }
       /* Marca e ACEEASI cu cea de pe ecranul de autentificare (`login.html`):
          placa in accent, unda in cerneala pe fill, numele dedesubt. Login ->
          splash -> aplicatie trebuie sa fie acelasi obiect care se apropie, nu
@@ -103,14 +103,19 @@
         will-change: transform, opacity;
       }
       #splash .sp-logo { width: 60px; height: 60px; }
-      #splash .sp-placa { fill: #8ab2d9; fill: var(--accent); }
+      #splash .sp-placa { fill: #a3a3cc; fill: var(--accent); }
+      #splash .sp-cerc, #splash .sp-unda {
+        fill: none; stroke: #14141b; stroke: var(--accent-text);
+        stroke-linecap: round; stroke-linejoin: round;
+      }
+      #splash .sp-cerc { stroke-width: 5; }
       #splash .sp-unda {
-        fill: none; stroke: #0e1114; stroke: var(--accent-text);
-        stroke-width: 6.4; stroke-linecap: round; stroke-linejoin: round;
-        /* 104 = lungimea exacta a traseului (11,5+20+10,5+20+10,5+20+11,5).
-           Scrisa, nu masurata cu `getTotalLength`: masurarea ar cere JS in
-           primul cadru, iar traseul e o constanta din siglă. */
-        stroke-dasharray: 104; stroke-dashoffset: 104;
+        stroke-width: 4.2;
+        /* `pathLength="1"` NORMALIZEAZA traseul, deci lungimea nu mai trebuie
+           scrisa de mana. Inainte era 104 — suma laturilor semnalului
+           dreptunghiular — o constanta care s-ar fi stricat TACUT la orice
+           schimbare de marca, si chiar s-a schimbat marca. */
+        stroke-dasharray: 1; stroke-dashoffset: 1;
       }
       #splash .sp-nume {
         /* Scos din flux (vezi `.sp-marca`): atarna sub placa, la aceeasi
@@ -120,7 +125,7 @@
         white-space: nowrap; line-height: 1.2;
         font-family: 'Gabarito', system-ui, sans-serif;
         font-size: 21px; font-weight: 600; letter-spacing: -0.01em;
-        color: #e9ecef; color: var(--text);
+        color: #ededf2; color: var(--text);
       }
       /* SOSIREA: placa se aseaza, unda se SCRIE, numele urca dupa ea. Trei
          miscari in ordinea in care se citeste marca, nu trei deodata.
@@ -165,18 +170,19 @@
         #splash.pleaca, #splash.pleaca .sp-marca { transition-duration: .12s; }
       }
     </style>
-    <script type="module" crossorigin src="/assets/main-k5A-0gKT.js"></script>
+    <script type="module" crossorigin src="/assets/main-3vLdcOE-.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-DK3Fl9T5.js">
     <link rel="modulepreload" crossorigin href="/assets/Modal-DAO3jZ1k.js">
     <link rel="stylesheet" crossorigin href="/assets/Modal-8_l8ZrY8.css">
-    <link rel="stylesheet" crossorigin href="/assets/main-DePTYDPQ.css">
+    <link rel="stylesheet" crossorigin href="/assets/main-98gETZZD.css">
   </head>
   <body>
     <div id="splash" aria-hidden="true" role="presentation">
       <div class="sp-marca">
         <svg class="sp-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect class="sp-placa" width="64" height="64" rx="14" />
-          <path class="sp-unda" d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" />
+          <path class="sp-cerc" d="M14 32a18 18 0 1 0 36 0 18 18 0 1 0-36 0" />
+          <path class="sp-unda" pathLength="1" d="M20 32c4-11.33 8-11.33 12 0s8 11.33 12 0" />
         </svg>
         <span class="sp-nume">TORQA</span>
       </div>

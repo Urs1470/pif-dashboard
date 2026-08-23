@@ -55,18 +55,17 @@
 
 <header class="header" bind:clientHeight={inaltime}>
   <a href="/" class="brand" title="TORQA" use:apasareLunga={{ actiune: comutaUrma }} oncontextmenu={(e) => e.preventDefault()}>
-    <!-- Marca „Unda" — semnal dreptunghiular (PWM). Aceleasi coordonate ca
-         `frontend/public/favicon.svg`, dar aici tila ia `--accent` si cerneala
-         `--accent-text`, deci marca URMEAZA TEMA; fisierul .svg e un asset si
-         nu stie de tokenuri, deci acolo hexul e scris. Grosimea e 6.4 la 26px
-         randati (fata de 5.6 pe tile-ul de asset si 7 pe favicon): traseul se
-         ingroasa pe masura ce marca se micsoreaza, altfel se stinge. -->
-    <svg class="brand-tile" width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
-      <rect width="64" height="64" rx="14" fill="var(--accent)" />
-      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="var(--accent-text)"
-            stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- ACEEASI MARCA CA IN `BaraSus.svelte`, si asta e chiar rostul notei:
+         pana la AURORA, antetul de telefon si bara de desktop desenau semne
+         DIFERITE. Semnul ia `--accent`, deci urmeaza tema; coordonatele sunt cele
+         canonice din `design/handoff-aurora/assets/torqa-logomark.svg`.
+         Fara cuvantul „TORQA" langa el (handoff: marca singura in antet). -->
+    <svg class="brand-semn" width="42" height="42" viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="var(--accent)" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 32a18 18 0 1 0 36 0 18 18 0 1 0-36 0" stroke-width="5" />
+        <path d="M20 32c4-11.33 8-11.33 12 0s8 11.33 12 0" stroke-width="4.2" />
+      </g>
     </svg>
-    <span class="brand-name">TORQA</span>
   </a>
 
   <!-- `.header-context` (titlul paginii in bara) A PLECAT: era singurul titlu
@@ -139,7 +138,7 @@
     color: var(--text);
     white-space: nowrap;
   }
-  .brand-tile { flex: none; display: block; }
+  .brand-semn { flex: none; display: block; }
 
   .h-spacer { flex: 1; }
 

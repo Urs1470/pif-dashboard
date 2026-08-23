@@ -27,43 +27,92 @@ import sys
 RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IESIRE = os.path.join(RADACINA, 'frontend', 'assets')
 
-# Tila ia --accent (tema deschisa: fillul e acelasi in ambele teme, fiindca
-# iconita de launcher nu stie ce tema are aplicatia), cerneala ia --accent-text.
-ACCENT = '#5980a6'
+# ===== MARCA (AURORA, 2026-08-23) =====
+#
+# O sinusoida de o perioada inscrisa intr-un cerc — simbolul de sursa alternativa.
+# Trecerile prin zero cad exact pe axa (x = 20, 32, 44), amplitudini egale sus si
+# jos. Cerc: raza 18, grosime 5. Unda: grosime 4.2.
+# Canonic: `design/handoff-aurora/assets/torqa-logomark.svg`.
+#
+# INAINTE DE AURORA, FISIERUL ASTA DESENA ALTCEVA DECAT APLICATIA, si nimeni n-a
+# observat: aici era rampa cu cerc pe `#5980a6`, in `favicon.svg` semnalul
+# dreptunghiular (PWM), iar in bara marca noua. Trei marci, in acelasi produs.
+# Comentariul de aici chiar spunea „exact ca in favicon.svg" — si nu mai era
+# adevarat de doua redesign-uri. De aceea TOATE artefactele se genereaza acum de
+# aici, si cele web, nu doar cele de Android.
+
+def marca(cerneala, umbra=''):
+    return (f'<g fill="none" stroke="{cerneala}" stroke-linecap="round"'
+            f' stroke-linejoin="round"{umbra}>'
+            f'<path d="M14 32a18 18 0 1 0 36 0 18 18 0 1 0-36 0" stroke-width="5"/>'
+            f'<path d="M20 32c4-11.33 8-11.33 12 0s8 11.33 12 0" stroke-width="4.2"/>'
+            f'</g>')
+
+# Tila simpla ia `--accent` de tema DESCHISA: iconita de launcher nu stie ce tema
+# are aplicatia, iar valoarea mai inchisa tine cerneala alba lizibila pe ea.
+ACCENT = '#63638f'
 CERNEALA = '#ffffff'
 
 # ECRANUL DE INCARCARE = FONDUL APLICATIEI, nu o imagine de marca.
 # Splash-ul se vede o secunda, exact inainte ca pagina sa apara — daca e alta
 # culoare decat fondul care ii urmeaza, pornirea clipeste. De aceea valorile sunt
 # `--bg` din `tokens.css`, pe teme, nu ceva ales aici.
-FOND_INCHIS  = '#121417'    # --bg, [data-theme="dark"]
-FOND_DESCHIS = '#f4f5f7'    # --bg, [data-theme="light"]
+FOND_INCHIS  = '#15151a'    # --bg, [data-theme="dark"]
+FOND_DESCHIS = '#f5f5f9'    # --bg, [data-theme="light"]
 
-# Logo-ul, exact ca in frontend/public/favicon.svg — aceleasi coordonate.
-RAMPA = (
-    '<path d="M14 48 C27 48 30 40 33 30 S42 16 50 16 L50 48 Z" fill="{i}" opacity="0.3"/>'
-    '<path d="M14 48 C27 48 30 40 33 30 S42 16 50 16" fill="none" stroke="{i}"'
-    ' stroke-width="5.5" stroke-linecap="round"/>'
-    '<circle cx="50" cy="16" r="5" fill="{i}"/>'
-).format(i=CERNEALA)
+# ===== ICONITA DE APLICATIE — „planseta de schite" =====
+# Corp cu gradient, caroiaj de 4 unitati, axe punctate si repere de colt; marca
+# deasupra, intr-un gradient metalic cu umbra proprie. Constructia asta ramane
+# DOAR iconita: in interfata s-ar citi ca un corp strain (handoff, README).
+DEFS = (
+    '<defs>'
+    '<linearGradient id="corp" x1="0" y1="1" x2="0" y2="0">'
+    '<stop offset="0" stop-color="#1b1b30"/><stop offset=".55" stop-color="#3f3f66"/>'
+    '<stop offset="1" stop-color="#7878a6"/></linearGradient>'
+    '<pattern id="caroiaj" width="4" height="4" patternUnits="userSpaceOnUse">'
+    '<path d="M4 0H0v4" fill="none" stroke="#dfdff2" stroke-opacity=".30" stroke-width=".35"/>'
+    '</pattern>'
+    '<linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">'
+    '<stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e6e6f2"/>'
+    '<stop offset="1" stop-color="#b6b6d0"/></linearGradient>'
+    '<filter id="umbra" x="-40%" y="-40%" width="180%" height="180%">'
+    '<feDropShadow dx="0" dy="1.8" stdDeviation="1.6" flood-color="#0d0d20" flood-opacity=".55"/>'
+    '</filter>'
+    '</defs>'
+)
+PLANSETA = (
+    '<rect width="64" height="64" fill="url(#corp)"/>'
+    '<rect width="64" height="64" fill="url(#caroiaj)" opacity=".55"/>'
+    '<g fill="none" stroke="#dfdff2" stroke-opacity=".42" stroke-width=".45">'
+    '<path d="M0 32h64M32 0v64" stroke-dasharray="2 2.4"/>'
+    '<path d="M6 6h6M6 6v6M58 6h-6M58 6v6M6 58h6M6 58v-6M58 58h-6M58 58v-6" stroke-opacity=".55"/>'
+    '</g>'
+)
+MARCA_METAL = marca('url(#metal)', ' filter="url(#umbra)"')
+
+def svg(continut, taiat=False):
+    clip = ('<defs><clipPath id="taie"><rect width="64" height="64" rx="15"/></clipPath></defs>'
+            f'<g clip-path="url(#taie)">{continut}</g>'
+            '<rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none"'
+            ' stroke="#fff" stroke-opacity=".22" stroke-width="1.2"/>') if taiat else continut
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+            f'{DEFS}{clip}</svg>')
 
 # ZONA SIGURA O PUNE GENERATORUL, NU NOI.
 # `capacitor-assets` scrie XML-ul adaptive cu `inset 16.7%` pe stratul de
 # prim-plan — exact cat trebuie ca desenul sa incapa in cercul de 66% pe care
 # orice producator il pastreaza. Daca ii dam un logo caruia i-am pus DEJA marja,
-# insetul se aplica a doua oara si rampa iese de doua ori mai mica decat trebuie.
+# insetul se aplica a doua oara si marca iese de doua ori mai mica decat trebuie.
 # Deci desenam pe toata panza si il lasam pe el sa strange.
-SVG_FUNDAL = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
-              f'<rect width="64" height="64" fill="{ACCENT}"/></svg>')
+SVG_FUNDAL = svg(PLANSETA)
+SVG_PRIMPLAN = svg(MARCA_METAL)
+SVG_INTREG = svg(PLANSETA + MARCA_METAL, taiat=True)
 
-SVG_PRIMPLAN = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
-                f'{RAMPA}</svg>')
+# Tila simpla, pentru favicon si pentru locurile mici: fara caroiaj (handoff:
+# „la sub ~32px se recomanda o varianta fara caroiaj").
+SVG_TILA = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+            f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{marca(CERNEALA)}</svg>')
 
-# Acelasi XML pentru ambele forme. Diferenta fata de ce scrie generatorul: FARA
-# inset pe fundal. Fundalul unei iconite adaptive trebuie sa umple panza pana in
-# margini — el e cel pe care sistemul il taie in cerc, patrat sau picatura. Cu
-# inset, tila se opreste inainte de margine si iconita apare ca un patrat mic
-# care pluteste intr-un colt transparent.
 XML_ADAPTIVE = '''<?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@mipmap/ic_launcher_background" />
@@ -72,10 +121,6 @@ XML_ADAPTIVE = '''<?xml version="1.0" encoding="utf-8"?>
     </foreground>
 </adaptive-icon>
 '''
-
-SVG_INTREG = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
-              f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{RAMPA}</svg>')
-
 
 def svg_splash(fond):
     """Panza patrata (`capacitor-assets` o taie pentru fiecare densitate si
@@ -87,7 +132,7 @@ def svg_splash(fond):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
             f'<rect width="100" height="100" fill="{fond}"/>'
             f'<g transform="translate(39 39) scale(0.34375)">'
-            f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{RAMPA}</g>'
+            f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{marca(CERNEALA)}</g>'
             f'</svg>')
 
 
@@ -122,6 +167,18 @@ def main():
                  os.path.join(IESIRE, 'splash.png'), 2732)
         randeaza(p, svg_splash(FOND_INCHIS),
                  os.path.join(IESIRE, 'splash-dark.png'), 2732)
+
+        # SI ARTEFACTELE WEB, DIN ACEEASI SURSA. Cat timp erau scrise separat,
+        # marca a apucat sa se bifurce in TREI fara ca nimeni sa observe: rampa
+        # aici, semnalul dreptunghiular in favicon, si a treia in bara.
+        pub = os.path.join(RADACINA, 'frontend', 'public')
+        print('Scriu in %s:' % pub)
+        randeaza(p, SVG_INTREG, os.path.join(pub, 'icon-192.png'), 192)
+        randeaza(p, SVG_INTREG, os.path.join(pub, 'icon-512.png'), 512)
+        with open(os.path.join(pub, 'favicon.svg'), 'w',
+                  encoding='utf-8', newline='\n') as fh:
+            fh.write(SVG_TILA + '\n')
+        print('  favicon.svg  (tila fara caroiaj — se citeste si la 16px)')
         br.close()
     print('\nAcum: cd frontend && npx capacitor-assets generate --android')
     print('apoi:  python scripts/gen_icons.py --repara-xml   (scoate insetul de pe fundal)')
