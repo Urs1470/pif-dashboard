@@ -431,35 +431,36 @@ def ruleaza(page, baza, pid):
              'pornit de la %dpx, ajuns la %dpx' % (inaltat, page.evaluate("window.scrollY")))
 
     out('\n--- 6. cadrul nu intra in instantaneul paginii ---')
-    # CE E CADRU PE DESKTOP S-A SCHIMBAT, CONTRACTUL NU.
+    # CE E CADRU PE DESKTOP S-A SCHIMBAT DE DOUA ORI, CONTRACTUL NU.
     # Erau doua bucati — antetul de sus si dockul de jos — si fiecare avea nevoie
     # de nume propriu ca sa nu fie inghitita de instantaneul `root` si sa ia
-    # alunecarea de ±10px la fiecare schimbare de ruta. Pe desktop amandoua au
-    # fost inlocuite de bara laterala, deci ramane un singur obiect de verificat,
-    # cu exact aceeasi cerinta. Antetul si dockul mai exista pe telefon, unde
-    # `audit_mobil.py` le vede.
+    # alunecarea de ±10px la fiecare schimbare de ruta. Apoi amandoua au devenit
+    # bara laterala (`cadru-lateral`), iar la AURORA bara a urcat sus si pluteste
+    # (`cadru-bara`). Obiectul e tot unul singur si cerinta e neatinsa; se schimba
+    # doar numele. Antetul si dockul mai exista pe telefon, unde `audit_mobil.py`
+    # le vede.
     nume = page.evaluate("""(() => {
       const b = document.querySelector('.bara');
       return { bara: b ? getComputedStyle(b).viewTransitionName : 'lipsa' };
     })()""")
-    nota(nume['bara'] == 'cadru-lateral',
-         'bara laterala are nume propriu de tranzitie', str(nume['bara']))
+    nota(nume['bara'] == 'cadru-bara',
+         'bara de sus are nume propriu de tranzitie', str(nume['bara']))
 
     out('\n--- 7. tenta slotului activ ALUNECA ---')
-    # AXA S-A ROTIT, CONTRACTUL NU. In dock tenta se muta pe ORIZONTALA dintr-un
-    # slot in altul; in bara laterala, pe VERTICALA dintr-un rand in altul. Deci
-    # tot ce se masura pe `left` se masoara pe `top`, si nimic altceva nu se
-    # schimba: un singur slot marcat, tenta fix peste el, si — singura proba care
-    # chiar prinde regresia — pozitia LA 90ms, intre plecare si sosire. Dupa ce
-    # se termina, o tenta care sare si una care aluneca arata identic.
+    # AXA S-A ROTIT DE DOUA ORI, CONTRACTUL NU. In dock tenta se muta pe
+    # ORIZONTALA; in bara laterala se mutase pe VERTICALA; la AURORA bara a urcat
+    # sus, deci masuram iar pe `left`/`width`. Nimic altceva nu se schimba: un
+    # singur slot marcat, tenta fix peste el, si — singura proba care chiar prinde
+    # regresia — pozitia LA 90ms, intre plecare si sosire. Dupa ce se termina, o
+    # tenta care sare si una care aluneca arata identic.
     mergi_la(page, '/')
     p0 = page.evaluate("""(() => {
       const p = document.querySelector('.pilula');
       const s = document.querySelector('.rute [data-pilula]');
       if (!p || !s) return null;
       const cp = p.getBoundingClientRect(), cs = s.getBoundingClientRect();
-      return { y: Math.round(cp.top), h: Math.round(cp.height),
-               sy: Math.round(cs.top), sh: Math.round(cs.height),
+      return { y: Math.round(cp.left), h: Math.round(cp.width),
+               sy: Math.round(cs.left), sh: Math.round(cs.width),
                marcate: document.querySelectorAll('.rute [data-pilula]').length };
     })()""")
     nota(p0 is not None, 'pastila exista si un singur slot o poarta')
@@ -467,18 +468,18 @@ def ruleaza(page, baza, pid):
         nota(p0['marcate'] == 1, 'exact UN slot marcat', '%d marcate' % p0['marcate'])
         nota(abs(p0['y'] - p0['sy']) <= 1 and abs(p0['h'] - p0['sh']) <= 1,
              'pastila e fix peste slotul activ',
-             'pastila y=%d h=%d / slot y=%d h=%d' % (p0['y'], p0['h'], p0['sy'], p0['sh']))
+             'pastila x=%d w=%d / slot x=%d w=%d' % (p0['y'], p0['h'], p0['sy'], p0['sh']))
         el = tab_din_nav(page, '/calendar')
         el.click()
         page.wait_for_timeout(90)
         la_mijloc = page.evaluate(
-            "Math.round(document.querySelector('.pilula').getBoundingClientRect().top)")
+            "Math.round(document.querySelector('.pilula').getBoundingClientRect().left)")
         page.wait_for_timeout(600)
         la_final = page.evaluate("""(() => {
           const p = document.querySelector('.pilula');
           const s = document.querySelector('.rute [data-pilula]');
-          return { y: Math.round(p.getBoundingClientRect().top),
-                   sy: Math.round(s.getBoundingClientRect().top) };
+          return { y: Math.round(p.getBoundingClientRect().left),
+                   sy: Math.round(s.getBoundingClientRect().left) };
         })()""")
         nota(abs(la_final['y'] - la_final['sy']) <= 1, 'ajunge pe slotul nou',
              'pastila %d / slot %d' % (la_final['y'], la_final['sy']))

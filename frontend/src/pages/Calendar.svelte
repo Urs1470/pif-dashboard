@@ -2085,7 +2085,7 @@
      insemnata, nu ca un punct. Paddingul celulei scade la `3px 3px 0` doar pe ea,
      ca dreptunghiul sa nu impinga benzile in jos cu cei 5px in plus. */
   .zi.sel { padding: 3px 3px 0; }
-  .zi.sel .n { width: 24px; height: 22px; min-width: 0; padding: 0; border-radius: var(--radius-xs);
+  .zi.sel .n { width: 24px; height: 22px; min-width: 0; padding: 0; border-radius: var(--radius-celula);
                background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
   /* Cuvantul, nu inca o culoare. Sta pe cerneala adanca fiindca fondul celulei e
      deja tenta de accent — text pe tenta ia intotdeauna varianta `-deep`. */

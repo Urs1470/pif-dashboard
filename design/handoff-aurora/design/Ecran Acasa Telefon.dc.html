@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="tokens-variante.css" />
+</helmet>
+
+<div data-var="{{ varianta }}" data-theme="{{ tema }}" style="position: relative; overflow: hidden; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-sans); -webkit-font-smoothing: antialiased;" data-screen-label="Acasă telefon">
+
+  <span aria-hidden="true" style="position: absolute; inset: 0; z-index: 0; pointer-events: none; background: var(--halo, none);"></span>
+
+
+  <header style="position: relative; z-index: 2; min-height: 56px; background: var(--glass-sheen, none), var(--glass-bg, var(--bar-bg)); box-shadow: inset 0 -1px 0 var(--border); -webkit-backdrop-filter: var(--glass-filter, saturate(180%) blur(28px)); backdrop-filter: var(--glass-filter, saturate(180%) blur(28px)); display: flex; align-items: center; flex-wrap: wrap; gap: 4px; padding: 4px 16px;">
+    <span style="display: flex; align-items: center; gap: 10px; min-height: 44px; font-family: var(--font-title); font-weight: var(--w-title); font-size: 1.125rem; letter-spacing: var(--ls-title); color: var(--text);">
+      <svg width="42" height="42" viewBox="0 0 64 64" aria-hidden="true" style="flex: none; display: block;">
+    <g fill="none" stroke="var(--accent)" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 32 A15 15 0 1 0 47 32 A15 15 0 1 0 17 32" stroke-width="5"></path>
+      <path d="M22 32 C25.33 22.67 28.67 22.67 32 32 C35.33 41.33 38.67 41.33 42 32" stroke-width="4.2"></path>
+    </g>
+  </svg>
+    </span>
+    <span style="flex: 1;"></span>
+    <span style="display: flex; align-items: center; gap: 8px;">
+      <span style="width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--radius-full); color: var(--text-secondary);" title="Caută">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      </span>
+      <button style="width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--radius-full); color: var(--text-secondary); cursor: pointer;" title="Temă" onClick="{{ comutaTema }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>
+      </button>
+    </span>
+  </header>
+
+  <div style="position: relative; z-index: 1; padding: 16px;">
+
+    <div style="display: flex; align-items: center; gap: 8px; padding: 0 2px 16px; flex-wrap: nowrap;">
+      <span style="display: flex; align-items: center; gap: 7px; flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 8px 12px 8px 10px; border-radius: var(--radius-sm); background: var(--bg-surface); border: 1px solid var(--panel-line); box-shadow: var(--shadow-sm);">
+        <span style="flex: none; color: var(--accent); display: inline-flex;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        </span>
+        <span style="flex: none; font-weight: var(--w-ctrl); font-size: 0.8125rem; color: var(--accent-deep); white-space: nowrap;">Mâine</span>
+        <span style="flex: none; font-size: 0.8125rem; color: var(--text); white-space: nowrap;">Continental</span>
+        <span style="flex: 0 1 auto; min-width: 0; font-size: 0.8125rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">· Deplasare Sibiu · PIF linie extrudare</span>
+        <span style="flex: none; margin-left: auto; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); white-space: nowrap;">24 aug–27 aug</span>
+      </span>
+
+      <span style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: none; min-height: 44px; padding: 4px 10px; font-size: 0.8125rem; border-radius: var(--radius-xs); background: var(--danger-subtle); color: var(--danger-deep); white-space: nowrap;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+        <span style="font-family: var(--font-mono); font-variant-numeric: tabular-nums;">2</span> neînchise
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </span>
+    </div>
+
+    <section style="background: var(--bg-surface); border: 1px solid var(--panel-line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 20px 8px 6px;">
+
+      <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; margin: 0 8px 16px; color: var(--text);">
+        <h2 style="font-family: var(--font-title); font-size: 1.75rem; font-weight: var(--w-title); letter-spacing: var(--ls-title); margin: 0;">Astăzi</h2>
+        <span style="font-size: 0.8125rem; font-weight: 500; color: var(--text-dim);">{{ ziua }}</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8125rem; font-weight: var(--w-ctrl); color: var(--danger);"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--danger);"></span>2 restante</span>
+      </div>
+
+      <div style="display: flex; margin: 0 8px 16px;">
+        <div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+          <span style="display: inline-flex; align-items: center; color: var(--text-dim); flex: none;" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+          </span>
+          <span style="flex: 1; color: var(--text-dim); font-size: 1rem;">Task rapid pentru azi</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 4px; font-size: 0.75rem; font-weight: var(--w-ctrl); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">
+        <span style="display: inline-flex; align-items: center; color: var(--text-dim);" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect width="20" height="14" x="2" y="6" rx="2"></rect></svg>
+        </span>Muncă<span style="font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums; text-transform: none; letter-spacing: 0;">7</span>
+      </div>
+
+      <div role="list" style="display: flex; flex-direction: column; position: relative;">
+        <sc-for list="{{ munca }}" as="it" hint-placeholder-count="7">
+          <div role="listitem" style="--ring: {{ it.ring }}; position: relative; display: flex; align-items: center; min-height: 52px; padding: 0; overflow: hidden;">
+            <sc-if value="{{ it.nuPrimul }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="position: absolute; top: 0; z-index: 2; left: 10px; right: 10px; height: 1px; background: var(--border);"></span></sc-if>
+            <div style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 0 10px; background: var(--bg-surface); position: relative; z-index: 1;">
+              <span style="display: flex; align-items: center; justify-content: center; width: 16px; height: 44px; flex: none; color: var(--text-secondary);" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+              </span>
+              <span style="display: flex; align-items: center; justify-content: center; min-width: 30px; width: 30px; min-height: 44px; flex: none;">
+                <span style="width: 20px; height: 20px; border: 1.5px solid var(--ring, var(--border-strong)); border-radius: 50%; display: block;"></span>
+              </span>
+              <span style="flex: 1 1 0; min-width: 0; min-height: 44px; display: flex; flex-direction: column; justify-content: center; gap: 1px;">
+                <span style="display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%;">
+                  <span style="font-size: 0.9375rem; color: var(--text); font-weight: var(--w-row); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;">{{ it.titlu }}</span>
+                  <sc-if value="{{ it.arePasi }}" hint-placeholder-val="{{ false }}">
+                    <span style="flex: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.8125rem; color: var(--text-dim);">
+                      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="flex: none; display: block;">
+                        <circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--border-strong)" stroke-width="3"></circle>
+                        <circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--text-dim)" stroke-width="3" stroke-dasharray="{{ it.dash }}" transform="rotate(-90 6 6)"></circle>
+                      </svg>
+                      <span style="font-variant-numeric: tabular-nums;">{{ it.pasi }}</span>
+                    </span>
+                  </sc-if>
+                </span>
+                <sc-if value="{{ it.context }}" hint-placeholder-val="{{ true }}">
+                  <span style="display: flex; align-items: center; min-width: 0; overflow: hidden; font-size: 0.8125rem; color: var(--text-dim); white-space: nowrap; text-overflow: ellipsis;">{{ it.context }}</span>
+                </sc-if>
+              </span>
+              <span style="flex: none; width: 46px; text-align: right; font-family: var(--font-mono); font-size: 0.75rem; color: {{ it.termenCol }}; font-weight: {{ it.termenW }}; font-variant-numeric: tabular-nums; white-space: nowrap;">{{ it.termen }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 4px; margin-top: 8px; border-top: 1px solid var(--border); font-size: 0.75rem; font-weight: var(--w-ctrl); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">
+        <span style="display: inline-flex; align-items: center; color: var(--text-dim);" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </span>Personal<span style="font-family: var(--font-mono); color: var(--text-dim); font-variant-numeric: tabular-nums; text-transform: none; letter-spacing: 0;">2</span>
+      </div>
+
+      <div role="list" style="display: flex; flex-direction: column; position: relative;">
+        <sc-for list="{{ personale }}" as="it" hint-placeholder-count="2">
+          <div role="listitem" style="--ring: {{ it.ring }}; position: relative; display: flex; align-items: center; min-height: 52px; padding: 0; overflow: hidden;">
+            <sc-if value="{{ it.nuPrimul }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="position: absolute; top: 0; z-index: 2; left: 10px; right: 10px; height: 1px; background: var(--border);"></span></sc-if>
+            <div style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 0 10px; background: var(--bg-surface); position: relative; z-index: 1;">
+              <span style="width: 16px; flex: none;" aria-hidden="true"></span>
+              <span style="display: flex; align-items: center; justify-content: center; min-width: 30px; width: 30px; min-height: 44px; flex: none;">
+                <span style="width: 20px; height: 20px; border: 1.5px solid var(--ring, var(--border-strong)); border-radius: 50%; display: block;"></span>
+              </span>
+              <span style="flex: 1 1 0; min-width: 0; font-size: 0.9375rem; color: var(--text); font-weight: var(--w-row); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ it.titlu }}</span>
+              <span style="flex: none; width: 46px; text-align: right; font-family: var(--font-mono); font-size: 0.75rem; color: {{ it.termenCol }}; font-weight: {{ it.termenW }}; font-variant-numeric: tabular-nums;">{{ it.termen }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+    </section>
+    <span style="display: block; height: var(--dock-space, 96px);"></span>
+  </div>
+
+  <nav style="position: absolute; z-index: 3; left: 12px; right: 12px; bottom: 6px; display: flex; justify-content: space-between; gap: 2px; padding: 5px; border-radius: 30px; box-shadow: var(--glass-rim, none), var(--glass-cast, var(--shadow-md)); isolation: isolate;" ref="{{ dockRef }}">
+    <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: inherit; pointer-events: none; -webkit-backdrop-filter: var(--glass-filter, saturate(180%) blur(30px)); backdrop-filter: var(--glass-filter, saturate(180%) blur(30px));"></span>
+    <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: inherit; pointer-events: none; padding: 13px; -webkit-backdrop-filter: var(--glass-edge, blur(2px) saturate(170%) brightness(1.25)); backdrop-filter: var(--glass-edge, blur(2px) saturate(170%) brightness(1.25)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;"></span>
+    <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: var(--glass-sheen, none), var(--glass-bg, var(--dock-bg));"></span>
+    <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: var(--spec, 0); transition: opacity .35s var(--ease); background: radial-gradient(110px 60px at calc(var(--mx, .5) * 100%) calc(var(--my, .5) * 100%), var(--glass-spec-a, rgba(255,255,255,.20)), var(--glass-spec-b, rgba(255,255,255,.06)) 42%, transparent 72%);"></span>
+    <sc-for list="{{ navTelefon }}" as="n" hint-placeholder-count="5">
+      <span title="{{ n.label }}" style="position: relative; flex: 1 1 0; min-width: 0; min-height: 56px; border-radius: 24px; color: {{ n.col }}; background: {{ n.bg }}; box-shadow: {{ n.ring }}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px 2px; cursor: pointer;">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{ n.d }}" fill="currentColor" fill-rule="evenodd"></path></svg>
+        <span style="font-size: 0.6875rem; font-weight: {{ n.w }}; line-height: 1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ n.label }}</span>
+      </span>
+    </sc-for>
+    <span aria-hidden="true" style="position: relative; flex: none; width: 1px; margin: 12px 5px; background: var(--border-strong); opacity: .5;"></span>
+    <button style="position: relative; flex: none; align-self: center; width: 48px; height: 48px; display: grid; place-items: center; border-radius: var(--radius-full); background: var(--fab-bg, var(--accent)); color: var(--accent-text); box-shadow: var(--fab-rim, none), var(--fab-glow, var(--shadow-md)); cursor: pointer; transition: transform .16s var(--ease);" style-active="transform: scale(.94)" aria-label="{{ actiune }}" title="{{ actiune }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+    </button>
+  </nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:428,&quot;height&quot;:932},&quot;tema&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;varianta&quot;:{&quot;editor&quot;:null,&quot;default&quot;:&quot;aurora&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;dock&quot;:{&quot;editor&quot;:null,&quot;default&quot;:&quot;jos&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  static DATE = {
+    munca: [
+      { titlu: 'Citire log alarme AL-4 supratensiune', context: 'Continental Sibiu', k: -2, termen: '−2 z', total: 0, gata: 0 },
+      { titlu: 'Trimite raportul PIF către client', context: 'Continental Sibiu', k: -1, termen: '−1 z', total: 0, gata: 0 },
+      { titlu: 'Parametrizare ABB ACS880 — rampe', context: 'Aquatim Timișoara', k: 0, termen: '09:00', total: 5, gata: 2 },
+      { titlu: 'Verificare cuplaj pompa P-12', context: 'Aquatim Timișoara', k: 0, termen: 'azi', total: 0, gata: 0 },
+      { titlu: 'Debrief parametri Siemens G120', context: 'Aquatim Timișoara', k: 0, termen: 'azi', total: 3, gata: 1 },
+      { titlu: 'Comandă encoder HTL 1024 imp', context: 'Aprovizionare', k: 0, termen: '13:30', total: 0, gata: 0 },
+      { titlu: 'Actualizare schemă dulap DC-3', context: 'Hermes — retehnologizare', k: 0, termen: 'azi', total: 0, gata: 0 },
+    ],
+    personale: [
+      { titlu: 'Programare ITP', k: -4, termen: '−4 z', total: 0, gata: 0 },
+      { titlu: 'Plată abonament telefon', k: 0, termen: 'azi', total: 0, gata: 0 },
+    ],
+  }
+
+  static ICO = {
+    home: 'M11.3 2.7a1 1 0 0 1 1.4 0l8.6 7.5a1 1 0 0 1 .34.76V20a1.5 1.5 0 0 1-1.5 1.5h-4.3v-6a1 1 0 0 0-1-1h-3.6a1 1 0 0 0-1 1v6H4.85A1.5 1.5 0 0 1 3.35 20v-9.04a1 1 0 0 1 .34-.76z',
+    tasks: 'M4.5 4h4A1.5 1.5 0 0 1 10 5.5v3A1.5 1.5 0 0 1 8.5 10h-4A1.5 1.5 0 0 1 3 8.5v-3A1.5 1.5 0 0 1 4.5 4z M5.4 6.7l1.1 1.1 2.1-2.3.95.9-3.05 3.3-2-2z M13 5h7v2h-7z M13 11h7v2h-7z M13 17h7v2h-7z M4 14h6v2H4z',
+    plan: 'M5 3h1.5v2H5zM17.5 3H19v2h-1.5z M4 6h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z M6.5 10.2h6v1.8h-6z M9.5 13.6h7v1.8h-7z M6.5 17h4.5v1.8H6.5z',
+    calendar: 'M5 3h1.5v2H5zM17.5 3H19v2h-1.5z M4 6h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z M6.8 11h2.4v2.3H6.8z M10.8 11h2.4v2.3h-2.4z M14.8 11h2.4v2.3h-2.4z M6.8 15h2.4v2.3H6.8z M10.8 15h2.4v2.3h-2.4z',
+    mai: 'M12 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z M19 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z M5 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z',
+  }
+
+  state = { tema: null }
+  dockRef = React.createRef()
+
+  legSticla(el) {
+    if (!el || el.__lg) return
+    el.__lg = true
+    el.addEventListener('pointermove', (e) => {
+      const r = el.getBoundingClientRect()
+      el.style.setProperty('--mx', ((e.clientX - r.left) / r.width).toFixed(3))
+      el.style.setProperty('--my', ((e.clientY - r.top) / r.height).toFixed(3))
+      el.style.setProperty('--spec', '1')
+    })
+    el.addEventListener('pointerleave', () => el.style.setProperty('--spec', '0'))
+  }
+
+  componentDidMount() { this.legSticla(this.dockRef.current) }
+  componentDidUpdate() { this.legSticla(this.dockRef.current) }
+
+  get tema() { return this.state.tema || this.props.tema || 'dark' }
+
+  rand(t, i) {
+    const C = 2 * Math.PI * 4.5
+    const frac = t.total ? Math.min(1, t.gata / t.total) : 0
+    return {
+      ...t,
+      ring: t.k < 0 ? 'var(--danger)' : t.k === 0 ? 'var(--accent)' : 'var(--border-strong)',
+      nuPrimul: i > 0,
+      arePasi: !!t.total,
+      pasi: t.total ? `${t.gata}/${t.total}` : '',
+      dash: `${(frac * C).toFixed(3)} ${C.toFixed(3)}`,
+      termenCol: t.k < 0 ? 'var(--danger)' : 'var(--text-dim)',
+      termenW: t.k <= 0 ? 500 : 400,
+    }
+  }
+
+  renderVals() {
+    const C = this.constructor
+    const s = new Date().toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long' })
+    const I = C.ICO
+    const ACTIUNI = {
+      'Acasă': 'Adaugă task pentru azi',
+      'Taskuri': 'Adaugă task',
+      'Plan': 'Planifică o zi',
+      'Calendar': 'Adaugă în calendar',
+      'Mai mult': 'Adaugă',
+    }
+    const navTelefon = [
+      ['Acasă', I.home, true], ['Taskuri', I.tasks, false], ['Plan', I.plan, false],
+      ['Calendar', I.calendar, false], ['Mai mult', I.mai, false],
+    ].map(([label, d, activ]) => ({
+      label, d, activ,
+      col: activ ? 'var(--text)' : 'var(--text-dim)',
+      bg: activ ? 'var(--glass-fill, var(--bg-elevated))' : 'transparent',
+      ring: activ ? 'var(--glass-sel, none)' : 'none',
+      w: activ ? 600 : 500,
+    }))
+
+    return {
+      varianta: this.props.varianta || 'aurora',
+      tema: this.tema,
+      ziua: s.charAt(0).toUpperCase() + s.slice(1),
+      munca: C.DATE.munca.map((t, i) => this.rand(t, i)),
+      personale: C.DATE.personale.map((t, i) => this.rand(t, i)),
+      navTelefon,
+      dockRef: this.dockRef,
+      actiune: ACTIUNI[(navTelefon.find(n => n.activ) || {}).label] || 'Adaugă',
+      comutaTema: () => this.setState({ tema: this.tema === 'dark' ? 'light' : 'dark' }),
+    }
+  }
+}
+</script>
+</body>
+</html>

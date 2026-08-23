@@ -49,7 +49,14 @@ INDEPENDENTE_DE_TEMA = {'--loc-site', '--loc-sediu', '--on-color',
 #             ridica deasupra ei; fara `visualViewport` ramane 0 si bara sta pe
 #             marginea de jos, deci valoarea de rezerva e chiar comportamentul
 #             vechi.
-DIN_JS = {'--gl-p', '--gl-s', '--trasY', '--kb'}
+#   --mx/--my : unde e cursorul peste o suprafata de sticla (0..1 pe fiecare axa),
+#             puse de lib/sticla.js ca sa mute reflexul specular. Rezerva .5/.5 =
+#             centrul, adica exact ce trebuie cand nu e niciun cursor pe ea.
+#   --spec  : cat de aprins e reflexul (0..1). Rezerva 0 — stins; asa arata pe
+#             telefon, unde reflexul nici nu se leaga.
+#   --spec-raza : marimea elipsei de reflex; difera intre bara (150px 74px) si
+#             dockul de telefon (110px 60px), deci nu poate fi o constanta in CSS.
+DIN_JS = {'--gl-p', '--gl-s', '--trasY', '--kb', '--mx', '--my', '--spec', '--spec-raza'}
 
 # Fisiere in care valorile brute sunt legitime, cu motiv.
 SCUTITE_HEX = {

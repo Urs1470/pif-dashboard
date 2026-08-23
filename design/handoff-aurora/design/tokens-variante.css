@@ -1,0 +1,104 @@
+/* AURORA — setul de tokenuri pentru direcția aleasă a ecranului Acasă.
+   Structura si NUMELE rolurilor sunt cele din frontend/src/styles/tokens.css —
+   se schimba doar VALORILE. Geometria (46px rand, 12 gap, 920 coloana, 44 tinta)
+   nu e aici: ea nu tine de directia estetica. */
+
+@font-face { font-family: 'Gabarito'; src: url('static/fonts/Gabarito-Variable.woff2') format('woff2-variations'); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: 'DM Mono'; src: url('static/fonts/DMMono-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'DM Mono'; src: url('static/fonts/DMMono-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+
+[data-var] {
+  --radius-full: 9999px;
+  --panel-line: transparent;
+  --halo: none;
+  --fab-bottom: 100px;
+  --dock-space: 96px;
+  --w-row: 500;
+  --w-ctrl: 600;
+  --bg-hover: color-mix(in oklab, var(--text) 6%, var(--bg-surface));
+  --bg-active: color-mix(in oklab, var(--text) 10%, var(--bg-surface));
+  --accent-ring: color-mix(in srgb, var(--accent) 40%, transparent);
+  --danger-subtle: color-mix(in oklab, var(--danger) 14%, var(--bg-surface));
+  --success-subtle: color-mix(in oklab, var(--success) 14%, var(--bg-surface));
+  --focus-ring: 0 0 0 3px var(--accent-ring);
+  --ease: cubic-bezier(.32, .72, .28, 1);
+  --transition-colors: background-color .12s var(--ease), border-color .12s var(--ease), color .12s var(--ease), box-shadow .12s var(--ease), opacity .12s var(--ease);
+}
+
+[data-var] button {
+  font: inherit; color: inherit; border: 0; background: none;
+  padding: 0; margin: 0; text-align: inherit; -webkit-appearance: none; appearance: none;
+}
+[data-var] * { box-sizing: border-box; }
+
+/* ============ AURORA — gri reci + un singur accent (#A3A3CC / #63638F) ============
+   Tema intunecata e carbune, nu negru: suprafetele au relief propriu si umbre reale.
+   Sticla nu mai are spalare de gradient peste ea — volumul vine numai din muchie:
+   o banda de lentila pe contur (blur mic, luminozitate mare) plus doua rame speculare. */
+[data-var="aurora"] {
+  --font-sans: 'Gabarito', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+  --font-title: var(--font-sans);
+  --w-title: 600; --ls-title: -0.02em; --w-row: 500; --w-ctrl: 500;
+  --radius-xs: 999px; --radius-sm: 14px; --radius-md: 24px; --radius-lg: 30px;
+  --fab-bottom: 120px; --dock-space: 128px;
+  --glass-sheen: none;
+}
+[data-var="aurora"][data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15151a; --bg-surface: #1e1e25; --bg-elevated: #27272f;
+  --border: #30303a; --border-strong: #45454f;
+  --text: #ededf2; --text-secondary: #a6a6b2; --text-dim: #86868f;
+  --accent: #a3a3cc; --accent-deep: #c4c4e6; --accent-subtle: #262633; --accent-text: #14141b;
+  --danger: #e08a7c; --danger-deep: #f0a598; --success: #86c4a6;
+  --panel-line: rgba(255,255,255,.04);
+  --bar-bg: rgba(21,21,26,.62);
+  --dock-bg: rgba(30,30,38,.55);
+  --glass-bg: rgba(44,44,56,.50);
+  --glass-filter: saturate(180%) blur(26px);
+  --glass-edge: blur(1px) saturate(210%) brightness(1.22);
+  --glass-rim:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 2px 1px -1px rgba(255,255,255,.10),
+    inset 0 0 0 1px rgba(255,255,255,.07),
+    inset 0 -1px 0 rgba(0,0,0,.36);
+  --glass-cast: 0 1px 2px rgba(0,0,0,.45), 0 16px 34px -14px rgba(0,0,0,.70);
+  --glass-fill: rgba(163,163,204,.14);
+  --glass-spec-a: rgba(214,214,255,.20); --glass-spec-b: rgba(214,214,255,.06);
+  --glass-sel: inset 0 0 0 1px rgba(163,163,204,.24), inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(0,0,0,.24);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+  --shadow-md: 0 2px 4px rgba(0,0,0,.30), 0 24px 48px -28px rgba(0,0,0,.80);
+  --halo: radial-gradient(60% 34% at 50% -12%, rgba(163,163,204,.14), transparent 76%);
+  --fab-bg: #a3a3cc;
+  --fab-rim: inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(0,0,0,.20);
+  --fab-glow: 0 2px 6px rgba(0,0,0,.45), 0 10px 22px -10px rgba(163,163,204,.35);
+}
+[data-var="aurora"][data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f5f9; --bg-surface: #ffffff; --bg-elevated: #eeeef4;
+  --border: #e3e3eb; --border-strong: #c7c7d4;
+  --text: #1c1c24; --text-secondary: #55555f; --text-dim: #7a7a86;
+  --accent: #63638f; --accent-deep: #4a4a72; --accent-subtle: #ececf4; --accent-text: #ffffff;
+  --danger: #a8483a; --danger-deep: #85372b; --success: #3a7a5e;
+  --panel-line: rgba(28,28,36,.06);
+  --bar-bg: rgba(245,245,249,.70);
+  --dock-bg: rgba(255,255,255,.60);
+  --glass-bg: rgba(255,255,255,.55);
+  --glass-filter: saturate(180%) blur(26px);
+  --glass-edge: blur(1px) saturate(200%) brightness(1.06);
+  --glass-rim:
+    inset 0 1px 0 #ffffff,
+    inset 0 2px 1px -1px rgba(255,255,255,.9),
+    inset 0 0 0 1px rgba(28,28,36,.07),
+    inset 0 -1px 0 rgba(28,28,36,.07);
+  --glass-cast: 0 1px 2px rgba(40,40,70,.07), 0 16px 34px -14px rgba(40,40,70,.22);
+  --glass-fill: rgba(255,255,255,.80);
+  --glass-spec-a: rgba(255,255,255,.85); --glass-spec-b: rgba(255,255,255,.30);
+  --glass-sel: inset 0 0 0 1px rgba(28,28,36,.10), inset 0 1px 0 #ffffff, inset 0 -1px 0 rgba(28,28,36,.05);
+  --shadow-sm: 0 1px 2px rgba(40,40,70,.06);
+  --shadow-md: 0 2px 4px rgba(40,40,70,.05), 0 24px 48px -30px rgba(40,40,70,.28);
+  --halo: radial-gradient(60% 34% at 50% -12%, rgba(163,163,204,.24), transparent 76%);
+  --fab-bg: #63638f;
+  --fab-rim: inset 0 1px 0 rgba(255,255,255,.34), inset 0 -1px 0 rgba(0,0,0,.14);
+  --fab-glow: 0 2px 6px rgba(40,40,70,.16), 0 10px 22px -10px rgba(99,99,143,.40);
+}

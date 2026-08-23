@@ -2,9 +2,17 @@
    Redesign 2026-08-08 (handoff „Design audit complet dashboard").
 
    OPT ROLURI, DOUA SETURI DE VALORI, UN SINGUR ACCENT.
-   Accentul e otel. Restul culorilor nu decoreaza — spun stare: restant, facut.
+   Restul culorilor nu decoreaza — spun stare: restant, facut.
    Ce a plecat din sistem, cerut explicit: a doua culoare de brand (amberul
-   Bento), movul decorativ, gradientele mari, glowul, sticla/blurul. */
+   Bento), movul decorativ, gradientele mari, glowul.
+
+   AURORA, 2026-08-23 (handoff „sticla cu muchie-lentila", `design/handoff-aurora/`).
+   Accentul nu mai e otel, e un liliac rece. Si sticla S-A INTORS in sistem, dar
+   nu ca glassmorphism: volumul vine din MUCHIE (o banda-lentilA pe contur, decupata
+   cu `mask-composite`), nu dintr-o spalare de gradient peste suprafata — de aceea
+   `--glass-sheen` exista si e `none`. Blurul se foloseste DOAR pe cele doua bare de
+   navigatie (bara de sus pe desktop, antetul si dockul pe telefon), fiindca acolo
+   continutul chiar trece pe dedesubt. Nu e o textura de imprastiat pe carduri. */
 
 :root,
 [data-theme="dark"] {
@@ -13,18 +21,18 @@
   /* ---- Suprafete: DOUA niveluri, plus o tenta ----
      Elevatia se citeste prin UMBRA, nu prin linii peste tot (vezi --shadow-*).
      `--bg-elevated` e „suprafata 2": inset in card (camp, chip, celula). */
-  --bg: #121417;
-  --bg-surface: #191d21;
-  --bg-elevated: #1f242a;
+  --bg: #15151a;
+  --bg-surface: #1e1e25;
+  --bg-elevated: #27272f;
 
   /* ---- Linii ---- */
-  --border: #262b31;
-  --border-strong: #343b43;
+  --border: #30303a;
+  --border-strong: #45454f;
 
   /* ---- Text ----
      `--text-dim` e MINIMUL pentru text mic, verificat pe FOND (nu doar pe
      suprafata): ~5,6:1 aici, ~4,7:1 pe tema deschisa. Nu se mai deschide. */
-  --text: #e9ecef;
+  --text: #ededf2;
   /* TREI TREPTE CARE CHIAR SUNT TREI. Masurat pe randare: `--text-secondary` si
      `--text-dim` se deosebeau intre ELE cu 1,29:1 pe tema inchisa si 1,16:1 pe cea
      deschisa — sub pragul de 3:1 la care doua suprafete se deosebesc, deci
@@ -33,29 +41,33 @@
      doua trepte identice, deci pagina nu spunea unde sa te uiti intai.
      S-a ridicat SECONDARY, nu s-a coborat dim: dim e deja minimul verificat, iar
      pe tema deschisa mai jos ar fi cazut sub AA pe suprafata (4,98 acum).
-     Dupa: fond 15,56 / 8,62 / 5,63 (inchis), 15,32 / 7,23 / 4,85 (deschis) —
-     trepte de 1,81 si 1,53, respectiv 2,12 si 1,49. Inainte: 1,29 si 1,16. */
-  --text-secondary: #abb2ba;
-  --text-dim: #868f99;
+     Dupa AURORA: fond 15,59 / 7,82 / 5,53 (inchis), 15,56 / 6,77 / 4,83 (deschis).
+     Paleta din handoff dadea `--text-dim` peste pragul de sus (4,11 pe camp, inchis;
+     3,67 pe camp, deschis) — adica exact regula scrisa mai sus, incalcata. Corectia
+     e minima si pe aceeasi nuanta: dim +7 pe inchis, -15 pe deschis; iar fiindca dim
+     s-a apropiat de secondary pe tema inchisa (1,37 < 1,4), s-a RIDICAT secondary,
+     ca si data trecuta — dim ramane podeaua, nu se coboara ea. */
+  --text-secondary: #a9a9b5;
+  --text-dim: #8d8d96;
 
-  /* ---- Accent (otel) ----
+  /* ---- Accent (liliac rece) ----
      `--accent-deep` e CERNEALA PE TENTA. Text pe `--accent-subtle` ia
      intotdeauna `--accent-deep`, niciodata `--accent`.
      `--accent-text` e cerneala pe FILLUL saturat. */
-  --accent: #8ab2d9;
-  --accent-deep: #aecbe8;
-  --accent-subtle: #1c2733;
-  --accent-text: #0e1114;
+  --accent: #a3a3cc;
+  --accent-deep: #c4c4e6;
+  --accent-subtle: #262633;
+  --accent-text: #14141b;
 
   /* ---- Stare ---- */
-  --danger: #e0917f;
-  --danger-deep: #eaa694;
-  --success: #82c2a2;
+  --danger: #e08a7c;
+  --danger-deep: #f0a598;
+  --success: #86c4a6;
   --success-deep: #9fd4b8;
 
   /* ---- Umbre: DOUA niveluri, in locul liniilor peste tot ---- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 16px -10px rgba(0, 0, 0, .6);
-  --shadow-md: 0 1px 2px rgba(0, 0, 0, .5), 0 14px 34px -16px rgba(0, 0, 0, .75);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .35);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, .30), 0 24px 48px -28px rgba(0, 0, 0, .80);
 
   /* Doua umbre care nu sunt niveluri de elevatie, ci OBIECTE anume — de aceea au
      token propriu, nu se aproximeaza cu --shadow-md. Erau scrise de mana: cea de
@@ -69,6 +81,50 @@
      in care peste val vine si un panou opac — atunci valul doar separa, nu stinge. */
   --scrim: rgba(0, 0, 0, .6);
   --scrim-slab: rgba(0, 0, 0, .18);
+
+  /* ---- STICLA (AURORA) — doar pentru barele de navigatie ----
+     Suprafata e o stiva de patru straturi peste un container CU `isolation: isolate`
+     si FARA `background` (altfel n-are ce refracta): 1. blur+saturatie, 2. banda-lentila
+     pe contur, 3. tenta, 4. reflexul care urmareste cursorul.
+     `--glass-edge` e ce deosebeste materialul asta de glassmorphismul obisnuit: un inel
+     de 13px pe margine, cu blur mic si luminozitate mare, decupat cu `mask-composite`.
+     Fara el ramane blur + chenar + umbra, adica orice alta aplicatie.
+     Filtrele SVG in `backdrop-filter: url(#…)` NU merg in Chromium — de aceea muchia e
+     facuta cu masca, nu cu `feDisplacementMap`.
+     `--bar-bg`/`--dock-bg` sunt REZERVA fara blur: aceleasi culori cu alfa mai mare,
+     pentru cazul in care `backdrop-filter` lipseste. Fara ele textul devine ilizibil.
+     Blurul NU coboara sub ~20px fara reverificarea contrastului: el aplatizeaza ce e
+     dedesubt, si asta e singurul motiv pentru care textul de pe bara se citeste. */
+  --glass-sheen: none;   /* punct de extensie; sticla NU are spalare de gradient */
+  --glass-bg: rgba(44, 44, 56, .50);
+  --glass-filter: saturate(180%) blur(26px);
+  --glass-edge: blur(1px) saturate(210%) brightness(1.22);
+  --glass-rim:
+    inset 0 1px 0 rgba(255, 255, 255, .22),
+    inset 0 2px 1px -1px rgba(255, 255, 255, .10),
+    inset 0 0 0 1px rgba(255, 255, 255, .07),
+    inset 0 -1px 0 rgba(0, 0, 0, .36);
+  --glass-cast: 0 1px 2px rgba(0, 0, 0, .45), 0 16px 34px -14px rgba(0, 0, 0, .70);
+  --glass-fill: rgba(163, 163, 204, .14);
+  --glass-sel:
+    inset 0 0 0 1px rgba(163, 163, 204, .24),
+    inset 0 1px 0 rgba(255, 255, 255, .22),
+    inset 0 -1px 0 rgba(0, 0, 0, .24);
+  --glass-spec-a: rgba(214, 214, 255, .20);
+  --glass-spec-b: rgba(214, 214, 255, .06);
+  --bar-bg: rgba(21, 21, 26, .62);
+  --dock-bg: rgba(30, 30, 38, .55);
+
+  /* Actiunea principala din dock. Singurul obiect din aplicatie cu fill saturat. */
+  --fab-bg: #a3a3cc;
+  --fab-rim: inset 0 1px 0 rgba(255, 255, 255, .38), inset 0 -1px 0 rgba(0, 0, 0, .20);
+  --fab-glow: 0 2px 6px rgba(0, 0, 0, .45), 0 10px 22px -10px rgba(163, 163, 204, .35);
+
+  /* Linia de pe panouri: nu mai e `--border`, ci o linie care abia se vede — cardul
+     se desprinde prin UMBRA, iar chenarul doar ii inchide conturul. */
+  --panel-line: rgba(255, 255, 255, .04);
+  /* Halou: o singura sursa de lumina, sus, in spatele barei. */
+  --halo: radial-gradient(60% 34% at 50% -12%, rgba(163, 163, 204, .14), transparent 76%);
 
   /* ================================================================
      ALIASURI — nume vechi care raman in cod, mapate pe rolurile noi.
@@ -168,13 +224,23 @@
   --card-pad: 16px;
   --card-pad-compact: 12px;
 
-  /* ---- Raza: PATRU trepte, nimic intre ele ----
-     8 chip · 10 control si rand · 14 suprafata · 20 doar foaia de jos ·
-     cerc doar bifa. */
-  --radius-xs: 8px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  /* ---- Raza: PATRU trepte, nimic intre ele (AURORA) ----
+     pastila chip si control mic · 14 rand si camp · 24 suprafata · 30 dock si foaie ·
+     cerc doar bifa.
+     `--radius-xs` NU mai e 8px, e PASTILA: cipurile si controalele mici devin
+     complet rotunjite. E schimbarea de forma cu cea mai larga raza de actiune din
+     direcţia asta — atinge fiecare cip de stare, fiecare buton mic si fiecare
+     segment, in toata aplicatia, nu doar pe Acasa. */
+  --radius-xs: 999px;
+  /* EXCEPTIE, cu motiv: reperul zilei selectate din Calendar e o cutie de 24x22
+     si trebuie sa ramana DREPTUNGHI. Comentariul de la `.zi.sel .n` explica de ce
+     a fost facut asa: rotund se citea ca bifa unui task, iar „31" se umfla intr-un
+     oval. Cu `--radius-xs` devenit pastila, acel loc s-ar intoarce tacut in exact
+     defectul reparat atunci — deci primeste treapta lui, nu o valoare scrisa de mana. */
+  --radius-celula: 8px;
+  --radius-sm: 14px;
+  --radius-md: 24px;
+  --radius-lg: 30px;
   --radius-full: 9999px;
 
   /* ---- Tipografie ----
@@ -211,6 +277,14 @@
   --fw-normal: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
+
+  /* AURORA cere greutati pe ROL, nu pe treapta: titlul e 600 cu urmarire stransa,
+     randul de lista si controlul stau amandoua pe 500. Numele vin din handoff si
+     raman ca atare, ca sa se poata urmari inapoi la el. */
+  --w-title: 600;
+  --ls-title: -0.02em;
+  --w-row: 500;
+  --w-ctrl: 500;
 
   --lh-tight: 1.15;
   --lh-snug: 1.35;
@@ -353,6 +427,12 @@
 
   /* ---- Layout ---- */
   --header-height: 56px;
+  /* Dockul de pe telefon PLUTESTE (nu mai e lipit de marginea de jos), deci ultimul
+     rand din lista ar ramane sub el. `--dock-space` e distantierul de la finalul
+     continutului; `--fab-bottom` e inaltimea la care sta actiunea principala cand
+     e desenata in afara dockului. */
+  --dock-space: 128px;
+  --fab-bottom: 120px;
   --content-max: 1400px;
   /* DOUA LATIMI, FIINDCA SUNT DOUA FELURI DE PAGINA.
      1400 e latimea HARTILOR — Planificatorul (30 de zile in coloane) si
@@ -381,7 +461,14 @@
      220 e latimea la care „Departament" — cel mai lung nume de ruta — incape
      intreg langa iconita, fara sa se taie: 10 (padding) + 19 (iconita) + 10
      (gol) + ~150 (text) + 10 = 199, plus aer. */
-  --sidebar-w: 220px;
+  /* 0 DE CAND NAVIGATIA DE DESKTOP NU MAI E O COLOANA (AURORA, 2026-08-23).
+     Era 220px, latimea barei laterale. Bara a urcat sus si pluteste, deci nu mai
+     ocupa latime — dar tokenul ramane, fiindca cinci locuri isi socotesc pozitia
+     din el (App, Modal, TrageReincarca, Urma) si cu 0 devin toate corecte fara
+     sa fie atinse. `--bara-h` e perechea lui pe verticala, si NU are valoare
+     aici: o masoara `BaraSus.svelte`, fiindca bara plutitoare are nevoie de
+     `top + inaltime + aer`, nu de o constanta. */
+  --sidebar-w: 0px;
 
   /* Sensul ultimei navigari (1 inainte / -1 inapoi / 0 nimic), scris din App la
      fiecare schimbare de ruta; il citesc regulile ::view-transition din
@@ -491,47 +578,74 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg: #f4f5f7;
+  --bg: #f5f5f9;
   --bg-surface: #ffffff;
-  --bg-elevated: #f7f8fa;
+  --bg-elevated: #eeeef4;
 
-  --border: #e6e8ec;
-  --border-strong: #d2d6dc;
+  --border: #e3e3eb;
+  --border-strong: #c7c7d4;
 
-  --text: #1b1e23;
+  --text: #1c1c24;
   /* Aceeasi corectie ca pe tema inchisa, vezi nota de acolo: separarea dintre
      secondary si dim era 1,16:1, adica inexistenta. Acum 1,49:1. */
-  --text-secondary: #4b525d;
-  --text-dim: #656c78;
+  --text-secondary: #55555f;
+  --text-dim: #6b6b77;
 
   /* ACCENTUL DE TEMA DESCHISA E MAI INCHIS DECAT PARE, SI ARE UN MOTIV MASURAT.
-     Era `#5980a6`, si cadea sub AA in AMBELE roluri ale lui — singurul rol din
-     sistem care cadea, si numai pe tema pe care Ion o foloseste in hala:
-       ca text pe suprafata  4,15   ca text pe fond 3,80   alb pe fillul lui 4,15
-     Regula scrisa („text pe o tenta ia varianta -deep") acopera exact cazul care
-     NU cadea; cele doua care cadeau — accent ca text pe o SUPRAFATA, si cerneala
-     pe un FILL — nu erau numite de nicio regula, iar `audit_design.py` verifica
-     paritatea tokenurilor intre teme, niciodata contrastul.
-     `#4e7192` e cea mai DESCHISA valoare de aceeasi nuanta care trece toate trei
-     cu marja (4,71 pe cea mai stransa): orice pas in plus s-ar lua din diferenta
-     fata de `--accent-deep`, iar accentul ar incepe sa arate ca el.
-     Tema intunecata nu se atinge — acolo perechile sunt deja 7,63 si 8,52. */
-  --accent: #4e7192;
-  --accent-deep: #3d5f83;
-  --accent-subtle: #ebf1f7;
+     Istoric: `#5980a6` cadea sub AA in doua roluri (accent ca text pe o SUPRAFATA
+     si cerneala pe un FILL) — cele pe care nicio regula scrisa nu le numea, si pe
+     care `audit_design.py` nu le poate vedea, fiindca el verifica paritatea
+     tokenurilor intre teme, niciodata contrastul. De acolo a aparut
+     `scripts/audit_contrast.py`, si de acolo valoarea calibrata de atunci, `#4e7192`.
+     AURORA muta accentul pe liliac; `#63638f` a fost trecut prin acelasi verificator
+     INAINTE sa fie adoptat si iese mai bine decat cel vechi: 5,66 ca text pe
+     suprafata (era 5,12), 5,20 pe fond (era 4,69), 5,66 alb pe fillul lui.
+     Singurul rol al paletei noi care cadea era `--text-dim` — vezi nota de la el. */
+  --accent: #63638f;
+  --accent-deep: #4a4a72;
+  --accent-subtle: #ececf4;
   --accent-text: #ffffff;
 
-  --danger: #b04a38;
-  --danger-deep: #8f3a2b;
-  --success: #3f7d5e;
+  --danger: #a8483a;
+  --danger-deep: #85372b;
+  --success: #3a7a5e;
   --success-deep: #2f6349;
 
-  --shadow-sm: 0 1px 2px rgba(20, 24, 31, .05), 0 4px 12px -8px rgba(20, 24, 31, .10);
-  --shadow-md: 0 1px 2px rgba(20, 24, 31, .05), 0 10px 28px -14px rgba(20, 24, 31, .14);
-  --shadow-glisare: -6px 0 12px -8px rgba(20, 24, 31, .18);
-  --shadow-foaie: 0 -14px 40px -12px rgba(20, 24, 31, .16);
-  --scrim: rgba(20, 24, 31, .32);
-  --scrim-slab: rgba(20, 24, 31, .10);
+  --shadow-sm: 0 1px 2px rgba(40, 40, 70, .06);
+  --shadow-md: 0 2px 4px rgba(40, 40, 70, .05), 0 24px 48px -30px rgba(40, 40, 70, .28);
+  --shadow-glisare: -6px 0 12px -8px rgba(40, 40, 70, .18);
+  --shadow-foaie: 0 -14px 40px -12px rgba(40, 40, 70, .16);
+  --scrim: rgba(40, 40, 70, .32);
+  --scrim-slab: rgba(40, 40, 70, .10);
+
+  /* ---- STICLA, tema deschisa (vezi nota completa la tema intunecata) ----
+     Rama de sus e alb PLIN, nu alb cu alfa: pe un fond deschis o muchie translucida
+     dispare, si atunci sticla nu mai are grosime. */
+  --glass-bg: rgba(255, 255, 255, .55);
+  --glass-filter: saturate(180%) blur(26px);
+  --glass-edge: blur(1px) saturate(200%) brightness(1.06);
+  --glass-rim:
+    inset 0 1px 0 #ffffff,
+    inset 0 2px 1px -1px rgba(255, 255, 255, .9),
+    inset 0 0 0 1px rgba(28, 28, 36, .07),
+    inset 0 -1px 0 rgba(28, 28, 36, .07);
+  --glass-cast: 0 1px 2px rgba(40, 40, 70, .07), 0 16px 34px -14px rgba(40, 40, 70, .22);
+  --glass-fill: rgba(255, 255, 255, .80);
+  --glass-sel:
+    inset 0 0 0 1px rgba(28, 28, 36, .10),
+    inset 0 1px 0 #ffffff,
+    inset 0 -1px 0 rgba(28, 28, 36, .05);
+  --glass-spec-a: rgba(255, 255, 255, .85);
+  --glass-spec-b: rgba(255, 255, 255, .30);
+  --bar-bg: rgba(245, 245, 249, .70);
+  --dock-bg: rgba(255, 255, 255, .60);
+
+  --fab-bg: #63638f;
+  --fab-rim: inset 0 1px 0 rgba(255, 255, 255, .34), inset 0 -1px 0 rgba(0, 0, 0, .14);
+  --fab-glow: 0 2px 6px rgba(40, 40, 70, .16), 0 10px 22px -10px rgba(99, 99, 143, .40);
+
+  --panel-line: rgba(28, 28, 36, .06);
+  --halo: radial-gradient(60% 34% at 50% -12%, rgba(163, 163, 204, .24), transparent 76%);
 
   /* Toate alisurile de mai sus se rezolva prin `var()` la rolurile redefinite
      aici, deci nu se repeta. Exceptiile sunt cele care nu depind de tema. */

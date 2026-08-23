@@ -2,7 +2,7 @@
   import { fade } from 'svelte/transition'
   import Header from './components/layout/Header.svelte'
   import Dock from './components/layout/Dock.svelte'
-  import Sidebar from './components/layout/Sidebar.svelte'
+  import BaraSus from './components/layout/BaraSus.svelte'
   import { ecran } from './lib/ecran.svelte.js'
   import Toast from './components/ui/Toast.svelte'
   import TrageReincarca from './components/ui/TrageReincarca.svelte'
@@ -95,7 +95,7 @@
   // „inainte din dreapta, inapoi din stanga"). Sensul vine din ORDINEA
   // NAVIGATIEI — spre dreapta in dockul de telefon, mai jos in bara laterala de
   // desktop — deci continutul soseste din dreapta, si invers. Lista de mai jos e
-  // sursa acelei ordini pentru amandoua; `Dock.svelte` si `Sidebar.svelte` isi
+  // sursa acelei ordini pentru amandoua; `Dock.svelte` si `BaraSus.svelte` isi
   // insira rutele in aceeasi ordine, altfel aceeasi navigare ar aluneca intr-un
   // sens pe telefon si in celalalt pe desktop.
   // Doua drumuri, acelasi sens:
@@ -243,7 +243,7 @@
   {#if ecran.telefon}
     <Dock deschideCautarea={() => paleta?.deschide()} />
   {:else}
-    <Sidebar deschideCautarea={() => paleta?.deschide()} />
+    <BaraSus deschideCautarea={() => paleta?.deschide()} />
   {/if}
   <CommandPalette bind:this={paleta} />
   <Toast />
@@ -274,15 +274,20 @@
     flex-direction: column;
     min-height: 100dvh;
     overflow-x: clip;
-    /* BARA LATERALA IMPINGE, NU ACOPERA. E `position: fixed` (deci iese din
-       flux) tocmai ca sa nu deruleze cu pagina; rezerva o tine coloana de
-       continut. Pe telefon `--sidebar-w` e 0, deci regula nu face nimic acolo.
-       Pe `.app-main`, nu pe `.app-content`: si antetul de telefon, daca ecranul
-       s-ar largi cat sa aiba amandoua, trebuie sa inceapa dupa bara.
-       PADDING, nu `margin-left`: cu margin, `overflow-x: clip` ar taia de la
-       marginea ferestrei si ultimii 220px de continut ar disparea sub taietura. */
+    /* BARA DE SUS PLUTESTE, DECI CONTINUTUL TRECE PE SUB EA — de aceea e
+       translucida. Ce nu are voie sa treaca pe sub ea e PRIMUL rand: rezerva o
+       tine `--bara-h`, scrisa de `BaraSus.svelte` dupa ce se masoara (bara e
+       plutitoare, deci rezerva e `top + inaltime + aer`, nu doar inaltimea).
+       Pe telefon `--bara-h` nu e scrisa de nimeni si cade pe 0, unde antetul e
+       in flux si isi tine singur locul.
+       `--sidebar-w` a ramas 0 peste tot de cand navigatia nu mai e o coloana;
+       cele cinci locuri care isi socoteau pozitia din ea au devenit corecte
+       fara sa fie atinse. PADDING, nu `margin`: cu margin, `overflow-x: clip`
+       ar taia de la marginea ferestrei. */
     padding-left: var(--sidebar-w);
-    transition: padding-left var(--dur-base) var(--ease);
+    padding-top: var(--bara-h, 0px);
+    transition: padding-left var(--dur-base) var(--ease),
+                padding-top var(--dur-base) var(--ease);
   }
 
   /* FARA `overflow-y: auto` AICI.
@@ -299,7 +304,7 @@
   .app-content {
     flex: 1;
     /* Dockul pluteste peste continut pe telefon — lasa loc dedesubt. Pe desktop
-       `--dock-h` e 0 (o scrie `Sidebar.svelte` la montare), deci ramane doar
+       `--dock-h` e 0 (o scrie `BaraSus.svelte` la montare), deci ramane doar
        aerul de la capatul paginii. */
     padding-bottom: calc(var(--dock-h) + var(--space-lg) + var(--safe-bottom));
     transition: padding-right var(--dur-base) var(--ease);

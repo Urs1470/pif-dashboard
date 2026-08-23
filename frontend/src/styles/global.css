@@ -1426,3 +1426,79 @@ html.tema-vt::view-transition-old(cadru-antet),
 html.tema-vt::view-transition-old(cadru-doc) { animation: vt-tema-pleaca var(--dur-slow) linear both; opacity: 1; }
 html.tema-vt::view-transition-new(cadru-antet),
 html.tema-vt::view-transition-new(cadru-doc) { animation: vt-tema-vine var(--dur-slow) linear both; opacity: 0; }
+
+/* ===== SUPRAFATA DE STICLA (AURORA) =====
+   Materialul barelor de navigatie. Straturile le pune la RULARE `lib/sticla.js`,
+   deci NU apar in markup — de aceea regulile stau aici si nu intr-o componenta:
+   Svelte taie din build regulile ale caror selectoare nu le gaseste, si atunci
+   sticla ar disparea fara nicio eroare. Vezi antetul lui `lib/sticla.js`.
+
+   Containerul NU are `background`: altfel straturile de dedesubt n-au ce refracta.
+   Ordinea straturilor e ordinea din DOM; continutul urca peste ele fiindca e
+   `position: relative`, nu printr-un `z-index` scris de mana. */
+.sticla {
+  position: relative;
+  isolation: isolate;
+  background: none;
+  box-shadow: var(--glass-rim), var(--glass-cast);
+}
+.sticla > .s-blur,
+.sticla > .s-edge,
+.sticla > .s-tint,
+.sticla > .s-spec {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+/* Continutul propriu-zis: orice copil care NU e strat sta deasupra. */
+.sticla > *:not(.s-blur):not(.s-edge):not(.s-tint):not(.s-spec) { position: relative; }
+
+/* 1. Blurul. NU coboara sub ~20px fara reverificarea contrastului: el aplatizeaza
+      ce trece pe dedesubt, si asta e singurul motiv pentru care textul de pe bara
+      se citeste peste o pagina cu carduri albe. */
+.sticla > .s-blur {
+  -webkit-backdrop-filter: var(--glass-filter);
+          backdrop-filter: var(--glass-filter);
+}
+
+/* 2. BANDA-LENTILA — ce face materialul asta sa aiba GROSIME.
+      Un inel de 13px pe margine, cu blur mic si luminozitate mare; masca decupeaza
+      centrul, deci filtrul se aplica DOAR pe banda. `-webkit-mask-composite: xor`
+      si `mask-composite: exclude` NU sunt sinonime — au vocabulare de valori
+      diferite, si amandoua sunt necesare. */
+.sticla > .s-edge {
+  padding: 13px;
+  -webkit-backdrop-filter: var(--glass-edge);
+          backdrop-filter: var(--glass-edge);
+  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+          mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-origin: content-box, border-box;
+          mask-origin: content-box, border-box;
+  -webkit-mask-clip: content-box, border-box;
+          mask-clip: content-box, border-box;
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+}
+
+/* 3. Tenta. `--glass-sheen` e `none` cu buna stiinta: sticla NU are spalare de
+      gradient peste suprafata, volumul vine numai din muchie. */
+.sticla > .s-tint { background: var(--glass-sheen), var(--glass-bg); }
+
+/* 4. Reflexul care urmareste cursorul. `--mx`/`--my`/`--spec` le scrie
+      `lib/sticla.js`, si numai pe aparate cu cursor. */
+.sticla > .s-spec {
+  opacity: var(--spec, 0);
+  transition: opacity var(--dur-slow) var(--ease);
+  background: radial-gradient(var(--spec-raza, 150px 74px)
+              at calc(var(--mx, .5) * 100%) calc(var(--my, .5) * 100%),
+              var(--glass-spec-a), var(--glass-spec-b) 42%, transparent 72%);
+}
+
+/* REZERVA, cand `backdrop-filter` lipseste. Fara ea tenta ramane la .50-.55 peste
+   continut nefiltrat si textul barei devine ilizibil — de aceea `--bar-bg` si
+   `--dock-bg` exista cu aceeasi culoare si alfa mai mare. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .sticla.sticla-bara > .s-tint { background: var(--bar-bg); }
+  .sticla.sticla-dock > .s-tint { background: var(--dock-bg); }
+}

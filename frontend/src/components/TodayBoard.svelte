@@ -599,7 +599,11 @@
     position: fixed; right: calc(var(--space-md) + var(--safe-right));
     bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
     width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
-    border-radius: var(--radius-lg); border: none;
+    /* CERC, explicit. `--radius-lg` a trecut 20 -> 30 odata cu AURORA, iar pe o
+       cutie de 58px asta depaseste jumatatea laturii — butonul devenea rotund
+       din accident, in patru fisiere deodata. Prototipul chiar il deseneaza
+       rotund, deci rezultatul ramane; doar ca acum e scris. */
+    border-radius: var(--radius-full); border: none;
     background: var(--accent); color: var(--accent-text);
     box-shadow: var(--shadow-lg); z-index: calc(var(--z-sticky) - 1);
     cursor: pointer; transition: var(--transition-pressable); }

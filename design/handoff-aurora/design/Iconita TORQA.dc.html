@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="tokens-variante.css" />
+<style>
+  body { margin: 0; background: #08080b; color: #e3e3e9; font-family: 'Gabarito', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: #9494b0; text-decoration: none; }
+  a:hover { color: #b3b3cd; }
+  * { box-sizing: border-box; }
+</style>
+</helmet>
+
+<svg aria-hidden="true" width="0" height="0" style="position: absolute; width: 0; height: 0;">
+  <defs>
+    <clipPath id="tq-clip"><rect width="64" height="64" rx="15"></rect></clipPath>
+
+    <linearGradient id="a-base" x1="0" y1="0" x2="0.55" y2="1">
+      <stop offset="0" stop-color="#34343f"></stop><stop offset=".55" stop-color="#17171e"></stop><stop offset="1" stop-color="#0a0a0f"></stop>
+    </linearGradient>
+    <radialGradient id="a-spec" cx=".26" cy=".08" r=".72">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".40"></stop><stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop>
+    </radialGradient>
+    <radialGradient id="a-bounce" cx=".86" cy="1" r=".62">
+      <stop offset="0" stop-color="#9494b0" stop-opacity=".55"></stop><stop offset="1" stop-color="#9494b0" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="a-sweep" x1="0" y1="0" x2="1" y2="1">
+      <stop offset=".30" stop-color="#ffffff" stop-opacity="0"></stop>
+      <stop offset=".47" stop-color="#ffffff" stop-opacity=".17"></stop>
+      <stop offset=".63" stop-color="#ffffff" stop-opacity="0"></stop>
+    </linearGradient>
+    <linearGradient id="a-glyph" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"></stop><stop offset="1" stop-color="#c9c9dd"></stop>
+    </linearGradient>
+
+    <linearGradient id="b-base" x1="0" y1="0" x2=".4" y2="1">
+      <stop offset="0" stop-color="#4a4a56"></stop><stop offset=".5" stop-color="#33333d"></stop><stop offset="1" stop-color="#22222a"></stop>
+    </linearGradient>
+    <linearGradient id="b-cross" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"></stop>
+      <stop offset=".38" stop-color="#ffffff" stop-opacity=".13"></stop>
+      <stop offset=".52" stop-color="#ffffff" stop-opacity="0"></stop>
+      <stop offset=".78" stop-color="#ffffff" stop-opacity=".09"></stop>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop>
+    </linearGradient>
+    <filter id="b-brush" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85 0.015" numOctaves="3" seed="4"></feTurbulence>
+      <feColorMatrix type="saturate" values="0"></feColorMatrix>
+      <feComponentTransfer><feFuncA type="linear" slope=".26"></feFuncA></feComponentTransfer>
+    </filter>
+
+    <radialGradient id="c-base" cx=".32" cy="-.05" r="1.1">
+      <stop offset="0" stop-color="#8a8ab8"></stop><stop offset=".45" stop-color="#4a4a6a"></stop><stop offset="1" stop-color="#1a1a26"></stop>
+    </radialGradient>
+    <linearGradient id="c-gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".46"></stop>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop>
+    </linearGradient>
+    <linearGradient id="c-glyph" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf6"></stop><stop offset="1" stop-color="#e6e2d4"></stop>
+    </linearGradient>
+    <filter id="c-drop" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="1.4" stdDeviation="1.1" flood-color="#0d0d16" flood-opacity=".55"></feDropShadow>
+    </filter>
+
+    <linearGradient id="d-top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c8c8e2"></stop><stop offset="1" stop-color="#8f8fb2"></stop>
+    </linearGradient>
+
+    <g id="mat-glass">
+      <rect width="64" height="64" fill="url(#a-base)"></rect>
+      <rect width="64" height="64" fill="url(#a-bounce)"></rect>
+      <rect width="64" height="64" fill="url(#a-spec)"></rect>
+      <rect width="64" height="64" fill="url(#a-sweep)"></rect>
+    </g>
+    <g id="mat-email">
+      <rect width="64" height="64" fill="url(#c-base)"></rect>
+      <ellipse cx="32" cy="2" rx="36" ry="22" fill="url(#c-gloss)"></ellipse>
+    </g>
+
+    
+    
+    
+    <linearGradient id="r-body" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#1b1b30"></stop>
+      <stop offset=".55" stop-color="#3f3f66"></stop>
+      <stop offset="1" stop-color="#8f8fbe"></stop>
+    </linearGradient>
+    <pattern id="r-grid" width="4" height="4" patternUnits="userSpaceOnUse">
+      <path d="M4 0 H0 V4" fill="none" stroke="#dfdff2" stroke-opacity=".30" stroke-width=".35"></path>
+    </pattern>
+    <linearGradient id="r-mark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"></stop>
+      <stop offset=".55" stop-color="#e6e6f2"></stop>
+      <stop offset="1" stop-color="#b6b6d0"></stop>
+    </linearGradient>
+    <filter id="r-drop" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="1.8" stdDeviation="1.6" flood-color="#0d0d20" flood-opacity=".55"></feDropShadow>
+    </filter>
+
+    <pattern id="x-grid" width="6" height="6" patternUnits="userSpaceOnUse">
+      <path d="M6 0 H0 V6" fill="none" stroke="#9494b0" stroke-opacity=".45" stroke-width=".9"></path>
+    </pattern>
+    <linearGradient id="x-iri" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7be7ff"></stop>
+      <stop offset=".28" stop-color="#a99cff"></stop>
+      <stop offset=".52" stop-color="#ff9ec2"></stop>
+      <stop offset=".74" stop-color="#ffd29a"></stop>
+      <stop offset="1" stop-color="#8ff5d0"></stop>
+    </linearGradient>
+    <filter id="x-emboss" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="bl"></feGaussianBlur>
+      <feSpecularLighting in="bl" surfaceScale="4.5" specularConstant="1.15" specularExponent="24" lighting-color="#ffffff" result="sp">
+        <feDistantLight azimuth="235" elevation="58"></feDistantLight>
+      </feSpecularLighting>
+      <feComposite in="sp" in2="SourceAlpha" operator="in" result="spc"></feComposite>
+      <feDiffuseLighting in="bl" surfaceScale="3" diffuseConstant="1" lighting-color="#8c8ca8" result="df">
+        <feDistantLight azimuth="235" elevation="46"></feDistantLight>
+      </feDiffuseLighting>
+      <feComposite in="df" in2="SourceAlpha" operator="in" result="dfc"></feComposite>
+      <feMerge><feMergeNode in="dfc"></feMergeNode><feMergeNode in="spc"></feMergeNode></feMerge>
+    </filter>
+    <filter id="x-refract" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.022 0.03" numOctaves="2" seed="5" result="n"></feTurbulence>
+      <feGaussianBlur in="n" stdDeviation="1" result="ns"></feGaussianBlur>
+      <feDisplacementMap in="SourceGraphic" in2="ns" scale="9" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+    </filter>
+    <filter id="x-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="9"></feTurbulence>
+      <feColorMatrix type="saturate" values="0"></feColorMatrix>
+      <feComponentTransfer><feFuncA type="linear" slope=".2"></feFuncA></feComponentTransfer>
+    </filter>
+    <mask id="x-mask-cuplu">
+      <rect width="64" height="64" fill="#000"></rect>
+      <path d="M15.6 41.5 A19 19 0 1 1 48.4 41.5 M41.4 34.8 L49.4 41.9 L42.6 49.6" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path>
+    </mask>
+
+    
+    
+    
+    
+
+    
+  </defs>
+
+
+
+
+
+
+
+
+
+
+  <symbol id="ico-a" viewBox="0 0 64 64">
+    <g clip-path="url(#tq-clip)">
+      <rect width="64" height="64" fill="url(#a-base)"></rect>
+      <rect width="64" height="64" fill="url(#a-bounce)"></rect>
+      <rect width="64" height="64" fill="url(#a-spec)"></rect>
+      <rect width="64" height="64" fill="url(#a-sweep)"></rect>
+      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#04040a" stroke-opacity=".6" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 1.5)"></path>
+      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="url(#a-glyph)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#ffffff" stroke-opacity=".65" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2.2)"></path>
+    </g>
+    <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".20" stroke-width="1.2"></rect>
+  </symbol>
+
+  <symbol id="ico-b" viewBox="0 0 64 64">
+    <g clip-path="url(#tq-clip)">
+      <rect width="64" height="64" fill="url(#b-base)"></rect>
+      <rect width="64" height="64" filter="url(#b-brush)" opacity=".5"></rect>
+      <rect width="64" height="64" fill="url(#b-cross)"></rect>
+      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#ffffff" stroke-opacity=".26" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 1.3)"></path>
+      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#1a1a21" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#000000" stroke-opacity=".45" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -1.1)"></path>
+    </g>
+    <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="1.2"></rect>
+  </symbol>
+
+  <symbol id="ico-c" viewBox="0 0 64 64">
+    <g clip-path="url(#tq-clip)">
+      <rect width="64" height="64" fill="url(#c-base)"></rect>
+      <ellipse cx="32" cy="2" rx="36" ry="22" fill="url(#c-gloss)"></ellipse>
+      <g filter="url(#c-drop)">
+        <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="url(#c-glyph)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </g>
+      <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2.3)"></path>
+    </g>
+    <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".22" stroke-width="1.2"></rect>
+  </symbol>
+
+  <symbol id="ico-d" viewBox="0 0 64 64">
+    <g clip-path="url(#tq-clip)">
+      <rect width="64" height="64" fill="#20202b"></rect>
+      <path d="M0 0 H64 V26 L0 44 Z" fill="#2f2f3f"></path>
+      <path d="M0 0 H32 L0 30 Z" fill="#3a3a4d"></path>
+      <path d="M64 26 V64 H18 Z" fill="#191922"></path>
+      <g>
+        <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#3a3a52" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(3.2 3.2)"></path>
+        <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#43435e" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(2.4 2.4)"></path>
+        <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#4d4d6c" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(1.6 1.6)"></path>
+        <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#5a5a7d" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(.8 .8)"></path>
+        <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#7fd4ff" stroke-opacity=".5" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(-.55 -.55)"></path>
+        <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="#ff9ec2" stroke-opacity=".45" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(.55 .55)"></path>
+        <path d="M10 42 H21.5 V22 H32 V42 H42.5 V22 H54" fill="none" stroke="url(#d-top)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </g>
+    </g>
+    <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".16" stroke-width="1.2"></rect>
+  </symbol>
+</svg>
+
+<section style="padding: 40px 40px 24px; display: flex; flex-direction: column; gap: 28px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; max-width: 76ch;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #77777f;">Tura 6 · Invertor, PIF, convertor</span>
+    <h1 style="margin: 0; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; color: #ededf2;">Semne din schema de forță</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #97979f; text-wrap: pretty;">Același tratament de planșă, dar semnele vin acum din schema de forță: convertorul, circuitul intermediar, puntea, sursa, modulația. Sunt scrise cu grosimi diferite, ca într-un desen tehnic — contur gros pentru corp, linie subțire pentru detaliul de simbol.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start;">
+    <sc-for list="{{ burst }}" as="b" hint-placeholder-count="3">
+      <div id="{{ b.id }}" style="display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 306px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">{{ b.id }}</span>
+          <span style="font-size: 17px; font-weight: 600; color: #ededf2;">{{ b.nume }}</span>
+        </div>
+
+        <svg width="150" height="150" viewBox="0 0 64 64" style="display: block; align-self: center;">
+          <g clip-path="url(#tq-clip)">
+            <rect width="64" height="64" fill="url(#r-body)"></rect>
+            <rect width="64" height="64" fill="url(#r-grid)" opacity=".55"></rect>
+            <g fill="none" stroke="#dfdff2" stroke-opacity=".42" stroke-width=".45">
+              <path d="M0 32 H64 M32 0 V64" stroke-dasharray="2 2.4"></path>
+              <sc-if value="{{ b.areCerc }}" hint-placeholder-val="{{ true }}">
+                <circle cx="32" cy="32" r="22.5"></circle>
+                <circle cx="32" cy="32" r="14" stroke-dasharray="1.6 2"></circle>
+                <sc-for list="{{ ticks }}" as="r" hint-placeholder-count="12">
+                  <path d="M32 6.4 V10.2" transform="{{ r.t }}"></path>
+                </sc-for>
+              </sc-if>
+              <path d="M6 6 H12 M6 6 V12 M58 6 H52 M58 6 V12 M6 58 H12 M6 58 V52 M58 58 H52 M58 58 V52" stroke-opacity=".55"></path>
+            </g>
+            <rect width="64" height="64" fill="url(#a-spec)" opacity=".55"></rect>
+            <g filter="url(#r-drop)">
+              <path d="{{ b.d }}" fill="none" stroke="url(#r-mark)" stroke-width="{{ b.sw }}" stroke-linecap="round" stroke-linejoin="round"></path><sc-if value="{{ b.areD2 }}" hint-placeholder-val="{{ false }}"><path d="{{ b.d2 }}" fill="none" stroke="url(#r-mark)" stroke-width="{{ b.sw2 }}" stroke-linecap="round" stroke-linejoin="round"></path></sc-if>
+            </g>
+          </g>
+          <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".22" stroke-width="1.2"></rect>
+        </svg>
+
+        <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #24242c;">
+          <svg width="28" height="28" viewBox="0 0 64 64">
+            <g clip-path="url(#tq-clip)">
+              <rect width="64" height="64" fill="url(#r-body)"></rect>
+              <rect width="64" height="64" fill="url(#r-grid)" opacity=".55"></rect><sc-if value="{{ b.areCerc }}" hint-placeholder-val="{{ true }}"><g fill="none" stroke="#dfdff2" stroke-opacity=".42" stroke-width=".45"><circle cx="32" cy="32" r="22.5"></circle></g></sc-if>
+              <path d="{{ b.d }}" fill="none" stroke="url(#r-mark)" stroke-width="{{ b.sw }}" stroke-linecap="round" stroke-linejoin="round"></path><sc-if value="{{ b.areD2 }}" hint-placeholder-val="{{ false }}"><path d="{{ b.d2 }}" fill="none" stroke="url(#r-mark)" stroke-width="{{ b.sw2 }}" stroke-linecap="round" stroke-linejoin="round"></path></sc-if>
+            </g>
+          </svg>
+          <svg width="20" height="20" viewBox="0 0 64 64">
+            <g clip-path="url(#tq-clip)">
+              <rect width="64" height="64" fill="url(#r-body)"></rect>
+              <rect width="64" height="64" fill="url(#r-grid)" opacity=".55"></rect><sc-if value="{{ b.areCerc }}" hint-placeholder-val="{{ true }}"><g fill="none" stroke="#dfdff2" stroke-opacity=".42" stroke-width=".45"><circle cx="32" cy="32" r="22.5"></circle></g></sc-if>
+              <path d="{{ b.d }}" fill="none" stroke="url(#r-mark)" stroke-width="{{ b.sw }}" stroke-linecap="round" stroke-linejoin="round"></path><sc-if value="{{ b.areD2 }}" hint-placeholder-val="{{ false }}"><path d="{{ b.d2 }}" fill="none" stroke="url(#r-mark)" stroke-width="{{ b.sw2 }}" stroke-linecap="round" stroke-linejoin="round"></path></sc-if>
+            </g>
+          </svg>
+        </div>
+
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">{{ b.teza }}</p>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section style="padding: 8px 40px 24px; display: flex; flex-direction: column; gap: 28px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; max-width: 76ch;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #77777f;">Tura 4 · Mai departe de tratamentele alese</span>
+    <h1 style="margin: 0; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; color: #ededf2;">Trei materiale cu fizică, nu cu gradienți</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #97979f; text-wrap: pretty;">Aici volumul nu mai e desenat de mână: lumina, relieful și refracția sunt calculate de motor. Sunt mai scumpe la randare și mai greu de controlat — dar arată altfel decât orice iconiță făcută din straturi de gradient.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start;">
+
+    <div id="4a" style="display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 306px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">4a</span>
+        <span style="font-size: 17px; font-weight: 600; color: #ededf2;">Relief cu lumină reală</span>
+      </div>
+      <svg width="150" height="150" viewBox="0 0 64 64" style="display: block; align-self: center;">
+        <g clip-path="url(#tq-clip)">
+          <rect width="64" height="64" fill="url(#b-base)"></rect>
+          <rect width="64" height="64" filter="url(#b-brush)" opacity=".5"></rect>
+          <rect width="64" height="64" fill="url(#b-cross)"></rect>
+          <g filter="url(#x-emboss)">
+            <path d="M15.6 41.5 A19 19 0 1 1 48.4 41.5 M41.4 34.8 L49.4 41.9 L42.6 49.6" fill="none" stroke="#2a2a34" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round"></path>
+          </g>
+        </g>
+        <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".26" stroke-width="1.2"></rect>
+      </svg>
+      <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #24242c;">
+        <svg width="28" height="28" viewBox="0 0 64 64"><g clip-path="url(#tq-clip)"><rect width="64" height="64" fill="url(#b-base)"></rect><g filter="url(#x-emboss)"><path d="M15.6 41.5 A19 19 0 1 1 48.4 41.5 M41.4 34.8 L49.4 41.9 L42.6 49.6" fill="none" stroke="#2a2a34" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round"></path></g></g></svg>
+        <svg width="20" height="20" viewBox="0 0 64 64"><g clip-path="url(#tq-clip)"><rect width="64" height="64" fill="url(#b-base)"></rect><g filter="url(#x-emboss)"><path d="M15.6 41.5 A19 19 0 1 1 48.4 41.5 M41.4 34.8 L49.4 41.9 L42.6 49.6" fill="none" stroke="#2a2a34" stroke-width="6.8" stroke-linecap="round" stroke-linejoin="round"></path></g></g></svg>
+      </div>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">Semnul e o suprafață, nu un contur: din alfa lui se construiește un relief, iar peste el cad două lumini — una difuză și una speculară, ambele de la 235°. Mută sursa de lumină și se schimbă tot obiectul.</p>
+    </div>
+
+    <div id="4b" style="display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 306px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">4b</span>
+        <span style="font-size: 17px; font-weight: 600; color: #ededf2;">Lentilă</span>
+      </div>
+      <svg width="150" height="150" viewBox="0 0 64 64" style="display: block; align-self: center;">
+        <g clip-path="url(#tq-clip)">
+          <rect width="64" height="64" fill="url(#a-base)"></rect>
+          <rect width="64" height="64" fill="url(#x-grid)" opacity=".5"></rect>
+          <rect width="64" height="64" fill="url(#a-bounce)"></rect>
+          <g mask="url(#x-mask-cuplu)">
+            <g filter="url(#x-refract)">
+              <rect width="64" height="64" fill="url(#a-base)"></rect>
+              <rect width="64" height="64" fill="url(#x-grid)" opacity=".95"></rect>
+              <rect width="64" height="64" fill="url(#a-bounce)"></rect>
+            </g>
+            <rect width="64" height="64" fill="#ffffff" opacity=".07"></rect>
+          </g>
+          <path d="M15.6 41.5 A19 19 0 1 1 48.4 41.5 M41.4 34.8 L49.4 41.9 L42.6 49.6" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2)"></path>
+          <path d="M15.6 41.5 A19 19 0 1 1 48.4 41.5 M41.4 34.8 L49.4 41.9 L42.6 49.6" fill="none" stroke="#04040a" stroke-opacity=".45" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 2.2)"></path>
+          <rect width="64" height="64" fill="url(#a-sweep)"></rect>
+        </g>
+        <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".20" stroke-width="1.2"></rect>
+      </svg>
+      <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #24242c;">
+        <svg width="28" height="28" viewBox="0 0 64 64"><g clip-path="url(#tq-clip)"><rect width="64" height="64" fill="url(#a-base)"></rect><rect width="64" height="64" fill="url(#x-grid)" opacity=".5"></rect><g mask="url(#x-mask-cuplu)"><g filter="url(#x-refract)"><rect width="64" height="64" fill="url(#a-base)"></rect><rect width="64" height="64" fill="url(#x-grid)" opacity=".95"></rect></g><rect width="64" height="64" fill="#ffffff" opacity=".07"></rect></g></g></svg>
+        <svg width="20" height="20" viewBox="0 0 64 64"><g clip-path="url(#tq-clip)"><rect width="64" height="64" fill="url(#a-base)"></rect><rect width="64" height="64" fill="url(#x-grid)" opacity=".5"></rect><g mask="url(#x-mask-cuplu)"><g filter="url(#x-refract)"><rect width="64" height="64" fill="url(#a-base)"></rect><rect width="64" height="64" fill="url(#x-grid)" opacity=".95"></rect></g><rect width="64" height="64" fill="#ffffff" opacity=".07"></rect></g></g></svg>
+      </div>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">Semnul nu are culoare proprie: e o bucată de sticlă care distorsionează caroiajul din spate. Refracția e calculată, deci se vede doar acolo unde există ceva de refractat — exact ca sticla adevărată.</p>
+    </div>
+
+    <div id="4c" style="display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 306px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">4c</span>
+        <span style="font-size: 17px; font-weight: 600; color: #ededf2;">Peliculă</span>
+      </div>
+      <svg width="150" height="150" viewBox="0 0 64 64" style="display: block; align-self: center;">
+        <g clip-path="url(#tq-clip)">
+          <rect width="64" height="64" fill="#0a0a0f"></rect>
+          <g mask="url(#x-mask-cuplu)">
+            <rect width="64" height="64" fill="url(#x-iri)"></rect>
+            <rect width="64" height="64" fill="url(#a-sweep)"></rect>
+            <rect width="64" height="64" filter="url(#x-grain)" opacity=".5"></rect>
+          </g>
+          <path d="M15.6 41.5 A19 19 0 1 1 48.4 41.5 M41.4 34.8 L49.4 41.9 L42.6 49.6" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2.3)"></path>
+          <rect width="64" height="64" fill="url(#a-spec)" opacity=".5"></rect>
+        </g>
+        <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="1.2"></rect>
+      </svg>
+      <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #24242c;">
+        <svg width="28" height="28" viewBox="0 0 64 64"><g clip-path="url(#tq-clip)"><rect width="64" height="64" fill="#0a0a0f"></rect><g mask="url(#x-mask-cuplu)"><rect width="64" height="64" fill="url(#x-iri)"></rect></g></g></svg>
+        <svg width="20" height="20" viewBox="0 0 64 64"><g clip-path="url(#tq-clip)"><rect width="64" height="64" fill="#0a0a0f"></rect><g mask="url(#x-mask-cuplu)"><rect width="64" height="64" fill="url(#x-iri)"></rect></g></g></svg>
+      </div>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">Peliculă subțire pe negru: spectrul se plimbă peste semn ca uleiul pe apă, cu grâne fin peste. Singura variantă din tot setul care aduce culoare — și tocmai de aceea cea mai riscantă lângă interfața gri.</p>
+    </div>
+
+  </div>
+</section>
+
+<section style="padding: 8px 40px 24px; display: flex; flex-direction: column; gap: 32px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; max-width: 76ch;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #77777f;">Tura 3 · Semne noi, în materialele alese</span>
+    <h1 style="margin: 0; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; color: #ededf2;">Patru semne, două materiale</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #97979f; text-wrap: pretty;">Materialele rămân <a href="#2a">2a</a> sticlă turnată și <a href="#2c">2c</a> email profund. Ce se schimbă e semnul: nu mai e pulsul actual, ci patru idei din meseria propriu-zisă. Fiecare apare în ambele materiale, plus la 20 px — acolo se decide.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start;">
+
+    <sc-for list="{{ semne }}" as="s" hint-placeholder-count="4">
+      <div id="{{ s.id }}" style="display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 306px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">{{ s.id }}</span>
+          <span style="font-size: 17px; font-weight: 600; color: #ededf2;">{{ s.nume }}</span>
+        </div>
+
+        <div style="display: flex; gap: 14px; align-items: flex-end;">
+          <svg width="126" height="126" viewBox="0 0 64 64" style="display: block;">
+            <g clip-path="url(#tq-clip)">
+              <use href="#mat-glass"></use>
+              <path d="{{ s.d }}" fill="none" stroke="#04040a" stroke-opacity=".6" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 1.5)"></path>
+              <path d="{{ s.d }}" fill="none" stroke="url(#a-glyph)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="{{ s.d }}" fill="none" stroke="#ffffff" stroke-opacity=".6" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2.2)"></path>
+            </g>
+            <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".20" stroke-width="1.2"></rect>
+          </svg>
+          <svg width="126" height="126" viewBox="0 0 64 64" style="display: block;">
+            <g clip-path="url(#tq-clip)">
+              <use href="#mat-email"></use>
+              <g filter="url(#c-drop)">
+                <path d="{{ s.d }}" fill="none" stroke="url(#c-glyph)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path>
+              </g>
+              <path d="{{ s.d }}" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2.3)"></path>
+            </g>
+            <rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none" stroke="#ffffff" stroke-opacity=".22" stroke-width="1.2"></rect>
+          </svg>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #24242c;">
+          <svg width="28" height="28" viewBox="0 0 64 64">
+            <g clip-path="url(#tq-clip)"><use href="#mat-glass"></use><path d="{{ s.d }}" fill="none" stroke="url(#a-glyph)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path></g>
+          </svg>
+          <svg width="20" height="20" viewBox="0 0 64 64">
+            <g clip-path="url(#tq-clip)"><use href="#mat-glass"></use><path d="{{ s.d }}" fill="none" stroke="url(#a-glyph)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path></g>
+          </svg>
+          <span style="width: 1px; height: 22px; background: #24242c;"></span>
+          <svg width="28" height="28" viewBox="0 0 64 64">
+            <g clip-path="url(#tq-clip)"><use href="#mat-email"></use><path d="{{ s.d }}" fill="none" stroke="url(#c-glyph)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path></g>
+          </svg>
+          <svg width="20" height="20" viewBox="0 0 64 64">
+            <g clip-path="url(#tq-clip)"><use href="#mat-email"></use><path d="{{ s.d }}" fill="none" stroke="url(#c-glyph)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round"></path></g>
+          </svg>
+        </div>
+
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">{{ s.teza }}</p>
+      </div>
+    </sc-for>
+
+  </div>
+</section>
+
+<section style="padding: 8px 40px 72px; display: flex; flex-direction: column; gap: 32px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; max-width: 76ch;">
+    <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #77777f;">Tura 2 · Iconița de aplicație</span>
+    <h1 style="margin: 0; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; color: #ededf2;">Patru tratamente cu volum</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #97979f; text-wrap: pretty;">Același semn — profilul de cuplu — dar cu material, nu doar culoare. Fiecare e un singur SVG scalabil, fără imagini: gradienți, texturi procedurale și lumini în interiorul fișierului. Sub fiecare, aceeași iconiță la mărimile reale la care ajunge (96 → 20 px), pentru că un tratament complex e bun doar dacă supraviețuiește la 20.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start;">
+
+    <div id="2a" style="display: flex; flex-direction: column; gap: 16px; padding: 22px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 300px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">2a</span>
+        <span style="font-size: 17px; font-weight: 600; color: #ededf2;">Sticlă turnată</span>
+      </div>
+      <svg width="176" height="176" viewBox="0 0 64 64" style="display: block; align-self: center;"><use href="#ico-a"></use></svg>
+      <div style="display: flex; align-items: flex-end; gap: 14px; height: 100px; padding-top: 6px; border-top: 1px solid #24242c;">
+        <svg width="96" height="96" viewBox="0 0 64 64"><use href="#ico-a"></use></svg>
+        <svg width="48" height="48" viewBox="0 0 64 64"><use href="#ico-a"></use></svg>
+        <svg width="28" height="28" viewBox="0 0 64 64"><use href="#ico-a"></use></svg>
+        <svg width="20" height="20" viewBox="0 0 64 64"><use href="#ico-a"></use></svg>
+      </div>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">Limbajul din aplicație, dus în iconiță: semnul e prins în sticlă, cu umbra lui dedesubt și muchia luminată deasupra. Reflexia diagonală și lumina rece de jos-dreapta îi dau grosime.</p>
+    </div>
+
+    <div id="2b" style="display: flex; flex-direction: column; gap: 16px; padding: 22px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 300px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">2b</span>
+        <span style="font-size: 17px; font-weight: 600; color: #ededf2;">Anodizat</span>
+      </div>
+      <svg width="176" height="176" viewBox="0 0 64 64" style="display: block; align-self: center;"><use href="#ico-b"></use></svg>
+      <div style="display: flex; align-items: flex-end; gap: 14px; height: 100px; padding-top: 6px; border-top: 1px solid #24242c;">
+        <svg width="96" height="96" viewBox="0 0 64 64"><use href="#ico-b"></use></svg>
+        <svg width="48" height="48" viewBox="0 0 64 64"><use href="#ico-b"></use></svg>
+        <svg width="28" height="28" viewBox="0 0 64 64"><use href="#ico-b"></use></svg>
+        <svg width="20" height="20" viewBox="0 0 64 64"><use href="#ico-b"></use></svg>
+      </div>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">Aluminiu periat, cu semnul frezat în el — nu desenat peste. Textura e procedurală, deci nu se repetă vizibil. Cea mai apropiată de fața unui dulap de automatizare.</p>
+    </div>
+
+    <div id="2c" style="display: flex; flex-direction: column; gap: 16px; padding: 22px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 300px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">2c</span>
+        <span style="font-size: 17px; font-weight: 600; color: #ededf2;">Email profund</span>
+      </div>
+      <svg width="176" height="176" viewBox="0 0 64 64" style="display: block; align-self: center;"><use href="#ico-c"></use></svg>
+      <div style="display: flex; align-items: flex-end; gap: 14px; height: 100px; padding-top: 6px; border-top: 1px solid #24242c;">
+        <svg width="96" height="96" viewBox="0 0 64 64"><use href="#ico-c"></use></svg>
+        <svg width="48" height="48" viewBox="0 0 64 64"><use href="#ico-c"></use></svg>
+        <svg width="28" height="28" viewBox="0 0 64 64"><use href="#ico-c"></use></svg>
+        <svg width="20" height="20" viewBox="0 0 64 64"><use href="#ico-c"></use></svg>
+      </div>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">Smalț adânc cu boltă lucioasă, semnul în fildeș cu umbră proprie. Cea mai caldă și cea mai lizibilă la mărimi mici, pentru că are contrastul cel mai mare între semn și fond.</p>
+    </div>
+
+    <div id="2d" style="display: flex; flex-direction: column; gap: 16px; padding: 22px; border-radius: 20px; background: #101015; border: 1px solid #24242c; width: 300px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 24px; padding: 0 8px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #1c1c26; color: #b3b3cd;">2d</span>
+        <span style="font-size: 17px; font-weight: 600; color: #ededf2;">Prismă</span>
+      </div>
+      <svg width="176" height="176" viewBox="0 0 64 64" style="display: block; align-self: center;"><use href="#ico-d"></use></svg>
+      <div style="display: flex; align-items: flex-end; gap: 14px; height: 100px; padding-top: 6px; border-top: 1px solid #24242c;">
+        <svg width="96" height="96" viewBox="0 0 64 64"><use href="#ico-d"></use></svg>
+        <svg width="48" height="48" viewBox="0 0 64 64"><use href="#ico-d"></use></svg>
+        <svg width="28" height="28" viewBox="0 0 64 64"><use href="#ico-d"></use></svg>
+        <svg width="20" height="20" viewBox="0 0 64 64"><use href="#ico-d"></use></svg>
+      </div>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #97979f; text-wrap: pretty;">Semnul extrudat, cu fațete în fundal și o dispersie cromatică fină pe muchii. Cea mai spectaculoasă la mărime mare și cea mai riscantă la 20 px — extrudarea se închide.</p>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const ticks = []
+    for (let a = 0; a < 360; a += 30) ticks.push({ t: `rotate(${a} 32 32)` })
+    return {
+      ticks,
+      burst: [
+        {
+          id: '7a', areCerc: true, nume: 'Convertor', sw: 4.6, d: 'M15 15 H49 V49 H15 Z M15 49 L49 15',
+          areD2: true, sw2: 3, d2: 'M20.5 23 H29 M22 28 H27.5 M35 41 C36.4 37.2 38.4 44.8 39.8 41 C41.2 37.2 43.2 44.8 44.6 41',
+          teza: 'Simbolul de convertor din schemă, exact cum îl desenezi în documentație: pătrat cu diagonală, continuu într-o parte, alternativ în cealaltă. Nu-l recunoaște nimeni din afara meseriei — pentru cineva din branșă e însă numele produsului scris în clar.',
+        },
+        {
+          id: '7b', areCerc: true, nume: 'Legătură DC', sw: 5.4, d: 'M10 32 H25 M39 32 H54',
+          areD2: true, sw2: 5.4, d2: 'M27.5 20 V44 M36.5 20 V44',
+          teza: 'Inima convertorului: redresor în stânga, circuit intermediar la mijloc, invertor în dreapta. Trei elemente, două bare — cea mai abstractă formă din set și, în același timp, cea mai exactă.',
+        },
+        {
+          id: '7c', areCerc: true, nume: 'Punte', sw: 6, d: 'M16 14 V50 M48 14 V50 M16 32 H25 M39 32 H48 M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26',
+          teza: 'Puntea de invertor cu sarcina în mijloc. Simetrică pe ambele axe, deci cade exact pe axele planșei; din afară se citește ca monogramă.',
+        },
+        {
+          id: '7d', areCerc: false, nume: 'Sursă', sw: 5, d: 'M14 32 A18 18 0 1 0 50 32 A18 18 0 1 0 14 32',
+          areD2: true, sw2: 4.2, d2: 'M20 32 C24 20.67 28 20.67 32 32 C36 43.33 40 43.33 44 32',
+          teza: 'Sinusoidă în cerc — simbolul de sursă alternativă. O perioadă întreagă, simetrică, cu trecerile prin zero exact pe axa orizontală a planșei și vârfurile la mijlocul fiecărei semiperioade. Cea mai rotundă și mai calmă din set, singura care arată bine și ca favicon monocrom.',
+        },
+        {
+          id: '7e', areCerc: true, nume: 'Modulație', sw: 4.2, d: 'M10 25 V16 H18 V25 H26 V16 H34 V25 H42 V16 H50',
+          areD2: true, sw2: 4.2, d2: 'M10 44 C15 33.5 20 54.5 25 44 C30 33.5 35 54.5 40 44 C45 33.5 50 50 54 42',
+          teza: 'Sus pulsul comandat, jos unda care iese din el — ce face efectiv un invertor. Cea mai explicativă și cea mai fragilă la mărimi mici: la 20 px cele două linii se apropie prea tare.',
+        },
+      ],
+      semne: [
+        {
+          id: '3a', nume: 'Cuplu', d: 'M15.6 41.5 A19 19 0 1 1 48.4 41.5 M41.4 34.8 L49.4 41.9 L42.6 49.6',
+          teza: 'Săgeata de moment în jurul arborelui — chiar numele produsului, desenat. Cel mai direct semn din listă și cel care rezistă cel mai bine la 20 px, pentru că e o formă închisă.',
+        },
+        {
+          id: '3b', nume: 'Rampă', d: 'M9 47 L23 21 H41 L55 47',
+          teza: 'Profilul de accelerare–palier–decelerare, adică exact ce parametrizezi într-un convertizor. Nu-l recunoaște nimeni din afara meseriei — ceea ce poate fi tocmai avantajul.',
+        },
+        {
+          id: '3c', nume: 'Arbore cu pană', d: 'M14 32 A18 18 0 1 0 50 32 A18 18 0 1 0 14 32 M24.5 18.4 H39.5',
+          teza: 'Secțiune prin capătul de arbore, cu canalul de pană. Cel mai „fier" dintre toate, fără nicio aluzie la software; funcționează bine ca formă rotundă pe un ecran plin de dreptunghiuri.',
+        },
+        {
+          id: '3d', nume: 'Rotor', d: 'M32 31 L32 11 M32 33 L49.3 43 M32 33 L14.7 43 M32 27.6 A4.4 4.4 0 1 0 32 36.4 A4.4 4.4 0 1 0 32 27.6',
+          teza: 'Trei faze la 120° în jurul butucului. Citește și ca rotor, și ca schemă trifazată; cea mai simetrică, deci cea mai calmă la mărimi mici.',
+        },
+        {
+          id: '3e', nume: 'Verigi · abstract', d: 'M25 32 m-12.5 0 a12.5 12.5 0 1 0 25 0 a12.5 12.5 0 1 0 -25 0 M39 32 m-12.5 0 a12.5 12.5 0 1 0 25 0 a12.5 12.5 0 1 0 -25 0',
+          teza: 'Două inele întrepătrunse — legătura dintre lucruri, fără nicio trimitere la meserie. Forma cea mai neutră din listă și cea care se comportă cel mai bine ca siluetă monocromă.',
+        },
+        {
+          id: '3f', nume: 'Iris · abstract', d: 'M17 41 H45 M31.71 14.51 L17.71 38.76 M47.29 40.49 L33.29 16.24',
+          teza: 'Trei lame care lasă o deschidere triunghiulară la mijloc. Abstract, dar cu tensiune: se citește ca obturator, ca focalizare, ca „intrare".',
+        },
+        {
+          id: '3g', nume: 'Panglică · abstract', d: 'M13 44 C13 24 27 22 32 32 C37 42 51 40 51 20',
+          teza: 'O singură linie care se pliază peste ea însăși. Cel mai puțin corporatist semn din set; frumos la mărime mare, cel mai fragil la 20 px.',
+        },
+        {
+          id: '3h', nume: 'Cristal · abstract', d: 'M32 11 L51 32 L32 53 L13 32 Z M32 24 L41 32 L32 40',
+          teza: 'Romb cu o fațetă interioară. Geometrie pură, fără sens impus — și singura formă care câștigă din materialul de sticlă, pentru că are deja aspect de piatră tăiată.',
+        },
+      ],
+    }
+  }
+}
+</script>
+</body>
+</html>
