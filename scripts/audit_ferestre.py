@@ -203,7 +203,7 @@ SONDA = r"""
 FERESTRE = [
     # Pe desktop adaugarea e IN LINIE (`quick-add`, `Tasks.svelte:1145`), fara
     # fereastra: butonul plutitor exista doar sub `ecran.telefon`.
-    dict(nume='adauga-task', ruta='/tasks', unde='telefon', pasi=[('sel', '.fab')]),
+    dict(nume='adauga-task', ruta='/tasks', unde='telefon', pasi=[('sel', '.dock-fab')]),
     dict(nume='panou-task', ruta='/tasks', unde='telefon', pasi=[('sel', '.tmain')]),
     dict(nume='actiuni-task', ruta='/tasks', unde='telefon', pasi=[('lung', '.tmain')]),
     dict(nume='alege-data', ruta='/tasks', unde='ambele',
@@ -224,7 +224,7 @@ FERESTRE = [
     # Pe desktop butonul de tema comuta direct, fara fereastra — prin desen.
     dict(nume='tema', ruta='/tasks', unde='telefon',
          pasi=[('sel', 'button[aria-label="Temă"]')]),
-    dict(nume='proiect-nou', ruta='/projects', unde='ambele', pasi=[('sel', '.fab')],
+    dict(nume='proiect-nou', ruta='/projects', unde='ambele', pasi=[('sel', '.dock-fab')],
          pasi_desktop=[('text', 'Proiect nou')]),
     # Pe desktop sortarea e un meniu agatat de buton, nu o fereastra — prin desen.
     dict(nume='sorteaza', ruta='/projects', unde='telefon', pasi=[('sel', '.sort-trigger')]),
@@ -234,7 +234,7 @@ FERESTRE = [
          pasi=[('sel', '.pcard'), ('sel', 'button[aria-label="Șterge proiectul"]')]),
     # Idem in proiect (`ProjectDetail.svelte:1360`, gardat pe `ecran.telefon`).
     dict(nume='task-proiect', ruta='/projects', unde='telefon',
-         pasi=[('sel', '.pcard'), ('sel', '.fab')]),
+         pasi=[('sel', '.pcard'), ('sel', '.dock-fab')]),
     dict(nume='zi-calendar', ruta='/calendar', unde='telefon', pasi=[('sel', '.zi')]),
     dict(nume='export-pdf', ruta='/plan', unde='ambele', pasi=[('text', 'ExportPDF')]),
 ]

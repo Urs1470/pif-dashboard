@@ -19,7 +19,7 @@ Ce da, si de ce fiecare:
     from proba_mobil import Banc
     with Banc() as b:
         b.mergi('/tasks')
-        print(b.raspuns('.fab'))
+        print(b.raspuns('.dock-fab'))
 """
 import json
 import os

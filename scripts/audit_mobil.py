@@ -691,7 +691,7 @@ def lista_de_facut(ctx, baza):
     n0 = page.eval_on_selector_all('.trow', 'e => e.length')
     zi(page.locator('.quick-add').count() == 0,
        'compozitorul inline nu se dubleaza cu butonul de adaugare')
-    fab = page.locator('.fab').first
+    fab = page.locator('.dock-fab').first
     zi(fab.count() > 0 and fab.is_visible(), 'butonul mare cu plus e pe ecran')
     if fab.count() and fab.is_visible():
         c = fab.bounding_box()
@@ -985,21 +985,26 @@ def dockul_pe_telefon(ctx, baza):
             page.wait_for_timeout(55)
         page.wait_for_timeout(420)
 
-    # CONTRACT INTORS PE 2026-08-10 (Ion): dock-ul pe telefon e FIX, jos de tot,
-    # mereu la vedere — a rasturnat propria cerinta din 2026-07-31 („urmareste
-    # derularea ca bara de adresa"). Cu etichetele sub iconite dockul e harta
-    # aplicatiei, iar o harta care fuge de sub deget e mai scumpa decat ecranul
-    # castigat. Testul verifica acum CONTRARIUL celui vechi: derularea NU-l
-    # misca, si sta lipit de marginea de jos. (Singura ascundere ramasa e
-    # tastatura — netestabila credibil headless.)
+    # CONTRACT INTORS PE 2026-08-10 (Ion): dock-ul pe telefon e FIX si mereu la
+    # vedere — a rasturnat propria cerinta din 2026-07-31 („urmareste derularea ca
+    # bara de adresa"). Cu etichetele sub iconite dockul e harta aplicatiei, iar o
+    # harta care fuge de sub deget e mai scumpa decat ecranul castigat.
+    #
+    # AURORA (2026-08-23) a schimbat UN singur lucru din contractul asta: dockul
+    # nu mai e LIPIT de fundul ecranului, ci PLUTESTE la 6px + safe-area. Restul e
+    # neatins, si tocmai de aceea se verifica in continuare: cinci tinte, peste
+    # 52px, nu iese din ecran, si derularea NU-l misca — nici in jos, nici in varf.
+    # Ce era „lipit la 0" a devenit „desprins, dar putin": intre 4 si 20px de gol,
+    # cu safe-area inclusa. Plafonul e acolo ca sa prinda regresia inversa — un
+    # dock care incepe iar sa fuga in sus de sub deget.
     deruleaza(500)
     jos = page.evaluate(STARE)
     zi(not jos['ascuns'], 'coborand prin pagina, dock-ul RAMANE (contract 2026-08-10)')
     zi(not jos['subEcran'], 'sta pe ecran, nu sub el')
-    lipit = page.evaluate("""() => {
+    gol = page.evaluate("""() => {
       const r = document.querySelector('.dock').getBoundingClientRect();
       return Math.round(window.innerHeight - r.bottom); }""")
-    zi(abs(lipit) <= 1, 'lipit de marginea de jos (bottom: 0)', 'gol de %dpx' % lipit)
+    zi(4 <= gol <= 20, 'pluteste deasupra marginii de jos (AURORA)', 'gol de %dpx' % gol)
 
     deruleaza(0)
     varf = page.evaluate(STARE)

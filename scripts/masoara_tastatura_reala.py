@@ -242,9 +242,9 @@ def main():
         # android". Foaia de creare focalizeaza campul singura, deci sosirea foii
         # si sosirea IME-ului sunt in ACEEASI urma — cum le vede si el.
         page.evaluate('window.__start()')
-        r = dreptunghi(page, '.fab')
+        r = dreptunghi(page, '.dock-fab')
         if not r:
-            print('Fara `.fab` pe /tasks.')
+            print('Fara `.dock-fab` pe /tasks.')
             return 3
         x, y = aparat.catre_aparat(page, r['x'], r['y'])
         aparat.atinge(x, y)

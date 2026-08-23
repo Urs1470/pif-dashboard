@@ -178,9 +178,9 @@ def main():
             print('  ATENTIE: numarul include si drumul lui `adb shell input tap`')
             print('  (o comanda de shell pornita pe telefon), deci NU e latenta aplicatiei.')
             print('  E util doar ca sa compari intrari intre ele, nu ca valoare absoluta.')
-            for ruta, sel, nume in [('/', '.fab', 'Acasa: buton adaugare'),
+            for ruta, sel, nume in [('/', '.dock-fab', 'Acasa: buton adaugare'),
                                     ('/', '.amain', 'Acasa: rand de task'),
-                                    ('/tasks', '.fab', 'Taskuri: buton adaugare'),
+                                    ('/tasks', '.dock-fab', 'Taskuri: buton adaugare'),
                                     ('/tasks', '.tmain', 'Taskuri: rand'),
                                     ('/projects', '.pcard', 'Proiecte: card')]:
                 a.mergi(ruta)
@@ -191,7 +191,7 @@ def main():
 
             print('')
             print('=== FOI: sosire si fiecare drum de iesire ===')
-            for ruta, decl, nume in [('/tasks', '.fab', 'foaia de adaugare'),
+            for ruta, decl, nume in [('/tasks', '.dock-fab', 'foaia de adaugare'),
                                      ('/tasks', '.tmain', 'foaia taskului'),
                                      ('/calendar', '.zi', 'foaia zilei')]:
                 a.mergi(ruta)
@@ -255,7 +255,7 @@ def main():
             print('')
             print('=== TASTATURA: cum soseste viewportul ===')
             a.mergi('/tasks')
-            a.atinge('.fab', 1.2)
+            a.atinge('.dock-fab', 1.2)
             camp = '.modal.sheet input, .fa-cauta input'
             if a.exista(camp):
                 u = a.urma('.modal.sheet', lambda: a.atinge(camp, 2.2), coada=600)
@@ -281,7 +281,7 @@ def main():
             print('=== DUBLA ATINGERE PE BUTONUL DE ADAUGARE (reparatia de ieri) ===')
             a.mergi('/')
             inainte = a.cate('.arow')
-            g = a.geo('.fab')
+            g = a.geo('.dock-fab')
             if g:
                 aparat.atinge(g['x'] * a.dpr, g['y'] * a.dpr, 0.12)
                 aparat.atinge(g['x'] * a.dpr, g['y'] * a.dpr, 2.0)

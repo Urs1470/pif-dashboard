@@ -58,7 +58,8 @@
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import MarkdownView from '../components/notes/MarkdownView.svelte'
   import EditorLung from '../components/ui/EditorLung.svelte'
-  import { todayISO, addDays, diffDays } from '../lib/calendarDates.js'
+  import { todayISO, addDays, diffDays } from '../lib/calendarDates.js'
+  import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
 
   let azi = $state(todayISO())
 
@@ -821,6 +822,16 @@
     if (d < 30) return `acum ${d} zile`
     return ''
   }
+  // BUTONUL "+" E AL DOCULUI ACUM (AURORA). Pagina spune doar CE creeaza el; cutia,
+  // pozitia si materialul le tine `Dock.svelte`. Inainte, fiecare pagina cu lista
+  // isi desena propriul `.fab` in coltul de jos - patru copii ale aceleiasi cutii,
+  // care acopereau ultimul rand exact acolo unde te uitai.
+  // `$effect` cheama singur curatarea la demontare si la fiecare schimbare a
+  // conditiei, deci butonul dispare cand nu mai are ce crea (arhiva, alt tab).
+  $effect(() => {
+    if (!(ecran.telefon && activeTab === 'tasks' && project)) return
+    return inregistreazaActiune('Task nou in proiect', () => { taskEditat = null; showAdauga = true })
+  })
 </script>
 
 <!-- INTERIORUL TASKULUI DESCHIS — acelasi desen ca `taskDetail` din /tasks:
@@ -1357,11 +1368,6 @@
      (58px, rază 20, peste dock, la dreapta), fiindca e acelasi obiect: singura cale
      de adaugare de pe telefon. Doar in tabul Taskuri: in celelalte taburi n-ar avea
      ce sa adauge. Proiectul intra precompletat din pagina curenta. -->
-{#if ecran.telefon && activeTab === 'tasks' && project}
-  <button class="fab" onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Task nou în proiect">
-    <Plus size={25} strokeWidth={1.5} />
-  </button>
-{/if}
 
 <!-- TASKUL DESCHIS: foaie pe telefon, panou pe desktop — aceeasi gazda si
      acelasi cap ca in /tasks (bifa mare cu inelul severitatii, titlul, randul
@@ -1878,22 +1884,6 @@
        Aceeasi rezerva ca in /tasks: inaltimea butonului plus distanta lui. */
     .tab-pane { padding-bottom: calc(58px + var(--space-md)); }
 
-    /* BUTONUL MARE CU PLUS — copiat la valoare din /tasks, nu aproximat: e acelasi
-       obiect pe alt ecran, deci orice diferenta de pozitie s-ar citi ca doua
-       butoane diferite cand treci de la o pagina la alta. */
-    .fab { --fab-size: 58px;
-      position: fixed; right: calc(var(--space-md) + var(--safe-right));
-      bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
-      width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
-      /* CERC, explicit. `--radius-lg` a trecut 20 -> 30 odata cu AURORA, iar pe o
-       cutie de 58px asta depaseste jumatatea laturii — butonul devenea rotund
-       din accident, in patru fisiere deodata. Prototipul chiar il deseneaza
-       rotund, deci rezultatul ramane; doar ca acum e scris. */
-    border-radius: var(--radius-full); border: none;
-      background: var(--accent); color: var(--accent-text);
-      box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
-      cursor: pointer; transition: var(--transition-pressable); }
-    .fab:active { transform: scale(var(--press-scale)); }
     /* O LINIE, cu actiunile in panoul de sub rand (vezi Taskuri / „Astazi").
        Randul avea titlul sus si actiunile pe o linie proprie dedesubt. */
     /* ACEEASI GEOMETRIE CA IN /tasks SI PE „Astăzi" — pana la pixel.

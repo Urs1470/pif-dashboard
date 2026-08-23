@@ -75,7 +75,8 @@
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
   import { suportaPush, esteIosNeinstalat, stareAbonament, aboneaza, dezaboneaza } from '../lib/push.js'
-  import { esteNativ, probeaza, reprogrameaza, alarmaExacta, deschideAlarmaExacta } from '../lib/notificari.js'
+  import { esteNativ, probeaza, reprogrameaza, alarmaExacta, deschideAlarmaExacta } from '../lib/notificari.js'
+  import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
 
   // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
   // adresabila — un link din paleta, din cautare sau de pe Acasa aterizeaza
@@ -943,6 +944,16 @@
   // Comutarea are deja o unealta care nu se poate rata: cele doua segmente din
   // bara, cu pastila care aluneca intre ele. E la vedere, spune in ce sfera esti,
   // si o atingere gresita nu bifeaza niciun task.
+  // BUTONUL "+" E AL DOCULUI ACUM (AURORA). Pagina spune doar CE creeaza el; cutia,
+  // pozitia si materialul le tine `Dock.svelte`. Inainte, fiecare pagina cu lista
+  // isi desena propriul `.fab` in coltul de jos - patru copii ale aceleiasi cutii,
+  // care acopereau ultimul rand exact acolo unde te uitai.
+  // `$effect` cheama singur curatarea la demontare si la fiecare schimbare a
+  // conditiei, deci butonul dispare cand nu mai are ce crea (arhiva, alt tab).
+  $effect(() => {
+    if (!(ecran.telefon && !showArchive)) return
+    return inregistreazaActiune('Task nou', () => { puls(); taskEditat = null; showAdauga = true })
+  })
 </script>
 
 {#snippet taskDetail(t)}
@@ -1314,11 +1325,6 @@
        atunci vrei sa pui si termenul din prima". Termenul se pune tot din prima,
        dar SCRIS — „mâine revizie pompa" — iar Categoria si Recurenta au intrat in
        foaie, unde nu mai ocupa doua randuri din patru pentru ceva folosit rar. -->
-  {#if ecran.telefon && !showArchive}
-    <button class="fab" onpointerdown={() => puls()} onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Task nou">
-      <Plus size={25} strokeWidth={1.5} />
-    </button>
-  {/if}
 </div>
 
 <!-- TASKUL DESCHIS: foaie pe telefon, PANOU LATERAL pe desktop (desen 3a,
@@ -1639,24 +1645,9 @@
   /* Butonul mare cu plus (doar telefon). Peste dock, nu langa el — valorile din
      desen (T4): 58×58, raza 18, plusul 25/1.5, cu 24px deasupra dockului randat
      (72 = 68 + 4). Acelasi obiect ca in `Projects.svelte`. */
-  /* Geometria butonului plutitor, o singura data: o citesc si butonul, si
-     rezerva de sub lista (`--fab-loc` mai jos). */
-  .fab { --fab-size: 58px;
-    position: fixed; right: calc(var(--space-md) + var(--safe-right));
-    bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
-    width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
-    /* CERC, explicit. `--radius-lg` a trecut 20 -> 30 odata cu AURORA, iar pe o
-       cutie de 58px asta depaseste jumatatea laturii — butonul devenea rotund
-       din accident, in patru fisiere deodata. Prototipul chiar il deseneaza
-       rotund, deci rezultatul ramane; doar ca acum e scris. */
-    border-radius: var(--radius-full); border: none;
-    background: var(--accent); color: var(--accent-text);
-    box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
-    cursor: pointer; transition: var(--transition-pressable); }
   /* Presiunea se simte IMEDIAT: scalare mai adanca, pe durata de apasare (nu pe
      tranzitia de vopsea), plus un puls haptic la atingere (Ion: „butonul de
      creare parca reactioneaza prea greu, trebuie o presiune mai mare"). */
-  .fab:active { transform: scale(0.9); transition-duration: var(--dur-press); }
   .page-title-row { display: flex; align-items: center; gap: var(--space-sm); color: var(--text); min-width: 0; }
   .page-title-row h1 { font-size: var(--font-title); font-weight: var(--fw-semibold); }
   /* `.count` a plecat in global.css. E NEUTRA acum, nu amber: numarul de langa

@@ -491,9 +491,9 @@ def main():
             # taskurile personale, deci un `goto` direct n-ar ajunge niciodata.
             page.evaluate("() => { location.hash = '#/' }")
             page.wait_for_timeout(1600)
-            # Pe telefon adaugarea de pe Acasa vine din butonul PLUTITOR (`.fab`);
+            # Pe telefon adaugarea de pe Acasa vine din butonul de actiune din dock (`.dock-fab`);
             # `.bh-add` din capul boardului e ascuns pe telefon (2026-08-21).
-            adauga = page.query_selector('.fab')
+            adauga = page.query_selector('.dock-fab')
             if adauga is None:
                 note.append('boardul „Astazi" n-are buton plutitor de adaugare')
             else:
@@ -544,7 +544,7 @@ def main():
                 page.wait_for_timeout(1800)
                 MARCA_P = 'Audit — ora de proba'
                 if page.locator('.trow', has_text=MARCA_P).count() == 0:
-                    fab = page.locator('.fab').first
+                    fab = page.locator('.dock-fab').first
                     if fab.count():
                         fab.click()
                         page.wait_for_timeout(900)

@@ -1,11 +1,13 @@
 <script>
   import { onMount } from 'svelte'
   import { fly, fade } from 'svelte/transition'
-  import { Search, MoreHorizontal, Download } from '@lucide/svelte'
+  import { Search, MoreHorizontal, Download, Plus } from '@lucide/svelte'
   import SolidIcon from '../ui/SolidIcon.svelte'
   import { router, link } from '../../lib/router.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
+  import { sticla } from '../../lib/sticla.js'
+  import { actiuneNoua } from '../../lib/actiuneNoua.svelte.js'
 
   let { deschideCautarea = () => {} } = $props()
 
@@ -316,6 +318,9 @@
     return router.path.startsWith(path)
   }
 
+  // Ce creeaza „+" pe pagina curenta, sau `null` daca nu creeaza nimic.
+  const actiune = $derived(actiuneNoua())
+
   function openSearch() {
     foaieDeschisa = false
     deschideCautarea()
@@ -350,7 +355,8 @@
   }
 </script>
 
-<nav class="dock" class:hidden bind:this={dockEl} aria-label="Navigație principală">
+<nav class="dock sticla sticla-dock" class:hidden bind:this={dockEl}
+     use:sticla={{ spec: '110px 60px' }} aria-label="Navigație principală">
   <!-- Tenta slotului activ. Primul copil, ca sa fie clar ca sta DEDESUBT; e
        absoluta, deci nu intra in flexul barei si nu conteaza la `space-around`. -->
   <span class="dock-pilula" class:gata={pilula.gata} class:asezata={pilulaAsezata}
@@ -373,7 +379,6 @@
       <span class="dock-et">{item.scurt || item.label}</span>
     </a>
   {/each}
-  <span class="sep" aria-hidden="true"></span>
   {#if ecran.telefon}
     <!-- Pastila vine aici DOAR cand niciun tab de ruta nu e activ, adica atunci
          cand chiar esti pe o pagina din foaie. Deschiderea foii peste o ruta cu
@@ -385,6 +390,21 @@
       <MoreHorizontal size={marimeIcon} />
       <span class="dock-et">Mai mult</span>
     </button>
+
+    <!-- ACTIUNEA PRINCIPALA, mutata din coltul ecranului IN dock (AURORA).
+         Acolo acoperea ultimul rand din lista, pe fiecare pagina care avea lista.
+         CE creeaza il spune PAGINA, prin `lib/actiuneNoua.svelte.js` — dockul stie
+         doar cum arata butonul. Pe paginile unde crearea n-are sens nu se
+         inregistreaza nimeni si butonul nu exista deloc.
+         NU are clasa `.dock-item`: acela e un slot de NAVIGATIE, si `audit_mobil`
+         numara exact cinci. Butonul asta e o actiune, nu un drum. -->
+    {#if actiune}
+      <span class="sep" aria-hidden="true"></span>
+      <button class="dock-fab" onclick={actiune.fa}
+              aria-label={actiune.eticheta} title={actiune.eticheta}>
+        <Plus size={22} strokeWidth={1.5} />
+      </button>
+    {/if}
 
     {#if foaieDeschisa}
       <!-- Foaia celor trei rute ramase. Cautarea sta in CAP, nu la coada: e
@@ -466,12 +486,14 @@
     padding: var(--space-12) var(--space-sm) var(--space-sm);
     border-radius: var(--radius-md);
     z-index: var(--z-sticky);
-    /* OPAC, cu umbra. Era semi-transparent cu `blur(18px)`, deci continutul
-       paginii se plimba dedesubt ca o pata in miscare — exact sub degetul care
-       cauta un tab. O suprafata flotanta se desprinde prin umbra, nu prin
-       sticla; asa se desprind si modalul, si toastul, si popoverul. */
-    background: var(--bg-surface);
-    box-shadow: var(--shadow-md);
+    /* STICLA, din nou — dar nu cea de atunci. Prima incercare era
+       `blur(18px)` peste un fond semi-transparent, si continutul paginii se
+       plimba dedesubt ca o pata in miscare, exact sub degetul care cauta un tab.
+       Materialul AURORA rezolva chiar asta: blurul e 26px (aplatizeaza ce trece
+       pe dedesubt, in loc sa-l tarasca), iar volumul vine din MUCHIE, nu dintr-o
+       spalare peste suprafata. Fondul, rama si umbra le pune `.sticla`
+       (`global.css`) — containerul NU are `background` propriu, altfel straturile
+       n-ar avea ce refracta. */
   }
 
   /* Eticheta exista doar pe telefon (blocul de 768) — pe desktop iconita ajunge,
@@ -568,10 +590,38 @@
   }
 
   .sep {
+    /* Peste straturile de sticla, ca si sloturile. */
+    position: relative;
+    z-index: 1;
+    flex: none;
     width: 1px;
     background: var(--border-strong);
-    margin: var(--space-10) var(--space-6);
+    margin: var(--space-12) 5px;
+    /* Jumatate: separa cele doua feluri de obiecte (drumuri | actiune) fara sa
+       devina el insusi un obiect. */
+    opacity: .5;
   }
+
+  /* ACTIUNEA PRINCIPALA. Singurul obiect din aplicatie cu fill saturat de accent
+     — de aceea are tokenii lui (`--fab-*`), nu `--shadow-md` aproximat. */
+  .dock-fab {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    align-self: center;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-full);
+    background: var(--fab-bg);
+    color: var(--accent-text);
+    box-shadow: var(--fab-rim), var(--fab-glow);
+    cursor: pointer;
+    border: none;
+    transition: var(--transition-pressable);
+  }
+  .dock-fab:active { transform: scale(var(--press-scale)); }
 
   /* ===== Foaia „Mai mult" (doar telefon) =====
      Se aseaza DEASUPRA docului, ancorata de marginea lui de jos, ca sa ramana
@@ -680,28 +730,36 @@
      praguri diferite, ar exista o latime la care ai opt iconite marite si dock-ul
      ar iesi din ecran. */
   @media (max-width: 768px) {
-    /* FIX, JOS DE TOT (Ion, 2026-08-10): bara plina de la margine la margine,
-       lipita de fundul ecranului — ca in desenele mobile — nu pastila plutitoare
-       de pe desktop. Safe-area intra in padding, nu in `bottom`, ca fundalul sa
-       curga pana sub gestul de sistem. */
+    /* PLUTESTE, LIPIT DE NICIO MARGINE (AURORA, 2026-08-23).
+       Contractul de dinainte (Ion, 2026-08-10) cerea bara plina, lipita de fundul
+       ecranului. Directia „sticla cu muchie-lentila" o desprinde: sticla are nevoie
+       de patru muchii ca sa se vada ca e un OBIECT, nu o banda; iar continutul care
+       trece pe dedesubt e chiar motivul pentru care e translucida.
+       Safe-area trece din padding in `bottom`: dockul nu mai are ce sa acopere pana
+       sub gestul de sistem, trebuie sa stea DEASUPRA lui. */
     .dock {
-      left: 0;
-      right: 0;
-      bottom: 0;
+      left: calc(12px + var(--safe-left));
+      right: calc(12px + var(--safe-right));
+      bottom: calc(6px + var(--safe-bottom));
       transform: translateY(var(--dock-shift, 0px));
-      width: 100%;
-      max-width: 100%;
-      gap: var(--space-xs);
-      padding: var(--space-sm) var(--space-6) calc(var(--space-sm) + var(--safe-bottom));
-      border-radius: var(--radius-md) var(--radius-md) 0 0;
-      justify-content: space-around;
+      width: auto;
+      max-width: none;
+      gap: var(--space-2xs);
+      padding: 5px;
+      border-radius: var(--radius-lg);
+      justify-content: space-between;
     }
     /* ETICHETA SUB ICONITA (desenele mobile, toate cadrele): cinci cuvinte
        pentru cinci drumuri — iconita singura cere sa fi invatat deja harta.
        Doar pe telefon: pe desktop dock-ul tine opt lucruri si eticheta le-ar
        dubla latimea. Tinta creste la 56×~58, tot peste prag. */
     .dock-item {
-      width: 60px;
+      /* IMPART LATIMEA, nu mai sunt fixe la 60px: dockul plutitor are latimea
+         ecranului minus 24, iar cinci sloturi fixe ar lasa goluri inegale intre
+         ele si butonul „+". */
+      flex: 1 1 0;
+      min-width: 0;
+      width: auto;
       height: auto;
       min-height: 56px;
       border-radius: var(--radius-md);

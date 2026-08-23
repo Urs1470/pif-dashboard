@@ -199,9 +199,9 @@ def main():
             # nimic care se anima 220ms in urma.
             out('\n--- tastatura: un pas, iar foaia il urmeaza in acelasi cadru ---')
             mergi(page, baza, '/tasks')
-            fab = page.query_selector('.fab')
+            fab = page.query_selector('.dock-fab')
             if fab is None:
-                bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .fab')
+                bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .dock-fab')
             else:
                 x, y = centru(fab)
                 tap(cdp, page, x, y, 900)
@@ -314,9 +314,9 @@ def main():
                 # sub tastatura in browser FARA ca vreo alta proba sa observe.
                 out('\n--- regimul browser: `--kb` chiar ridica foaia ---')
                 mergi(page, baza, '/tasks')
-                fab = page.query_selector('.fab')
+                fab = page.query_selector('.dock-fab')
                 if fab is None:
-                    bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .fab')
+                    bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .dock-fab')
                 else:
                     fx, fy = centru(fab)
                     tap(cdp, page, fx, fy, 900)
@@ -362,7 +362,7 @@ def main():
                 # ===== 2. NIMIC SUB TASTATURA =====
                 out('\n--- nimic sub tastatura ---')
                 page.wait_for_timeout(300)
-                fab = page.query_selector('.fab')
+                fab = page.query_selector('.dock-fab')
                 if fab is not None:
                     fx, fy = centru(fab)
                     tap(cdp, page, fx, fy, 800)

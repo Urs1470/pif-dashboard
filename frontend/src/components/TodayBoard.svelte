@@ -25,7 +25,8 @@
   import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
-  import { motionDuration, DUR_BASE, EASE, plecare, sosire, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, EASE, plecare, sosire, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
+  import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
 
   // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
   // "deadline-uri" dupa ce bifez / mut / scot un task (altfel ramaneau stale
@@ -336,6 +337,17 @@
       inchideGlisarea()
     }
   })
+
+  // BUTONUL „+" E AL DOCULUI ACUM (AURORA). Pagina spune doar CE creeaza el; cutia,
+  // pozitia si materialul le tine `Dock.svelte`. Inainte, fiecare pagina cu lista
+  // isi desena propriul `.fab` in coltul de jos — patru copii ale aceleiasi cutii,
+  // care acopereau ultimul rand exact acolo unde te uitai.
+  // `$effect` cheama singur curatarea la demontare si la fiecare schimbare a
+  // conditiei, deci butonul dispare cand nu mai are ce crea (arhiva, alt tab).
+  $effect(() => {
+    if (!(peTelefon)) return
+    return inregistreazaActiune('Adaugă task pentru azi', () => { puls(); taskEditat = null; showAdauga = true })
+  })
 </script>
 
 <section class="board cell-in">
@@ -570,11 +582,6 @@
      Acasa nu e foarte reactiv si vreau sa-l faci mai proeminent pe mobil."
      Butonul mic „Adaugă task" din capul boardului ramane doar pe desktop (vezi
      `.bh-add { display: none }` in blocul de telefon). -->
-{#if peTelefon}
-  <button class="fab" onpointerdown={() => puls()} onclick={() => { taskEditat = null; showAdauga = true }} aria-label="Adaugă task">
-    <Plus size={25} strokeWidth={1.5} />
-  </button>
-{/if}
 
 <!-- ACEEASI foaie de adaugare ca in /tasks si ca in tabul Taskuri al unui proiect.
      Aici a inlocuit `TaskPickerModal`, care putea doar sa CAUTE. -->
@@ -593,21 +600,6 @@
            onSterge={() => stergeDinBoard(foaieTask)} />
 
 <style>
-  /* BUTONUL PLUTITOR — identic cu cel din /tasks: 58px, rază 20, peste dock, la
-     dreapta, presiune imediata (scalare adanca + puls haptic). Doar pe telefon. */
-  .fab { --fab-size: 58px;
-    position: fixed; right: calc(var(--space-md) + var(--safe-right));
-    bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
-    width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
-    /* CERC, explicit. `--radius-lg` a trecut 20 -> 30 odata cu AURORA, iar pe o
-       cutie de 58px asta depaseste jumatatea laturii — butonul devenea rotund
-       din accident, in patru fisiere deodata. Prototipul chiar il deseneaza
-       rotund, deci rezultatul ramane; doar ca acum e scris. */
-    border-radius: var(--radius-full); border: none;
-    background: var(--accent); color: var(--accent-text);
-    box-shadow: var(--shadow-lg); z-index: calc(var(--z-sticky) - 1);
-    cursor: pointer; transition: var(--transition-pressable); }
-  .fab:active { transform: scale(0.9); transition-duration: var(--dur-press); }
 
   /* Suprafata se desprinde prin umbra. Padding-ul lateral scade la 8, fiindca
      randul isi aduce propriii 12 — separatorul iese la 20 de la marginea
@@ -959,7 +951,7 @@
        `--tap-sheet`, nu podeaua de 44 a tintelor obisnuite. Inaltimea o tine
        acum invelisul, fiindca el e cutia; inputul se intinde in ea. */
     .qa-camp { min-height: var(--tap-sheet); }
-    /* Pe telefon adaugarea vine din butonul PLUTITOR (`.fab`, mai jos), proeminent
+    /* Pe telefon adaugarea vine din butonul de actiune al DOCULUI (`.dock-fab`), proeminent
        si peste dock — deci butonul mic din capul boardului nu mai are rost aici. */
     .bh-add { display: none; }
 

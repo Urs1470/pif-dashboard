@@ -395,7 +395,7 @@ def main():
 
             tinte = [
                 ('rand de task', '.trow-wrap .gl-fata, .trow'),
-                ('buton plutitor', '.fab'),
+                ('buton de actiune (dock)', '.dock-fab'),
                 ('slot de dock', '.dock-item'),
             ]
             # Capetele de grupa NU sunt in lista: sunt etichete lipite sus, nu
@@ -486,7 +486,7 @@ def main():
             out('\n--- B. foaia de adaugare si trecerea de tema ---')
             page.goto(baza + '/#/tasks', wait_until='load')
             page.wait_for_timeout(1500)
-            fab = page.query_selector('.fab')
+            fab = page.query_selector('.dock-fab')
             if fab is None:
                 note.append('fara buton plutitor — sar foaia de adaugare')
             else:

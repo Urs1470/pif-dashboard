@@ -103,12 +103,21 @@
        e perechea ei pe web. */
     view-transition-name: cadru-antet;
     height: var(--header-height);
-    /* FARA BLUR. Bara statea pe `backdrop-filter: blur(14px)` peste un fond
-       semi-transparent, deci continutul care trecea pe sub ea se vedea ca o pata
-       care se misca — pe o pagina cu carduri albe, exact acolo unde te uiti
-       intai. Suprafata e opaca; separarea o face linia de jos. */
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
+    /* STICLA, DAR NU CEA DE ATUNCI (AURORA, 2026-08-23).
+       Prima incercare era `blur(14px)` peste un fond semi-transparent, si
+       continutul care trecea pe dedesubt se vedea ca o pata care se misca — pe o
+       pagina cu carduri albe, exact acolo unde te uiti intai. Materialul AURORA
+       rezolva chiar asta: 26px de blur APLATIZEAZA ce e dedesubt in loc sa-l
+       tarasca. De aceea blurul nu coboara sub ~20px fara sa se reverifice
+       contrastul — el e singurul motiv pentru care textul de aici se citeste.
+
+       Antetul ia doar DOUA straturi din material, nu cele patru ale barelor
+       plutitoare: e lipit de marginea de sus, deci n-are patru muchii de aratat.
+       Rama completa (`--glass-rim`) e inlocuita de o singura linie jos. */
+    background: var(--glass-sheen), var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+            backdrop-filter: var(--glass-filter);
+    box-shadow: inset 0 -1px 0 var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -153,6 +162,12 @@
   }
   .h-btn:hover { color: var(--text); }
   .h-btn:active { transform: scale(var(--press-scale)); }
+
+  /* REZERVA, cand `backdrop-filter` lipseste: aceeasi culoare, alfa mai mare.
+     Fara ea tenta ramane la .55 peste continut nefiltrat si textul devine ilizibil. */
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .header { background: var(--bar-bg); }
+  }
 
   @media (max-width: 768px) {
     .header {

@@ -31,7 +31,8 @@
   import ErrorState from '../components/ui/ErrorState.svelte'
   import ConfirmDialog from '../components/ui/ConfirmDialog.svelte'
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
-  import Modal from '../components/ui/Modal.svelte'
+  import Modal from '../components/ui/Modal.svelte'
+  import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
 
   // CHIPURILE DE FILTRU AU PLECAT. Grila separa deja finalizatele in „Arhivă"
   // pliabila; „Finalizat" ca chip arata exact acel continut, dar in grila, iar
@@ -195,6 +196,16 @@
 
   const activeItems = $derived(sortItems(projects.items.filter(p => p.status !== 'finalizat')))
   const archivedItems = $derived(sortItems(projects.items.filter(p => p.status === 'finalizat')))
+  // BUTONUL "+" E AL DOCULUI ACUM (AURORA). Pagina spune doar CE creeaza el; cutia,
+  // pozitia si materialul le tine `Dock.svelte`. Inainte, fiecare pagina cu lista
+  // isi desena propriul `.fab` in coltul de jos - patru copii ale aceleiasi cutii,
+  // care acopereau ultimul rand exact acolo unde te uitai.
+  // `$effect` cheama singur curatarea la demontare si la fiecare schimbare a
+  // conditiei, deci butonul dispare cand nu mai are ce crea (arhiva, alt tab).
+  $effect(() => {
+    if (!(ecran.telefon && !showArchive)) return
+    return inregistreazaActiune('Proiect nou', () => { showNewModal = true })
+  })
 </script>
 
 <svelte:document onclick={onDocClick} />
@@ -389,11 +400,6 @@
        obiect ca in Taskuri (`Tasks.svelte`), la aceleasi coordonate: peste dock,
        in dreapta, unde ajunge degetul mare fara sa muti telefonul in mana.
        Ascuns in arhiva: acolo te uiti la ce s-a terminat, nu adaugi. -->
-  {#if ecran.telefon && !showArchive}
-    <button class="fab" onclick={() => showNewModal = true} aria-label="Proiect nou">
-      <Plus size={25} strokeWidth={1.5} />
-    </button>
-  {/if}
 </div>
 
 <!-- Optiunile de sortare, o singura data pentru amandoua suprafetele: dropdown
@@ -617,21 +623,6 @@
      plusul 25/1.5, cu 24px deasupra dockului (dockul randat are 72 = 68 + 4).
      Cel mai mare obiect plutitor din aplicatie — daca se schimba, se schimba si
      perechea lui din `Tasks.svelte`. */
-  /* Geometria butonului plutitor, o singura data: o citesc si butonul, si
-     rezerva de sub lista (`--fab-loc` mai jos). */
-  .fab { --fab-size: 58px;
-    position: fixed; right: calc(var(--space-md) + var(--safe-right));
-    bottom: calc(var(--dock-h) + 4px + 24px + var(--safe-bottom));
-    width: var(--fab-size); height: var(--fab-size); display: grid; place-items: center;
-    /* CERC, explicit. `--radius-lg` a trecut 20 -> 30 odata cu AURORA, iar pe o
-       cutie de 58px asta depaseste jumatatea laturii — butonul devenea rotund
-       din accident, in patru fisiere deodata. Prototipul chiar il deseneaza
-       rotund, deci rezultatul ramane; doar ca acum e scris. */
-    border-radius: var(--radius-full); border: none;
-    background: var(--accent); color: var(--accent-text);
-    box-shadow: var(--shadow-md); z-index: calc(var(--z-sticky) - 1);
-    cursor: pointer; transition: var(--transition-pressable); }
-  .fab:active { transform: scale(var(--press-scale)); }
   /* Fill discret in loc de contur gol: o pastila conturata se citeste ca eticheta,
      iar asta comuta statusul. Chevronul o spune fara `title`. Culoarea vine din
      `--st` (STATUS_COLORS), deci fondul se deduce din ea — o singura regula

@@ -219,9 +219,9 @@ window.__kbAnim = (de_la, la, ms) => {
 def _(page, cdp, baza):
     mergi(page, baza, '/tasks')
     page.evaluate(KB)
-    if page.query_selector('.fab') is None:
+    if page.query_selector('.dock-fab') is None:
         return None
-    page.click('.fab')
+    page.click('.dock-fab')
     page.wait_for_timeout(900)
     if page.query_selector('.modal') is None:
         return None
@@ -232,9 +232,9 @@ def _(page, cdp, baza):
 def _(page, cdp, baza):
     mergi(page, baza, '/tasks')
     page.evaluate(KB)
-    if page.query_selector('.fab') is None:
+    if page.query_selector('.dock-fab') is None:
         return None
-    page.click('.fab')
+    page.click('.dock-fab')
     page.wait_for_timeout(900)
     page.evaluate('window.__kb(300)')
     page.wait_for_timeout(700)
