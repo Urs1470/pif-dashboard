@@ -753,6 +753,10 @@
        pentru cinci drumuri — iconita singura cere sa fi invatat deja harta.
        Doar pe telefon: pe desktop dock-ul tine opt lucruri si eticheta le-ar
        dubla latimea. Tinta creste la 56×~58, tot peste prag. */
+    /* Manerul de desktop nu mai are ce cauta aici: dockul se randeaza DOAR pe
+       telefon (`App.svelte`), iar in flex el ramanea un copil de 0px care mai
+       adauga un gap intre sloturi. */
+    .dock-grip { display: none; }
     .dock-item {
       /* IMPART LATIMEA, nu mai sunt fixe la 60px: dockul plutitor are latimea
          ecranului minus 24, iar cinci sloturi fixe ar lasa goluri inegale intre

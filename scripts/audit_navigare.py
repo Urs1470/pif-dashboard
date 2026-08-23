@@ -471,6 +471,22 @@ def ruleaza(page, baza, pid):
              'pastila x=%d w=%d / slot x=%d w=%d' % (p0['y'], p0['h'], p0['sy'], p0['sh']))
         el = tab_din_nav(page, '/calendar')
         el.click()
+        # 90ms DE CAND PORNESTE, nu de cand apesi — si asta nu e o slabire a probei,
+        # e separarea a doua lucruri care erau amestecate.
+        # Intre clic si mutarea tentei sta `startViewTransition`: el INGHEATA pagina
+        # veche pana se aplica ruta noua (vezi comentariul din `lib/router.svelte.js`,
+        # cu cursa de 180ms pe importul chunkului). Masurat pe masina asta: tenta
+        # porneste la 190-280ms de la clic, dupa cat de incarcata e masina — deci un
+        # prag fix de 90ms masura latenta de navigare, nu alunecarea. Latenta o
+        # masoara deja sectiunea 8, pe cadre, si acolo ii e locul.
+        # Ce ramane aici e contractul adevarat: tenta trece PRIN pozitii intermediare
+        # in loc sa sara. Asteptam sa se clinteasca, apoi ne uitam la 90ms dupa.
+        start_x = p0['y']
+        page.wait_for_function(
+            """(x0) => {
+              const p = document.querySelector('.pilula');
+              return p && Math.abs(Math.round(p.getBoundingClientRect().left) - x0) > 1;
+            }""", arg=start_x, timeout=3000)
         page.wait_for_timeout(90)
         la_mijloc = page.evaluate(
             "Math.round(document.querySelector('.pilula').getBoundingClientRect().left)")

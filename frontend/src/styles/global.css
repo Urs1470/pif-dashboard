@@ -1476,9 +1476,17 @@ html.tema-vt::view-transition-new(cadru-doc) { animation: vt-tema-vine var(--dur
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
+  /* SUB CONTINUT, PRIN `z-index`, NU FORTAND POZITIA COPIILOR.
+     Prima varianta punea `position: relative` pe orice copil care nu e strat —
+     si a IESIT prost, masurat: regula globala (specificitate 0,5,0) batea
+     `.dock-pilula { position: absolute }` din componenta (0,2,0), deci tenta
+     dockului a intrat in flux si a mancat 40px din latimea celor cinci sloturi.
+     Etichetele „Calendar" si „Mai mult" ajunsesera taiate.
+     `isolation: isolate` de pe `.sticla` face un context de stivuire propriu,
+     deci `-1` ramane inauntru: straturile se picteaza deasupra fondului
+     containerului (care e `none`) si sub tot restul, fara sa atinga nimic. */
+  z-index: -1;
 }
-/* Continutul propriu-zis: orice copil care NU e strat sta deasupra. */
-.sticla > *:not(.s-blur):not(.s-edge):not(.s-tint):not(.s-spec) { position: relative; }
 
 /* 1. Blurul. NU coboara sub ~20px fara reverificarea contrastului: el aplatizeaza
       ce trece pe dedesubt, si asta e singurul motiv pentru care textul de pe bara

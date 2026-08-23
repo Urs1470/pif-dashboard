@@ -187,9 +187,28 @@
         </span>
       {/if}
     {:else}
-      <span class="gol">
-        <MapPin size={14} /> Nicio ieșire planificată
-      </span>
+      <!-- O ABSENTA E O USA, NU UN ANUNT.
+           Aici statea „Nicio ieșire planificată" ca text palid — adica exact in
+           pozitia in care altfel sta lucrul cel mai important al liniei, si care
+           acum spunea ce NU ai. Langa ea, in dreapta, un cip rosu care spune ce e
+           gresit. Ochiul se ducea la rosu, iar stanga nu ducea nicaieri.
+           Acum e ACEEASI pastila ca ieșirea reala, deci randul isi tine forma si
+           plin, si gol — si duce in Calendar, singurul loc de unde se creeaza o
+           perioada (invariantul „Calendarul detine perioadele"). Fara obiect nou:
+           acelasi `.pr`, alt ton.
+           Tonul: `--bg-elevated` FARA umbra, adica suprafata 2, cea INFUNDATA.
+           Ce exista se ridica, ce lipseste sta in adancitura — asa se deosebesc
+           fara sa fie nevoie de inca o culoare. -->
+      <button class="pr pr-gol"
+              onclick={() => navigate('/calendar')}
+              title="Deschide Calendarul ca să planifici o deplasare">
+        <span class="ico"><CalendarX2 size={15} /></span>
+        <!-- Pe telefon, propozitia scurta: la 360px cea intreaga se taia cu doua
+             litere, ceea ce se citeste ca neglijenta. Intreaga ramane in `title`
+             si pe desktop, unde randul are loc. -->
+        <span class="gol-t">{ecran.telefon ? 'Nicio ieșire' : 'Nicio ieșire planificată'}</span>
+        <span class="gol-a"><span class="gol-a-t">planifică</span><ChevronRight size={13} /></span>
+      </button>
     {/if}
 
     <span class="spatiu"></span>
@@ -222,7 +241,7 @@
       <button class="ct-nr rau" onclick={() => navigate(`/calendar?zi=${primaDeClarificat}`)}
               title="Te duce la cea mai veche">
         <AlertTriangle size={13} /> <span class="ct-n">{deClarificat}</span>
-        {#if ecran.telefon}{deClarificat === 1 ? 'perioadă neînchisă' : 'perioade neînchise'}{:else}{deClarificat === 1 ? 'perioadă trecută, proiect neînchis' : 'perioade trecute, proiect neînchis'}{/if}
+        {#if ecran.telefon}{deClarificat === 1 ? 'neînchisă' : 'neînchise'}{:else}{deClarificat === 1 ? 'perioadă trecută, proiect neînchis' : 'perioade trecute, proiect neînchis'}{/if}
         <ChevronRight size={13} />
       </button>
     {/if}
@@ -290,6 +309,17 @@
   .apc { color: var(--text-dim); margin-right: 5px; }
   .pt { margin: 0 5px; }
 
+  /* Ramura GOALA a liniei — vezi comentariul din markup. `.gol` a ramas doar
+     pentru EROARE, care chiar e un anunt, nu o usa: acolo n-ai unde sa te duci
+     pana nu reincerci. */
+  .pr-gol { background: var(--bg-elevated); box-shadow: none; }
+  .pr-gol .ico { color: var(--text-dim); }
+  .gol-t { font-size: var(--font-small); color: var(--text-secondary); white-space: nowrap;
+           overflow: hidden; text-overflow: ellipsis; }
+  .gol-a { display: inline-flex; align-items: center; gap: 3px; flex: none;
+           font-size: var(--font-small); color: var(--text-dim); white-space: nowrap; }
+  .gol-a-t { margin-right: 3px; }
+
   .gol { display: inline-flex; align-items: center; gap: 7px;
          font-size: var(--font-small); color: var(--text-dim); }
   /* Eroarea foloseste limbajul semantic, nu pe cel de „gol": danger pe semn,
@@ -333,38 +363,42 @@
   }
 
   @media (max-width: 760px) {
-    .ctx { gap: var(--space-sm); }
+    /* UN SINGUR RAND (AURORA, si Ion pe 2026-08-23: „nu pune in doua randuri").
+       Era o pastila pe DOUA randuri — cand+unde sus, lucrarea si intervalul
+       dedesubt — tocmai ca sa incapa numele intreg al lucrarii, care la 20ch se
+       taia mereu. Handoff-ul cere linia intr-un rand, cu descrierea TRUNCHIATA si
+       cipul de severitate langa ea. Deci eticheta se taie iar, cu buna stiinta:
+       randul de context n-are voie sa creasca in inaltime si sa impinga boardul,
+       care e continutul paginii. Inaltimea de atingere ramane `--tap-min`. */
+    .ctx { gap: var(--space-sm); flex-wrap: nowrap; }
     /* Pe telefon rămâne doar ieșirea următoare — restul e context de desktop. */
     .apoi { display: none; }
 
-    /* Prima linie a ecranului „Acasă" e si prima tinta. Era o pastila de 34px
-       inalta si intinsa pe toata latimea — destul de lata cat s-o vezi, prea joasa
-       cat s-o atingi. Trece pe doua randuri (cand+unde sus, lucrarea si intervalul
-       dedesubt): incape numele intreg al lucrarii, care la 20ch se taia mereu. */
     .pr {
-      display: grid;
-      grid-template-columns: auto auto minmax(0, 1fr) auto;
-      align-items: center;
-      row-gap: var(--space-2xs); column-gap: 7px;
-      width: 100%; min-height: var(--tap-min);
-      padding: var(--space-sm) var(--space-12) var(--space-sm) var(--space-10);
-      border-radius: var(--radius-sm);
+      /* Se STRANGE, nu ocupa tot: cipul de severitate din dreapta ramane pe
+         acelasi rand fiindca e `flex: none`, iar ce cedeaza e descrierea. */
+      flex: 1 1 auto; min-width: 0; width: auto;
+      min-height: var(--tap-min);
+      padding: 0 var(--space-12);
+      column-gap: 7px;
     }
     .sep { display: none; }
-    /* Pozitiile sunt EXPLICITE, nu lasate pe seama ordinii din DOM: `.ce` vine
-       inaintea lui `.zile` in markup, deci auto-plasarea umplea randul 2 cu
-       eticheta si impingea intervalul pe un al treilea rand.
-       Sus: cand · unde ... interval. Jos: ce lucrare, pe toata latimea — la 20ch
-       eticheta se taia mereu, iar exact ea spune ce faci acolo. */
-    .ico  { grid-area: 1 / 1; }
-    .cand { grid-area: 1 / 2; }
-    .unde { grid-area: 1 / 3; justify-self: start; overflow: hidden; text-overflow: ellipsis; }
-    .zile { grid-area: 1 / 4; justify-self: end; }
+    /* Ce cedeaza primul cand se ingusteaza randul: eticheta lucrarii. Clientul si
+       intervalul raman intregi — ele spun UNDE si CAND, adica exact ce cauti pe
+       linia asta; „ce lucrare" o afli din pagina proiectului. */
+    .unde { overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
     .ce {
-      grid-area: 2 / 1 / 3 / -1;
-      max-width: none; white-space: normal;
-      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+      flex: 1 1 auto; min-width: 0;
+      max-width: none; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
     }
+    .zile { flex: none; }
+    /* Ramura goala se strange la fel. Cuvantul „planifica" ramane pe desktop:
+       pe un rand de 336px el ar fi luat din chiar propozitia care spune despre ce
+       e vorba. Pastila plus sageata spun deja ca duce undeva. */
+    .gol-t { flex: 1 1 auto; min-width: 0; }
+    .gol-a-t { display: none; }
+    .ct-nr.rau { flex: none; }
 
     /* Pe telefon ramane UN singur contor — cel rosu, care cere actiune.
        „Fara perioada" a plecat de aici la cererea lui Ion (2026-08-10:
