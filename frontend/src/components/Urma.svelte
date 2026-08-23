@@ -48,7 +48,13 @@
      al aplicatiei. Sta pe stanga, ca sa nu se bata cu butonul plutitor. */
   .urma {
     position: fixed;
-    left: var(--space-md);
+    /* DUPA BARA LATERALA, nu peste ea. Butonul sta la `--z-toast + 1` = 2001,
+       adica peste orice altceva din aplicatie — bara e la `--z-sticky` = 200 —
+       deci la `left: 16px` s-ar picta fix peste randurile de navigatie, si
+       tocmai un obiect care se aprinde rar ar acoperi ceva ce e mereu acolo.
+       Pe telefon `--sidebar-w` e 0 si termenul dispare, deci pozitia de acolo
+       ramane exact cea de dinainte. */
+    left: calc(var(--sidebar-w) + var(--space-md));
     bottom: calc(var(--dock-h) + 14px + var(--safe-bottom) + var(--space-12) + var(--kb, 0px));
     z-index: calc(var(--z-toast) + 1);
     min-height: var(--tap-min);

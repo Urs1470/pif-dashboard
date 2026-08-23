@@ -89,6 +89,7 @@ se încarcă singur când atingi `frontend/src/**`. Sursa valorilor rămâne
 ```bash
 python scripts/lint.py              # pyflakes + compilatorul Svelte (secunde, fara Chromium)
 python scripts/audit_design.py      # coerenta sistemului de design (sub o secunda)
+python scripts/audit_contrast.py    # contrastul perechilor reale, pe amandoua temele
 python scripts/test_suite.py        # API + verificari statice (44 de probe)
 python scripts/smoke_ui.py          # fiecare ruta in Chromium, desktop + mobil
 python scripts/audit_mobil.py       # geometrie si gesturi pe trei latimi de telefon
@@ -109,6 +110,14 @@ fiindca nu poate verifica selectorul, un `let` citit in markup care in mod runes
 redeseneaza, un import care nu se rezolva, un `svelte-ignore` cu coduri separate prin
 spatiu (tace doar primul). Toate cinci existau in cod pe 2026-08-23, si niciun alt
 verificator nu le vedea. Linia de baza e CURATA, deci orice abatere e noua.
+
+**`audit_contrast.py` masoara ce `audit_design.py` nu poate.** Acela verifica PARITATEA
+tokenurilor intre teme — ca fiecare rol sa existe in amandoua — niciodata contrastul lor.
+Comentariile din `tokens.css` isi scriu singure ratiile calibrate de mana, iar rolul care a
+cazut ultima oara (accentul ca text pe o suprafata, pe tema deschisa) nu era numit de nicio
+regula. Proba rezolva aliasurile si cele cinci `color-mix()` ca browserul (oklab si sRGB) si
+socoteste doar perechile care chiar apar pe ecran, plus separarea celor trei trepte de text —
+aceea nu e lizibilitate, e conditia ca ierarhia declarata sa se si vada.
 
 **`audit_tastatura.py` emuleaza tastatura** printr-un `visualViewport` fals care urca la 250ms
 dupa focus — singurul mod de a vedea pe masina de dezvoltare ce face foaia sub IME-ul Android.

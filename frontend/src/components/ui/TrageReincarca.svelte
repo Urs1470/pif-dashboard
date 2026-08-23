@@ -63,7 +63,13 @@
        constanta (`height: auto` + `flex-wrap` + decupajul ecranului), deci nu
        se poate calcula aici din tokenuri fara sa gresesti. */
     top: calc(var(--h-antet, var(--header-height)) - 34px);
-    left: 50%;
+    /* Centrat pe COLOANA DE CONTINUT, nu pe fereastra: `position: fixed` se
+       raporteaza la ecran, deci nu stie de rezerva pe care bara laterala o tine
+       in `.app-main`. Fara jumatatea ei, discul ar iesi cu 110px la stanga de
+       centrul a ceea ce tragi. Pe telefon `--sidebar-w` e 0 si termenul dispare;
+       gestul e oricum al atingerii, dar un laptop cu ecran tactil e peste prag
+       si il are. */
+    left: calc(50% + var(--sidebar-w) / 2);
     /* SUB antet, nu la egalitate cu el. Amandoua erau pe `--z-sticky`, si la
        egalitate castiga ultimul din DOM — adica discul, care ajungea astfel sa
        se picteze peste bara. O treapta mai jos si antetul (opac, fara blur) il

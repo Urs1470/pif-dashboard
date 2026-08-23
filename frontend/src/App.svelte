@@ -2,6 +2,8 @@
   import { fade } from 'svelte/transition'
   import Header from './components/layout/Header.svelte'
   import Dock from './components/layout/Dock.svelte'
+  import Sidebar from './components/layout/Sidebar.svelte'
+  import { ecran } from './lib/ecran.svelte.js'
   import Toast from './components/ui/Toast.svelte'
   import TrageReincarca from './components/ui/TrageReincarca.svelte'
   import Tooltip from './components/ui/Tooltip.svelte'
@@ -90,8 +92,12 @@
   const fadeDur = $derived(motionDuration(viewTransitionsOn() ? 0 : DUR_FAST))
 
   // ===== SCHIMBAREA DE PAGINA E DIRECTIONALA (contractul de miscare: 240ms,
-  // „inainte din dreapta, inapoi din stanga"). Sensul vine din ORDINEA dockului:
-  // mergi spre dreapta in dock -> continutul soseste din dreapta, si invers.
+  // „inainte din dreapta, inapoi din stanga"). Sensul vine din ORDINEA
+  // NAVIGATIEI — spre dreapta in dockul de telefon, mai jos in bara laterala de
+  // desktop — deci continutul soseste din dreapta, si invers. Lista de mai jos e
+  // sursa acelei ordini pentru amandoua; `Dock.svelte` si `Sidebar.svelte` isi
+  // insira rutele in aceeasi ordine, altfel aceeasi navigare ar aluneca intr-un
+  // sens pe telefon si in celalalt pe desktop.
   // Doua drumuri, acelasi sens:
   //  - fara View Transitions: `alunecare` (Svelte) pe blocul de ruta;
   //  - cu View Transitions: browserul detine tranzitia, deci sensul i se da prin
@@ -170,7 +176,12 @@
 
 <div class="app-layout">
   <div class="app-main">
-    <Header deschideCautarea={() => paleta?.deschide()} />
+    <!-- ANTETUL E DOAR AL TELEFONULUI. Pe desktop marca, tema si starea retelei
+         stau in bara laterala, iar o bara de 56px care ar mai tine doar gol nu e
+         un cadru, e o margine. -->
+    {#if ecran.telefon}
+      <Header deschideCautarea={() => paleta?.deschide()} />
+    {/if}
     <main class="app-content" id="main-content">
       {#key routeKey}
         <!-- `sensNav` se citeste NEconditionat (si pe ramura View Transitions):
@@ -222,9 +233,18 @@
     </main>
   </div>
 
-  <!-- Docul cheama paleta printr-o functie exportata, nu printr-o apasare de
+  <!-- DOUA NAVIGATII, NICIODATA AMANDOUA. Pe telefon dockul de jos, sub degetul
+       mare; pe desktop bara laterala, mereu la vedere. Nu se randeaza ambele cu
+       una ascunsa din CSS, fiindca fiecare SCRIE `--dock-h` pe <html> — doi
+       scriitori pe aceeasi variabila inseamna ca ultimul montat castiga, la
+       intamplare.
+       Amandoua cheama paleta printr-o functie exportata, nu printr-o apasare de
        taste fabricata (vezi `deschide()` din CommandPalette). -->
-  <Dock deschideCautarea={() => paleta?.deschide()} />
+  {#if ecran.telefon}
+    <Dock deschideCautarea={() => paleta?.deschide()} />
+  {:else}
+    <Sidebar deschideCautarea={() => paleta?.deschide()} />
+  {/if}
   <CommandPalette bind:this={paleta} />
   <Toast />
   <!-- Arcul de „trage sa reincarci". Randat O SINGURA data, aici: gestul e al
@@ -254,6 +274,15 @@
     flex-direction: column;
     min-height: 100dvh;
     overflow-x: clip;
+    /* BARA LATERALA IMPINGE, NU ACOPERA. E `position: fixed` (deci iese din
+       flux) tocmai ca sa nu deruleze cu pagina; rezerva o tine coloana de
+       continut. Pe telefon `--sidebar-w` e 0, deci regula nu face nimic acolo.
+       Pe `.app-main`, nu pe `.app-content`: si antetul de telefon, daca ecranul
+       s-ar largi cat sa aiba amandoua, trebuie sa inceapa dupa bara.
+       PADDING, nu `margin-left`: cu margin, `overflow-x: clip` ar taia de la
+       marginea ferestrei si ultimii 220px de continut ar disparea sub taietura. */
+    padding-left: var(--sidebar-w);
+    transition: padding-left var(--dur-base) var(--ease);
   }
 
   /* FARA `overflow-y: auto` AICI.
@@ -269,7 +298,9 @@
      creeaza container de derulare. */
   .app-content {
     flex: 1;
-    /* Dock-ul pluteste peste continut la toate latimile — lasa loc dedesubt. */
+    /* Dockul pluteste peste continut pe telefon — lasa loc dedesubt. Pe desktop
+       `--dock-h` e 0 (o scrie `Sidebar.svelte` la montare), deci ramane doar
+       aerul de la capatul paginii. */
     padding-bottom: calc(var(--dock-h) + var(--space-lg) + var(--safe-bottom));
     transition: padding-right var(--dur-base) var(--ease);
   }
@@ -338,7 +369,9 @@
   .skip-link {
     position: fixed;
     top: -100px;
-    left: var(--space-md);
+    /* Dupa bara laterala, nu peste ea: e `position: fixed`, deci se raporteaza
+       la ecran si n-ar sti singura de rezerva din `.app-main`. */
+    left: calc(var(--sidebar-w) + var(--space-md));
     /* Se vede doar la Tab, dar cand se vede e un buton ca oricare altul —
        deci are caseta unui buton, nu 36px. */
     display: inline-flex;

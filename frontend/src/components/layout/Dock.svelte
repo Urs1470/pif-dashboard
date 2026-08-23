@@ -23,17 +23,33 @@
   // butonul plutitor ramanea la 12px de dock in loc de 28.
   // `borderBoxSize` e drumul corect; `getBoundingClientRect` e rezerva pentru
   // browserele care nu-l raporteaza.
+  //
+  // SI SE STERGE LA DEMONTARE — dar numai daca valoarea de pe <html> e inca a
+  // NOASTRA. De cand desktopul are bara laterala in loc de dock, cele doua
+  // componente se schimba intre ele la o redimensionare peste/sub 768px, si
+  // amandoua scriu aceeasi variabila. Un `removeProperty` neconditionat ar
+  // sterge, la desmontare, exact valoarea pe care cealalta tocmai a scris-o
+  // (ordinea montare/desmontare nu e garantata), iar `--dock-h` ar cadea pe
+  // implicitul de 68px din tokens — 68px de gol sub fiecare pagina, fara ca
+  // nimic sa se fi schimbat pe ecran. Cu garda, oricare ordine iese corect.
   let dockEl = $state(null)
   $effect(() => {
     if (!dockEl) return
+    let ultima = null
     const scrie = (e) => {
       const h = e?.borderBoxSize?.[0]?.blockSize ?? dockEl.getBoundingClientRect().height
-      document.documentElement.style.setProperty('--dock-h', Math.round(h) + 'px')
+      ultima = Math.round(h) + 'px'
+      document.documentElement.style.setProperty('--dock-h', ultima)
     }
     const ro = new ResizeObserver(([e]) => { scrie(e); masoaraPilula() })
     ro.observe(dockEl)
     scrie(null)
-    return () => ro.disconnect()
+    return () => {
+      ro.disconnect()
+      if (document.documentElement.style.getPropertyValue('--dock-h') === ultima) {
+        document.documentElement.style.removeProperty('--dock-h')
+      }
+    }
   })
 
   // ===== TENTA SLOTULUI ACTIV ALUNECA, NU SE APRINDE IN ALT LOC =====

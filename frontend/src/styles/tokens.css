@@ -367,11 +367,21 @@
      titlu la termen scade sub jumatate. Pe telefon nu schimba nimic — acolo
      randul e oricum ingust, si acolo problema nu exista. */
   --content-lista: 920px;
-  /* DOAR VALOAREA IMPLICITA — se rescrie la rulare din `Dock.svelte`, care
-     masoara bara cu un `ResizeObserver`. 68 e inaltimea pastilei de pe desktop;
-     pe telefon bara are 72+ si difera cu safe-area, deci nimeni nu mai scrie
-     inaltimea dockului de mana. */
+  /* DOAR VALOAREA IMPLICITA — se rescrie la rulare de componenta de navigatie
+     montata: `Dock.svelte` (telefon) o masoara cu un `ResizeObserver`, iar
+     `Sidebar.svelte` (desktop) o pune pe 0, fiindca acolo nu mai exista bara de
+     jos. Un singur scriitor la un moment dat; cine tine navigatia tine si cat
+     spatiu ocupa ea. 68 e o valoare de pornire pentru cadrul dintre demontarea
+     uneia si montarea celeilalte. */
   --dock-h: 68px;
+
+  /* LATIMEA BAREI LATERALE, si tot atat de multa rezerva la stanga in
+     `.app-main`. Valoarea de aici e cea de DESKTOP; pe telefon devine 0 (blocul
+     de 768 de mai jos), fiindca acolo bara nu exista si rezerva ar fi un gol.
+     220 e latimea la care „Departament" — cel mai lung nume de ruta — incape
+     intreg langa iconita, fara sa se taie: 10 (padding) + 19 (iconita) + 10
+     (gol) + ~150 (text) + 10 = 199, plus aer. */
+  --sidebar-w: 220px;
 
   /* Sensul ultimei navigari (1 inainte / -1 inapoi / 0 nimic), scris din App la
      fiecare schimbare de ruta; il citesc regulile ::view-transition din
@@ -457,6 +467,24 @@
   :root {
     --font-title: 1.75rem;   /* 25 -> 28 */
     --font-body: 1rem;       /* 15 -> 16 */
+
+    /* Pe telefon navigatia e dockul de jos, deci la stanga nu se rezerva nimic. */
+    --sidebar-w: 0px;
+  }
+}
+
+/* PE DESKTOP NU MAI EXISTA ANTET, DECI INALTIMEA LUI E ZERO.
+   Nu e o valoare de complezenta: marca, tema si starea retelei au urcat in bara
+   laterala, iar `Header.svelte` nu se mai randeaza deloc peste 768px. Tokenul e
+   citit de SAPTE locuri ca „de cat cade continutul de sus" — capetele lipicioase
+   de grup din /tasks si din pagina de proiect, sinele lipicioase din Planificator,
+   Calculator si pagina de proiect, si `scrollMarginTop` din `lib/focus.js` si
+   Calendar. Toate sunt corecte la 0 exact atunci cand antetul lipseste, deci
+   valoarea se schimba INTR-UN loc si cele sapte se repara singure.
+   Pe telefon ramane 56px: acolo antetul exista si e chiar inaltimea lui. */
+@media (min-width: 769px) {
+  :root {
+    --header-height: 0px;
   }
 }
 

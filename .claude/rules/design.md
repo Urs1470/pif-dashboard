@@ -32,5 +32,9 @@ otel pe hartie, doua teme (dark implicit + light), amandoua in tokens.
   (NU `type="date"`), `<Modal>`, `<Toast>`, `<EmptyState>`, `<ErrorState>`, `<Skeleton>`
   (DOAR la prima incarcare), `<SelectorZi>`. Numaratorile folosesc `.count` din `global.css`.
 - **Tinte touch:** `--tap-min` 44px. Control nou = da-i `:active`.
-- **Inainte de commit:** `python scripts/audit_design.py` — singurul test care prinde
-  incoerenta (build-ul trece vesel peste o a doua paleta copiata).
+- **Navigatie:** desktop (>768px) = `Sidebar.svelte`, coloana fixa de `--sidebar-w` care
+  impinge continutul; telefon = `Dock.svelte`, bara de jos. Niciodata amandoua: fiecare scrie
+  `--dock-h` pe `<html>`. Pe desktop `--header-height` e 0 — antetul nu se randeaza acolo.
+- **Inainte de commit:** `python scripts/audit_design.py` (coerenta — build-ul trece vesel
+  peste o a doua paleta copiata) **si** `python scripts/audit_contrast.py` (contrastul, pe
+  amandoua temele — obligatoriu la orice atingere a unei culori din `tokens.css`).

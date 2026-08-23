@@ -113,23 +113,29 @@ def animatii(page):
     return page.evaluate("window.__anim.slice()")
 
 
-def arata_docul(page):
-    """Pe desktop docul sta ascuns si apare cand cursorul intra in banda de jos
-    (48px, vezi `REVEAL_EDGE` din Dock). Fara pasul asta orice `hover` pe un tab
-    expira: elementul e randat, dar tradus SUB fereastra."""
-    vp = page.viewport_size
-    page.mouse.move(vp['width'] / 2, vp['height'] - 8)
-    page.wait_for_timeout(260)      # cat tine tranzitia dockului (--dur-base)
+def tab_din_nav(page, cale):
+    """Randul unei rute din navigatia de DESKTOP, adica bara laterala.
 
+    Proba ruleaza intr-un singur context, la 1280x800 (vezi `ruleaza`), deci
+    navigatia e `Sidebar.svelte`, nu dockul — acela a ramas doar pe telefon si se
+    verifica in `audit_mobil.py`.
 
-def tab_din_doc(page, cale):
-    arata_docul(page)
-    return page.locator('.dock a[href="%s"]' % cale).first
+    ISTORIC, fiindca explica de ce nu mai exista un pas de „arata navigatia":
+    pana la bara laterala, desktopul avea dockul ascuns, care iesea doar cand
+    cursorul intra in ultimii 48px de jos (`REVEAL_EDGE`). Fara acel pas orice
+    `hover` pe un tab expira — elementul era randat, dar tradus SUB fereastra.
+    Bara laterala e mereu la vedere, deci pasul a disparut; daca vreodata se
+    intoarce o ascundere, se intoarce si el.
+
+    Selectorul intra prin `.rute` INADINS: marca din capul barei e tot un
+    `<a href="/">`, iar `.bara a[href="/"]` ar prinde-o pe ea, care nu e un tab.
+    """
+    return page.locator('.rute a[href="%s"]' % cale).first
 
 
 def mergi_la(page, tab, astepta=700):
-    """Apasa un tab din dock exact ca utilizatorul: hover, apoi click."""
-    el = tab_din_doc(page, tab)
+    """Apasa o ruta din navigatie exact ca utilizatorul: hover, apoi click."""
+    el = tab_din_nav(page, tab)
     el.hover()
     page.wait_for_timeout(160)      # cat dureaza drumul de la hover la click
     el.click()
@@ -209,7 +215,7 @@ def ruleaza_taburi(page, baza):
     try:
         for tur in ('prima vizita', 'a doua vizita'):
             for cale, nume in RUTE_TAB:
-                el = tab_din_doc(page, cale)
+                el = tab_din_nav(page, cale)
                 page.evaluate("window.__cadre = 0; window.__cand = []; window.__stari = [];"
                               " window.__t = performance.now()")
                 el.hover()
@@ -384,7 +390,7 @@ def ruleaza(page, baza, pid):
     URL_DEPT = '/api/settings/plan-departament'
     mergi_la(page, '/tasks')
     cereri.clear()
-    el = tab_din_doc(page, '/departament')
+    el = tab_din_nav(page, '/departament')
     el.hover()
     page.wait_for_timeout(500)
     inainte = [u for u in cereri if URL_DEPT in u]
@@ -403,7 +409,7 @@ def ruleaza(page, baza, pid):
     # de cereri fara ca nimic sa arate altfel pe ecran.
     mergi_la(page, '/tasks')
     cereri.clear()
-    tab_din_doc(page, '/departament').hover()
+    tab_din_nav(page, '/departament').hover()
     page.wait_for_timeout(500)
     nota(len([u for u in cereri if URL_DEPT in u]) == 0,
          'hoverul pe date proaspete nu mai cere nimic',
@@ -425,54 +431,61 @@ def ruleaza(page, baza, pid):
              'pornit de la %dpx, ajuns la %dpx' % (inaltat, page.evaluate("window.scrollY")))
 
     out('\n--- 6. cadrul nu intra in instantaneul paginii ---')
+    # CE E CADRU PE DESKTOP S-A SCHIMBAT, CONTRACTUL NU.
+    # Erau doua bucati — antetul de sus si dockul de jos — si fiecare avea nevoie
+    # de nume propriu ca sa nu fie inghitita de instantaneul `root` si sa ia
+    # alunecarea de ±10px la fiecare schimbare de ruta. Pe desktop amandoua au
+    # fost inlocuite de bara laterala, deci ramane un singur obiect de verificat,
+    # cu exact aceeasi cerinta. Antetul si dockul mai exista pe telefon, unde
+    # `audit_mobil.py` le vede.
     nume = page.evaluate("""(() => {
-      const h = document.querySelector('.header'), d = document.querySelector('.dock');
-      return {
-        antet: h ? getComputedStyle(h).viewTransitionName : 'lipsa',
-        doc: d ? getComputedStyle(d).viewTransitionName : 'lipsa',
-      };
+      const b = document.querySelector('.bara');
+      return { bara: b ? getComputedStyle(b).viewTransitionName : 'lipsa' };
     })()""")
-    nota(nume['antet'] == 'cadru-antet', 'antetul are nume propriu de tranzitie', str(nume['antet']))
-    nota(nume['doc'] == 'cadru-doc', 'docul are nume propriu de tranzitie', str(nume['doc']))
+    nota(nume['bara'] == 'cadru-lateral',
+         'bara laterala are nume propriu de tranzitie', str(nume['bara']))
 
     out('\n--- 7. tenta slotului activ ALUNECA ---')
+    # AXA S-A ROTIT, CONTRACTUL NU. In dock tenta se muta pe ORIZONTALA dintr-un
+    # slot in altul; in bara laterala, pe VERTICALA dintr-un rand in altul. Deci
+    # tot ce se masura pe `left` se masoara pe `top`, si nimic altceva nu se
+    # schimba: un singur slot marcat, tenta fix peste el, si — singura proba care
+    # chiar prinde regresia — pozitia LA 90ms, intre plecare si sosire. Dupa ce
+    # se termina, o tenta care sare si una care aluneca arata identic.
     mergi_la(page, '/')
-    arata_docul(page)
     p0 = page.evaluate("""(() => {
-      const p = document.querySelector('.dock-pilula');
-      const s = document.querySelector('.dock [data-pilula]');
+      const p = document.querySelector('.pilula');
+      const s = document.querySelector('.rute [data-pilula]');
       if (!p || !s) return null;
       const cp = p.getBoundingClientRect(), cs = s.getBoundingClientRect();
-      return { x: Math.round(cp.left), w: Math.round(cp.width),
-               sx: Math.round(cs.left), sw: Math.round(cs.width),
-               marcate: document.querySelectorAll('.dock [data-pilula]').length };
+      return { y: Math.round(cp.top), h: Math.round(cp.height),
+               sy: Math.round(cs.top), sh: Math.round(cs.height),
+               marcate: document.querySelectorAll('.rute [data-pilula]').length };
     })()""")
     nota(p0 is not None, 'pastila exista si un singur slot o poarta')
     if p0:
         nota(p0['marcate'] == 1, 'exact UN slot marcat', '%d marcate' % p0['marcate'])
-        nota(abs(p0['x'] - p0['sx']) <= 1 and abs(p0['w'] - p0['sw']) <= 1,
+        nota(abs(p0['y'] - p0['sy']) <= 1 and abs(p0['h'] - p0['sh']) <= 1,
              'pastila e fix peste slotul activ',
-             'pastila x=%d w=%d / slot x=%d w=%d' % (p0['x'], p0['w'], p0['sx'], p0['sw']))
-        # Alunecarea se masoara IN TIMPUL ei: dupa ce se termina, o pastila care
-        # sare si una care aluneca arata identic.
-        el = tab_din_doc(page, '/calendar')
+             'pastila y=%d h=%d / slot y=%d h=%d' % (p0['y'], p0['h'], p0['sy'], p0['sh']))
+        el = tab_din_nav(page, '/calendar')
         el.click()
         page.wait_for_timeout(90)
         la_mijloc = page.evaluate(
-            "Math.round(document.querySelector('.dock-pilula').getBoundingClientRect().left)")
+            "Math.round(document.querySelector('.pilula').getBoundingClientRect().top)")
         page.wait_for_timeout(600)
         la_final = page.evaluate("""(() => {
-          const p = document.querySelector('.dock-pilula');
-          const s = document.querySelector('.dock [data-pilula]');
-          return { x: Math.round(p.getBoundingClientRect().left),
-                   sx: Math.round(s.getBoundingClientRect().left) };
+          const p = document.querySelector('.pilula');
+          const s = document.querySelector('.rute [data-pilula]');
+          return { y: Math.round(p.getBoundingClientRect().top),
+                   sy: Math.round(s.getBoundingClientRect().top) };
         })()""")
-        nota(abs(la_final['x'] - la_final['sx']) <= 1, 'ajunge pe slotul nou',
-             'pastila %d / slot %d' % (la_final['x'], la_final['sx']))
-        intre = min(p0['x'], la_final['x']) - 2 < la_mijloc < max(p0['x'], la_final['x']) + 2
-        nota(intre and la_mijloc not in (p0['x'], la_final['x']),
+        nota(abs(la_final['y'] - la_final['sy']) <= 1, 'ajunge pe slotul nou',
+             'pastila %d / slot %d' % (la_final['y'], la_final['sy']))
+        intre = min(p0['y'], la_final['y']) - 2 < la_mijloc < max(p0['y'], la_final['y']) + 2
+        nota(intre and la_mijloc not in (p0['y'], la_final['y']),
              'la 90ms e INTRE cele doua sloturi (aluneca, nu sare)',
-             'plecat %d -> la 90ms %d -> ajuns %d' % (p0['x'], la_mijloc, la_final['x']))
+             'plecat %d -> la 90ms %d -> ajuns %d' % (p0['y'], la_mijloc, la_final['y']))
 
     out('\n--- 8. fiecare tab, cu LATENTA si masurat pe CADRE ---')
     ruleaza_taburi(page, baza)

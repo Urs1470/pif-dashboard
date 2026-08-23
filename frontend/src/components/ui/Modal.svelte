@@ -895,10 +895,20 @@
   // LISTA FACE LOC, nu se ascunde sub panou — dar numai cand mai are ce da.
   // Sub 1100px coloana de continut e deja ingusta, iar impinsul ar strange
   // exact randurile pe care panoul ar trebui sa le lase citibile.
+  //
+  // PRAGUL E PE COLOANA, NU PE FEREASTRA. `innerWidth` nu stie de bara laterala,
+  // iar bara ia 220px din stanga in acelasi timp in care panoul ia pana la 560
+  // din dreapta. Pe o fereastra de 1200px asta lasa 420px de lista impinsa intre
+  // ele — sub latimea la care un rand de task mai e citibil, si exact cazul pe
+  // care pragul de 1100 fusese pus sa-l opreasca. Se scade latimea reala a barei
+  // (0 pe telefon), deci pragul inseamna acelasi lucru pe ambele: „coloana mai
+  // are 1100px de dat".
   $effect(() => {
     if (!open || !panou) return
+    const latBara = () =>
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w')) || 0
     const potriveste = () => document.documentElement.classList.toggle(
-      'are-panou', window.innerWidth >= 1100)
+      'are-panou', window.innerWidth - latBara() >= 1100)
     potriveste()
     window.addEventListener('resize', potriveste)
     return () => {
