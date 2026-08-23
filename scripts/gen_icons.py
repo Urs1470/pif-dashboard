@@ -90,11 +90,41 @@ PLANSETA = (
 )
 MARCA_METAL = marca('url(#metal)', ' filter="url(#umbra)"')
 
+# ===== FORMA: SQUIRCLE, NU DREPTUNGHI ROTUNJIT (Apple, 2026-08-23) =====
+#
+# Iconitele Apple nu au colturi de ARC DE CERC, ci curbura CONTINUA: raza nu sare
+# de la infinit la o valoare fixa in punctul de tangenta, ci creste lin. De aceea
+# un `rx` obisnuit se citeste ca „aproape" langa o iconita de sistem.
+# Ion, 2026-08-23: redesignul e inspirat de la ei, deci si forma.
+#
+# Se genereaza NUMERIC din superelipsa |x/a|^n + |y/a|^n = 1, nu din coeficienti
+# copiati de undeva: asa se poate verifica, si se poate regla dintr-un singur
+# numar. n = 5 e aproximarea uzuala a formei lor (n = 2 ar da un cerc, n -> inf un
+# patrat). 128 de puncte pe contur — la 1024px randati inseamna sub un pixel intre
+# ele, deci conturul e neted si la marimea cea mai mare pe care o scoatem.
+import math
+
+def squircle(centru, a, n=5.0, puncte=128):
+    """Traseu inchis de superelipsa, in coordonatele grilei de 64."""
+    pas = []
+    for i in range(puncte):
+        t = 2 * math.pi * i / puncte
+        ct, st = math.cos(t), math.sin(t)
+        x = centru + a * math.copysign(abs(ct) ** (2.0 / n), ct)
+        y = centru + a * math.copysign(abs(st) ** (2.0 / n), st)
+        pas.append('%s%.3f %.3f' % ('M' if i == 0 else 'L', x, y))
+    return ''.join(pas) + 'Z'
+
+
+FORMA = squircle(32, 32)          # conturul iconitei
+FORMA_RAMA = squircle(32, 31.4)   # aceeasi forma, trasa 0.6 inauntru, pentru rama
+
+
 def svg(continut, taiat=False):
-    clip = ('<defs><clipPath id="taie"><rect width="64" height="64" rx="15"/></clipPath></defs>'
+    clip = (f'<defs><clipPath id="taie"><path d="{FORMA}"/></clipPath></defs>'
             f'<g clip-path="url(#taie)">{continut}</g>'
-            '<rect x=".6" y=".6" width="62.8" height="62.8" rx="14.4" fill="none"'
-            ' stroke="#fff" stroke-opacity=".22" stroke-width="1.2"/>') if taiat else continut
+            f'<path d="{FORMA_RAMA}" fill="none" stroke="#fff" stroke-opacity=".22"'
+            f' stroke-width="1.2"/>') if taiat else continut
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
             f'{DEFS}{clip}</svg>')
 
@@ -111,7 +141,7 @@ SVG_INTREG = svg(PLANSETA + MARCA_METAL, taiat=True)
 # Tila simpla, pentru favicon si pentru locurile mici: fara caroiaj (handoff:
 # „la sub ~32px se recomanda o varianta fara caroiaj").
 SVG_TILA = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
-            f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{marca(CERNEALA)}</svg>')
+            f'<path d="{FORMA}" fill="{ACCENT}"/>{marca(CERNEALA)}</svg>')
 
 XML_ADAPTIVE = '''<?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
@@ -132,7 +162,7 @@ def svg_splash(fond):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
             f'<rect width="100" height="100" fill="{fond}"/>'
             f'<g transform="translate(39 39) scale(0.34375)">'
-            f'<rect width="64" height="64" rx="14" fill="{ACCENT}"/>{marca(CERNEALA)}</g>'
+            f'<path d="{FORMA}" fill="{ACCENT}"/>{marca(CERNEALA)}</g>'
             f'</svg>')
 
 
