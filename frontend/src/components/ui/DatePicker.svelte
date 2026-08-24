@@ -203,7 +203,7 @@
 
 <div class="dp" class:has-label={label}>
   {#if label}<span class="dp-label">{label}</span>{/if}
-  <button type="button" class="dp-trigger" class:placeholder={!eticheta && !display} {disabled}
+  <button type="button" class="dp-trigger" class:deschis={open} class:placeholder={!eticheta && !display} {disabled}
     bind:this={triggerEl} onclick={() => open ? close() : openCal()}>
     <span class="dp-value">{eticheta || display || placeholder}</span>
     <Calendar size={15} strokeWidth={1.5} />
@@ -264,7 +264,17 @@
     transition: box-shadow var(--dur-fast) var(--ease);
   }
   .dp-trigger:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--border-strong); }
-  .dp-trigger:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px var(--accent); }
+  /* SI CAND E DESCHIS, nu doar la focus de tastatura. Declansatorul e un `<button>`,
+     iar pe butoane `:focus-visible` NU se aprinde la clic de mouse — deci deschideai
+     popoverul si campul ramanea stins, desi el e chiar obiectul deschis. La cinci
+     controale care se declara in comentariile lor „acelasi camp al sistemului",
+     asta era singura deosebire pe care o vedeai cu ochiul.
+     Reteta nu e inventata aici: `Select.svelte:196` o are deja — `:focus, .open`.
+     (`Input` si `Textarea` raman pe `:focus` cu buna stiinta: sunt campuri de text,
+     unde `:focus-visible` se potriveste oricum la clic, iar `:focus` are un plus —
+     aprinde muchia si cand focalizam din cod, cum face foaia de adaugare.) */
+  .dp-trigger:focus-visible,
+  .dp-trigger.deschis { outline: none; box-shadow: inset 0 0 0 1.5px var(--accent); }
   .dp-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
   .dp-trigger.placeholder .dp-value { color: var(--text-dim); }
   .dp-trigger :global(svg) { color: var(--text-dim); flex-shrink: 0; }

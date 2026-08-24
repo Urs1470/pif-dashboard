@@ -276,7 +276,7 @@
 <div class="so">
   {#if label}<span class="so-label">{label}</span>{/if}
 
-  <button type="button" class="so-trigger" class:placeholder={!eticheta && !afisat} {disabled}
+  <button type="button" class="so-trigger" class:deschis={open} class:placeholder={!eticheta && !afisat} {disabled}
           bind:this={triggerEl} onclick={deschideCeasul}>
     <span class="so-value">{eticheta || afisat || placeholder}</span>
     <Clock size={16} strokeWidth={1.5} />
@@ -375,7 +375,17 @@
     transition: box-shadow var(--dur-fast) var(--ease);
   }
   .so-trigger:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--border-strong); }
-  .so-trigger:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px var(--accent); }
+  /* SI CAND E DESCHIS, nu doar la focus de tastatura. Declansatorul e un `<button>`,
+     iar pe butoane `:focus-visible` NU se aprinde la clic de mouse — deci deschideai
+     popoverul si campul ramanea stins, desi el e chiar obiectul deschis. La cinci
+     controale care se declara in comentariile lor „acelasi camp al sistemului",
+     asta era singura deosebire pe care o vedeai cu ochiul.
+     Reteta nu e inventata aici: `Select.svelte:196` o are deja — `:focus, .open`.
+     (`Input` si `Textarea` raman pe `:focus` cu buna stiinta: sunt campuri de text,
+     unde `:focus-visible` se potriveste oricum la clic, iar `:focus` are un plus —
+     aprinde muchia si cand focalizam din cod, cum face foaia de adaugare.) */
+  .so-trigger:focus-visible,
+  .so-trigger.deschis { outline: none; box-shadow: inset 0 0 0 1.5px var(--accent); }
   .so-trigger:disabled { opacity: .5; cursor: not-allowed; }
   .so-trigger.placeholder .so-value { color: var(--text-dim); }
   .so-trigger :global(svg) { color: var(--text-dim); flex-shrink: 0; }
