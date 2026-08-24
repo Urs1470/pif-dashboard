@@ -99,24 +99,27 @@
       <h1>Departament</h1>
       <span class="page-sub">Planul întregii echipe</span>
     </div>
-  </div>
-  {#if loading}
-    <div class="asteptare"><Skeleton height="420px" /></div>
-  {:else if error}
-    <ErrorState message={error} onretry={load} />
-  {:else}
-    <div class="bara">
-      {#if url && !editeaza}
-        <span class="spatiu"></span>
+    <!-- PE LINIA TITLULUI, nu pe un rand al lor (Ion, 2026-08-23: „ca sa incapa
+         tot campul cu planner fara sa dau scroll"). Randul separat costa 38px de
+         control plus doua margini, si mai rau: ramanea acolo si cand editai
+         linkul, gol, fiindca doar CONTINUTUL lui era conditionat. Antetul avea
+         deja `justify-content: space-between` — locul din dreapta il astepta. -->
+    {#if url && !editeaza}
+      <div class="actiuni">
         <a class="b" href={url} target="_blank" rel="noopener noreferrer">
           <ExternalLink size={13} /> Deschide în tab nou
         </a>
         <button class="b" onclick={() => { ciorna = url; editeaza = true }}>
           <Link2 size={13} /> Schimbă linkul
         </button>
-      {/if}
-    </div>
-
+      </div>
+    {/if}
+  </div>
+  {#if loading}
+    <div class="asteptare"><Skeleton height="420px" /></div>
+  {:else if error}
+    <ErrorState message={error} onretry={load} />
+  {:else}
     {#if editeaza}
       <div class="config">
         <h2>Linkul planului de departament</h2>
@@ -181,8 +184,9 @@
   .page-sub { font-size: var(--font-small); font-weight: var(--fw-medium);
     color: var(--text-secondary); white-space: nowrap; }
 
-  .bara { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); min-height: var(--ctrl-md); }
-  .spatiu { flex: 1; }
+  /* Actiunile stau in antet, in capatul din dreapta. `flex: none` ca titlul sa
+     cedeze primul cand se ingusteaza, nu ele. */
+  .actiuni { display: flex; align-items: center; gap: var(--space-sm); flex: none; }
 
   /* Controlul in rand: 38px, 15/600, suprafata cu umbra fina — fara chenar, ca
      peste tot dupa redesign. Erau 28px si 13px fara greutate. */
@@ -229,7 +233,10 @@
     .page { --rezerva: calc(var(--dock-h) + var(--space-sm) + var(--safe-bottom));
             padding: var(--space-md); }
     .b { height: var(--tap-min); padding: 0 var(--space-14); font-size: var(--font-small); }
-    .bara { min-height: var(--tap-min); }
+    /* Pe telefon actiunile trec sub titlu (antetul are deja `flex-wrap: wrap`) si
+       isi iau latimea, ca sa ramana atins-abile la 44px. */
+    .actiuni { width: 100%; }
+    .actiuni :global(.b) { flex: 1; justify-content: center; }
     /* Campul primeste linkul de partajare — se lipeste, deci trebuie sa fie usor
        de atins si de golit; 32px inaltime cu font de 16px taia si textul. */
     .rand input { height: var(--tap-min); min-width: 0; font-size: var(--font-small); }

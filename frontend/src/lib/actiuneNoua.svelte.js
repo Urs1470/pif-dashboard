@@ -7,10 +7,15 @@
 // cutii, in patru fisiere.
 //
 // Registrul inverseaza relatia: pagina spune CE face, dockul stie CUM arata.
-// Pe paginile unde crearea n-are sens (Calculator, Departament, Calendar)
-// nimeni nu se inregistreaza, si atunci butonul pur si simplu nu exista — nu e
-// ascuns cu o lista de rute tinuta in dock, care s-ar desincroniza la prima ruta
-// noua.
+//
+// PE PAGINILE FARA CREARE PROPRIE BUTONUL RAMANE (Ion, 2026-08-23). Prima
+// varianta il facea sa DISPARA acolo, si iesise prost de doua ori: intai geometria
+// dockului sarea de la o pagina la alta (reparat separat, cu coada de latime fixa),
+// dar si dupa aceea ramanea intrebarea „unde s-a dus butonul?". O unealta care
+// apare si dispare dupa camera in care esti nu se invata niciodata.
+// Acum exista o ACTIUNE IMPLICITA: te duce la taskurile generale si deschide
+// direct foaia de creare. Butonul face mereu acelasi lucru — creeaza ceva — iar
+// pagina doar alege CE, cand are o parere.
 //
 // Se foloseste asa, in pagina:
 //     $effect(() => inregistreazaActiune('Adaugă task', () => { showAdauga = true }))
@@ -22,9 +27,33 @@
 // Doua importuri cu acelasi nume in acelasi fisier nu compileaza.
 let curenta = $state(null)
 
-/** Ce actiune e disponibila acum: `{ eticheta, fa }` sau `null`. */
+// Cerere in asteptare: „am apasat + de pe o pagina care nu creeaza nimic".
+// NEreactiva si CONSUMABILA o singura data — daca ar fi un semnal reactiv, o
+// intoarcere ulterioara pe /tasks ar redeschide foaia din senin. Nu e nici in URL
+// din acelasi motiv: o reincarcare a paginii n-are de ce sa te puna sa scrii un task.
+let cerut = false
+
+/** Apasat de pe o pagina fara creare proprie: du-ma unde se creeaza, si deschide. */
+export function cereTaskNou() {
+  cerut = true
+}
+
+/** Chemat de /tasks la montare. Intoarce `true` O SINGURA data dupa fiecare cerere. */
+export function consumaCerereTaskNou() {
+  const c = cerut
+  cerut = false
+  return c
+}
+
+const IMPLICITA = {
+  eticheta: 'Adaugă task',
+  cale: '/tasks',
+  fa: cereTaskNou,   // navigarea o face dockul, ca sa poata folosi `link`/preincarcarea
+}
+
+/** Ce actiune e disponibila acum: cea a paginii, altfel cea implicita. */
 export function actiuneNoua() {
-  return curenta
+  return curenta || IMPLICITA
 }
 
 /**

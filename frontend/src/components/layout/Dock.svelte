@@ -7,7 +7,8 @@
   import { ecran } from '../../lib/ecran.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
   import { sticla } from '../../lib/sticla.js'
-  import { actiuneNoua } from '../../lib/actiuneNoua.svelte.js'
+  import { actiuneNoua } from '../../lib/actiuneNoua.svelte.js'
+  import { navigate } from '../../lib/router.svelte.js'
 
   let { deschideCautarea = () => {} } = $props()
 
@@ -407,7 +408,10 @@
     <span class="dock-coada">
       {#if actiune}
         <span class="sep" aria-hidden="true"></span>
-        <button class="dock-fab" onclick={actiune.fa}
+        <!-- Actiunea IMPLICITA (pagini fara creare proprie) are si o `cale`: ea
+             lasa o cerere in registru, iar drumul il face dockul. -->
+        <button class="dock-fab"
+                onclick={() => { actiune.fa(); if (actiune.cale) navigate(actiune.cale) }}
                 aria-label={actiune.eticheta} title={actiune.eticheta}>
           <Plus size={22} strokeWidth={1.5} />
         </button>

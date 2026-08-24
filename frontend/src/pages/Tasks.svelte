@@ -76,7 +76,7 @@
   import { apiJson } from '../lib/api.js'
   import { suportaPush, esteIosNeinstalat, stareAbonament, aboneaza, dezaboneaza } from '../lib/push.js'
   import { esteNativ, probeaza, reprogrameaza, alarmaExacta, deschideAlarmaExacta } from '../lib/notificari.js'
-  import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
+  import { inregistreazaActiune, consumaCerereTaskNou } from '../lib/actiuneNoua.svelte.js'
 
   // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
   // adresabila — un link din paleta, din cautare sau de pe Acasa aterizeaza
@@ -953,6 +953,15 @@
   $effect(() => {
     if (!(ecran.telefon && !showArchive)) return
     return inregistreazaActiune('Task nou', () => { puls(); taskEditat = null; showAdauga = true })
+  })
+
+  // AM VENIT AICI APASAND „+" DE PE ALTA PAGINA. Foaia se deschide o data, la
+  // sosire. `consuma...` sterge cererea in aceeasi chemare, deci o intoarcere
+  // ulterioara pe pagina asta nu o redeschide.
+  $effect(() => {
+    if (!consumaCerereTaskNou()) return
+    taskEditat = null
+    showAdauga = true
   })
 </script>
 
