@@ -27,7 +27,7 @@
   // adica exact clasa de eticheta din propria lui secțiune de tipografie.
   import { marcheazaAterizarea } from '../lib/focus.js'
   import { tick, untrack } from 'svelte'
-  import { motion, motionDuration, DUR_SLOW } from '../lib/motion.svelte.js'
+  import { motion, motionDuration, DUR_NORMAL } from '../lib/motion.svelte.js'
   import { Search, Mic, Plus, X, ChevronDown, Check } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import Skeleton from './ui/Skeleton.svelte'
@@ -214,7 +214,7 @@
     if (!deschis) return
     // `untrack`: `motion.reduced` e stare reactiva, iar ca dependenta ar re-porni
     // efectul la orice comutare a setarii de sistem (vezi nota din ProjectFormModal).
-    const dupaAsezare = untrack(() => (motion.reduced ? 0 : motionDuration(DUR_SLOW) + 40))
+    const dupaAsezare = untrack(() => (motion.reduced ? 0 : motionDuration(DUR_NORMAL) + 40))
     const t = setTimeout(() => {
       campEl?.focus()
       if (editeaza) campEl?.select()

@@ -248,7 +248,7 @@
   import { tick, untrack } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_BASE, DUR_SLOW, DUR_ARC, EASE, EASE_IESIRE, ARC } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, DUR_NORMAL, DUR_CLOSE, EASE, EASE_IESIRE } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   // Foaia si voalul ies in `body`: pagina din spate se RETRAGE (un `transform`
   // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
@@ -368,7 +368,7 @@
         b.style.top = ''
         b.style.width = ''
         window.scrollTo(0, yBlocat)
-      }, motionDuration(DUR_BASE))
+      }, motionDuration(DUR_CLOSE))
     }
   })
 
@@ -392,7 +392,7 @@
   // Svelte cheama functia cu `direction: 'in'`.
   function intra(node, _params, opts) {
     const laIntrare = opts?.direction !== 'out'
-    const duration = motionDuration(sheet && laIntrare ? DUR_SLOW : DUR_BASE)
+    const duration = motionDuration(laIntrare ? DUR_NORMAL : DUR_CLOSE)
     // SOSIREA FRANEAZA, PLECAREA ACCELEREAZA. Pana acum amandoua mergeau pe
     // `--ease`, deci foaia se retragea ca si cum s-ar razgandi: incetinea exact
     // in intervalul in care trebuia sa fie deja plecata. Vezi `--ease-iesire`.
@@ -441,22 +441,17 @@
     // deschide din centru"; panoul vine dinspre marginea de care se lipeste, deci
     // o deplasare mica, pe axa lui. Distanta e mica cu bunastiinta: obiectul e
     // deja la locul lui, miscarea doar spune din ce parte a venit.
-    if (panou) return { duration, easing: curba, css: (t, u) => `opacity: ${t}; transform: translateX(${u * 8}px)` }
+    if (panou) return { duration, easing: curba, css: (t, u) => `opacity: ${t}; transform: translateX(${u * 60}px)` }
     // Caseta: creste din declansator daca exista unul, altfel din centru.
-    // ARC pe scalare (se misca in spatiu), `--ease` pe opacitate — regula
-    // `spatial` / `effects` din tokens.
     const org = origineaCasetei(node)
     if (org) node.style.transformOrigin = org
-    // La INCHIDERE caseta nu mai are de ce sa creasca pe arc: arcul e pentru un
-    // obiect care soseste si se aseaza. Pleaca pe durata de element, cu curba de
-    // iesire pe amandoua canalele.
     if (!laIntrare) {
-      return { duration, easing: EASE_IESIRE, css: (t) => `opacity: ${t}; transform: scale(${0.98 + 0.02 * t});` }
+      return { duration, easing: EASE_IESIRE, css: (t) => `opacity: ${t}; transform: scale(${0.9 + 0.1 * t});` }
     }
     return {
-      duration: motionDuration(DUR_ARC),
-      easing: (t) => t,
-      css: (t) => `opacity: ${EASE(t)}; transform: scale(${0.96 + 0.04 * ARC(t)});`,
+      duration,
+      easing: EASE,
+      css: (t) => `opacity: ${t}; transform: scale(${0.9 + 0.1 * t});`,
       // Originea se sterge la final: lasata acolo, ar ramane pe casetă si
       // pentru INCHIDERE, care se joaca din alt punct decat s-a deschis.
       tick: (t) => { if (t === 1) node.style.transformOrigin = '' },
@@ -1089,8 +1084,8 @@
        onpointerdowncapture={() => { apasatInauntru = true }} onclickcapture={pazesteClic}
        style:--nivel={nivel} style:--voal-p={voalP} style:z-index="calc(var(--z-modal) + (var(--nivel) - 1) * 10)"
        onintrostart={() => { sosind = true }} onintroend={() => { sosind = false }}
-       in:fade|global={{ duration: motionDuration(sheet ? DUR_SLOW : DUR_BASE), easing: EASE }}
-       out:fade|global={{ duration: motionDuration(DUR_BASE), easing: EASE_IESIRE }}>
+       in:fade|global={{ duration: motionDuration(500), easing: EASE }}
+       out:fade|global={{ duration: motionDuration(400), easing: EASE_IESIRE }}>
     <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
          class:acoperit class:gest={hFoaie !== null} class:mijloc={sheet && inalt && !intins}
          class:se-trage={trageManer}
@@ -1161,7 +1156,7 @@
      era reversibil cu ochii — trageai jumatate de foaie si nimic nu-ti spunea cat
      mai ai pana pierzi ce ai deschis. In repaus e mereu 1, deci pe desktop (unde
      nu exista gest) regula da exact `--scrim`, ca pana acum. */
-  .backdrop.varf { background: color-mix(in srgb, var(--scrim) calc(var(--voal-p, 1) * 100%), transparent); }
+  .backdrop.varf { background: color-mix(in srgb, var(--scrim) calc(var(--voal-p, 1) * 100%), transparent); backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); }
   /* Cat timp degetul e pe ecran, voalul n-are voie sa ramana in urma lui. */
   .backdrop.trage { transition: none; }
   /* Foaia de dedesubt nu-si mai arata iesirea: butonul ei ar inchide un obiect
@@ -1171,13 +1166,16 @@
      Doua niveluri de suprafata se desprind prin UMBRA; linia de 1px e separator
      intre randuri, cu marja laterala. Popupul din DatePicker era deja fara. */
   .modal {
-    background: var(--bg-overlay);
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: var(--glass-surface-filter);
+    backdrop-filter: var(--glass-surface-filter);
+    border: var(--glass-surface-border);
     border-radius: var(--radius-md);
     width: 100%;
     max-height: 85dvh;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--glass-surface-highlight), var(--shadow-md);
   }
   .modal-sm { max-width: 400px; }
   .modal-md { max-width: 560px; }
@@ -1213,7 +1211,7 @@
     /* PANOUL NU ACOPERA CONTEXTUL — DECI NICI VOALUL NU-L ACOPERA.
        Un voal de 0,65 peste exact lista pe care panoul ar trebui s-o lase la
        vedere anuleaza motivul pentru care panoul e panou si nu caseta. */
-    .backdrop.varf:has(.modal-panou) { background: var(--scrim-slab); }
+    .backdrop.varf:has(.modal-panou) { background: var(--scrim-slab); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 
     /* Manerul: o bara subtire pe muchia din stanga, cu cursorul care spune ce
        face. Se ingroasa la hover, nu se coloreaza — e o unealta, nu o stare. */
@@ -1239,7 +1237,14 @@
   /* "doc" — document aproape fullscreen (editor observatii/notite).
      Body-ul nu deruleaza si nu are padding: pagina interioara (RichTextEditor
      variant="doc") isi gestioneaza singura scroll-ul si coloana de text. */
-  .modal-doc { max-width: 1060px; height: 95dvh; max-height: 95dvh; }
+  .modal-doc {
+    max-width: 1060px; height: 95dvh; max-height: 95dvh;
+    background: var(--bg-overlay);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: var(--shadow-md);
+  }
   /* ANTETUL UNUI DOCUMENT E O LINIE DE CONTEXT, NU UN TITLU DE FEREASTRA.
      Pe telefon asta se decisese deja (vezi `.modal.sheet .modal-title` mai jos);
      pe desktop ramasese varianta tare: Space Grotesk bold la 18.4px, care pe
@@ -1388,8 +1393,7 @@
       max-height: min(92dvh, 100dvh - var(--safe-top) - 24px - var(--kb, 0px));
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       border-bottom: none;
-      /* Umbra urca, nu coboara: sheet-ul se ridica peste pagina. */
-      box-shadow: var(--shadow-foaie);
+      box-shadow: var(--glass-surface-highlight), var(--shadow-foaie);
     }
     /* Pe telefon panoul REDEVINE foaie: acelasi continut, acelasi component, alt
        loc. Fara `.modal-panou` in lista asta ar fi ramas o coloana de 340px lipita
@@ -1471,9 +1475,9 @@
        ridicare `.gest` pleaca si valoarea e deja cea finala. */
     .modal.sheet {
       translate: 0 var(--trasY, 0px);
-      transition: translate var(--dur-slow) var(--ease-spring),
-                  scale var(--dur-slow) var(--ease),
-                  border-radius var(--dur-slow) var(--ease);
+      transition: translate var(--dur-normal) var(--ease-spring),
+                  scale var(--dur-normal) var(--ease),
+                  border-radius var(--dur-normal) var(--ease);
       will-change: translate;
     }
     .modal.sheet.trage { transition: none; }
@@ -1618,5 +1622,13 @@
     }
     .modal-doc .modal-header { padding-top: calc(var(--space-md) + var(--safe-top)); }
     .modal-doc .modal-footer { padding-bottom: calc(var(--space-md) + var(--safe-bottom)); }
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    .modal {
+      background: var(--bg-overlay);
+      border: none;
+      box-shadow: var(--shadow-md);
+    }
   }
 </style>

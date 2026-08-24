@@ -115,6 +115,15 @@
   --bar-bg: rgba(21, 21, 26, .62);
   --dock-bg: rgba(30, 30, 38, .55);
 
+  /* ---- Sticla de SUPRAFATA (modale, foi, panou, toast) ----
+     Mai opaca decat bara (0.72 vs 0.55): textul sta DEASUPRA, deci
+     citibilitatea conteaza mai mult decat transparenta.
+     NU ia muchie, NU ia reflex — e o masa, nu o lentila. */
+  --glass-surface: rgba(30, 30, 37, 0.72);
+  --glass-surface-filter: saturate(140%) blur(24px);
+  --glass-surface-border: 1px solid rgba(255, 255, 255, 0.08);
+  --glass-surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
   /* Actiunea principala din dock. Singurul obiect din aplicatie cu fill saturat. */
   --fab-bg: #a3a3cc;
   --fab-rim: inset 0 1px 0 rgba(255, 255, 255, .38), inset 0 -1px 0 rgba(0, 0, 0, .20);
@@ -341,14 +350,21 @@
   --z-toast: 2000;
   --z-tooltip: 3000;
 
-  /* ---- Miscare: TREI durate, DOUA curbe ----
-     90ms apasare · 220ms element · 280ms suprafata. */
+  /* ---- Miscare: CINCI durate, TREI curbe (handoff 2026-08-24) ----
+     Scara Apple (WWDC 2023–2025): spring = metoda primara; durata perceptuala +
+     bounce. Bounce 0 implicit (instrument profesional), bounce >=0.3 doar FAB/check.
+     MICRO 150ms: vopsea — hover, culoare, umbra
+     FAST  300ms: element — press vizibil, tooltip, tab switch
+     NORMAL 700ms: suprafata — modal, foaie, panou (open)
+     SLOW  900ms: scena — tranzitie pagina, hero, task adaugare/stergere
+     Iesirile sunt mai SCURTE: 500ms suprafata, 800ms task exit. */
   --dur-press: 0.09s;
+  --dur-micro: 0.15s;
+  --dur-fast: 0.3s;
+  --dur-normal: 0.7s;
+  --dur-slow: 0.9s;
+  /* Compatibilitate — folosite in ~30 de fisiere; se migreaza gradual. */
   --dur-base: 0.22s;
-  --dur-slow: 0.28s;
-  /* Vopseaua (hover, culoare, umbra) nu e in scara de miscare: nu misca nimic,
-     deci nu are nevoie de cadrul unui element care sosește. */
-  --dur-fast: 0.12s;
   --ease: cubic-bezier(.32, .72, .28, 1);
 
   /* IESIREA ACCELEREAZA, NU FRANEAZA (2026-08-17, handoff „Rafinare mobil").
@@ -375,9 +391,13 @@
      cadru: 11% la 60ms, 27% la 100ms, viteza maxima fix in clipa in care obiectul
      paraseste ecranul. Raspunsul se vede la timp, si totusi nu franeaza. */
   --ease-iesire: cubic-bezier(.4, 0, 1, 1);
-  /* Singura curba cu depasire din sistem. Cursorul de tab o are fiindca
-     urmareste degetul; revenirea dintr-un gest, din acelasi motiv. */
+  /* Curba cu depasire pentru ce urmareste degetul (cursorul de tab, revenire
+     gest). Depaseste cu ~35%, corect doar cand mana a dat elanul. */
   --ease-spring: cubic-bezier(.34, 1.35, .42, 1);
+  /* Curba SALTAREATA (bounce 0.3) — FAB, popup confirmare, bifa check, toast.
+     Mai multa depasire decat --ease-spring, dar P2 (.64,1) o face sa se ASEZE
+     mai repede — asa popup-ul nu pare ca se clatina, ci ca aterizeaza ferm. */
+  --spring-bouncy: cubic-bezier(.34, 1.4, .64, 1);
 
   /* ---- ARCUL: pentru ce se MISCA in spatiu (2026-08-15) ----
      Sistemul avea o singura amortizare pentru tot — si pentru un rand care
@@ -425,11 +445,11 @@
   --press-scale-sm: 0.965;
 
   --transition-colors:
-    background-color var(--dur-fast) var(--ease),
-    border-color var(--dur-fast) var(--ease),
-    color var(--dur-fast) var(--ease),
-    box-shadow var(--dur-fast) var(--ease),
-    opacity var(--dur-fast) var(--ease);
+    background-color .3s var(--ease),
+    border-color .3s var(--ease),
+    color .3s var(--ease),
+    box-shadow .3s var(--ease),
+    opacity .3s var(--ease);
 
   --transition-pressable:
     var(--transition-colors),
@@ -654,6 +674,11 @@
   --glass-spec-b: rgba(255, 255, 255, .30);
   --bar-bg: rgba(245, 245, 249, .70);
   --dock-bg: rgba(255, 255, 255, .60);
+
+  --glass-surface: rgba(255, 255, 255, 0.72);
+  --glass-surface-filter: saturate(140%) blur(24px);
+  --glass-surface-border: 1px solid rgba(28, 28, 36, 0.08);
+  --glass-surface-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
   --fab-bg: #63638f;
   --fab-rim: inset 0 1px 0 rgba(255, 255, 255, .34), inset 0 -1px 0 rgba(0, 0, 0, .14);

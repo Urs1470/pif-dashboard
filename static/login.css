@@ -61,7 +61,7 @@
   --font-label: 0.75rem;
   --font-brand: 1.125rem;
 
-  --dur-fast: 0.12s;
+  --dur-fast: 0.3s;
   --dur-press: 0.09s;
   --ease: cubic-bezier(.32, .72, .28, 1);
 }

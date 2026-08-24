@@ -14,14 +14,16 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
 
 - **Suprafete:** `--bg` < `--bg-surface` < `--bg-elevated`. Elevatia se citeste din umbra, nu
   din chenare peste tot.
-- **STICLA e permisa, dar DOAR pe barele de navigatie** (`BaraSus`, `Header`, `Dock`) —
-  acolo continutul chiar trece pe dedesubt, si de-aia sunt translucide. NU e o textura de
-  imprastiat pe carduri. Se pune cu `use:sticla` (`lib/sticla.js`) plus clasa `.sticla`;
-  regulile stau in `global.css`, fiindca straturile se creeaza la RULARE si Svelte TAIE din
-  build regulile ale caror selectoare nu le gaseste in markup. Volumul vine din MUCHIE
-  (`--glass-edge`, decupata cu `mask-composite`), nu dintr-o spalare peste suprafata —
-  `--glass-sheen` e `none` cu buna stiinta. Blurul NU coboara sub ~20px fara reverificarea
-  contrastului. `--bar-bg`/`--dock-bg` sunt rezerva cand `backdrop-filter` lipseste.
+- **STICLA — doua materiale, doua scopuri.**
+  *Sticla de bara* (`BaraSus`, `Header`, `Dock`) — 4 straturi DOM (`use:sticla` +
+  `.sticla`), cu muchie-lentila si reflex speculativ. Regulile in `global.css`.
+  *Sticla de suprafata* (modale, foi, panou lateral, toast) — CSS-only, cu
+  `--glass-surface` / `--glass-surface-filter` / `--glass-surface-border` /
+  `--glass-surface-highlight`. Mai opaca (0.72 vs 0.55), fara muchie, fara reflex.
+  NU se pune pe: carduri de lista, randuri de task, toolbar-uri inline, inputuri,
+  chipuri, badge-uri. `.modal-doc` (editor fullscreen) ramane solid.
+  `@supports not (backdrop-filter)` — fallback la `--bg-overlay` solid.
+  Blurul NU coboara sub ~20px fara reverificarea contrastului.
 - **Culoarea e stare, nu decor. UN accent** (`--accent`, liliac rece). Text pe tenta ia intotdeauna
   varianta `-deep`. `--warning`/`--info`/`--purple`/`--service-*` sunt **aliasuri** — nu
   introduce o a treia stare. Pe randurile de task culoarea e rezervata **severitatii**
@@ -37,11 +39,13 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
   `--radius-sm` 14 (rand si camp), `--radius-md` 24 (suprafata), `--radius-lg` 30 (dock si
   foaie), cerc doar bifa. `--radius-celula` (8px) e o exceptie cu motiv scris — reperul zilei
   selectate din Calendar trebuie sa ramana DREPTUNGHI, altfel se citeste ca bifa unui task.
-- **Miscare — patru durate, trei curbe** (verifica in tokens, nu din memorie):
-  `--dur-press` .09 · `--dur-base` .22 · `--dur-slow` .28 · `--dur-fast` .12 (vopsea, nu
-  miscare); `--ease` la SOSIRE, `--ease-iesire` la PLECARE (accelereaza, nu franeaza —
-  ce pleaca nu mai e urmarit), `--ease-spring` cand ceva urmareste degetul, `--ease-arc` /
-  `--ease-arc-elan` pentru arcele lungi. NU `transition: all` — foloseste
+- **Miscare — cinci durate, patru curbe** (verifica in tokens, nu din memorie):
+  `--dur-press` .09 · `--dur-micro` .15 · `--dur-fast` .3 · `--dur-normal` .7 ·
+  `--dur-slow` .9; `--dur-base` .22 e inca in uz (~30 fisiere), se migreaza gradual.
+  `--ease` la SOSIRE, `--ease-iesire` la PLECARE (accelereaza, nu franeaza —
+  ce pleaca nu mai e urmarit), `--ease-spring` cand ceva urmareste degetul,
+  `--spring-bouncy` (FAB, popup, bifa, toast), `--ease-arc` / `--ease-arc-elan`
+  pentru arcele lungi. NU `transition: all` — foloseste
   `--transition-colors` sau `--transition-pressable`. Doar `transform`/`opacity` in animatii.
 - **Ce poate fi INTRERUPT nu se anima cu CSS, ci cu `lib/arc.js`** — un arc adevarat, cu
   pozitie SI viteza, parametrizat ca la Apple (durata perceptuala + `bounce`). O tranzitie CSS

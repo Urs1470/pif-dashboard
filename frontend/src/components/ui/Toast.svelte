@@ -81,10 +81,12 @@
     gap: var(--space-10);
     min-height: var(--tap-min);
     padding: 0 var(--space-sm) 0 var(--space-14);
-    background: var(--bg-overlay);
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: var(--glass-surface-filter);
+    backdrop-filter: var(--glass-surface-filter);
+    border: var(--glass-surface-border);
     border-radius: var(--radius-sm);
-    /* Se desprinde prin UMBRA, nu prin chenar — ca orice suprafata flotanta. */
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--glass-surface-highlight), var(--shadow-md);
     font-size: var(--font-small);
     color: var(--text);
     min-width: 260px;
@@ -172,5 +174,13 @@
     .toast-action { height: var(--tap-min); padding: 0 var(--space-md); }
     .toast-progres { min-width: 66px; }
     .toast-close { width: var(--tap-min); height: var(--tap-min); }
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    .toast {
+      background: var(--bg-overlay);
+      border: none;
+      box-shadow: var(--shadow-md);
+    }
   }
 </style>

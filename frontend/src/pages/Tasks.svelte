@@ -19,7 +19,7 @@
   import { inregistreaza } from '../lib/reincarcare.svelte.js'
   import { uita } from '../lib/cache.js'
   import { flip } from 'svelte/animate'
-  import { motionDuration, DUR_BASE, plecare, sosire, alunecare, EASE, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_FAST, plecare, sosire, alunecare, EASE, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
   // Acelasi puls de prag ca la glisarea unui rand: doua gesturi diferite, dar
   // „ai trecut pragul" trebuie sa se simta la fel, altfel se invata separat.
   import { ListTodo, Plus, CheckCircle2, CalendarDays, Clock, ArrowRight, ChevronsRight, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
@@ -1025,7 +1025,7 @@
            apare la hover. Gestul e o solutie pentru absenta hover-ului, nu o
            imbunatatire universala. -->
       <div class="sub-row" class:sub-done={sub.done} class:gl-sub={ecran.telefon}
-           animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
+           animate:flip={{ duration: motionDuration(DUR_FAST), easing: EASE }}
            in:sosire|local out:plecare
            use:glisare={{ activ: ecran.telefon && editSubId !== sub.id, onAmana: () => removeSubtask(sub) }}>
         <div class="gl-pista-s" aria-hidden="true"><span class="gl-et-s">Șterge</span><span class="gl-ico-s"><SolidIcon name="trash" size={15} /></span></div>
@@ -1240,7 +1240,7 @@
                Vezi `plecare` in lib/motion.svelte.js. -->
                     <div class="trow-wrap" role="presentation" class:deschis={showSheet && sheetTask?.id === t.id}
              style="--ring: {dueRing(t.data_scadenta)}"
-             animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
+             animate:flip={{ duration: motionDuration(DUR_FAST), easing: EASE }}
              onpointerenter={() => preincarca(t.id)}
              in:sosire|local out:plecare>
           <div class="trow" class:done={t.status === 'done'} class:bifare={bifatAcum === t.id} use:focusOnLand={focusKey('global', t.id)}

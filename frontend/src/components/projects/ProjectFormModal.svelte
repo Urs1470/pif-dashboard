@@ -1,6 +1,6 @@
 <script>
   import { untrack } from 'svelte'
-  import { motion, motionDuration, DUR_SLOW } from '../../lib/motion.svelte.js'
+  import { motion, motionDuration, DUR_NORMAL } from '../../lib/motion.svelte.js'
   import { Zap, Wrench } from '@lucide/svelte'
   import Modal from '../ui/Modal.svelte'
   import Input from '../ui/Input.svelte'
@@ -76,7 +76,7 @@
       // motion" cat timp foaia e deschisa ar re-rula efectul, iar el incepe cu
       // `form = emptyForm()`: ai fi pierdut tot ce scrisesesi. Ceasul se si
       // curata, ca sa nu focalizeze un camp dintr-o foaie deja inchisa.
-      const pauza = untrack(() => (motion.reduced ? 0 : motionDuration(DUR_SLOW) + 40))
+      const pauza = untrack(() => (motion.reduced ? 0 : motionDuration(DUR_NORMAL) + 40))
       const ceas = setTimeout(() => numeEl?.focus(), pauza)
       return () => clearTimeout(ceas)
     }

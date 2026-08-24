@@ -258,7 +258,7 @@ code, pre {
      mai sus). */
   html.are-modal .app-main {
     transform: scale(.93) translateY(6px);
-    transition: transform var(--dur-slow) var(--ease);
+    transition: transform var(--dur-normal) var(--ease);
   }
 }
 
@@ -991,10 +991,11 @@ input[type="checkbox"].cbx:active { transform: scale(0.92); }
   from { clip-path: inset(0 100% 0 0); }
   to { clip-path: inset(0 0 0 0); }
 }
+.bifare { animation: taskComplete var(--dur-normal) var(--ease) both; }
 .bifare .check-empty {
   background: var(--success-subtle);
   border-color: var(--success);
-  animation: bifStamp var(--dur-base) var(--ease);
+  animation: checkPop var(--dur-fast) var(--spring-bouncy) both;
 }
 .bifare .check-empty::after {
   content: '';
@@ -1266,7 +1267,7 @@ input[type="checkbox"].cbx:active { transform: scale(0.92); }
    `position: fixed` dinauntru (popoverul si eticheta de tragere din Planificator
    sunt fixed) si le-ar muta pe toate cu cat e derulata pagina. */
 @keyframes rutaIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateX(24px) scale(.98); }
   to { opacity: 1; transform: none; }
 }
 /* `backwards`, NU `forwards` — ASTA E REPARATIA, si merita citita.
@@ -1296,7 +1297,10 @@ input[type="checkbox"].cbx:active { transform: scale(0.92); }
    Splashul primei incarcari e tratat mai jos: `splash-activ` pune pe pauza (ca sosirea
    sa nu se joace ascunsa sub val) si `splash-a-lucrat` o stinge de tot. Pe navigarile
    obisnuite nu exista niciuna dintre clase, deci intrarea se joaca normal. */
-.ruta-in { animation: rutaIn var(--dur-arc) var(--ease-arc) backwards; }
+.ruta-in { animation: rutaIn var(--dur-slow) var(--ease) backwards; }
+@media (max-width: 768px) {
+  .ruta-in { animation-duration: var(--dur-fast); }
+}
 
 /* ===== SOSIREA ASTEAPTA VALUL =====
    Cat timp splashul de deschidere e pe ecran (`index.html`), pagina de dedesubt
@@ -1468,14 +1472,14 @@ html.tema-vt::view-transition-new(root) {
   /* Numai stingere incrucisata: fara `vt-pagina-noua`, care poarta alunecarea
      de navigare. Suprascrie regulile de mai sus, care sunt scrise fara clasa. */
   animation-name: none;
-  animation-duration: var(--dur-slow);
+  animation-duration: var(--dur-normal);
   animation-timing-function: linear;
   /* `normal` in loc de implicitul `blend`: cu doua imagini opace suprapuse,
      amestecul le-ar face pe amandoua palide la mijlocul drumului. */
   mix-blend-mode: normal;
 }
-html.tema-vt::view-transition-old(root) { opacity: 1; animation: vt-tema-pleaca var(--dur-slow) linear both; }
-html.tema-vt::view-transition-new(root) { opacity: 0; animation: vt-tema-vine var(--dur-slow) linear both; }
+html.tema-vt::view-transition-old(root) { opacity: 1; animation: vt-tema-pleaca var(--dur-normal) linear both; }
+html.tema-vt::view-transition-new(root) { opacity: 0; animation: vt-tema-vine var(--dur-normal) linear both; }
 @keyframes vt-tema-pleaca { to { opacity: 0; } }
 @keyframes vt-tema-vine { to { opacity: 1; } }
 
@@ -1483,11 +1487,11 @@ html.tema-vt::view-transition-new(root) { opacity: 0; animation: vt-tema-vine va
    deci ies din instantaneul `root` — si la o schimbare de tema ar POCNI, singurele
    doua suprafete din ecran care n-ar trece lin. Aici li se da inapoi stingerea. */
 html.tema-vt::view-transition-group(cadru-antet),
-html.tema-vt::view-transition-group(cadru-doc) { animation-duration: var(--dur-slow); }
+html.tema-vt::view-transition-group(cadru-doc) { animation-duration: var(--dur-normal); }
 html.tema-vt::view-transition-old(cadru-antet),
-html.tema-vt::view-transition-old(cadru-doc) { animation: vt-tema-pleaca var(--dur-slow) linear both; opacity: 1; }
+html.tema-vt::view-transition-old(cadru-doc) { animation: vt-tema-pleaca var(--dur-normal) linear both; opacity: 1; }
 html.tema-vt::view-transition-new(cadru-antet),
-html.tema-vt::view-transition-new(cadru-doc) { animation: vt-tema-vine var(--dur-slow) linear both; opacity: 0; }
+html.tema-vt::view-transition-new(cadru-doc) { animation: vt-tema-vine var(--dur-normal) linear both; opacity: 0; }
 
 /* ===== SUPRAFATA DE STICLA (AURORA) =====
    Materialul barelor de navigatie. Straturile le pune la RULARE `lib/sticla.js`,
@@ -1570,7 +1574,7 @@ html.tema-vt::view-transition-new(cadru-doc) { animation: vt-tema-vine var(--dur
       `lib/sticla.js`, si numai pe aparate cu cursor. */
 .sticla > .s-spec {
   opacity: var(--spec, 0);
-  transition: opacity var(--dur-slow) var(--ease);
+  transition: opacity var(--dur-fast) var(--ease);
   background: radial-gradient(var(--spec-raza, 150px 74px)
               at calc(var(--mx, .5) * 100%) calc(var(--my, .5) * 100%),
               var(--glass-spec-a), var(--glass-spec-b) 42%, transparent 72%);
@@ -1629,3 +1633,121 @@ body::after { display: none; }
     transition: opacity var(--dur-base) var(--ease);
   }
 }
+
+/* ===== KEYFRAMES MOTION SPEC (handoff 2026-08-24) =====
+   Fiecare animatie acoperita o singura data. Principii Apple (WWDC 2023-2025):
+   spring = metoda primara, materializare (nu doar fade), doar transform+opacity
+   pe proprietati de layout (off-thread). Culorile/borderele au --transition-colors. */
+
+/* §2 — Tranzitii intre pagini */
+@keyframes pageSlideIn {
+  0%   { opacity: 0; transform: translateX(24px) scale(.98); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes pageSlideOut {
+  0%   { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(-20px); }
+}
+
+/* §3 — Modal centrat */
+@keyframes scaleIn {
+  0%   { opacity: 0; transform: scale(.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes scaleOut {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.9); }
+}
+
+/* §3 — Foaie / bottom sheet */
+@keyframes sheetUp {
+  0%   { transform: translateY(100%); }
+  100% { transform: translateY(0); }
+}
+@keyframes sheetDown {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+/* §3 — Panou lateral */
+@keyframes panelSlideIn {
+  0%   { opacity: 0; transform: translateX(60px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes panelSlideOut {
+  0%   { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(60px); }
+}
+
+/* §3 — Val (scrim) */
+@keyframes veilIn  { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes veilOut { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+/* §4 — Task: adaugare */
+@keyframes taskFadeIn {
+  0%   { opacity: 0; transform: translateY(-14px) scale(.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* §4 — Task: stergere */
+@keyframes taskFadeOut {
+  0%   { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-28px) scale(.96); }
+}
+
+/* §4 — Task: completare */
+@keyframes taskComplete {
+  0%   { opacity: 1; transform: scale(1); }
+  40%  { transform: scale(.96); }
+  100% { opacity: .35; transform: scale(1); }
+}
+
+/* §4 — Bifa check pop (spring bouncy) */
+@keyframes checkPop {
+  0%   { transform: scale(0) rotate(-30deg); opacity: 0; }
+  55%  { transform: scale(1.25) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* §5 — Popup de confirmare (spring bouncy) */
+@keyframes popupBounce {
+  0%   { opacity: 0; transform: scale(.85) translateY(8px); }
+  70%  { transform: scale(1.02) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* §5 — Toast notificare */
+@keyframes tooltipIn {
+  0%   { opacity: 0; transform: translateY(6px) scale(.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* §7 — Ring oscilator (taskuri restante) — stroke-dash rulat pe cerc */
+@keyframes ringOscillator {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -56.55; }
+}
+@keyframes ringOscReverse {
+  0%   { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 56.55; }
+}
+
+/* §7 — Ring pulsator (taskuri de azi) — inel expandabil */
+@keyframes ringPulse {
+  0%   { transform: scale(1); opacity: .6; }
+  60%  { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* §8 — Skeleton pulse */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: .5; }
+  50%      { opacity: .25; }
+}
+
+/* §8 — Fade slide up (stagger in dupa skeleton) */
+@keyframes fadeSlideUp {
+  0%   { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+

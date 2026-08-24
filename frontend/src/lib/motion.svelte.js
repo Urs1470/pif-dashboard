@@ -3,28 +3,26 @@
 // pentru `prefers-reduced-motion`; e stinsa cu buna stiinta — vezi `motion` mai jos,
 // unde scrie de ce si cum se pune inapoi dintr-o linie.
 //
-// TREI DURATE, NIMIC INTRE ELE (redesign 2026-08-08):
-//   90  apasare — sub ~100ms legatura cauza-efect se citeste ca instantanee
-//   220 element — un rand, un chip, un toast: lucruri de marimea unui deget
-//   280 suprafata — o foaie, un panou, un modal: lucruri cat ecranul
-// `--dur-fast` (120) nu e in scara: e vopsea (hover, culoare), nu miscare.
-export const DUR_FAST = 120
-export const DUR_BASE = 220
-export const DUR_SLOW = 280
+// CINCI DURATE (handoff motion 2026-08-24, model Apple WWDC 2023-2025):
+//   90   apasare — sub ~100ms legatura cauza-efect se citeste ca instantanee
+//   150  micro — vopsea: hover, culoare, umbra, opacitate
+//   300  fast — element: press vizibil, tooltip, tab switch
+//   700  normal — suprafata: modal, foaie, panou (DESCHIDERE)
+//   900  slow — scena: tranzitie pagina, hero, task adaugare/stergere
+// Iesirile sunt mai scurte: 500 suprafata, 800 task exit.
 export const DUR_PRESS = 90
+export const DUR_MICRO = 150
+export const DUR_FAST = 300
+export const DUR_NORMAL = 700
+export const DUR_CLOSE = 500
+export const DUR_SLOW = 900
+// Compatibilitate — consumatorii vechi; se migreaza gradual.
+export const DUR_BASE = 220
 
-/** Cat tine STAMPILA DE BIFARE inainte ca randul sa plece din lista.
- *
- *  Nu e o treapta din scara — e o SUMA, si de-aia trebuie sa stea intr-un singur
- *  loc: inelul se stampileaza (`bifStamp`, --dur-base), bifa se traseaza dupa
- *  80ms (`bifDesen`, --dur-base), iar taietura merge in paralel (`bifTaie`).
- *  Ultima se incheie la 80 + 220 = 300ms; peste ea, o rasuflare ca semnul sa
- *  fie VAZUT, nu doar jucat.
- *  Statea scrisa de mana ca `400` in doua fisiere (/tasks si Acasa), fara nicio
- *  legatura cu duratele de mai sus: daca una dintre ele s-ar fi schimbat,
- *  randul ar fi plecat peste o animatie neterminata, tacut si doar intr-unul
- *  dintre ecrane. Vezi `@keyframes bifDesen` in global.css. */
-export const INTARZIERE_BIFA = 80 + DUR_BASE + 100
+/** Cat tine animatia de bifare inainte ca randul sa plece din lista.
+ *  `taskComplete` dureaza 650ms — randul sta cat se joaca pulsul + stingerea,
+ *  apoi iese cu `plecare` (800ms). */
+export const INTARZIERE_BIFA = 700
 
 // Cat tine o tranzitie cand utilizatorul a cerut mai putina miscare. NU zero:
 // vezi `motionDuration`.
@@ -116,13 +114,17 @@ export function easeCss() {
   return _easeCss
 }
 
-// Perechea exacta a lui `--ease-spring`. O SINGURA curba cu depasire in tot
-// sistemul (era esantionata dintr-un `linear()` cu opt opriri; acum e aceeasi
-// bezier pe care o scrie si CSS-ul, deci nu mai exista doua arcuri usor
-// diferite dupa cine deseneaza miscarea). Depaseste tinta cu ~35% si revine —
+// Perechea exacta a lui `--ease-spring`. Depaseste tinta cu ~35% si revine —
 // corect pentru un obiect care urmareste degetul (cursorul de tab, revenirea
-// dintr-un gest), gresit pentru orice altceva. De aceea nu e implicitul.
+// dintr-un gest), gresit pentru orice altceva.
 export const SPRING = bezier(0.34, 1.35, 0.42, 1)
+
+// Perechea exacta a lui `--spring-bouncy` din tokens.css. Saltareata: FAB,
+// popup confirmare, bifa check, toast. Mai multa depasire, dar P2 (.64,1) o
+// face sa se ASEZE mai repede — asa popup-ul aterizeaza ferm.
+const PUNCTE_BOUNCY = [0.34, 1.4, 0.64, 1]
+export const BOUNCY = bezier(...PUNCTE_BOUNCY)
+export function bouncyCss() { return `cubic-bezier(${PUNCTE_BOUNCY.join(',')})` }
 
 // ARCUL, IN JS — perechea exacta a lui `--ease-arc` din tokens.css.
 //
@@ -232,37 +234,23 @@ export function motionDuration(ms) {
 // doua animatii de layout pe acelasi eveniment s-ar calca una pe alta.
 // Se foloseste cu `|local`, ca prima incarcare a listei sa NU se joace:
 // intrarea e pentru randul nou, nu pentru pagina noua.
-export function sosire(node, { duration = DUR_ARC } = {}) {
+export function sosire(node, { duration = 1100 } = {}) {
   const d = motionDuration(duration)
-  // Sub `reduced-motion` ramane doar stingerea: translatia e exact ce a cerut
-  // utilizatorul sa nu se mai intample.
-  const dz = motion.reduced ? 0 : 5
-  // ARC pe pozitie, `--ease` pe opacitate — nu din estetica, din regula scrisa
-  // in tokens: `spatial` are voie sa depaseasca, `effects` niciodata. O
-  // depasire pe opacitate se citeste ca palpait. De aceea nu se poate pune un
-  // singur easing pe amandoua, si se calculeaza separat.
-  return {
-    duration: d,
-    easing: (t) => t,           // progres liniar; curbele se aplica mai jos
-    css: (t) => `opacity: ${EASE(t)}; transform: translateY(${(1 - ARC(t)) * dz}px);`,
-  }
-}
-
-/** PANOUL LATERAL DE PE DESKTOP: 200ms, 8px, dinspre marginea din dreapta.
- *
- *  E aceeasi componenta ca foaia de jos de pe telefon (280/220), doar ca pe
- *  desktop intra ca panou — deci are propria pereche de numere, scrisa in sistem:
- *  „pe desktop aceeasi componenta intra ca panou lateral: 200ms, 8px".
- *  Mai scurt decat o suprafata (280) fiindca nu acopera nimic: face loc, iar
- *  latimea coloanei se anima oricum din grila.
- *  Ca peste tot, `reduced-motion` lasa doar stingerea, fara drum. */
-export function panou(node, { duration = 200 } = {}) {
-  const d = motionDuration(duration)
-  const dx = motion.reduced ? 0 : 8
+  const dy = motion.reduced ? 0 : -14
   return {
     duration: d,
     easing: EASE,
-    css: (t) => `opacity: ${t}; transform: translateX(${(1 - t) * dx}px);`,
+    css: (t, u) => `opacity: ${t}; transform: translateY(${u * dy}px) scale(${0.98 + 0.02 * t});`,
+  }
+}
+
+export function panou(node, { duration = DUR_NORMAL } = {}) {
+  const d = motionDuration(duration)
+  const dx = motion.reduced ? 0 : 60
+  return {
+    duration: d,
+    easing: EASE,
+    css: (t, u) => `opacity: ${t}; transform: translateX(${u * dx}px);`,
   }
 }
 
@@ -303,28 +291,9 @@ export function alunecare(node, { sens = 0, duration = 240 } = {}) {
 // Deci: cod mort care contrazicea regula „doar transform/opacity". Sters cu tot
 // cu consumatorul lui.
 
-export function plecare(node, { duration = DUR_BASE } = {}) {
+export function plecare(node, { duration = 800 } = {}) {
   const d = motionDuration(duration)
 
-  // RANDUL CARE PLEACA IESE DIN FLUX, NU-SI ANIMEAZA INALTIMEA.
-  //
-  // Pana acum se strangea animand `height`, `margin-bottom` si cele doua
-  // `border-width` — patru proprietati de LAYOUT, interpolate din JS la fiecare
-  // cadru. Pe o lista de taskuri asta inseamna un reflow complet al listei de
-  // fiecare data, iar `animate:flip` de pe frati rula in acelasi timp: doua
-  // mecanisme pentru acelasi gol, unul pe layout si unul pe compozitor.
-  // Regula scrisa a casei (`.claude/rules/design.md`) cere de altfel exact
-  // invers: „Doar `transform`/`opacity` in animatii".
-  //
-  // Acum randul e scos din flux INSTANT (`position: absolute`, pe geometria lui
-  // de dinainte), deci golul se inchide in acelasi cadru, iar fratii aluneca in
-  // sus prin `animate:flip` — adica pe `transform`, pe compozitor. Randul care
-  // pleaca doar se stinge deasupra lor.
-  //
-  // Cere ca lista sa fie context de pozitionare (`position: relative`) — vezi
-  // `.task-list` / `.a-list`. Daca vreun apelant uita, `offsetParent` iese
-  // pagina si randul ar sari; de aceea masuram fata de parintele REAL si, daca
-  // el nu e pozitionat, ramanem pe stingere simpla, fara scoatere din flux.
   const p = node.parentElement
   let scos = false
   if (p && getComputedStyle(p).position !== 'static') {
@@ -344,12 +313,8 @@ export function plecare(node, { duration = DUR_BASE } = {}) {
   return {
     duration: d,
     easing: EASE,
-    // Cand randul e scos din flux, golul s-a inchis deja: ce ramane de spus e
-    // „obiectul asta pleaca", si o spune stingerea plus o retragere mica.
-    // Cand NU s-a putut scoate (parinte nepozitionat), ramane doar stingerea —
-    // niciodata o animatie de inaltime.
     css: scos
-      ? (t) => `opacity: ${t}; transform: scale(${0.97 + 0.03 * t});`
+      ? (t, u) => `opacity: ${t}; transform: translateX(${u * -28}px) scale(${0.96 + 0.04 * t});`
       : (t) => `opacity: ${t};`,
   }
 }

@@ -3,8 +3,8 @@
   import { ecran } from '../../lib/ecran.svelte.js'
   import { scale, fly, fade } from 'svelte/transition'
   import { portal } from '../../lib/portal.js'
-  import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
-  import { nivelNou, nivelInchis } from './Modal.svelte'
+  import { motionDuration, DUR_FAST, DUR_BASE, DUR_NORMAL, EASE } from '../../lib/motion.svelte.js'
+  import { nivelNou, nivelInchis } from './Modal.svelte'
   import { foaieTrage } from '../../lib/foaieTrage.js'
 
   let {
@@ -142,7 +142,7 @@
   function deschide(node) {
     if (sheet) {
       return {
-        duration: motionDuration(DUR_SLOW),
+        duration: motionDuration(DUR_NORMAL),
         easing: EASE,
         css: (t, u) => `transform: translateY(${u * 100}%)`,
       }

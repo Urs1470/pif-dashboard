@@ -36,7 +36,7 @@
   import { exportMarkdown } from '../lib/exportMd.js'
   import RichText from '../components/ui/RichText.svelte'
   import { navigate } from '../lib/router.svelte.js'
-  import { motionDuration, DUR_BASE, plecare, sosire, alunecare, EASE } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, DUR_FAST, plecare, sosire, alunecare, EASE } from '../lib/motion.svelte.js'
   import { focusOnLand, focusKey } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { apasareLunga } from '../lib/apasareLunga.js'
@@ -1160,7 +1160,7 @@
               {#each grupe[gid].items as t (t.id)}
                 <div class="trow-wrap" role="presentation" class:deschis={showSheet && sheetTask?.id === t.id}
                      style="--ring: {dueRing(t.data_scadenta)}"
-                     animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
+                     animate:flip={{ duration: motionDuration(DUR_FAST), easing: EASE }}
                      onpointerenter={() => preincarca(t.id)}
                      in:sosire|local out:plecare>
                   {@render randTask(t)}
@@ -1178,7 +1178,7 @@
                 {#each doneTasks as t (t.id)}
                   <div class="trow-wrap" role="presentation" class:deschis={showSheet && sheetTask?.id === t.id}
                        style="--ring: {dueRing(t.data_scadenta)}"
-                       animate:flip={{ duration: motionDuration(DUR_BASE), easing: EASE }}
+                       animate:flip={{ duration: motionDuration(DUR_FAST), easing: EASE }}
                        onpointerenter={() => preincarca(t.id)}
                        in:sosire|local out:plecare>
                     {@render randTask(t)}
