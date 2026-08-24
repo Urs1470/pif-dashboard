@@ -1,7 +1,7 @@
 // Oglinda numerica a lui `--dur-*` din tokens.css (proprietatile CSS nu se pot
-// citi ca numere in parametrii tranzitiilor Svelte), plus o singura sursa
-// reactiva pentru `prefers-reduced-motion`, ca preferinta schimbata la mijlocul
-// sesiunii sa ajunga in toate componentele deodata.
+// citi ca numere in parametrii tranzitiilor Svelte). Aici traia si sursa reactiva
+// pentru `prefers-reduced-motion`; e stinsa cu buna stiinta — vezi `motion` mai jos,
+// unde scrie de ce si cum se pune inapoi dintr-o linie.
 //
 // TREI DURATE, NIMIC INTRE ELE (redesign 2026-08-08):
 //   90  apasare — sub ~100ms legatura cauza-efect se citeste ca instantanee
@@ -366,8 +366,8 @@ export function plecare(node, { duration = DUR_BASE } = {}) {
  * Se cheama in doi timpi: masori INAINTE de schimbarea datelor, apoi chemi
  * `aterizare(el, masuratoarea)` dupa ce Svelte a re-randat.
  *
- * Sub `prefers-reduced-motion` durata e 0, deci obiectul doar apare — exact ce
- * spune regula din `motionDuration`.
+ * Durata vine intotdeauna din `motionDuration`, care azi nu mai are pe ce sa cada:
+ * steagul `motion.reduced` e fix `false` (vezi nota de la el).
  *
  *   const dinainte = el.getBoundingClientRect()
  *   await salveaza(); await tick()

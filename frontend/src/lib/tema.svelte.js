@@ -73,20 +73,17 @@ function schimbaAtributul(efectiv) {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', BARA[efectiv])
 }
 
-function ceruMaiPutinaMiscare() {
-  return typeof window !== 'undefined'
-    && (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false)
-}
-
 function aplica(lin = false) {
   const efectiv = tema.mod === 'auto' ? tema.sistem : tema.mod
   if (efectiv === tema.efectiva && lin) return   // nimic de trecut
   tema.efectiva = efectiv
   if (typeof document === 'undefined') return
 
-  // Cine a cerut mai putina miscare a cerut si asta: schimbarea de tema nu e
-  // miscare, e vopsea — nu se pierde nicio informatie daca vine dintr-un cadru.
-  if (!lin || ceruMaiPutinaMiscare() || !document.startViewTransition) {
+  // `prefers-reduced-motion` NU se mai citeste nicaieri in aplicatie — Ion a cerut-o
+  // explicit („scoate exceptia si limitarea aia cu reduced motion"), fiindca
+  // dashboardul lui e animat cu buna stiinta si el e singurul lui utilizator.
+  // Ramane doar cazul in care browserul chiar n-are `startViewTransition`.
+  if (!lin || !document.startViewTransition) {
     schimbaAtributul(efectiv)
     return
   }

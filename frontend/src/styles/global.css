@@ -320,6 +320,16 @@ input:focus, select:focus, textarea:focus {
   outline: none;
 }
 
+/* NU EXISTA `prefers-reduced-motion` IN APLICATIA ASTA, si e o alegere, nu o scapare.
+   Ion, de doua ori, explicit: „scoate exceptia si limitarea aia cu reduced motion, si
+   reduced effects" / „vreau un dashbord animat". Dashboardul are UN utilizator, care a
+   cerut miscarea si stie ce a cerut; o preferinta de sistem pusa candva pentru alta
+   aplicatie nu are de ce sa i-o stinga pe a lui.
+   Erau sapte blocuri aici, dintre care unul care taia TOT la 120ms.
+   `@media print` ramane, si nu e acelasi lucru: la tiparire animatiile nu se joaca
+   deloc, deci un element care porneste din `opacity: 0` si se ridica prin animatie ar
+   iesi ALB pe hartie. Acolo regula repara o pana, nu exprima o preferinta. */
+
 /* ===== Raspuns la APASARE, pe tot dashboardul =====
    Aplicatia avea 146 de reguli `:hover` si 37 de `:active`. Pe telefon — unde Ion
    isi tine taskurile — `:hover` NU EXISTA: degetul nu pluteste. Deci pentru cele
@@ -342,9 +352,6 @@ input:focus, select:focus, textarea:focus {
     transform: scale(var(--press-scale));
     transition: transform var(--dur-press) var(--ease);
   }
-}
-@media (prefers-reduced-motion: reduce) {
-  :where(button, [role="button"], a.btn, .tab, .row, .zi):active { transform: none; }
 }
 
 /* ===== UN RAND CU GESTURI NU E TEXT DE SELECTAT =====
@@ -458,10 +465,6 @@ input:focus, select:focus, textarea:focus {
   45% { transform: scale(1.18); }
   100% { transform: scale(1); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .gl-pista .gl-ico { transform: none; }
-  .gl-bifa .gl-pista .gl-ico { animation: none; }
-}
 
 /* Un singur raspuns la „ce se intampla daca dau drumul": cat timp tragi spre
    dreapta, panoul de actiuni al gestului OPUS (ancorat la dreapta) se ascunde.
@@ -539,10 +542,6 @@ input:focus, select:focus, textarea:focus {
    vad niciodata deodata. */
 .gl-dreapta .gl-pista-s { visibility: hidden; }
 .gl-stanga .gl-pista { visibility: hidden; }
-@media (prefers-reduced-motion: reduce) {
-  .gl-pista-s .gl-ico-s { transform: none; }
-  .gl-amana .gl-pista-s .gl-ico-s { animation: none; }
-}
 @media (max-width: 768px) {
   .gl-pista-s { display: flex; }
 }
@@ -713,14 +712,6 @@ input:focus, select:focus, textarea:focus {
   .focus-flash > .gl-fata::before,
   .focus-flash > .gl-fata::after { display: none; }
 }
-@media (prefers-reduced-motion: reduce) {
-  /* Fara miscare ramane UN semn static, nu doua inele suprapuse: al doilea nu
-     adauga nimic cand nu mai exista ritm care sa-l deosebeasca de primul. */
-  .focus-flash::before, .focus-flash > .gl-fata::before { display: none; }
-  .focus-flash::after, .focus-flash > .gl-fata::after {
-    animation: none; opacity: 1; transform: none;
-  }
-}
 
 /* Safety net: orice tranzitie/animatie CSS noua respecta automat reduced-motion,
    chiar daca componenta nu verifica explicit lib/motion.svelte.js din JS.
@@ -728,14 +719,6 @@ input:focus, select:focus, textarea:focus {
    instantanee e mai greu de urmarit decat una scurta, iar o tranzitie de durata
    zero nu emite `transitionend` — pe el se sincronizeaza bifarea. Ramura JS
    (DUR_REDUSA din motion.svelte.js) foloseste aceeasi valoare. */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 120ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 120ms !important;
-    scroll-behavior: auto !important;
-  }
-}
 
 /* View Transitions: morph-ul card->rand (shared-element) reglat la feeling-ul
    aplicatiei. Browserele fara View Transitions ignora aceste reguli. */
@@ -1026,10 +1009,6 @@ input[type="checkbox"].cbx:active { transform: scale(0.92); }
   transform: translate(-50%, -50%) rotate(45deg);
   animation: bifDesen var(--dur-base) var(--ease) 80ms backwards;
 }
-@media (prefers-reduced-motion: reduce) {
-  /* Semnul ramane — el e informatie, nu decor. Doar trasarea lui dispare. */
-  .bifare .check-empty::after { animation: none; clip-path: none; }
-}
 .bifare .ttitle, .bifare .atitle, .bifare .mrow-title {
   color: var(--text-dim);
   transition: color var(--dur-base) var(--ease);
@@ -1266,9 +1245,6 @@ html.prima-incarcare .cell-in {
   animation: cellIn var(--dur-arc) var(--ease-arc) backwards;
   animation-delay: min(var(--celula, 0) * var(--pas-scara), var(--pas-scara-max));
 }
-@media (prefers-reduced-motion: reduce) {
-  html.prima-incarcare .cell-in { opacity: 1; animation: none; }
-}
 
 /* DESCHIDEREA UNEI RUTE (tura 13).
    Calendarul si Planificatorul erau singurele doua ecrane care apareau intre
@@ -1370,13 +1346,7 @@ html.prima-incarcare.splash-a-lucrat .cell-in { animation: none; }
   to { opacity: 1; transform: none; }
 }
 .asteptare { animation: asteptareIn var(--dur-arc) var(--ease-arc) backwards; }
-@media (prefers-reduced-motion: reduce) {
-  .asteptare { opacity: 1; animation: none; }
-}
 @media print { .asteptare { opacity: 1 !important; animation: none !important; } }
-@media (prefers-reduced-motion: reduce) {
-  html.prima-incarcare .ruta-in { opacity: 1; animation: none; }
-}
 /* HARTIA NU ASTEAPTA O ANIMATIE.
    Amandoua pornesc de la `opacity: 0` si se ridica prin animatie — iar la print
    animatiile nu se joaca, deci regula de baza ar ramane ultimul cuvant si foaia

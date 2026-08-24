@@ -149,9 +149,9 @@
     transition: var(--transition-colors);
   }
   .toast-close:hover { background: var(--bg-hover); color: var(--text); }
-  /* Vezi `components/ui/Modal.svelte`, `.modal-close:active`: acelasi buton, acelasi
-     motiv — pe telefon hoverul nu exista. */
-  .toast-close:active { background: var(--bg-active); transform: scale(0.94); }
+  /* Vezi `components/ui/Modal.svelte`, `.modal-close:active`: acelasi buton, aceeasi
+     reteta — tenta de fond peste podeaua globala, si apasarea si pe desktop. */
+  .toast-close:active { background: var(--bg-active); transform: scale(var(--press-scale)); }
 
 
   @media (max-width: 768px) {

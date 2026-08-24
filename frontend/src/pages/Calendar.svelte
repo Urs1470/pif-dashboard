@@ -2330,15 +2330,6 @@
   }
   .banda.gasita::before { animation-delay: var(--dur-arc); }
   .banda.gasita::after { animation-delay: calc(var(--dur-arc) + var(--pauza-semn)); }
-  /* Fara miscare, semnul trebuie sa fie STATIC si sa stea — `stingeGasitele` ii
-     da mai mult timp. Regula sta dupa cele de mai sus fiindca un `@media` nu
-     adauga specificitate. Un singur inel: al doilea ar fi doar acelasi contur
-     desenat inca o data peste primul, fara nimic de spus. */
-  @media (prefers-reduced-motion: reduce) {
-    .banda.gasita { animation: none; }
-    .banda.gasita::before { animation: none; opacity: 1; transform: none; }
-    .banda.gasita::after { display: none; }
-  }
   .banda-t { display: block; font-size: var(--font-label); font-weight: var(--fw-semibold);
              line-height: var(--lh-snug); color: var(--accent-text);
              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

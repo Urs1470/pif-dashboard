@@ -2924,9 +2924,6 @@
      acelasi stagger, doar fara partea care il facea lizibil. Se scot de tot.
      Aici, la sfarsit: media query-ul nu adauga specificitate, deci scris mai sus
      ar fi fost anulat de `.impl-band` / `.bar`. */
-  @media (prefers-reduced-motion: reduce) {
-    .impl-band, .bar, .wk { animation: none; }
-  }
 
   /* ===== print (browser print-to-PDF) ===== */
   .print-title { display: none; }

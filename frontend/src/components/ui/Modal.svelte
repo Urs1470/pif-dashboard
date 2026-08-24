@@ -1297,9 +1297,12 @@
     background: var(--bg-hover);
     color: var(--text);
   }
-  /* Pe telefon nu exista hover, deci fara `:active` butonul nu confirma NIMIC intre
-     atingere si disparitia foii. `design.md`: „control nou = da-i `:active`". */
-  .modal-close:active { background: var(--bg-active); transform: scale(0.94); }
+  /* CE ADAUGA, peste podeaua globala. `global.css` scaleaza deja orice `<button>`
+     la atingere, dar DOAR pe pointer grosier — deci pe desktop apasarea nu spunea
+     nimic, iar tenta de fond lipsea peste tot. Regula asta le da pe amandoua, cu
+     acelasi `--press-scale` ca podeaua: doua butoane care apasa cu alt procent
+     decat restul aplicatiei se simt ca alt buton. */
+  .modal-close:active { background: var(--bg-active); transform: scale(var(--press-scale)); }
 
   .modal-body {
     padding: var(--space-lg);
