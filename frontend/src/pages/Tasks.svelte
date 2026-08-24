@@ -1163,12 +1163,20 @@
   <div class="list-cell cell-in">
   {#if !showArchive && !ecran.telefon}
     <form class="quick-add" onsubmit={(e) => { e.preventDefault(); quickAdd() }}>
-      <div class="qa-rand">
-        <input type="text" bind:this={quickInput}
-               placeholder={ecran.telefon ? 'Task rapid…' : 'Task rapid... Enter pentru a adăuga'}
-               bind:value={quickTitle} disabled={quickAdding} />
-        <button type="submit" class="quick-add-btn" disabled={!quickTitle.trim() || quickAdding} title="Adaugă task"><Plus size={16} /></button>
-      </div>
+        <!-- ACEEASI FORMA CA PE ACASA (A3, vezi `components/TodayBoard.svelte`).
+             Aici statea un buton „+" langa camp, care facea exact ce face Enter —
+             a doua cale catre aceeasi actiune, in acelasi loc. Plusul ramane, dar
+             ca SEMN in interiorul campului: spune ce e linia asta fara sa mai fie o
+             tinta de apasat. Bara asta se randeaza doar pe desktop, unde Enter e
+             oricum singurul drum, si placeholderul o scrie.
+             Ion, 2026-08-24: „bara din acasa si bara din taskuri si bara din
+             proiecte de adaugare taskuri nu este la fel." -->
+        <div class="qa-camp">
+          <span class="qa-ico" aria-hidden="true"><Plus size={17} /></span>
+          <input type="text" bind:this={quickInput}
+                 placeholder="Task rapid... Enter pentru a adăuga"
+                 bind:value={quickTitle} disabled={quickAdding} />
+        </div>
       {#if quickTitle.trim()}
         <div class="qa-cand" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
           <button type="button" class="qa-chip" onclick={() => quickAdd(0)}>Azi</button>
@@ -1678,13 +1686,19 @@
   /* RAZA DE CAMP, NU DE SUPRAFATA. Purta `--radius-md` (24) — treapta panoului,
      pusa pe un camp de text — si scria la 13px cand orice alt camp scrie la 15.
      Reperul e `components/TodayBoard.svelte`, care le avea deja pe amandoua bine. */
-  .quick-add input { flex: 1; min-height: var(--ctrl-md); padding: var(--space-sm) var(--space-12); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-body); }
-  .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
+  /* Invelisul e cel care poarta haina; campul dinauntru e text gol pe el. Focusul
+     se muta odata cu ele — `:focus-within`, fiindca ce primeste focusul e copilul.
+     Aceeasi reteta ca `.qa-camp` din `components/TodayBoard.svelte`. */
+  .qa-camp { display: flex; align-items: center; gap: var(--space-10);
+    min-height: var(--tap-min); padding: 0 var(--space-14); background: var(--bg-elevated);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .qa-camp:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
+  .qa-ico { display: inline-flex; align-items: center; color: var(--text-dim); flex: none; }
+  .quick-add input { flex: 1; min-width: 0; background: none; border: 0; padding: 0;
+    align-self: stretch; color: var(--text); font-size: var(--font-body); }
+  .quick-add input:focus { outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  /* Butonul poarta raza CAMPULUI de langa el, nu pe a lui: sunt un singur obiect. */
-  .quick-add-btn { width: var(--ctrl-md); min-height: var(--ctrl-md); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
-  .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .filters { display: flex; gap: var(--space-xs); flex-wrap: wrap; align-items: center; }
   /* ARHIVA — ACTIUNE-FANTOMA, NU CHIP. Aici erau doua chipuri („Active"/„Arhivă"),
      din care unul era mereu pornit. Ramane un singur buton, cu haina iconitei
@@ -1892,7 +1906,6 @@
     box-shadow: inset 0 0 0 1.5px var(--border-strong); }
 
   /* ===== compozitorul ===== */
-  .qa-rand { display: flex; gap: var(--space-sm); }
   .qa-cand { display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap; padding: var(--space-sm) var(--space-2xs) 0; }
   .qa-chip { padding: 5px var(--space-14); border-radius: var(--radius-full);
     background: var(--bg-elevated); border: 1px solid var(--border);
@@ -2223,8 +2236,6 @@
          si nici nu se mai putea atinge. 58 + 16 acopera banda cu 12px de scapare. */
       padding-bottom: calc(58px + var(--space-md)); }
     .toolbar { flex-direction: column; align-items: stretch; }
-      .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
-    .quick-add-btn { width: 44px; }
     .form-row-2 { grid-template-columns: 1fr; }
     /* O LINIE, ca in aplicatiile de to-do.
        Inainte: titlul sus, cele trei actiuni de intretinere pe o linie proprie

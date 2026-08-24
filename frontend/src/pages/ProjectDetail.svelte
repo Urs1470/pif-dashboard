@@ -1083,9 +1083,17 @@
              doua ecrane, cu proiectul deja pus. Pe desktop linia rămâne: acolo n-ai
              buton plutitor, ai un camp la vedere, si e mai rapid decat o foaie. -->
         <form class="quick-add" onsubmit={(e) => { e.preventDefault(); handleCreateTask() }}>
-          <div class="qa-rand">
+        <!-- ACEEASI FORMA CA PE ACASA (A3, vezi `components/TodayBoard.svelte`).
+             Aici statea un buton „+" langa camp, care facea exact ce face Enter —
+             a doua cale catre aceeasi actiune, in acelasi loc. Plusul ramane, dar
+             ca SEMN in interiorul campului: spune ce e linia asta fara sa mai fie o
+             tinta de apasat. Bara asta se randeaza doar pe desktop, unde Enter e
+             oricum singurul drum, si placeholderul o scrie.
+             Ion, 2026-08-24: „bara din acasa si bara din taskuri si bara din
+             proiecte de adaugare taskuri nu este la fel." -->
+          <div class="qa-camp">
+            <span class="qa-ico" aria-hidden="true"><Plus size={17} /></span>
             <input type="text" placeholder="Task rapid... Enter pentru a adăuga" bind:value={newTaskTitle} disabled={creatingTask} />
-            <button type="submit" class="quick-add-btn" disabled={!newTaskTitle.trim() || creatingTask} title="Adaugă task"><Plus size={16} /></button>
           </div>
           {#if newTaskTitle.trim()}
             <div class="qa-cand" transition:slide={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
@@ -1572,7 +1580,6 @@
   .tab-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
   .tab-sub { font-size: var(--font-small); color: var(--text-dim); }
   .quick-add { display: flex; flex-direction: column; margin-bottom: var(--space-md); }
-  .qa-rand { display: flex; gap: var(--space-sm); }
   /* Chipurile de zi, identice cu cele din /tasks: adaugarea si planificarea sunt
      un singur gest. Enter ramane „fara termen" — indiciul o spune. */
   .qa-cand { display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap; padding: var(--space-sm) var(--space-2xs) 0; }
@@ -1586,13 +1593,19 @@
     border-radius: var(--radius-full); font-size: var(--font-small); }
   .qa-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: auto; }
 
-  /* Vezi nota din `pages/Tasks.svelte`: raza de CAMP, si textul cat in orice alt camp. */
-  .quick-add input { flex: 1; min-height: var(--ctrl-md); padding: var(--space-sm) var(--space-12); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-body); }
-  .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
+  /* Invelisul e cel care poarta haina; campul dinauntru e text gol pe el. Focusul
+     se muta odata cu ele — `:focus-within`, fiindca ce primeste focusul e copilul.
+     Aceeasi reteta ca `.qa-camp` din `components/TodayBoard.svelte`. */
+  .qa-camp { display: flex; align-items: center; gap: var(--space-10);
+    min-height: var(--tap-min); padding: 0 var(--space-14); background: var(--bg-elevated);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+  .qa-camp:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
+  .qa-ico { display: inline-flex; align-items: center; color: var(--text-dim); flex: none; }
+  .quick-add input { flex: 1; min-width: 0; background: none; border: 0; padding: 0;
+    align-self: stretch; color: var(--text); font-size: var(--font-body); }
+  .quick-add input:focus { outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .quick-add-btn { width: var(--ctrl-md); min-height: var(--ctrl-md); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
-  .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .empty { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-lg) 0; text-align: center; }
 
   /* Task list */
@@ -1930,8 +1943,6 @@
     .td-link { min-height: var(--tap-min); font-size: var(--font-small); }
     .td-dp :global(.dp-trigger) { min-height: var(--tap-min); font-size: var(--font-small); }
     .td-jos { gap: var(--space-lg); }
-    .quick-add input, .quick-add-btn { min-height: var(--tap-min); }
-    .quick-add-btn { width: var(--tap-min); }
     .qa-chip { min-height: var(--tap-sheet); }
     .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); }
     /* Aceeasi reteta ca in Taskuri si Astăzi: 44px de atins, 30px de latime.
