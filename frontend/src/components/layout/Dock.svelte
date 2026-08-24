@@ -203,7 +203,7 @@
         : kbLocked || !(inZone || peekReveal)
   )
 
-  // Iconite mai mari pe telefon: dock-ul tine cinci lucruri in loc de opt, iar
+  // Iconite mai mari pe telefon: dock-ul tine patru lucruri in loc de opt, iar
   // spatiul castigat se duce in TINTA, nu in aer.
   const marimeIcon = $derived(ecran.telefon ? 24 : 20)
 
@@ -312,32 +312,35 @@
     { path: '/calculator', label: 'Calculator', icon: 'calculator' },
   ]
 
-  // PE TELEFON, DOCK-UL TINE CINCI LUCRURI (cerinta Ion).
+  // PE TELEFON, DOCK-UL TINE PATRU LUCRURI (cerinta Ion).
   //
   // Sapte iconite plus cautarea inseamna opt tinte pe latimea unui telefon: la
   // 390px raman ~44px de tinta, adica exact minimul, fara aer intre ele — si
   // tocmai degetul mare, care ajunge acolo, e cel mai gros instrument de atins.
-  // Raman rutele pe care le deschizi zilnic de pe teren; Proiecte, Departament si
-  // Calculator sunt lucruri pe care le faci asezat.
+  // Raman rutele pe care le deschizi zilnic de pe teren: Acasa, Taskuri, Calendar.
   //
-  // Socoteala aia e in continuare corecta, si decizia ramane. Ce NU era in regula
-  // e ce se intampla cu cele trei rute scoase: singurul drum spre ele era
-  // butonul de cautare -> paleta de comanda -> tastatura -> scrii „proiecte".
-  // Patru pasi si o tastatura ca sa ajungi la o pagina de nivel unu, pe un
-  // telefon. O paleta de comanda e o unealta de TASTATURA; pe un ecran fara Ctrl
-  // nu poate fi singurul drum catre o ruta.
+  // PLANIFICATORUL A COBORAT IN FOAIE (Ion, 2026-08-24: „muta planificatorul in mai
+  // mult la 3 puncte"). Era al patrulea slot de navigatie; Ion l-a judecat o unealta
+  // de PLANIFICARE — ceva ce deschizi cand asezi saptamana, nu la fiecare atingere de
+  // pe teren, ca „ce am azi" (Taskuri) sau „unde sunt" (Calendar). Langa Proiecte,
+  // Departament si Calculator, in foaie.
   //
-  // Al cincilea slot devine „Mai mult": o foaie cu cele trei rute la 44px
-  // fiecare. Cautarea nu pleaca — urca in capul foii, deci o atingere iti da si
-  // rutele, si cautarea, iar cine vrea sa scrie scrie. Pe desktop nu se schimba
-  // nimic: acolo sunt toate sapte, plus Ctrl+K.
+  // Ce NU trebuie sa se strice mutand o ruta in foaie: sa nu ramana singurul drum
+  // spre ea butonul de cautare -> paleta de comanda -> tastatura. Patru pasi si o
+  // tastatura ca sa ajungi la o pagina de nivel unu, pe un telefon. Foaia „Mai mult"
+  // rezolva exact asta: o atingere iti da rutele, la 44px fiecare.
+  //
+  // Al patrulea slot ramane „Mai mult": o foaie cu cele PATRU rute scoase (Proiecte,
+  // Plan, Departament, Calculator) la 44px fiecare. Cautarea nu pleaca — urca in capul
+  // foii, deci o atingere iti da si rutele, si cautarea, iar cine vrea sa scrie scrie.
+  // Pe desktop nu se schimba nimic: acolo sunt toate sapte, plus Ctrl+K.
   //
   // Filtrul citeste `ecran.telefon`, sursa unica a pragului de 768px, NU o a doua
   // definitie locala: `isMobile` de mai sus include si `pointer: coarse`, fiindca
   // raspunde la alta intrebare — „ce ASCUNDE dock-ul: derularea sau cursorul", nu
   // „cate incap pe lat". Pe o tableta lata cu ecran tactil vrei ascundere la
   // derulare, dar ai loc de toate sapte.
-  const PE_TELEFON = new Set(['/', '/tasks', '/plan', '/calendar'])
+  const PE_TELEFON = new Set(['/', '/tasks', '/calendar'])
   const itemsVizibile = $derived(
     ecran.telefon ? items.filter((i) => PE_TELEFON.has(i.path)) : items
   )

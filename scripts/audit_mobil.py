@@ -913,7 +913,7 @@ BIFEAZA = """(marca) => {
 
 
 def dockul_pe_telefon(ctx, baza):
-    """Dock-ul pe telefon: cinci tinte, mai mari, si ascundere la derulare.
+    """Dock-ul pe telefon: patru tinte, mai mari, si ascundere la derulare.
 
     De ce e verificat. Ascunderea la derulare s-a rupt O DATA fara nicio eroare:
     efectul care readuce dock-ul la schimbarea rutei chema o functie care CITEA
@@ -922,7 +922,9 @@ def dockul_pe_telefon(ctx, baza):
     ascundea. Asta se prinde doar deruland si masurand.
 
     Si numarul de tinte conteaza: daca cineva readauga rute in `PE_TELEFON` fara sa
-    scada marimea, dock-ul iese din ecran — la 56px de tinta incap cinci, nu opt."""
+    scada marimea, dock-ul iese din ecran. PATRU de cand Ion a mutat Planificatorul in
+    foaia „Mai mult" (2026-08-24): Acasa, Taskuri, Calendar + „Mai mult". La 56px de
+    tinta incapeau cinci; patru incap cu si mai mult aer."""
     out('--- dock pe telefon ---')
     probleme = 0
     page = ctx.new_page()
@@ -966,7 +968,7 @@ def dockul_pe_telefon(ctx, baza):
         page.close()
         return probleme
 
-    zi(s0['n'] == 5, 'cinci tinte pe telefon', 'sunt %d' % s0['n'])
+    zi(s0['n'] == 4, 'patru tinte pe telefon', 'sunt %d' % s0['n'])
     zi(s0['tinta'] >= 52, 'tintele folosesc spatiul castigat (>=52px)', '%dpx' % s0['tinta'])
     zi(not s0['depaseste'], 'dock-ul nu iese din ecran')
 
@@ -992,7 +994,7 @@ def dockul_pe_telefon(ctx, baza):
     #
     # AURORA (2026-08-23) a schimbat UN singur lucru din contractul asta: dockul
     # nu mai e LIPIT de fundul ecranului, ci PLUTESTE la 6px + safe-area. Restul e
-    # neatins, si tocmai de aceea se verifica in continuare: cinci tinte, peste
+    # neatins, si tocmai de aceea se verifica in continuare: patru tinte, peste
     # 52px, nu iese din ecran, si derularea NU-l misca — nici in jos, nici in varf.
     # Ce era „lipit la 0" a devenit „desprins, dar putin": intre 4 si 20px de gol,
     # cu safe-area inclusa. Plafonul e acolo ca sa prinda regresia inversa — un

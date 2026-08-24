@@ -73,7 +73,8 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
   deschide foaia de creare. Butonul nu dispare niciodata — o unealta care apare si dispare
   dupa camera in care esti nu se invata. Iar locul lui (`.dock-coada`, latime fixa) ramane
   rezervat chiar si atunci, ca sloturile sa nu-si schimbe latimea intre pagini.
-  `.dock-item` ramane doar pentru sloturile de NAVIGATIE — `audit_mobil` numara exact cinci.
+  `.dock-item` ramane doar pentru sloturile de NAVIGATIE — `audit_mobil` numara exact patru
+  (Acasa, Taskuri, Calendar + „Mai mult”; Planificatorul a coborat in foaie pe 2026-08-24).
 - **Marca** e semnul AURORA: o sinusoida de o perioada inscrisa intr-un cerc (trecerile prin
   zero la x = 20, 32, 44; cerc raza 18 grosime 5, unda grosime 4.2). In interfata ia
   `--accent`, deci urmeaza tema. Canonic: `design/handoff-aurora/assets/torqa-logomark.svg`.
