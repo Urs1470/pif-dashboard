@@ -27,7 +27,7 @@
   import { Search } from '@lucide/svelte'
   import ComutaTema from './ComutaTema.svelte'
   import FaraRetea from './FaraRetea.svelte'
-  import { router, link } from '../../lib/router.svelte.js'
+  import { router, link, navigate } from '../../lib/router.svelte.js'
   import { apasareLunga } from '../../lib/apasareLunga.js'
   import { sticla } from '../../lib/sticla.js'
   import { urmaActiva, porneste as pornesteUrma } from '../../lib/urma.js'
@@ -207,6 +207,69 @@
     toast(acum ? 'Urmă pornită — deschide o foaie, apoi apasă „Urmă”' : 'Urmă oprită', 'success')
     window.dispatchEvent(new CustomEvent('pif-urma'))
   }
+
+  // ===== SCURTATURI DE NAVIGARE (doar desktop) =====
+  //
+  // Ion, 2026-08-24: „ceva gen ctrl+shift+ sageata dreapta sau stanga, sau gaseste
+  // tu ceva mai comod". Sunt doua feluri de drum, si merita amandoua:
+  //
+  //   Alt+1 … Alt+7      sari DIRECT la o ruta, in ordinea din bara
+  //   Ctrl+Shift+←/→     vecinul din stanga / din dreapta, cu roata la capete
+  //
+  // DE CE `Alt+cifra` SI NU `Ctrl+cifra`, desi a doua e conventia din Slack si din
+  // editoare: in browser `Ctrl+1..9` e a BROWSERULUI (schimba taburile lui) si nu
+  // poate fi luata dintr-o pagina obisnuita. `Alt+cifra` e libera. In aplicatia
+  // Android nu conteaza — acolo nu exista tastatura fizica si nici bara asta.
+  // `Alt+←/→` ar fi fost mai scurta pentru vecin, dar aia e inapoi/inainte in
+  // istoricul browserului; de aceea ramane perechea propusa de Ion.
+  //
+  // TAC CAT TIMP SCRII. `Ctrl+Shift+←/→` selecteaza cuvant cu cuvant intr-un camp,
+  // iar `Alt+cifra` poate ajunge intr-un editor. Daca focusul e pe ceva in care se
+  // scrie, scurtatura nu exista.
+  //
+  // Tenta se muta prin acelasi drum ca la clic (`tinteste`), nu asteptand ruta —
+  // vezi nota de la ea.
+  const SCRIS = /^(INPUT|TEXTAREA|SELECT)$/
+
+  function seScrie(t) {
+    return !!t && (t.isContentEditable || SCRIS.test(t.tagName))
+  }
+
+  function duLa(cale) {
+    // Elementul exista in bara, deci tenta poate tinti INAINTE sa aterizeze ruta.
+    const el = barEl?.querySelector('.ruta[href="' + cale + '"]')
+    tinteste(el, cale)
+    navigate(cale)
+  }
+
+  function scurtaturi(e) {
+    if (seScrie(e.target) || !items.length) return
+
+    if (e.altKey && !e.ctrlKey && !e.metaKey && e.key >= '1' && e.key <= '9') {
+      const i = Number(e.key) - 1
+      if (i < items.length) {
+        e.preventDefault()
+        duLa(items[i].path)
+      }
+      return
+    }
+
+    if (e.ctrlKey && e.shiftKey && !e.altKey &&
+        (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      e.preventDefault()
+      const acum = items.findIndex((x) => x.path === rutaActiva)
+      const de_la = acum === -1 ? 0 : acum
+      const pas = e.key === 'ArrowRight' ? 1 : -1
+      // Cu roata: de pe ultima ruta, „dreapta" duce la prima. Sapte drumuri intr-un
+      // inel se parcurg mai repede decat intr-o linie cu doua capete moarte.
+      duLa(items[(de_la + pas + items.length) % items.length].path)
+    }
+  }
+
+  $effect(() => {
+    window.addEventListener('keydown', scurtaturi)
+    return () => window.removeEventListener('keydown', scurtaturi)
+  })
 </script>
 
 <header class="bara sticla sticla-bara" bind:this={barEl} bind:clientHeight={inaltime}
@@ -237,12 +300,13 @@
           class:gata={pilula.gata} class:asezata={pilulaAsezata}
           style="--pr:{pilula.r}"
           aria-hidden="true"></span>
-    {#each items as item (item.path)}
+    {#each items as item, i (item.path)}
       <a
         href={item.path}
         use:link
         onclick={(e) => { tinteste(e.currentTarget, item.path); e.currentTarget.blur() }}
         class="ruta"
+        title="{item.label} (Alt+{i + 1})"
         class:active={isActive(item.path)}
         data-pilula={rutaActiva === item.path ? '' : undefined}
         aria-current={isActive(item.path) ? 'page' : undefined}

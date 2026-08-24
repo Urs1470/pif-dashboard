@@ -1283,7 +1283,21 @@ def perioadele_se_trag(browser, baza):
 
             # --- 2. redimensionarea ---
             page.reload(wait_until='load')
-            page.wait_for_selector('.banda[data-perioada]', timeout=15000)
+            # ASTEPTAREA ISI SPUNE MOTIVUL. Timeoutul gol arunca un traceback de
+            # Playwright in raportul portii — adica un verdict fara nicio informatie
+            # despre ce s-a intamplat. S-a si intamplat, pe 2026-08-24, cand masina
+            # rula in paralel serverul de previzualizare, mai multe Chromium si sapte
+            # agenti: banda n-a reaparut in 15s, si tot ce s-a vazut a fost stiva.
+            # Acum spune CE lipseste si CU CE date, si trece mai departe ca abatere,
+            # nu ca prabusire — restul probelor tot merita rulate.
+            try:
+                page.wait_for_selector('.banda[data-perioada]', timeout=15000)
+            except Exception:
+                cate = page.eval_on_selector_all('.banda', 'e => e.length')
+                out('  PICA  %s: banda n-a reaparut dupa reload — %d benzi in grila, '
+                    'perioada mutata e %s' % (eticheta, cate, dupa))
+                probleme += 1
+                continue
             page.wait_for_timeout(700)
             man = page.eval_on_selector_all(
                 '.banda.lat[data-perioada] .maner.dr',
