@@ -56,7 +56,17 @@ INDEPENDENTE_DE_TEMA = {'--loc-site', '--loc-sediu', '--on-color',
 #             telefon, unde reflexul nici nu se leaga.
 #   --spec-raza : marimea elipsei de reflex; difera intre bara (150px 74px) si
 #             dockul de telefon (110px 60px), deci nu poate fi o constanta in CSS.
-DIN_JS = {'--gl-p', '--gl-s', '--trasY', '--kb', '--mx', '--my', '--spec', '--spec-raza'}
+#   --px/--py : pozitia tentei rutei active, in px, pusa de `lib/arc.js` la fiecare
+#             cadru. Erau in binding-ul de markup pana cand poziția a trecut de pe
+#             o tranzitie CSS pe un ARC: o tranzitie nu poate reprezenta o viteza
+#             initiala, deci la retargetare in zbor repornea de la zero si se vedea
+#             o clipa de stagnare. Un arc are nevoie de valoarea pe CADRU, iar un
+#             `$state` scris de 60 de ori pe secunda ar pune tot arborele
+#             componentei pe drumul de reactualizare degeaba. Rezerva 0 = colțul din
+#             stanga-sus, si de-aia tenta e invizibila (`.gata`) pana la prima
+#             masuratoare.
+DIN_JS = {'--gl-p', '--gl-s', '--trasY', '--kb', '--mx', '--my', '--spec', '--spec-raza',
+          '--px', '--py'}
 
 # Fisiere in care valorile brute sunt legitime, cu motiv.
 SCUTITE_HEX = {

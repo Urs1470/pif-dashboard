@@ -9,6 +9,7 @@
   import { sticla } from '../../lib/sticla.js'
   import { actiuneNoua } from '../../lib/actiuneNoua.svelte.js'
   import { navigate } from '../../lib/router.svelte.js'
+  import { creeazaArc } from '../../lib/arc.js'
 
   let { deschideCautarea = () => {} } = $props()
 
@@ -76,20 +77,65 @@
   // dupa `.active`: cu doua sloturi active `querySelector` l-ar alege tacut pe
   // primul din DOM, iar asta ar muta tenta cand deschizi foaia, adica pe un
   // gest care nu te duce nicaieri.
-  let pilula = $state({ x: 0, y: 0, w: 0, h: 0, r: '', gata: false })
+  // POZITIA o poarta ARCUL (`lib/arc.js`), nu o tranzitie CSS: la retargetare in
+  // zbor — apesi doua taburi una dupa alta — o tranzitie reporneste de la viteza
+  // ZERO si se vede o clipa de stagnare. Un arc duce mai departe viteza pe care o
+  // avea. Marimea si raza rămân in stare: intre sloturile aceluiasi dock nu se
+  // schimba, iar cand se schimba (telefon vs desktop) un salt e corect.
+  let pilula = $state({ w: 0, h: 0, r: '', gata: false })
   let pilulaAsezata = $state(false)
-  let amMasurat = false   // NEreactiv: citit in efectul care scrie `pilula`
+  let pilulaEl = null
+  let amMasurat = false   // NEreactiv: citit in efectul care aseaza pastila
+
+  const arcPilula = creeazaArc({
+    durata: 0.38,
+    bounce: 0.298,
+    scrie: ({ x, y }) => {
+      if (!pilulaEl) return
+      if (x !== undefined) pilulaEl.style.setProperty('--px', x + 'px')
+      if (y !== undefined) pilulaEl.style.setProperty('--py', y + 'px')
+    },
+  })
 
   const rutaActiva = $derived(itemsVizibile.find((i) => isActive(i.path))?.path ?? null)
 
+  // `intentia` e ruta pe care ai APASAT-O, cat timp routerul inca n-a ajuns la ea.
+  // NEreactiva: o citeste `masoaraPilula`, si daca ar fi reactiva ar reporni singura
+  // efectul care o cheama.
+  let intentia = null
+
+  /** Duce tenta pe slotul apasat, ACUM. Vezi nota de mai jos. */
+  function tinteste(el, cale) {
+    if (!el) return
+    intentia = cale
+    arcPilula.tinteste('x', el.offsetLeft)
+    arcPilula.tinteste('y', el.offsetTop)
+    pilula.w = el.offsetWidth
+    pilula.h = el.offsetHeight
+    pilula.r = getComputedStyle(el).borderRadius
+    pilula.gata = true
+  }
+
   function masoaraPilula() {
+    // TENTA URMEAZA INTENTIA, NU ATERIZAREA RUTEI — aceeasi reparatie ca in
+    // `BaraSus.svelte`, si pe telefon conteaza mai mult: masurat, dockul astepta
+    // 255ms de la atingere pana sa se clinteasca tenta, fiindca `startViewTransition`
+    // tine pagina veche in aer (cursa de 180ms din `lib/router.svelte.js`).
+    // Unde te duci se stie din clipa apasarii.
+    // Garda: cat timp ai apasat o ruta la care routerul n-a ajuns, o re-masurare ar
+    // citi slotul rutei VECHI si ar trage tenta inapoi la ea.
+    if (intentia && rutaActiva !== intentia) return false
+    intentia = null
     const slot = dockEl?.querySelector('[data-pilula]')
     if (!slot) { pilula.gata = false; return false }
     // `offsetLeft/Top` se masoara fata de cutia de PADDING a lui `offsetParent`
     // — exact reperul fata de care se aseaza si un copil absolut cu `left: 0`,
     // deci cele doua sisteme coincid si dockul isi poate pastra paddingul.
-    pilula.x = slot.offsetLeft
-    pilula.y = slot.offsetTop
+    // Prima asezare e INSTANT: altfel tenta ar aluneca din coltul din stanga-sus
+    // la incarcare, ca si cum ai fi navigat.
+    const instant = !amMasurat
+    arcPilula.tinteste('x', slot.offsetLeft, { instant })
+    arcPilula.tinteste('y', slot.offsetTop, { instant })
     pilula.w = slot.offsetWidth
     pilula.h = slot.offsetHeight
     // Raza se CITESTE din slot: pe telefon e `--radius-md`, pe desktop
@@ -360,15 +406,18 @@
      use:sticla={{ spec: '110px 60px' }} aria-label="Navigație principală">
   <!-- Tenta slotului activ. Primul copil, ca sa fie clar ca sta DEDESUBT; e
        absoluta, deci nu intra in flexul barei si nu conteaza la `space-around`. -->
-  <span class="dock-pilula" class:gata={pilula.gata} class:asezata={pilulaAsezata}
-        style="--px:{pilula.x}px; --py:{pilula.y}px; --pw:{pilula.w}px; --ph:{pilula.h}px; --pr:{pilula.r}"
+  <!-- `--px`/`--py` NU sunt in binding: le scrie arcul, direct in element, la
+       fiecare cadru (vezi nota de la `pilula`). -->
+  <span class="dock-pilula" bind:this={pilulaEl}
+        class:gata={pilula.gata} class:asezata={pilulaAsezata}
+        style="--pw:{pilula.w}px; --ph:{pilula.h}px; --pr:{pilula.r}"
         aria-hidden="true"></span>
   <button class="dock-grip" aria-label="Arată navigația" title="Navigație" onclick={revealFromPeek}></button>
   {#each itemsVizibile as item (item.path)}
     <a
       href={item.path}
       use:link
-      onclick={(e) => e.currentTarget.blur()}
+      onclick={(e) => { tinteste(e.currentTarget, item.path); e.currentTarget.blur() }}
       class="dock-item"
       class:active={isActive(item.path)}
       data-pilula={rutaActiva === item.path ? '' : undefined}
@@ -542,8 +591,11 @@
      Doar `transform`: OPACITATEA ramane pe curba de vopsea. O depasire pe
      opacitate se citeste ca palpait, si e chiar regula scrisa in tokens
      („effects — NICIODATA"). */
+  /* NUMAI OPACITATEA. Poziția o poarta arcul din `lib/arc.js` — o tranzitie CSS
+     nu poate reprezenta o viteza initiala si reporneste de la zero cand tinta se
+     schimba in zbor. Opacitatea ramane pe curba de vopsea. */
   .dock-pilula.asezata {
-    transition: transform var(--dur-arc-elan) var(--ease-arc-elan), opacity var(--dur-fast) var(--ease);
+    transition: opacity var(--dur-fast) var(--ease);
   }
 
   .dock-item {

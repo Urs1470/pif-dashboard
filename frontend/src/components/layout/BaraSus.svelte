@@ -32,6 +32,7 @@
   import { sticla } from '../../lib/sticla.js'
   import { urmaActiva, porneste as pornesteUrma } from '../../lib/urma.js'
   import { toast } from '../../stores/ui.svelte.js'
+  import { creeazaArc } from '../../lib/arc.js'
 
   let { deschideCautarea = () => {} } = $props()
 
@@ -96,11 +97,42 @@
   // ===== TENTA RUTEI ACTIVE ALUNECA (pe orizontala acum) =====
   // Slotul care poarta tenta e MARCAT in markup (`data-pilula`), nu cautat dupa
   // `.active`: o cautare dupa clasa ar gasi si un rand care doar seamana.
-  let pilula = $state({ x: 0, w: 0, r: '', gata: false })
+  // `x` si `w` NU mai stau in `$state`: le poarta ARCUL, care scrie direct in
+  // element la fiecare cadru (vezi `lib/arc.js`). Aici rămân doar cele care se
+  // schimba rar — raza, citita din slot, si `gata`, care aprinde opacitatea.
+  let pilula = $state({ r: '', gata: false })
   let pilulaAsezata = $state(false)
-  let amMasurat = false   // NEreactiv: citit in efectul care scrie `pilula`
+  let pilulaEl = null
+  let amMasurat = false   // NEreactiv: citit in efectul care aseaza pastila
 
-  function masoaraPilula() {
+  // ARCUL TENTEI. Inainte era o tranzitie CSS pe `transform` si `width`, cu
+  // `--ease-arc-elan`. Arata identic cat timp porneste din repaus — dar la
+  // RETARGETARE in zbor o tranzitie CSS reporneste de la viteza ZERO, si se vedea
+  // o clipa de stagnare inainte sa se intoarca (masurat: +8.7, +5.6, +3.2, +1.2
+  // px/cadru in directia VECHE, dupa ce apasasei deja alt tab).
+  // Un arc preia viteza pe care o avea. Durata si bounce dau exact varful
+  // esantionului livrat (1.0384), deci caracterul nu se schimba — vezi nota din
+  // `lib/arc.js` pentru de ce .298 si nu .28.
+  const arcPilula = creeazaArc({
+    durata: 0.38,
+    bounce: 0.298,
+    scrie: ({ x, w }) => {
+      if (!pilulaEl) return
+      if (x !== undefined) pilulaEl.style.setProperty('--px', x + 'px')
+      if (w !== undefined) pilulaEl.style.setProperty('--pw', w + 'px')
+    },
+  })
+
+  /** Duce tenta pe un slot. `instant` = fara miscare (prima asezare, redimensionare). */
+  function aseazaPe(el, instant = false) {
+    arcPilula.tinteste('x', el.offsetLeft, { instant })
+    arcPilula.tinteste('w', el.offsetWidth, { instant })
+    // Raza se CITESTE din slot: o a doua copie a regulii s-ar desincroniza.
+    pilula.r = getComputedStyle(el).borderRadius
+    pilula.gata = true
+  }
+
+  function masoaraPilula({ instant = false } = {}) {
     // CINE APASA ULTIMUL ARE DREPTATE. Garda sta AICI, nu la apelant, fiindca sunt
     // doi apelanti: efectul pe `router.path` SI `ResizeObserver`-ul. Cat timp ai
     // apasat o ruta la care routerul inca n-a ajuns, orice re-masurare ar citi
@@ -113,11 +145,9 @@
     if (!slot) { pilula.gata = false; return false }
     // `offsetLeft` se masoara fata de cutia de PADDING a lui `offsetParent` —
     // exact reperul fata de care se aseaza si un copil absolut cu `left: 0`.
-    pilula.x = slot.offsetLeft
-    pilula.w = slot.offsetWidth
-    // Raza se CITESTE din slot: o a doua copie a regulii s-ar desincroniza.
-    pilula.r = getComputedStyle(slot).borderRadius
-    pilula.gata = true
+    // Prima asezare e mereu INSTANT: altfel tenta ar aluneca din marginea din
+    // stanga la incarcarea paginii, ca si cum ai fi navigat.
+    aseazaPe(slot, instant || !amMasurat)
     return true
   }
 
@@ -133,8 +163,8 @@
   // elementul apasat; efectul de mai jos o re-masoara cand ruta chiar aterizeaza,
   // pe aceleasi valori, deci nu se vede nicio a doua miscare.
   // WWDC23 „Animate with springs": miscarea trebuie sa raspunda gestului, nu sa-l
-  // astepte. (Pasul urmator, daca-l vrem: si VITEZA sa se pastreze la retargetare —
-  // o tranzitie CSS reporneste de la zero, un arc adevarat nu.)
+  // astepte. Perechea acestei reparatii — pastrarea VITEZEI la retargetare — e
+  // facuta de arcul de mai sus.
   // `intentia` e ruta pe care ai APASAT-O ultima data, cat timp routerul inca n-a
   // ajuns la ea. NEreactiva: o citeste efectul de mai jos, si daca ar fi reactiva
   // l-ar reporni singura.
@@ -143,10 +173,7 @@
   function tinteste(el, cale) {
     if (!el) return
     intentia = cale
-    pilula.x = el.offsetLeft
-    pilula.w = el.offsetWidth
-    pilula.r = getComputedStyle(el).borderRadius
-    pilula.gata = true
+    aseazaPe(el)
   }
 
   $effect(() => {
@@ -165,7 +192,9 @@
   // reMasurare, tenta ar ramane pe pozitia veche.
   $effect(() => {
     if (!barEl) return
-    const ro = new ResizeObserver(() => masoaraPilula())
+    // INSTANT: o redimensionare de fereastra nu e o navigare. Daca ar aluneca,
+    // tragerea marginii ferestrei ar arata ca si cum ai fi apasat un alt tab.
+    const ro = new ResizeObserver(() => masoaraPilula({ instant: true }))
     ro.observe(barEl)
     return () => ro.disconnect()
   })
@@ -201,8 +230,12 @@
   <nav class="rute">
     <!-- Tenta rutei active. Primul copil, ca sa fie clar ca sta DEDESUBT; e
          absoluta, deci nu intra in flexul listei. -->
-    <span class="pilula" class:gata={pilula.gata} class:asezata={pilulaAsezata}
-          style="--px:{pilula.x}px; --pw:{pilula.w}px; --pr:{pilula.r}"
+    <!-- `--px`/`--pw` NU sunt in binding: le scrie arcul, direct in element, la
+         fiecare cadru. Un `$state` scris de 60 de ori pe secunda ar pune tot
+         arborele componentei pe drumul de reactualizare degeaba. -->
+    <span class="pilula" bind:this={pilulaEl}
+          class:gata={pilula.gata} class:asezata={pilulaAsezata}
+          style="--pr:{pilula.r}"
           aria-hidden="true"></span>
     {#each items as item (item.path)}
       <a
@@ -301,14 +334,13 @@
   /* Vizibila abia dupa prima masuratoare — pana atunci ar fi lipita de marginea
      din stanga, adica exact de unde n-are voie sa alunece. */
   .pilula.gata { opacity: 1; }
-  /* ELAN. Tenta traverseaza o distanta pe care O VEZI, deci are voie sa arate ca
-     a avut viteza: depaseste cu ~4% si revine. Doar `transform` si `width`:
-     OPACITATEA ramane pe curba de vopsea — o depasire pe opacitate se citeste ca
+  /* NUMAI OPACITATEA MAI E TRANZITIE CSS. Poziția si latimea le poarta ARCUL din
+     `lib/arc.js`, fiindca o tranzitie CSS nu poate reprezenta o viteza initiala si
+     reporneste de la zero cand tinta se schimba in zbor.
+     Opacitatea RAMANE pe curba de vopsea — o depasire pe opacitate se citeste ca
      palpait, si e chiar regula scrisa in tokens („effects — NICIODATA"). */
   .pilula.asezata {
-    transition: transform var(--dur-arc-elan) var(--ease-arc-elan),
-                width var(--dur-arc-elan) var(--ease-arc-elan),
-                opacity var(--dur-fast) var(--ease);
+    transition: opacity var(--dur-fast) var(--ease);
   }
 
   .ruta {
