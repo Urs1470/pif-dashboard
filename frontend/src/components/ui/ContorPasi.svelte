@@ -44,16 +44,19 @@
       <!-- Pista si arcul stau pe ACEEASI raza si aceeasi grosime: altfel n-ar fi
            acelasi inel, ar fi doua cercuri concentrice. -->
       <circle class="tp-pista" cx="6" cy="6" r={R} />
-      {#if frac > 0}
-        <!-- `rotate` ca ATRIBUT SVG, nu `transform-origin` in CSS: pe elementele
-             SVG originea implicita e coltul din stanga-sus al viewport-ului, si
-             ar cere si `transform-box: fill-box` ca sa se poarte cum te astepti.
-             Forma din atribut ia centrul explicit si merge peste tot.
-             -90 muta inceputul arcului de la ora 3 la ora 12. -->
-        <circle class="tp-arc" cx="6" cy="6" r={R}
-                stroke-dasharray="{(frac * C).toFixed(3)} {C.toFixed(3)}"
-                transform="rotate(-90 6 6)" />
-      {/if}
+      <!-- `rotate` ca ATRIBUT SVG, nu `transform-origin` in CSS: pe elementele
+           SVG originea implicita e coltul din stanga-sus al viewport-ului, si
+           ar cere si `transform-box: fill-box` ca sa se poarte cum te astepti.
+           Forma din atribut ia centrul explicit si merge peste tot.
+           -90 muta inceputul arcului de la ora 3 la ora 12. -->
+      <!-- SE RANDEAZA MEREU, INCLUSIV LA ZERO. Era sub `{#if frac > 0}`, si atunci
+           trecerea de la 0 la primul subtask bifat CREA elementul — deci nu exista
+           nimic de la ce sa se anime, arcul aparea din nimic. Fara `stroke-linecap`
+           (vezi `.tp-arc` in global.css) un dash de lungime zero nu deseneaza
+           nimic, deci la 0 arata exact la fel ca inainte. -->
+      <circle class="tp-arc" cx="6" cy="6" r={R}
+              stroke-dasharray="{(frac * C).toFixed(3)} {C.toFixed(3)}"
+              transform="rotate(-90 6 6)" />
     </svg>
     <span class="tpasi-cifre">{gata}/{total}</span>
   </span>

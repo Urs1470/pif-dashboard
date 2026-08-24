@@ -598,7 +598,19 @@ input:focus, select:focus, textarea:focus {
 .tpasi-inel .tp-pista,
 .tpasi-inel .tp-arc { fill: none; stroke-width: 3; }
 .tpasi-inel .tp-pista { stroke: var(--border-strong); }
-.tpasi-inel .tp-arc { stroke: var(--text-dim); }
+.tpasi-inel .tp-arc {
+  stroke: var(--text-dim);
+  /* INELUL SE UMPLE, NU SARE. Bifezi un subtask si arcul trecea instant de la 2/5
+     la 3/5 — singurul lucru din rand care se schimba fara sa se miște.
+     `--ease`, NU `--ease-arc`: arcul ala are depasire (~1%), si o depasire pe o
+     VALOARE se citeste ca o cifra greșita pentru o clipa — la 4/5 ar trece peste
+     inel intreg si ar arata plin. Regula din tokens spune acelasi lucru pe alta
+     cale: depasirea e pentru ce se MISCA in spatiu, nu pentru ce MASOARA.
+     Tranzitie CSS, nu integratorul din `lib/arc.js`: continuitatea vitezei la
+     intrerupere nu se vede pe un inel de 12px, iar un rAF per rand de lista ar fi
+     exact munca degeaba despre care e sesiunea de performanta (WWDC25 306). */
+  transition: stroke-dasharray var(--dur-base) var(--ease);
+}
 /* `tabular-nums` se INTOARCE, si merita spus de ce, fiindca a fost scos cu doua
    ture mai devreme („latimea fixa e o unealta de coloana" — adevarat cand
    contorul era doar text). Acum nu e despre aliniere, e despre STABILITATE: cu

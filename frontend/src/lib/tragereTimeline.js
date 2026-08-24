@@ -23,6 +23,8 @@
 // variabile CSS si atat.
 
 import { incepeTragere } from './tragere.js'
+import { urmaritor } from './gesturi.js'
+import { creeazaArc } from './arc.js'
 
 /** Numarul de zile intre doua ISO (b - a), pe calendar local. */
 function difZile(a, b) {
@@ -71,6 +73,9 @@ export function tragePeZile(ev, cfg) {
   let delta = 0          // zile intregi, calculate doar pentru previzualizare
   let raf = 0
   let ultimDelta = null
+  // Viteza degetului, ca banda sa-si duca elanul mai departe la ridicare — vezi
+  // nota din `laFinal`.
+  const vit = urmaritor()
 
   const idxStart = difZile(ziStart, ziObiect)
 
@@ -94,12 +99,14 @@ export function tragePeZile(ev, cfg) {
       // `will-change` DOAR cat tine gestul: lasat permanent, tine un strat de
       // compozitare pentru fiecare banda din pagina.
       obiect.style.willChange = 'transform'
+      vit.porneste(x0)
       obiect.classList.add('se-trage')
       pista.classList.add('pista-trage')
       laInceput?.()
     },
     laMiscare(x) {
       dx = x - x0
+      vit.adauga(x)
       // Cuantizarea e DOAR pentru previzualizare (ce zi se aprinde); `--dx`
       // ramane continuu, deci obiectul urmareste degetul pixel cu pixel.
       const d = Math.round(dx / ziW)
@@ -110,14 +117,36 @@ export function tragePeZile(ev, cfg) {
       if (raf) { cancelAnimationFrame(raf); raf = 0 }
       curata()
       if (delta === 0) { laAtingere?.(); return }
-      // SNAPUL CONFIRMA (90ms): obiectul se aseaza pe ziua intreaga, apoi se
-      // comite. Fara el, ultimul lucru vazut e obiectul intre doua zile.
-      obiect.style.transition = 'transform var(--dur-press) var(--ease)'
-      obiect.style.setProperty('--dx', (delta * ziW).toFixed(1) + 'px')
+      // SNAPUL CONFIRMA: obiectul se aseaza pe ziua intreaga, apoi se comite.
+      // Fara el, ultimul lucru vazut e obiectul intre doua zile.
+      //
+      // ASEZAREA DUCE MAI DEPARTE VITEZA DEGETULUI. Era o tranzitie CSS de 90ms
+      // (`--dur-press`), deci banda pe care tocmai o aruncasesi se oprea sec si
+      // apoi aluneca — aceeasi discontinuitate reparata la foaie. WWDC24: „this
+      // spring uses the velocity from the interactiveSprings, to carry the
+      // animation forward with continuous velocity."
+      //
+      // ZIUA RAMANE ALEASA DIN POZITIE, NU DIN PROIECTIE. Foaia isi alege treapta
+      // din „unde ar fi ajuns degetul", si e corect: acolo proiectia alege o
+      // TREAPTA VIZUALA. Aici ar alege o DATA care se scrie in baza — un fleac de
+      // deget te-ar muta cu o zi peste ce ai ochit, si ai afla din calendar, nu
+      // din gest. Deci: decizia predictibila, miscarea continua.
+      //
+      // `bounce: 0` (neted, implicitul recomandat de ei): o banda care depaseste
+      // ziua si se intoarce ar arata ca a aterizat pe ziua greșita.
+      const tinta = delta * ziW
       const zi = plusZile(ziObiect, delta)
       const d = delta
-      setTimeout(async () => {
-        obiect.style.transition = ''
+      let gataArc
+      const asezat = new Promise((res) => { gataArc = res })
+      const arc = creeazaArc({
+        durata: 0.28,
+        bounce: 0,
+        scrie: ({ dx: v }) => { obiect.style.setProperty('--dx', v.toFixed(1) + 'px') },
+        laFinal: () => gataArc(),
+      })
+      arc.preia('dx', dx, vit.viteza() * 1000, tinta)
+      ;(async () => {
         // `--dx` SE SCOATE ABIA DUPA CE ZIUA NOUA E IN DOM.
         //
         // Scos inainte de commit (cum era), obiectul sarea INAPOI pe ziua veche
@@ -130,12 +159,16 @@ export function tragePeZile(ev, cfg) {
         // urma. `laCommit` se asteapta, si el isi asteapta propriul `tick()`,
         // deci cand ne intoarcem aici `left` e deja ziua noua: scoaterea lui
         // `--dx` nu mai misca nimic. Nici salt inapoi, nici dublu-offset.
+        // SE ASTEAPTA AMANDOUA: asezarea si commitul. Daca serverul raspunde
+        // primul, scoaterea lui `--dx` ar taia asezarea in doua; daca arcul se
+        // termina primul, obiectul ramane unde l-a lasat pana vin datele — exact
+        // ce cere nota de mai sus.
         try {
-          await laCommit?.(zi, d)
+          await Promise.all([asezat, laCommit?.(zi, d)])
         } finally {
           obiect.style.removeProperty('--dx')
         }
-      }, 90)
+      })()
     },
     laAnulare() {
       if (raf) { cancelAnimationFrame(raf); raf = 0 }
