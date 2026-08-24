@@ -7,6 +7,7 @@
   import { apiJson } from '../../lib/api.js'
   import { motionDuration, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
   import { nivelNou, nivelInchis } from '../ui/Modal.svelte'
+  import { actiuneNoua } from '../../lib/actiuneNoua.svelte.js'
 
   // 6px + scale(.985) intr-o singura tranzitie: `fly` si `scale` nu se pot pune
   // pe acelasi nod (fiecare ar rescrie `transform`-ul celeilalte).
@@ -205,11 +206,32 @@
     requestAnimationFrame(() => inputEl?.focus())
   }
 
+  /** Scrii chiar acum intr-un camp? Atunci tastele-litera sunt text, nu comenzi. */
+  function inCamp(e) {
+    const el = e.target
+    return !!(el && el.matches && el.matches(
+      'input, textarea, select, [contenteditable="true"], [contenteditable=""]'))
+  }
+
   function onGlobalKey(e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault()
       open = !open
       if (open) requestAnimationFrame(() => inputEl?.focus())
+      return
+    }
+    // SHORTCUT UNIVERSAL DE CREARE — „n" (new). Face exact ce face butonul
+    // „+ Adaugă task" / FAB-ul dockului: actiunea de creare A PAGINII CURENTE
+    // (`actiuneNoua`), deci pe Acasă un task de azi, pe /tasks unul global, in
+    // pagina proiectului unul al lui — un singur gest, peste tot. Doar cand nu
+    // scrii intr-un camp si nu e deja un strat deschis (foaie/paleta): altfel
+    // ar deschide o creare peste alta sau ar inghiti litera „n" din text.
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey &&
+        (e.key === 'n' || e.key === 'N') &&
+        !inCamp(e) &&
+        !document.documentElement.classList.contains('are-modal')) {
+      e.preventDefault()
+      actiuneNoua().fa()
     }
   }
 
