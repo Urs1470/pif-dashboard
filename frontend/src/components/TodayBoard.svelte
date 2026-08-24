@@ -1,9 +1,9 @@
 <script>
   import { onMount } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { CalendarCheck, Plus, GripVertical, ArrowRight, X, CheckCircle2, ListPlus, Check, CalendarDays, User, Briefcase } from '@lucide/svelte'
+  import { CalendarCheck, GripVertical, ArrowRight, X, CheckCircle2, ListPlus, Check, CalendarDays, User, Briefcase } from '@lucide/svelte'
   import {
-    agenda, loadAgendaToday, quickAddToday, moveToTomorrow, moveToDate,
+    agenda, loadAgendaToday, moveToTomorrow, moveToDate,
     removeFromToday, toggleDone, reorderAgenda
   } from '../stores/agenda.svelte.js'
   import { dueRing, formatDate, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
@@ -25,7 +25,7 @@
   import ErrorState from './ui/ErrorState.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import DatePicker from './ui/DatePicker.svelte'
-  import { motionDuration, DUR_BASE, EASE, plecare, sosire, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, EASE, plecare, sosire, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
   import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
 
   // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
@@ -33,8 +33,6 @@
   // pana la refresh sau schimbare de tab).
   let { onchange = () => {} } = $props()
 
-  let quickTitle = $state('')
-  let quickAdding = $state(false)
   let showAdauga = $state(false)
 
   let dragIndex = $state(null)
@@ -98,20 +96,6 @@
   // isOverdue/isToday vin din formatters.js — aceeasi axa si aceleasi praguri ca
   // dueRing(), o singura definitie pentru toate listele.
 
-  async function doQuickAdd() {
-    const t = quickTitle.trim()
-    if (!t || quickAdding) return
-    quickAdding = true
-    try {
-      await quickAddToday(t)
-      quickTitle = ''
-      onchange()
-    } catch (e) {
-      toast(`Eroare: ${e.message}`, 'error')
-    } finally {
-      quickAdding = false
-    }
-  }
 
   // Randul care isi joaca stampila chiar acum (`.bifare`, reguli in global.css).
   let bifatAcum = $state('')
@@ -372,19 +356,9 @@
     </button>
   </div>
 
-  <form class="quick-add" onsubmit={(e) => { e.preventDefault(); doQuickAdd() }}>
-    <!-- O SINGURA CALE DE ADAUGARE PE ECRAN (A3). Langa camp statea un buton „+"
-         care facea exact ce face Enter — a doua cale catre aceeasi actiune, in
-         acelasi loc. Plusul ramane, dar ca SEMN in interiorul campului: spune ce
-         e linia asta fara sa mai fie o tinta de apasat.
-         Pe telefon nu ramane nimic de apasat fiindca nu e nevoie: formularul are
-         un singur camp de text, deci tasta Go a tastaturii il trimite nativ.
-         Placeholderul o scrie pe desktop, unde Enter e singurul drum. -->
-    <div class="qa-camp">
-      <span class="qa-ico" aria-hidden="true"><Plus size={17} /></span>
-      <input type="text" placeholder={peTelefon ? 'Task rapid pentru azi' : 'Task rapid pentru azi, apoi Enter'} bind:value={quickTitle} disabled={quickAdding} />
-    </div>
-  </form>
+  <!-- BARA „TASK RAPID" A PLECAT (Ion, 2026-08-24: „acasa nu mai are nevoie de
+       fieldul task rapid"). Acasa nu mai are a doua cale de creare: butonul „Adaugă
+       task" din capul boardului (`.bh-add`) deschide foaia „1a", ca peste tot. -->
 
   <!-- `!agenda.incarcat`, NU `items.length === 0`: a doua forma confunda „inca
        n-am primit nimic" cu „raspunsul e gol", deci pe un board fara niciun task
@@ -637,28 +611,6 @@
   .bh-add { display: inline-flex; align-items: center; gap: 7px; height: var(--ctrl-md); padding: 0 var(--space-14); font-size: var(--font-body); font-weight: var(--fw-semibold); border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--panel-line); color: var(--text-secondary); cursor: pointer; transition: var(--transition-pressable); flex-shrink: 0; }
   .bh-add:hover { background: var(--bg-hover); color: var(--text); }
 
-  /* Campul e UN obiect, iar plusul e semnul lui dinauntru — nu un al doilea
-     buton langa el (vezi comentariul din markup). Chenarul, fondul si raza trec
-     de pe `input` pe invelis, ca iconita sa stea in interiorul lor; inputul
-     ramane text gol pe fondul invelisului. Focusul se muta odata cu ele:
-     `:focus-within`, fiindca ce primeste focusul e copilul. */
-  .quick-add { display: flex; margin: 0 var(--space-sm) var(--space-md); }
-  .qa-camp { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-10);
-    min-height: var(--tap-min); padding: 0 var(--space-14); background: var(--bg-elevated);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
-  .qa-camp:focus-within { border-color: var(--accent); box-shadow: var(--focus-ring); }
-  .qa-ico { display: inline-flex; align-items: center; color: var(--text-dim); flex: none; }
-  .quick-add input { flex: 1; min-width: 0; background: none; border: 0; padding: 0;
-    align-self: stretch; color: var(--text); font-size: var(--font-body); }
-  /* INELUL DE FOCUS STA PE INVELIS, NU SI PE CAMP. `global.css:296` il pune pe
-     ORICE `input:focus` — iar aici campul e invelit, deci primea si el unul, cu
-     `border-radius: 0`. Ieseau doua chenare: cel rotunjit al invelisului si un
-     dreptunghi cu colturi drepte inauntru, ale carui capete se vedeau ca doua bare
-     verticale (Ion, 2026-08-24: „doar un chenar in jurul campului si atat, fara
-     barele verticale pe margini"). */
-  .quick-add input:focus { outline: none; box-shadow: none; }
-  .quick-add input::placeholder { color: var(--text-dim); }
 
   /* `.a-skel` a plecat: invelisul de schelet al boardului nu mai exista in
      markup (scheletul vine acum din `Skeleton.svelte`, cu forma randului real).
@@ -948,11 +900,6 @@
        se declanseaza niciodata. Acelasi slot, celalalt maner. */
     .grip { display: none; }
     .gl-maner { display: flex; }
-    /* Compozitorul e desenat la 48 (`Acasă.dc.html` 3c): e panoul de scris al
-       boardului, stă jos, si se atinge cu degetul mare intins — de aceea
-       `--tap-sheet`, nu podeaua de 44 a tintelor obisnuite. Inaltimea o tine
-       acum invelisul, fiindca el e cutia; inputul se intinde in ea. */
-    .qa-camp { min-height: var(--tap-sheet); }
     /* Pe telefon adaugarea vine din butonul de actiune al DOCULUI (`.dock-fab`), proeminent
        si peste dock — deci butonul mic din capul boardului nu mai are rost aici. */
     .bh-add { display: none; }

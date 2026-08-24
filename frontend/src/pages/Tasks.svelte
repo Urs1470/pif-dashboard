@@ -1165,21 +1165,18 @@
         {#if pushStatus?.last_error}<span class="g-punct" aria-hidden="true"></span>{/if}
       </button>
     {/if}
+    <!-- CREAREA: un buton MIC in coltul din dreapta al barei (cerinta Ion), nu un
+         rand mare in lista. Deschide foaia „1a" centrata. Pe telefon lipseste —
+         acolo creeaza butonul plutitor din dock. -->
+    {#if !ecran.telefon}
+      <button class="tb-adauga" onclick={() => { taskEditat = null; showAdauga = true }}>
+        <Plus size={15} strokeWidth={2} /><span class="tb-adauga-et">Adaugă task</span>
+      </button>
+    {/if}
   </div>
 
   <div class="v3grid">
   <div class="list-cell cell-in">
-  {#if !showArchive && !ecran.telefon}
-    <!-- CREAREA PE DESKTOP E MODALUL centrat „1a", nu o bara inline (handoff 2026-08-24:
-         „pe desktop înlocuiește bara — se deschide centrat"). Butonul deschide ACEEASI
-         foaie ca „+" de pe telefon — un singur limbaj de creare pe ambele ecrane, iar
-         scrisul + Enter raman inauntru, in campul foii. -->
-    <button class="creare-d" onclick={() => { taskEditat = null; showAdauga = true }}>
-      <span class="creare-d-p" aria-hidden="true"><Plus size={17} /></span>
-      Adaugă task
-    </button>
-  {/if}
-
   <!-- SCHELETELE SUNT PENTRU PRIMA INCARCARE, NU PENTRU FIECARE ACTIUNE.
        Conditia era doar `globalTasks.loading`, iar `loadGlobalTasks()` se cheama
        dupa ORICE modificare (bifat, mutat termen, adaugat, sters). Deci de fiecare
@@ -1622,19 +1619,18 @@
      un rand pe orice telefon. */
   .toolbar { display: flex; gap: var(--space-md); align-items: center; margin-bottom: var(--space-md); flex-wrap: nowrap; }
   .toolbar .sfere { min-width: 0; }
-  /* CREAREA PE DESKTOP: un rand-afordanta in capul listei care deschide foaia „1a"
-     centrata (handoff 2026-08-24). Ia haina de camp (suprafata 2, raza de rand),
-     cu „+" in accent — spune „adaugi aici", dar scrisul propriu-zis se face in foaie. */
-  .creare-d { display: flex; align-items: center; gap: var(--space-10);
-    width: 100%; min-height: var(--tap-min); margin-bottom: var(--space-md);
-    padding: 0 var(--space-14); background: var(--bg-elevated); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); color: var(--text-secondary);
-    font-size: var(--font-body); font-weight: var(--fw-medium); text-align: left;
-    cursor: pointer; transition: var(--transition-pressable); }
-  .creare-d:hover { border-color: var(--accent); background: var(--accent-subtle); color: var(--accent-deep); }
-  .creare-d:active { transform: scale(var(--press-scale)); }
-  .creare-d-p { display: inline-flex; align-items: center; flex: none; color: var(--accent); }
-  .creare-d:hover .creare-d-p { color: var(--accent-deep); }
+  /* CREAREA: un buton MIC in coltul din dreapta al barei (cerinta Ion), langa
+     Muncă/Personal/Arhivă. `margin-left: auto` il impinge in colt. Tenta de accent
+     ca sa se citeasca drept actiunea principala, dar compact. Deschide foaia „1a". */
+  .tb-adauga { margin-left: auto; flex: none;
+    display: inline-flex; align-items: center; gap: var(--space-6);
+    min-height: var(--ctrl-md); padding: 0 var(--space-12); border: none;
+    border-radius: var(--radius-xs); background: var(--accent-subtle); color: var(--accent-deep);
+    font-family: inherit; font-size: var(--font-control); font-weight: var(--fw-semibold);
+    white-space: nowrap; cursor: pointer; transition: var(--transition-pressable); }
+  .tb-adauga :global(svg) { flex: none; }
+  .tb-adauga:hover { background: color-mix(in oklab, var(--accent) 22%, var(--bg-surface)); }
+  .tb-adauga:active { transform: scale(var(--press-scale)); }
   /* ARHIVA — ACTIUNE-FANTOMA, NU CHIP. Aici erau doua chipuri („Active"/„Arhivă"),
      din care unul era mereu pornit. Ramane un singur buton, cu haina iconitei
      Google de langa el: si aceea e o setare, nu un filtru. Activ = tinta amber,

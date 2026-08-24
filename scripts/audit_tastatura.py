@@ -557,10 +557,10 @@ def main():
                          'atingerea randului deschide o FOAIE, repede',
                          'niciun .modal.sheet in 700 ms' if primul is None else '%d ms' % primul['t'],
                          '%d ms' % (primul['t'] if primul else -1))
-                    bifa(page.query_selector('.modal.sheet .ts-cap') is not None
+                    bifa(page.query_selector('.modal.sheet .dt-cap') is not None
                          and page.query_selector('.modal.sheet .sub-nou') is not None,
-                         'foaia are capul taskului (bifa, titlu) si subtaskurile',
-                         'lipseste .ts-cap sau .sub-nou')
+                         'foaia are capul taskului (bifa, titlu) si pasii',
+                         'lipseste .dt-cap sau .sub-nou')
                     bifa(page.query_selector('.subtask-body:not(.modal .subtask-body)') is None,
                          'nimic nu se mai desface in lista', 'a ramas un .subtask-body in lista')
                     inchide_tot(page)
@@ -634,7 +634,7 @@ def main():
                 if rand:
                     rand.click()
                     page.wait_for_timeout(700)
-                    bifa(page.query_selector('.modal-panou .ts-cap') is not None,
+                    bifa(page.query_selector('.modal-panou .dt-cap') is not None,
                          'clicul pe rand deschide panoul lateral, ca in /tasks', 'fara .modal-panou')
                     # Panoul lasa lista la vedere sub un voal slab; un clic pe ea
                     # cade pe voal si inchide panoul — acelasi drum ca in /tasks.

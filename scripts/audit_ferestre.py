@@ -202,10 +202,10 @@ SONDA = r"""
 # masoara sosirea. `unde` spune pe ce latimi are voie sa existe fereastra.
 FERESTRE = [
     # Adaugarea e o FEREASTRA pe amandoua acum (handoff „1a", 2026-08-24): pe telefon
-    # din butonul plutitor, pe desktop din randul „+ Adaugă task" (`.creare-d`) care a
-    # inlocuit bara inline — acelasi modal centrat.
+    # din butonul plutitor, pe desktop din butonul mic „+ Adaugă task" (`.tb-adauga`)
+    # din coltul barei, care a inlocuit bara inline — acelasi modal centrat.
     dict(nume='adauga-task', ruta='/tasks', unde='ambele',
-         pasi=[('sel', '.dock-fab')], pasi_desktop=[('sel', '.creare-d')]),
+         pasi=[('sel', '.dock-fab')], pasi_desktop=[('sel', '.tb-adauga')]),
     dict(nume='panou-task', ruta='/tasks', unde='telefon', pasi=[('sel', '.tmain')]),
     dict(nume='actiuni-task', ruta='/tasks', unde='telefon', pasi=[('lung', '.tmain')]),
     dict(nume='alege-data', ruta='/tasks', unde='ambele',
