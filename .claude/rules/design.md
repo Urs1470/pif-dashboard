@@ -27,7 +27,7 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
   introduce o a treia stare. Pe randurile de task culoarea e rezervata **severitatii**
   (inelul bifei + textul termenului, amandoua din `--ring`, pus cu `dueRing()`).
   **Muchia colorata de 3px nu mai exista nicaieri.**
-- **Tipografie — cinci trepte, doua familii:** Gabarito (tot textul), DM Mono (cifre care se
+- **Tipografie — cinci trepte, doua familii:** Hanken Grotesk (tot textul), DM Mono (cifre care se
   compara pe verticala). `--font-title` 25 · `--font-h2` 21 · `--font-h3`=`--font-body` 15 ·
   `--font-small` 13 · `--font-label` 12. **Nu exista 14px.** Nimic scris de mana:
   `font-size`, `letter-spacing`, `line-height` in afara `tokens.css` sunt abateri.

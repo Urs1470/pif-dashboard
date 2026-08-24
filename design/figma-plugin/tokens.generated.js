@@ -436,7 +436,7 @@ const TOKENS = {
   "tipografie": {
     "--font-sans": {
       "px": null,
-      "brut": "'Gabarito', system-ui, -apple-system, sans-serif",
+      "brut": "'Hanken Grotesk', system-ui, -apple-system, sans-serif",
       "alias": null,
       "telefon": null
     },
@@ -448,7 +448,7 @@ const TOKENS = {
     },
     "--font-heading": {
       "px": null,
-      "brut": "'Gabarito', system-ui, -apple-system, sans-serif",
+      "brut": "'Hanken Grotesk', system-ui, -apple-system, sans-serif",
       "alias": "--font-sans",
       "telefon": null
     },

@@ -42,15 +42,11 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2363638f'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 32a18 18 0 1 0 36 0 18 18 0 1 0-36 0' stroke-width='5'/%3E%3Cpath d='M20 32c4-11.33 8-11.33 12 0s8 11.33 12 0' stroke-width='4.2'/%3E%3C/g%3E%3C/svg%3E" />
     <!-- FONTURILE, CERUTE DIN HTML — nu descoperite din foaia de stil.
-         Gabarito era deja aici. DM Mono lipsea, si se vedea: masurat la prima
-         deschidere pe telefon (4G, CPU 4x), `document.fonts.status` trecea prin
-         `loading` la 1004ms SI la 1533ms — adica cifrele (termenele din lista,
-         numarul fiecarei grupe) se desenau cu fontul de rezerva si se schimbau
-         de doua ori dupa ce citeai deja pagina. Fontul mono nu e descoperit
+         Hanken Grotesk si DM Mono, preincarcate. Fontul mono nu e descoperit
          decat cand se aseaza primul text mono, adica dupa ce lista s-a randat.
          Doar greutatea 400: pe ecranul de aterizare nu exista mono de 500. -->
-    <link rel="preload" href="/static/fonts/Gabarito-Variable.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/static/fonts/Gabarito-Variable-ext.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/static/fonts/HankenGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/static/fonts/HankenGrotesk-Variable-ext.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/static/fonts/DMMono-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/static/fonts/DMMono-400-ext.woff2" as="font" type="font/woff2" crossorigin />
     <title>TORQA</title>
@@ -123,7 +119,7 @@
         position: absolute; top: calc(100% + 14px); left: 50%;
         transform: translateX(-50%);
         white-space: nowrap; line-height: 1.2;
-        font-family: 'Gabarito', system-ui, sans-serif;
+        font-family: 'Hanken Grotesk', system-ui, sans-serif;
         font-size: 21px; font-weight: 600; letter-spacing: -0.01em;
         color: #ededf2; color: var(--text);
       }
@@ -170,11 +166,11 @@
         #splash.pleaca, #splash.pleaca .sp-marca { transition-duration: .12s; }
       }
     </style>
-    <script type="module" crossorigin src="/assets/main-rvFtjIzh.js"></script>
+    <script type="module" crossorigin src="/assets/main-DowHPfGP.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-DK3Fl9T5.js">
-    <link rel="modulepreload" crossorigin href="/assets/Modal-BqdRNmO_.js">
-    <link rel="stylesheet" crossorigin href="/assets/Modal-Dn-6UozR.css">
-    <link rel="stylesheet" crossorigin href="/assets/main-b35i7fJy.css">
+    <link rel="modulepreload" crossorigin href="/assets/Modal-Cav6Ph7i.js">
+    <link rel="stylesheet" crossorigin href="/assets/Modal-CbMxy1eb.css">
+    <link rel="stylesheet" crossorigin href="/assets/main-mVG93_Nd.css">
   </head>
   <body>
     <div id="splash" aria-hidden="true" role="presentation">

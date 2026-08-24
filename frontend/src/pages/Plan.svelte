@@ -344,7 +344,7 @@
   // altul — impachetarea reuseste, ecranul nu. Se masoara bara PLUS titlul.
   const ETICHETA_MAX = 220     // `.bar-txt` max-width
   const ETICHETA_PAD = 7       // golul dintre bara si titlul ei
-  // Latimea unui titlu, aproximata: Gabarito semibold la --font-small (13px) are
+  // Latimea unui titlu, aproximata: Hanken Grotesk semibold la --font-small (13px) are
   // ~0.45em pe caracter. Nu masuram in DOM — ar insemna un layout pass per task
   // la fiecare re-randare, iar o eroare de cateva procente doar imparte doua
   // etichete pe randuri diferite, ceea ce oricum voiai.

@@ -249,10 +249,11 @@
   --radius-full: 9999px;
 
   /* ---- Tipografie ----
-     GABARITO PESTE TOT. DM Mono doar pe cifre si coduri, ca sa se alinieze
-     coloanele. Inter, Space Grotesk si JetBrains Mono au iesit din sistem.
+     HANKEN GROTESK PESTE TOT. Umanist grotesc: calm si curat, cea mai buna
+     lizibilitate la marimi mici — conteaza pentru cititul in hala, pe lumina
+     proasta. DM Mono doar pe cifre si coduri, ca sa se alinieze coloanele.
      Regula se verifica singura: daca textul se poate traduce, nu e mono. */
-  --font-sans: 'Gabarito', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
   --font-mono: 'DM Mono', ui-monospace, 'Fira Code', monospace;
   /* Un singur font: titlul si corpul sunt aceeasi familie, deosebite de marime
      si greutate. `--font-heading` ramane ca nume, nu ca a doua familie. */

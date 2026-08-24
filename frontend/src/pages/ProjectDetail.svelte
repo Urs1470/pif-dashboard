@@ -1549,7 +1549,7 @@
   /* ===== CAPUL DE GRUPA — ACELASI OBIECT CA IN /tasks, PE TOATE LATIMILE =====
      Comitul anterior a unificat DOAR blocul de sub 768px, si asa a ramas: pe
      desktop, aceeasi clasa se randa in doua feluri la un clic distanta. Masurat,
-     opt proprietati difereau — familie (DM Mono vs Gabarito), culoare (--danger
+     opt proprietati difereau — familie (DM Mono vs Hanken Grotesk), culoare (--danger
      vs --text-secondary), punct (fara vs 7px), padding (10 2 5 vs 4 12 8), gap
      (4 vs 8), pozitie (static vs sticky), inaltime (34 vs 31) si daca se randeaza
      numarul (pe toate grupele vs doar pe „restante").

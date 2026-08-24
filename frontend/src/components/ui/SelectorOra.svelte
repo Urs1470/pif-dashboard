@@ -29,7 +29,7 @@
   import { scale, fade } from 'svelte/transition'
   import { portal } from '../../lib/portal.js'
   import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
-  import { nivelNou, nivelInchis } from './Modal.svelte'
+  import { nivelNou, nivelInchis } from './Modal.svelte'
   import { foaieTrage } from '../../lib/foaieTrage.js'
 
   let {
@@ -449,7 +449,7 @@
   }
   /* Inelul interior (13–00) e mai mic: doua inele de aceeasi greutate s-ar citi ca
      un singur camp de numere, si n-ai mai vedea ca sunt doua scari. */
-  .so-nr.mic { font-size: 12.5px; fill: var(--text-dim); }
+  .so-nr.mic { font-size: var(--font-small); fill: var(--text-dim); }
   /* Numarul ALES sta peste discul de accent, deci ia cerneala de pe fill. */
   .so-nr.sel { fill: var(--accent-text); font-weight: var(--fw-semibold); }
 
