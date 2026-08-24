@@ -1604,7 +1604,13 @@
   .qa-ico { display: inline-flex; align-items: center; color: var(--text-dim); flex: none; }
   .quick-add input { flex: 1; min-width: 0; background: none; border: 0; padding: 0;
     align-self: stretch; color: var(--text); font-size: var(--font-body); }
-  .quick-add input:focus { outline: none; }
+  /* INELUL DE FOCUS STA PE INVELIS, NU SI PE CAMP. `global.css:296` il pune pe
+     ORICE `input:focus` — iar aici campul e invelit, deci primea si el unul, cu
+     `border-radius: 0`. Ieseau doua chenare: cel rotunjit al invelisului si un
+     dreptunghi cu colturi drepte inauntru, ale carui capete se vedeau ca doua bare
+     verticale (Ion, 2026-08-24: „doar un chenar in jurul campului si atat, fara
+     barele verticale pe margini"). */
+  .quick-add input:focus { outline: none; box-shadow: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
   .empty { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-lg) 0; text-align: center; }
 

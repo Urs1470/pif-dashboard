@@ -29,7 +29,8 @@
   import { scale, fade } from 'svelte/transition'
   import { portal } from '../../lib/portal.js'
   import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
-  import { nivelNou, nivelInchis } from './Modal.svelte'
+  import { nivelNou, nivelInchis } from './Modal.svelte'
+  import { foaieTrage } from '../../lib/foaieTrage.js'
 
   let {
     /** 'HH:MM' sau '' */
@@ -289,7 +290,8 @@
   {/if}
 
   {#if open}
-    <div class="so-pop" class:sheet use:portal bind:this={popupEl} style={popupStyle} transition:deschide>
+    <div class="so-pop" class:sheet use:portal bind:this={popupEl} style={popupStyle} transition:deschide
+         use:foaieTrage={{ activ: sheet, laInchidere: () => { open = false } }}>
       {#if sheet}<span class="so-grip" aria-hidden="true"></span>{/if}
 
       <!-- ANTETUL E SI AFISAJ SI NAVIGATIE: cifra activa spune ce alege cadranul, iar
@@ -448,11 +450,19 @@
   .so-foot-btn {
     display: inline-flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-12);
     border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-semibold);
-    color: var(--accent); background: var(--accent-subtle); cursor: pointer;
-    transition: opacity var(--dur-fast) var(--ease);
+    color: var(--accent-on-subtle); background: var(--accent-subtle); cursor: pointer;
+    transition: var(--transition-colors);
   }
-  .so-foot-btn:hover { opacity: .8; }
+  /* CERNEALA PE TENTA IA VARIANTA ADANCA, si hoverul APASA TENTA, nu stinge textul.
+     Erau amandoua gresite in acelasi loc: `--accent` peste `--accent-subtle` (4,81
+     pe tema deschisa, cand `--accent-deep` da 7,11), plus un hover pe opacitate —
+     care se inmulteste peste cerneala si o duce sub prag. Regula e scrisa in
+     `Button.svelte:121`: „hoverul merge spre varianta ADANCA, nu pe opacitate".
+     `--accent-on-subtle` e literal `--accent-deep`; il folosesc pe el fiindca
+     numeste ROLUL, si asa se repara singur daca perechea se schimba vreodata. */
+  .so-foot-btn:hover { background: color-mix(in oklab, var(--accent) 22%, var(--bg-surface)); }
   .so-foot-btn.clear { color: var(--danger); background: transparent; }
+  .so-foot-btn.clear:hover { color: var(--danger-deep); background: var(--danger-subtle); }
 
   /* ===== Telefon: ceasul e foaie, cu un cadran cat latimea ecranului ===== */
   .so-pop.sheet {
@@ -465,12 +475,27 @@
     z-index: calc(var(--z-modal) + 41);
   }
   /* Manerul: acelasi obiect ca al foii din `Modal` — 38×4, `--border-strong`. */
+  /* Manerul e SEMN, nu tinta: gestul asculta pe toata banda de sus a foii (vezi
+     `lib/foaieTrage.js`). Aceeasi lectie ca la Modal — Ion: „de TOT ANTETUL, nu de
+     bara de 4px". */
   .so-grip {
+    pointer-events: none;
     display: block; width: 38px; height: 4px; margin: var(--space-sm) auto var(--space-2xs);
     border-radius: var(--radius-full); background: var(--border-strong);
   }
   @media (max-width: 768px) {
     .so-trigger { min-height: var(--tap-sheet); }
+    /* SUBSOLUL SE INGROASA CA IN CALENDAR. Antetul componentei spune ca toata
+       carcasa e „copiata la valoare din `DatePicker.svelte`" — subsolul era singura
+       piesa la care copierea s-a oprit: intr-o FOAIE de telefon, „Acum" si „Scoate
+       ora" ramaneau la ~26px, sub `--tap-min`. Perechea din calendar e
+       `DatePicker.svelte:347`. `:only-child` fiindca „Scoate ora" dispare cand n-ai
+       ora pusa, exact ca „Sterge". */
+    .so-pop.sheet .so-foot-btn {
+      flex: 1; justify-content: center; min-height: var(--tap-min);
+      font-size: var(--font-small); border-radius: var(--radius-md);
+    }
+    .so-pop.sheet .so-foot-btn:only-child { flex: 0 1 160px; }
     /* Pe un cadran de ~358px numerele cresc odata cu el: la 15px pe SVG scalat ar
        iesi ~22px reali pe inelul de afara. Nu se mai ating, deci nu mai e nevoie de
        nimic in plus — dar acul se ingroasa, ca sa rămână in proporţie. */

@@ -4,7 +4,8 @@
   import { scale, fly, fade } from 'svelte/transition'
   import { portal } from '../../lib/portal.js'
   import { motionDuration, DUR_FAST, DUR_BASE, DUR_SLOW, EASE } from '../../lib/motion.svelte.js'
-  import { nivelNou, nivelInchis } from './Modal.svelte'
+  import { nivelNou, nivelInchis } from './Modal.svelte'
+  import { foaieTrage } from '../../lib/foaieTrage.js'
 
   let {
     value = $bindable(''),
@@ -216,7 +217,8 @@
   {/if}
 
   {#if open}
-    <div class="dp-pop" class:sheet use:portal bind:this={popupEl} style={popupStyle} transition:deschide>
+    <div class="dp-pop" class:sheet use:portal bind:this={popupEl} style={popupStyle} transition:deschide
+         use:foaieTrage={{ activ: sheet, laInchidere: () => { open = false } }}>
       {#if sheet}<span class="dp-grip" aria-hidden="true"></span>{/if}
       <div class="dp-head">
         <button type="button" class="dp-nav" onclick={prevMonth} aria-label="Luna anterioară"><ChevronLeft size={16} /></button>
@@ -302,11 +304,19 @@
   .dp-foot-btn {
     display: inline-flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-12);
     border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-semibold);
-    color: var(--accent); background: var(--accent-subtle); cursor: pointer;
-    transition: opacity var(--dur-fast) var(--ease);
+    color: var(--accent-on-subtle); background: var(--accent-subtle); cursor: pointer;
+    transition: var(--transition-colors);
   }
-  .dp-foot-btn:hover { opacity: 0.8; }
+  /* CERNEALA PE TENTA IA VARIANTA ADANCA, si hoverul APASA TENTA, nu stinge textul.
+     Erau amandoua gresite in acelasi loc: `--accent` peste `--accent-subtle` (4,81
+     pe tema deschisa, cand `--accent-deep` da 7,11), plus un hover pe opacitate —
+     care se inmulteste peste cerneala si o duce sub prag. Regula e scrisa in
+     `Button.svelte:121`: „hoverul merge spre varianta ADANCA, nu pe opacitate".
+     `--accent-on-subtle` e literal `--accent-deep`; il folosesc pe el fiindca
+     numeste ROLUL, si asa se repara singur daca perechea se schimba vreodata. */
+  .dp-foot-btn:hover { background: color-mix(in oklab, var(--accent) 22%, var(--bg-surface)); }
   .dp-foot-btn.clear { color: var(--danger); background: transparent; }
+  .dp-foot-btn.clear:hover { color: var(--danger-deep); background: var(--danger-subtle); }
 
   /* ===== Telefon: calendarul e sheet, cu zile pe care se poate nimeri =====
      Latimea intreaga imparte 7 coloane la ~50px in loc de ~34px, iar `aspect-ratio: 1`
@@ -333,7 +343,11 @@
     border-bottom: none;
     box-shadow: var(--shadow-foaie);
   }
+  /* Manerul e SEMN, nu tinta: gestul asculta pe toata banda de sus a foii (vezi
+     `lib/foaieTrage.js`). Aceeasi lectie ca la Modal — Ion: „de TOT ANTETUL, nu de
+     bara de 4px". */
   .dp-grip {
+    pointer-events: none;
     display: block; width: 36px; height: 4px; margin: var(--space-sm) auto var(--space-2xs);
     border-radius: var(--radius-full); background: var(--border-strong);
   }

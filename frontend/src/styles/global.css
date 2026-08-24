@@ -292,7 +292,16 @@ code, pre {
    Reparatia adevarata e la sursa: `.ruta-in` si `.cell-in` umplu acum INAPOI
    (`backwards`), deci dupa ce se termina nu mai ating `transform` deloc. */
 
-/* ===== Focus ring global pe inputs ===== */
+/* ===== Focus ring global pe inputs =====
+   CAMPUL INVELIT TREBUIE SA-L STINGA. Regula asta prinde ORICE `input:focus`,
+   inclusiv unul care sta INAUNTRUL unui invelis care isi arata singur focusul
+   (`.qa-camp:focus-within`, `.fa-cauta`, `.palette-search`). Acolo ies DOUA chenare:
+   cel rotunjit al invelisului, si inelul asta pe input — care are `border-radius: 0`,
+   deci un dreptunghi cu colturi drepte inauntru, ale carui capete se vad ca doua bare
+   verticale. Raportat de Ion pe 2026-08-24; `FoaieAdauga` si `CommandPalette` il
+   stingeau deja, cele trei bare de adaugare rapida nu.
+   Deci: cand infasori un input, pune pe el `box-shadow: none` la `:focus` si lasa
+   invelisul sa poarte semnul. */
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--accent);
