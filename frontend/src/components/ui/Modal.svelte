@@ -268,7 +268,8 @@
     if (px < -120 || px > 220 || py < -120 || py > 220) return ''
     return `${px.toFixed(1)}% ${py.toFixed(1)}%`
   }
-  import { PRAG_INCHIDE, PRAG_INTINDE, PRAG_DIRECTIE, puls, urmaritor } from '../../lib/gesturi.js'
+  import { PRAG_INCHIDE, PRAG_INTINDE, PRAG_DIRECTIE, puls, urmaritor } from '../../lib/gesturi.js'
+  import { creeazaArc } from '../../lib/arc.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
   // jos) — nu cand parintele pune `open = false` singur. Exista fiindca un modal de
@@ -551,7 +552,42 @@
     return Math.max(0, (sheetEl?.offsetHeight || 0) - trasY)
   }
 
+  // ===== ARCUL CARE PREIA GESTUL FOII =====
+  //
+  // `lasa()` folosea de mult viteza degetului ca sa DECIDA treapta („unde ar fi
+  // ajuns daca ar mai fi continuat putin"). Dar dupa decizie predea unei tranzitii
+  // CSS, iar aia porneste de la viteza ZERO: foaia pe care tocmai ai aruncat-o se
+  // opreste in aer si pleaca din nou. WWDC24: „this spring uses the velocity from
+  // the interactiveSprings, to carry the animation forward with continuous
+  // velocity."
+  // Acum arcul CONTINUA gestul — primeste pozitia si viteza degetului si duce
+  // aceeasi functie `aseaza()` mai departe, cadru cu cadru. Deci toata logica de
+  // dedesubt (rezistenta la capat, voalul care urmareste, pragul care pulseaza)
+  // ramane exact aceeasi; se schimba doar CINE muta valoarea.
+  // Durata si bounce sunt perechea `--ease-arc` (0.42s / .201): o foaie e o
+  // SUPRAFATA care se mișcă in spatiu, nu un obiect mic care sare.
+  let arcRuleaza = false
+  let treaptaTinta = 0
+
+  const arcFoaie = creeazaArc({
+    durata: 0.42,
+    bounce: 0.201,
+    scrie: ({ h }) => { if (h !== undefined) aseaza(h) },
+    laFinal: () => {
+      // PREDAREA MAI DEPARTE: arcul a terminat, acum CSS-ul isi ia inaltimea inapoi
+      // (`height: auto` pe treapta de baza), altfel foaia n-ar mai urma continutul.
+      arcRuleaza = false
+      trage = false
+      duLaTreapta(treaptaTinta)
+    },
+  })
+
   function apuca(clientY) {
+    // UN GEST NOU OPRESTE ARCUL, nu se bate cu el. „Be ready for a new transition
+    // to start at any time" — daca apuci foaia in timp ce se aseaza, degetul o
+    // preia de unde e, cu tot cu elanul ei.
+    arcFoaie.opreste()
+    arcRuleaza = false
     untrack(reimprospateazaTrepte)
     hApucat = inaltimeVizibila()
     yApucat = clientY
@@ -564,7 +600,10 @@
   /** `total` = cat din foaie se vede. Singurul lucru pe care il misca degetul. */
   function aseaza(total) {
     totalAcum = total
-    vit.adauga(total)
+    // Cat timp miscarea vine din ARC, nu din deget, nu se mai adauga esantioane:
+    // altfel urmaritorul ar „vedea" propria animatie si viteza urmatorului gest ar
+    // fi masurata din ce a facut arcul.
+    if (!arcRuleaza) vit.adauga(total)
     const h0 = trepte[0]
     const hMax = trepte[trepte.length - 1]
     let v = total
@@ -597,7 +636,6 @@
 
   function lasa() {
     if (!trage) return
-    trage = false
     idPointer = null
     const h0 = trepte[0]
     // NU pozitia in care s-a oprit degetul, ci UNDE AR FI AJUNS daca ar mai fi
@@ -609,6 +647,7 @@
       // compune pe acelasi obiect in sensuri opuse: revenirea spre 0 CU ARC, in
       // timp ce tranzitia de iesire coboara foaia cu toata inaltimea ei. Prima
       // jumatate a iesirii s-ar anula singura — se citeste exact ca lag.
+      trage = false
       inchide()
       return
     }
@@ -618,7 +657,14 @@
       if (d < dMin) { dMin = d; cel = i }
     })
     if (cel !== treapta) puls(8)
-    duLaTreapta(cel)
+    // `trage` RAMANE pornit pana se aseaza arcul: el e cel care tine tranzitia CSS
+    // stinsa (`.modal.sheet.trage { transition: none }`), iar peste o valoare scrisa
+    // pe cadru o tranzitie n-ar face decat s-o intarzie cu un cadru.
+    treaptaTinta = cel
+    treapta = cel
+    arcRuleaza = true
+    // `viteza()` e in px/ms; arcul lucreaza in px/s.
+    arcFoaie.preia('h', totalAcum, vit.viteza() * 1000, trepte[cel])
   }
 
   /** Aseaza foaia pe o treapta si PREDA inaltimea inapoi CSS-ului. */

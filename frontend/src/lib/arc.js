@@ -66,8 +66,12 @@ const PRAG_VITEZA = 6    // px/s
  * @param {number} o.durata   secunde (perceptuala, nu timpul pana la oprire)
  * @param {number} o.bounce   -1..1
  * @param {(valori: Record<string, number>) => void} o.scrie  chemat la fiecare cadru
+ * @param {() => void} [o.laFinal]  chemat O DATA, cand toate canalele s-au asezat.
+ *        Exista fiindca un gest predat arcului trebuie sa se PREDEA MAI DEPARTE la
+ *        final: foaia isi lasa inaltimea in px cat tine miscarea, iar dupa ea o da
+ *        inapoi CSS-ului (`height: auto`), altfel n-ar mai urma continutul.
  */
-export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie }) {
+export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie, laFinal }) {
   const k = (2 * Math.PI / durata) ** 2
   const c = bounce >= 0
     ? 4 * Math.PI * (1 - bounce) / durata
@@ -134,7 +138,11 @@ export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie }) {
     }
 
     scrie(valori())
-    if (inMiscare) cerere = requestAnimationFrame(pas)
+    if (inMiscare) {
+      cerere = requestAnimationFrame(pas)
+    } else if (laFinal) {
+      laFinal()
+    }
   }
 
   return {
@@ -154,6 +162,37 @@ export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie }) {
       }
       if (Math.abs(ca.x - ca.t) < PRAG_DIST && Math.abs(ca.v) < PRAG_VITEZA) {
         ca.x = tinta
+        ca.gata = true
+        scrie(valori())
+        return
+      }
+      ca.gata = false
+      porneste()
+    },
+
+    /**
+     * PREIA UN GEST. Pozitia SI viteza vin din DEGET, nu din arc — asta e drumul
+     * pe care o tranzitie CSS nu-l are deloc.
+     *
+     * WWDC24 „Enhance your UI animations and transitions": la sfarsitul unui gest
+     * „a final non-interactive spring animation is created. This spring uses the
+     * velocity from the interactiveSprings, to carry the animation forward with
+     * continuous velocity." Fara asta, obiectul pe care tocmai l-ai aruncat se
+     * opreste in aer si porneste din nou — se citeste ca lag, chiar daca durata e
+     * aceeasi.
+     *
+     * `viteza` e in px/SECUNDA. `lib/gesturi.js` o da in px/ms (plafonata la 3),
+     * deci se inmulteste cu 1000 la apelant — conversia sta acolo, unde se vede
+     * langa unitatea ei.
+     */
+    preia(nume, x, viteza, tinta) {
+      const ca = canal(nume)
+      ca.x = x
+      ca.v = viteza
+      ca.t = tinta
+      if (motion.reduced) {
+        ca.x = tinta
+        ca.v = 0
         ca.gata = true
         scrie(valori())
         return
