@@ -20,9 +20,11 @@ export const DUR_SLOW = 900
 export const DUR_BASE = 220
 
 /** Cat tine animatia de bifare inainte ca randul sa plece din lista.
- *  `taskComplete` dureaza 650ms — randul sta cat se joaca pulsul + stingerea,
- *  apoi iese cu `plecare` (800ms). */
-export const INTARZIERE_BIFA = 700
+ *  `checkPop` dureaza 300ms (DUR_FAST + bouncy), deci 350ms lasa bifa sa fie
+ *  VAZUTA inainte ca randul sa plece. Pulsul pe rand (`taskComplete`, DUR_NORMAL)
+ *  inca curge cand randul iese — exact cum o suprafata care se stinge se si
+ *  retrage in acelasi timp. Total (350 + 400 exit) = 750ms < 900ms prag. */
+export const INTARZIERE_BIFA = 350
 
 // Cat tine o tranzitie cand utilizatorul a cerut mai putina miscare. NU zero:
 // vezi `motionDuration`.
@@ -291,7 +293,7 @@ export function alunecare(node, { sens = 0, duration = 240 } = {}) {
 // Deci: cod mort care contrazicea regula „doar transform/opacity". Sters cu tot
 // cu consumatorul lui.
 
-export function plecare(node, { duration = 800 } = {}) {
+export function plecare(node, { duration = 400 } = {}) {
   const d = motionDuration(duration)
 
   const p = node.parentElement

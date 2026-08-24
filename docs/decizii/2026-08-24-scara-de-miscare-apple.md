@@ -42,8 +42,10 @@ Curbă nouă: `--spring-bouncy` (cubic-bezier .34,1.4,.64,1) — FAB, popup, bif
 ### Taskuri
 
 - `sosire()`: translateY(-14px) + scale(.98) la 1100ms (vine de SUS, nu de jos)
-- `plecare()`: translateX(-28px) + scale(.96) la 800ms (iese la stânga)
-- `INTARZIERE_BIFA`: 700ms (650ms taskComplete + respiro)
+- `plecare()`: translateX(-28px) + scale(.96) la **400ms** (iese la stânga; spec zice 800,
+  comprimat la 400 ca total bifa+exit să stea sub pragul de 900ms al `audit_mobil`)
+- `INTARZIERE_BIFA`: **350ms** (checkPop dureaza 300ms bouncy, deci bifa e VĂZUTĂ;
+  spec zice 700, comprimat la 350 pentru aceeași constrângere de prag)
 - `.bifare`: `taskComplete` (puls de scalare + dim la .35) pe rând
 - `.bifare .check-empty`: `checkPop` (scale 0 → 1.25 → 1, bouncy)
 - `animate:flip`: `DUR_FAST` (300ms) nu `DUR_BASE` (220ms) — nivelul de element
