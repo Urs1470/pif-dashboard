@@ -1675,10 +1675,14 @@
      Cat timp era `flex-direction: row`, chipurile se asezau LANGA camp, ieseau
      din ecran, iar campul se intindea pe inaltimea lor. */
   .quick-add { display: flex; flex-direction: column; margin-bottom: var(--space-md); }
-  .quick-add input { flex: 1; min-height: var(--ctrl-md); padding: var(--space-sm) var(--space-12); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
+  /* RAZA DE CAMP, NU DE SUPRAFATA. Purta `--radius-md` (24) — treapta panoului,
+     pusa pe un camp de text — si scria la 13px cand orice alt camp scrie la 15.
+     Reperul e `components/TodayBoard.svelte`, care le avea deja pe amandoua bine. */
+  .quick-add input { flex: 1; min-height: var(--ctrl-md); padding: var(--space-sm) var(--space-12); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-body); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .quick-add-btn { width: var(--ctrl-md); min-height: var(--ctrl-md); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  /* Butonul poarta raza CAMPULUI de langa el, nu pe a lui: sunt un singur obiect. */
+  .quick-add-btn { width: var(--ctrl-md); min-height: var(--ctrl-md); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .filters { display: flex; gap: var(--space-xs); flex-wrap: wrap; align-items: center; }
@@ -2162,7 +2166,7 @@
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
   .sub-add { display: flex; gap: var(--space-xs); margin-top: 0; }
-  .sub-add input { flex: 1; padding: var(--space-6) var(--space-10); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
+  .sub-add input { flex: 1; padding: var(--space-6) var(--space-10); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-body); }
   /* `flex-shrink: 0`: fara el butonul se strangea la 12px (masurat) — inputul de
      langa are `flex: 1` si il storcea, iar „+" ajungea o dunga netastabila. */
   .sub-add-btn { width: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }

@@ -1586,10 +1586,11 @@
     border-radius: var(--radius-full); font-size: var(--font-small); }
   .qa-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: auto; }
 
-  .quick-add input { flex: 1; min-height: var(--ctrl-md); padding: var(--space-sm) var(--space-12); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); font-size: var(--font-small); }
+  /* Vezi nota din `pages/Tasks.svelte`: raza de CAMP, si textul cat in orice alt camp. */
+  .quick-add input { flex: 1; min-height: var(--ctrl-md); padding: var(--space-sm) var(--space-12); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-body); }
   .quick-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .quick-add-btn { width: var(--ctrl-md); min-height: var(--ctrl-md); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+  .quick-add-btn { width: var(--ctrl-md); min-height: var(--ctrl-md); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; flex-shrink: 0; transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
   .quick-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
   .quick-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .empty { color: var(--text-dim); font-size: var(--font-small); padding: var(--space-lg) 0; text-align: center; }
@@ -1822,7 +1823,7 @@
   .sub-row:hover .sub-del { opacity: 1; }
   .sub-del:hover { color: var(--danger); background: var(--danger-subtle); }
   .sub-add { display: flex; gap: var(--space-xs); margin-top: 0; }
-  .sub-add input { flex: 1; padding: var(--space-6) var(--space-10); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-small); }
+  .sub-add input { flex: 1; padding: var(--space-6) var(--space-10); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: var(--font-body); }
   .sub-add input:focus { border-color: var(--accent); box-shadow: var(--focus-ring); outline: none; }
   .sub-add-btn { width: 32px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
   .sub-add-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }

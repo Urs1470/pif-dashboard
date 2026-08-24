@@ -1068,7 +1068,8 @@
   /* min-height = 2 randuri -> etichetele scurte si cele care se rup pe 2 randuri rezerva aceeasi zona,
      deci inputurile se aliniaza uniform (impreuna cu align-items:end pe grid) */
   .equip-field label { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-tight); min-height: 2.4em; display: flex; align-items: flex-start; }
-  .equip-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); }
+  /* Raza de CAMP. Textul ramane 13: e o grila deasa de campuri numerice. */
+  .equip-field input { padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text); font-size: var(--font-small); font-weight: var(--fw-semibold); }
   .equip-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
   .equip-field input:disabled { opacity: 0.45; }
   .equip-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); margin-top: var(--space-10); }

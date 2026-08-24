@@ -172,9 +172,18 @@
      aplicatiei; dockul sta unde sta peste tot. */
   /* Acelasi padding de sus ca restul rutelor (--space-lg): titlul sta acum in
      pagina si trebuie sa cada pe aceeasi linie ca pe /projects, /tasks, /plan. */
+  /* INALTIMEA SCADE REZERVA CARE CHIAR EXISTA.
+     Formula scadea `--header-height` si `--dock-h` — corecte pe telefon, dar pe
+     desktop AMANDOUA sunt 0px de cand navigatia s-a mutat in bara de sus. Rezerva
+     reala de acolo e `--bara-h` (92px, masurata la rulare de `BaraSus.svelte`), si
+     ea nu era scazuta de nicaieri. Rezultatul, masurat pe Chromium la 1280x720,
+     1512x860 si 1280x600: pagina depasea ecranul cu exact 92px, la orice
+     dimensiune — deci Departamentul cerea scroll pe desktop, mereu (Ion, 2026-08-24).
+     `var(--bara-h, 0px)`: pe telefon variabila nu e scrisa, deci termenul dispare
+     singur si formula ramane cea de dinainte. */
   .page { padding: var(--space-lg);
           display: flex; flex-direction: column;
-          height: calc(100dvh - var(--header-height) - var(--dock-h) - var(--space-lg) - var(--safe-bottom));
+          height: calc(100dvh - var(--bara-h, 0px) - var(--header-height) - var(--dock-h) - var(--space-lg) - var(--safe-bottom));
           min-height: 380px; overflow: hidden; }
   .page-header { display: flex; align-items: center; justify-content: space-between;
     gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md); flex: none; }
@@ -198,7 +207,13 @@
   .b:hover:not(:disabled) { background: var(--bg-hover); color: var(--text); }
   .b:active:not(:disabled) { transform: scale(var(--press-scale)); }
   .b:disabled { opacity: 0.5; cursor: default; }
-  .b.ok { color: var(--success); border-color: color-mix(in srgb, var(--success) 45%, transparent); }
+  /* ACTIUNEA PRINCIPALA POARTA ACCENTUL, NU O CULOARE DE STARE.
+     Era verde, iar in toata aplicatia verdele inseamna FACUT — aici statea pe un
+     buton care abia urmeaza sa faca ceva, deci spunea „ăsta e butonul principal",
+     ceea ce e treaba accentului. Prima regula a sistemului: culoarea e stare, nu decor.
+     `border-color` a plecat si el: `.b` are `border: none`, deci nu desena nimic. */
+  .b.ok { background: var(--accent); color: var(--accent-text); box-shadow: none; }
+  .b.ok:hover:not(:disabled) { background: var(--accent-deep); color: var(--accent-text); }
 
   /* Fundal alb sub cadru: aplicatia lor e pe tema deschisa, iar pe fundalul
      nostru cald-inchis marginile ar aparea ca o rama murdara in timpul incarcarii. */
@@ -229,9 +244,9 @@
   .rand input:focus { outline: none; border-color: var(--accent); }
 
   @media (max-width: 768px) {
-    /* Pe telefon dock-ul e fix si mereu vizibil — ii lasam tot locul. */
-    .page { --rezerva: calc(var(--dock-h) + var(--space-sm) + var(--safe-bottom));
-            padding: var(--space-md); }
+    /* `--rezerva` a plecat: nu era citita de nimeni, nici aici, nici in global.css.
+       Locul dockului il scade formula de inaltime de mai sus. */
+    .page { padding: var(--space-md); }
     .b { height: var(--tap-min); padding: 0 var(--space-14); font-size: var(--font-small); }
     /* Pe telefon actiunile trec sub titlu (antetul are deja `flex-wrap: wrap`) si
        isi iau latimea, ca sa ramana atins-abile la 44px. */

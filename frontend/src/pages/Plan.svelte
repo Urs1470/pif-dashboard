@@ -2025,9 +2025,13 @@
      Tipul e SCRIS in chip, deci cuvantul il spune; culoarea n-are ce adauga.
      (In Proiecte tipul e deja o iconita gri, fara fill — aceeasi solutie.) */
   /* Chipul de tip, ca in desen: 20px, 12/600, tracking usor — o eticheta, nu text. */
-  .tip-chip { display: inline-flex; align-items: center; height: 20px;
+  /* INALTIMEA VINE DIN SCARA, nu scrisa de mana. Era `height: 20px`, sub cea mai
+     mica treapta (`--ctrl-xs` = 28) — iar scara aia exista tocmai fiindca pe
+     desktop ajunsesera 25 de inaltimi distincte de control. Un cip de 20 langa
+     unul de 28 si unul de 32 nu se citeste ca ierarhie. */
+  .tip-chip { display: inline-flex; align-items: center; height: var(--ctrl-xs);
     font-size: var(--font-label); font-weight: var(--fw-semibold); letter-spacing: var(--tracking-label);
-    padding: 0 var(--space-6); border-radius: var(--radius-xs); background: var(--bg-elevated);
+    padding: 0 var(--space-10); border-radius: var(--radius-xs); background: var(--bg-elevated);
     color: var(--text-secondary); flex-shrink: 0; }
 
   /* Jgheabul restantelor. Reperele stau centrate si se inghesuie cand sunt multe:
