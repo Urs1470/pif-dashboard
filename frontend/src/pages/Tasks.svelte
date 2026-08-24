@@ -2359,7 +2359,11 @@
        44 raman pe controalele PAGINII (bifa din lista, filtrele, butoanele din
        cap); ce e mai jos e continutul foii.
        Interiorul taskului deschis: aici se bifeaza subtaskuri si se scrie unul nou. */
-    .ts-check { min-width: var(--tap-sheet); min-height: var(--tap-sheet); }
+    /* DOAR inaltimea creste pe telefon (tinta de atingere), NU si latimea: cu
+       `min-width: var(--tap-sheet)` cutia bifei se largea la 48px si inelul se
+       departa iar de titlu — exact ce cerea Ion sa NU se mai intample. Latimea
+       ramane cea compacta din regula de baza (30px). */
+    .ts-check { min-height: var(--tap-sheet); }
     .ts-rand { min-height: var(--tap-sheet); }
     .sub-add input, .sub-add-btn { min-height: var(--tap-sheet); }
     .sub-add-btn { width: var(--tap-sheet); }
