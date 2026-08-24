@@ -58,7 +58,7 @@
   import ProjectFormModal from '../components/projects/ProjectFormModal.svelte'
   import MarkdownView from '../components/notes/MarkdownView.svelte'
   import EditorLung from '../components/ui/EditorLung.svelte'
-  import { todayISO, addDays, diffDays } from '../lib/calendarDates.js'
+  import { todayISO, addDays, diffDays } from '../lib/calendarDates.js'
   import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
 
   let azi = $state(todayISO())
@@ -920,14 +920,14 @@
       {/if}
     </div>
 
-    <!-- Actiunile rare, sub o linie — ca in /tasks. -->
+    <!-- „Adaugă notă", pe o linie sub subtaskuri — ca in /tasks. Al doilea selector
+         de data („Schimbă termenul") a plecat: termenul se schimba din randul de sus
+         (📅), iar doua controale de data cu formate diferite in aceeasi foaie era
+         reprosul „nu e aranjat bine" (Ion, 2026-08-24). -->
     <div class="td-jos">
       <button class="td-link" class:areNota={!!t.descriere} onclick={() => openNoteModal(t)}>
-        <Text size={12} strokeWidth={2} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
+        <Text size={14} strokeWidth={1.5} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
       </button>
-      <span class="td-link td-dp">
-        <DatePicker value={t.data_scadenta} placeholder="Schimbă termenul" onchange={(v) => setTermenTaskData(t, v)} />
-      </span>
     </div>
   </div>
 {/snippet}
@@ -1766,16 +1766,21 @@
   /* Extinderea e CONTINUAREA randului, separata doar de o linie subtire — aceeasi
      reteta ca in /tasks, la aceleasi valori. */
   /* ===== Antetul foii — acelasi ca in /tasks ===== */
-  .ts-cap { display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-sm); }
-  .ts-check { flex: none; min-width: var(--tap-min); min-height: var(--tap-min);
-    display: flex; align-items: center; justify-content: flex-start; color: var(--success);
+  /* Inelul si titlul, un obiect inline — vezi nota din pages/Tasks.svelte. */
+  .ts-cap { display: flex; align-items: center; gap: var(--space-2xs); margin-bottom: var(--space-md); }
+  .ts-check { flex: none; min-width: 30px; min-height: var(--tap-min);
+    display: flex; align-items: center; justify-content: center; color: var(--success);
     background: none; border: none; cursor: pointer; padding: 0; }
   .ts-titlu { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-semibold);
-    color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; padding-top: 9px; }
+    color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; }
   .ts-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
-  .ts-rand { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
-    min-height: var(--tap-min); padding: 0 var(--space-12); margin-bottom: var(--space-sm);
-    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);
+  /* NU pe toata latimea (Ion, 2026-08-24: „nu vreau tot acel buton pe toata
+     latimea, ala cu azi"). E un CIP compact, cat scrie pe el (`fit-content`),
+     aliniat la stanga; la atingere deschide optiunile dedesubt. Pastila (`--radius-xs`)
+     = forma de cip a sistemului. Pe telefon urca la `--tap-sheet` (media, mai jos). */
+  .ts-rand { display: inline-flex; align-items: center; gap: var(--space-xs); width: fit-content; max-width: 100%;
+    min-height: var(--ctrl-md); padding: 0 var(--space-12); margin-bottom: var(--space-md);
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xs);
     color: var(--text-dim); font-size: var(--font-small); text-align: left; cursor: pointer;
     transition: var(--transition-pressable); }
   .ts-rand:hover { border-color: var(--border-strong); }
@@ -1797,19 +1802,16 @@
     border-top: 1px solid var(--border);
     display: flex; flex-direction: column; gap: var(--space-xs); }
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
-  .td-jos { display: flex; align-items: center; gap: var(--space-md);
-    margin-top: var(--space-sm); padding-top: var(--space-sm);
-    border-top: 1px dashed var(--border); }
-  .td-link { display: inline-flex; align-items: center; gap: var(--space-6); padding: 0;
-    background: none; border: none; color: var(--text-dim);
+  .td-jos { margin-top: var(--space-sm); padding-top: var(--space-sm);
+    border-top: 1px solid var(--border); }
+  /* Un rand ca „+ Adaugă subtask", doar mai stins — ca in /tasks. */
+  .td-link { display: flex; align-items: center; gap: 9px; width: 100%;
+    min-height: var(--ctrl-sm); padding: 0 var(--space-6); border: none; border-radius: var(--radius-xs);
+    background: none; color: var(--text-dim);
     font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }
+  .td-link :global(svg) { flex: none; }
   .td-link:hover { color: var(--accent); }
-  .td-link.areNota { color: var(--text-dim); }
-  .td-dp :global(.dp) { width: auto; }
-  .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: var(--space-6);
-    background: none; border: none; box-shadow: none; border-radius: 0;
-    color: var(--text-dim); font-size: var(--font-small); }
-  .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
+  .td-link.areNota { color: var(--text-secondary); }
   .sub-section { display: flex; flex-direction: column; gap: var(--space-2xs); }
   /* Antetul sectiunii de subtaskuri — aceeasi reteta ca in /tasks (titlu + bara
      + numar pe un rand); .sub-bara/.sub-num vin din global.css. */
@@ -1942,8 +1944,6 @@
     .trow:global(.gl-bifa) { background: var(--success-subtle); box-shadow: inset 0 0 0 1px var(--success); }
     .back { min-height: var(--tap-min); }
     .td-link { min-height: var(--tap-min); font-size: var(--font-small); }
-    .td-dp :global(.dp-trigger) { min-height: var(--tap-min); font-size: var(--font-small); }
-    .td-jos { gap: var(--space-lg); }
     .qa-chip { min-height: var(--tap-sheet); }
     .qa-dp :global(.dp-trigger) { min-height: var(--tap-min); }
     /* Aceeasi reteta ca in Taskuri si Astăzi: 44px de atins, 30px de latime.

@@ -75,7 +75,7 @@
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
   import { suportaPush, esteIosNeinstalat, stareAbonament, aboneaza, dezaboneaza } from '../lib/push.js'
-  import { esteNativ, probeaza, reprogrameaza, alarmaExacta, deschideAlarmaExacta } from '../lib/notificari.js'
+  import { esteNativ, probeaza, reprogrameaza, alarmaExacta, deschideAlarmaExacta } from '../lib/notificari.js'
   import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
 
   // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
@@ -1084,15 +1084,17 @@
     {/if}
   </div>
 
-  <!-- Actiunile rare, sub o linie: se gasesc cand le cauti, nu concureaza cu
-       subtaskurile, care sunt continutul. -->
+  <!-- „Adaugă notă", pe o linie sub subtaskuri — actiune rara, o gasesti cand o
+       cauti, nu concureaza cu subtaskurile (continutul).
+       Aici mai statea un AL DOILEA selector de data („Schimbă termenul", ca
+       `31.08.2026`), langa notă. Dar termenul se schimba deja din randul de sus
+       (📅 `31 aug.`), care deschide tot selectorul de zi, calendarul inclus. Doua
+       controale de data in aceeasi foaie, cu formate diferite, era chiar reprosul
+       „nu e aranjat bine" (Ion, 2026-08-24). A ramas unul singur, sus. -->
   <div class="td-jos">
     <button class="td-link" class:areNota={!!t.descriere} onclick={() => openNoteModal(t)}>
-      <Text size={12} strokeWidth={2} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
+      <Text size={14} strokeWidth={1.5} /> {t.descriere ? 'Editează nota' : 'Adaugă notă'}
     </button>
-    <span class="td-link td-dp">
-      <DatePicker value={t.data_scadenta} placeholder="Schimbă termenul" onchange={(v) => setTermenData(t, v)} />
-    </span>
   </div>
 {/snippet}
 
@@ -1922,9 +1924,8 @@
   /* Cele doua actiuni rare, SUB continut si la 11px: chipurile de dinainte stateau
      deasupra subtaskurilor si erau primul lucru pe care il vedeai la deschiderea
      unui task. O linie punctata le separa de lista fara sa deseneze o a doua cutie. */
-  .td-jos { display: flex; align-items: center; gap: var(--space-md);
-    margin-top: var(--space-sm); padding-top: var(--space-sm);
-    border-top: 1px dashed var(--border); }
+  .td-jos { margin-top: var(--space-sm); padding-top: var(--space-sm);
+    border-top: 1px solid var(--border); }
   /* IN FOAIE, ACTIUNILE NU SE DERULEAZA (T1c).
      `taskDetail` e acelasi snippet si in randul desfasurat de pe desktop, si in
      foaia de pe telefon — dar numai in foaie corpul deruleaza, deci numai acolo
@@ -1947,18 +1948,18 @@
     padding-bottom: var(--space-md);
     background: var(--bg-overlay);
   }
-  .td-link { display: inline-flex; align-items: center; gap: var(--space-6); padding: 0;
-    background: none; border: none; color: var(--text-dim);
+  /* Un RAND, ca „+ Adaugă subtask" (`.sub-nou`) — pe toata latimea, aliniat pe
+     aceeasi coloana, doar mai stins fiindca e o actiune rara. Fara fond la hover
+     (doar cerneala): nu concureaza cu subtaskurile. */
+  .td-link { display: flex; align-items: center; gap: 9px; width: 100%;
+    min-height: var(--ctrl-sm); padding: 0 var(--space-6); border: none; border-radius: var(--radius-xs);
+    background: none; color: var(--text-dim);
     font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }
+  .td-link :global(svg) { flex: none; }
   .td-link:hover { color: var(--accent); }
-  .td-link.areNota { color: var(--text-dim); }
-  /* DatePicker-ul isi aduce caseta de camp; aici trebuie sa arate ca vecinul lui —
-     un link, nu un input. */
-  .td-dp :global(.dp) { width: auto; }
-  .td-dp :global(.dp-trigger) { min-height: 0; padding: 0; gap: var(--space-6);
-    background: none; border: none; box-shadow: none; border-radius: 0;
-    color: var(--text-dim); font-size: var(--font-small); }
-  .td-dp :global(.dp-trigger:hover) { color: var(--accent); background: none; }
+  .td-link.areNota { color: var(--text-secondary); }
+  /* Previzualizarea notei (cand exista): sub subtaskuri, deasupra randului „Editează
+     nota". Text secundar, decupat la cateva randuri de `RichText`. */
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
 
   /* `relative`: randul care pleaca se scoate din flux fata de lista (vezi
@@ -2126,17 +2127,26 @@
     width: 18px; flex: none; }
 
   /* ===== Antetul foii ===== */
-  .ts-cap { display: flex; align-items: flex-start; gap: var(--space-sm); margin-bottom: var(--space-sm); }
-  .ts-check { flex: none; min-width: var(--tap-min); min-height: var(--tap-min);
-    display: flex; align-items: center; justify-content: flex-start; color: var(--success);
+  /* INELUL SI TITLUL SUNT UN SINGUR OBIECT INLINE (Ion, 2026-08-24: „sa nu fie
+     separat inelul de marcare si taskul propriuzis, sa fie inline"). `align-items:
+     center` le pune pe aceeasi linie; cutia bifei se stramge la ~30px (cercul e 22)
+     in loc de 44, ca sa nu ramana un gol mare intre cerc si titlu — dar pastreaza
+     44px pe INALTIME, deci tinta de atingere ramane intreaga. */
+  .ts-cap { display: flex; align-items: center; gap: var(--space-2xs); margin-bottom: var(--space-md); }
+  .ts-check { flex: none; min-width: 30px; min-height: var(--tap-min);
+    display: flex; align-items: center; justify-content: center; color: var(--success);
     background: none; border: none; cursor: pointer; padding: 0; }
   .ts-titlu { font-family: var(--font-heading); font-size: var(--font-h3); font-weight: var(--fw-semibold);
-    color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; padding-top: 9px; }
+    color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; }
   .ts-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
   /* Randul de termen: UN card de o linie, ca „📅 28 Feb 11:00" la Todoist. */
-  .ts-rand { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
-    min-height: var(--tap-min); padding: 0 var(--space-12); margin-bottom: var(--space-sm);
-    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);
+  /* NU pe toata latimea (Ion, 2026-08-24: „nu vreau tot acel buton pe toata
+     latimea, ala cu azi"). E un CIP compact, cat scrie pe el (`fit-content`),
+     aliniat la stanga; la atingere deschide optiunile dedesubt. Pastila (`--radius-xs`)
+     = forma de cip a sistemului. Pe telefon urca la `--tap-sheet` (media, mai jos). */
+  .ts-rand { display: inline-flex; align-items: center; gap: var(--space-xs); width: fit-content; max-width: 100%;
+    min-height: var(--ctrl-md); padding: 0 var(--space-12); margin-bottom: var(--space-md);
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-xs);
     color: var(--text-dim); font-size: var(--font-small); text-align: left; cursor: pointer;
     transition: var(--transition-pressable); }
   .ts-rand:hover { border-color: var(--border-strong); }
@@ -2398,7 +2408,5 @@
     /* Indiciul despre Enter n-are cui sa se adreseze pe o tastatura de telefon. */
     .qa-hint { display: none; }
     .td-link { min-height: var(--tap-sheet); font-size: var(--font-small); }
-    .td-dp :global(.dp-trigger) { min-height: var(--tap-sheet); font-size: var(--font-small); }
-    .td-jos { gap: var(--space-lg); }
   }
 </style>

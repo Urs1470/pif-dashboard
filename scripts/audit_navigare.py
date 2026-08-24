@@ -15,9 +15,14 @@ lui traia in componenta, pe care `{#key routeKey}` o distruge.
 Cele patru contracte verificate aici sunt exact cele care nu se pot vedea intr-o
 captura de ecran:
 
-  1. PRIMA INCARCARE are `rutaIn` si `cellIn`. Ele n-au fost sterse, au fost
-     mutate acolo unde au sens: deschiderea aplicatiei.
-  2. SCHIMBAREA DE TAB nu le mai are pe niciuna — tranzitia o detine browserul.
+  1. PRIMA INCARCARE are `rutaIn` si `cellIn` — intrarea paginii.
+  2. SCHIMBAREA DE TAB le are ACUM pe amandoua (Ion, 2026-08-24: „vreau ca fiecare
+     pagina sa aiba animatie la aparitie, gen cum e la planificator"), si NU mai
+     porneste un View Transition de rута. Pana atunci VT-ul detinea tranzitia si le
+     ascundea (scara se juca sub instantaneu), deci erau gardate pe prima incarcare;
+     de cand `navigate` nu mai porneste VT (2026-08-24), sunt singura miscare de
+     sosire si se joaca la fiecare navigare. Un al treilea strat (VT) peste ele ar fi
+     din nou bugul de pe 14 august.
   3. REVENIREA PE UN TAB nu mai trece prin schelet.
   4. HOVERUL incepe treaba: modulul si datele rutei sunt cerute inainte de click.
   5. O PAGINA NOUA incepe de sus (fereastra deruleaza, nu `.app-content`).
@@ -361,13 +366,16 @@ def ruleaza(page, baza, pid):
     nota(page.evaluate("document.documentElement.classList.contains('prima-incarcare')"),
          'steagul prima-incarcare e pus la deschidere')
 
-    out('\n--- 2. schimbarea de tab: O SINGURA miscare ---')
+    out('\n--- 2. schimbarea de tab: PAGINA intra animat, fara VT ---')
     curata(page)
     mergi_la(page, '/calendar')
     a = animatii(page)
     intrari = [n for n in a if n in ('rutaIn', 'cellIn')]
-    nota(not intrari, 'la schimbarea de tab nu se mai joaca rutaIn/cellIn',
-         'gasite: %s' % sorted(set(intrari)) if intrari else '')
+    nota(bool(intrari), 'la schimbarea de tab pagina intra animat (rutaIn/cellIn)',
+         'vazute: %s' % sorted(set(a)))
+    vt = [n for n in a if n.startswith('vt-pagina')]
+    nota(not vt, 'schimbarea de tab NU porneste un View Transition de rута',
+         'gasite: %s' % sorted(set(vt)) if vt else '')
     nota(not page.evaluate("document.documentElement.classList.contains('prima-incarcare')"),
          'steagul s-a stins la prima navigare')
     nota(page.locator('.cal').count() > 0 or page.locator('.page').count() > 0,

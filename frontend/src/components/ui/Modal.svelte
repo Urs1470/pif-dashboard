@@ -268,7 +268,7 @@
     if (px < -120 || px > 220 || py < -120 || py > 220) return ''
     return `${px.toFixed(1)}% ${py.toFixed(1)}%`
   }
-  import { PRAG_INCHIDE, PRAG_INTINDE, PRAG_DIRECTIE, puls, urmaritor } from '../../lib/gesturi.js'
+  import { PRAG_INCHIDE, PRAG_INTINDE, PRAG_DIRECTIE, puls, urmaritor } from '../../lib/gesturi.js'
   import { creeazaArc } from '../../lib/arc.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
@@ -1261,6 +1261,26 @@
   }
   .modal-doc .modal-body { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
   .modal-doc .modal-body > :global(*) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+  /* PANOUL DE TASK: antetul e CONTEXT, nu titlu — aceeasi decizie ca la `.modal-doc`
+     si ca pe telefon (`.modal.sheet .modal-title`, mai jos). Titlul foii repeta
+     taskul, iar EROUL e in corp: bifa mare + titlul. Pe desktop antetul ramasese pe
+     `.modal-title` tare (h3 semibold), deci acelasi text aparea de doua ori, la
+     fel de apasat — exact reprosul lui Ion („modalul... e cam urat, nu e aranjat
+     bine", 2026-08-24). Aici il fac o linie linistita: mica, stinsa, fara majuscule
+     (titlul de task e prea lung pentru ele, spre deosebire de eticheta de `doc`),
+     taiata la nevoie. Fara linie sub el — panoul nu are nevoie de un separator de
+     antet cand corpul incepe cu eroul. */
+  .modal-panou .modal-header { border-bottom: none; padding-bottom: var(--space-sm); }
+  .modal-panou .modal-title {
+    font-family: var(--font-sans);
+    font-size: var(--font-label);
+    font-weight: var(--fw-medium);
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   .modal-header {
     display: flex;
