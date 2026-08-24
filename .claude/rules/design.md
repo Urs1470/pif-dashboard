@@ -43,6 +43,18 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
   ce pleaca nu mai e urmarit), `--ease-spring` cand ceva urmareste degetul, `--ease-arc` /
   `--ease-arc-elan` pentru arcele lungi. NU `transition: all` — foloseste
   `--transition-colors` sau `--transition-pressable`. Doar `transform`/`opacity` in animatii.
+- **Ce poate fi INTRERUPT nu se anima cu CSS, ci cu `lib/arc.js`** — un arc adevarat, cu
+  pozitie SI viteza, parametrizat ca la Apple (durata perceptuala + `bounce`). O tranzitie CSS
+  nu poate reprezenta o viteza initiala: la retargetare in zbor reporneste de la ZERO, si se
+  vede ca o clipa de stagnare (masurat pe tenta rutei: ~200ms in care mergea inca in directia
+  abandonata). Asa merge `.pilula` din `BaraSus` si `Dock` — pozitia o scrie arcul, DIRECT in
+  element (`--px`/`--py`, valori de CADRU, ca `--gl-p`), iar in CSS mai ramane doar opacitatea.
+  `bounce` .298 la 0.38s reproduce exact varful esantionului `--ease-arc-elan` (1.0384), deci
+  caracterul nu se schimba — vezi nota din `lib/arc.js`.
+  Tenta urmeaza **intentia** (elementul apasat), nu aterizarea rutei: intre clic si aplicare
+  sta `startViewTransition`, care tine pagina veche in aer ~180ms.
+  De masurat cu Playwright, nu in panoul de previzualizare: acolo nu se compoziteaza, deci
+  `requestAnimationFrame` nu bate si arcul pare inghetat.
 - **Componente:** `components/ui/` — `<Input>`, `<Textarea>`, `<Select>`, `<DatePicker>`
   (NU `type="date"`), `<Modal>`, `<Toast>`, `<EmptyState>`, `<ErrorState>`, `<Skeleton>`
   (DOAR la prima incarcare), `<SelectorZi>`. Numaratorile folosesc `.count` din `global.css`.
