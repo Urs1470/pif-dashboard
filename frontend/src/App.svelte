@@ -1,5 +1,4 @@
 <script>
-  import { fade } from 'svelte/transition'
   import Header from './components/layout/Header.svelte'
   import Dock from './components/layout/Dock.svelte'
   import BaraSus from './components/layout/BaraSus.svelte'
@@ -12,8 +11,7 @@
   import { setLucideProps, Compass, ArrowLeft } from '@lucide/svelte'
   import EmptyState from './components/ui/EmptyState.svelte'
   import ErrorState from './components/ui/ErrorState.svelte'
-  import { router, resolveRoute, viewTransitionsOn, setPreincarcaRuta, link } from './lib/router.svelte.js'
-  import { motionDuration, DUR_FAST, EASE, alunecare } from './lib/motion.svelte.js'
+  import { router, resolveRoute, setPreincarcaRuta, link, navigate } from './lib/router.svelte.js'
 
   /* ICONITELE SUNT LA 1.5, NU LA 2.
      Regula („Lucide la stroke-width 1.5") era scrisa in handoff si in sistemul de
@@ -29,8 +27,11 @@
   setLucideProps({ strokeWidth: 1.5 })
 
   import Home from './pages/Home.svelte'
-  import Skeleton from './components/ui/Skeleton.svelte'
+  import Skeleton from './components/ui/Skeleton.svelte'
   import { urmaresteDerularea } from './lib/derulare.js'
+  import FoaieAdauga from './components/FoaieAdauga.svelte'
+  import { creareImplicita } from './lib/actiuneNoua.svelte.js'
+  import { loadGlobalTasks } from './stores/tasks.svelte.js'
 
   let paleta = $state(null)
 
@@ -87,46 +88,21 @@
 
   const rawMatch = $derived(resolveRoute(routes))
   const routeKey = $derived(router.path)
-  // When the browser drives the route change via the View Transitions API, let it
-  // own the cross-fade; the Svelte fade only runs as a fallback (no VT support).
-  // motionDuration() also zeroes this under reduced-motion regardless of VT support.
-  const fadeDur = $derived(motionDuration(viewTransitionsOn() ? 0 : DUR_FAST))
 
-  // ===== SCHIMBAREA DE PAGINA E DIRECTIONALA (contractul de miscare: 240ms,
-  // „inainte din dreapta, inapoi din stanga"). Sensul vine din ORDINEA
-  // NAVIGATIEI — spre dreapta in dockul de telefon, mai jos in bara laterala de
-  // desktop — deci continutul soseste din dreapta, si invers. Lista de mai jos e
-  // sursa acelei ordini pentru amandoua; `Dock.svelte` si `BaraSus.svelte` isi
-  // insira rutele in aceeasi ordine, altfel aceeasi navigare ar aluneca intr-un
-  // sens pe telefon si in celalalt pe desktop.
-  // Doua drumuri, acelasi sens:
-  //  - fara View Transitions: `alunecare` (Svelte) pe blocul de ruta;
-  //  - cu View Transitions: browserul detine tranzitia, deci sensul i se da prin
-  //    variabila `--nav-sens` de pe <html>, citita de regulile
-  //    `::view-transition-*(root)` din global.css.
-  // `sensNav` e un $derived LENES, citit chiar de parametrii tranzitiei — asa
-  // valoarea e proaspata inainte sa porneasca intro-ul (un $effect ar fi rulat
-  // dupa). Navigarea in interiorul aceleiasi sectiuni (/projects -> /projects/:id,
-  // adica exact morph-ul de card) are sens 0 — morph-ul nu primeste si o alunecare.
-  const ORDINE_NAV = ['/', '/projects', '/tasks', '/plan', '/calendar', '/departament', '/calculator']
+  // AICI ERA `sensNav` (plus `--nav-sens` si o alunecare directionala a intregului
+  // ecran, „inainte din dreapta, inapoi din stanga"). Au plecat odata cu tranzitia
+  // de rута: de cand `navigate` nu mai porneste un View Transition pe root
+  // (`router.svelte.js`), intrarea fiecarei pagini o face PAGINA insasi, prin
+  // `.ruta-in` + `.cell-in` din `global.css` — invelisul urca 10px si celulele
+  // sosesc in scara, exact intrarea Planificatorului, acum la fiecare navigare.
+  // O alunecare a intregului ecran PESTE scara de celule ar fi doua miscari peste
+  // aceiasi pixeli (bugul reparat pe 14 august).
+  //
+  // Ce ramane aici e doar pentru SCHELET: ruta de baza (`/tasks?sfera=personal` ->
+  // `/tasks`) si rutele al caror continut e o lista de randuri, ca scheletul sa ia
+  // forma paginii catre care mergi.
   const bazaRutei = (p) => '/' + ((p || '/').split('/')[1] || '')
-  // Rutele al caror continut e o LISTA de randuri. Vezi scheletul de mai jos.
   const RUTE_LISTA = new Set(['/tasks', '/projects'])
-  let bazaVeche = null
-  const sensNav = $derived.by(() => {
-    const b = bazaRutei(router.path)
-    let s = 0
-    if (bazaVeche !== null && b !== bazaVeche) {
-      const a = ORDINE_NAV.indexOf(bazaVeche)
-      const z = ORDINE_NAV.indexOf(b)
-      if (a >= 0 && z >= 0 && a !== z) s = z > a ? 1 : -1
-    }
-    bazaVeche = b
-    if (typeof document !== 'undefined') {
-      document.documentElement.style.setProperty('--nav-sens', String(s))
-    }
-    return s
-  })
 
   let LoadedComponent = $state(null)
   let loadedParams = $state({})
@@ -189,12 +165,11 @@
     {/if}
     <main class="app-content" id="main-content">
       {#key routeKey}
-        <!-- `sensNav` se citeste NEconditionat (si pe ramura View Transitions):
-             cititul e cel care il recalculeaza si scrie `--nav-sens` pe <html>. -->
-        {@const sens = sensNav}
-        <div class="content-width"
-             in:alunecare={{ sens: viewTransitionsOn() ? 0 : sens, duration: 240 }}
-             out:fade={{ duration: fadeDur, easing: EASE }}>
+        <!-- Fara tranzitie pe INVELIS: `{#key routeKey}` reface blocul la fiecare
+             navigare, iar intrarea o joaca PAGINA din el (`.ruta-in` + `.cell-in`,
+             `global.css`). O alunecare a invelisului peste scara de celule ar fi
+             doua miscari peste aceiasi pixeli. -->
+        <div class="content-width">
           <!-- DOUA LUCRURI DIFERITE, DOUA FORME.
                O ADRESA GRESITA NU E O EROARE: patratul ramane neutru, ca la orice
                stare goala, si primesti drumul inapoi. O pagina care n-a putut fi
@@ -257,6 +232,14 @@
   <TrageReincarca />
   <!-- Un singur tooltip pentru toata aplicatia; citeste atributele `title`. -->
   <Tooltip />
+  <!-- FOAIA DE CREARE IMPLICITA, GLOBALA. „+" de pe o pagina fara creare proprie o
+       ridica PESTE pagina curenta, fara sa navigheze — asa nu se mai vede o „migrare"
+       la Taskuri sub foaia care urca (Ion, 2026-08-24). Pe /tasks foaia e a PAGINII
+       (cu editare si sfera proprie); asta e doar drumul implicit, de oriunde altundeva.
+       Pe /tasks aterizezi abia dupa o creare reusita — atunci `onSchimbare` reincarca
+       lista si te duce acolo, ca sa-ti vezi taskul; daca renunti, ramai unde erai. -->
+  <FoaieAdauga bind:open={creareImplicita.deschis}
+               onSchimbare={() => { loadGlobalTasks(); navigate('/tasks') }} />
   <!-- Jurnalul de pe aparat (`#/?urma=1`) — vezi lib/urma.js. -->
   <Urma />
 </div>

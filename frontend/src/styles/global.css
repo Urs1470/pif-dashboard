@@ -1239,9 +1239,15 @@ input[type="checkbox"].cbx:active { transform: scale(0.92); }
    spatiu, deci intra in categoria `spatial` din tokens: are voie sa depaseasca
    cu ~1% si sa se aseze. Pasul scarii creste de la 40 la 45ms, cat sa se
    citeasca peste durata mai lunga a arcului; plafonul ramane la sase celule.
-   Scara se joaca DOAR aici, la prima incarcare — la schimbarea de tab s-ar
-   aduna peste tranzitia browserului (bugul reparat pe 14 august). */
-html.prima-incarcare .cell-in {
+   Scara se joaca la FIECARE navigare (Ion, 2026-08-24: „vreau ca fiecare pagina sa
+   aiba animatie la aparitie, gen cum e la planificator"). Pana atunci era gardata pe
+   `html.prima-incarcare`, fiindca la o schimbare de tab se aduna peste tranzitia
+   browserului (VT pe root) — trei intrari peste aceiasi pixeli, opacitati care se
+   inmultesc, bugul reparat pe 14 august. Acum `navigate` nu mai porneste un VT de
+   rута (vezi `router.svelte.js`), deci scara e singura miscare de sosire si se poate
+   juca oricand se monteaza pagina. Prima incarcare cu splash o trateaza regulile de
+   mai jos (`splash-activ` / `splash-a-lucrat`). */
+.cell-in {
   animation: cellIn var(--dur-arc) var(--ease-arc) backwards;
   animation-delay: min(var(--celula, 0) * var(--pas-scara), var(--pas-scara-max));
 }
@@ -1279,19 +1285,18 @@ html.prima-incarcare .cell-in {
    de baza pleaca odata cu `forwards` (altfel pagina ar ramane invizibila).
    Nu prin `animation-name: none` la deschiderea modalului: acela repornea
    animatia rutei la INCHIDERE, si coborarea foii se vedea taiata. */
-/* SI ACUM, GARDA PE `html.prima-incarcare`.
-   Miscarea era buna; locul in care se juca nu. La fiecare schimbare de tab
-   `{#key routeKey}` reface blocul de continut, deci `rutaIn` (220ms, 10px pe Y)
-   pornea PESTE `::view-transition-*(root)` (240ms, 10px pe X) si peste scara de
-   celule. Trei intrari, doua axe, iar opacitatile se INMULTESC: la jumatatea
-   drumului o celula ajungea pe la 0,13 in loc de 0,5. Pagina nu sosea, aparea
-   de trei ori.
-   Steagul e scris in `index.html` (si in `calc.html`, unde nu exista router) si
-   scos de `router.svelte.js` la prima navigare — se STINGE, nu se aprinde, si
-   asta conteaza: `animation-name` care revine de la `none` la un nume
-   reporneste animatia, deci o clasa pusa doar in timpul tranzitiei ar fi jucat,
-   la scoatere, exact miscarea pe care o suprima. */
-html.prima-incarcare .ruta-in { animation: rutaIn var(--dur-arc) var(--ease-arc) backwards; }
+/* LA FIECARE NAVIGARE, nu doar la prima incarcare.
+   Pana la 2026-08-24 era gardata pe `html.prima-incarcare`: la o schimbare de tab
+   `{#key routeKey}` reface blocul de continut, deci `rutaIn` (10px pe Y) pornea PESTE
+   `::view-transition-*(root)` (VT pe root, 10px pe X) si peste scara de celule — trei
+   intrari, doua axe, iar opacitatile se INMULTESC (o celula ajungea pe la 0,13 in loc
+   de 0,5): pagina nu sosea, aparea de trei ori. Acum `navigate` nu mai porneste un VT
+   de rута (`router.svelte.js`), deci raman doua miscari curate, in ordinea in care se
+   citeste pagina: invelisul urca, apoi celulele.
+   Splashul primei incarcari e tratat mai jos: `splash-activ` pune pe pauza (ca sosirea
+   sa nu se joace ascunsa sub val) si `splash-a-lucrat` o stinge de tot. Pe navigarile
+   obisnuite nu exista niciuna dintre clase, deci intrarea se joaca normal. */
+.ruta-in { animation: rutaIn var(--dur-arc) var(--ease-arc) backwards; }
 
 /* ===== SOSIREA ASTEAPTA VALUL =====
    Cat timp splashul de deschidere e pe ecran (`index.html`), pagina de dedesubt

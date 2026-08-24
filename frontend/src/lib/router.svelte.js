@@ -1,4 +1,3 @@
-import { tick } from 'svelte'
 import { motion } from './motion.svelte.js'
 import { PRAG_TELEFON } from './ecran.svelte.js'
 
@@ -258,18 +257,29 @@ export function navigate(path) {
   // Doua animatii peste aceiasi pixeli e exact ce s-a reparat pe 14 august.
   if (cale(path) === router.path) { applyPath(path); return }
 
-  if (!viewTransitionsOn()) { applyPath(path); return }
-  try {
-    document.startViewTransition(async () => {
-      // Inainte de `applyPath`: asa cache-ul e deja cald cand efectul din App
-      // citeste noua ruta, deci `LoadedComponent` nu mai trece prin `null`.
-      if (preincarcaRuta) {
-        try { await Promise.race([preincarcaRuta(path), pauza(plafonIncarcare())]) } catch (_) {}
-      }
-      applyPath(path)
-      await tick()
-    })
-  } catch (_) {
+  // FARA View Transition la navigare (Ion, 2026-08-24: „vreau ca fiecare pagina sa
+  // aiba animatie la aparitie, gen cum e la planificator").
+  //
+  // Intrarea aia — invelisul care urca 10px (`.ruta-in`) plus celulele care sosesc
+  // in scara (`.cell-in`) — se juca DOAR la prima incarcare, fiindca la o schimbare
+  // de tab tranzitia o detinea browserul (VT pe root) si cele doua se bateau: VT
+  // ia un INSTANTANEU al paginii noi si il tine peste continutul VIU, deci scara de
+  // celule se juca ascunsa sub el si vedeai pagina deja asezata. Scotand VT-ul de
+  // ruta, intrarea fiecarei pagini se joaca LIVE la fiecare navigare (vezi
+  // `global.css`: `.ruta-in` / `.cell-in`, nu mai sunt gardate pe `prima-incarcare`).
+  //
+  // A doua parte: morph-ul de card (`focus.js`) isi facea propriul VT si INGHETA
+  // ecranul ~650ms fara sa morfeze — acum trece si el prin `navigate`, deci ia
+  // aceeasi intrare rapida.
+  //
+  // Preincarcarea ramane: astept modulul + datele (pana la plafon) INAINTE sa
+  // schimb ruta, ca pagina sa soseasca cu continut, nu cu schelet.
+  if (preincarcaRuta) {
+    Promise.race([
+      Promise.resolve(preincarcaRuta(path)).catch(() => {}),
+      pauza(plafonIncarcare()),
+    ]).then(() => applyPath(path))
+  } else {
     applyPath(path)
   }
 }

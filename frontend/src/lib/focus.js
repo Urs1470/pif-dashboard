@@ -2,17 +2,9 @@
 // the hash, e.g. #/tasks?focus=global:123) so it is shareable and reload-safe. On
 // the destination page the matching row scrolls itself to the center of the
 // viewport and flashes a highlight, then the param is consumed.
-//
-// morphNavigate() additionally runs a View-Transitions shared-element morph: the
-// clicked card visually "becomes" the destination row (progressive enhancement —
-// falls back to a plain navigate when the API is unavailable or reduced-motion).
 
-import { tick } from 'svelte'
-import { router, applyPath, navigate, viewTransitionsOn } from './router.svelte.js'
+import { router, navigate } from './router.svelte.js'
 import { motion } from './motion.svelte.js'
-
-const VT_NAME = 'focus-morph'
-let morphPending = null // { key, resolve } while a morph is in flight
 
 export function focusKey(kind, id) {
   return `${kind}:${id}`
@@ -25,46 +17,34 @@ export function focusHref(path, kind, id) {
   return `${path}${sep}focus=${encodeURIComponent(focusKey(kind, id))}`
 }
 
-// Navigate to a task and morph the clicked element into the destination row.
-export function morphNavigate(sourceEl, path, kind, id) {
-  const href = focusHref(path, kind, id)
-  // PE TELEFON NU EXISTA MORPH. Tranzitia cu element partajat INGHEATA ecranul
-  // pana cand pagina-tinta si-a montat randul — masurat: 744ms fara niciun cadru
-  // dupa atingerea unui task de pe „Astăzi" — si abia apoi joaca o alunecare de
-  // 300ms. Pe desktop, cu datele in cache si mouse-ul deja pe rand, e invizibil;
-  // cu degetul, prin tunel, e exact senzatia de „nu s-a intamplat nimic". Ion:
-  // „tranzitia de pe taskurile de acasa trebuie rafinata." Pe atingere se
-  // navigheaza ca oriunde (alunecarea de ruta), iar aterizarea face restul:
-  // randul vine in centru si se HASUREAZA (vezi `focusOnLand`).
-  const atingere = typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches
-  if (!sourceEl || !viewTransitionsOn() || atingere) { navigate(href); return }
-
-  sourceEl.style.viewTransitionName = VT_NAME
-  let resolveReady
-  const ready = new Promise((res) => { resolveReady = res })
-  morphPending = { key: focusKey(kind, id), resolve: resolveReady }
-
-  let vt
-  try {
-    vt = document.startViewTransition(async () => {
-      applyPath(href)
-      await tick()
-      // Wait for the destination row to mount + tag itself, but never freeze the
-      // screen for long if the page is slow (fall through after 600ms).
-      await Promise.race([ready, new Promise((r) => setTimeout(r, 600))])
-      await tick()
-    })
-  } catch (_) {
-    sourceEl.style.viewTransitionName = ''
-    morphPending = null
-    applyPath(href)
-    return
-  }
-  const cleanup = () => {
-    try { sourceEl.style.viewTransitionName = '' } catch (_) {}
-    morphPending = null
-  }
-  vt.finished.then(cleanup, cleanup)
+/**
+ * Deschide un element in pagina lui si il aduce in centru cu un semn (hasura).
+ *
+ * AICI A FOST UN MORPH, si l-am scos pe 2026-08-24 fiindca nu functiona.
+ * Ideea era ca elementul apasat sa „devina" randul-tinta printr-o tranzitie cu
+ * element partajat (View Transitions, `focus-morph`). Masurat in Chromium real,
+ * pe desktop:
+ *   - callbackul `startViewTransition` tinea ecranul INGHETAT ~657ms de fiecare
+ *     data (chiar peste plafonul de 600ms), la ORICE tinta — si pagina de proiect
+ *     (grea), si /tasks (usoara), si la revizit cald;
+ *   - la sfarsitul callbackului NICIUN element nu avea `focus-morph`, deci morph-ul
+ *     nu avea nici macar ce anima: `applyPath` demonteaza pagina veche INAUNTRUL
+ *     callbackului (sursa dispare), iar randul-tinta se eticheteaza abia intr-un
+ *     `requestAnimationFrame` care nu se declanseaza cat timp VT-ul tine pagina
+ *     inghetata — deci pierde mereu cursa cu plafonul.
+ * Rezultatul real nu era un morph, ci ~650ms de ecran inghetat urmate de o
+ * taietura. Aceeasi senzatie pe care Ion a reclamat-o pe telefon („nu s-a
+ * intamplat nimic"), unde morph-ul fusese deja sarit — doar ca pe desktop
+ * ramasese. Ion, 2026-08-24: „taskul din acasa la pagina sursa a taskului trebuie
+ * o tranzitie mai rapida."
+ *
+ * Acum face exact ce facea deja ramura de atingere, peste tot: navigare simpla.
+ * Pagina-tinta soseste cu propria ei intrare animata (`.ruta-in` + `.cell-in`,
+ * vezi `global.css`), iar `focusOnLand` aduce randul in centru INSTANT si il
+ * hasureaza — asa stii pe ce ai apasat. Fara niciun cadru inghetat.
+ */
+export function focusNavigate(_sourceEl, path, kind, id) {
+  navigate(focusHref(path, kind, id))
 }
 
 // CINE ASTEAPTA O ATERIZARE. Actiunea isi verifica cheia la montare si la
@@ -121,9 +101,6 @@ export function focusOnLand(node, key) {
       router.query = { ...router.query, focus: undefined }
     }
 
-    const morphing = !!(morphPending && morphPending.key === key)
-    const releaseMorph = morphing ? morphPending.resolve : null
-
     requestAnimationFrame(() => {
       // Nodul poate fi INLOCUIT intre montare si cadrul asta (vezi nota de mai
       // sus). Atunci nu se consuma si nu se marcheaza nimic: randul care ii ia
@@ -146,23 +123,12 @@ export function focusOnLand(node, key) {
         ? dock.getBoundingClientRect().top - 8 : vh
       const needsScroll = r.top < sus || r.bottom > jos
 
-      if (morphing) {
-        // Land at the final position INSTANTLY so the morph animates the card to
-        // exactly where the row ends up; then tag the row + release the transition.
-        if (needsScroll) {
-          try { node.scrollIntoView({ behavior: 'auto', block: 'center' }) } catch (_) { node.scrollIntoView() }
-        }
-        node.style.viewTransitionName = VT_NAME
-        setTimeout(() => { try { node.style.viewTransitionName = '' } catch (_) {} }, 800)
-        releaseMorph?.()
-      } else if (needsScroll) {
+      if (needsScroll) {
         // INSTANT, NU `smooth`. Derularea lina adauga ~400ms DUPA ce pagina a
         // sosit: randul aluneca spre centru cat timp tu deja te uiti la lista, si
-        // exact asta se citeste ca „lent, intarziat" (Ion, 2026-08-21). Aterizarea
-        // se face INAINTE ca tranzitia de ruta sa picteze (actiunea ruleaza in
-        // callbackul ei), deci cu `auto` pagina SOSESTE cu randul deja in centru —
-        // zero asteptare, iar semnalul „pe asta ai apasat" il da inelul care
-        // pulseaza. Aceeasi alegere ca pe ramura cu morph, de deasupra.
+        // exact asta se citeste ca „lent, intarziat" (Ion, 2026-08-21). Cu `auto`
+        // pagina SOSESTE cu randul deja in centru — zero asteptare, iar semnalul
+        // „pe asta ai apasat" il da inelul care pulseaza.
         try { node.scrollIntoView({ behavior: 'auto', block: 'center' }) } catch (_) { node.scrollIntoView() }
       }
 

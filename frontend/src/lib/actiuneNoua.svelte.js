@@ -27,28 +27,31 @@
 // Doua importuri cu acelasi nume in acelasi fisier nu compileaza.
 let curenta = $state(null)
 
-// Cerere in asteptare: „am apasat + de pe o pagina care nu creeaza nimic".
-// NEreactiva si CONSUMABILA o singura data — daca ar fi un semnal reactiv, o
-// intoarcere ulterioara pe /tasks ar redeschide foaia din senin. Nu e nici in URL
-// din acelasi motiv: o reincarcare a paginii n-are de ce sa te puna sa scrii un task.
-let cerut = false
+// Foaia de creare implicita e GLOBALA (gazduita in App.svelte), NU pe /tasks.
+//
+// Inainte, „+" de pe o pagina fara creare proprie NAVIGA la /tasks si deschidea foaia
+// acolo. Navigarea aia se vedea ca o „migrare" (Ion, 2026-08-24: „tranzitia de mutare
+// nu este fluida, parca se vede un schelet la migrare"): pagina de sub deget se schimba
+// in Taskuri — alt antet, alta lista, uneori un schelet de lista — chiar in timp ce foaia
+// urca. Doua miscari peste aceiasi pixeli, exact ce sistemul evita peste tot.
+//
+// Acum foaia se ridica PESTE pagina curenta, fara sa se schimbe nimic dedesubt. Semnalul
+// e REACTIV (nu mai e o cerere consumabila): App tine o foaie legata de `deschis`, iar
+// foaia insasi il pune pe `false` la inchidere. Pe /tasks aterizezi abia DUPA ce chiar
+// creezi un task — vezi `App.svelte`, `dupaCreareImplicita` — deci „du-ma la taskuri" al
+// lui Ion se pastreaza, dar fara migrarea vizibila; daca renunti, ramai unde erai.
+export const creareImplicita = $state({ deschis: false })
 
-/** Apasat de pe o pagina fara creare proprie: du-ma unde se creeaza, si deschide. */
+/** Apasat de pe o pagina fara creare proprie: ridica foaia GLOBALA, in loc. */
 export function cereTaskNou() {
-  cerut = true
+  creareImplicita.deschis = true
 }
 
-/** Chemat de /tasks la montare. Intoarce `true` O SINGURA data dupa fiecare cerere. */
-export function consumaCerereTaskNou() {
-  const c = cerut
-  cerut = false
-  return c
-}
-
+// Fara `cale`: „+" implicit nu mai navigheaza. Navigarea catre /tasks, cand se
+// intampla, e a foii globale (dupa o creare reusita), nu a apasarii.
 const IMPLICITA = {
   eticheta: 'Adaugă task',
-  cale: '/tasks',
-  fa: cereTaskNou,   // navigarea o face dockul, ca sa poata folosi `link`/preincarcarea
+  fa: cereTaskNou,
 }
 
 /** Ce actiune e disponibila acum: cea a paginii, altfel cea implicita. */

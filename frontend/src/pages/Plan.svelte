@@ -30,7 +30,7 @@
   import { incepeTragere } from '../lib/tragere.js'
   import { tragePeZile } from '../lib/tragereTimeline.js'
   import { ecran } from '../lib/ecran.svelte.js'
-  import { morphNavigate } from '../lib/focus.js'
+  import { focusNavigate } from '../lib/focus.js'
   import { glisare } from '../lib/glisare.js'
   import { apasareLunga } from '../lib/apasareLunga.js'
   import FoaieTask from '../components/FoaieTask.svelte'
@@ -669,8 +669,8 @@
     const task = t || sel
     if (!task) return
     closePop()
-    if (task.tip === 'proiect' && task.proiect_id) morphNavigate(el, `/projects/${task.proiect_id}`, 'task', task.id)
-    else morphNavigate(el, '/tasks', 'global', task.id)
+    if (task.tip === 'proiect' && task.proiect_id) focusNavigate(el, `/projects/${task.proiect_id}`, 'task', task.id)
+    else focusNavigate(el, '/tasks', 'global', task.id)
   }
 
   async function onMove(t, v) {
@@ -1271,7 +1271,7 @@
                   {#if lane.tip === 'proiect'}
                     <!-- `title` acopera SI randul al doilea: el se taia („linia de extrudare 3
                            · 4 tas…"), iar `numeIntreg` singur raspundea doar pentru primul. -->
-                    <button class="lane-name" onclick={(e) => morphNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={etichetaLane(lane)}>
+                    <button class="lane-name" onclick={(e) => focusNavigate(e.currentTarget, `/projects/${lane.id}`, 'project', lane.id)} title={etichetaLane(lane)}>
                       <span class="lane-dot"></span>
                       <span class="lane-col">
                         <span class="lane-txt">{lane.nume}</span>
