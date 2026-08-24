@@ -111,6 +111,14 @@ redeseneaza, un import care nu se rezolva, un `svelte-ignore` cu coduri separate
 spatiu (tace doar primul). Toate cinci existau in cod pe 2026-08-23, si niciun alt
 verificator nu le vedea. Linia de baza e CURATA, deci orice abatere e noua.
 
+Si **o verificare care verifica VERIFICAREA**: analiza de CSS nefolosit a Svelte se
+dezarmeaza singura, tacut, la anumite constructii (un `{...rest}` pe un ELEMENT o
+opreste pentru tot fisierul). Pe 2026-08-24 erau **12 din 48** de componente mute —
+toate paginile mari si toate primitivele din `components/ui/` — iar linterul iesea
+„curat" peste reguli moarte livrate in build. `lint.py` injecteaza acum un selector
+imposibil in fiecare fisier: daca nu e raportat, fisierul e mut si cade pe o
+verificare textuala conservatoare. Cand vezi `css_probabil_nefolosit`, aia e.
+
 **`audit_contrast.py` masoara ce `audit_design.py` nu poate.** Acela verifica PARITATEA
 tokenurilor intre teme — ca fiecare rol sa existe in amandoua — niciodata contrastul lor.
 Comentariile din `tokens.css` isi scriu singure ratiile calibrate de mana, iar rolul care a

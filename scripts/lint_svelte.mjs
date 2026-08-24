@@ -14,7 +14,12 @@
 //   3. importul care nu se rezolva — clasa de esec pentru care exista `smoke_ui`
 //      ("pagina ramasa pe schelet"), dar aici se prinde in mai putin de o secunda.
 //
-// Plus doua verificari proprii, pe capcane gasite in acest repo:
+// Plus TREI verificari proprii, pe capcane gasite in acest repo:
+//   - fisierele in care compilatorul TACE. Verificarea 1 de mai sus se dezarmeaza
+//     singura, fara niciun semn, la anumite constructii — masurat, 12 din 48 de
+//     componente, printre ele toate paginile mari. Acolo `css_unused_selector` nu
+//     mai raporteaza NIMIC si linterul iesea „curat" peste reguli moarte livrate in
+//     build. Vezi verificarea 1b: e cea care verifica VERIFICAREA.
 //   - `svelte-ignore` cu coduri separate prin SPATIU tace doar PRIMUL cod
 //     (verificat cu compilatorul). Separatorul corect e virgula. Un ignore scris
 //     cu spatiu arata ca acopera doua avertismente si acopera unul.
@@ -114,6 +119,76 @@ for (const f of fisiere.filter((f) => f.endsWith('.svelte'))) {
     }
   } catch (e) {
     err(rel(f), e.start?.line ?? 0, e.code || 'compile_error', String(e.message).split('\n')[0])
+  }
+}
+
+
+// ------------------------------------- 1b. fisiere in care compilatorul TACE
+//
+// CEA MAI IMPORTANTA VERIFICARE DIN FISIERUL ASTA, fiindca verifica VERIFICAREA.
+//
+// `css_unused_selector` e cea mai puternica regula de aici — Svelte chiar TAIE
+// regula din build, deci un selector nesemnalat e o bucata de interfata care nu
+// se deseneaza. Numai ca analiza asta se DEZARMEAZA singura, tacut, la anumite
+// constructii: un `{...rest}` pe un ELEMENT (nu pe o componenta) o opreste pentru
+// TOT fisierul, fiindca Svelte nu poate sti daca `class` vine din spread.
+//
+// Rezultatul: in fisierul ala regula nu mai raporteaza NIMIC — nici selectorii
+// legitim nefolositi — si linterul continua sa iasa cu 0. Masurat pe 2026-08-24:
+// 12 din 48 de componente erau mute, printre ele Plan, Tasks, ProjectDetail,
+// Calculator si toate primitivele din `components/ui/`. Doua reguli moarte se
+// randau in build de saptamani, in bundle, fara ca nimic sa le vada.
+//
+// SONDA: injectez in `<style>` un selector care nu poate exista si intreb daca e
+// raportat. Daca nu e, fisierul e mut — si atunci cade pe verificarea TEXTUALA de
+// mai jos, care e conservatoare cu buna stiinta: numeste doar clasele al caror
+// nume nu apare NICAIERI in fisier in afara blocului `<style>`. Aia nu poate fi
+// un fals pozitiv din spread, fiindca un spread transmite valori, nu inventeaza
+// nume care nu-s scrise nicaieri.
+const SONDA = 'zzz-sonda-lint-nefolosita'
+// Selector simplu de clasa la inceput de regula: `.ceva {`, `.ceva:hover {`,
+// `.ceva.alta {`. Ce e mai complicat de atat nu se judeca textual.
+const CLASA_SIMPLA = /(^|[},])\s*\.([a-zA-Z][-\w]*)(?=[\s.,:>{[])/g
+
+for (const f of fisiere.filter((f) => f.endsWith('.svelte'))) {
+  const sursa = fs.readFileSync(f, 'utf8')
+  const i = sursa.lastIndexOf('</style>')
+  if (i === -1) continue
+  let mut = false
+  try {
+    const test = sursa.slice(0, i) + `.${SONDA} { color: red }\n` + sursa.slice(i)
+    const { warnings } = compile(test, { filename: rel(f), generate: 'client', dev: false })
+    mut = !warnings.some((w) => w.code === 'css_unused_selector'
+                                && String(w.message).includes(SONDA))
+  } catch (e) {
+    continue // fisierul nu compileaza; se raporteaza deja mai sus
+  }
+  if (!mut) continue
+
+  const stil = sursa.slice(sursa.indexOf('<style>'), i)
+  const restul = sursa.slice(0, sursa.indexOf('<style>')) + sursa.slice(i)
+  const vazute = new Set()
+  let m
+  CLASA_SIMPLA.lastIndex = 0
+  while ((m = CLASA_SIMPLA.exec(stil)) !== null) {
+    const nume = m[2]
+    if (vazute.has(nume)) continue
+    vazute.add(nume)
+    // numele apare undeva in afara stilului? (markup, script, chiar si comentariu)
+    if (new RegExp(`(?<![-\\w])${nume}(?![-\\w])`).test(restul)) continue
+    // ...sau numele e COMPUS in markup: `class="btn btn-{variant}"` produce
+    // `.btn-primary` fara ca sirul „btn-primary" sa existe undeva in fisier.
+    // Accept un prefix pana la o cratima, urmat IMEDIAT de `{` — adica exact
+    // tiparul asta si nimic mai larg, ca sa nu se stinga verificarea la loc.
+    let compus = false
+    for (let k = nume.indexOf('-'); k !== -1; k = nume.indexOf('-', k + 1)) {
+      if (restul.includes(nume.slice(0, k + 1) + '{')) { compus = true; break }
+    }
+    if (compus) continue
+    const linie = sursa.slice(0, sursa.indexOf('<style>') + m.index).split('\n').length
+    err(rel(f), linie, 'css_probabil_nefolosit',
+        `.${nume} nu apare nicaieri in fisier, iar in fisierul asta compilatorul `
+        + 'TACE (nu raporteaza si nu taie NICIUN selector), deci regula scapa de el')
   }
 }
 

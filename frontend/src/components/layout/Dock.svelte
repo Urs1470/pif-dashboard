@@ -7,7 +7,7 @@
   import { ecran } from '../../lib/ecran.svelte.js'
   import { motionDuration, DUR_FAST, DUR_BASE, EASE } from '../../lib/motion.svelte.js'
   import { sticla } from '../../lib/sticla.js'
-  import { actiuneNoua } from '../../lib/actiuneNoua.svelte.js'
+  import { actiuneNoua } from '../../lib/actiuneNoua.svelte.js'
   import { navigate } from '../../lib/router.svelte.js'
   import { creeazaArc } from '../../lib/arc.js'
 
@@ -572,7 +572,18 @@
     width: var(--pw, 50px);
     height: var(--ph, 50px);
     border-radius: var(--pr, var(--radius-sm));
-    background: var(--accent-subtle);
+    /* ACELASI MATERIAL CA PASTILA DIN BARA DE SUS (`BaraSus.svelte`). Amandoua sunt
+       „unde sunt acum", amandoua stau PE o bara de sticla — si pana la 2026-08-24 se
+       desenau din materiale diferite: aia din sticla (`--glass-fill` + muchia
+       `--glass-sel`), asta din tenta de accent. Tokenurile astea doua exista in
+       AURORA exact pentru selectia de pe o bara de sticla; dockul nu fusese trecut.
+       CERNEALA RAMANE ACCENT, si aici e deosebirea fata de bara de sus — o pastrez
+       cu buna stiinta. Pe desktop pastila sta sub un CUVANT intr-un sir de sapte, si
+       forma ei ajunge. Pe telefon sunt cinci ICOANE, iar accentul de pe cea activa e
+       reperul dupa care Ion vede unde e fara sa citeasca. Materialul se unifica;
+       accentul ar fi o curatenie care sterge un reper. */
+    background: var(--glass-fill);
+    box-shadow: var(--glass-sel);
     transform: translate(var(--px, 0px), var(--py, 0px));
     opacity: 0;
     pointer-events: none;

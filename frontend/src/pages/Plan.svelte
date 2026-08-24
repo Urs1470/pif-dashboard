@@ -2781,15 +2781,15 @@
   .exp-name { font-size: var(--font-small); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .exp-opt { display: flex; align-items: center; gap: 9px; font-size: var(--font-small); color: var(--text-secondary); cursor: pointer; padding-top: var(--space-6); border-top: 1px solid var(--border); }
   .modal-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); }
-  /* Aceeasi haina de control ca in capul paginii si in panou. */
-  .btn-ghost { display: inline-flex; align-items: center; justify-content: center; height: var(--ctrl-md); padding: 0 var(--space-md);
-    border-radius: var(--radius-sm); background: var(--bg-surface); border: none; box-shadow: var(--shadow-sm);
-    color: var(--text-secondary); cursor: pointer; font-size: var(--font-body); font-weight: var(--fw-semibold);
-    transition: var(--transition-pressable); }
-  .btn-ghost:hover { background: var(--bg-hover); color: var(--text); }
-  .btn-ghost:active { transform: scale(var(--press-scale)); }
-  .btn-primary { display: inline-flex; align-items: center; gap: var(--space-6); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); background: var(--accent); border: none; color: var(--accent-text); cursor: pointer; font-size: var(--font-small); font-weight: var(--fw-semibold); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  /* Aici erau `.btn-ghost` si `.btn-primary`, redesenate local peste `Button.svelte`
+     si divergente fata de el (fond de suprafata cu umbra in loc de transparent; raza
+     de SUPRAFATA in loc de camp; 13px in loc de 15). Markupul trecuse deja pe
+     `<Button>` — vezi nota din snippetul `footer` — dar REGULILE au ramas, si au
+     ramas si in build.
+     N-a prins-o nimeni fiindca in fisierul asta verificarea de CSS nefolosit e
+     DEZARMATA: Svelte nu raporteaza si nu taie niciun selector aici, nici macar
+     unul inventat pe loc. Vezi `scripts/lint_svelte.mjs`, verificarea „fisiere in
+     care compilatorul tace". */
 
   /* ===== telefon =====
      ULTIMELE in fisier, cu buna stiinta. Un `@media` NU adauga specificitate: la

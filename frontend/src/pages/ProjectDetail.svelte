@@ -1577,8 +1577,6 @@
   .wiki-editor { width: 100%; min-height: 360px; resize: vertical; font-family: var(--font-mono); font-size: var(--font-small); line-height: var(--lh-normal); color: var(--text); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-10) var(--space-12); }
   .wiki-editor:focus { outline: none; border-color: var(--accent-ring); }
   .wiki-edit-actions { display: flex; gap: var(--space-sm); margin-top: var(--space-10); }
-  .tab-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-sm); }
-  .tab-sub { font-size: var(--font-small); color: var(--text-dim); }
   .quick-add { display: flex; flex-direction: column; margin-bottom: var(--space-md); }
   /* Chipurile de zi, identice cu cele din /tasks: adaugarea si planificarea sunt
      un singur gest. Enter ramane „fara termen" — indiciul o spune. */

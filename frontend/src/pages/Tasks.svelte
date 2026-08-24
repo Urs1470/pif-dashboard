@@ -1705,7 +1705,6 @@
      barele verticale pe margini"). */
   .quick-add input:focus { outline: none; box-shadow: none; }
   .quick-add input::placeholder { color: var(--text-dim); }
-  .filters { display: flex; gap: var(--space-xs); flex-wrap: wrap; align-items: center; }
   /* ARHIVA — ACTIUNE-FANTOMA, NU CHIP. Aici erau doua chipuri („Active"/„Arhivă"),
      din care unul era mereu pornit. Ramane un singur buton, cu haina iconitei
      Google de langa el: si aceea e o setare, nu un filtru. Activ = tinta amber,
@@ -2195,8 +2194,6 @@
      lui a ramas: o treime din latimea modalului, goala, pe ambele formulare. */
   .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
 
-  .task-skeleton { padding: var(--space-sm) var(--space-md); }
-
 
   /* ===== V3: grid lista + agenda 7 zile ===== */
   /* AGENDA DE 7 ZILE A PLECAT (2026-08-07). Era o a doua coloana de 300px care
@@ -2295,7 +2292,6 @@
     /* Ca la Proiecte: caseta are 44px, dar inputul dinauntru avea 25 si doar el
        primeste focus. */
         .a-ico { min-height: var(--tap-min); padding: 0 var(--space-12); font-size: var(--font-small); }
-    .filters { gap: var(--space-xs); }
     .g-ico { width: var(--tap-min); min-height: var(--tap-min); }
     /* Capsula creste ODATA cu segmentele: tinta de 44 vine din segment, nu din
        padding-ul capsulei, altfel jumatate din capsula n-ar face nimic la atins.
@@ -2335,7 +2331,6 @@
 
     /* Cautarea pliata: o iconita de 44px, nu o caseta cat randul. */
     .toolbar { flex-direction: row; align-items: center; gap: var(--space-sm); }
-    .filters { flex: 1; justify-content: flex-end; }
 
     /* TITLUL ARE VOIE SA CADA PE DOUA RANDURI.
        Pe o singura linie, „Reinnoire certificat de acces in site Co…" nu spune la
