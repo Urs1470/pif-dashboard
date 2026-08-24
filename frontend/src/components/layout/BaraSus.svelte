@@ -419,7 +419,7 @@
     /* `--text-secondary`, nu `--text-dim`: un drum inactiv trebuie sa se poata
        CITI, nu doar ghici — e singura harta a aplicatiei. */
     color: var(--text-secondary);
-    font-size: var(--font-small);
+    font-size: var(--font-body);
     font-weight: var(--fw-normal);
     letter-spacing: var(--tracking-normal);
     text-decoration: none;
