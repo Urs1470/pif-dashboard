@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-08-24
+
+- [2026-08-24 Scara de mișcare Apple](2026-08-24-scara-de-miscare-apple.md) — 5 trepte (90/150/300/700/900ms), model WWDC 2023–2025; modal 700/500ms cu scale(.9) și blur(7px); pagini 900ms cu translateX+scale; taskuri 1100ms sosire / 800ms plecare; `--dur-slow` (0.28→0.9) auditat peste toți consumatorii
+
 ## 2026-08-23
 
 - [2026-08-23 Bară laterală în loc de dock, pe desktop](2026-08-23-bara-laterala-in-loc-de-dock.md) — peste 768px navigația e o coloană fixă de 220px care împinge conținutul, iar antetul dispare (marca/tema/rețeaua urcă în ea); pe telefon dockul rămâne neatins. `--dock-h` e scris de componenta montată, `--header-height` devine 0 pe desktop, deci cele 15 socoteli de geometrie se repară singure. Plus `scripts/audit_contrast.py`: contrastul nu mai e verificat de nimeni.
