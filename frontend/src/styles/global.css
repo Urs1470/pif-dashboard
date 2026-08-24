@@ -1466,7 +1466,18 @@ html.tema-vt::view-transition-new(cadru-doc) { animation: vt-tema-vine var(--dur
   position: relative;
   isolation: isolate;
   background: none;
-  box-shadow: var(--glass-rim), var(--glass-cast);
+  /* UMBRA SE ADANCESTE CAND CONTINUTUL TRECE PE DEDESUBT.
+     „As text scrolls underneath, shadows become more prominent to create
+     additional separation." (WWDC25, „Meet Liquid Glass")
+     Sta AICI, la `.sticla`, nu in fiecare bara: e o proprietate a MATERIALULUI, nu
+     a barei care il poarta — la fel ca rama si ca tenta.
+     `--scrim` e deja tokenul umbrei de tema, deci nu apare o a doua valoare de
+     culoare; `--derulat` e 0 pe o pagina care nu deruleaza, deci in repaus regula
+     nu adauga nimic. */
+  box-shadow:
+    var(--glass-rim),
+    var(--glass-cast),
+    0 10px 26px -12px color-mix(in srgb, var(--scrim) calc(var(--derulat, 0) * 100%), transparent);
 }
 .sticla > .s-blur,
 .sticla > .s-edge,
@@ -1535,4 +1546,50 @@ html.tema-vt::view-transition-new(cadru-doc) { animation: vt-tema-vine var(--dur
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .sticla.sticla-bara > .s-tint { background: var(--bar-bg); }
   .sticla.sticla-dock > .s-tint { background: var(--dock-bg); }
+}
+
+/* ===== MUCHIILE DE DERULARE (AURORA / Liquid Glass) =====
+   „As content begins to scroll underneath a glass element, the effect gently
+   dissolves the content into the background, lifting the glass visually above the
+   moving content, and allowing floating elements like titles to always remain
+   legible." (WWDC25, „Meet Liquid Glass")
+
+   Blurul barei aplatizeaza ce e dedesubt, dar nu-l DIZOLVA: un titlu de rand care
+   trece sub ea rămâne un obiect care se citeste prin sticla. Muchia il duce in fond
+   exact pe banda in care intra sub bara.
+
+   DOUA PSEUDO-ELEMENTE PE `body`, nu doua noduri in App: sunt pura vopsea, n-au
+   nimic de facut in arborele componentelor, si asa nu pot fi mutate din greseala
+   de un layout.
+   `z-index` intre continut (auto) si bare (`--z-sticky`): dizolva continutul, nu
+   sticla de deasupra lui.
+   Opacitatea vine din `--derulat` / `--derulat-jos`, scrise de `lib/derulare.js`:
+   pe o pagina care nu deruleaza nu se aprind deloc. */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: calc(var(--z-sticky) - 50);
+  pointer-events: none;
+}
+body::before {
+  top: 0;
+  height: calc(var(--bara-h, 56px) + var(--space-lg));
+  background: linear-gradient(to bottom, var(--bg) 34%, transparent);
+  opacity: var(--derulat, 0);
+}
+/* Muchia de jos e a DOCULUI, deci exista doar unde exista el. La capatul listei se
+   stinge: acolo n-are ce acoperi, si un voal peste nimic se citeste ca murdarie. */
+body::after { display: none; }
+@media (max-width: 768px) {
+  body::after {
+    display: block;
+    bottom: 0;
+    height: calc(var(--dock-h, 66px) + var(--space-lg));
+    background: linear-gradient(to top, var(--bg) 34%, transparent);
+    opacity: var(--derulat-jos, 0);
+    transition: opacity var(--dur-base) var(--ease);
+  }
 }

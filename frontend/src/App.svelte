@@ -29,7 +29,8 @@
   setLucideProps({ strokeWidth: 1.5 })
 
   import Home from './pages/Home.svelte'
-  import Skeleton from './components/ui/Skeleton.svelte'
+  import Skeleton from './components/ui/Skeleton.svelte'
+  import { urmaresteDerularea } from './lib/derulare.js'
 
   let paleta = $state(null)
 
@@ -134,6 +135,10 @@
   // Fara ceva de care sa depinda, „Încearcă din nou" n-ar avea ce sa reporneasca:
   // `rawMatch` e neschimbat, deci efectul nu s-ar mai executa niciodata.
   let reincercare = $state(0)
+
+  // CAT S-A DERULAT, ca valoare pentru CSS. O singura sursa pentru amandoua
+  // muchiile de sticla (sus si jos) — vezi `lib/derulare.js`.
+  $effect(urmaresteDerularea)
 
   $effect(() => {
     const m = rawMatch

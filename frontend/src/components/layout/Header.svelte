@@ -116,7 +116,14 @@
     background: var(--glass-sheen), var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-filter);
             backdrop-filter: var(--glass-filter);
-    box-shadow: inset 0 -1px 0 var(--border);
+    /* UMBRA SE ADANCESTE CAND CONTINUTUL TRECE PE DEDESUBT.
+       „As text scrolls underneath, shadows become more prominent to create
+       additional separation." In repaus rămâne doar linia: antetul e lipit de
+       marginea de sus si n-are de ce sa pluteasca peste o pagina care nu deruleaza.
+       `--scrim` e deja tokenul umbrei de tema, deci nu apare o a doua valoare. */
+    box-shadow:
+      inset 0 -1px 0 var(--border),
+      0 6px 18px -8px color-mix(in srgb, var(--scrim) calc(var(--derulat, 0) * 100%), transparent);
     display: flex;
     align-items: center;
     justify-content: space-between;

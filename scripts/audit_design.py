@@ -66,7 +66,12 @@ INDEPENDENTE_DE_TEMA = {'--loc-site', '--loc-sediu', '--on-color',
 #             stanga-sus, si de-aia tenta e invizibila (`.gata`) pana la prima
 #             masuratoare.
 DIN_JS = {'--gl-p', '--gl-s', '--trasY', '--kb', '--mx', '--my', '--spec', '--spec-raza',
-          '--px', '--py'}
+          '--px', '--py',
+#   --derulat / --derulat-jos : cat s-a derulat (0..1) si daca mai e continut sub
+#             pliu, scrise de `lib/derulare.js`. Din ele isi ia sticla muchia de
+#             derulare si umbra care se adanceste — vezi WWDC25 „Meet Liquid Glass".
+#             Rezerva 0 in ambele: pe o pagina care nu deruleaza nu se aprind.
+          '--derulat', '--derulat-jos'}
 
 # Fisiere in care valorile brute sunt legitime, cu motiv.
 SCUTITE_HEX = {
