@@ -591,6 +591,58 @@ def tokenuri_definite(text):
     return blocuri, aliasuri
 
 
+# ---------------------------------------------------------------- R8: a doua paleta
+#
+# `static/login.css` E IN AFARA RAZEI CELORLALTE REGULI, si acolo s-a ascuns exact
+# defectul pentru care exista fisierul asta.
+#
+# Pagina de autentificare e singurul sablon randat pe server: nu incarca bundle-ul
+# SPA-ului, deci nu poate importa `tokens.css` si isi tine propria COPIE a
+# tokenurilor. Comentariul din capul ei promitea ca „valorile sunt aceleasi si se
+# schimba IMPREUNA cu el" — o promisiune pe care nimic n-o verifica.
+# Masurat pe 2026-08-24: 31 din 47 de tokeni divergeau. Toata paleta era cea
+# dinainte de AURORA — alt accent, alt fond, alte raze — deci primul ecran pe care
+# il vezi era alta aplicatie. Iar `--text-secondary` divergea DEJA inainte de
+# AURORA, ceea ce spune ca nu e un accident: e ce se intampla mereu cu o copie
+# nesupravegheata.
+#
+# Regula nu cere ca login.css sa declare TOT ce e in tokens.css — ea ia doar ce are
+# nevoie. Cere doar ca ce declara sa fie IDENTIC.
+
+LOGIN_CSS = RADACINA / 'static' / 'login.css'
+
+_COMENTARIU = re.compile(r'/\*.*?\*/', re.S)
+_DECL = re.compile(r'(--[\w-]+)\s*:\s*([^;]+);')
+
+
+def _tokeni_din(text, tipar):
+    m = re.search(tipar, _COMENTARIU.sub('', text), re.S)
+    if not m:
+        return {}
+    return {d.group(1): ' '.join(d.group(2).split())
+            for d in _DECL.finditer(m.group(1))}
+
+
+def paleta_de_login():
+    """[(tema, token, valoare_din_login, valoare_din_tokens)] pentru ce diverge."""
+    if not LOGIN_CSS.exists():
+        return []
+    login = LOGIN_CSS.read_text(encoding='utf-8')
+    sursa = TOKENS.read_text(encoding='utf-8')
+    L = {'dark': _tokeni_din(login, r'(?<!\w):root\s*\{(.*?)\n\}'),
+         'light': _tokeni_din(login, r'\[data-theme="light"\]\s*\{(.*?)\n\}')}
+    T = {'dark': _tokeni_din(sursa, r':root,\s*\[data-theme="dark"\]\s*\{(.*?)\n\}'),
+         'light': _tokeni_din(sursa, r'\[data-theme="light"\]\s*\{(.*?)\n\}')}
+    dif = []
+    for tema in ('dark', 'light'):
+        for tok, val in sorted(L[tema].items()):
+            # Tema deschisa suprascrie doar primitivele; restul le mosteneste.
+            ref = T[tema].get(tok) or (T['dark'].get(tok) if tema == 'light' else None)
+            if ref and ref != val:
+                dif.append((tema, tok, val, ref))
+    return dif
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--lista', action='store_true', help='listeaza fiecare aparitie')
@@ -676,6 +728,12 @@ def main():
         print(f'\nR7 token de culoare doar in tema dark: {len(doar_dark)}')
         for t in doar_dark:
             print(f'   {t}')
+    dif_login = paleta_de_login()
+    if dif_login:
+        total += len(dif_login)
+        print('\nR8 static/login.css a divergit de tokens.css: %d' % len(dif_login))
+        for tema, tok, a, b in dif_login:
+            print('   [%s] %s: %s  ->  ar trebui %s' % (tema, tok, a, b))
 
     print('\n' + '=' * 60)
     if total == 0:
