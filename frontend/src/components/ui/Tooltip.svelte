@@ -194,7 +194,10 @@
     flex-direction: column;
     gap: var(--space-2xs);
     padding: 7px var(--space-10);
-    border-radius: var(--radius-xs);
+    /* SUPRAFATA, nu cip: are pana la 340px latime si mai multe randuri, deci raza de
+       pastila ii facea capetele semicercuri. `--radius-xs` a fost aleasa cand insemna
+       8px; azi inseamna 999. */
+    border-radius: var(--radius-sm);
     background: var(--bg-overlay);
     box-shadow: var(--shadow-md);
     color: var(--text-secondary);

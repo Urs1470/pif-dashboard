@@ -2168,12 +2168,16 @@
      latimea unei zile se citea ca o umbra sub cifra, iar numele lucrarii — singurul
      lucru care spune CE faci acolo — statea pe o tenta care il inghitea. Acum e
      plina cu accentul, la 24px, cu cerneala de pe fill (`--accent-text`) la 12/600.
-     Raza `--radius-xs`, nu `--radius-sm`: bara e un chip, iar la 24px inaltime raza
-     de 10 ar rotunji-o pana la pastila. */
+     RAZA: `--radius-celula` (8), si comentariul de mai jos e motivul. Scria „raza de
+     10 ar rotunji-o pana la pastila" si alegea `--radius-xs` ca sa evite exact asta —
+     pe cand `--radius-xs` insemna 8px. Sub AURORA a devenit 999, deci banda ajunsese
+     tocmai in defectul pe care propozitia il refuza. Si nu e doar aspect: capetele
+     ei POARTA INTELES (rotund = incepe/se termina, drept = continua peste saptamana),
+     iar la o perioada de o zi doua capete de pastila se ating si distinctia dispare. */
   .banda { position: relative; z-index: 1; align-self: start;
            margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda));
            min-height: 24px; display: flex; align-items: center;
-           padding: 0 9px; border: none; text-align: left; border-radius: var(--radius-xs);
+           padding: 0 9px; border: none; text-align: left; border-radius: var(--radius-celula);
            cursor: grab; background: var(--c); }
   .banda:active { cursor: grabbing; }
   /* Capetele rotunjite spun unde INCEPE si unde se TERMINA lucrarea. La granita de
@@ -2502,9 +2506,13 @@
            line-height: var(--lh-snug); }
   /* RANDUL 3 — cele trei chipuri, toate in aceeasi cutie. */
   .it-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 5px; }
-  /* Chipurile sunt suprafata a doua cu inel, nu pastile pe `--bg-hover`: la 20px
-     si cu raza `--radius-xs` se citesc ca etichete, iar `--radius-full` le facea
-     sa semene cu numaratorile de peste tot. */
+  /* Chipurile sunt suprafata a doua cu inel, nu tenta pe `--bg-hover`.
+     FORMA e pastila si asa ramane: sub AURORA `--radius-xs` E pastila, iar un cip de
+     stare e exact obiectul pe care schimbarea aia il tintea. Propozitia de dinainte
+     spunea ca `--radius-full` „le facea sa semene cu numaratorile" — azi si acelea
+     sunt pastile, deci deosebirea nu mai sta in forma, ci in UMPLERE: numaratoarea e
+     tenta plina, cipul e suprafata a doua cu inel. Ce s-a schimbat e argumentul, nu
+     valoarea. */
   .loc { display: inline-flex; align-items: center; gap: var(--space-xs); height: 20px; padding: 0 7px;
          border-radius: var(--radius-xs); background: var(--bg-elevated);
          box-shadow: inset 0 0 0 1px var(--border); white-space: nowrap;

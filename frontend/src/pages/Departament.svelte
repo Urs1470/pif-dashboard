@@ -232,9 +232,12 @@
   .config h2 { font-size: var(--font-h2); font-weight: var(--fw-semibold); margin-bottom: var(--space-sm); }
   .config p { font-size: var(--font-small); color: var(--text-dim); margin-bottom: var(--space-sm); line-height: var(--lh-normal); }
   .config code { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text-secondary); }
+  /* Caseta de avertizare e un BLOC de text cu iconita, nu un cip: la raza de
+     pastila capetele deveneau semicercuri pe un paragraf. Vezi nota din
+     `components/ui/Tooltip.svelte` — acelasi tipar, aceeasi cauza. */
   .atentie { display: flex; gap: var(--space-10); align-items: flex-start;
              background: var(--danger-subtle); color: var(--danger-deep);
-             border-radius: var(--radius-xs); padding: var(--space-10) var(--space-12); }
+             border-radius: var(--radius-sm); padding: var(--space-10) var(--space-12); }
   .atentie :global(svg) { flex: none; margin-top: 1px; }
 
   .rand { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-md); }

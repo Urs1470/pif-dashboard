@@ -516,6 +516,35 @@ class Audit:
             self.abatere('R10 z-index in banda tokenurilor, scris de mana',
                          p, curat, m.start(), m.group(0))
 
+    # -- R14 ----------------------------------------------------------------
+    def r14_cerneala_pe_tenta(self, p, text, curat):
+        """Text `--accent` pe fond `--accent-subtle`: 4,81:1 pe tema deschisa.
+
+        `design.md` o scrie de un an — „text pe tenta ia intotdeauna varianta
+        `-deep`" — si `tokens.css` are chiar aliasul care o repara singur,
+        `--accent-on-subtle`. Cu toate astea, la inventarul din 2026-08-24 erau
+        12 locuri ramase pe rolul de baza.
+
+        DE CE N-A PRINS-O NIMENI. `audit_contrast.py` socoteste perechile pe
+        care le declara el, deci vede ca PERECHEA e proasta — dar nu poate sti
+        care regula CSS o produce. `audit_design.py` verifica paritatea intre
+        teme si valorile scrise de mana, deci vede ca tokenul EXISTA — dar nu
+        cat de mult e folosit. Intre ele incapea exact intrebarea asta:
+        „tokenul care repara e adoptat, sau doar definit?"
+
+        Se uita pe BLOC, nu pe fisier: doar acolo unde aceeasi regula isi pune
+        si fondul, si cerneala. Cazul in doi timpi (fondul pe `:hover`, cerneala
+        pe regula de baza) nu se poate decide mecanic — cine e „acelasi obiect"
+        e o judecata — deci ramane in seama omului."""
+        for m in re.finditer(r'[^{}]+\{[^{}]*\}', curat):
+            bloc = m.group(0)
+            if not re.search(r'\bbackground(?:-color)?\s*:\s*[^;]*--accent-subtle', bloc):
+                continue
+            k = re.search(r'(?<![-\w])color\s*:\s*var\(\s*--accent\s*\)', bloc)
+            if k:
+                self.abatere('R14 cerneala --accent pe tenta --accent-subtle',
+                             p, curat, m.start() + k.start(), k.group(0))
+
     # -- R11 ----------------------------------------------------------------
     def r11_hover_only(self, p, text, curat):
         """Un control ascuns cu `opacity: 0` care se aprinde DOAR la `:hover` e
@@ -672,6 +701,7 @@ def main():
         a.r11_hover_only(p, text, curat)
         a.r12_inaltime_control_bruta(p, text, curat)
         a.r13_spatiere_bruta(p, text, curat)
+        a.r14_cerneala_pe_tenta(p, text, curat)
 
     # -- R6: tokenuri folosite dar nedefinite -------------------------------
     tk = TOKENS.read_text(encoding='utf-8')

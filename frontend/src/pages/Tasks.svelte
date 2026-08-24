@@ -1552,11 +1552,11 @@
       </div>
       <div class="n-feluri">
         <label class="n-comutator">
-          <input type="checkbox" bind:checked={setari.scadente} />
+          <input type="checkbox" class="cbx" bind:checked={setari.scadente} />
           <span>Taskurile scadente în ziua respectivă</span>
         </label>
         <label class="n-comutator">
-          <input type="checkbox" bind:checked={setari.faraTermen} />
+          <input type="checkbox" class="cbx" bind:checked={setari.faraTermen} />
           <span>Taskurile rămase fără termen</span>
         </label>
         <!-- ORA EXACTĂ (v41). Ion: „trebuie să fie notificări pentru taskurile cu
@@ -1567,7 +1567,7 @@
              e a taskului. Și nu intră în regula „cel puțin un fel pornit" — nu e un
              semnal de dimineață, e o alarmă. -->
         <label class="n-comutator">
-          <input type="checkbox" bind:checked={setari.oreExacte} />
+          <input type="checkbox" class="cbx" bind:checked={setari.oreExacte} />
           <span>La ora exactă a taskului</span>
         </label>
         <!-- AL TREILEA COMUTATOR E ALTĂ ÎNTREBARE: nu „ce am de făcut azi", ci
@@ -1579,7 +1579,7 @@
              tine doar bifa si textul. -->
         <div class="n-comutator">
           <label class="n-com-et">
-            <input type="checkbox" bind:checked={setari.deplasari} />
+            <input type="checkbox" class="cbx" bind:checked={setari.deplasari} />
             <span>Seara dinaintea unei plecări pe site</span>
           </label>
           <Select bind:value={setari.oraDeplasare} options={oreDisponibile} size="sm" />
@@ -1918,7 +1918,7 @@
     color: var(--text-secondary); font-size: var(--font-small);
     font-weight: var(--fw-medium); cursor: pointer;
     transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
-  .qa-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
+  .qa-chip:hover { border-color: var(--accent); color: var(--accent-on-subtle); background: var(--accent-subtle); }
   .qa-dp :global(.dp-trigger) { min-height: var(--ctrl-sm); padding: var(--space-xs) var(--space-12);
     border-radius: var(--radius-full); font-size: var(--font-small); }
   .qa-hint { font-size: var(--font-small); color: var(--text-dim); margin-left: auto; }
@@ -2131,7 +2131,7 @@
     min-height: var(--ctrl-sm); padding: 0 var(--space-6); border: none; border-radius: var(--radius-xs);
     background: none; color: var(--text-dim); font-size: var(--font-small);
     cursor: pointer; transition: var(--transition-colors); }
-  .sub-nou:hover { background: var(--accent-subtle); color: var(--accent); }
+  .sub-nou:hover { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .sub-nou-p { display: flex; align-items: center; justify-content: center;
     width: 18px; flex: none; }
 

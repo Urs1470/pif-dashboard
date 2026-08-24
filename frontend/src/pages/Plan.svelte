@@ -1824,7 +1824,7 @@
       <div class="exp-list">
         {#each plan.lanes as l (l.tip + ':' + l.id)}
           <label class="exp-row">
-            <input type="checkbox" checked={exportSel.has(l.id)} onchange={() => toggleExportLane(l.id)} />
+            <input type="checkbox" class="cbx" checked={exportSel.has(l.id)} onchange={() => toggleExportLane(l.id)} />
             <span class="exp-dot" style="background:{laneColor(l.id)}"></span>
             <span class="exp-name">{l.nume}</span>
           </label>
@@ -1832,7 +1832,7 @@
       </div>
     </div>
     <label class="exp-opt">
-      <input type="checkbox" bind:checked={exportPageBreak} />
+      <input type="checkbox" class="cbx" bind:checked={exportPageBreak} />
       <span>Câte un proiect pe pagină</span>
     </label>
   </div>

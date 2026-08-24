@@ -405,7 +405,7 @@
           onkeydown={onMathKeydown}
         />
         <label class="math-disp" title="Formulă pe rând separat, centrată">
-          <input type="checkbox" bind:checked={mathDisplay} /> Bloc
+          <input type="checkbox" class="cbx" bind:checked={mathDisplay} /> Bloc
         </label>
         <button type="button" class="math-btn primary" onclick={saveMath}>{editingChip ? 'Salvează' : 'Inserează'}</button>
         {#if editingChip}

@@ -869,13 +869,20 @@ input[type="date"]:focus::-webkit-calendar-picker-indicator {
 }
 
 /* ===== Checkbox custom (stil legacy) ===== */
+/* RETETA ASTA ERA SCRISA SI NEFOLOSITA: pana la 2026-08-24 avea ZERO utilizari, in
+   timp ce opt casete din patru pagini ramasesera native — adica pictate cu accentul
+   SISTEMULUI DE OPERARE, singura culoare din aplicatie care nu venea din tokeni.
+
+   RAZA e `--radius-celula` (8), nu `--radius-xs`: pe o cutie de 20px pastila da un
+   CERC, iar cercul e deja luat — e bifa unui task (`design.md`: „cerc doar bifa").
+   O caseta de setari desenata ca bifa de task spune ca e alta unealta decat e. */
 input[type="checkbox"].cbx {
   appearance: none;
   -webkit-appearance: none;
   width: 20px;
   height: 20px;
   border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-celula);
   background: var(--bg);
   cursor: pointer;
   position: relative;
@@ -900,6 +907,7 @@ input[type="checkbox"].cbx:checked::after {
 input[type="checkbox"].cbx:focus {
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
+input[type="checkbox"].cbx:active { transform: scale(0.92); }
 
 /* O SINGURA BIFA, SI SEVERITATEA E PE EA.
    Era definita in trei fisiere la patru marimi (18 / 16 / 14 / 22), plus inca o

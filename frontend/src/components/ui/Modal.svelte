@@ -1283,7 +1283,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-sm);
+    /* ACEEASI FORMA CA `.toast-close`: doua butoane de inchidere identice ca rol si
+       ca marime (`--ctrl-sm`) purtau raze diferite — 14 aici, pastila acolo — si se
+       vad IN ACELASI TIMP, fiindca un toast apare peste o foaie deschisa. Pastila e
+       cea corecta: un control mic e pastila (`design.md`). */
+    border-radius: var(--radius-xs);
     color: var(--text-dim);
     /* Fara `font-size`: butonul poarta un `<X>` Lucide (SVG dimensionat prin
        `size`), deci treapta de font nu masura niciodata nimic aici. */
@@ -1293,6 +1297,9 @@
     background: var(--bg-hover);
     color: var(--text);
   }
+  /* Pe telefon nu exista hover, deci fara `:active` butonul nu confirma NIMIC intre
+     atingere si disparitia foii. `design.md`: „control nou = da-i `:active`". */
+  .modal-close:active { background: var(--bg-active); transform: scale(0.94); }
 
   .modal-body {
     padding: var(--space-lg);

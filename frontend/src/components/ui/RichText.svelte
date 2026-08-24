@@ -60,6 +60,6 @@
   .rt-clip { position: relative; }
   .rt-clamped { overflow: hidden; }
   .rt-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 44px; background: linear-gradient(transparent, var(--rt-fade, var(--bg))); pointer-events: none; }
-  .rt-toggle { display: inline-flex; align-items: center; gap: var(--space-xs); margin-top: var(--space-6); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); cursor: pointer; padding: 3px var(--space-sm); border-radius: var(--radius-xs); transition: background-color var(--dur-fast) var(--ease); }
+  .rt-toggle { display: inline-flex; align-items: center; gap: var(--space-xs); margin-top: var(--space-6); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent-on-subtle); cursor: pointer; padding: 3px var(--space-sm); border-radius: var(--radius-xs); transition: background-color var(--dur-fast) var(--ease); }
   .rt-toggle:hover { background: var(--accent-subtle); }
 </style>

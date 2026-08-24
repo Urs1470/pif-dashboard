@@ -232,8 +232,14 @@
      direcţia asta — atinge fiecare cip de stare, fiecare buton mic si fiecare
      segment, in toata aplicatia, nu doar pe Acasa. */
   --radius-xs: 999px;
-  /* EXCEPTIE, cu motiv: reperul zilei selectate din Calendar e o cutie de 24x22
-     si trebuie sa ramana DREPTUNGHI. Comentariul de la `.zi.sel .n` explica de ce
+  /* TREAPTA OBIECTELOR MICI CARE TREBUIE SA RAMANA DREPTUNGHIURI — trei, fiecare
+     cu motivul scris la locul ei, si toate trei aceeasi speta: forma lor spune deja
+     altceva, iar pastila le-ar face sa spuna acel altceva.
+       `.zi.sel .n`  (Calendar)   reperul zilei: rotund se citea ca bifa unui task
+       `.banda`      (Calendar)   capetele ei poarta inteles — incepe / continua
+       `.cbx`        (global.css) caseta de setari: cercul e deja luat de bifa
+     Prima e cea originala, si restul comentariului e al ei: cutie de 24x22 care
+     trebuie sa ramana DREPTUNGHI. Comentariul de la `.zi.sel .n` explica de ce
      a fost facut asa: rotund se citea ca bifa unui task, iar „31" se umfla intr-un
      oval. Cu `--radius-xs` devenit pastila, acel loc s-ar intoarce tacut in exact
      defectul reparat atunci — deci primeste treapta lui, nu o valoare scrisa de mana. */

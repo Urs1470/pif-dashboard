@@ -627,7 +627,7 @@
         <span class="equip-sub">plăcuța + date drive — completează automat cardurile</span>
       </button>
       <label class="equip-switch" title="Cardurile folosesc datele de mai jos">
-        <input type="checkbox" bind:checked={sharedOn} /> aplică la carduri
+        <input type="checkbox" class="cbx" bind:checked={sharedOn} /> aplică la carduri
       </label>
     </div>
     {#if panelOpen}
@@ -1029,7 +1029,7 @@
     padding: var(--space-6) var(--space-12); border: 1px solid var(--border); border-radius: var(--radius-sm);
     background: var(--bg-surface); cursor: pointer; transition: var(--transition-colors);
   }
-  .surse-btn:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .surse-btn:hover { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .surse { display: flex; flex-direction: column; gap: var(--space-md); }
   .surse-intro { font-size: var(--font-small); color: var(--text-dim); line-height: var(--lh-normal); }
   .surse-sec h3 { font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--accent); margin-bottom: var(--space-xs); }
@@ -1058,8 +1058,8 @@
     background: var(--bg-elevated); cursor: pointer; display: inline-flex; align-items: center; gap: var(--space-xs);
     transition: var(--transition-colors);
   }
-  .equip-foot button:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
-  .equip-foot .ef-import { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
+  .equip-foot button:hover { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
+  .equip-foot .ef-import { color: var(--accent-on-subtle); border-color: var(--accent); background: var(--accent-subtle); }
   .equip-foot .ef-import:hover { filter: brightness(1.07); }
   .equip-name { font-size: var(--font-small); padding: var(--space-6) 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elevated); color: var(--text); width: 130px; }
   /* align-items:end -> inputurile se aliniaza la baza chiar daca o eticheta se rupe pe 2 randuri */
@@ -1076,14 +1076,14 @@
   .equip-chips-h { font-size: var(--font-small); color: var(--text-dim); }
   .equip-chip { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: var(--radius-full); overflow: hidden; }
   .equip-chip > button { font-size: var(--font-small); padding: 3px var(--space-10); color: var(--text-secondary); cursor: pointer; background: var(--bg-surface); }
-  .equip-chip > button:hover { background: var(--accent-subtle); color: var(--accent); }
+  .equip-chip > button:hover { background: var(--accent-subtle); color: var(--accent-on-subtle); }
   .equip-chip .chip-x { padding: 3px var(--space-sm); color: var(--text-dim); border-left: 1px solid var(--border); }
   .equip-msg { font-size: var(--font-small); color: var(--accent); margin-top: var(--space-sm); }
   /* input cu buton de legare la datele partajate */
   .inp-row { display: flex; align-items: stretch; gap: var(--space-xs); margin-top: auto; }
   .inp-row .inp-field { flex: 1; min-width: 0; margin-top: 0; }
   .link-btn { display: flex; align-items: center; justify-content: center; width: 28px; flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-dim); cursor: pointer; background: var(--bg-surface); }
-  .link-btn.on { color: var(--accent); border-color: var(--accent); background: var(--accent-subtle); }
+  .link-btn.on { color: var(--accent-on-subtle); border-color: var(--accent); background: var(--accent-subtle); }
   .link-btn:hover { color: var(--text); border-color: var(--text-dim); }
   .equip-group { margin-top: var(--space-12); }
   .equip-group-h { display: block; font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-dim); text-transform: uppercase; letter-spacing: var(--tracking-label); margin-bottom: var(--space-6); }
@@ -1315,7 +1315,7 @@
     padding: 3px 11px; border-radius: var(--radius-full); border: 1px solid var(--border); background: var(--bg-surface);
     cursor: pointer; transition: var(--transition-colors);
   }
-  .chip:hover { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+  .chip:hover { background: var(--accent-subtle); color: var(--accent-on-subtle); border-color: var(--accent); }
   .reset-btn {
     font-size: var(--font-small);
     color: var(--text-dim);
@@ -1532,7 +1532,7 @@
     font-size: var(--font-small); font-weight: var(--fw-semibold);
     padding: 7px var(--space-12); border-radius: var(--radius-md);
     background: var(--accent-subtle); border: 1px solid var(--accent);
-    color: var(--accent); text-decoration: none; width: fit-content;
+    color: var(--accent-on-subtle); text-decoration: none; width: fit-content;
   }
   .fig-link:hover { filter: brightness(1.07); }
   .term-docs { display: flex; flex-direction: column; gap: var(--space-6); align-items: flex-start; }
