@@ -1588,8 +1588,9 @@
       <!-- ===== GRILA DE LUNA + DENSITATE =====
            Patru saptamani, luni-prima, celule de 52px. Cifra spune ZIUA, bara de
            sub ea spune CAT ai in ea — deci incarcarea saptamanii se citeste din
-           forma, fara sa numeri nimic. Tenta spune STAREA: weekend (suprafata 2),
-           zi cu restante (tenta de danger), ziua aleasa (fill de accent).
+           forma, fara sa numeri nimic. Tenta spune STAREA: weekend (suprafata 2)
+           si zi cu restante (tenta de danger). Ziua ALEASA nu e o tenta, e un reper
+           pe cifra — acelasi obiect ca in Calendar; motivul, la `.mg-cel.activa`.
            A luat locul pistei de perioade: vezi nota de la `gridStart` in <script>. -->
       <section class="mgrila">
         <div class="mg-zile" aria-hidden="true">
@@ -1891,10 +1892,13 @@
      global.css. */
   .toggle.on { background: var(--accent-subtle); color: var(--accent-on-subtle); box-shadow: none; }
   .toggle:disabled { opacity: 0.4; cursor: not-allowed; }
-  /* 4px nu e o treapta din scara (8 chip · 10 control · 14 suprafata · 20 foaie).
-     Cercul e rezervat bifei de task; asta e o casuta de filtru, deci ramane
-     patrata si ia treapta cea mai mica. */
-  /* Raza 5, din desen: la 16px un colt de 8 ar face casuta aproape rotunda. */
+  /* CASUTA DE FILTRU: patrata, cu o raza scrisa de mana, si amandoua cu motiv.
+     Cercul e rezervat bifei de task, deci nu poate fi rotunda. Iar scara nu are
+     treapta pentru ea: sub AURORA cea mai mica treapta e PASTILA (`--radius-xs`),
+     care pe o cutie de 16px da exact cercul de care fugim, iar urmatoarea,
+     `--radius-celula` (8), ar rotunji-o pana aproape de el.
+     5px e valoarea din desen si ramane scrisa de mana — o exceptie de 16px care
+     n-are treapta nu justifica un token nou. */
   .tk-box { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid var(--border-strong); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .toggle.on .tk-box { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
   .skel { display: flex; flex-direction: column; gap: var(--space-sm); }
@@ -1975,7 +1979,7 @@
      cand dubla, cand rupta — exact la granita. `margin-left: -1px` aduce linia
      din corp pe acelasi pixel ca separatorul din antet, la orice latime.
      `granite.has(i - 1)` ramane cum e: el spune CARE muchie, nu unde cade. */
-  .col-line { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -1px; background: var(--border-subtle); }
+  .col-line { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -1px; background: var(--border); }
   /* Granita de grupa coboara din antet prin toate benzile — altfel randul de
      saptamani ar fi o eticheta care nu imparte nimic. */
   .col-line.granita { background: var(--border-strong); }
@@ -2365,7 +2369,7 @@
 
   /* dim, nu faint: indicatiile de gest sunt text de citit (masurat 3.18:1 la
      10.4px, sub AA) — faint e doar pentru etichete/large. */
-  .hint { text-align: center; font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm); border-top: 1px solid var(--border-subtle); }
+  .hint { text-align: center; font-size: var(--font-small); color: var(--text-dim); padding: var(--space-sm); border-top: 1px solid var(--border); }
 
   .drag-label { position: fixed; z-index: var(--z-tooltip); pointer-events: none; background: var(--bg-overlay);
     border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 3px var(--space-sm);
@@ -2470,9 +2474,13 @@
     border-radius: var(--radius-full);
     background: var(--accent);
   }
+  /* PALID INSEAMNA FILL STINS, NU CONTUR — la 3px un inel de 1px pe ambele fete
+     lasa o singura linie de umplere intre ele, deci conturul nu mai spune faza, doar
+     ingroasa culoarea. Aplicatia scrie lectia asta deja de doua ori, amandoua la 4px:
+     `.banda.pregatire` din Calendar (38%) si `.impl-band.pregatire` de mai sus (42%).
+     Banda asta era singura ramasa pe contur, si e cea mai SUBTIRE dintre toate. */
   .mg-banda.pregatire {
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 40%, transparent);
   }
 
   /* WEEKENDUL e suprafata 2: nu e o stare, e un fel de zi. */
@@ -2485,22 +2493,28 @@
      culoare. */
   .mg-cel.rest { background: var(--danger-subtle); }
   .mg-cel.rest .mg-nr { color: var(--danger-deep); }
-  /* ZIUA ALEASA: fill saturat de accent cu cerneala pe el. Ultima regula, deci
-     bate weekendul si restantele — ce ai atins tu e mai important decat ce e ziua
-     de fel, si trebuie sa se vada dintr-o privire unde eşti in grila. */
-  .mg-cel.activa { background: var(--accent); }
-  .mg-cel.activa .mg-nr { color: var(--accent-text); font-weight: var(--fw-semibold); }
-  /* Pe fillul de accent, TOT ce e desenat trece pe cerneala lui — inclusiv banda de
-     perioada, care altfel ar fi accent peste accent, adica invizibila exact pe ziua
-     la care te uiti. Segmentele isi pastreaza ierarhia prin opacitate: restant
-     intreg, de facut mai palid, facut abia vizibil. */
-  .mg-cel.activa .mg-seg { background: var(--accent-text); opacity: .55; }
-  .mg-cel.activa .mg-seg.rest { opacity: 1; }
-  .mg-cel.activa .mg-seg.gata { opacity: .3; }
-  .mg-cel.activa .mg-banda { background: var(--accent-text); opacity: .9; }
-  .mg-cel.activa .mg-banda.pregatire {
-    background: transparent;
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-text) 70%, transparent);
+  /* ZIUA ALEASA: ACELASI SEMN CA IN CALENDAR — reperul sta pe CIFRA, nu pe celula.
+     Pana la 2026-08-24 aici se umplea toata celula de 52px cu accent saturat. Doua
+     lucruri erau in neregula cu asta, si al doilea e mai grav decat primul:
+       1. era al TREILEA obiect cu fill saturat, desi `tokens.css` scrie langa
+          `--fab-*` ca actiunea din dock e „singurul obiect din aplicatie" cu asa
+          ceva — iar o afirmatie de felul asta ori e adevarata, ori nu inseamna nimic;
+       2. tragea dupa ea SASE reguli de compensare. Cand fondul devine accent, tot ce
+          e desenat peste el (patru feluri de segment, doua feluri de banda) trebuie
+          repictat pe `--accent-text` cu ierarhia refacuta din opacitati. Sase reguli
+          care exista doar ca sa repare consecintele uneia singure.
+     Calendarul raspunde la exact aceeasi intrebare — „ce zi am deschis" — cu o cutie
+     de 24x22 pe cifra (`.zi.sel .n`), si de aceea o iau de acolo, la litera: aceeasi
+     marime, aceeasi raza, aceeasi cerneala. Doua ecrane care arata acelasi lucru il
+     arata acum la fel, iar cele sase reguli au disparut.
+     CASTIGUL IN PLUS: fillul acoperea si tenta de restante, deci pe ziua deschisa nu
+     se mai vedea ca are restante. Semnul pe cifra le lasa pe amandoua sa se vada. */
+  .mg-cel.activa .mg-nr {
+    width: 24px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-celula);
+    background: var(--accent); color: var(--accent-text);
+    font-weight: var(--fw-semibold);
   }
 
   .mg-legenda {
@@ -2741,7 +2755,7 @@
   .bl-items { display: flex; flex-wrap: wrap; gap: var(--space-sm); padding: var(--space-xs) var(--space-md) var(--space-md); }
   /* Dunga era `var(--text-dim)` — o linie gri care nu codifica nimic. Se sterge
      fara inlocuitor; severitatea acestui chip o poarta chipul lui de termen. */
-  .bl-chip { display: flex; align-items: center; gap: var(--space-6); padding: var(--space-6) var(--space-sm) var(--space-6) 7px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: grab; max-width: 320px; }
+  .bl-chip { display: flex; align-items: center; gap: var(--space-6); padding: var(--space-6) var(--space-sm) var(--space-6) 7px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: grab; max-width: 320px; }
   .bl-chip:hover { border-color: var(--border-strong); }
   .bl-chip:active { cursor: grabbing; }
   .bl-chip :global(.bl-grip) { color: var(--text-dim); flex-shrink: 0; }
@@ -2842,7 +2856,7 @@
     .mrow { padding: 0; overflow: hidden; position: relative; touch-action: pan-y; }
     .gl-fata { display: flex; align-items: center; gap: var(--space-xs); width: 100%;
                min-height: var(--row-h-mobile); padding: 5px var(--space-sm);
-               background: var(--bg-panel); position: relative; z-index: 1;
+               background: var(--bg-elevated); position: relative; z-index: 1;
                border-radius: var(--radius-md); }
     /* FARA `will-change` PERMANENT. Il tinea fiecare rand din lista, deci pe 40 de
        taskuri erau 40 de straturi de compozitare pastrate tot timpul, si cand nu

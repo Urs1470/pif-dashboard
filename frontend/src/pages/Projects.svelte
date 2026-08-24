@@ -627,9 +627,13 @@
      iar asta comuta statusul. Chevronul o spune fara `title`. Culoarea vine din
      `--st` (STATUS_COLORS), deci fondul se deduce din ea — o singura regula
      pentru amandoua statusurile, nu doua tokenuri scrise de mana. */
-  /* CHIP CU COLTURI DE 8, NU CERC. Scara de raze e „8 chip · 10 control · 14
-     suprafata · 20 foaia · cerc doar bifa"; `--radius-full` facea din status
-     singurul obiect rotund de pe ecran care nu e o bifa.
+  /* PASTILA (`--radius-xs`), ca orice cip de stare — vezi `components/ui/Badge.svelte`,
+     care e acelasi obiect cu alta sursa de culoare. Deosebirea de o BIFA nu mai sta
+     in forma (si bifa e rotunda, si cipul e pastila), ci in marime si in umplere:
+     bifa e un cerc de 20px cu inel, cipul e o pastila lata cu tenta si text.
+     Pana la 2026-08-24 aici scria „CHIP CU COLTURI DE 8, NU CERC", cu scara de raze
+     dinaintea AURORA citata intreaga — deci comentariul cerea o forma pe care
+     tokenul de sub el n-o mai putea produce.
      Si cerneala: era `--st` PLIN peste propria tenta. Text pe tenta ia
      intotdeauna adancul — cum `--st` vine din `STATUS_COLORS` si nu are treapta
      `-deep`, adancul se DERIVA, aceeasi formula ca in `Badge.svelte`. */

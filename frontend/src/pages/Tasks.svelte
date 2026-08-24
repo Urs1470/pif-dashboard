@@ -1315,7 +1315,7 @@
                  titlu, repetarea era zgomot; acum e o coloana, iar o coloana cu
                  goluri nu se mai poate citi pe verticala — si tocmai citirea pe
                  verticala e singurul motiv pentru care e o coloana. -->
-            <span class="ttermen" class:sev={isOverdue(t.data_scadenta)}
+            <span class="termen" class:sev={isOverdue(t.data_scadenta)}
                   class:acum={isToday(t.data_scadenta)}>{termenScurt(t)}</span>            </div>
           </div>
           <!-- Aici se desfacea taskul in lista, pe desktop. A ramas fara declansator
@@ -1929,7 +1929,7 @@
      unui task. O linie punctata le separa de lista fara sa deseneze o a doua cutie. */
   .td-jos { display: flex; align-items: center; gap: var(--space-md);
     margin-top: var(--space-sm); padding-top: var(--space-sm);
-    border-top: 1px dashed var(--border-subtle); }
+    border-top: 1px dashed var(--border); }
   /* IN FOAIE, ACTIUNILE NU SE DERULEAZA (T1c).
      `taskDetail` e acelasi snippet si in randul desfasurat de pe desktop, si in
      foaia de pe telefon — dar numai in foaie corpul deruleaza, deci numai acolo
@@ -2079,13 +2079,8 @@
      Severitatea se citeste din ea SI din inelul bifei, amandoua din `--ring`.
      13, nu 12: pe rand termenul e METADATA, iar 12 e treapta etichetelor
      majuscule — o alta clasa de text, cu alt rol si alt tracking. */
-  .ttermen { flex: none; width: 46px; text-align: right;
-    font-family: var(--font-mono); font-size: var(--font-small);
-    color: var(--text-dim); font-variant-numeric: tabular-nums;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ttermen.sev { color: var(--danger); }
-  /* „azi" gri, ca in desen — inelul bifei poarta accentul; textul doar rosul. */
-  .ttermen.acum { font-weight: var(--fw-medium); }
+  /* Coloana de termen e `.termen`, in `global.css`. Copia de aici era singura la
+     13px, in timp ce celelalte doua liste o desenau la 12. */
 
   /* Pe desktop invelisul de glisare nu exista pentru layout. */
   .gl-fata { display: contents; }
@@ -2097,7 +2092,7 @@
      din stanga si sta pe acelasi fundal. Inainte pareau doua obiecte fara legatura. */
   /* Extinderea: continut in acelasi card, separat doar de o linie subtire. */
   .subtask-body { margin: 0; padding: var(--space-6) var(--space-12) var(--space-12) 34px;
-    border-top: 1px solid var(--border-subtle);
+    border-top: 1px solid var(--border);
     display: flex; flex-direction: column; gap: var(--space-xs); }
 
   /* Actiuni discrete: chip-uri "+ Descriere / + Fisier" in loc de link-uri italic plutinde */
@@ -2146,7 +2141,7 @@
   /* Randul de termen: UN card de o linie, ca „📅 28 Feb 11:00" la Todoist. */
   .ts-rand { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
     min-height: var(--tap-min); padding: 0 var(--space-12); margin-bottom: var(--space-sm);
-    background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);
     color: var(--text-dim); font-size: var(--font-small); text-align: left; cursor: pointer;
     transition: var(--transition-pressable); }
   .ts-rand:hover { border-color: var(--border-strong); }

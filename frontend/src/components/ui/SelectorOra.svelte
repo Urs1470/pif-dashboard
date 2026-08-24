@@ -455,7 +455,7 @@
 
   .so-foot {
     display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
-    margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--border-subtle);
+    margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--border);
   }
   .so-foot-btn {
     display: inline-flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-12);

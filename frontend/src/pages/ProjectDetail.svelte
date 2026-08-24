@@ -1160,7 +1160,7 @@
                     <button class="ta-chip" onclick={() => openTaskEditModal(t)}><SolidIcon name="pencil" size={13} />Editează</button>
                     <button class="ta-chip ta-sterge" onclick={() => { taskDeleteId = t.id; showTaskDelete = true }}><SolidIcon name="trash" size={13} />Șterge</button>
                   </div>
-                  <span class="ttermen" class:sev={isOverdue(t.data_scadenta)}
+                  <span class="termen" class:sev={isOverdue(t.data_scadenta)}
                         class:acum={isToday(t.data_scadenta)}>{termenScurtTask(t)}</span>
                   </div>
                 </div>
@@ -1497,7 +1497,7 @@
   .rcell { background: var(--bg-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: var(--space-md) var(--space-20); }
   .rprog { display: flex; align-items: baseline; gap: var(--space-10); margin-top: var(--space-10); }
   .rprog-num { font-family: var(--font-mono); font-size: var(--font-title); font-weight: var(--fw-semibold); color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
-  .rbar { flex: 1; height: 6px; border-radius: var(--radius-full); background: var(--bg-panel); overflow: hidden; }
+  .rbar { flex: 1; height: 6px; border-radius: var(--radius-full); background: var(--bg-elevated); overflow: hidden; }
   .rbar i { display: block; height: 100%; background: var(--accent); border-radius: var(--radius-full); transition: width var(--dur-base) var(--ease); }
   .rdate { font-family: var(--font-mono); font-size: var(--font-h3); font-weight: var(--fw-semibold); color: var(--text); margin-top: var(--space-10); font-variant-numeric: tabular-nums; }
   .rdate.urgent { color: var(--danger); }
@@ -1744,12 +1744,9 @@
   .ta-dp :global(.dp) { width: auto; }
   .ta-dp :global(.dp-trigger) { min-height: 0; flex-direction: row-reverse; }
 
-  .ttermen { flex: none; width: 46px; text-align: right;
-    font-family: var(--font-mono); font-size: var(--font-label);
-    color: var(--text-dim); font-variant-numeric: tabular-nums;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ttermen.sev { color: var(--danger); }
-  .ttermen.acum { color: var(--accent-deep); font-weight: var(--fw-medium); }
+  /* Coloana de termen e `.termen`, in `global.css`. Copia de aici era singura care
+     colora „azi" in accent — pe un rand care are DEJA inelul bifei in accent, adica
+     acelasi fapt spus de doua ori, cu doua cerneli. */
 
   .task-form { display: flex; flex-direction: column; gap: var(--space-md); }
   /* LA VEDERE, PALIDE — nu ascunse pana la hover.
@@ -1761,7 +1758,7 @@
      ecran tactil sau o tableta in peisaj cadeau exact intre ele. */
 
   /* Done separator */
-  .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border-subtle); text-transform: uppercase; letter-spacing: var(--tracking-label); }
+  .done-sep { display: flex; align-items: center; gap: var(--space-xs); padding: var(--space-sm) var(--space-xs); font-size: var(--font-small); font-weight: var(--fw-semibold); color: var(--text-dim); cursor: pointer; margin-top: var(--space-sm); border-top: 1px solid var(--border); text-transform: uppercase; letter-spacing: var(--tracking-label); }
   .done-sep:hover { color: var(--text-secondary); }
   /* Contorul e `.count.success` din global.css — pastila partajata, nu una
      desenata aici peste `.grup-n`. */
@@ -1780,7 +1777,7 @@
   .ts-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
   .ts-rand { display: flex; align-items: center; gap: var(--space-sm); width: 100%;
     min-height: var(--tap-min); padding: 0 var(--space-12); margin-bottom: var(--space-sm);
-    background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);
     color: var(--text-dim); font-size: var(--font-small); text-align: left; cursor: pointer;
     transition: var(--transition-pressable); }
   .ts-rand:hover { border-color: var(--border-strong); }
@@ -1799,12 +1796,12 @@
   /* Corpul taskului sta acum in foaie/panou, nu indentat sub un rand din lista:
      fara cei 34px de spina din stanga. */
   .subtask-body { margin: 0; padding: 0;
-    border-top: 1px solid var(--border-subtle);
+    border-top: 1px solid var(--border);
     display: flex; flex-direction: column; gap: var(--space-xs); }
   .td-nota { margin-bottom: var(--space-sm); font-size: var(--font-small); color: var(--text-secondary); }
   .td-jos { display: flex; align-items: center; gap: var(--space-md);
     margin-top: var(--space-sm); padding-top: var(--space-sm);
-    border-top: 1px dashed var(--border-subtle); }
+    border-top: 1px dashed var(--border); }
   .td-link { display: inline-flex; align-items: center; gap: var(--space-6); padding: 0;
     background: none; border: none; color: var(--text-dim);
     font-size: var(--font-small); cursor: pointer; transition: var(--transition-colors); }

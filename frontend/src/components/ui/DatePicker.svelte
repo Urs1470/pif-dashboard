@@ -310,7 +310,7 @@
   .dp-day.selected { background: var(--accent); color: var(--accent-text); font-weight: var(--fw-semibold); }
   .dp-day.selected:hover { background: var(--accent); color: var(--accent-text); }
 
-  .dp-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--border-subtle); }
+  .dp-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-top: var(--space-10); padding-top: var(--space-10); border-top: 1px solid var(--border); }
   .dp-foot-btn {
     display: inline-flex; align-items: center; gap: var(--space-xs); padding: 5px var(--space-12);
     border-radius: var(--radius-full); font-size: var(--font-small); font-weight: var(--fw-semibold);

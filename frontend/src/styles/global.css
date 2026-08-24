@@ -440,8 +440,8 @@ input:focus, select:focus, textarea:focus {
    intra. Din momentul asta ridicarea degetului bifeaza — si se vede. */
 .gl-bifa .gl-pista { background: var(--success); }
 .gl-bifa .gl-pista .gl-ico {
-  color: var(--on-color);
-  background: var(--on-color);
+  color: var(--accent-text);
+  background: var(--accent-text);
   box-shadow: none;
   opacity: 1;
   animation: glPoc var(--dur-base) var(--ease);
@@ -449,7 +449,7 @@ input:focus, select:focus, textarea:focus {
 .gl-bifa .gl-pista .gl-ico :global(svg),
 .gl-bifa .gl-pista .gl-ico svg { color: var(--success); }
 .gl-bifa .gl-pista .gl-et {
-  color: var(--on-color);
+  color: var(--accent-text);
   opacity: 1;
   transform: none;
 }
@@ -509,14 +509,14 @@ input:focus, select:focus, textarea:focus {
 }
 .gl-amana .gl-pista-s { background: var(--accent); }
 .gl-amana .gl-pista-s .gl-ico-s {
-  color: var(--on-color);
-  background: var(--on-color);
+  color: var(--accent-text);
+  background: var(--accent-text);
   box-shadow: none;
   opacity: 1;
   animation: glPoc var(--dur-base) var(--ease);
 }
 .gl-amana .gl-pista-s .gl-ico-s svg { color: var(--accent); }
-.gl-amana .gl-pista-s .gl-et-s { color: var(--on-color); opacity: 1; transform: none; }
+.gl-amana .gl-pista-s .gl-et-s { color: var(--accent-text); opacity: 1; transform: none; }
 /* ===== ACEEASI PISTA PE RANDUL DE SUBTASK, DAR VERBUL E „Șterge" =====
    Pe telefon pubela statea PERMANENT pe fiecare rand (hover nu exista, deci
    regula devenise „e mereu acolo"): pe 390px randul avea 70px de mecanica —
@@ -531,9 +531,9 @@ input:focus, select:focus, textarea:focus {
 .gl-sub .gl-pista-s .gl-ico-s,
 .gl-sub .gl-pista-s .gl-et-s { color: var(--danger); }
 .gl-sub.gl-amana .gl-pista-s { background: var(--danger); }
-.gl-sub.gl-amana .gl-pista-s .gl-ico-s { color: var(--on-color); background: var(--on-color); }
+.gl-sub.gl-amana .gl-pista-s .gl-ico-s { color: var(--accent-text); background: var(--accent-text); }
 .gl-sub.gl-amana .gl-pista-s .gl-ico-s svg { color: var(--danger); }
-.gl-sub.gl-amana .gl-pista-s .gl-et-s { color: var(--on-color); }
+.gl-sub.gl-amana .gl-pista-s .gl-et-s { color: var(--accent-text); }
 
 /* Un singur raspuns la „ce se intampla daca dau drumul": cele doua piste nu se
    vad niciodata deodata. */
@@ -908,6 +908,38 @@ input[type="checkbox"].cbx:focus {
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 input[type="checkbox"].cbx:active { transform: scale(0.92); }
+
+
+/* O SINGURA COLOANA DE TERMEN.
+   Traia in trei copii — `.atermen` (Acasa) si `.ttermen` (Taskuri, pagina de
+   proiect) — cu trei raspunsuri diferite: 12px vs 13px, depasitul ingrosat intr-un
+   loc si nu in celelalte, iar „azi" colorat in accent pe pagina de proiect si gri
+   in restul. Comentariul din `TodayBoard.svelte` sustinea ca e „aceeasi ca in
+   /tasks, pana la pixel"; nu era, de la prima diferenta.
+
+   CE RAMANE, si de ce:
+   · 12px MONO, aliniat la dreapta, latime fixa de 46 — coloana asta se citeste PE
+     VERTICALA, si de-aia e coloana; `tabular-nums` ca cifrele sa nu danseze.
+   · DEPASIT = rosu, atat. Fara greutate peste: culoarea spune deja tot, iar pe
+     Acasa — unde aproape totul e azi sau restant — al doilea semn ar face pagina
+     sa strige.
+   · AZI = gri cu greutate, NU accent. Accentul pentru „azi" il poarta deja inelul
+     bifei, pe acelasi rand; a doua oara ar fi doua canale colorate pentru acelasi
+     fapt. (Regula era scrisa in doua din cele trei copii, si incalcata in a treia.) */
+.termen {
+  flex: none;
+  width: 46px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: var(--font-label);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.termen.sev { color: var(--danger); }
+.termen.acum { font-weight: var(--fw-medium); }
 
 /* O SINGURA BIFA, SI SEVERITATEA E PE EA.
    Era definita in trei fisiere la patru marimi (18 / 16 / 14 / 22), plus inca o
@@ -1415,7 +1447,7 @@ html.prima-incarcare.splash-a-lucrat .cell-in { animation: none; }
   transition: background-color var(--dur-fast) var(--ease);
 }
 .rowlist .row:last-child { border-bottom: none; }
-.rowlist .row:hover { background: var(--bg-panel); }
+.rowlist .row:hover { background: var(--bg-elevated); }
 
 /* Print (Planificator PDF export): hide app chrome + let the page own the sheet.
    Gated on body.plan-printing so only the Planificator export triggers it. */

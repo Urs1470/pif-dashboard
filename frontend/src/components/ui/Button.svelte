@@ -26,11 +26,18 @@
     justify-content: center;
     gap: var(--space-xs);
     font-weight: var(--fw-semibold);
-    /* RAZA DE CONTROL (10), NU DE SUPRAFATA (14).
-       Scara are patru trepte cu roluri scrise: 8 chip · 10 control si rand ·
-       14 suprafata · 20 foaie. Butonul e un control, si asa il arata toate
-       desenele; la 14 avea aceeasi rotunjire ca un card, deci se citea ca o
-       suprafata mica in loc de o tinta. */
+    /* RAZA DE RAND SI CAMP (14), NU DE SUPRAFATA (24).
+       Scara de AZI, cea din AURORA: `--radius-xs` pastila (cip si control MIC) ·
+       `--radius-sm` 14 (rand si camp) · `--radius-md` 24 (suprafata) ·
+       `--radius-lg` 30 (dock si foaie). Butonul plin sta pe treapta campului,
+       fiindca cel mai des sta LANGA un camp, intr-un formular, si cele doua trebuie
+       sa aiba aceeasi cutie. Pastila e a controlului mic (`.btn-sm`, cipuri), nu a
+       acestuia.
+       Argumentul de dinainte se pastreaza, doar ca numerele s-au mutat: la raza de
+       SUPRAFATA butonul se citeste ca un card mic, nu ca o tinta. Pana la
+       2026-08-24 randurile astea recitau scara dinaintea redesignului („8 chip ·
+       10 control · 14 suprafata") si spuneau „NU 14" deasupra unei linii care
+       tocmai asta cerea. */
     border-radius: var(--radius-sm);
     /* CHENAR TRANSPARENT PE TOATE VARIANTELE, ca sa aiba aceeasi cutie.
        Doar `.btn-secondary` are chenar vizibil. Fara linia asta, el iesea cu 2px
@@ -116,7 +123,7 @@
 
   .btn-danger {
     background: var(--danger);
-    color: var(--on-color);
+    color: var(--accent-text);
   }
   /* Ca la `.btn-primary`: hoverul merge spre varianta ADANCA, nu pe opacitate —
      care s-ar inmulti peste cerneala si ar scoate textul sub prag. */

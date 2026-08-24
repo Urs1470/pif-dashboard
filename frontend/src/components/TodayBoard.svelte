@@ -499,7 +499,7 @@
                     title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={14} strokeWidth={1.5} />Scoate</button>
           </div>
           </div>
-          <span class="atermen" class:sev={isOverdue(it.data_scadenta)}
+          <span class="termen" class:sev={isOverdue(it.data_scadenta)}
                 class:acum={isToday(it.data_scadenta)}>{termenScurt(it)}</span>
           </div>
         </div>
@@ -567,7 +567,7 @@
                     title="Scoate termenul — taskul se întoarce în „fără termen”"><X size={14} strokeWidth={1.5} />Scoate</button>
           </div>
           </div>
-          <span class="atermen" class:sev={isOverdue(it.data_scadenta)}
+          <span class="termen" class:sev={isOverdue(it.data_scadenta)}
                 class:acum={isToday(it.data_scadenta)}>{termenScurt(it)}</span>
           </div>
         </div>
@@ -790,7 +790,7 @@
      celorlalte si NU are tranzitie pe transform — altfel `.arow`-ul de mai sus i-ar
      interpola fiecare cadru si randul ar merge in urma degetului. Vecinii, dimpotriva,
      se dau la o parte cu tranzitie: acolo miscarea trebuie sa se vada ca o mutare. */
-  .arow:global(.reord-tras) { z-index: 3; transition: none; box-shadow: var(--shadow-lg);
+  .arow:global(.reord-tras) { z-index: 3; transition: none; box-shadow: var(--shadow-md);
                               border-color: var(--accent); }
   /* Cat timp tragi, restul randurilor nu mai raspund la atingere: degetul e ocupat. */
   .a-list:global(.reord-activ) .arow:not(:global(.reord-tras)) { pointer-events: none; }
@@ -841,16 +841,9 @@
   /* `.a-pasi` a urcat pe linia titlului si se numeste `.tpasi` (global.css):
      acelasi fapt purta doua haine, una aici si niciuna in celelalte trei liste. */
 
-  /* COLOANA DE TERMEN — aceeasi ca in /tasks, pana la pixel. */
-  .atermen { flex: none; width: 46px; text-align: right;
-    font-family: var(--font-mono); font-size: var(--font-label);
-    color: var(--text-dim); font-variant-numeric: tabular-nums;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .atermen.sev { color: var(--danger); font-weight: var(--fw-medium); }
-  /* „azi" ramane GRI (desen 3a): severitatea de „azi" o spune inelul bifei, in
-     accent; textul se coloreaza doar cand e depasit. Doua canale colorate pentru
-     aceeasi treapta ar face boardul — unde totul e azi sau restant — sa strige. */
-  .atermen.acum { font-weight: var(--fw-medium); }
+  /* Coloana de termen e `.termen`, in `global.css` — o singura definitie pentru
+     toate cele trei liste. Aici statea o copie care se declara „aceeasi ca in
+     /tasks, pana la pixel" si nu era. */
 
   /* Invelisul nu are geometrie proprie pe desktop: e doar ce cade pe linia a
      doua PE TELEFON, intreg. Fara `display: contents` aici, cele doua lucruri

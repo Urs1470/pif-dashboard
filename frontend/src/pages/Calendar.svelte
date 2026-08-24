@@ -2391,7 +2391,7 @@
     padding: var(--space-12) var(--space-2xs) var(--space-6); border-top: 1px solid var(--border);
     font-family: var(--font-mono); font-size: var(--font-label);
     letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-dim); }
-  .ag-linie { flex: 1; height: 1px; background: var(--border-subtle); }
+  .ag-linie { flex: 1; height: 1px; background: var(--border); }
   .ag-n { font-variant-numeric: tabular-nums; }
   /* RANDURILE NU SUNT CARDURI (M5). Erau fill tentat plus chenar de 1px — pe
      fundalul paginii, una sub alta, faceau o coloana de cutii in care ochiul

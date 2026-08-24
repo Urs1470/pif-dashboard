@@ -68,7 +68,7 @@
     border-left: 3px solid var(--border); margin: 0.7em 0; padding: var(--space-2xs) 0 var(--space-2xs) var(--space-14);
     color: var(--text-secondary);
   }
-  .md-rendered :global(hr) { border: none; border-top: 1px solid var(--border-subtle); margin: 1.2em 0; }
+  .md-rendered :global(hr) { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
   /* TABEL CU DOAR LINII DE RAND. Grila completa (chenar pe fiecare celula) plus
      fond pe antet desena o cutie in mijlocul unui text care n-are nicio alta
      cutie: liniile orizontale ajung ca sa urmaresti un rand, iar cele verticale

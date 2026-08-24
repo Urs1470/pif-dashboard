@@ -132,13 +132,19 @@
      scris in cele ~70 de fisiere. Fiecare are motivul lui scris.
      ================================================================ */
 
-  /* Erau doua trepte sub `--text-dim`. Sistemul spune ca `--text-dim` e podeaua
-     pentru text mic; deci a doua treapta nu e o alegere, e o abatere. Colapsata. */
-  --text-faint: var(--text-dim);
-  /* Linia subtire nu mai e o a treia culoare: e aceeasi linie. */
-  --border-subtle: var(--border);
-  /* Panoul si campul sunt „suprafata 2". */
-  --bg-panel: var(--bg-elevated);
+  /* CE S-A INTAMPLAT CU ALIASURILE DE MIGRARE (2026-08-24).
+     Redesignul din august a scos trepte din sistem — a doua treapta de text sub
+     `--text-dim`, a treia linie, a doua umbra — dar le-a lasat NUMELE ca aliasuri, ca
+     sa nu se strice locurile care le foloseau. Locurile alea au fost mutate acum pe
+     rol (32 de apeluri), iar numele au plecat cu ele: `--text-faint`, `--border-subtle`,
+     `--shadow-lg`, `--shadow-glow-accent`, `--on-color` (al doilea nume al lui
+     `--accent-text`) si `--bg-panel` (al doilea nume al suprafetei 2).
+     Motivul nu e curatenia, e cautarea: cat timp acelasi lucru se scrie cu doua nume,
+     cine cauta dupa ROL nu le gaseste pe toate — si asa a trecut neobservata jumatate
+     din inventarul de consecventa din 2026-08-24. Iar un nume care declara o treapta
+     inexistenta o invita inapoi. */
+  /* Campul are nume propriu, si RAMANE: azi e suprafata 2, dar e o alegere care se
+     poate schimba singura — un ROL, nu o prescurtare. La fel `--bg-overlay` mai jos. */
   --bg-input: var(--bg-elevated);
   /* Suprafata flotanta e tot suprafata — se desprinde prin umbra, nu prin ton. */
   --bg-overlay: var(--bg-surface);
@@ -179,13 +185,6 @@
      raman ca sa nu ramana referinte moarte, dar sunt neutre. */
   --loc-site: var(--text-secondary);
   --loc-sediu: var(--text-dim);
-
-  /* Cerneala pe un fill saturat. */
-  --on-color: var(--accent-text);
-
-  /* Umbra mare si glowul colorat au plecat din sistem (doua niveluri, atat). */
-  --shadow-lg: var(--shadow-md);
-  --shadow-glow-accent: var(--shadow-md);
 
   /* SERIILE DE GRAFIC raman trei culori distincte — acolo culoarea e DATE
      (curbe de motor in Calculator), nu identitate de brand. Sunt aceleasi pe

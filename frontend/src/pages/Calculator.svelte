@@ -1184,7 +1184,7 @@
   .search-ic { position: absolute; left: 12px; display: flex; color: var(--text-dim); pointer-events: none; }
   .search-inp {
     width: 100%; padding: 9px 38px; border: 1px solid var(--border); border-radius: var(--radius-full);
-    background: var(--bg-panel); color: var(--text); font-size: var(--font-body);
+    background: var(--bg-elevated); color: var(--text); font-size: var(--font-body);
     transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
   }
   .search-inp:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus-ring); }
@@ -1294,7 +1294,7 @@
   .ac-list {
     position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; right: 0;
     background: var(--bg-overlay); border: 1px solid var(--border); border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg); padding: var(--space-xs);
+    box-shadow: var(--shadow-md); padding: var(--space-xs);
   }
   .ac-item {
     display: flex; align-items: center; justify-content: space-between; gap: var(--space-10); width: 100%;

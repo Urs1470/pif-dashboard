@@ -64,7 +64,7 @@
     color: var(--accent-text);
     font-size: var(--font-small);
     font-weight: var(--fw-semibold);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
     cursor: pointer;
   }
   .urma:active { transform: scale(var(--press-scale)); }

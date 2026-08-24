@@ -1177,7 +1177,7 @@
     max-height: 85dvh;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
   }
   .modal-sm { max-width: 400px; }
   .modal-md { max-width: 560px; }

@@ -7,10 +7,15 @@
 </span>
 
 <style>
-  /* CHIP CU COLTURI DE 8, NU PASTILA ROTUNDA (desen Proiecte 3a + scara de raze:
-     „cerc doar bifa"). Punctul colorat a plecat: fondul tentat spune deja
-     culoarea, iar la 5px punctul era doar zgomot. Textul ramane cum e scris —
-     „Finalizat", nu „FINALIZAT": e o stare, nu o eticheta de sectiune. */
+  /* PASTILA, si asta e forma CORECTA sub AURORA: `--radius-xs` inseamna pastila
+     (999), iar cipul de stare e chiar obiectul pe care schimbarea aia il tintea.
+     Pana la 2026-08-24 aici scria opusul — „CHIP CU COLTURI DE 8, NU PASTILA
+     ROTUNDA" — dintr-o scara de raze care nu mai exista de la redesign. Codul era
+     bun, comentariul minţea, si asta e mai rau: comentariul e singurul loc unde se
+     citeste INTENTIA unei valori, deci un comentariu vechi produce defecte noi.
+     Punctul colorat a plecat: fondul tentat spune deja culoarea, iar la 5px punctul
+     era doar zgomot. Textul ramane cum e scris — „Finalizat", nu „FINALIZAT": e o
+     stare, nu o eticheta de sectiune. */
   .badge {
     display: inline-flex;
     align-items: center;
