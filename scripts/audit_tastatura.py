@@ -480,9 +480,9 @@ def main():
             if len(randuri) > 3:
                 x, y = centru(randuri[3])
                 tap(cdp, page, x, y, 800)
-                link = page.query_selector('.modal.sheet .td-link')
+                link = page.query_selector('.modal.sheet .dt-nota-sec button')
                 if link is None:
-                    bifa(False, 'foaia are „Adaugă notă"', 'lipseste .td-link')
+                    bifa(False, 'foaia are „Adaugă notă"', 'lipseste afordanța de notă')
                 else:
                     xx, yy = centru(link)
                     tap(cdp, page, xx, yy, 900)

@@ -37,7 +37,7 @@
   import { loadCandidates, scheduleForToday, moveToDate, removeFromToday } from '../stores/agenda.svelte.js'
   import { createGlobalTask, createTask } from '../stores/tasks.svelte.js'
   import { projects, loadProjects } from '../stores/projects.svelte.js'
-  import { grupeazaDupaTermen, ORDINE_GRUPE, etichetaTermenScurt } from '../lib/grupare.js'
+  import { grupeazaDupaTermen, ORDINE_GRUPE, etichetaTermen } from '../lib/grupare.js'
   import { dueRing } from '../lib/formatters.js'
   import { culoareProiect } from '../lib/culori.js'
   import { parseTask } from '../lib/parserTask.js'
@@ -129,6 +129,16 @@
   const ziAleasa = $derived(refuzZi ? null : citit.zi)
   const oraAleasa = $derived(refuzOra ? null : (oraSePoate ? citit.ora : null))
   const titluCurat = $derived(citit.titlu)
+
+  // A DOUA LINIE A RANDULUI-EROU: „task nou · mâine · Stație Biochem" (handoff „1a").
+  // O propozitie linistita in loc de un rand de cipuri — spune acelasi lucru (ce s-a
+  // inteles), dar sub titlu, ca metadata, nu ca butoane. La editare nu e „task nou".
+  const metaCreare = $derived([
+    editeaza ? null : 'task nou',
+    ziAleasa && citit.etichetaZi ? citit.etichetaZi : null,
+    oraAleasa || null,
+    proiectAles?.nume || null,
+  ].filter(Boolean).join(' · '))
 
   async function runSearch() {
     loading = true
@@ -235,6 +245,18 @@
     if (it.tip === 'proiect' && it.proiect_nume) return it.proiect_nume
     if (it.categorie && it.categorie !== 'General') return it.categorie
     return ''
+  }
+
+  /** A doua linie a unui rand din „Există deja". Coloana de termen din dreapta a
+   *  plecat (randurile sunt grupate pe zi acum), deci pentru grupele care se intind
+   *  pe mai multe zile — „Zilele astea", „Mai târziu" — ziua se muta AICI, langa
+   *  proiect: „Hala 2 · vineri". Pentru „Azi"/„Mâine"/„Restante" capul grupei spune
+   *  deja ziua, deci n-o repetam. */
+  function contextRand(it, gid) {
+    const unde = undeE(it)
+    const zi = (gid === 'saptamana' || gid === 'tarziu') ? etichetaTermen(it.data_scadenta) : ''
+    if (unde && zi) return `${unde} · ${zi}`
+    return unde || zi || ''
   }
 
   /** Titlul taiat in bucati, ca potrivirea sa se poata ingrosa fara sa se
@@ -382,23 +404,21 @@
   }
 </script>
 
-<!-- `lg` (720), nu `md` (560). Ion, 2026-08-21: „pe desktop nu are sens sa fie
-     atat de mic." Randul foii are trei coloane — bifa, titlu + proiect, termen
-     pironit la 46 — deci latimea se duce toata in coloana din mijloc, unde stau
-     exact cele doua lucruri lungi: titlul si numele lucrarii. La 560 se taiau
-     amandoua pe un ecran care avea 1440. -->
-<!-- Foaie NORMALA de jos (`size="lg"`), ca modalul de detalii task si ca foaia
-     de la apasarea lunga — Ion, 2026-08-21: „vreau o animatie lina precum la
-     modalul detalii task sau la atingere lunga." Deschiderea e o singura
-     alunecare de jos; tastatura vine DUPA ce foaia s-a asezat (vezi efectul de
-     focus, secventiat), deci nu concureaza cu deschiderea. -->
-<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="lg">
+<!-- `md` (~520), nu `lg` (720). Redesignul „1a" (handoff 2026-08-24) scoate coloana
+     de termen din randurile „există deja" (acum grupate pe zi), deci cele doua lucruri
+     lungi — titlul si numele lucrarii — nu mai impart latimea cu o a treia coloana si
+     incap intr-un modal calm de creare, centrat pe desktop. (Rastoarna cererea de `lg`
+     din 2026-08-21, care era pentru randul cu trei coloane de atunci.) -->
+<!-- Foaie NORMALA de jos, ca modalul de detalii task si ca foaia de la apasarea
+     lunga — o singura alunecare; tastatura vine DUPA ce s-a asezat (efectul de focus,
+     secventiat), deci nu concureaza cu deschiderea. -->
+<Modal bind:open={deschis} onclose={() => open = false} title={editeaza ? 'Editează task' : 'Adaugă task'} size="md">
   <div class="fa">
     <!-- RANDUL DE SUS *ESTE* CAMPUL: 56px, lupa 17, text 16 (sub 16 Safari face
          zoom la focus), si contorul „N din M" in mono la dreapta — cifre care se
          compara, deci exact cazul pentru DM Mono. -->
     <div class="fa-cauta">
-      <Search size={17} strokeWidth={1.5} />
+      <span class="fa-lupa"><Search size={17} strokeWidth={1.5} /></span>
       <input type="text" placeholder="Ce ai de făcut?" bind:value={q} bind:this={campEl}
              onkeydown={(e) => { if (e.key === 'Enter' && titluCurat.trim()) { e.preventDefault(); editeaza ? salveaza() : creeaza() } }} />
       {#if q.trim() && items.length}<span class="fa-nr">{items.length} din {total}</span>{/if}
@@ -410,49 +430,52 @@
       {/if}
     </div>
 
-    <!-- CE A INTELES, CA CHIPURI. Ziua pe tenta de accent (cerneala `-deep`, cum
-         cere regula: text pe tenta ia varianta adanca), proiectul pe suprafata 2
-         cu punctul lui de culoare — deci se deosebesc dintr-o privire, fara sa
-         citesti. Fiecare are `×`: ce a ghicit aplicaţia trebuie sa se poata
-         refuza, altfel parserul devine o surpriza. -->
+    <!-- CE A INTELES, CA O PROPOZITIE LINISTITA — nu un rand de cipuri (handoff „1a").
+         „Se planifică mâine · ● Stație Biochem": ziua in cerneala de accent (varianta
+         adanca, cum cere regula: text pe tenta/langa accent ia `-deep`), proiectul cu
+         punctul lui de culoare. Fiecare are un `×` mic: ce a ghicit aplicatia trebuie
+         sa se poata refuza, altfel parserul devine o surpriza. -->
     {#if (ziAleasa && citit.etichetaZi) || oraAleasa || proiectAles}
-      <div class="fa-chipuri">
+      <div class="fa-linie">
+        {#if (ziAleasa && citit.etichetaZi) || oraAleasa}<span class="fa-l-lead">Se planifică</span>{/if}
         {#if ziAleasa && citit.etichetaZi}
-          <span class="fa-chip zi">
-            {citit.etichetaZi}
-            <button onclick={() => refuzZi = true} aria-label="Scoate ziua"><X size={12} strokeWidth={2.5} /></button>
+          <span class="fa-cheie">{citit.etichetaZi}
+            <button onclick={() => refuzZi = true} aria-label="Scoate ziua"><X size={11} strokeWidth={3} /></button>
           </span>
         {/if}
-        <!-- Ora, pe aceeasi tenta ca ziua: sunt acelasi fel de fapt („cand"), deci
-             n-au voie sa se citeasca drept doua clase de informatie. Cifrele sunt
-             mono — se compara pe verticala cu termenele din lista de dedesubt. -->
+        <!-- Ora, pe aceeasi cerneala ca ziua: acelasi fel de fapt („cand"). Cifrele
+             sunt mono — se compara pe verticala cu termenele din lista de dedesubt. -->
         {#if oraAleasa}
-          <span class="fa-chip zi">
-            <span class="fa-ora">{oraAleasa}</span>
-            <button onclick={() => refuzOra = true} aria-label="Scoate ora"><X size={12} strokeWidth={2.5} /></button>
+          <span class="fa-cheie"><span class="fa-ora">{oraAleasa}</span>
+            <button onclick={() => refuzOra = true} aria-label="Scoate ora"><X size={11} strokeWidth={3} /></button>
           </span>
         {/if}
         {#if proiectAles}
-          <span class="fa-chip proj">
+          {#if (ziAleasa && citit.etichetaZi) || oraAleasa}<span class="fa-l-pct">·</span>{/if}
+          <span class="fa-cheie-proj">
             <span class="fa-dot" style="background: {culoareProiect(proiectAles.id)}"></span>
             {proiectAles.nume}
-            <button onclick={() => refuzProiect = true} aria-label="Scoate proiectul"><X size={12} strokeWidth={2.5} /></button>
+            <button onclick={() => refuzProiect = true} aria-label="Scoate proiectul"><X size={11} strokeWidth={3} /></button>
           </span>
         {/if}
       </div>
     {/if}
 
     <div class="fa-list">
-      <!-- PRIMUL RAND E CREAREA, si e primul dinadins: cel mai des chiar vrei un
-           task nou. 52px (`--row-h-mobile`) — aceeasi inaltime ca randurile de
-           dedesubt, ca lista sa fie o lista, nu un buton plus o lista. -->
+      <!-- RANDUL-EROU E PRIMUL, dinadins: cel mai des chiar vrei un task nou.
+           Cerc plin de accent cu „+", titlul pe un rand, iar dedesubt propozitia
+           „task nou · mâine · Stație Biochem" (handoff „1a"). `↵` la dreapta spune
+           ca Enter creeaza; pe telefon dispare (nu exista Enter fizic — vezi CSS). -->
       {#if titluCurat.trim()}
         <button class="fa-creeaza" onclick={editeaza ? salveaza : creeaza} disabled={creating}>
           <span class="fa-plus">
-            {#if editeaza}<Check size={17} strokeWidth={2.5} />{:else}<Plus size={17} strokeWidth={2} />{/if}
+            {#if editeaza}<Check size={17} strokeWidth={2.5} />{:else}<Plus size={17} strokeWidth={2.5} />{/if}
           </span>
-          <span class="fa-ct">{editeaza ? 'Salvează' : 'Creează'} „{titluCurat}"</span>
-          {#if ziAleasa && citit.etichetaZi}<span class="fa-cz">{citit.etichetaZi}</span>{/if}
+          <span class="fa-ct-wrap">
+            <span class="fa-ct">{editeaza ? 'Salvează' : 'Creează'} „{titluCurat}"</span>
+            {#if metaCreare}<span class="fa-meta">{metaCreare}</span>{/if}
+          </span>
+          <span class="fa-enter" aria-hidden="true">↵</span>
         </button>
       {/if}
 
@@ -460,10 +483,13 @@
         <div class="fa-schelet"><Skeleton varianta="rand" randuri={3} /></div>
       {:else if items.length > 0 && !editeaza}
         <div class="fa-cap">Există deja</div>
+        <!-- GRUPAT PE ZI, cu cap de grup — nu o coloana de termen la dreapta (handoff
+             „1a"). Capul zilei poarta ziua; randul poarta titlul si proiectul. Pentru
+             grupele care se intind pe mai multe zile, `contextRand` muta ziua pe rand. -->
         {#each ORDINE_GRUPE as gid (gid)}
           {#if grupe[gid]?.items.length}
-            {#each grupe[gid].items as it, i (it.tip + ':' + it.id)}
-              {#if i > 0}<span class="fa-sep"></span>{/if}
+            <div class="fa-subcap" class:azi={grupe[gid].ton === 'accent'} class:rest={grupe[gid].ton === 'danger'}>{grupe[gid].titlu}</div>
+            {#each grupe[gid].items as it (it.tip + ':' + it.id)}
               <button class="fa-rand" style="--ring: {dueRing(it.data_scadenta)}" onclick={() => alege(it)}>
                 <span class="check-empty"></span>
                 <span class="fa-titlu">
@@ -471,11 +497,8 @@
                     <span class="fa-tx">{#each bucati(it.titlu, q) as b}{#if b.m}<mark>{b.text}</mark>{:else}{b.text}{/if}{/each}</span>
                     <ContorPasi gata={it.subtask_done || 0} total={it.subtask_total || 0} />
                   </span>
-                  <!-- A doua linie, doar cand are ce spune — ca pe board: text gri
-                       sub titlu, nicio pastila. Subordonarea o da pozitia. -->
-                  {#if undeE(it)}<span class="fa-unde">{undeE(it)}</span>{/if}
+                  {#if contextRand(it, gid)}<span class="fa-unde">{contextRand(it, gid)}</span>{/if}
                 </span>
-                <span class="fa-termen">{etichetaTermenScurt(it.data_scadenta)}</span>
               </button>
             {/each}
           {/if}
@@ -549,6 +572,9 @@
     color: var(--text-dim);
     flex: none;
   }
+  /* Lupa e in ACCENT (handoff „1a"): campul de scriere e inima foii, iar accentul
+     spune „aici incepe". Singura iconita de accent din foaie. */
+  .fa-lupa { display: flex; flex: none; color: var(--accent); }
   .fa-cauta input {
     flex: 1;
     min-width: 0;
@@ -601,43 +627,53 @@
      e deschis, deci trebuie sa se vada fara sa cauti. */
   .fa-mic.asculta { background: var(--accent); color: var(--accent-text); }
 
-  .fa-chipuri {
+  /* CE A INTELES, CA O LINIE (nu cipuri): „Se planifică mâine · ● Biochem". */
+  .fa-linie {
     display: flex;
     flex: none;
+    align-items: center;
     flex-wrap: wrap;
-    gap: var(--space-6);
+    gap: 7px;
     padding: var(--space-10) var(--space-20);
     border-bottom: 1px solid var(--border);
+    font-size: var(--font-small);
+    color: var(--text-dim);
   }
-  /* Raza 8 = treapta de chip. */
-  .fa-chip {
+  .fa-l-lead { color: var(--text-dim); }
+  .fa-l-pct { color: var(--text-dim); opacity: .5; }
+  /* Ziua/ora — cerneala de accent adanca (text langa accent ia `-deep`). */
+  .fa-cheie {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--accent-deep);
+    font-weight: var(--fw-medium);
+  }
+  .fa-cheie-proj {
     display: inline-flex;
     align-items: center;
     gap: var(--space-6);
-    height: 26px;
-    padding: 0 var(--space-xs) 0 9px;
-    border-radius: var(--radius-xs);
-    font-size: var(--font-small);
+    color: var(--text-secondary);
     font-weight: var(--fw-medium);
   }
-  /* Text pe tenta ia varianta adanca — regula scrisa in tokens.css. */
-  .fa-chip.zi { background: var(--accent-subtle); color: var(--accent-deep); }
-  /* Cifrele orei sunt mono si tabulare: se compara pe verticala cu coloana de
-     termene din lista, si nu au voie sa-si schimbe latimea la fiecare tasta. */
+  /* Cifrele orei sunt mono si tabulare: se compara pe verticala cu termenele. */
   .fa-ora { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .fa-chip.proj { background: var(--bg-elevated); color: var(--text-secondary); }
   .fa-dot { width: 7px; height: 7px; border-radius: var(--radius-full); flex: none; }
-  .fa-chip button {
+  .fa-cheie button,
+  .fa-cheie-proj button {
     display: grid;
     place-items: center;
     width: 22px;
     height: 22px;
+    margin-left: -2px;
     border-radius: var(--radius-full);
     color: inherit;
-    opacity: .65;
+    opacity: .55;
     cursor: pointer;
+    transition: var(--transition-colors);
   }
-  .fa-chip button:hover { opacity: 1; background: color-mix(in oklab, currentColor 14%, transparent); }
+  .fa-cheie button:hover,
+  .fa-cheie-proj button:hover { opacity: 1; background: color-mix(in oklab, currentColor 14%, transparent); }
 
   /* Si pe desktop lista are inaltime FIXA, din acelasi motiv: caseta e centrata,
      deci cand se scurteaza se muta si sus si jos — de doua ori mai mult decat pe
@@ -646,21 +682,20 @@
      subsolul) isi tin inaltimea, iar restul e lista si deruleaza inauntru. */
   .fa-list { overflow-y: auto; flex: 1; min-height: 0; padding: var(--space-6); }
 
-  /* CREAREA: 52 = `--row-h-mobile`, aceeasi inaltime ca randurile de dedesubt.
-     Tenta de accent plus cerneala adanca — nu fill saturat: un rand de lista
-     colorat plin ar striga mai tare decat titlul paginii. */
+  /* RANDUL-EROU (~66), cerc plin de accent cu „+", doua linii de text. Tenta de
+     accent-subtle + cerneala adanca — nu fill saturat pe TOT randul: un rand de
+     lista colorat plin ar striga mai tare decat titlul paginii. Raza 14 (rand/camp):
+     cei 18 din macheta nu sunt pe scara sistemului. */
   .fa-creeaza {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: var(--space-14);
     width: 100%;
-    min-height: var(--row-h-mobile);
-    padding: 0 var(--space-12);
+    min-height: 66px;
+    padding: 0 var(--space-md);
     border-radius: var(--radius-sm);
     background: var(--accent-subtle);
     color: var(--accent-deep);
-    font-size: var(--font-rand);
-    font-weight: var(--fw-medium);
     text-align: left;
     cursor: pointer;
     transition: var(--transition-pressable);
@@ -668,16 +703,47 @@
   .fa-creeaza:hover { background: color-mix(in oklab, var(--accent) 18%, var(--bg-surface)); }
   .fa-creeaza:active { transform: scale(var(--press-scale)); }
   .fa-creeaza:disabled { opacity: .6; cursor: default; }
-  .fa-plus { display: grid; place-items: center; flex: none; width: 20px; height: 20px; }
-  .fa-ct { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  /* Ziua citita din text, la dreapta — in coloana in care randurile de dedesubt
-     isi tin termenul, deci se citeste pe verticala cu ele. */
-  .fa-cz {
+  /* Cercul plin de accent — singurul fill saturat din foaie, ca „+" sa fie eroul
+     randului. Cerneala pe fill ia `--accent-text`. */
+  .fa-plus {
+    display: grid;
+    place-items: center;
     flex: none;
-    width: 46px;
-    text-align: right;
+    width: var(--ctrl-sm);
+    height: var(--ctrl-sm);
+    border-radius: var(--radius-full);
+    background: var(--accent);
+    color: var(--accent-text);
+  }
+  .fa-ct-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .fa-ct {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-body);
+    font-weight: var(--fw-semibold);
+  }
+  /* A doua linie: ce s-a inteles, ca metadata sub titlu. Aceeasi cerneala ca titlul,
+     doar mai stinsa — pe tenta, `--accent-deep` are contrast de sus, deci .72 ramane
+     lizibil (secundar). */
+  .fa-meta {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-small);
+    opacity: .72;
+  }
+  /* „Enter creeaza". Pe telefon dispare — nu exista Enter fizic (vezi media). */
+  .fa-enter {
+    flex: none;
     font-family: var(--font-mono);
     font-size: var(--font-label);
+    opacity: .7;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-celula);
+    padding: 1px var(--space-6);
   }
 
   /* Eticheta de sectiune: 12 majuscule 600, ls .05em — clasa de eticheta a
@@ -690,6 +756,19 @@
     color: var(--text-secondary);
     padding: var(--space-14) var(--space-12) var(--space-xs);
   }
+  /* Cap de ZI in „Există deja": aceeasi treapta de eticheta, mai stinsa decat capul
+     mare. „Azi" pe cerneala de accent, restantele pe pericol, restul stins — capul
+     poarta ziua, deci randul n-o mai repeta la dreapta. */
+  .fa-subcap {
+    font-size: var(--font-label);
+    font-weight: var(--fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--text-dim);
+    padding: var(--space-sm) var(--space-12) var(--space-2xs);
+  }
+  .fa-subcap.azi { color: var(--accent-deep); }
+  .fa-subcap.rest { color: var(--danger-deep); }
 
   /* ACELASI RAND CA IN LISTE: bifa la stanga, titlu plus contor de pasi, termen
      pironit la 46px in mono. `--ring` vine de pe element si coloreaza si inelul
@@ -738,16 +817,6 @@
   /* Potrivirea se ingroasa in accent ADANC. Un fundal colorat pe rand ar fi a doua
      codificare peste ceva ce textul spune deja. */
   .fa-tx mark { background: none; color: var(--accent-deep); font-weight: var(--fw-semibold); }
-  .fa-termen {
-    flex: none;
-    width: 46px;
-    text-align: right;
-    font-family: var(--font-mono);
-    font-size: var(--font-label);
-    color: var(--ring, var(--text-dim));
-    font-variant-numeric: tabular-nums;
-  }
-  .fa-sep { display: block; height: 1px; background: var(--border); margin: 0 var(--space-12); }
 
   .fa-hint { padding: 18px var(--space-12); font-size: var(--font-small); color: var(--text-dim); }
   .fa-schelet { padding: var(--space-sm) var(--space-12); }
@@ -797,5 +866,8 @@
        cand venea tastatura in loc de ~100. Exact asta se vedea ca „se rupe
        animatia". Valoarea e cea dinainte de experimentul cu pagina. */
     .fa { flex-basis: 58dvh; }
+    /* Indiciul „Enter creeaza" n-are cui — tastatura de telefon n-are Enter fizic. */
+    .fa-enter { display: none; }
+    .fa-creeaza { min-height: 62px; }
   }
 </style>

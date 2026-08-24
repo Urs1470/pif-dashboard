@@ -201,16 +201,18 @@ SONDA = r"""
 # Pasii de dinainte de ultimul sunt drumul pana la fereastra; pe ULTIMUL se
 # masoara sosirea. `unde` spune pe ce latimi are voie sa existe fereastra.
 FERESTRE = [
-    # Pe desktop adaugarea e IN LINIE (`quick-add`, `Tasks.svelte:1145`), fara
-    # fereastra: butonul plutitor exista doar sub `ecran.telefon`.
-    dict(nume='adauga-task', ruta='/tasks', unde='telefon', pasi=[('sel', '.dock-fab')]),
+    # Adaugarea e o FEREASTRA pe amandoua acum (handoff „1a", 2026-08-24): pe telefon
+    # din butonul plutitor, pe desktop din randul „+ Adaugă task" (`.creare-d`) care a
+    # inlocuit bara inline — acelasi modal centrat.
+    dict(nume='adauga-task', ruta='/tasks', unde='ambele',
+         pasi=[('sel', '.dock-fab')], pasi_desktop=[('sel', '.creare-d')]),
     dict(nume='panou-task', ruta='/tasks', unde='telefon', pasi=[('sel', '.tmain')]),
     dict(nume='actiuni-task', ruta='/tasks', unde='telefon', pasi=[('lung', '.tmain')]),
     dict(nume='alege-data', ruta='/tasks', unde='ambele',
          pasi=[('sel', '.tmain'), ('sel', '.modal .dp-trigger')],
          pasi_desktop=[('hover', '.tmain'), ('sel', '.dp-trigger')]),
     dict(nume='editor-nota', ruta='/tasks', unde='telefon',
-         pasi=[('sel', '.tmain'), ('sel', '.modal .td-link')]),
+         pasi=[('sel', '.tmain'), ('sel', '.modal .dt-nota-sec button')]),
     dict(nume='editeaza-task', ruta='/tasks', unde='desktop',
          pasi=[('hover', '.tmain'), ('sel', '.ta-chip:not(.ta-sterge)')]),
     dict(nume='sterge-task', ruta='/tasks', unde='desktop',

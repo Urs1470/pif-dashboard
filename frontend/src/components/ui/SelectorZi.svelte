@@ -1,6 +1,7 @@
 <script>
   import { Sun, Sunrise, CalendarSearch, X } from '@lucide/svelte'
   import DatePicker from './DatePicker.svelte'
+  import { zilePanaLa } from '../../lib/formatters.js'
 
   // ACELASI SET IN ORICE FOAIE SAU PANOU CARE REPLANIFICA.
   //
@@ -29,17 +30,27 @@
     const p = (x) => String(x).padStart(2, '0')
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
   }
+
+  // CE ZI E ACUM PUSA, ca sa se vada pe pastila (handoff „hold·1a": ziua curenta
+  // e aprinsa). Nu e un mod nou, e doar oglinda lui `value` — orice foaie de
+  // replanificare beneficiaza sa arate unde e taskul acum. Azi/Mâine se aprind cand
+  // termenul cade pe ele; „Alege" preia orice alta zi (inclusiv restant), fiindca
+  // ea e singura care poate ajunge acolo.
+  const k = $derived(zilePanaLa(value))
+  const aziActiv = $derived(k === 0)
+  const maineActiv = $derived(k === 1)
+  const alegeActiv = $derived(k !== null && k !== 0 && k !== 1)
 </script>
 
 <div class="sz">
   <div class="sz-rand">
-    <button type="button" class="sz-optiune" onclick={() => onalege?.(ziPeste(0))}>
+    <button type="button" class="sz-optiune" class:activ={aziActiv} onclick={() => onalege?.(ziPeste(0))}>
       <Sun size={15} strokeWidth={1.5} /> Azi
     </button>
-    <button type="button" class="sz-optiune" onclick={() => onalege?.(ziPeste(1))}>
+    <button type="button" class="sz-optiune" class:activ={maineActiv} onclick={() => onalege?.(ziPeste(1))}>
       <Sunrise size={15} strokeWidth={1.5} /> Mâine
     </button>
-    <span class="sz-optiune sz-dp">
+    <span class="sz-optiune sz-dp" class:activ={alegeActiv}>
       <CalendarSearch size={15} strokeWidth={1.5} />
       <DatePicker {value} eticheta="Alege" onchange={(v) => onalege?.(v || null)} />
     </span>
@@ -74,6 +85,11 @@
   }
   .sz-optiune:hover { background: var(--accent-subtle); color: var(--accent-deep); }
   .sz-optiune:active { transform: scale(var(--press-scale)); }
+  /* ZIUA CURENTA E APRINSA — fill de accent, ca ziua aleasa din calendar
+     (`.dp-day.selected`): acelasi inteles („asta e ziua"), deci acelasi semn.
+     Iconita si textul iau cerneala de pe fill. Bate hoverul (vine dupa el). */
+  .sz-optiune.activ,
+  .sz-optiune.activ:hover { background: var(--accent); color: var(--accent-text); }
 
   /* Al treilea slot poarta iconita LUI si imprumuta declansatorul lui DatePicker
      pentru text — deci calendarul se deschide de pe tot butonul, nu doar de pe

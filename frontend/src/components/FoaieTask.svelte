@@ -24,12 +24,13 @@
   //               intre gest si rezultat.
   //   'actiuni' — cele cinci actiuni din handoff. Aici ajunge APASAREA LUNGA: ea
   //               nu declara dinainte ce vrei, deci are dreptul sa intrebe.
-  import { CalendarSearch, Sunrise, Clock } from '@lucide/svelte'
+  import { Clock, CheckCircle2 } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import SelectorZi from './ui/SelectorZi.svelte'
   import SelectorOra from './ui/SelectorOra.svelte'
-  import DatePicker from './ui/DatePicker.svelte'
   import SolidIcon from './ui/SolidIcon.svelte'
+  import { dueRing, esteDepasit, esteAzi } from '../lib/formatters.js'
+  import { etichetaTermen } from '../lib/grupare.js'
 
   let {
     open = $bindable(false),
@@ -115,24 +116,45 @@
         {@render randOra()}
       </div>
     {:else}
-      <!-- CE RAMANE IN FOAIE E CE N-ARE ALTA CALE.
-           Handoff-ul cerea cinci actiuni: Bifează · Mută pe mâine · Alege ziua ·
-           Deschide · Șterge. Doua au plecat la cererea lui Ion, si amandoua pentru
-           acelasi motiv — erau al doilea drum catre ceva care se face deja:
-             „Bifează"  — o face glisarea la dreapta, bifa din rand si bifa mare din
-                          foaia taskului. Ion: „am destule locuri de unde pot face asta."
-             „Deschide" — o face atingerea randului.
-           Un meniu care repeta ce e deja pe ecran il face mai lung fara sa-l faca
-           mai capabil, iar aici lungimea costa: foaia soseste sub deget.
-           Rămân ziua, ORA si stergerea — singurele care nu se pot face altfel de pe
-           telefon. -->
+      <!-- „hold·1a". Taskul e REPERUL din capul foii (bifa + titlu + termen curent),
+           dedesubt un SINGUR rand de replanificare, apoi actiunile, iar „Șterge"
+           izolat sub o linie ca sa nu fie atins din greseala.
+           CE N-A RAMAS: „Bifează" (o face glisarea si bifa din rand — Ion: „am
+           destule locuri de unde pot face asta") si „Deschide" (o face atingerea
+           randului). Un meniu care repeta ce e pe ecran e mai lung, nu mai capabil,
+           iar aici lungimea costa: foaia soseste sub deget. -->
+      <!-- Reperul poarta `--ring` pe bifa si pe termen: aceeasi severitate ca in
+           lista din care ai prins gestul, ca sa stii pe CARE rand a prins. Bifa e
+           DOAR reper (nu se bifeaza de aici — vezi mai sus). -->
+      <div class="ft-referinta" style="--ring: {dueRing(task.data_scadenta)}">
+        {#if task.status === 'done'}
+          <CheckCircle2 size={20} class="ft-ref-bifat" />
+        {:else}
+          <span class="check-empty"></span>
+        {/if}
+        <span class="ft-ref-titlu">{task.titlu}</span>
+        {#if task.data_scadenta}
+          <span class="ft-ref-termen" class:sev={esteDepasit(task.data_scadenta) || esteAzi(task.data_scadenta)}>{etichetaTermen(task.data_scadenta)}</span>
+        {/if}
+      </div>
+
+      <!-- UN SINGUR RAND DE ZILE, nu doua. „Mută pe mâine" + „Alege ziua" (doua
+           randuri) se strang in `SelectorZi` — acelasi set ca in orice foaie sau
+           panou care replanifica, cu ziua curenta aprinsa. Foaia se inchide la
+           ALEGERE (`apoi`), fiindca gestul s-a incheiat; „Alege" deschide
+           calendarul, care are foaia ca gazda. `aratScoate` e stins: reperul arata
+           deja termenul, iar golirea lui se face din calendar. -->
+      <div class="ft-replan">
+        <span class="ft-sec">Replanifică</span>
+        <SelectorZi value={task.data_scadenta || ''} aratScoate={false}
+                    onalege={(v) => apoi(() => onZi?.(v || null))} />
+      </div>
+
       <div class="ft-verbe">
         {#if onEditeaza}
-          <!-- „Editează" redeschide FOAIA DE ADAUGARE cu titlul curent, selectat.
-               Nu un al doilea formular: aceeasi foaie care creeaza, fiindca e
-               aceeasi intrebare („cum se numeste si cand?") — iar textul selectat
-               inseamna ca poti rescrie randul dintr-un gest, care e ce faci de cele
-               mai multe ori cand deschizi un task. -->
+          <!-- „Editează" redeschide FOAIA DE ADAUGARE cu titlul curent, selectat —
+               aceeasi foaie care creeaza, fiindca e aceeasi intrebare („cum se
+               numeste si cand?"). -->
           <button class="ft-rand" onclick={() => apoi(onEditeaza)}>
             <SolidIcon name="pencil" size={16} />
             Editează
@@ -140,37 +162,20 @@
         {/if}
 
         {@render randOra()}
+      </div>
 
-        <button class="ft-rand" onclick={() => apoi(onMaine)}>
-          <Sunrise size={16} strokeWidth={1.5} />
-          Mută pe mâine
-        </button>
-
-        <!-- „Alege ziua" imprumuta declansatorul lui `DatePicker` pentru toata
-             suprafata randului, exact ca al treilea slot din `SelectorZi` — deci
-             calendarul se deschide de pe tot randul, nu doar de pe text. Foaia se
-             inchide la ALEGERE, nu la atingerea randului: intre ele sta
-             calendarul, si el are nevoie de foaie ca gazda. -->
-        <span class="ft-rand ft-dp">
-          <CalendarSearch size={16} strokeWidth={1.5} />
-          <DatePicker value={task.data_scadenta || ''} eticheta="Alege ziua"
-                      onchange={(v) => apoi(() => onZi?.(v || null))} />
-        </span>
-
-        {#if onSterge}
-          <!-- STERGEREA STA ULTIMA. Nu e o actiune egala cu celelalte: din ea pierzi
-               ceva. Aceeasi ierarhie ca „Scoate din calendar" in `SelectorZi`, si
-               acolo si aici din acelasi motiv.
-               `--danger-deep`, cum cere handoff-ul: `-deep` inseamna „mai mult
-               contrast" in AMBELE teme (pe intuneric mai deschis, pe lumina mai
-               inchis — vezi nota de la `--accent-hover` in tokens.css), deci pe
-               suprafata neutra a randului citeste mai tare decat `--danger`. -->
+      {#if onSterge}
+        <!-- STERGEREA STA IZOLATA SUB O LINIE. Nu e o actiune egala cu celelalte:
+             din ea pierzi ceva, si sta acolo unde se odihneste degetul pe o foaie.
+             `--danger-deep`: `-deep` inseamna „mai mult contrast" in AMBELE teme,
+             deci pe suprafata neutra a randului citeste mai tare decat `--danger`. -->
+        <div class="ft-sterge-zona">
           <button class="ft-rand ft-sterge" onclick={() => apoi(onSterge)}>
             <SolidIcon name="trash" size={16} />
             Șterge
           </button>
-        {/if}
-      </div>
+        </div>
+      {/if}
     {/if}
   </Modal>
 {/if}
@@ -194,26 +199,84 @@
      interpretat oricum ca long-press pe ea — foaia soseste SUB deget, deci e
      singurul strat din aplicatie care primeste un gest pe care nu l-a pornit. */
   .ft-verbe,
-  .ft-plan {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-6);
+  .ft-plan,
+  .ft-replan,
+  .ft-referinta,
+  .ft-sterge-zona {
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+  }
+  .ft-verbe,
+  .ft-plan {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+  .ft-plan { gap: var(--space-6); }
+
+  /* REPERUL: bifa (reper, nu buton) + titlu + termen curent. `--ring` de pe rand
+     coloreaza si inelul si termenul — o singura sursa de severitate, ca in lista. */
+  .ft-referinta {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding-bottom: var(--space-14);
+    margin-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border);
+  }
+  .ft-referinta :global(svg) { flex: none; color: var(--success); }
+  .ft-ref-titlu {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-body);
+    font-weight: var(--fw-semibold);
+    color: var(--text);
+  }
+  /* Termenul, mono ca peste tot; `.sev` il aprinde din acelasi `--ring` ca bifa —
+     exact reteta lui `.ts-val.sev` din foaia de detalii. */
+  .ft-ref-termen {
+    flex: none;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--font-small);
+    color: var(--text-dim);
+  }
+  .ft-ref-termen.sev { color: var(--ring); }
+
+  /* Un SINGUR rand de replanificare, cu eticheta lui. `SelectorZi` isi aduce
+     pastilele; aici doar asezarea si spatiul pana la actiuni. */
+  .ft-replan {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  /* Stergerea, izolata sub o linie. */
+  .ft-sterge-zona {
+    margin-top: var(--space-6);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
   }
 
   /* 48 = `--tap-sheet`, pragul de atingere DIN FOAIE (44 e podeaua de pe telefon,
      48 e cat cere o foaie — vezi tokens). Raza 10 = treapta de „control si rand",
      nu 14: astea sunt randuri intr-o suprafata, nu suprafete. */
+  /* RANDURILE DE ACTIUNE SUNT CALME — fara fond, doar text + iconita, pe suprafata
+     foii (handoff „hold·1a"). Reperul si pastilele de replanificare poarta suprafata;
+     actiunile nu concureaza cu ele. Fondul apare la hover/apasare. */
   .ft-rand {
     display: flex;
     align-items: center;
     gap: 11px;
     min-height: var(--tap-sheet);
-    padding: 0 var(--space-14);
+    padding: 0 var(--space-12);
     border-radius: var(--radius-sm);
-    background: var(--bg-elevated);
+    background: none;
     color: var(--text);
     font-size: var(--font-body);
     font-weight: var(--fw-medium);
@@ -226,29 +289,7 @@
   .ft-rand:hover :global(svg) { color: var(--accent-deep); }
   .ft-rand:active { transform: scale(var(--press-scale)); }
 
-  /* Randul cu calendar: declansatorul lui `DatePicker` se intinde pe tot randul si
-     isi pierde haina proprie (are deja una de la `.ft-rand`). Aceeasi retusare ca
-     `.sz-dp` din `SelectorZi` — inclusiv iconita lui, care ar fi al doilea
-     calendar langa al nostru. */
-  .ft-dp { position: relative; padding: 0 var(--space-14); }
-  .ft-dp :global(.dp) { flex: 1; min-width: 0; }
-  .ft-dp :global(.dp-trigger) {
-    width: 100%;
-    min-height: var(--tap-sheet);
-    padding: 0;
-    gap: 0;
-    background: none;
-    border: none;
-    box-shadow: none;
-    color: inherit;
-    font-family: inherit;
-    font-size: var(--font-body);
-    font-weight: var(--fw-medium);
-  }
-  .ft-dp :global(.dp-trigger svg) { display: none; }
-  .ft-dp :global(.dp-trigger:hover) { background: none; color: inherit; }
-
-  /* RANDUL DE ORA: aceeasi dezbracare ca `.ft-dp`, ca sa nu se deosebeasca de
+  /* RANDUL DE ORA: se dezbraca la fel ca declansatorul de calendar, ca sa nu se deosebeasca de
      celelalte randuri (Ion). Ce rămâne din `SelectorOra` e doar declansatorul lui,
      fara cutie, fara eticheta si fara iconita proprie — iconita si cuvantul „Ora"
      le pune randul, in aceeasi ordine ca la vecinii lui. Valoarea sta la dreapta,

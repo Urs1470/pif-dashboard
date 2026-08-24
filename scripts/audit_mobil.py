@@ -702,24 +702,24 @@ def lista_de_facut(ctx, baza):
         camp = page.locator('.fa-cauta input').first
         zi(camp.count() > 0, 'butonul deschide foaia de adaugare')
         if camp.count():
-            # PARSERUL, INAINTE DE CREARE: ce se scrie in text trebuie sa apara ca
-            # CHIP, altfel ziua ar fi extrasa in tacere (sau deloc) si n-ai cum sa
-            # stii pe ce zi cade taskul pana nu-l vezi in lista.
+            # PARSERUL, INAINTE DE CREARE: ce se scrie in text trebuie sa apara pe
+            # LINIA DE CONFIRMARE („Se planifică mâine · ● …", `.fa-linie`/`.fa-cheie`
+            # — redesignul „1a" a inlocuit rândul de cipuri cu o propozitie), altfel
+            # ziua ar fi extrasa in tacere si n-ai cum sa stii pe ce zi cade taskul.
             camp.fill('mâine ' + MARCA)
             page.wait_for_timeout(400)
-            chip = page.locator('.fa-chip.zi')
-            zi(chip.count() > 0, 'ziua scrisa in text devine chip')
-            if chip.count():
-                zi('mâine' in (chip.first.text_content() or '').lower(),
-                   'chipul spune ziua inteleasa', chip.first.text_content())
-            # Titlul de pe randul de creare NU mai are ziua in el: ce a devenit chip
+            cheie = page.locator('.fa-linie .fa-cheie')
+            zi(cheie.count() > 0, 'ziua scrisa in text apare pe linia de confirmare')
+            if cheie.count():
+                zi('mâine' in (page.locator('.fa-linie').first.text_content() or '').lower(),
+                   'linia spune ziua inteleasa', page.locator('.fa-linie').first.text_content())
+            # Titlul de pe randul de creare NU mai are ziua in el: ce a fost inteles
             # a plecat din titlu, altfel taskul s-ar numi „mâine revizie…".
             #
             # Se citeste `.fa-ct` — spanul TITLULUI —, nu textul intregului rand:
-            # randul poarta la dreapta si ziua citita din text (`.fa-cz`, in coloana
-            # de 46px a termenelor), deci textul lui CONTINE „mâine" cu bunastiinta.
-            # Prima versiune a testului se uita la tot randul si picase pe exact
-            # asta: raporta ca bug ce era, de fapt, chipul cerut de handoff.
+            # randul poarta si a doua linie „task nou · mâine · …" (`.fa-meta`), deci
+            # textul lui CONTINE „mâine" cu bunastiinta. Prima versiune a testului se
+            # uita la tot randul si picase pe exact asta.
             creeaza = page.locator('.fa-creeaza').first
             zi(creeaza.count() > 0, 'primul rand al listei e „Creează”')
             if creeaza.count():
@@ -728,17 +728,17 @@ def lista_de_facut(ctx, baza):
                    'ziua a plecat din titlul care se va salva', titlu_de_salvat.strip())
                 zi(MARCA.split('—')[-1].strip() in titlu_de_salvat,
                    'titlul pastreaza restul textului', titlu_de_salvat.strip())
-                # Ziua rămâne vizibila pe rand, in coloana termenului.
-                zi('mâine' in (page.locator('.fa-creeaza .fa-cz').first.text_content() or '').lower(),
-                   'randul de creare arata ziua la dreapta')
+                # Ziua rămâne vizibila pe rand, in a doua linie („task nou · mâine").
+                zi('mâine' in (page.locator('.fa-creeaza .fa-meta').first.text_content() or '').lower(),
+                   'randul de creare arata ziua in a doua linie')
 
             # Crearea propriu-zisa se face FARA zi, ca testul de glisare de mai jos
             # sa aiba ce muta: daca taskul s-ar naste deja pe mâine, verificarea
             # „ziua aleasa din foaie muta taskul" ar trece fara sa mute nimic.
             camp.fill(MARCA)
             page.wait_for_timeout(400)
-            zi(page.locator('.fa-chip.zi').count() == 0,
-               'fara zi in text nu apare chip de zi')
+            zi(page.locator('.fa-linie .fa-cheie').count() == 0,
+               'fara zi in text nu apare cheie de zi pe linia de confirmare')
             # FOAIA NU-SI SCHIMBA INALTIMEA CAT TIMP SCRII.
             #
             # Ion: „cand tastez ceva in taskuri modalul isi schimba dimensiunea la
@@ -795,13 +795,26 @@ def lista_de_facut(ctx, baza):
         text_foaie = ' | '.join(randuri_foaie)
         zi(len(randuri_foaie) > 0, 'apasarea lunga deschide foaia de actiuni', text_foaie)
         if randuri_foaie:
-            for cerut in ('Editează', 'Mută pe mâine', 'Alege ziua', 'Șterge'):
+            # Redesign „hold·1a": taskul e REPERUL sus, iar „Mută pe mâine" + „Alege
+            # ziua" (doua randuri) s-au strans intr-un SINGUR rand de zile
+            # (`SelectorZi`, „Replanifică") — un gest, nu doua ecrane.
+            ref = page.query_selector('.modal .ft-referinta')
+            zi(ref is not None, 'foaia are taskul ca reper sus',
+               ref.text_content() if ref else 'lipseste .ft-referinta')
+            pastile = [t.strip() for t in page.eval_on_selector_all(
+                '.modal .ft-replan .sz-optiune', 'e => e.map(x => x.textContent)')]
+            for cerut in ('Azi', 'Mâine', 'Alege'):
+                zi(any(cerut in x for x in pastile),
+                   'replanificarea (un rand) are „%s"' % cerut, ' | '.join(pastile))
+            for cerut in ('Editează', 'Șterge'):
                 zi(any(cerut in x for x in randuri_foaie), 'foaia are „%s"' % cerut, text_foaie)
-            for interzis in ('Bifează', 'Redeschide', 'Deschide'):
+            # ABSENTE: „Mută pe mâine"/„Alege ziua" ca RANDURI separate au disparut
+            # (sunt pastile acum); „Bifează"/„Deschide" n-au fost niciodata aici.
+            for interzis in ('Bifează', 'Redeschide', 'Deschide', 'Mută pe mâine', 'Alege ziua'):
                 # „Deschide" apare ca subsir in „Redeschide", deci se compara pe
                 # randul intreg, nu pe text lipit.
                 zi(not any(x.strip().startswith(interzis) for x in randuri_foaie),
-                   'foaia NU mai are „%s"' % interzis, text_foaie)
+                   'foaia NU mai are randul „%s"' % interzis, text_foaie)
 
             # „Editează" duce in foaia de adaugare, cu titlul CURENT si SELECTAT.
             page.locator('.modal .ft-rand', has_text='Editează').first.click()
@@ -835,7 +848,7 @@ def lista_de_facut(ctx, baza):
         cx, cy = r[0] + r[2] * 0.5, r[1] + r[3] / 2
         page.evaluate(TRAGE, [cx, cy, [[cx - d, cy] for d in (30, 100, 180, 240)], 5])
         page.wait_for_timeout(900)
-        zi(page.locator('.ts-zile .sz-optiune').count() > 0,
+        zi(page.locator('.dt-pastile .pt').count() > 0,
            'glisarea deschide foaia cu ziua de ales')
         page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
         page.wait_for_timeout(1400)
@@ -888,14 +901,14 @@ CAUTA_RAND = """(marca) => {
 # local in fiecare foaie (`.ts-zi`), cu alt desen in fiecare loc; de la redesign
 # sunt o componenta, deci si testul intreaba de ea.
 ALEGE_ZI_IN_FOAIE = """(eticheta) => {
-  const b = [...document.querySelectorAll('.ts-zile .sz-optiune')].find(x => x.textContent.includes(eticheta));
+  const b = [...document.querySelectorAll('.dt-pastile .pt')].find(x => x.textContent.includes(eticheta));
   if (!b) return false;
   b.click();
   return true;
 }"""
 
 # Deschide foaia FARA gest, cand testul vrea doar sa mute ziua (atingerea randului
-# deschide aceeasi foaie; panoul de termen se desface cu un clic pe randul de data).
+# deschide aceeasi foaie; pastilele de replanificare sunt mereu la vedere).
 DESCHIDE_FOAIA = """(marca) => {
   const r = [...document.querySelectorAll('.trow')].find(x => x.textContent.includes(marca));
   if (!r) return false;
@@ -1451,11 +1464,10 @@ def azi_peste_tot(ctx, baza):
     page.goto(baza + '/#/tasks', wait_until='load')
     page.wait_for_selector('.trow', timeout=15000)
     page.wait_for_timeout(1100)
-    # Foaia, apoi randul de termen, apoi ziua — acelasi drum ca pe deget, fara gest.
+    # Foaia, apoi ziua direct din pastile (mereu la vedere) — acelasi drum ca pe
+    # deget, fara gest.
     page.evaluate(DESCHIDE_FOAIA, MARCA)
     page.wait_for_timeout(900)
-    page.locator('.ts-rand').first.click()
-    page.wait_for_timeout(500)
     page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
     page.wait_for_timeout(1500)
     page.keyboard.press('Escape')
