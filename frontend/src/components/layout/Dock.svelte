@@ -827,7 +827,7 @@
     .dock {
       left: calc(12px + var(--safe-left));
       right: calc(12px + var(--safe-right));
-      bottom: calc(6px + var(--safe-bottom));
+      bottom: calc(var(--dock-margin) + var(--safe-bottom));
       transform: translateY(var(--dock-shift, 0px));
       width: auto;
       max-width: none;
@@ -878,7 +878,7 @@
        o dunga care se plimba peste continut. Il coboram cu toata distanta lui fata
        de marginea ecranului. */
     .dock.hidden {
-      --dock-shift: calc(100% + 14px + var(--safe-bottom) + 6px);
+      --dock-shift: calc(100% + 14px + var(--safe-bottom) + var(--dock-margin));
     }
   }
 </style>

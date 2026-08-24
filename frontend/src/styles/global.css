@@ -227,7 +227,7 @@ code, pre {
    dock-ul se ascunde singur cand cursorul pleaca de jos. Distanta acopera si
    safe-area, ca sa nu ramana o dunga sub gestul de sistem. */
 @media (max-width: 768px) {
-  html.are-modal .dock { --dock-shift: calc(100% + var(--safe-bottom) + 6px); }
+  html.are-modal .dock { --dock-shift: calc(100% + var(--safe-bottom) + var(--dock-margin)); }
 
   /* PAGINA SE RETRAGE SUB FOAIE (Ion, 2026-08-15). Foaia vine DEASUPRA paginii,
      nu peste ea — iar asta se spune cel mai bine lasand pagina sa se dea putin

@@ -436,12 +436,17 @@
 
   /* ---- Layout ---- */
   --header-height: 56px;
-  /* Dockul de pe telefon PLUTESTE (nu mai e lipit de marginea de jos), deci ultimul
-     rand din lista ar ramane sub el. `--dock-space` e distantierul de la finalul
-     continutului; `--fab-bottom` e inaltimea la care sta actiunea principala cand
-     e desenata in afara dockului. */
-  --dock-space: 128px;
-  --fab-bottom: 120px;
+  /* CAT DE SUS PLUTESTE DOCKUL PESTE LINIA DE SAFE-AREA, pe telefon. E o PODEA cu
+     motiv: dockul sta la `--dock-margin + safe-bottom` de fundul ecranului, iar
+     `safe-bottom` e chiar zona gesturilor de sistem — sub linia aia dockul ar prinde
+     swipe-ul de navigare. La `--dock-margin: 0` marginea lui de jos e fix pe linie
+     (masurat). PODEA DE JOS: 4px — sub atat dockul nu se mai citeste ca obiect DESPRINS
+     de margine, iar `audit_mobil` cere golul in [4,20] tocmai fiindca identitatea AURORA
+     e „sticla care pluteste", nu bara lipita. Coborat de la 6 la 4 la cererea lui Ion
+     (2026-08-24, „putin mai jos"): cat se poate ramanand plutitor.
+     Scris intr-un singur loc: pozitia (`Dock.svelte`), ascunderea (`Dock.svelte`) si
+     retragerea sub modal (`global.css`) il citesc pe toate de aici. */
+  --dock-margin: 4px;
   --content-max: 1400px;
   /* DOUA LATIMI, FIINDCA SUNT DOUA FELURI DE PAGINA.
      1400 e latimea HARTILOR — Planificatorul (30 de zile in coloane) si

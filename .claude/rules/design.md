@@ -61,7 +61,8 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
 - **Tinte touch:** `--tap-min` 44px. Control nou = da-i `:active`.
 - **Navigatie:** desktop (>768px) = `BaraSus.svelte`, bara de sticla care PLUTESTE sus
   (14px/18px), peste care trece continutul; rezerva de sus o tine `--bara-h`, MASURATA.
-  Telefon = `Header.svelte` (sus, lipit) + `Dock.svelte` (jos, plutitor la 6px + safe-area).
+  Telefon = `Header.svelte` (sus, lipit) + `Dock.svelte` (jos, plutitor la `--dock-margin` + safe-area; podea pe linia de safe-area,
+  sub ea ar prinde gestul de sistem).
   Niciodata amandoua: fiecare scrie `--dock-h` pe `<html>`, iar bara scrie si `--sidebar-w: 0`
   (coloana nu mai exista, dar tokenul ramane fiindca cinci locuri isi socotesc pozitia din el).
   Tenta rutei active e `.pilula` — UN obiect care ALUNECA, masurat de `audit_navigare`; nu se
