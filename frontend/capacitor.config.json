@@ -8,7 +8,8 @@
     "errorPath": "fara-retea.html"
   },
   "android": {
-    "allowMixedContent": false
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": true
   },
   "plugins": {
     "LocalNotifications": {
