@@ -150,9 +150,6 @@
   }
   .toast-close:hover { background: var(--bg-hover); color: var(--text); }
 
-  @media (prefers-reduced-motion: reduce) {
-    .toast-umplere { transition: none; }
-  }
 
   @media (max-width: 768px) {
     /* PESTE DOCK, nu sub el: sub dock ar fi acoperit exact de bara pe care o ai

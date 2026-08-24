@@ -53,35 +53,58 @@ export function sticla(nod, optiuni = {}) {
 
   if (optiuni.spec) nod.style.setProperty('--spec-raza', optiuni.spec)
 
-  // REFLEXUL E NUMAI PENTRU CURSOR. Pe telefon nu exista pointer care sa
-  // zaboveasca: efectul ar fi invizibil, dar ar costa un al patrulea strat
-  // compozitat si un ascultator pe fiecare cadru al degetului. Iar cine a cerut
-  // mai putina miscare nu primeste un gradient care se aprinde sub mana.
-  const areCursor = window.matchMedia('(hover: hover)').matches
-  const vreaMiscare = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const cuReflex = (optiuni.reflex ?? true) && areCursor && vreaMiscare
+  // REFLEXUL SE APRINDE SI SUB DEGET (Ion, 2026-08-24).
+  //
+  // Era legat DOAR pe aparate cu cursor, cu doua motive care s-au dovedit
+  // amandoua greșite pentru produsul asta:
+  //   - „pe telefon nu exista pointer care sa zaboveasca" — dar sesiunea Apple pe
+  //     Liquid Glass spune exact invers: „Liquid Glass responds to interaction by
+  //     instantly flexing and energizing with light... starting right under your
+  //     fingertips, the glow spreads throughout the element." Reflexul nu e pentru
+  //     zabovire, e RASPUNSUL la atingere. Pe telefon lipsea tocmai unde conteaza.
+  //   - `prefers-reduced-motion` — scos la cererea explicita a lui Ion.
+  // Acum se leaga pe pointer, indiferent de fel: `pointerdown` da punctul de
+  // pornire (sub deget), `pointermove` il urmareste, iar ridicarea il stinge.
+  // Nu se ramifica pe `pointerType`: cu mouse, `pointermove` face ce facea si
+  // inainte, iar `pointerdown` doar il aprinde mai devreme.
+  const cuReflex = optiuni.reflex ?? true
+
+  // CAT TIMP DEGETUL E JOS, LUMINA NU SE STINGE.
+  // Masurat: la `touchMove`, Chromium trimite si `pointerleave` — deci un `pleaca`
+  // legat orbeste pe el stingea reflexul chiar in timpul gestului (`--spec` cadea
+  // la 0 desi degetul era inca pe sticla). Cu mouse-ul, `pointerleave` inseamna
+  // chiar ce zice si trebuie sa stinga; cu degetul, doar ridicarea o face.
+  let jos = false
 
   function misca(e) {
+    if (e.type === 'pointerdown') jos = true
     const r = nod.getBoundingClientRect()
     if (!r.width || !r.height) return
     nod.style.setProperty('--mx', ((e.clientX - r.left) / r.width).toFixed(3))
     nod.style.setProperty('--my', ((e.clientY - r.top) / r.height).toFixed(3))
     nod.style.setProperty('--spec', '1')
   }
-  function pleaca() {
+  function pleaca(e) {
+    if (e && e.type === 'pointerleave' && jos) return
+    jos = false
     nod.style.setProperty('--spec', '0')
   }
 
+  const LEGATURI = [
+    ['pointerdown', misca],
+    ['pointermove', misca],
+    ['pointerup', pleaca],
+    ['pointercancel', pleaca],
+    ['pointerleave', pleaca],
+  ]
   if (cuReflex) {
-    nod.addEventListener('pointermove', misca)
-    nod.addEventListener('pointerleave', pleaca)
+    for (const [ev, fn] of LEGATURI) nod.addEventListener(ev, fn, { passive: true })
   }
 
   return {
     destroy() {
       if (cuReflex) {
-        nod.removeEventListener('pointermove', misca)
-        nod.removeEventListener('pointerleave', pleaca)
+        for (const [ev, fn] of LEGATURI) nod.removeEventListener(ev, fn)
       }
       for (const s of create) s.remove()
       nod.__sticla = false

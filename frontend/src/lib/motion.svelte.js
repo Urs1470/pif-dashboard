@@ -174,17 +174,20 @@ export function arcCss() {
   return _arcCss
 }
 
-function readReducedMotion() {
-  return typeof window !== 'undefined'
-    && (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false)
-}
-
-export const motion = $state({ reduced: readReducedMotion() })
-
-if (typeof window !== 'undefined' && window.matchMedia) {
-  window.matchMedia('(prefers-reduced-motion: reduce)')
-    .addEventListener?.('change', (e) => { motion.reduced = e.matches })
-}
+// MISCAREA NU SE MAI TAIE. Ion, 2026-08-24: „scoate exceptia si limitarea aia cu
+// reduced motion, si reduced effects — vreau un dashboard animat".
+//
+// Am ridicat obiectia o data (e o preferinta de accesibilitate, si chiar sesiunea
+// Apple pe Liquid Glass o respecta: „Reduced Motion ... disables any elastic
+// properties for the material"), iar decizia a fost asta. E o aplicatie cu UN
+// utilizator, pe telefonul lui, deci preferinta sistemului nu vorbeste in numele
+// altcuiva.
+// PLUMBARIA RAMANE: `motionDuration()` si toti apelantii lui sunt neatinsi, ca
+// intoarcerea sa fie o singura linie — se pune inapoi citirea de mai jos.
+//   window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
+// Steagul ramane, ca `motionDuration()` si cei ~40 de apelanti ai lui sa nu se
+// atinga. Doar sursa lui s-a stins.
+export const motion = $state({ reduced: false })
 
 // „MAI PUTINA MISCARE" NU INSEAMNA ZERO.
 //

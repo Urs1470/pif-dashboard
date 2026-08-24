@@ -95,9 +95,6 @@
   .sk-titlu { height: 13px; }
   .sk-termen { width: 30px; height: 11px; margin-left: auto; flex: none; }
 
-  @media (prefers-reduced-motion: reduce) {
-    .skeleton { animation: none; }
-  }
   @keyframes skel-puls {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.45; }

@@ -767,9 +767,6 @@
   .arow.dragover::after { content: ''; position: absolute; top: -1px; z-index: 4;
     left: var(--space-12); right: var(--space-12); height: 2px; border-radius: 1px;
     background: var(--accent); }
-  @media (prefers-reduced-motion: reduce) {
-    .arow { transition: none; }
-  }
 
   /* Manerul apare la hover, ca actiunile — dar coloana lui de 16px e rezervata
      pe TOATE randurile (vezi si `.grip-loc`). `opacity`, nu `display`: daca

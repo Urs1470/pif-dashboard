@@ -537,9 +537,6 @@
   @keyframes tstyle-intra {
     from { opacity: 0; transform: translateY(-4px); }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .tstyle-menu { animation: none; }
-  }
   .topt {
     display: flex;
     align-items: center;

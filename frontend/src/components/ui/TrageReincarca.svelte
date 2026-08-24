@@ -14,7 +14,6 @@
   // Trecerea dintre ele nu se anima: sunt doua propozitii, nu una care se
   // schimba. O tranzitie intre „cat mai am" si „nu stiu cat" ar minti.
   import { reincarcare } from '../../lib/reincarcare.svelte.js'
-  import { motion } from '../../lib/motion.svelte.js'
 
   const PRAG = 64
   const R = 9
@@ -129,11 +128,4 @@
   .ptr.roteste svg { animation: ptrRoti .8s linear infinite; }
   @keyframes ptrRoti { to { transform: rotate(360deg); } }
 
-  @media (prefers-reduced-motion: reduce) {
-    /* Rotirea RAMANE: ea nu e podoaba, e singurul lucru care spune ca cererea e
-       inca in zbor — la fel ca semnul bifei si plierea randului, care raman si
-       ele. Doar ca mai lenta, ca sa nu palpaie. */
-    .ptr.roteste svg { animation-duration: 1.4s; }
-    .ptr-disc { scale: 1; }
-  }
 </style>

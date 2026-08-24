@@ -41,8 +41,6 @@
 // `--dx` (vezi nota din `tokens.css`). Un `$state` scris de 60 de ori pe secunda ar
 // pune tot arborele componentei pe drumul de reactualizare degeaba.
 
-import { motion } from './motion.svelte.js'
-
 // Pas fix de integrare. Semi-implicit Euler e stabil la pasi mici; 1/240 s da
 // patru substeps pe cadru la 60Hz, si ramane exact si la 120Hz.
 const PAS = 1 / 240
@@ -148,12 +146,13 @@ export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie, laFinal }) {
   return {
     /**
      * Muta tinta unui canal. VITEZA CURENTA SE PASTREAZA — asta e tot rostul.
-     * `instant` sare direct (prima asezare, sau `prefers-reduced-motion`).
+     * `instant` sare direct — prima asezare a unui obiect, sau o redimensionare
+     * de fereastra, care nu e o navigare.
      */
     tinteste(nume, tinta, { instant = false } = {}) {
       const ca = canal(nume)
       ca.t = tinta
-      if (instant || motion.reduced) {
+      if (instant) {
         ca.x = tinta
         ca.v = 0
         ca.gata = true
@@ -190,13 +189,6 @@ export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie, laFinal }) {
       ca.x = x
       ca.v = viteza
       ca.t = tinta
-      if (motion.reduced) {
-        ca.x = tinta
-        ca.v = 0
-        ca.gata = true
-        scrie(valori())
-        return
-      }
       ca.gata = false
       porneste()
     },

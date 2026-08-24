@@ -216,7 +216,4 @@
   .l.prima { flex: 1; min-width: 0; color: var(--text); font-weight: var(--fw-medium); }
   .sc { flex: none; font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-dim); }
 
-  @media (prefers-reduced-motion: reduce) {
-    .tip { transition: none; }
-  }
 </style>
