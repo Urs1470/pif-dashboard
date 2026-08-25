@@ -1130,7 +1130,6 @@
   // foaie ca pe Acasa si /tasks) — doar nu era legat la dock, si de-aia butonul
   // disparea aici. Vezi `lib/actiuneNoua.svelte.js`.
   $effect(() => {
-    if (!ecran.telefon) return
     return inregistreazaActiune('Adaugă task', () => { taskEditat = null; showAdauga = true })
   })
 </script>

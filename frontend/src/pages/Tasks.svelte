@@ -771,7 +771,7 @@
   // `$effect` cheama singur curatarea la demontare si la fiecare schimbare a
   // conditiei, deci butonul dispare cand nu mai are ce crea (arhiva, alt tab).
   $effect(() => {
-    if (!(ecran.telefon && !showArchive)) return
+    if (showArchive) return
     return inregistreazaActiune('Task nou', () => { puls(); taskEditat = null; showAdauga = true })
   })
 
