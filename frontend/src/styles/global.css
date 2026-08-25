@@ -242,14 +242,13 @@ code, pre {
      La INCHIDERE se intoarce pe curba obisnuita, nu pe arc: pagina care revine
      n-are voie sa depaseasca — ar parea ca sare in fata. */
   /* LA INCHIDERE, FUNDALUL TERMINA ODATA CU FOAIA. Regula asta e ceasul de
-     REVENIRE (cea de sub ea, cu `are-modal`, e ceasul de ducere). Era
-     `--dur-slow` + `--ease`, adica 280ms de franare peste o foaie care pleaca in
-     220 accelerand: masurat, fundalul inca se marea la 50ms dupa ce foaia
-     disparuse — a treia „etapa" pe care o vedea Ion la inchidere. Acum au
-     acelasi ceas si aceeasi curba de plecare. */
+     REVENIRE (cea de sub ea, cu `are-modal`, e ceasul de ducere).
+     `--dur-mid` (500ms) = DUR_CLOSE — foaia pleaca in 500, pagina revine in 500.
+     Era `--dur-base` (220ms), care ramasese din scara veche: pagina revenea
+     de trei ori mai repede decat foaia care inca cobora. */
   .app-main {
     transform-origin: 50% 0;
-    transition: transform var(--dur-base) var(--ease-iesire);
+    transition: transform var(--dur-mid) var(--ease-iesire);
   }
   /* ACELASI CEAS CA FOAIA. Ducerea mergea pe `--dur-arc` (420) cu arc, in timp
      ce foaia soseste in 280: fundalul termina la 140ms dupa obiectul care l-a
