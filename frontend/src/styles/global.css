@@ -244,11 +244,12 @@ code, pre {
   /* LA INCHIDERE, FUNDALUL TERMINA ODATA CU FOAIA. Regula asta e ceasul de
      REVENIRE (cea de sub ea, cu `are-modal`, e ceasul de ducere).
      `--dur-mid` (500ms) = DUR_CLOSE — foaia pleaca in 500, pagina revine in 500.
-     Era `--dur-base` (220ms), care ramasese din scara veche: pagina revenea
-     de trei ori mai repede decat foaia care inca cobora. */
+     Curba e `--ease` (franare), NU `--ease-iesire` (accelerare): pagina se
+     ASAZA inapoi, deci incetineste la final. Cu accelerarea, ultimele cadre
+     sunt cele mai rapide si aterizarea se citeste ca un salt. */
   .app-main {
     transform-origin: 50% 0;
-    transition: transform var(--dur-mid) var(--ease-iesire);
+    transition: transform var(--dur-mid) var(--ease);
   }
   /* ACELASI CEAS CA FOAIA. Ducerea mergea pe `--dur-arc` (420) cu arc, in timp
      ce foaia soseste in 280: fundalul termina la 140ms dupa obiectul care l-a
