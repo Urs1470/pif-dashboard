@@ -17,12 +17,12 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
 - **STICLA — doua materiale, doua scopuri.**
   *Sticla de bara* (`BaraSus`, `Header`, `Dock`) — 4 straturi DOM (`use:sticla` +
   `.sticla`), cu muchie-lentila si reflex speculativ. Regulile in `global.css`.
-  *Sticla de suprafata* (modale, foi, panou lateral, toast) — CSS-only, cu
+  *Sticla de suprafata* (toast) — CSS-only, cu
   `--glass-surface` / `--glass-surface-filter` / `--glass-surface-border` /
   `--glass-surface-highlight`. Mai opaca (0.72 vs 0.55), fara muchie, fara reflex.
+  Modalele (casete, foi, panoul) sunt SOLIDE (`--bg-overlay`).
   NU se pune pe: carduri de lista, randuri de task, toolbar-uri inline, inputuri,
-  chipuri, badge-uri. `.modal-doc` (editor fullscreen) ramane solid.
-  `@supports not (backdrop-filter)` — fallback la `--bg-overlay` solid.
+  chipuri, badge-uri.
   Blurul NU coboara sub ~20px fara reverificarea contrastului.
 - **Culoarea e stare, nu decor. UN accent** (`--accent`, liliac rece). Text pe tenta ia intotdeauna
   varianta `-deep`. `--warning`/`--info`/`--purple`/`--service-*` sunt **aliasuri** — nu

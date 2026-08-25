@@ -1169,16 +1169,13 @@
      Doua niveluri de suprafata se desprind prin UMBRA; linia de 1px e separator
      intre randuri, cu marja laterala. Popupul din DatePicker era deja fara. */
   .modal {
-    background: var(--glass-surface);
-    -webkit-backdrop-filter: var(--glass-surface-filter);
-    backdrop-filter: var(--glass-surface-filter);
-    border: var(--glass-surface-border);
+    background: var(--bg-overlay);
     border-radius: var(--radius-md);
     width: 100%;
     max-height: 85dvh;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--glass-surface-highlight), var(--shadow-md);
+    box-shadow: var(--shadow-md);
   }
   .modal-sm { max-width: 400px; }
   .modal-md { max-width: 560px; }
@@ -1242,11 +1239,6 @@
      variant="doc") isi gestioneaza singura scroll-ul si coloana de text. */
   .modal-doc {
     max-width: 1060px; height: 95dvh; max-height: 95dvh;
-    background: var(--bg-overlay);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    border: none;
-    box-shadow: var(--shadow-md);
   }
   /* ANTETUL UNUI DOCUMENT E O LINIE DE CONTEXT, NU UN TITLU DE FEREASTRA.
      Pe telefon asta se decisese deja (vezi `.modal.sheet .modal-title` mai jos);
@@ -1396,7 +1388,7 @@
       max-height: min(92dvh, 100dvh - var(--safe-top) - 24px - var(--kb, 0px));
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       border-bottom: none;
-      box-shadow: var(--glass-surface-highlight), var(--shadow-foaie);
+      box-shadow: var(--shadow-foaie);
     }
     /* Pe telefon panoul REDEVINE foaie: acelasi continut, acelasi component, alt
        loc. Fara `.modal-panou` in lista asta ar fi ramas o coloana de 340px lipita
@@ -1627,11 +1619,4 @@
     .modal-doc .modal-footer { padding-bottom: calc(var(--space-md) + var(--safe-bottom)); }
   }
 
-  @supports not (backdrop-filter: blur(1px)) {
-    .modal {
-      background: var(--bg-overlay);
-      border: none;
-      box-shadow: var(--shadow-md);
-    }
-  }
 </style>
