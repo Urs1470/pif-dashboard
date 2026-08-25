@@ -40,8 +40,10 @@ AURORA („sticla cu muchie-lentila", 2026-08-23) — carbune si un liliac rece,
   foaie), cerc doar bifa. `--radius-celula` (8px) e o exceptie cu motiv scris — reperul zilei
   selectate din Calendar trebuie sa ramana DREPTUNGHI, altfel se citeste ca bifa unui task.
 - **Miscare — cinci durate, patru curbe** (verifica in tokens, nu din memorie):
-  `--dur-press` .09 · `--dur-micro` .15 · `--dur-fast` .3 · `--dur-normal` .7 ·
-  `--dur-slow` .9; `--dur-base` .22 e inca in uz (~30 fisiere), se migreaza gradual.
+  `--dur-press` .09 · `--dur-micro` .15 · `--dur-fast` .3 · `--dur-mid` .5 ·
+  `--dur-normal` .7 · `--dur-slow` .9; `--dur-base` .22 e inca in uz (~30 fisiere),
+  se migreaza gradual. `mid` e caseta (modal-cutie), `normal` e suprafata mare (foaie,
+  panou). Iesirile: 350ms caseta, 500ms suprafata.
   `--ease` la SOSIRE, `--ease-iesire` la PLECARE (accelereaza, nu franeaza —
   ce pleaca nu mai e urmarit), `--ease-spring` cand ceva urmareste degetul,
   `--spring-bouncy` (FAB, popup, bifa, toast), `--ease-arc` / `--ease-arc-elan`

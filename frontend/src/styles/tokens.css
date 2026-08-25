@@ -355,12 +355,14 @@
      bounce. Bounce 0 implicit (instrument profesional), bounce >=0.3 doar FAB/check.
      MICRO 150ms: vopsea — hover, culoare, umbra
      FAST  300ms: element — press vizibil, tooltip, tab switch
-     NORMAL 700ms: suprafata — modal, foaie, panou (open)
+     MID   500ms: caseta — modal‑cutie (creare, editare, confirmare)
+     NORMAL 700ms: suprafata mare — foaie, panou (open)
      SLOW  900ms: scena — tranzitie pagina, hero, task adaugare/stergere
-     Iesirile sunt mai SCURTE: 500ms suprafata, 800ms task exit. */
+     Iesirile sunt mai SCURTE: 350ms caseta, 500ms suprafata, 800ms task exit. */
   --dur-press: 0.09s;
   --dur-micro: 0.15s;
   --dur-fast: 0.3s;
+  --dur-mid: 0.5s;
   --dur-normal: 0.7s;
   --dur-slow: 0.9s;
   /* Compatibilitate — folosite in ~30 de fisiere; se migreaza gradual. */

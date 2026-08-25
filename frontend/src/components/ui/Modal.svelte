@@ -248,7 +248,7 @@
   import { tick, untrack } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_BASE, DUR_NORMAL, DUR_CLOSE, EASE, EASE_IESIRE } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, DUR_MID, DUR_MID_CLOSE, DUR_NORMAL, DUR_CLOSE, EASE, EASE_IESIRE } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   // Foaia si voalul ies in `body`: pagina din spate se RETRAGE (un `transform`
   // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
@@ -392,7 +392,10 @@
   // Svelte cheama functia cu `direction: 'in'`.
   function intra(node, _params, opts) {
     const laIntrare = opts?.direction !== 'out'
-    const duration = motionDuration(laIntrare ? DUR_NORMAL : DUR_CLOSE)
+    const caseta = !sheet && !panou
+    const durIn = caseta ? DUR_MID : DUR_NORMAL
+    const durOut = caseta ? DUR_MID_CLOSE : DUR_CLOSE
+    const duration = motionDuration(laIntrare ? durIn : durOut)
     // SOSIREA FRANEAZA, PLECAREA ACCELEREAZA. Pana acum amandoua mergeau pe
     // `--ease`, deci foaia se retragea ca si cum s-ar razgandi: incetinea exact
     // in intervalul in care trebuia sa fie deja plecata. Vezi `--ease-iesire`.

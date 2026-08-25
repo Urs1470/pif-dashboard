@@ -3,16 +3,19 @@
 // pentru `prefers-reduced-motion`; e stinsa cu buna stiinta — vezi `motion` mai jos,
 // unde scrie de ce si cum se pune inapoi dintr-o linie.
 //
-// CINCI DURATE (handoff motion 2026-08-24, model Apple WWDC 2023-2025):
+// SASE DURATE (handoff motion 2026-08-24, model Apple WWDC 2023-2025):
 //   90   apasare — sub ~100ms legatura cauza-efect se citeste ca instantanee
 //   150  micro — vopsea: hover, culoare, umbra, opacitate
 //   300  fast — element: press vizibil, tooltip, tab switch
-//   700  normal — suprafata: modal, foaie, panou (DESCHIDERE)
+//   500  mid — caseta: modal-cutie (creare, editare, confirmare)
+//   700  normal — suprafata mare: foaie, panou (DESCHIDERE)
 //   900  slow — scena: tranzitie pagina, hero, task adaugare/stergere
-// Iesirile sunt mai scurte: 500 suprafata, 800 task exit.
+// Iesirile sunt mai scurte: 350 caseta, 500 suprafata, 800 task exit.
 export const DUR_PRESS = 90
 export const DUR_MICRO = 150
 export const DUR_FAST = 300
+export const DUR_MID = 500
+export const DUR_MID_CLOSE = 350
 export const DUR_NORMAL = 700
 export const DUR_CLOSE = 500
 export const DUR_SLOW = 900
