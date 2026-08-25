@@ -271,7 +271,7 @@
     .app-main {
       transition: padding-left var(--dur-base) var(--ease),
                   padding-top var(--dur-base) var(--ease),
-                  transform var(--dur-normal) var(--ease) 100ms;
+                  transform var(--dur-normal) var(--ease) var(--dur-press);
     }
   }
 
