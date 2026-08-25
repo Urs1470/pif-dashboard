@@ -22,10 +22,10 @@
   import { motionDuration, DUR_FAST, plecare, sosire, alunecare, EASE, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
   // Acelasi puls de prag ca la glisarea unui rand: doua gesturi diferite, dar
   // „ai trecut pragul" trebuie sa se simta la fel, altfel se invata separat.
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, Clock, ArrowRight, ChevronsRight, X, Check, Archive, Briefcase, User, Text } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, X, Check, Archive, Briefcase, User, Text } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, zilePanaLa } from '../lib/formatters.js'
+  import { formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
   import { grupeazaDupaTermen, etichetaTermen, etichetaTermenScurt, ORDINE_GRUPE } from '../lib/grupare.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { router, navigate } from '../lib/router.svelte.js'
@@ -792,7 +792,6 @@
   <!-- `subtasksCache[t.id]` lipsa = inca pe drum; se randeaza scheletul, cu
        atatea randuri cat stie contorul (vezi `deschideFoaia`). -->
   {@const peDrum = !subtasksCache[t.id] && (t.subtask_total || 0) > 0}
-  {@const k = zilePanaLa(t.data_scadenta)}
   <!-- REFERINTA: aceeasi tratare ca in foaia de actiuni (FoaieTask, hold·1a) —
        bifa + titlu + termen, intr-un singur rand. Bifarea inchide foaia. -->
   <div class="dt-referinta" style="--ring: {dueRing(t.data_scadenta)}">
@@ -804,30 +803,6 @@
     {#if t.data_scadenta}
       <span class="dt-ref-termen" class:sev={isOverdue(t.data_scadenta) || isToday(t.data_scadenta)}>{etichetaTermen(t.data_scadenta)}</span>
     {/if}
-  </div>
-
-  <!-- SCHIMBĂ TERMENUL — pastile mereu la vedere, cu ziua curenta aprinsa (fill de
-       accent, ca ziua aleasa din calendar). Nu mai e un buton-comutator: aici
-       replanifici din prima. „+7z" doar pe desktop (pe telefon sunt trei pastile
-       egale); „Alege" imbraca `DatePicker`, deci calendarul are foaia ca gazda. -->
-  <div class="dt-sec dt-sec-termen">
-    <span class="dt-lbl">Schimbă termenul</span>
-    <div class="dt-pastile">
-      <button type="button" class="pt" class:activ={k === 0} onclick={() => setTermen(t, 0)}>
-        <Clock size={14} strokeWidth={1.7} /> Azi
-      </button>
-      <button type="button" class="pt" class:activ={k === 1} onclick={() => setTermen(t, 1)}>
-        <ArrowRight size={14} strokeWidth={1.7} /> Mâine
-      </button>
-      {#if !ecran.telefon}
-        <button type="button" class="pt" onclick={() => setTermen(t, 7)}>
-          <ChevronsRight size={14} strokeWidth={1.7} /> +7z
-        </button>
-      {/if}
-      <span class="pt pt-dp" class:activ={k !== null && k !== 0 && k !== 1}>
-        <DatePicker value={t.data_scadenta} eticheta="Alege" onchange={(v) => setTermenData(t, v)} />
-      </span>
-    </div>
   </div>
 
   <!-- Fara stare de asteptare aici: `taskDetail` se randeaza DOAR cu
@@ -1583,7 +1558,7 @@
     width: 18px; flex: none; }
 
   /* ===== Foaia de detalii (det·1a / 1b) ===== */
-  /* Eticheta de sectiune — o singura reteta pentru „Schimbă termenul", „Pași", „Notă". */
+  /* Eticheta de sectiune — o singura reteta pentru „Pași" si „Notă". */
   .dt-lbl {
     display: block;
     font-size: var(--font-label);
@@ -1622,36 +1597,6 @@
     color: var(--text-dim);
   }
   .dt-ref-termen.sev { color: var(--ring); }
-
-  /* Sectiunea de replanificare: eticheta + pastile, separata de rest printr-o linie. */
-  .dt-sec-termen { padding-bottom: var(--space-md); margin-bottom: var(--space-md); border-bottom: 1px solid var(--border); }
-  .dt-sec-termen .dt-lbl { margin-bottom: var(--space-sm); }
-  .dt-pastile { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
-
-  .pt {
-    display: inline-flex; align-items: center; justify-content: center; gap: var(--space-6);
-    min-height: var(--ctrl-md); padding: 0 var(--space-14);
-    border-radius: var(--radius-xs); background: var(--bg-elevated); border: none;
-    color: var(--text-secondary); font-family: inherit; font-size: var(--font-control);
-    font-weight: var(--fw-medium); white-space: nowrap; cursor: pointer;
-    transition: var(--transition-pressable);
-  }
-  .pt :global(svg) { flex: none; }
-  .pt:hover { background: var(--accent-subtle); color: var(--accent-deep); }
-  .pt:active { transform: scale(var(--press-scale)); }
-  .pt.activ, .pt.activ:hover { background: var(--accent); color: var(--accent-text); }
-  .pt-dp { padding: 0; }
-  .pt-dp :global(.dp) { width: auto; }
-  .pt-dp :global(.dp-trigger) {
-    min-height: var(--ctrl-md); width: 100%;
-    padding: 0 var(--space-14); gap: var(--space-6);
-    flex-direction: row-reverse; justify-content: center;
-    background: none; border: none; box-shadow: none; color: inherit;
-    font-family: inherit; font-size: var(--font-control); font-weight: var(--fw-medium);
-    border-radius: var(--radius-xs);
-  }
-  .pt-dp :global(.dp-trigger svg) { color: inherit; }
-  .pt-dp :global(.dp-trigger:hover) { background: none; color: inherit; }
 
   /* Bara de „Pași" e in ACCENT aici (progres), nu `--success` („facut") ca in
      `global.css`. Scoped, deci `.sub-bara` din ProjectDetail ramane neatinsa. */
@@ -1856,10 +1801,6 @@
     /* DOAR inaltimea creste pe telefon (tinta de atingere), NU si latimea: cutia
        bifei ramane compacta ca inelul sa stea langa titlu. */
     .dt-check { min-height: var(--tap-sheet); margin-top: 0; }
-    .dt-pastile { flex-wrap: nowrap; }
-    .pt { flex: 1; min-width: 0; min-height: var(--tap-sheet); padding: 0 var(--space-sm); }
-    .pt-dp :global(.dp), .pt-dp :global(.dp-trigger) { width: 100%; }
-    .pt-dp :global(.dp-trigger) { min-height: var(--tap-sheet); }
     .sub-add input, .sub-add-btn { min-height: var(--tap-sheet); }
     .sub-add-btn { width: var(--tap-sheet); }
     /* Cardul isi pastreaza padding-ul orizontal si pe telefon — `2px 0` de aici

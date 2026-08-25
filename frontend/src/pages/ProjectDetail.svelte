@@ -22,7 +22,7 @@
   import { onMount } from 'svelte'
   import { slide, fade } from 'svelte/transition'
   import { flip } from 'svelte/animate'
-  import { ArrowLeft, Plus, CheckCircle2, CalendarDays, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, BookOpen, CalendarRange, Check, Text, Clock, ArrowRight, ChevronsRight } from '@lucide/svelte'
+  import { ArrowLeft, Plus, CheckCircle2, CalendarDays, AlertCircle, ListTodo, Settings2, FileDown, ChevronDown, ChevronRight, BookOpen, CalendarRange, Check, Text } from '@lucide/svelte'
   import ImplPeriods, { urlPerioade } from '../components/projects/ImplPeriods.svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import {
@@ -30,7 +30,7 @@
   } from '../stores/projects.svelte.js'
   import { apiJson } from '../lib/api.js'
   import { updateTask, deleteTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
-  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, zilePanaLa } from '../lib/formatters.js'
+  import { PROJECT_STATUS_LABELS, STATUS_COLORS, formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday } from '../lib/formatters.js'
   import { etichetaTermen, etichetaTermenScurt, grupeazaDupaTermen, ORDINE_GRUPE } from '../lib/grupare.js'
   import { ecran } from '../lib/ecran.svelte.js'
   import { exportMarkdown } from '../lib/exportMd.js'
@@ -821,7 +821,6 @@
   {@const subs = subtasksCache[t.id] || []}
   {@const doneCount = subs.filter(s => s.done).length}
   {@const gata = t.status === 'done' || t.status === 'finalizat'}
-  {@const k = zilePanaLa(t.data_scadenta)}
   <!-- REFERINTA: aceeasi tratare ca in FoaieTask (hold·1a) — bifa + titlu + termen. -->
   <div class="dt-referinta" style="--ring: {dueRing(t.data_scadenta)}">
     <button class="dt-check" onclick={() => { toggleTaskStatus(t); showSheet = false }}
@@ -832,26 +831,6 @@
     {#if t.data_scadenta}
       <span class="dt-ref-termen" class:sev={isOverdue(t.data_scadenta) || isToday(t.data_scadenta)}>{etichetaTermen(t.data_scadenta)}</span>
     {/if}
-  </div>
-
-  <div class="dt-sec dt-sec-termen">
-    <span class="dt-lbl">Schimbă termenul</span>
-    <div class="dt-pastile">
-      <button type="button" class="pt" class:activ={k === 0} onclick={() => setTermenTask(t, 0)}>
-        <Clock size={14} strokeWidth={1.7} /> Azi
-      </button>
-      <button type="button" class="pt" class:activ={k === 1} onclick={() => setTermenTask(t, 1)}>
-        <ArrowRight size={14} strokeWidth={1.7} /> Mâine
-      </button>
-      {#if !ecran.telefon}
-        <button type="button" class="pt" onclick={() => setTermenTask(t, 7)}>
-          <ChevronsRight size={14} strokeWidth={1.7} /> +7z
-        </button>
-      {/if}
-      <span class="pt pt-dp" class:activ={k !== null && k !== 0 && k !== 1}>
-        <DatePicker value={t.data_scadenta} eticheta="Alege" onchange={(v) => setTermenTaskData(t, v)} />
-      </span>
-    </div>
   </div>
 
   <div class="sub-section">
