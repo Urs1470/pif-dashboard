@@ -244,21 +244,21 @@ if (esteNativ()) {
   ;(async () => {
     const stare = await verificaActualizarea(apiJson)
     if (!stare?.nou) return
+    // Daca am descarcat deja EXACT aceasta versiune (descarcarea a reusit,
+    // instalatorul s-a deschis), nu mai arata popupul. Cand apare o versiune
+    // NOUA pe server, codul difera si popupul revine.
+    const CHEIE = 'pif-apk-oferit'
+    const oferit = localStorage.getItem(CHEIE)
+    if (oferit === String(stare.cod)) return
     const mb = stare.size ? ` · ${(stare.size / 1048576).toFixed(1)} MB` : ''
 
     async function descarca() {
-      // Chipul nu mai e buton cat timp se descarca: `progres` il transforma in
-      // afisaj. Asa nu mai trebuie disabled si nu mai poti porni a doua
-      // descarcare peste prima.
       actualizeazaToast(id, { message: 'Se descarcă…', rol: 'accent', actionLabel: '', progres: 0 })
       try {
         await descarcaSiInstaleaza((p) => actualizeazaToast(id, { progres: p }))
-        // Dialogul de sistem preia de aici.
+        localStorage.setItem(CHEIE, String(stare.cod))
         actualizeazaToast(id, { message: 'Instalează…', progres: null })
       } catch (e) {
-        // Mesajul serverului RAMANE pe ecran, exact cum vine, si nu pleaca singur:
-        // daca a picat permisiunea de instalare, trebuie sa poti citi ce ai de
-        // facut. Tocmai de asta anuntul e un toast FIX, nu unul de 4 secunde.
         actualizeazaToast(id, {
           message: e.message, rol: 'restant', ico: 'eroare',
           progres: null, actionLabel: 'Încearcă din nou',
