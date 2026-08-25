@@ -441,17 +441,17 @@
     // deschide din centru"; panoul vine dinspre marginea de care se lipeste, deci
     // o deplasare mica, pe axa lui. Distanta e mica cu bunastiinta: obiectul e
     // deja la locul lui, miscarea doar spune din ce parte a venit.
-    if (panou) return { duration, easing: curba, css: (t, u) => `opacity: ${t}; transform: translateX(${u * 60}px)` }
+    if (panou) return { duration, easing: curba, css: (t, u) => `transform: translateX(${u * 60}px)` }
     // Caseta: creste din declansator daca exista unul, altfel din centru.
     const org = origineaCasetei(node)
     if (org) node.style.transformOrigin = org
     if (!laIntrare) {
-      return { duration, easing: EASE_IESIRE, css: (t) => `opacity: ${t}; transform: scale(${0.9 + 0.1 * t});` }
+      return { duration, easing: EASE_IESIRE, css: (t) => `transform: scale(${0.9 + 0.1 * t});` }
     }
     return {
       duration,
       easing: EASE,
-      css: (t) => `opacity: ${t}; transform: scale(${0.9 + 0.1 * t});`,
+      css: (t) => `transform: scale(${0.9 + 0.1 * t});`,
       // Originea se sterge la final: lasata acolo, ar ramane pe casetă si
       // pentru INCHIDERE, care se joaca din alt punct decat s-a deschis.
       tick: (t) => { if (t === 1) node.style.transformOrigin = '' },
