@@ -1270,8 +1270,8 @@ input[type="checkbox"].cbx:active { transform: scale(0.92); }
    `position: fixed` dinauntru (popoverul si eticheta de tragere din Planificator
    sunt fixed) si le-ar muta pe toate cu cat e derulata pagina. */
 @keyframes rutaIn {
-  from { opacity: 0; transform: translateX(24px) scale(.98); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateX(24px) scale(.98); border-radius: var(--radius-md); overflow: hidden; }
+  to { opacity: 1; transform: none; border-radius: 0; overflow: visible; }
 }
 /* `backwards`, NU `forwards` — ASTA E REPARATIA, si merita citita.
    O animatie care ATINGE `transform` face din element blocul de referinta al

@@ -25,30 +25,30 @@
 // NUMELE E `inregistreazaActiune`, NU `inregistreaza`: acela exista deja, in
 // `lib/reincarcare.svelte.js` (trage-ca-sa-reincarci), si multe pagini il importa.
 // Doua importuri cu acelasi nume in acelasi fisier nu compileaza.
+import { navigate } from './router.svelte.js'
+
 let curenta = $state(null)
 
-// Foaia de creare implicita e GLOBALA (gazduita in App.svelte), NU pe /tasks.
-//
-// Inainte, „+" de pe o pagina fara creare proprie NAVIGA la /tasks si deschidea foaia
-// acolo. Navigarea aia se vedea ca o „migrare" (Ion, 2026-08-24: „tranzitia de mutare
-// nu este fluida, parca se vede un schelet la migrare"): pagina de sub deget se schimba
-// in Taskuri — alt antet, alta lista, uneori un schelet de lista — chiar in timp ce foaia
-// urca. Doua miscari peste aceiasi pixeli, exact ce sistemul evita peste tot.
-//
-// Acum foaia se ridica PESTE pagina curenta, fara sa se schimbe nimic dedesubt. Semnalul
-// e REACTIV (nu mai e o cerere consumabila): App tine o foaie legata de `deschis`, iar
-// foaia insasi il pune pe `false` la inchidere. Pe /tasks aterizezi abia DUPA ce chiar
-// creezi un task — vezi `App.svelte`, `dupaCreareImplicita` — deci „du-ma la taskuri" al
-// lui Ion se pastreaza, dar fara migrarea vizibila; daca renunti, ramai unde erai.
-export const creareImplicita = $state({ deschis: false })
+// STEAG CONSUMABIL: „+" de pe o pagina fara creare proprie navigheaza la /tasks
+// si deschide foaia de creare DE ACOLO (cu sfera si editare).
+// Tasks.svelte il consuma la montare si deschide foaia proprie.
+let _deschideDupaNavigare = false
 
-/** Apasat de pe o pagina fara creare proprie: ridica foaia GLOBALA, in loc. */
+/** Apasat de pe o pagina fara creare proprie: navigheaza la /tasks. */
 export function cereTaskNou() {
-  creareImplicita.deschis = true
+  _deschideDupaNavigare = true
+  navigate('/tasks')
 }
 
-// Fara `cale`: „+" implicit nu mai navigheaza. Navigarea catre /tasks, cand se
-// intampla, e a foii globale (dupa o creare reusita), nu a apasarii.
+/** Consumat de Tasks.svelte la montare. */
+export function consumaCerereCreare() {
+  if (_deschideDupaNavigare) {
+    _deschideDupaNavigare = false
+    return true
+  }
+  return false
+}
+
 const IMPLICITA = {
   eticheta: 'Adaugă task',
   fa: cereTaskNou,

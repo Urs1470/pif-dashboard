@@ -29,9 +29,7 @@
   import Home from './pages/Home.svelte'
   import Skeleton from './components/ui/Skeleton.svelte'
   import { urmaresteDerularea } from './lib/derulare.js'
-  import FoaieAdauga from './components/FoaieAdauga.svelte'
-  import { creareImplicita } from './lib/actiuneNoua.svelte.js'
-  import { loadGlobalTasks } from './stores/tasks.svelte.js'
+
 
   let paleta = $state(null)
 
@@ -232,14 +230,6 @@
   <TrageReincarca />
   <!-- Un singur tooltip pentru toata aplicatia; citeste atributele `title`. -->
   <Tooltip />
-  <!-- FOAIA DE CREARE IMPLICITA, GLOBALA. „+" de pe o pagina fara creare proprie o
-       ridica PESTE pagina curenta, fara sa navigheze — asa nu se mai vede o „migrare"
-       la Taskuri sub foaia care urca (Ion, 2026-08-24). Pe /tasks foaia e a PAGINII
-       (cu editare si sfera proprie); asta e doar drumul implicit, de oriunde altundeva.
-       Pe /tasks aterizezi abia dupa o creare reusita — atunci `onSchimbare` reincarca
-       lista si te duce acolo, ca sa-ti vezi taskul; daca renunti, ramai unde erai. -->
-  <FoaieAdauga bind:open={creareImplicita.deschis}
-               onSchimbare={() => { loadGlobalTasks(); navigate('/tasks') }} />
   <!-- Jurnalul de pe aparat (`#/?urma=1`) — vezi lib/urma.js. -->
   <Urma />
 </div>
