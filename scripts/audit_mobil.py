@@ -919,7 +919,8 @@ APASA_LUNG_RAND = """(marca) => {
   r.scrollIntoView({ block: 'center' });
   const box = r.getBoundingClientRect();
   const x = box.left + box.width / 2, y = box.top + box.height / 2;
-  const ev = (type) => document.elementFromPoint(x, y).dispatchEvent(
+  const tinta = document.elementFromPoint(x, y);
+  const ev = (type) => tinta.dispatchEvent(
     new PointerEvent(type, { pointerId: 1, pointerType: 'touch',
       clientX: x, clientY: y, bubbles: true, cancelable: true }));
   ev('pointerdown');
