@@ -241,21 +241,20 @@ code, pre {
      dinauntru.
      La INCHIDERE se intoarce pe curba obisnuita, nu pe arc: pagina care revine
      n-are voie sa depaseasca — ar parea ca sare in fata. */
-  /* LA INCHIDERE, PAGINA REVINE IN ACELASI TIMP CA LA DUCERE.
-     700ms la deschidere, 700ms la inchidere, aceeasi curba. Simetria e cea
-     care se simte „lin" — o revenire mai scurta (chiar pe aceeasi curba)
-     impinge 80% din miscare in primele ~150ms si arata ca un salt.
-     Ca foaia pleaca in 500 si pagina inca se aseaza 200ms dupa ea e corect:
-     e o miscare de fond, nu actiunea principala. */
+  /* RETRAGEREA PAGINII — transform-origin sta aici, TRANZITIA sta in App.svelte.
+     `.app-main` scoped (App.svelte, specificitate `.app-main.s-HASH` = 0-2-0)
+     BATE aceasta regula nescopata (specificitate `.app-main` = 0-1-0): `transition`
+     de aici NU se aplica niciodata. Tranzitia e in App.svelte `@media <=768px`:
+       padding-left, padding-top, transform 700ms ease 100ms
+     Delay-ul de 100ms e reparatia: `nivelInchis()` scoate `are-modal` instant, iar
+     fara intarziere pagina sarea inapoi cand modalul era inca 100% vizibil.
+     La DESCHIDERE regula de mai jos (`html.are-modal .app-main`, 0-2-1) castiga
+     si pune `transition: transform 700ms ease` FARA delay. */
   .app-main {
     transform-origin: 50% 0;
-    transition: transform var(--dur-normal) var(--ease);
   }
-  /* ACELASI CEAS CA FOAIA. Ducerea mergea pe `--dur-arc` (420) cu arc, in timp
-     ce foaia soseste in 280: fundalul termina la 140ms dupa obiectul care l-a
-     acoperit, adica o a doua miscare pe care o vezi fara s-o poti numi. Acum
-     amandoua se opresc odata; intoarcerea ramane pe ceasul de plecare (regula de
-     mai sus). */
+  /* ACEASTA REGULA CASTIGA SCOOPED-UL (0-2-1 > 0-2-0): la deschidere, pagina se
+     retrage IMEDIAT, fara intarziere, pe aceeasi durata si curba. */
   html.are-modal .app-main {
     transform: scale(.93) translateY(6px);
     transition: transform var(--dur-normal) var(--ease);
@@ -788,8 +787,12 @@ input:focus, select:focus, textarea:focus {
   animation-fill-mode: both, both;
 }
 @keyframes vt-pagina-noua-drum {
-  from { transform: translateX(calc(var(--nav-sens, 0) * 30px)); }
-  to { transform: none; }
+  from {
+    transform: translateX(calc(var(--nav-sens, 0) * 30px));
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  to { transform: none; border-radius: 0; overflow: visible; }
 }
 @keyframes vt-pagina-noua-cerneala {
   from { opacity: 0; }

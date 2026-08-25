@@ -277,6 +277,13 @@
     transition: padding-left var(--dur-base) var(--ease),
                 padding-top var(--dur-base) var(--ease);
   }
+  @media (max-width: 768px) {
+    .app-main {
+      transition: padding-left var(--dur-base) var(--ease),
+                  padding-top var(--dur-base) var(--ease),
+                  transform var(--dur-normal) var(--ease) 100ms;
+    }
+  }
 
   /* FARA `overflow-y: auto` AICI.
      A doua oara aceeasi capcana ca la `.app-main` de mai sus. `overflow: auto`
