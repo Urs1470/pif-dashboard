@@ -248,7 +248,7 @@
   import { tick, untrack } from 'svelte'
   import { X } from '@lucide/svelte'
   import { fade, scale } from 'svelte/transition'
-  import { motionDuration, DUR_BASE, DUR_MID, DUR_MID_CLOSE, DUR_NORMAL, DUR_CLOSE, EASE, EASE_IESIRE } from '../../lib/motion.svelte.js'
+  import { motionDuration, DUR_BASE, DUR_MID, DUR_MID_CLOSE, EASE, EASE_IESIRE } from '../../lib/motion.svelte.js'
   import { ecran } from '../../lib/ecran.svelte.js'
   // Foaia si voalul ies in `body`: pagina din spate se RETRAGE (un `transform`
   // pe invelisul ei), iar un obiect dinauntrul acelui invelis s-ar micsora
@@ -368,7 +368,7 @@
         b.style.top = ''
         b.style.width = ''
         window.scrollTo(0, yBlocat)
-      }, motionDuration(DUR_CLOSE))
+      }, motionDuration(DUR_MID_CLOSE))
     }
   })
 
@@ -393,8 +393,8 @@
   function intra(node, _params, opts) {
     const laIntrare = opts?.direction !== 'out'
     const caseta = !sheet && !panou
-    const durIn = caseta ? DUR_MID : DUR_NORMAL
-    const durOut = caseta ? DUR_MID_CLOSE : DUR_CLOSE
+    const durIn = DUR_MID
+    const durOut = DUR_MID_CLOSE
     const duration = motionDuration(laIntrare ? durIn : durOut)
     // SOSIREA FRANEAZA, PLECAREA ACCELEREAZA. Pana acum amandoua mergeau pe
     // `--ease`, deci foaia se retragea ca si cum s-ar razgandi: incetinea exact
@@ -1470,9 +1470,9 @@
        ridicare `.gest` pleaca si valoarea e deja cea finala. */
     .modal.sheet {
       translate: 0 var(--trasY, 0px);
-      transition: translate var(--dur-normal) var(--ease-spring),
-                  scale var(--dur-normal) var(--ease),
-                  border-radius var(--dur-normal) var(--ease);
+      transition: translate var(--dur-mid) var(--ease-spring),
+                  scale var(--dur-mid) var(--ease),
+                  border-radius var(--dur-mid) var(--ease);
       will-change: translate;
     }
     .modal.sheet.trage { transition: none; }

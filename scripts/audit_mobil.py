@@ -839,23 +839,27 @@ def lista_de_facut(ctx, baza):
             page.keyboard.press('Escape')
             page.wait_for_timeout(600)
 
-    # mutare din gest: glisarea spre stanga deschide FOAIA cu panoul de termen
-    # desfacut, si alegi ziua acolo. Pe /tasks termenele sunt imprastiate pe
-    # saptamani, deci un „Mâine" fix ar fi o zi aleasa de aplicatie, nu de tine —
-    # de aceea aici gestul duce la alegere, nu executa (spre deosebire de „Astăzi").
+    # Glisarea spre stanga deschide FOAIA DE DETALII (pasi + nota).
+    # Replanificarea se face din foaia de actiuni (long-press), nu de aici.
     r = page.evaluate(CAUTA_RAND, MARCA)
     if r:
         cx, cy = r[0] + r[2] * 0.5, r[1] + r[3] / 2
         page.evaluate(TRAGE, [cx, cy, [[cx - d, cy] for d in (30, 100, 180, 240)], 5])
         page.wait_for_timeout(900)
-        zi(page.locator('.dt-pastile .pt').count() > 0,
-           'glisarea deschide foaia cu ziua de ales')
+        zi(page.locator('.dt-referinta').count() > 0,
+           'glisarea deschide foaia de detalii')
+        page.keyboard.press('Escape')
+        page.wait_for_timeout(600)
+        page.evaluate(APASA_LUNG_RAND, MARCA)
+        page.wait_for_timeout(700)
+        page.evaluate('() => window.__ridica && window.__ridica()')
+        page.wait_for_timeout(700)
         page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
         page.wait_for_timeout(1400)
         page.keyboard.press('Escape')
         page.wait_for_timeout(700)
         grup = page.evaluate(GRUPUL_LUI, MARCA)
-        zi(grup == 'Mâine', 'ziua aleasa din foaie muta taskul', grup)
+        zi(grup == 'Mâine', 'ziua aleasa din foaia de actiuni muta taskul', grup)
 
     # bifare + anulare
     page.reload(wait_until='load')
@@ -901,18 +905,25 @@ CAUTA_RAND = """(marca) => {
 # local in fiecare foaie (`.ts-zi`), cu alt desen in fiecare loc; de la redesign
 # sunt o componenta, deci si testul intreaba de ea.
 ALEGE_ZI_IN_FOAIE = """(eticheta) => {
-  const b = [...document.querySelectorAll('.dt-pastile .pt')].find(x => x.textContent.includes(eticheta));
+  const b = [...document.querySelectorAll('.ft-replan .sz-optiune')].find(x => x.textContent.includes(eticheta));
   if (!b) return false;
   b.click();
   return true;
 }"""
 
-# Deschide foaia FARA gest, cand testul vrea doar sa mute ziua (atingerea randului
-# deschide aceeasi foaie; pastilele de replanificare sunt mereu la vedere).
-DESCHIDE_FOAIA = """(marca) => {
+# Declanseaza apasarea lunga pe un rand de task (deschide FoaieTask).
+# Dupa apel, asteapta 700ms si cheama window.__ridica() ca sa ridici degetul.
+APASA_LUNG_RAND = """(marca) => {
   const r = [...document.querySelectorAll('.trow')].find(x => x.textContent.includes(marca));
   if (!r) return false;
-  r.querySelector('.tmain').click();
+  r.scrollIntoView({ block: 'center' });
+  const box = r.getBoundingClientRect();
+  const x = box.left + box.width / 2, y = box.top + box.height / 2;
+  const ev = (type) => document.elementFromPoint(x, y).dispatchEvent(
+    new PointerEvent(type, { pointerId: 1, pointerType: 'touch',
+      clientX: x, clientY: y, bubbles: true, cancelable: true }));
+  ev('pointerdown');
+  window.__ridica = () => ev('pointerup');
   return true;
 }"""
 
@@ -1464,10 +1475,11 @@ def azi_peste_tot(ctx, baza):
     page.goto(baza + '/#/tasks', wait_until='load')
     page.wait_for_selector('.trow', timeout=15000)
     page.wait_for_timeout(1100)
-    # Foaia, apoi ziua direct din pastile (mereu la vedere) — acelasi drum ca pe
-    # deget, fara gest.
-    page.evaluate(DESCHIDE_FOAIA, MARCA)
-    page.wait_for_timeout(900)
+    # Foaia de actiuni (long-press), apoi „Mâine" din SelectorZi.
+    page.evaluate(APASA_LUNG_RAND, MARCA)
+    page.wait_for_timeout(700)
+    page.evaluate('() => window.__ridica && window.__ridica()')
+    page.wait_for_timeout(700)
     page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
     page.wait_for_timeout(1500)
     page.keyboard.press('Escape')
