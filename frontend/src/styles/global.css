@@ -241,15 +241,15 @@ code, pre {
      dinauntru.
      La INCHIDERE se intoarce pe curba obisnuita, nu pe arc: pagina care revine
      n-are voie sa depaseasca — ar parea ca sare in fata. */
-  /* LA INCHIDERE, FUNDALUL TERMINA ODATA CU FOAIA. Regula asta e ceasul de
-     REVENIRE (cea de sub ea, cu `are-modal`, e ceasul de ducere).
-     `--dur-mid` (500ms) = DUR_CLOSE — foaia pleaca in 500, pagina revine in 500.
-     Curba e `--ease` (franare), NU `--ease-iesire` (accelerare): pagina se
-     ASAZA inapoi, deci incetineste la final. Cu accelerarea, ultimele cadre
-     sunt cele mai rapide si aterizarea se citeste ca un salt. */
+  /* LA INCHIDERE, PAGINA REVINE IN ACELASI TIMP CA LA DUCERE.
+     700ms la deschidere, 700ms la inchidere, aceeasi curba. Simetria e cea
+     care se simte „lin" — o revenire mai scurta (chiar pe aceeasi curba)
+     impinge 80% din miscare in primele ~150ms si arata ca un salt.
+     Ca foaia pleaca in 500 si pagina inca se aseaza 200ms dupa ea e corect:
+     e o miscare de fond, nu actiunea principala. */
   .app-main {
     transform-origin: 50% 0;
-    transition: transform var(--dur-mid) var(--ease);
+    transition: transform var(--dur-normal) var(--ease);
   }
   /* ACELASI CEAS CA FOAIA. Ducerea mergea pe `--dur-arc` (420) cu arc, in timp
      ce foaia soseste in 280: fundalul termina la 140ms dupa obiectul care l-a
