@@ -822,7 +822,6 @@
   {@const doneCount = subs.filter(s => s.done).length}
   {@const gata = t.status === 'done' || t.status === 'finalizat'}
   {@const k = zilePanaLa(t.data_scadenta)}
-
   <!-- REFERINTA: aceeasi tratare ca in FoaieTask (hold·1a) — bifa + titlu + termen. -->
   <div class="dt-referinta" style="--ring: {dueRing(t.data_scadenta)}">
     <button class="dt-check" onclick={() => { toggleTaskStatus(t); showSheet = false }}
@@ -1702,31 +1701,6 @@
   .dt-ref-termen { flex: none; font-family: var(--font-mono); font-variant-numeric: tabular-nums;
     font-size: var(--font-small); color: var(--text-dim); }
   .dt-ref-termen.sev { color: var(--ring); }
-  .dt-sec-termen { padding-bottom: var(--space-md); margin-bottom: var(--space-md); border-bottom: 1px solid var(--border); }
-  .dt-sec-termen .dt-lbl { margin-bottom: var(--space-sm); }
-  .dt-pastile { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
-  /* Pastila de zi — pastila, suprafata 2; ziua curenta aprinsa cu fill de accent. */
-  .pt { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-6);
-    min-height: var(--ctrl-md); padding: 0 var(--space-14);
-    border-radius: var(--radius-xs); background: var(--bg-elevated); border: none;
-    color: var(--text-secondary); font-family: inherit; font-size: var(--font-control);
-    font-weight: var(--fw-medium); white-space: nowrap; cursor: pointer;
-    transition: var(--transition-pressable); }
-  .pt :global(svg) { flex: none; }
-  .pt:hover { background: var(--accent-subtle); color: var(--accent-deep); }
-  .pt:active { transform: scale(var(--press-scale)); }
-  .pt.activ, .pt.activ:hover { background: var(--accent); color: var(--accent-text); }
-  .pt-dp { padding: 0; }
-  .pt-dp :global(.dp) { width: auto; }
-  .pt-dp :global(.dp-trigger) {
-    min-height: var(--ctrl-md); width: 100%;
-    padding: 0 var(--space-14); gap: var(--space-6);
-    flex-direction: row-reverse; justify-content: center;
-    background: none; border: none; box-shadow: none; color: inherit;
-    font-family: inherit; font-size: var(--font-control); font-weight: var(--fw-medium);
-    border-radius: var(--radius-xs); }
-  .pt-dp :global(.dp-trigger svg) { color: inherit; }
-  .pt-dp :global(.dp-trigger:hover) { background: none; color: inherit; }
   /* Bara de „Pași" e in ACCENT aici (progres), nu `--success` ca in global.css. */
   .sub-bara span { background: var(--accent); }
   /* Scheletul are forma randului real (vezi `Skeleton`): sosirea nu misca nimic. */
@@ -1875,10 +1849,6 @@
     .back { min-height: var(--tap-min); }
     /* Foaia de detalii pe telefon — aceleasi trepte ca in /tasks. */
     .dt-check { min-height: var(--tap-sheet); margin-top: 0; }
-    .dt-pastile { flex-wrap: nowrap; }
-    .pt { flex: 1; min-width: 0; min-height: var(--tap-sheet); padding: 0 var(--space-sm); }
-    .pt-dp :global(.dp), .pt-dp :global(.dp-trigger) { width: 100%; }
-    .pt-dp :global(.dp-trigger) { min-height: var(--tap-sheet); }
     .dt-nota-add { min-height: var(--tap-sheet); }
     /* Aceeasi reteta ca in Taskuri si Astăzi: 44px de atins, 30px de latime.
        Cercul de 18px intr-o caseta de 44 impingea titlul cu un sfert de ecran. */

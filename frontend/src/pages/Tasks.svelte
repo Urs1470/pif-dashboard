@@ -793,7 +793,6 @@
        atatea randuri cat stie contorul (vezi `deschideFoaia`). -->
   {@const peDrum = !subtasksCache[t.id] && (t.subtask_total || 0) > 0}
   {@const k = zilePanaLa(t.data_scadenta)}
-
   <!-- REFERINTA: aceeasi tratare ca in foaia de actiuni (FoaieTask, hold·1a) —
        bifa + titlu + termen, intr-un singur rand. Bifarea inchide foaia. -->
   <div class="dt-referinta" style="--ring: {dueRing(t.data_scadenta)}">
@@ -1629,8 +1628,6 @@
   .dt-sec-termen .dt-lbl { margin-bottom: var(--space-sm); }
   .dt-pastile { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
 
-  /* PASTILA DE ZI — pastila (`--radius-xs`), suprafata 2; hover pe tenta; ziua
-     curenta e aprinsa cu fill de accent (ca ziua aleasa din calendar). */
   .pt {
     display: inline-flex; align-items: center; justify-content: center; gap: var(--space-6);
     min-height: var(--ctrl-md); padding: 0 var(--space-14);
@@ -1643,9 +1640,6 @@
   .pt:hover { background: var(--accent-subtle); color: var(--accent-deep); }
   .pt:active { transform: scale(var(--press-scale)); }
   .pt.activ, .pt.activ:hover { background: var(--accent); color: var(--accent-text); }
-  /* „Alege" imbraca declansatorul lui `DatePicker`: tot butonul e tinta, iar iconita
-     lui de calendar (nu una in plus) sta la stanga. Span-ul `.pt` da suprafata; el
-     preia si `.activ`. */
   .pt-dp { padding: 0; }
   .pt-dp :global(.dp) { width: auto; }
   .pt-dp :global(.dp-trigger) {
@@ -1862,9 +1856,6 @@
     /* DOAR inaltimea creste pe telefon (tinta de atingere), NU si latimea: cutia
        bifei ramane compacta ca inelul sa stea langa titlu. */
     .dt-check { min-height: var(--tap-sheet); margin-top: 0; }
-    /* Pe telefon: TREI pastile egale pe un rand (Azi/Mâine/Alege — „+7z" e ascuns
-       in markup), la inaltimea de foaie. „Alege" umple pastila lui, deci tot
-       butonul e tinta. */
     .dt-pastile { flex-wrap: nowrap; }
     .pt { flex: 1; min-width: 0; min-height: var(--tap-sheet); padding: 0 var(--space-sm); }
     .pt-dp :global(.dp), .pt-dp :global(.dp-trigger) { width: 100%; }
