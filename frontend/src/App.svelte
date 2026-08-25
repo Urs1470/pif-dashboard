@@ -47,6 +47,7 @@
     '/calendar': lazy(() => import('./pages/Calendar.svelte')),
     '/departament': lazy(() => import('./pages/Departament.svelte')),
     '/calculator': lazy(() => import('./pages/Calculator.svelte')),
+    '/settings': lazy(() => import('./pages/Settings.svelte')),
   }
 
   // Routerul nu stie sa incarce module — `lazyCache` e aici. Deci ii dam functia

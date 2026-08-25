@@ -162,7 +162,10 @@
            cuvantul de langa ea. Ce ramane colorat e CAND, fiindca doar asta
            decide daca te uiti mai departe. -->
       <button class="pr"
-              onclick={() => navigate(`/calendar?zi=${acum.start}`)}
+              onclick={() => {
+                const ids = acum.lucrari.map(p => p.id).filter(Boolean).join(',')
+                navigate(`/calendar?zi=${acum.start}${ids ? `&per=${encodeURIComponent(ids)}` : ''}`)
+              }}
               title="Vezi în Calendar">
         <span class="ico">
           {#if acum.sediu}<Building2 size={15} />{:else}<MapPin size={15} />{/if}

@@ -310,6 +310,7 @@
     // Langa Calendar, nu la coada: dupa „unde sunt eu" urmeaza imediat „cine e unde".
     { path: '/departament', label: 'Departament', icon: 'departament' },
     { path: '/calculator', label: 'Calculator', icon: 'calculator' },
+    { path: '/settings', label: 'Setări', icon: 'admin' },
   ]
 
   // PE TELEFON, DOCK-UL TINE PATRU LUCRURI (cerinta Ion).
@@ -330,10 +331,10 @@
   // tastatura ca sa ajungi la o pagina de nivel unu, pe un telefon. Foaia „Mai mult"
   // rezolva exact asta: o atingere iti da rutele, la 44px fiecare.
   //
-  // Al patrulea slot ramane „Mai mult": o foaie cu cele PATRU rute scoase (Proiecte,
-  // Plan, Departament, Calculator) la 44px fiecare. Cautarea nu pleaca — urca in capul
-  // foii, deci o atingere iti da si rutele, si cautarea, iar cine vrea sa scrie scrie.
-  // Pe desktop nu se schimba nimic: acolo sunt toate sapte, plus Ctrl+K.
+  // Al patrulea slot ramane „Mai mult": o foaie cu rutele scoase (Proiecte,
+  // Plan, Departament, Calculator, Setari) la 44px fiecare. Cautarea traieste
+  // in Header (buton) si in paleta (Ctrl+K pe desktop).
+  // Pe desktop nu se schimba nimic: acolo sunt toate, plus Ctrl+K.
   //
   // Filtrul citeste `ecran.telefon`, sursa unica a pragului de 768px, NU o a doua
   // definitie locala: `isMobile` de mai sus include si `pointer: coarse`, fiindca
@@ -494,10 +495,6 @@
                else if (e.key === 'Escape') { e.preventDefault(); foaieDeschisa = false }
              }}
              transition:fly={{ y: 12, duration: motionDuration(DUR_BASE), easing: EASE }}>
-          <button class="mm-cauta" onclick={openSearch} role="menuitem">
-            <Search size={17} /> Caută în tot dashboardul
-          </button>
-          <span class="mm-linie" aria-hidden="true"></span>
           {#each itemsInFoaie as item (item.path)}
             <a href={item.path} use:link class="mm-rand" class:active={isActive(item.path)}
                role="menuitem" onclick={() => (foaieDeschisa = false)}>
@@ -744,7 +741,6 @@
     background: var(--bg-overlay);
     box-shadow: var(--shadow-md);
   }
-  .mm-cauta,
   .mm-rand {
     display: flex;
     align-items: center;
@@ -760,8 +756,6 @@
     cursor: pointer;
     transition: var(--transition-colors);
   }
-  .mm-cauta { color: var(--text-dim); }
-  .mm-cauta:active,
   .mm-rand:active { background: var(--bg-hover); color: var(--text); }
   .mm-rand.active {
     color: var(--accent-deep);

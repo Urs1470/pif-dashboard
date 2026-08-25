@@ -48,6 +48,7 @@
     { path: '/calendar', label: 'Calendar' },
     { path: '/departament', label: 'Departament' },
     { path: '/calculator', label: 'Calculator' },
+    { path: '/settings', label: 'Setări' },
   ]
 
   function isActive(path) {

@@ -22,7 +22,7 @@
   import { motionDuration, DUR_FAST, plecare, sosire, alunecare, EASE, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
   // Acelasi puls de prag ca la glisarea unui rand: doua gesturi diferite, dar
   // „ai trecut pragul" trebuie sa se simta la fel, altfel se invata separat.
-  import { ListTodo, Plus, CheckCircle2, CalendarDays, Clock, ArrowRight, ChevronsRight, X, Check, Archive, Briefcase, User, Text, Bell, BellRing, Info, AlarmClockOff, ExternalLink } from '@lucide/svelte'
+  import { ListTodo, Plus, CheckCircle2, CalendarDays, Clock, ArrowRight, ChevronsRight, X, Check, Archive, Briefcase, User, Text } from '@lucide/svelte'
   import SolidIcon from '../components/ui/SolidIcon.svelte'
   import { globalTasks, loadGlobalTasks, updateGlobalTask, deleteGlobalTask, loadSubtasks, createSubtask, updateSubtask, deleteSubtask } from '../stores/tasks.svelte.js'
   import { formatDate, dueRing, isFutureRecurrence, esteDepasit as isOverdue, esteAzi as isToday, zilePanaLa } from '../lib/formatters.js'
@@ -72,8 +72,6 @@
   import RichText from '../components/ui/RichText.svelte'
   import { todayISO, addDays } from '../lib/calendarDates.js'
   import { apiJson } from '../lib/api.js'
-  import { suportaPush, esteIosNeinstalat, stareAbonament, aboneaza, dezaboneaza } from '../lib/push.js'
-  import { esteNativ, probeaza, reprogrameaza, alarmaExacta, deschideAlarmaExacta } from '../lib/notificari.js'
   import { inregistreazaActiune, consumaCerereCreare } from '../lib/actiuneNoua.svelte.js'
 
   // Sfera vine din URL (#/tasks?sfera=personal), nu din state local: vederea e
@@ -663,161 +661,12 @@
     }
   })
 
-  // Notificarile zilnice: o notificare PER task personal care sta fara termen
-  // de peste doua zile, cu „Facut"/„Azi" direct pe notificare.
-  let showPushModal = $state(false)
-  let pushStatus = $state(null)     // starea de pe server
-  let pushLocal = $state(null)      // permisiunea + abonamentul acestui browser
-  let pushBusy = $state(false)
+  let pushStatus = $state(null)
 
-  async function reincarcaPush() {
-    const [server, local] = await Promise.all([
-      apiJson('/api/push/status'),
-      suportaPush() ? stareAbonament() : Promise.resolve({ permisiune: 'unsupported', abonat: false }),
-    ])
-    pushStatus = server
-    pushLocal = local
-  }
 
-  // Alarma exacta: `null` = intrebarea n-are sens aici (web, sau Android sub 12).
-  let exacta = $state(null)
 
-  async function pornesteAlarma() {
-    try {
-      await deschideAlarmaExacta()
-      // Se re-citeste la revenirea in aplicatie, nu acum: ecranul de sistem e
-      // deschis peste noi, iar raspunsul vine dupa ce-l inchizi.
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-  }
 
-  async function deschidePush() {
-    // Setarile se cer la DESCHIDEREA ferestrei, nu la incarcarea paginii: sunt
-    // folosite doar aici, si o cerere in plus la fiecare intrare pe Taskuri ar
-    // fi trafic pentru un ecran pe care il deschizi de doua ori pe an.
-    if (!setari) {
-      apiJson('/api/push/setari').then((s) => { setari = s }).catch(() => {})
-    }
-    alarmaExacta().then((v) => { exacta = v }).catch(() => {})
-    showPushModal = true
-    try { await reincarcaPush() }
-    catch (e) { showPushModal = false; toast(`Eroare: ${e.message}`, 'error') }
-  }
 
-  async function activeazaPush() {
-    if (pushBusy) return
-    pushBusy = true
-    try {
-      await aboneaza()
-      await reincarcaPush()
-      toast('Notificări activate pe dispozitivul ăsta.', 'success')
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-    finally { pushBusy = false }
-  }
-
-  async function dezactiveazaPush() {
-    if (pushBusy) return
-    pushBusy = true
-    try {
-      await dezaboneaza()
-      await reincarcaPush()
-      toast('Notificări dezactivate pe dispozitivul ăsta.', 'success')
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-    finally { pushBusy = false }
-  }
-
-  async function testPush() {
-    if (pushBusy) return
-    pushBusy = true
-    try {
-      const r = await apiJson('/api/push/test', { method: 'POST', body: {} })
-      await reincarcaPush()
-      toast(r.esuate ? (r.motiv || `Eșuate: ${r.esuate}`) : 'Notificare de test trimisă.',
-            r.esuate ? 'error' : 'success')
-    } catch (e) { toast(`Eroare: ${e.message}`, 'error') }
-    finally { pushBusy = false }
-  }
-
-  // In aplicatia de pe telefon, proba nu trece prin server deloc: pune o alarma
-  // locala peste ~40s, pe acelasi canal si cu aceleasi butoane ca cele de la 8
-  // dimineata. Daca lantul e rupt undeva (permisiune, canal, alarma exacta),
-  // afli ACUM si afli unde — nu maine dimineata, din tacere.
-  async function probaLocala() {
-    if (pushBusy) return
-    pushBusy = true
-    try {
-      toast(await probeaza(), 'success')
-    } catch (e) { toast(e.message, 'error') }
-    finally { pushBusy = false }
-  }
-
-  // SETARILE DE NOTIFICARI. Stau pe SERVER, deci sunt aceleasi de pe orice
-  // dispozitiv si supravietuiesc unei reinstalari.
-  //
-  // NU MAI SUNT ASCUNSE PE WEB. Erau gardate pe `esteNativ()`, cu motivul „pe web
-  // nu exista canalul local pe care sa-l regleze" — dar cele patru reglaje nu sunt
-  // ale canalului, sunt ale REGULII, iar regula o citeste si planificatorul de pe
-  // server (`check_and_send_daily`). Deci ora la care suna telefonul se schimba de
-  // pe telefon si de nicaieri altundeva, desi setarea era comuna. Se arata oriunde
-  // exista ceva de programat: nativ mereu, pe web cand exista macar un dispozitiv
-  // abonat (nu neaparat asta — de pe PC regleze ce suna pe telefon).
-  let setari = $state(null)
-  let setariEroare = $state('')
-  const oreDisponibile = Array.from({ length: 24 }, (_, h) => ({
-    value: h, label: `${String(h).padStart(2, '0')}:00`,
-  }))
-  const arataSetari = $derived(
-    esteNativ() || (pushStatus?.disponibil && (pushLocal?.abonat || pushStatus?.abonamente > 0))
-  )
-
-  async function salveazaSetari() {
-    if (pushBusy || !setari) return
-    pushBusy = true
-    setariEroare = ''
-    try {
-      // Serverul valideaza si INTOARCE forma normalizata — o folosim pe aia, nu
-      // pe cea din formular: altfel un camp corectat de server (numar venit ca
-      // text din <input type=number>) ar ramane afisat gresit.
-      const { programate, ...salvate } = await apiJson('/api/push/setari', {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        // SE TRIMIT TOATE, nu doar cele patru de dinainte.
-        //
-        // `deplasari` si `oraDeplasare` lipseau din corp, iar serverul completeaza
-        // ce nu primeste din IMPLICITE (`_valideaza_setari` porneste de la
-        // `SETARI_IMPLICITE`, nu de la ce e in baza) — deci stingeai „Seara
-        // dinaintea unei plecări", salvai, si se reaprindea singura. Un comutator
-        // care nu-si tine starea te invata ca setarile mint, exact ce spune nota de
-        // la `taskuri_scadente` din `push.py`.
-        // Gasit adaugand `oreExacte`: el ar fi avut exact aceeasi soarta.
-        body: JSON.stringify({
-          ora: Number(setari.ora), zileVechime: Number(setari.zileVechime),
-          scadente: !!setari.scadente, faraTermen: !!setari.faraTermen,
-          oreExacte: !!setari.oreExacte,
-          deplasari: !!setari.deplasari, oraDeplasare: Number(setari.oraDeplasare),
-        }),
-      })
-      setari = salvate
-      // SALVAREA CONFIRMA CU UN NUMAR. O setare de notificari se verifica altfel
-      // abia a doua zi dimineata, deci fara numar nu ai de unde sti daca a prins.
-      // Pe telefon numarul vine din reprogramarea locala — care se face IMEDIAT,
-      // altfel alarmele deja puse ar suna la ora veche pana la urmatoarea
-      // deschidere a aplicatiei. Pe web il da serverul: cate pleaca data viitoare.
-      let cate = programate ?? 0
-      if (esteNativ()) {
-        // Si perioadele, nu doar taskurile: de la turul 15 incoace reprogramarea
-        // pune si alarma de plecare pe teren, iar ea se calculeaza din deplasari.
-        const [d, cal] = await Promise.all([
-          apiJson('/api/global-tasks?sfera=personal'),
-          apiJson(`/api/calendar?start=${todayISO()}&zile=60`).catch(() => null),
-        ])
-        cate = await reprogrameaza(Array.isArray(d) ? d : d.tasks || [], salvate,
-                                   cal?.perioade || [])
-      }
-      await reincarcaPush()
-      toast(`Salvat — ${cate} ${cate === 1 ? 'notificare programată' : 'notificări programate'}.`, 'success')
-    } catch (e) {
-      setariEroare = e.message
-    } finally { pushBusy = false }
-  }
 
   // Un singur $effect in loc de onMount + load-uri explicite pe chip-uri: ruleaza
   // la montare SI ori de cate ori se schimba sfera (din URL) sau arhiva — trei
@@ -1163,14 +1012,6 @@
             title={showArchive ? 'Înapoi la taskurile active' : 'Vezi arhiva'}>
       <Archive size={15} strokeWidth={1.5} /><span class="a-et">Arhivă</span>
     </button>
-    {#if sferaActiva === 'personal'}
-      <!-- NU chip: e o setare, nu un filtru. Sta LANGA „Arhivă" (cerinta Ion)
-           — butonul Google Calendar care statea intre ele a plecat. -->
-      <button class="g-ico" onclick={deschidePush} title="Notificări zilnice" aria-label="Notificări">
-        <Bell size={15} strokeWidth={1.5} />
-        {#if pushStatus?.last_error}<span class="g-punct" aria-hidden="true"></span>{/if}
-      </button>
-    {/if}
     <!-- CREAREA: un buton MIC in coltul din dreapta al barei (cerinta Ion), nu un
          rand mare in lista. Deschide foaia „1a" centrata. Pe telefon lipseste —
          acolo creeaza butonul plutitor din dock. -->
@@ -1428,168 +1269,7 @@
      ultima sincronizare · (eroarea) · actiunea principala · (linie) · .ics si
      Deconectează. Zona de lipit JSON apare DOAR cand nu exista credentiale — nu e
      un camp permanent intr-un ecran deschis zilnic. -->
-<!-- Modalul Google Calendar a plecat cu tot cu buton (Ion, 2026-08-10) —
-     vezi comentariul din script. -->
-
-<!-- Notificările zilnice, în trepte: indisponibil pe server → browser
-     nesuportat → permisiune refuzată → neabonat → abonat. -->
-<Modal bind:open={showPushModal} title="Notificări zilnice" size="sm">
-  <!-- IN APLICATIA DE PE TELEFON, NIMIC DIN ASTA NU MAI TRECE PRIN SERVER.
-       Alarma o pune Android, din timp, deci starea de abonament push de mai jos
-       n-are niciun inteles aici — ar arata o masinarie care nu mai e folosita. -->
-  {#if esteNativ()}
-    <p class="g-text">O notificare <strong>per task</strong>, nu un rezumat, cu „Făcut” și „Azi” pe
-      ea. Aici alarma o pune telefonul, din timp — nu vine de pe server, deci nu depinde nici
-      de rețea, nici de starea aplicației în momentul în care sună.</p>
-  {:else if pushStatus === null}
-    <div class="g-skel"><Skeleton width="80%" height="14px" /><Skeleton width="60%" height="14px" /></div>
-  {:else if !pushStatus.disponibil}
-    <p class="g-text">Notificările nu sunt disponibile pe server (lipsește pachetul
-      <span class="g-mono">pywebpush</span>). Verifică logurile de deploy.</p>
-  {:else if !suportaPush()}
-    <p class="g-text">
-      {#if esteIosNeinstalat()}
-        Pe iPhone notificările merg doar din aplicația instalată: Distribuie →
-        „Adaugă la ecranul principal”, deschide-o de acolo și revino aici.
-      {:else}
-        Browserul ăsta nu suportă notificări push.
-      {/if}
-    </p>
-  {:else if pushLocal?.permisiune === 'denied'}
-    <p class="g-text">Notificările sunt blocate pentru site. Deblochează-le din setările
-      browserului (lacătul din bara de adresă → Notificări) și revino aici.</p>
-  {:else if !pushLocal?.abonat}
-    <p class="g-text">Un task personal care stă fără termen mai mult de {'2'} zile îți trimite
-      dimineața, la {pushStatus.ora}, o notificare proprie — cu titlul lui și cu butoanele
-      „Făcut” și „Azi” direct pe notificare (pe Android; pe iPhone atingerea deschide taskul).</p>
-    {#if pushStatus.last_error}<p class="g-eroare">{pushStatus.last_error}</p>{/if}
-    <!-- `.modal-actions`, nu `.g-actiuni`: aceea era o clasa fara nicio regula
-         CSS (bug preexistent — perechea ei se numea `.g-actiune`, singular, si
-         era a cardului Google). Butoanele modalului au deja o asezare in
-         sistem, si asta e ea. -->
-    <div class="modal-actions">
-      <Button loading={pushBusy} onclick={activeazaPush}>Activează pe telefonul ăsta</Button>
-    </div>
-  {:else}
-    <p class="g-text">O notificare <strong>per task</strong>, nu un rezumat, cu „Făcut” și „Azi” pe
-      ea. Setările stau pe server, deci sunt aceleași de pe orice dispozitiv.</p>
-    <div class="g-stare">
-      <div class="g-rand">
-        <span class="g-et">Dispozitive abonate</span>
-        <span class="g-val">{pushStatus.abonamente}</span>
-      </div>
-      {#if pushStatus.last_error}<p class="g-eroare">{pushStatus.last_error}</p>{/if}
-    </div>
-    <!-- „Dezactivează aici" e despre ACEST dispozitiv, nu despre regula de pe
-         server — deci sta langa numarul de dispozitive, nu in bara de jos, unde
-         ar fi al treilea verb langa „Salvează" si „Trimite test". -->
-    <button class="g-link" disabled={pushBusy} onclick={dezactiveazaPush}>Nu mai trimite pe dispozitivul ăsta</button>
-  {/if}
-
-  <!-- CELE PATRU REGLAJE. Aceleasi de pe orice dispozitiv (stau pe server) si
-       aceeasi forma pe telefon ca pe web: ora si vechimea sus, cele doua feluri
-       de notificare ca doua propozitii de 48px sub ele. -->
-  {#if arataSetari}
-    {#if setari}
-      <div class="n-setari">
-        <Select label="Ora" bind:value={setari.ora} options={oreDisponibile} size="sm" />
-        <Input label="Vechime (zile)" type="number" min="0" max="60"
-               bind:value={setari.zileVechime} />
-      </div>
-      <div class="n-feluri">
-        <label class="n-comutator">
-          <input type="checkbox" class="cbx" bind:checked={setari.scadente} />
-          <span>Taskurile scadente în ziua respectivă</span>
-        </label>
-        <label class="n-comutator">
-          <input type="checkbox" class="cbx" bind:checked={setari.faraTermen} />
-          <span>Taskurile rămase fără termen</span>
-        </label>
-        <!-- ORA EXACTĂ (v41). Ion: „trebuie să fie notificări pentru taskurile cu
-             ore precise." E al treilea fel, și nu se suprapune cu primul: „scadente"
-             anunță DIMINEAȚA tot ce cade azi, ăsta anunță LA ORA lui. Un task cu oră
-             primește ambele, și e corect — unul spune „ai asta azi", altul „acum".
-             N-are selector de oră lângă el, ca deplasările: ora nu e o setare aici,
-             e a taskului. Și nu intră în regula „cel puțin un fel pornit" — nu e un
-             semnal de dimineață, e o alarmă. -->
-        <label class="n-comutator">
-          <input type="checkbox" class="cbx" bind:checked={setari.oreExacte} />
-          <span>La ora exactă a taskului</span>
-        </label>
-        <!-- AL TREILEA COMUTATOR E ALTĂ ÎNTREBARE: nu „ce am de făcut azi", ci
-             „mâine plec". De aceea are ora lui (seara dinainte), canalul lui pe
-             Android („Deplasări", se poate opri separat din sistem) și NU intră în
-             regula „cel puțin un fel pornit" — aia păzește taskurile. -->
-        <!-- Randul asta NU e un `<label>` intreg: eticheta ar prinde si clicul pe
-             selectorul de ora, deci alegerea orei ar stinge comutatorul. Label-ul
-             tine doar bifa si textul. -->
-        <div class="n-comutator">
-          <label class="n-com-et">
-            <input type="checkbox" class="cbx" bind:checked={setari.deplasari} />
-            <span>Seara dinaintea unei plecări pe site</span>
-          </label>
-          <Select bind:value={setari.oraDeplasare} options={oreDisponibile} size="sm" />
-        </div>
-      </div>
-      <!-- Regula e SCRISA, nu descoperita dintr-o eroare: serverul respinge
-           oprirea amandurora, iar un refuz care apare abia dupa ce ai apasat
-           „Salvează" se citeste ca o defectiune, nu ca o limita. -->
-      <p class="n-nota">
-        <Info size={15} strokeWidth={1.5} />
-        <span>Cel puțin un fel trebuie să rămână pornit — altfel n-ar mai suna nimic, iar
-          tăcerea nu se poate deosebi de o defecțiune.</span>
-      </p>
-      <!-- ALARMA EXACTĂ E O PERMISIUNE SEPARATĂ (Android 12+), și fără ea
-           sistemul adună alarmele într-o trezire: o notificare de dimineață care
-           vine la 8:40 nu mai e o notificare de dimineață. Se verifică și la
-           fiecare pornire (`MainActivity.onResume`), dar acolo ecranul de sistem
-           se deschide o singură dată per retragere — drumul care rămâne mereu la
-           îndemână e ăsta. Nu-i dăm calea prin meniuri: diferă de la un
-           producător la altul, iar o instrucțiune care nu se potrivește cu ce
-           vezi pe ecran te face să crezi că ai greșit tu. -->
-      {#if exacta === false}
-        <div class="n-alarma">
-          <AlarmClockOff size={16} strokeWidth={1.5} />
-          <div>
-            <strong>Alarma exactă e oprită</strong>
-            <p>Dimineața ar putea întârzia cu zeci de minute. Deschide comutatorul din
-              sistem — nu-ți spunem calea, fiindcă diferă de la un telefon la altul.</p>
-            <button class="n-alarma-b" onclick={pornesteAlarma}>
-              <ExternalLink size={14} strokeWidth={1.5} />Deschide ecranul
-            </button>
-          </div>
-        </div>
-      {/if}
-      {#if setariEroare}<p class="g-eroare">{setariEroare}</p>{/if}
-    {:else}
-      <div class="g-skel"><Skeleton width="70%" height="14px" /><Skeleton width="50%" height="14px" /></div>
-    {/if}
-  {/if}
-  {#snippet footer()}
-    <!-- PROBA E LA STANGA, DEPARTE DE „SALVEAZĂ". Una verifica lantul ACUM,
-         cealalta schimba ce se intampla maine — doua verbe care nu trebuie sa
-         stea lipite, fiindca a le confunda inseamna sa crezi ca ai salvat cand
-         de fapt ai trimis o notificare. -->
-    <div class="n-foot">
-      {#if esteNativ()}
-        <Button variant="secondary" disabled={pushBusy} onclick={probaLocala}>
-          <BellRing size={15} strokeWidth={1.5} />Notificare de probă
-        </Button>
-      {:else if pushStatus?.disponibil && pushLocal?.abonat}
-        <Button variant="secondary" disabled={pushBusy} onclick={testPush}>
-          <BellRing size={15} strokeWidth={1.5} />Notificare de probă
-        </Button>
-      {:else}
-        <span></span>
-      {/if}
-      <div class="modal-actions">
-        {#if arataSetari}
-          <Button disabled={pushBusy || !setari} onclick={salveazaSetari}>Salvează</Button>
-        {/if}
-      </div>
-    </div>
-  {/snippet}
-</Modal>
+<!-- Notificările zilnice au plecat în pagina Setări (2026-08-25). -->
 
 <style>
   .page { padding: var(--space-lg); }
@@ -1691,114 +1371,8 @@
      CAT TIMP nu e activ segmentul (bulina se citea greu pe segmentul stins) si e
      acelasi semn cu cel din antetul „Personal" de pe Acasa — cele doua suprafete
      se refera in continuare una la alta, doar c-o fac cu un desen, nu cu o culoare. */
-  /* Clopotelul de notificari — fantoma, nu chip: chipurile din toolbar sunt
-     filtre, iar asta e o intrare de setari. Punctul rosu apare doar cand o
-     trimitere a esuat — singurul moment in care merita atentie.
-     Prefixul `g-` e mostenit de la modalul Google (sters 2026-08-10); clasele
-     au ramas ale ferestrei de notificari, care le folosea deja pe toate. */
-  .g-ico { position: relative; display: flex; align-items: center; justify-content: center;
-           width: var(--ctrl-sm); min-height: var(--ctrl-sm); background: none; border: none; cursor: pointer;
-           color: var(--text-dim); border-radius: var(--radius-sm);
-           transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease); }
-  .g-ico:hover { color: var(--text); background: var(--bg-hover); }
-  /* Acelasi punct ca pe clopotel, pe segmentul de sfera. */
   .seg-punct { width: 6px; height: 6px; border-radius: 50%; background: var(--danger);
     flex: none; margin-left: var(--space-2xs); }
-  .g-punct { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px;
-             border-radius: 50%; background: var(--danger); }
-
-  /* Fereastra de notificari — text de stare, nu formular. */
-  .g-skel { display: flex; flex-direction: column; gap: var(--space-sm); }
-  .g-text { font-size: var(--font-small); color: var(--text-secondary); line-height: var(--lh-normal); text-wrap: pretty; }
-  .g-mono { font-family: var(--font-mono); font-size: var(--font-small); color: var(--text); }
-
-  /* Blocul de aici (`.g-card`, `.g-cap`, `.g-emblema`, `.g-nume`, `.g-t`,
-     `.g-sub`, `.g-pastila`, `.g-linie`, `.g-main`, `.g-rar`, `.g-rar-rand`,
-     `.g-sp`, `.g-actiune`, `.g-per`) descria cardul „Legatura cu Google" si a
-     plecat odata cu integrarea (2026-08-10). Ce ramane mai jos e al ferestrei
-     de notificari, care folosea deja aceleasi clase de stare. */
-  .g-stare { display: flex; flex-direction: column; }
-  .g-rand { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
-    min-height: var(--ctrl-md); font-size: var(--font-body); color: var(--text-secondary); }
-  .g-et { color: var(--text-secondary); }
-  .g-val { color: var(--text); text-align: right; }
-
-  .g-eroare { display: flex; gap: 9px; padding: 11px 13px; border-radius: var(--radius-sm);
-    background: var(--danger-subtle); color: var(--danger-deep);
-    font-family: var(--font-mono); font-size: var(--font-small); line-height: var(--lh-snug);
-    overflow-wrap: anywhere; }
-  .g-eroare :global(svg) { flex: none; margin-top: var(--space-2xs); }
-
-  .g-link { font-size: var(--font-small); color: var(--text-dim); background: none; border: none;
-            cursor: pointer; text-decoration: underline; padding: 0; align-self: center; }
-  .g-link:hover { color: var(--text); }
-  .g-link:disabled { color: var(--text-dim); cursor: default; text-decoration: none; }
-
-  /* SETARILE DE NOTIFICARI. Fara haina proprie: campurile sunt `Input`/`Select`
-     din aceeasi trusa ca peste tot, iar aici raman doar asezarea si comutatoarele.
-     Doua coloane pe latime, o coloana pe telefon — ora si pragul sunt scurte si
-     ar arata pierdute pe un rand intreg. */
-  .n-setari { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-              gap: var(--space-sm) var(--space-md); margin-top: var(--space-md); }
-  /* Cele doua feluri de notificare sunt o LISTA, nu doua campuri: rand de 48px,
-     separator de 1px cu marja laterala — aceeasi reteta ca listele din aplicatie.
-     Asa se citesc ca doua intrari intre care alegi, nu ca doua bife razlete. */
-  .n-feluri { display: flex; flex-direction: column; margin-top: var(--space-12); }
-  .n-feluri .n-comutator + .n-comutator { border-top: 1px solid var(--border); }
-  /* Comutatoarele sunt propozitii, nu campuri: tin toata latimea si se citesc
-     ca o fraza, ca sa se vada CE se opreste, nu doar ca exista un buton. */
-  .n-comutator { display: flex; align-items: center; gap: var(--space-12);
-                 font-size: var(--font-body); color: var(--text);
-                 min-height: 48px; padding: 0 var(--space-2xs); cursor: pointer; }
-  .n-comutator input { width: 18px; height: 18px; flex: none; accent-color: var(--accent);
-                       cursor: pointer; }
-  /* Ora plecarii sta CHIAR PE RANDUL ei, nu intr-un al treilea camp sus: e ora
-     acelui comutator, nu inca un reglaj global. */
-  .n-com-et { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-12);
-              cursor: pointer; }
-  .n-comutator :global(.field) { flex: none; width: 96px; }
-  /* Alarma exacta oprita — o stare a SISTEMULUI, deci suprafata in tenta de
-     restant, cu iconita si cu drumul catre ecranul care o repara. */
-  .n-alarma { display: flex; gap: var(--space-12); margin-top: var(--space-12);
-              padding: var(--space-12); border-radius: var(--radius-md);
-              background: var(--danger-subtle); }
-  .n-alarma :global(svg) { flex: none; margin-top: var(--space-2xs); color: var(--danger-deep); }
-  .n-alarma strong { display: block; font-size: var(--font-body); font-weight: var(--fw-semibold);
-                     color: var(--text); }
-  .n-alarma p { margin-top: var(--space-xs); font-size: var(--font-small); color: var(--text-secondary); }
-  .n-alarma-b { display: inline-flex; align-items: center; gap: var(--space-6); margin-top: var(--space-sm);
-                min-height: var(--tap-min); padding: 0 var(--space-12);
-                border: 1px solid var(--border); border-radius: var(--radius-md);
-                background: var(--bg-surface); color: var(--text);
-                font-size: var(--font-control); font-weight: var(--fw-semibold); cursor: pointer;
-                transition: var(--transition-colors); }
-  .n-alarma-b:hover { border-color: var(--text-dim); }
-
-  /* Regula scrisa, in gri, cu iconita — nu un avertisment: nu s-a intamplat
-     nimic rau, doar spune de ce nu se pot stinge amandoua. */
-  .n-nota { display: flex; align-items: flex-start; gap: var(--space-sm);
-            margin-top: var(--space-12); font-size: var(--font-small);
-            color: var(--text-secondary); }
-  .n-nota :global(svg) { flex: none; margin-top: 1px; color: var(--text-dim); }
-  /* Proba la stanga, „Salvează" la dreapta — cat mai departe una de alta pe
-     acelasi rand. Pe telefon `.modal-actions` isi intinde butonul pe toata
-     latimea (regula din Modal), deci cele doua trec pe randuri diferite. */
-  .n-foot { display: flex; align-items: center; justify-content: space-between;
-            gap: var(--space-sm); flex-wrap: wrap; }
-  .n-foot > :global(.modal-actions) { flex: 1; }
-  /* PE TELEFON ACTIUNEA PRINCIPALA E PRIMA SI LATA (T15).
-     `space-between` + `flex-wrap` + `.modal-actions > * { flex: 1 }` trimiteau
-     „Salvează" pe randul al doilea, SUB „Notificare de probă" — adica actiunea
-     care schimba ce se intampla maine ajungea desenata ca secundara, sub cea
-     care doar verifica lantul acum. `column-reverse` schimba doar ce vezi:
-     markupul ramane proba -> salveaza, deci si ordinea de Tab. */
-  @media (max-width: 768px) {
-    .n-foot { flex-direction: column-reverse; align-items: stretch; flex-wrap: nowrap; }
-    .n-foot > :global(.btn-secondary) { background: none; border: none; min-height: var(--tap-min); }
-  }
-  @media (max-width: 620px) {
-    .n-setari { grid-template-columns: 1fr; }
-  }
   /* Chipurile de status si prioritate au plecat in v34: taskul e facut sau nu,
      iar severitatea se citeste din bordura din stanga, dupa termen. */
 
@@ -2246,7 +1820,6 @@
     /* Ca la Proiecte: caseta are 44px, dar inputul dinauntru avea 25 si doar el
        primeste focus. */
         .a-ico { min-height: var(--tap-min); padding: 0 var(--space-12); font-size: var(--font-small); }
-    .g-ico { width: var(--tap-min); min-height: var(--tap-min); }
     /* Capsula creste ODATA cu segmentele: tinta de 44 vine din segment, nu din
        padding-ul capsulei, altfel jumatate din capsula n-ar face nimic la atins.
        Pe telefon capsula sta pe suprafata cu umbra, iar segmentele urca la 15 —
