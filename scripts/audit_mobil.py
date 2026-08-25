@@ -1210,7 +1210,7 @@ def perioadele_se_trag(browser, baza):
                 cdp.send('Input.dispatchTouchEvent', dict(
                     type='touchStart',
                     touchPoints=[dict(x=b0[1], y=b0[2], radiusX=6, radiusY=6, force=1)]))
-                page.wait_for_timeout(450)          # peste APASARE_LUNGA (300ms)
+                page.wait_for_timeout(700)          # peste APASARE_LUNGA (300ms); 450 nu ajungea sub sarcina
                 ridicata = page.evaluate(
                     '''() => { const b = document.querySelector('.banda.se-trage');
                          if (!b) return null;
