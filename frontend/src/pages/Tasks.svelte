@@ -794,33 +794,17 @@
   {@const peDrum = !subtasksCache[t.id] && (t.subtask_total || 0) > 0}
   {@const k = zilePanaLa(t.data_scadenta)}
 
-  <!-- FOAIA DE DETALII — „det·1a" (fara notă) / „det·1b" (cu notă). Sus, o linie de
-       context (termen · categorie); apoi titlul-EROU cu bifa lui; apoi replanificarea
-       ca pastile mereu la vedere; apoi pasii; jos, nota (una singura). -->
-  <div class="dt-over">
-    <span class="dt-o-termen">Termen
-      {#if t.data_scadenta}
-        <span class="dt-o-val" class:sev={isOverdue(t.data_scadenta) || isToday(t.data_scadenta)} style="--ring: {dueRing(t.data_scadenta)}">{etichetaTermen(t.data_scadenta)}</span>
-      {:else}<span class="dt-o-val dt-o-fara">fără</span>{/if}
-    </span>
-    <!-- Taskurile din /tasks n-au proiect — „unde" e categoria. Se arata doar cand
-         spune ceva (nu „General", implicitul care nu deosebeste nimic). Punctul e
-         NEUTRU: categoria nu are culoare de identitate ca un proiect, iar o culoare
-         inventata ar incalca „un singur accent". -->
-    {#if t.categorie && t.categorie !== 'General'}
-      <span class="dt-o-pct"></span>
-      <span class="dt-o-cat"><span class="dt-o-dot"></span>{t.categorie}</span>
-    {/if}
-  </div>
-
-  <!-- TITLUL E EROUL, cu bifa lui la stanga. `--ring` pe cap: severitatea se vede
-       chiar langa titlu. Bifarea inchide foaia — taskul pleaca din lista activa. -->
-  <div class="dt-cap" style="--ring: {dueRing(t.data_scadenta)}">
+  <!-- REFERINTA: aceeasi tratare ca in foaia de actiuni (FoaieTask, hold·1a) —
+       bifa + titlu + termen, intr-un singur rand. Bifarea inchide foaia. -->
+  <div class="dt-referinta" style="--ring: {dueRing(t.data_scadenta)}">
     <button class="dt-check" onclick={() => { toggleStatus(t); showSheet = false }}
             aria-label={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
-      {#if t.status === 'done'}<CheckCircle2 size={24} />{:else}<div class="check-empty big"></div>{/if}
+      {#if t.status === 'done'}<CheckCircle2 size={20} />{:else}<div class="check-empty"></div>{/if}
     </button>
-    <h2 class="dt-titlu" class:gata={t.status === 'done'}>{t.titlu}</h2>
+    <span class="dt-ref-titlu" class:gata={t.status === 'done'}>{t.titlu}</span>
+    {#if t.data_scadenta}
+      <span class="dt-ref-termen" class:sev={isOverdue(t.data_scadenta) || isToday(t.data_scadenta)}>{etichetaTermen(t.data_scadenta)}</span>
+    {/if}
   </div>
 
   <!-- SCHIMBĂ TERMENUL — pastile mereu la vedere, cu ziua curenta aprinsa (fill de
@@ -1187,7 +1171,7 @@
        foaie pe telefon; `iesireGest`: pe telefon iesirea e gestul in jos + butonul
        „inapoi", fiindca foaia n-are camp de text permanent (compozitorul de pas se
        deschide la cerere), iar coltul cu `X` e greu de atins pe un telefon inalt. -->
-  <Modal bind:open={showSheet} size="panou" iesireGest title="Detalii">
+  <Modal bind:open={showSheet} size="panou" iesireGest title={sheetTask?.titlu || 'Task'}>
     {@render taskDetail(sheetTask)}
   </Modal>
 {/if}
@@ -1610,40 +1594,35 @@
     color: var(--text-dim);
   }
 
-  /* OVERLINE: termen · categorie, deasupra titlului. */
-  .dt-over {
+  /* REFERINTA: aceeasi reteta ca `.ft-referinta` din FoaieTask — bifa + titlu + termen
+     intr-un singur rand, cu aceleasi fonturi. */
+  .dt-referinta {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-10);
-    font-size: var(--font-label);
+    gap: 11px;
+    padding-bottom: var(--space-14);
+    margin-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border);
+  }
+  .dt-referinta :global(svg) { flex: none; color: var(--success); }
+  .dt-check { flex: none; display: flex; align-items: center; justify-content: center;
+    color: var(--success); background: none; border: none; cursor: pointer; padding: 0; }
+  .dt-ref-titlu {
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: var(--font-body);
     font-weight: var(--fw-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-label);
+    color: var(--text);
+  }
+  .dt-ref-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
+  .dt-ref-termen {
+    flex: none;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--font-small);
     color: var(--text-dim);
   }
-  .dt-o-val { color: var(--accent-deep); }
-  .dt-o-val.sev { color: var(--ring); }
-  .dt-o-fara { color: var(--text-dim); }
-  .dt-o-pct { width: 3px; height: 3px; border-radius: var(--radius-full); background: var(--border-strong); flex: none; }
-  /* Categoria e un NUME, nu o eticheta: cerneala normala, nu majuscule. Punct neutru. */
-  .dt-o-cat {
-    display: inline-flex; align-items: center; gap: 7px;
-    text-transform: none; letter-spacing: var(--tracking-normal);
-    font-size: var(--font-small); font-weight: var(--fw-medium); color: var(--text-secondary);
-  }
-  .dt-o-dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--text-dim); flex: none; }
-
-  /* TITLUL-EROU, cu bifa la stanga. `align-items: flex-start` ca bifa sa stea la
-     prima linie cand titlul se rupe pe doua. */
-  .dt-cap { display: flex; align-items: flex-start; gap: var(--space-12); margin-bottom: var(--space-md); }
-  .dt-check { flex: none; min-width: 24px; min-height: var(--tap-min); margin-top: -3px;
-    display: flex; align-items: center; justify-content: flex-start; color: var(--success);
-    background: none; border: none; cursor: pointer; padding: 0; }
-  .dt-titlu { flex: 1; min-width: 0; font-family: var(--font-heading);
-    font-size: var(--font-h2); font-weight: var(--w-title); letter-spacing: var(--tracking-title);
-    color: var(--text); line-height: var(--lh-snug); overflow-wrap: anywhere; }
-  .dt-titlu.gata { text-decoration: line-through; color: var(--text-dim); }
+  .dt-ref-termen.sev { color: var(--ring); }
 
   /* Sectiunea de replanificare: eticheta + pastile, separata de rest printr-o linie. */
   .dt-sec-termen { padding-bottom: var(--space-md); margin-bottom: var(--space-md); border-bottom: 1px solid var(--border); }

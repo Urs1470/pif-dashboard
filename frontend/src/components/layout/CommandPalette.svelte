@@ -558,10 +558,11 @@
     .palette-search { height: 56px; padding: 0 var(--space-md); }
     /* Sugestia de scurtatura n-are ce cauta pe un ecran fara tastatura fizica. */
     .palette-search kbd { display: none; }
-    /* `--kb`: cu tastatura sus, `52dvh` ramanea inaltimea ecranului INTREG in
-       WebView-ul Capacitor, deci lista se intindea pe sub tastatura si vedeai
-       un singur rezultat. Variabila o scrie `Modal.svelte` din `visualViewport`. */
-    .palette-list { max-height: min(400px, calc(52dvh - var(--kb, 0px))); overscroll-behavior: contain; }
+    /* Spatiul REAL pentru lista: ecranul intreg minus tastatura minus tot ce e
+       deasupra listei (padding-ul backdropo-ului + cautarea de 56px) minus o
+       margine de jos. `52dvh - --kb` era gresit: scadea tastatura dintr-o
+       jumatate de ecran, deci cu 300px de tastatura lista ramanea 139px. */
+    .palette-list { max-height: min(400px, calc(100dvh - var(--kb, 0px) - var(--space-lg) - var(--safe-top) - 56px - var(--space-md))); overscroll-behavior: contain; }
     .palette-item { min-height: var(--tap-min); }
     /* `⏎` presupune o tasta Enter. Pe telefon randul se atinge. */
     .enter { display: none; }
