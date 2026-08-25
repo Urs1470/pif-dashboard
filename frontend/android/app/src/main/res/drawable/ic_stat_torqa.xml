@@ -2,9 +2,9 @@
      transparent devine alb (sau gri, dupa tema), deci culorile n-au ce cauta
      aici — de-aia nu e marca intreaga, ci doar unda, fara tile si fara text.
      O marca cu doua tonuri sau cu litere ar aparea ca un patrat alb.
-     Aceleasi coordonate ca `frontend/public/favicon.svg`, ca sa fie aceeasi
-     forma pe care o vezi pe ecranul principal. Grosimea e 7 (ca la favicon):
-     la 24dp un traseu de 5.6/64 s-ar stinge.
+     Aceleasi coordonate ca sinusoida din `torqa-logomark.svg` (AURORA):
+     M20 32c4-11.33 8-11.33 12 0s8 11.33 12 0. Grosimea e 7: la 24dp un
+     traseu de 4.2/64 s-ar stinge.
      Ramane VECTOR, nu PNG-uri per densitate: aceeasi forma la orice ecran,
      dintr-un singur fisier care nu se poate desincroniza cu el insusi. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -14,7 +14,7 @@
     android:viewportHeight="64"
     android:tint="#FFFFFFFF">
     <path
-        android:pathData="M10,42 H21.5 V22 H32 V42 H42.5 V22 H54"
+        android:pathData="M20,32c4,-11.33 8,-11.33 12,0s8,11.33 12,0"
         android:strokeColor="#FFFFFFFF"
         android:strokeWidth="7"
         android:strokeLineCap="round"

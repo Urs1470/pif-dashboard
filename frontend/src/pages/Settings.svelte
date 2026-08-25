@@ -267,7 +267,7 @@
   .n-et { color: var(--text-secondary); }
   .n-val { color: var(--text); text-align: right; }
 
-  .n-eroare { display: flex; gap: 9px; padding: 11px 13px; border-radius: var(--radius-sm);
+  .n-eroare { display: flex; gap: var(--space-sm); padding: var(--space-12); border-radius: var(--radius-sm);
     background: var(--danger-subtle); color: var(--danger-deep);
     font-family: var(--font-mono); font-size: var(--font-small); line-height: var(--lh-snug);
     overflow-wrap: anywhere; margin-top: var(--space-sm); }
@@ -285,7 +285,7 @@
   .n-feluri .n-comutator + .n-comutator { border-top: 1px solid var(--border); }
   .n-comutator { display: flex; align-items: center; gap: var(--space-12);
     font-size: var(--font-body); color: var(--text);
-    min-height: 48px; padding: 0 var(--space-2xs); cursor: pointer; }
+    min-height: var(--tap-min); padding: 0 var(--space-2xs); cursor: pointer; }
   .n-comutator input { width: 18px; height: 18px; flex: none; accent-color: var(--accent);
     cursor: pointer; }
   .n-com-et { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-12);
