@@ -29,7 +29,7 @@
   import FaraRetea from './FaraRetea.svelte'
   import { router, link, navigate } from '../../lib/router.svelte.js'
   import { apasareLunga } from '../../lib/apasareLunga.js'
-  import { sticla } from '../../lib/sticla.js'
+
   import { urmaActiva, porneste as pornesteUrma } from '../../lib/urma.js'
   import { toast } from '../../stores/ui.svelte.js'
   import { creeazaArc } from '../../lib/arc.js'
@@ -273,8 +273,8 @@
   })
 </script>
 
-<header class="bara sticla sticla-bara" bind:this={barEl} bind:clientHeight={inaltime}
-        use:sticla={{ spec: '150px 74px' }} aria-label="Navigație principală">
+<header class="bara" bind:this={barEl} bind:clientHeight={inaltime}
+        aria-label="Navigație principală">
   <a href="/" class="brand" use:link title="TORQA"
      use:apasareLunga={{ actiune: comutaUrma }} oncontextmenu={(e) => e.preventDefault()}>
     <!-- SEMNUL: o sinusoida de o perioada inscrisa intr-un cerc — simbolul de
@@ -345,8 +345,9 @@
     /* Asimetric: marca respira in stanga, butoanele rotunde au nevoie doar de 8. */
     padding: 0 var(--space-sm) 0 var(--space-md);
     border-radius: var(--radius-full);
-    /* Fondul, muchia si umbra vin din `.sticla` (global.css) — containerul NU are
-       `background` propriu, altfel straturile n-ar avea ce refracta. */
+    background: var(--bg-surface);
+    border: 1px solid var(--panel-line);
+    box-shadow: var(--glass-cast);
   }
 
   .brand {
@@ -387,10 +388,10 @@
     top: 50%;
     left: 0;
     width: var(--pw, 0px);
-    height: var(--ctrl-sm);
+    height: var(--ctrl-md);
     border-radius: var(--pr, var(--radius-full));
-    background: var(--glass-fill);
-    box-shadow: var(--glass-sel);
+    background: var(--accent-subtle);
+    box-shadow: inset 0 0 0 1px var(--accent-ring);
     transform: translate(var(--px, 0px), -50%);
     opacity: 0;
     pointer-events: none;
@@ -414,8 +415,8 @@
     z-index: 1;
     display: inline-flex;
     align-items: center;
-    height: var(--ctrl-sm);
-    padding: 0 var(--space-14);
+    height: var(--ctrl-md);
+    padding: 0 var(--space-md);
     border-radius: var(--radius-full);
     /* `--text-secondary`, nu `--text-dim`: un drum inactiv trebuie sa se poata
        CITI, nu doar ghici — e singura harta a aplicatiei. */
@@ -443,8 +444,8 @@
   }
 
   .b-btn {
-    width: var(--ctrl-sm);
-    height: var(--ctrl-sm);
+    width: var(--ctrl-md);
+    height: var(--ctrl-md);
     display: grid;
     place-items: center;
     border-radius: var(--radius-full);
