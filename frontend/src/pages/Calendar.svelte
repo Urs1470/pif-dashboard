@@ -2221,6 +2221,36 @@
      „azi" se si SCRIE, nu doar se coloreaza: o tenta singura n-ar spune care din
      cele doua stari e, iar cuvantul nu se poate confunda cu nimic. */
   .zi.azi { background: var(--accent-subtle); }
+  /* HASURA = ZIUA ARE TASKURI (Ion, 2026-08-26: „ai putea cumva celula de calendar
+     sa o hasurezi").
+     TEXTURA, NU TENTA, si asta e tot argumentul. Fondul celulei e deja ocupat de
+     STARE — `--bg-elevated` pentru weekend, `--accent-subtle` pentru azi — deci un
+     al treilea fond ar intra in conflict cu doua reguli existente si ar trebui sa
+     castige sau sa piarda in fata lor. Hasura sta pe alt canal: se ASEAZA PESTE
+     orice fond, deci o sambata cu treaba ramane si sambata, si cu treaba.
+     UN STRAT PROPRIU (`::after`), NU `background-image` PE CELULA — si asta nu e
+     stil, e cascada. Prima varianta punea `background-image` pe `.zi.are-tk`
+     (specificitate 0,2,0) si a iesit invizibila pe zilele din luna vecina:
+     `.zi.alta:not(.azi)` are 0,3,0 si foloseste PRESCURTAREA `background`, deci
+     scria `background-image: none` peste ea, indiferent de ordinea in fisier.
+     Masurat: sase celule cu `.are-tk` si `backgroundImage: none` pe toate.
+     Un strat separat nu se bate cu nimeni pe aceeasi proprietate.
+     `pointer-events: none`: celula intreaga e tinta de clic si de tragere, iar un
+     strat intins peste ea ar fi furat fiecare atingere.
+     Contrastul e mic cu buna stiinta (~7% accent): celula tine cifra zilei si
+     benzile cu numele lucrarii peste ea, iar o hasura care se face citita mai tare
+     decat continutul ei ar fi exact greseala pentru care textura de „sediu" a fost
+     scoasa de pe benzi — a treia axa de citit pe acelasi obiect. Aici nu e a treia:
+     fondul spune starea, hasura spune ca exista continut, iar pastila spune CAT.
+     Pe telefon dungile se ingusteaza: la 48px o hasura de 8px se citeste ca dungi,
+     nu ca textura. */
+  .zi.are-tk::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--accent) 7%, transparent) 0 2px,
+      transparent 2px 8px);
+  }
   .zi.drop, .zi.tinta:hover, .zi.tinta:active {
     outline: 2px solid var(--accent); outline-offset: -2px; background: var(--accent-subtle); }
   /* Cat timp un proiect asteapta sa fie asezat, TOATE zilele arata ca destinatii
@@ -2356,8 +2386,26 @@
   /* Capatul care CONTINUA se opreste fix pe muchia celulei. Cat timp grila avea
      gap de 4px, `-3px` il faceau sa treaca peste gol, ca sa nu para intrerupt;
      acum golul nu mai exista (R1), deci aceiasi 3px ar intra peste ziua vecina. */
-  .banda:not(.inceput) { margin-left: 0; }
-  .banda:not(.sfarsit) { margin-right: 0; }
+  /* SI E DREPT, NU DOAR NEROTUNJIT-CA-PASTILA (Ion, 2026-08-26: „uite ce rau
+     arata trecerea dintr-o saptamana in alta").
+     Comentariul de deasupra spune de un an ca la granita „capatul ramane drept",
+     dar CSS-ul nu-l punea niciodata: `.banda` are `--radius-celula` (8px) pe toate
+     colturile, iar `.inceput`/`.sfarsit` le inlocuiau doar pe ale lor cu pastila.
+     Colturile TAIATE ramaneau deci la 8px — masurat pe o perioada 28 aug – 4 sep:
+     bucata de sus se termina cu `999px/8px`, cea de jos incepea cu `8px/999px`.
+     La 24px inaltime, 8px de raza citesc a capat INCHEIAT: vedeai doua lucrari
+     scurte, una pe fiecare rand, nu una taiata de sfarsitul saptamanii.
+     Zero pe muchia taiata face din taietura un semn: bara se opreste in perete,
+     deci trece mai departe. Perechea ei — „… " in fata textului — spunea deja
+     asta, dar numai pe bucata de jos. */
+  .banda:not(.inceput) { margin-left: 0;
+                         border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .banda:not(.sfarsit) { margin-right: 0;
+                         border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  /* Fantoma urmeaza aceeasi regula: ea arata UNDE AR AJUNGE bara, deci trebuie sa
+     aiba exact forma ei, altfel previzualizarea minte despre ce se comite. */
+  .fantoma:not(.inceput) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .fantoma:not(.sfarsit) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
   /* Cat timp se trage, nimic din ce pluteste peste celule nu mai raspunde la
      pointer: `ziDinPunct` foloseste `elementFromPoint`, deci ar nimeri banda in
      locul zilei. Fantoma e oricum inertă, dar o trecem si pe ea prin regula ca
@@ -2644,13 +2692,26 @@
   }
 
   /* Contorul de taskuri din celula. Pastila mica, la capatul opus cifrei zilei.
-     Se randeaza doar cand exista — 42 de zerouri ar face grila sa arate plina. */
+     Se randeaza doar cand exista — 42 de zerouri ar face grila sa arate plina.
+
+     FILL, NU TENTA (Ion: „fa o pastila care sare mai bine in ochi").
+     Prima versiune era `--accent-subtle` cu cerneala `-deep`: corecta ca reteta,
+     dar cea mai stinsa forma din sistem, pusa pe cel mai mic obiect din celula —
+     deci se pierdea intre cifra zilei si benzi. Fillul saturat e treapta cea mai
+     tare pe care paleta o permite, si nu e o exceptie inventata aici: banda de
+     perioada foloseste acelasi fill de la C8.
+     Nu se confunda cu banda fiindca nu seamana cu ea la NICIUN alt canal: banda e
+     o bara lata, cu text, sub antet; asta e un cerc de 18px cu o cifra, in coltul
+     de sus. Aceeasi culoare pe doua forme care nu se pot confunda nu e ambiguitate.
+     Cerneala e `--accent-text`, singura care merge pe fill (regula sistemului:
+     pe TENTA se scrie `-deep`, pe FILL `-text`). */
   .zi-tk {
     margin-left: auto; flex: none;
-    font-family: var(--font-mono); font-size: var(--font-label);
+    font-family: var(--font-mono); font-size: var(--font-label); font-weight: var(--fw-semibold);
     font-variant-numeric: tabular-nums; line-height: 1;
-    padding: var(--space-2xs) var(--space-6); border-radius: var(--radius-xs);
-    background: var(--accent-subtle); color: var(--accent-on-subtle);
+    padding: var(--space-xs) var(--space-6); min-width: var(--space-20);
+    border-radius: var(--radius-xs); text-align: center;
+    background: var(--accent); color: var(--accent-text);
   }
 
   .urm { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; margin-top: var(--space-10);
@@ -2858,7 +2919,10 @@
     /* Pe telefon pastila sta LANGA cifra, nu impinsa la marginea celulei: la
        ~50px latime, `margin-left: auto` ar rupe in doua un antet care e centrat.
        Si se strange — cifra zilei ramane obiectul principal al celulei. */
-    .zi-tk { margin-left: 0; padding: 0 var(--space-xs); font-size: var(--font-label); }
+    /* Pe telefon pastila NU creste: acolo antetul are 43px de lucru, iar cifra
+       zilei trebuie sa ramana obiectul principal. Ce o face vizibila e fillul,
+       nu marimea. */
+    .zi-tk { margin-left: 0; padding: var(--space-2xs) var(--space-xs); min-width: 0; font-size: var(--font-label); }
     /* PE TELEFON, INTR-O ZI CU TREABA, „AZI" NU MAI E SCRIS.
        Masurat: antetul are 45px, iar cifra + „azi" + pastila cer 57 — deci
        pastila se taia exact in cazul cel mai des intalnit, ziua de azi care are
@@ -2871,6 +2935,14 @@
        deosebeasca AZI de ZIUA SELECTATA. Deosebirea ramane: selectia e un reper
        pe cifra, nu o tenta pe celula.) */
     .zi.azi.are-tk .azi-et { display: none; }
+    /* Hasura se strange odata cu celula: la 48px, pasul de 8px al desktopului da
+       sase dungi late care se citesc ca un model, nu ca o suprafata. */
+    .zi.are-tk::after {
+      background: repeating-linear-gradient(
+        -45deg,
+        color-mix(in srgb, var(--accent) 8%, transparent) 0 1px,
+        transparent 1px 5px);
+    }
     /* FARA SEPARATOARE VERTICALE (M3). La ~50px pe coloana, sapte linii verticale
        plus sapte cifre fac un grilaj in care ziua nu se mai desprinde. Raman doar
        liniile orizontale, care despart SAPTAMANILE — singura impartire pe care o
