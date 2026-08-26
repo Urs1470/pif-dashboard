@@ -38,10 +38,11 @@
   // eticheta pe primul lui rand si lucrarile inauntru.
   import { onMount, onDestroy, tick } from 'svelte'
   import { fade, slide } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download, Repeat } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download, Repeat, CheckCircle2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router, preincarca } from '../lib/router.svelte.js'
   import { focusHref } from '../lib/focus.js'
+  import { actualizeazaTask } from '../stores/tasks.svelte.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { motion, motionDuration, alunecare, sosire, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   // `PROJECT_STATUS_LABELS` a plecat cu C14: sertarul „fara perioada" contine prin
@@ -117,6 +118,40 @@
    *  hasureaza la sosire. Acelasi drum pe care il facea Planificatorul; el a
    *  plecat, drumul ramane. Si aceeasi iesire in doi timpi ca la proiect: pe
    *  telefon foaia coboara intai, pagina pleaca dupa ea. */
+  /** Bifarea din panoul zilei.
+   *
+   *  OPTIMISTA, apoi randul PLEACA. `/api/calendar` intoarce doar taskuri
+   *  nefinalizate, deci recitirea il scoate din lista — si asa trebuie: antetul
+   *  scrie „Ce ai de făcut", iar ce s-a facut nu mai e de facut. La fel se poarta
+   *  „Astăzi" (randul iese din DOM) si /tasks (trece in arhiva); un al treilea
+   *  comportament aici ar fi a treia regula de invatat pentru acelasi gest.
+   *  Cele doua stari se vad amandoua, in ordine: `.gata` taie titlul in clipa
+   *  atingerii (starea optimista), apoi recitirea il ia de tot. Fara treapta
+   *  intermediara randul ar disparea pur si simplu, si n-ai sti CE ai atins.
+   *  Iar plecarea nu e ireversibila: `toastUndo`, ca peste tot in aplicatie. */
+  async function comutaTask(t) {
+    if (busy === t.id) return
+    const nou = t.status === 'done' ? 'to_do' : 'done'
+    busy = t.id
+    const inainte = data.taskuri
+    data.taskuri = data.taskuri.map(x => (x.tip === t.tip && x.id === t.id ? { ...x, status: nou } : x))
+    try {
+      await actualizeazaTask(t.tip, t.id, { status: nou })
+      await load(true)
+      if (nou === 'done') {
+        toastUndo(`Făcut: ${t.titlu.slice(0, 34)}${t.titlu.length > 34 ? '…' : ''}`, {
+          onUndo: async () => {
+            await actualizeazaTask(t.tip, t.id, { status: 'to_do' })
+            await load(true)
+          },
+        })
+      }
+    } catch (e) {
+      data.taskuri = inainte
+      toast(`Eroare: ${e.message}`, 'error')
+    } finally { busy = '' }
+  }
+
   function mergiLaTask(t) {
     mergiLa(t.tip === 'proiect' && t.proiect_id
       ? focusHref(`/projects/${t.proiect_id}`, 'task', t.id)
@@ -312,8 +347,40 @@
   // le intoarce pe toate din fereastra), deci schimbarea zilei nu costa o cerere.
   // `?.taskuri || []`: un raspuns ramas in cache de dinaintea campului nu are de
   // unde sa-l aiba, iar panoul trebuie sa se randeze oricum.
-  const taskuriZilei = $derived(
-    (data?.taskuri || []).filter(t => (t.data_scadenta || '').slice(0, 10) === selectata))
+  // Cate taskuri cad pe fiecare zi — socotit O DATA per raspuns, nu per celula.
+  // Grila are 42 de celule si se redeseneaza la fiecare selectie; un `filter` in
+  // sablon ar fi 42 de parcurgeri ale listei la fiecare atingere.
+  const taskuriPeZi = $derived.by(() => {
+    const m = new Map()
+    for (const t of (data?.taskuri || [])) {
+      const z = (t.data_scadenta || '').slice(0, 10)
+      m.set(z, (m.get(z) || 0) + 1)
+    }
+    return m
+  })
+  const numarTaskuri = (zi) => taskuriPeZi.get(zi) || 0
+
+  // TASKURILE ZILEI, GRUPATE PE PROIECT PRIN ORDINE, nu prin antete.
+  //
+  // Sortarea pe (proiect, titlu) le aduce pe cele ale aceluiasi proiect una sub
+  // alta, iar `arataContext` scrie numele DOAR pe primul din grup. Prima versiune
+  // il scria pe fiecare rand: pe 31 iulie, trei randuri din cinci spuneau
+  // „Upgrade PILZ și MM440 APEX". O coloana care repeta aceeasi valoare nu e
+  // informatie, e zgomot — aceeasi lectie pe care pagina asta a invatat-o deja de
+  // doua ori (chipul „Continental · 4 lucrari" la C1, eticheta de status din
+  // sertar la C14).
+  const taskuriZilei = $derived.by(() => {
+    const ale = (data?.taskuri || [])
+      .filter(t => (t.data_scadenta || '').slice(0, 10) === selectata)
+    const context = (t) => t.proiect_nume || (t.categorie && t.categorie !== 'General' ? t.categorie : '')
+    ale.sort((a, b) => context(a).localeCompare(context(b), 'ro')
+      || (a.titlu || '').localeCompare(b.titlu || '', 'ro'))
+    return ale.map((t, i) => ({
+      ...t,
+      context: context(t),
+      arataContext: !!context(t) && (i === 0 || context(ale[i - 1]) !== context(t)),
+    }))
+  })
 
   // ===== asezarea pe benzi =====
   // Ce s-a schimbat si de ce: pana acum ziua arata UN bloc per client, etichetat
@@ -1408,6 +1475,7 @@
               tabindex="0"
               aria-selected={g.iso === selectata}
               style="grid-row: {Math.floor(i / 7) + 1}; grid-column: {i % 7 + 1}; --benzi: {benziPeRand[Math.floor(i / 7)] ?? 1}"
+              class:are-tk={!!numarTaskuri(g.iso)}
               class:alta={g.alta}
               class:col-ultima={i % 7 === 6}
               class:rand-ultim={i >= grila.length - 7}
@@ -1437,6 +1505,19 @@
                      spune CARE din stari e, iar un cuvant nu se confunda cu nimic. -->
                 <span class="n">{parseISO(g.iso).getDate()}</span>
                 {#if g.iso === azi}<span class="azi-et">azi</span>{/if}
+                <!-- CATE TASKURI CAD IN ZIUA ASTA.
+                     Contorul de LUCRARI a plecat din celula la C6, si pe drept:
+                     numara ceva ce se vede oricum, fiindca barele sunt chiar
+                     acolo, cu numele scris in ele. Taskurile nu se deseneaza in
+                     celula — deci cifra asta nu repeta nimic, e singurul lor semn.
+                     Fara ea, panoul raspunde abia DUPA ce ai ales ziua, si n-ai
+                     de unde sti pe care s-o alegi (Ion, 2026-08-26: „ce sens are
+                     acum, daca in celula nu sunt aratate cate ar fi").
+                     PASTILA, nu cifra goala: langa numarul zilei, un al doilea
+                     numar nud s-ar citi tot ca o data. Tenta il face insigna. -->
+                {#if numarTaskuri(g.iso)}
+                  <span class="zi-tk" title="{numarTaskuri(g.iso)} {numarTaskuri(g.iso) === 1 ? 'task' : 'taskuri'} cu termen în ziua asta">{numarTaskuri(g.iso)}</span>
+                {/if}
                 <!-- CONTORUL DE LUCRARI A PLECAT (C6): singurul numar din celula e
                      cifra zilei. Numara ce se vede oricum — la 100px randul isi
                      desfasoara toate benzile, fiecare cu numele scris in ea, deci
@@ -1811,22 +1892,27 @@
             {#if !taskuriZilei.length}
               <div class="gol tsk-gol">Nimic scadent în ziua asta.</div>
             {/if}
+            <!-- ACELASI RAND CA PE „ASTĂZI" SI IN /tasks: bifa in stanga, titlul
+                 langa ea, iar a doua linie DOAR cand are ce spune. Prima versiune
+                 avea titlu + proiect pe fiecare rand si un chevron la capat — trei
+                 obiecte pentru un rand care, in restul aplicatiei, are doua. Si
+                 nicio bifa: arata ca un task, dar nu se purta ca unul.
+                 Chevronul a plecat: randul intreg e tinta, ca peste tot; sageata
+                 e conventia foilor de actiuni, unde randul e o ACTIUNE, nu un
+                 obiect. -->
             <div class="tsk-lista">
               {#each taskuriZilei as t (t.tip + ':' + t.id)}
-                <button class="tsk" onclick={() => mergiLaTask(t)}
-                        title="Deschide taskul{t.proiect_nume ? ' în ' + t.proiect_nume : ''}">
-                  <span class="tsk-c">
+                <div class="tsk" class:gata={t.status === 'done'}>
+                  <button class="check" onclick={() => comutaTask(t)}
+                          title={t.status === 'done' ? 'Redeschide' : 'Marchează ca făcut'}>
+                    {#if t.status === 'done'}<CheckCircle2 size={18} />{:else}<span class="check-empty"></span>{/if}
+                  </button>
+                  <button class="tsk-main" title={t.titlu} onclick={() => mergiLaTask(t)}>
                     <span class="tsk-t">{t.titlu}</span>
-                    <!-- Al cui e taskul. La cele globale, categoria tine locul
-                         proiectului — acelasi rol, alt nume, ca in sertarul din
-                         Planificator. Cand n-are nici categorie, randul ramane pe
-                         o linie: un rand gol sub titlu ar arata ca un camp lipsa. -->
-                    {#if t.proiect_nume}<span class="tsk-s">{t.proiect_nume}</span>
-                    {:else if t.categorie}<span class="tsk-s">{t.categorie}</span>{/if}
-                  </span>
+                    {#if t.arataContext}<span class="tsk-s">{t.context}</span>{/if}
+                  </button>
                   {#if t.recurenta}<span class="tsk-rep" title="Se repetă: {t.recurenta}"><Repeat size={12} /></span>{/if}
-                  <ChevronRight size={15} class="tsk-chev" />
-                </button>
+                </div>
               {/each}
             </div>
           {/if}
@@ -2524,24 +2610,47 @@
      intre randuri — si un chevron care spune ca randul duce undeva. */
   .tsk-cap { margin-top: var(--space-md); padding-top: var(--space-12); border-top: 1px solid var(--border); }
   .tsk-gol { margin-top: var(--space-6); }
-  .tsk-lista { display: flex; flex-direction: column; margin-top: var(--space-6); }
+  .tsk-lista { display: flex; flex-direction: column; margin-top: var(--space-xs); }
   .tsk {
-    display: flex; align-items: center; gap: var(--space-sm); width: 100%; text-align: left;
-    padding: var(--space-sm) 0; background: none; border: none;
-    border-bottom: 1px solid var(--border); color: var(--text); cursor: pointer;
-    transition: var(--transition-colors);
+    display: flex; align-items: center; gap: var(--space-sm); width: 100%;
+    border-bottom: 1px solid var(--border);
   }
   .tsk:last-child { border-bottom: none; }
-  .tsk:hover { color: var(--accent-deep); }
-  .tsk-c { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+  /* Bifa: acelasi obiect ca `.check` din „Astăzi" si /tasks — cerc gol, plin cand
+     e facut. `.check-empty` vine din `global.css`, o singura data pentru toate. */
+  .tsk .check {
+    display: flex; align-items: center; justify-content: center; flex: none;
+    width: var(--ctrl-sm); height: var(--ctrl-sm); margin-left: -6px;
+    color: var(--success); cursor: pointer; transition: var(--transition-colors);
+  }
+  .tsk-main {
+    display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1;
+    padding: var(--space-sm) 0; text-align: left; color: var(--text); cursor: pointer;
+    transition: var(--transition-colors);
+  }
+  .tsk-main:hover { color: var(--accent-deep); }
   .tsk-t { font-size: var(--font-rand); font-weight: var(--w-row); line-height: var(--lh-snug); }
+  /* Al cui e taskul — scris o singura data per grup (vezi `arataContext`). */
   .tsk-s { font-size: var(--font-small); color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tsk-rep { display: inline-flex; color: var(--text-dim); flex: none; }
-  .tsk :global(.tsk-chev) { color: var(--text-dim); flex: none; }
+  /* Starea de o clipa dintre atingere si recitire: titlul se taie, ca sa vezi CE
+     ai bifat inainte sa plece randul. Vezi nota de la `comutaTask`. */
+  .tsk.gata .tsk-t { color: var(--text-dim); text-decoration: line-through; }
 
-  /* In foaie randul e o tinta de deget, ca peste tot pe telefon. */
+  /* In foaie randul si bifa sunt tinte de deget, ca peste tot pe telefon. */
   @media (max-width: 768px) {
-    .tsk { min-height: var(--tap-sheet); }
+    .tsk-main { min-height: var(--tap-sheet); justify-content: center; }
+    .tsk .check { width: var(--tap-min); height: var(--tap-min); margin-left: -10px; }
+  }
+
+  /* Contorul de taskuri din celula. Pastila mica, la capatul opus cifrei zilei.
+     Se randeaza doar cand exista — 42 de zerouri ar face grila sa arate plina. */
+  .zi-tk {
+    margin-left: auto; flex: none;
+    font-family: var(--font-mono); font-size: var(--font-label);
+    font-variant-numeric: tabular-nums; line-height: 1;
+    padding: var(--space-2xs) var(--space-6); border-radius: var(--radius-xs);
+    background: var(--accent-subtle); color: var(--accent-on-subtle);
   }
 
   .urm { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; margin-top: var(--space-10);
@@ -2746,6 +2855,22 @@
     /* Cifra sta CENTRATA (M2): la 50px latime, aliniata la stanga cadea peste
        capatul benzii de dedesubt si se citeau ca un singur bloc. */
     .zi-h { justify-content: center; }
+    /* Pe telefon pastila sta LANGA cifra, nu impinsa la marginea celulei: la
+       ~50px latime, `margin-left: auto` ar rupe in doua un antet care e centrat.
+       Si se strange — cifra zilei ramane obiectul principal al celulei. */
+    .zi-tk { margin-left: 0; padding: 0 var(--space-xs); font-size: var(--font-label); }
+    /* PE TELEFON, INTR-O ZI CU TREABA, „AZI" NU MAI E SCRIS.
+       Masurat: antetul are 45px, iar cifra + „azi" + pastila cer 57 — deci
+       pastila se taia exact in cazul cel mai des intalnit, ziua de azi care are
+       si taskuri. Trei obiecte nu incap intr-o celula de 49px, deci unul pleaca.
+       Pleaca CUVANTUL, fiindca „azi" mai are doua semne care il spun (tenta de
+       accent pe toata celula si pozitia lui in sir), iar cifra n-are niciunul:
+       fara ea n-ai de unde sti ca ziua cere ceva. Pe desktop celula are 176px si
+       incap toate trei — acolo cuvantul ramane, ca pana acum.
+       (Regula de la C9 — „«azi» e scris, nu doar colorat" — a fost scrisa ca sa
+       deosebeasca AZI de ZIUA SELECTATA. Deosebirea ramane: selectia e un reper
+       pe cifra, nu o tenta pe celula.) */
+    .zi.azi.are-tk .azi-et { display: none; }
     /* FARA SEPARATOARE VERTICALE (M3). La ~50px pe coloana, sapte linii verticale
        plus sapte cifre fac un grilaj in care ziua nu se mai desprinde. Raman doar
        liniile orizontale, care despart SAPTAMANILE — singura impartire pe care o

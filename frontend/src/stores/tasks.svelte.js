@@ -162,11 +162,9 @@ export function stergeTask(tip, id) {
 }
 
 // Perechea lui `stergeTask` pentru SCRIERE, si exista din acelasi motiv: listele
-// amestecate („Astăzi", Planificatorul) primesc taskuri globale si de proiect in
-// aceeasi lista, cu un `tip` langa id. Foaia de editare le trimite mai departe fara
-// sa stie pe ce ruta trăiesc.
-// (`stores/plan.svelte.js` are deja un `patch` identic, dar privat — el nu se poate
-// folosi de aici fiindca reincarca si Planificatorul la fiecare scriere.)
+// amestecate („Astăzi", panoul zilei din Calendar) primesc taskuri globale si de
+// proiect in aceeasi lista, cu un `tip` langa id. Foaia de editare si bifa din
+// panou le trimit mai departe fara sa stie pe ce ruta trăiesc.
 export function actualizeazaTask(tip, id, data) {
   return tip === 'global' ? updateGlobalTask(id, data) : updateTask(id, data)
 }
