@@ -1791,11 +1791,26 @@
                spune ce ai de facut si al cui e, iar atingerea il deschide acolo
                unde taskul chiar traieste.
                Sta DUPA perioade fiindca asta e ordinea intrebarilor: intai unde
-               esti, apoi ce faci acolo. -->
-          {#if taskuriZilei.length}
+               esti, apoi ce faci acolo.
+
+               ANTETUL RAMANE SI CAND LISTA E GOALA — si asta nu e stil.
+               Prima versiune randa sectiunea doar cand avea randuri, iar pe
+               2026-08-26 Calendarul s-a deschis pe ziua de azi: o perioada si
+               ZERO taskuri deschise. Panoul arata perioada si atat, deci
+               „nimic scadent" si „functia nu exista" se citeau la fel. Ion,
+               imediat: „si unde e lista cu taskuri?".
+               O jumatate a zilei care dispare cand raspunsul ei e „nimic" nu
+               raspunde — tace. Cifra 0 langa antet e un raspuns; absenta nu e.
+               Exceptia e ziua goala de tot: acolo „Liber." acopera deja
+               amandoua jumatatile (vezi ramura de mai sus), iar un al doilea
+               „nimic" sub el ar fi acelasi lucru spus de doua ori. -->
+          {#if selectate.length || taskuriZilei.length}
             <div class="pan-h tsk-cap">
               Ce ai de făcut <span class="cnt">{taskuriZilei.length}</span>
             </div>
+            {#if !taskuriZilei.length}
+              <div class="gol tsk-gol">Nimic scadent în ziua asta.</div>
+            {/if}
             <div class="tsk-lista">
               {#each taskuriZilei as t (t.tip + ':' + t.id)}
                 <button class="tsk" onclick={() => mergiLaTask(t)}
@@ -2508,6 +2523,7 @@
      intre ele de fiecare data. De aceea: fara chenar, fara tenta, doar o linie
      intre randuri — si un chevron care spune ca randul duce undeva. */
   .tsk-cap { margin-top: var(--space-md); padding-top: var(--space-12); border-top: 1px solid var(--border); }
+  .tsk-gol { margin-top: var(--space-6); }
   .tsk-lista { display: flex; flex-direction: column; margin-top: var(--space-6); }
   .tsk {
     display: flex; align-items: center; gap: var(--space-sm); width: 100%; text-align: left;

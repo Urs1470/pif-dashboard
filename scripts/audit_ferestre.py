@@ -208,8 +208,13 @@ FERESTRE = [
          pasi=[('sel', '.dock-fab')], pasi_desktop=[('sel', '.tb-adauga')]),
     dict(nume='panou-task', ruta='/tasks', unde='telefon', pasi=[('sel', '.tmain')]),
     dict(nume='actiuni-task', ruta='/tasks', unde='telefon', pasi=[('lung', '.tmain')]),
+    # PE TELEFON ZIUA SE ALEGE DIN FOAIA DE ACTIUNI, nu din foaia de detaliu.
+    # Pasul cerea `.modal .dp-trigger` dupa o atingere pe rand — dar foaia de
+    # detaliu n-are declansator de data (are bifa, termenul ca cip, Pasi si Nota).
+    # Drumul real, acelasi pe care il verifica si `audit_mobil`: apasare lunga ->
+    # foaia de actiuni -> „Alege" (un `DatePicker` cu eticheta, din `SelectorZi`).
     dict(nume='alege-data', ruta='/tasks', unde='ambele',
-         pasi=[('sel', '.tmain'), ('sel', '.modal .dp-trigger')],
+         pasi=[('lung', '.tmain'), ('text', 'Alege')],
          pasi_desktop=[('hover', '.tmain'), ('sel', '.dp-trigger')]),
     dict(nume='editor-nota', ruta='/tasks', unde='telefon',
          pasi=[('sel', '.tmain'), ('sel', '.modal .dt-nota-sec button')]),
@@ -217,8 +222,11 @@ FERESTRE = [
          pasi=[('hover', '.tmain'), ('sel', '.ta-chip:not(.ta-sterge)')]),
     dict(nume='sterge-task', ruta='/tasks', unde='desktop',
          pasi=[('hover', '.tmain'), ('sel', '.ta-chip.ta-sterge')]),
-    dict(nume='notificari', ruta='/tasks', unde='ambele',
-         pasi=[('text', 'Personal'), ('sel', 'button[aria-label="Notificări"]')]),
+    # `notificari` a plecat din lista: clopotelul din bara lui /tasks s-a mutat in
+    # pagina Setari pe 2026-08-25 (24dd24bc), iar acolo notificarile sunt un rand
+    # de pagina, nu o fereastra — `Settings.svelte` n-are niciun `Modal`. Proba
+    # cauta deci un buton care nu mai exista, si raporta „nu s-a deschis" pe
+    # amandoua latimile. O fereastra care nu mai e nu se verifica, se scoate.
     dict(nume='cauta', ruta='/tasks', unde='ambele',
          pasi=[('sel', 'button[aria-label="Caută"]')],
          # Pe desktop dockul e strans, iar paleta se cheama cu scurtatura.
@@ -305,6 +313,25 @@ def masoara_fereastra(ctx, baza, f, tema, telefon):
         for tip, tinta in pasi[:-1]:
             if not apasa(page, tip, tinta, note, cdp):
                 return ['nu s-a ajuns la fereastra'], note
+        # SE MASOARA PE O PAGINA ASEZATA, nu peste una care inca se misca.
+        #
+        # Drumul pana la fereastra poate include o NAVIGARE (`proiect-editeaza` si
+        # `proiect-sterge` trec prin `.pcard`, deci prin pagina de proiect), iar
+        # intrarea unei rute tine pana la 900ms (`--dur-slow`). `apasa` astepta
+        # 430ms fix, deci pe desktop clicul final cadea peste animatia paginii si
+        # sosirea ferestrei se raporta „0 animatii" — o fereastra care in realitate
+        # sosea normal. Pe telefon aceleasi doua treceau, deci raportul spunea
+        # „stricat doar pe desktop", ceea ce e chiar mai greu de crezut decat
+        # adevarul.
+        # Se asteapta ce se intampla, nu un numar: pana cand nu mai ruleaza nicio
+        # animatie, cu plafon — un plafon atins inseamna „pagina nu se aseaza", si
+        # atunci masuram oricum si se vede in raport.
+        try:
+            page.wait_for_function(
+                "() => document.getAnimations().filter(a => a.playState === 'running').length === 0",
+                timeout=2500, polling=80)
+        except Exception:
+            note.append('pagina nu s-a asezat in 2,5s inainte de masurare')
         page.evaluate("() => window.__f.reset()")
         page.evaluate("() => window.__f.urmareste(900)")
         tip, tinta = pasi[-1]
