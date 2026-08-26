@@ -42,6 +42,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 
 # Numele lunilor din `DatePicker.svelte` — folosite ca sa stiu pe ce luna s-a
 # deschis calendarul si cate apasari pe „luna urmatoare" mai trebuie.
@@ -1197,16 +1198,45 @@ def perioadele_se_trag(browser, baza):
                 ord0 = [z[0] for z in zile]
                 in0 = stare(page, b0[0])
 
+                # CENTRUL BENZII SE CITESTE INAINTE DE FIECARE ATINGERE.
+                #
+                # Pe telefon banda are 4px inaltime (`min-height: 4px`, pasul
+                # `--h-banda: 6px`), deci o deplasare de layout de un rand o scoate
+                # complet de sub deget. Si grila se aseaza inca dupa cele 700ms de
+                # asteptare: masurat pe 2026-08-26, intr-o rulare din patru, centrul
+                # citit la masurare era y=278,6, iar cel citit inainte de gest —
+                # y=269. Doua atingeri trimise la 278,6 cadeau amandoua pe `.zi` de
+                # dedesubt, nu pe banda.
+                # Se vedea doar la a doua: (c) pica fiindca gestul chiar n-avea ce
+                # apuca, dar (b) — „o glisare simpla nu muta nimic" — TRECEA, fiindca
+                # o glisare pe o zi goala intr-adevar nu muta nimic. O proba care
+                # se confirma din cauza ca a ratat tinta e mai rea decat una care
+                # pica: nu se vede ca n-a verificat.
+                # `harta` zilelor se reciteste din acelasi motiv, si in acelasi loc.
+                def centru_benzii():
+                    r = page.evaluate(
+                        """(id) => { const el = document.querySelector('.banda[data-perioada="' + id + '"]');
+                             if (!el) return null; const q = el.getBoundingClientRect();
+                             return [q.left + q.width / 2, q.top + q.height / 2,
+                                     Math.round(q.left), Math.round(q.top),
+                                     Math.round(q.width), Math.round(q.height)]; }""", b0[0])
+                    return r
+
                 # (b) O GLISARE SCURTA, FARA APASARE, RAMANE DERULARE. Proba
                 #     asta e cea care face gestul acceptabil: daca ea pica,
                 #     lista nu se mai poate derula cu degetul peste benzi.
+                pb = centru_benzii()
+                if not pb:
+                    out('  SARI  deget: banda a disparut din grila inainte de gest')
+                    ctx.close()
+                    continue
                 cdp.send('Input.dispatchTouchEvent', dict(
                     type='touchStart',
-                    touchPoints=[dict(x=b0[1], y=b0[2], radiusX=6, radiusY=6, force=1)]))
+                    touchPoints=[dict(x=pb[0], y=pb[1], radiusX=6, radiusY=6, force=1)]))
                 for k in range(1, 5):
                     cdp.send('Input.dispatchTouchEvent', dict(
                         type='touchMove',
-                        touchPoints=[dict(x=b0[1], y=b0[2] + k * 12, radiusX=6, radiusY=6, force=1)]))
+                        touchPoints=[dict(x=pb[0], y=pb[1] + k * 12, radiusX=6, radiusY=6, force=1)]))
                 cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
                 page.wait_for_timeout(400)
                 if stare(page, b0[0]) == in0:
@@ -1219,10 +1249,39 @@ def perioadele_se_trag(browser, baza):
                 #     manerele devin tinte de deget — semnalul care spune ca
                 #     gestul a prins, pe un ecran care n-are cursor.
                 t0 = ord0[min((ord0.index(in0[0]) if in0[0] in ord0 else 0) + 9, len(ord0) - 1)]
+                harta = {z[0]: (z[1], z[2]) for z in page.eval_on_selector_all(
+                    '.zi[data-zi]',
+                    'e => e.map(z => { const r = z.getBoundingClientRect();'
+                    ' return [z.dataset.zi, r.left + r.width / 2, r.top + r.height / 2] })')}
+                pc = centru_benzii()
+                if not pc or t0 not in harta:
+                    out('  SARI  deget: banda sau ziua-tinta au disparut inainte de gest')
+                    ctx.close()
+                    continue
                 cdp.send('Input.dispatchTouchEvent', dict(
                     type='touchStart',
-                    touchPoints=[dict(x=b0[1], y=b0[2], radiusX=6, radiusY=6, force=1)]))
-                page.wait_for_timeout(700)          # peste APASARE_LUNGA (300ms); 450 nu ajungea sub sarcina
+                    touchPoints=[dict(x=pc[0], y=pc[1], radiusX=6, radiusY=6, force=1)]))
+                # APASAREA LUNGA SE ASTEAPTA PE CONDITIE, NU PE CEAS.
+                #
+                # Aici a fost un `wait_for_timeout` fix: intai 450ms, urcat la 700
+                # (25cab389) fiindca „nu ajungea sub sarcina". Numarul nu era
+                # problema — masurat, cand gestul PORNESTE el porneste in ~337ms,
+                # iar cand nu porneste nu-l scot nici 3000. Cauza era geometria
+                # veche (vezi `centru_benzii` mai sus), reparata acum.
+                # Asteptarea ramane totusi pe CONDITIE, nu pe ceas: `APASARE_LUNGA`
+                # e 300ms masurate de ceasul PAGINII, iar cand firul ei principal e
+                # blocat, ceasul probei si al paginii nu mai sunt acelasi lucru.
+                # `polling=100`, nu implicitul `raf`: sub sarcina, cadrele sunt exact
+                # ce intarzie. Bugetul de 3s ramane o afirmatie — daca gestul nu
+                # porneste pana atunci, chiar nu porneste.
+                _t = time.time()
+                try:
+                    page.wait_for_function(
+                        "() => !!document.querySelector('.banda.se-trage')",
+                        timeout=3000, polling=100)
+                except Exception:
+                    pass
+                asteptat = int((time.time() - _t) * 1000)
                 ridicata = page.evaluate(
                     '''() => { const b = document.querySelector('.banda.se-trage');
                          if (!b) return null;
@@ -1230,11 +1289,22 @@ def perioadele_se_trag(browser, baza):
                          return { umbra: getComputedStyle(b).boxShadow !== 'none',
                                   maner: m ? Math.round(parseFloat(getComputedStyle(m).width)) : 0 }; }''')
                 if not ridicata:
-                    out('  PICA  deget: apasarea lunga nu a pornit gestul')
+                    # Cine a primit atingerea, si unde e banda ACUM. Fara asta,
+                    # „nu a pornit gestul" nu deosebeste „codul e stricat" de
+                    # „proba a atins alaturi" — si prima oara chiar a fost a doua.
+                    unde = page.evaluate(
+                        """(pt) => { const sub = document.elementFromPoint(pt[0], pt[1]);
+                             return sub ? (sub.className || sub.tagName) : null; }""",
+                        [pc[0], pc[1]])
+                    out('  PICA  deget: apasarea lunga nu a pornit gestul (%dms) — '
+                        'atins (%d,%d), banda la [%d,%d %dx%d], sub deget: %s'
+                        % (asteptat, pc[0], pc[1], pc[2], pc[3], pc[4], pc[5], unde))
                     probleme += 1
                 else:
                     if ridicata['umbra']:
-                        out('  OK    deget: banda se ridica la apucare')
+                        # Numarul e in raport cu intentie: el arata cat de departe
+                        # sta gestul de pragul fix care era aici (700ms).
+                        out('  OK    deget: banda se ridica la apucare (%dms)' % asteptat)
                     else:
                         out('  PICA  deget: banda apucata nu se ridica (niciun semnal)')
                         probleme += 1
@@ -1246,8 +1316,8 @@ def perioadele_se_trag(browser, baza):
                 for k in range(1, 9):
                     cdp.send('Input.dispatchTouchEvent', dict(
                         type='touchMove',
-                        touchPoints=[dict(x=b0[1] + (harta[t0][0] - b0[1]) * k / 8,
-                                          y=b0[2] + (harta[t0][1] - b0[2]) * k / 8,
+                        touchPoints=[dict(x=pc[0] + (harta[t0][0] - pc[0]) * k / 8,
+                                          y=pc[1] + (harta[t0][1] - pc[1]) * k / 8,
                                           radiusX=6, radiusY=6, force=1)]))
                     page.wait_for_timeout(16)
                 cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
