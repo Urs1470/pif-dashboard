@@ -280,9 +280,20 @@
   .dp-trigger :global(svg) { color: var(--text-dim); flex-shrink: 0; }
   .dp-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Suprafata flotanta: se desprinde prin UMBRA, nu si prin chenar. */
+  /* Suprafata flotanta: se desprinde prin UMBRA, nu si prin chenar.
+
+     Z-INDEXUL E AL UNUI STRAT PORTAT, NU AL UNUI DROPDOWN DIN PAGINA.
+     `--z-dropdown` (100) descrie un meniu care sta in fluxul paginii si trebuie
+     doar sa treaca peste continutul din jurul lui. Popoverul asta pleaca in
+     `<body>` prin `use:portal`, deci ajunge FRATE cu backdropul Modalului — iar
+     acela e la `--z-modal` (1000) sau mai sus. Masurat pe panoul „Perioadă de
+     implementare": declansatorul se aprindea (`.deschis`), calendarul se randa
+     la z 100 sub panoul de 1000, iar `elementFromPoint` pe ziua 15 intorcea
+     formularul de deasupra — deci nu era doar invizibil, era si de neatins.
+     `--z-tooltip` e treapta pe care o folosesc deja celelalte doua straturi
+     portate: meniul din `Select.svelte` si varianta-foaie de mai jos. */
   .dp-pop {
-    position: fixed; z-index: var(--z-dropdown);
+    position: fixed; z-index: var(--z-tooltip);
     width: 268px; padding: var(--space-12);
     background: var(--bg-overlay);
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);
@@ -347,7 +358,7 @@
   .dp-pop.sheet {
     top: auto; bottom: 0; left: 0; right: 0;
     width: auto; max-width: 100%;
-    z-index: var(--z-tooltip);
+    /* z-indexul vine din `.dp-pop`: e acelasi strat, doar alta forma. */
     padding: 0 var(--space-md) calc(var(--space-md) + var(--safe-bottom));
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-bottom: none;

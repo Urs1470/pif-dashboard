@@ -392,13 +392,22 @@
   .so-value { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .so-trigger:not(.placeholder) .so-value { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-  .so-voal { position: fixed; inset: 0; background: var(--scrim); z-index: calc(var(--z-modal) + 40); }
+  /* Aceeasi pereche ca la calendar (`.dp-voal` / `.dp-pop`): voalul cu o treapta
+     sub popup. Era scrisa de mana ca `--z-modal + 40/41`, adica o a doua scara
+     pentru acelasi lucru — si una care se prabusea la al cincilea strat de modal,
+     unde `--z-modal + (nivel-1)*10` ajunge tot la 1040. */
+  .so-voal { position: fixed; inset: 0; background: var(--scrim); z-index: calc(var(--z-tooltip) - 1); }
   /* Peste o foaie care are deja voal: doar separa. Vezi `--scrim-slab` in tokens.css
      si nota de la `pesteFoaie` in <script>. */
   .so-voal.slab { background: var(--scrim-slab); }
 
+  /* Acelasi motiv ca la `.dp-pop`: stratul pleaca in `<body>` prin `use:portal`,
+     deci se compara cu backdropul Modalului (`--z-modal`), nu cu continutul din
+     jurul declansatorului. `--z-dropdown` (100) il ingropa sub orice foaie sau
+     panou din care e deschis — iar aici era si mai vizibil, fiindca voalul lui
+     statea DEASUPRA modalului si popupul dedesubt. */
   .so-pop {
-    position: fixed; z-index: var(--z-dropdown);
+    position: fixed; z-index: var(--z-tooltip);
     width: 268px; padding: var(--space-12);
     background: var(--bg-overlay);
     border-radius: var(--radius-md); box-shadow: var(--shadow-md);
@@ -482,7 +491,7 @@
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow: var(--shadow-foaie);
     background: var(--bg-surface);
-    z-index: calc(var(--z-modal) + 41);
+    /* z-indexul vine din `.so-pop`: e acelasi strat, doar alta forma. */
   }
   /* Manerul: acelasi obiect ca al foii din `Modal` — 38×4, `--border-strong`. */
   /* Manerul e SEMN, nu tinta: gestul asculta pe toata banda de sus a foii (vezi

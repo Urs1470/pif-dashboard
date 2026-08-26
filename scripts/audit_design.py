@@ -516,6 +516,36 @@ class Audit:
             self.abatere('R10 z-index in banda tokenurilor, scris de mana',
                          p, curat, m.start(), m.group(0))
 
+    # -- R15 ----------------------------------------------------------------
+    def r15_strat_portat_sub_modal(self, p, text, curat):
+        """Un strat mutat in `<body>` prin `use:portal` nu mai are voie sa stea
+        pe `--z-dropdown`.
+
+        DOUA SCARI, NU UNA. `--z-dropdown` (100) descrie un meniu care ramane in
+        fluxul paginii si trebuie doar sa treaca peste continutul din jurul lui.
+        Din clipa in care elementul pleaca in `<body>`, el nu se mai compara cu
+        vecinii lui, ci cu CELELALTE straturi portate — iar acolo backdropul
+        Modalului sta la `--z-modal` (1000) sau mai sus, prin nivel.
+
+        Cum arata cand se strica: pe 2026-08-26, in panoul „Perioadă de
+        implementare", declansatorul de data se aprindea (`.deschis`, deci
+        `open === true`), calendarul se randa la z 100 sub panoul de 1000, iar
+        `elementFromPoint` pe ziua din mijloc intorcea formularul de deasupra.
+        Nu era doar invizibil — era si de neatins, deci nu semana cu o problema
+        de desen si nu se putea ghici din sursa.
+
+        DE CE N-A PRINS-O R10: acolo valoarea venea dintr-un TOKEN, deci era
+        „corecta" dupa singura intrebare pe care R10 o pune (scris de mana sau
+        nu). Intrebarea care lipsea nu e ce valoare are, ci PESTE CE trebuie sa
+        treaca. `Select.svelte` o avea deja rezolvata — meniul lui portat sta pe
+        `--z-tooltip` — deci regula nu inventeaza o conventie, o scrie pe cea
+        care exista in doua din trei locuri."""
+        if 'use:portal' not in curat:
+            return
+        for m in re.finditer(r'z-index:\s*[^;]*--z-dropdown[^;]*;', curat):
+            self.abatere('R15 strat portat pe --z-dropdown (nu trece de --z-modal)',
+                         p, curat, m.start(), m.group(0))
+
     # -- R14 ----------------------------------------------------------------
     def r14_cerneala_pe_tenta(self, p, text, curat):
         """Text `--accent` pe fond `--accent-subtle`: 4,81:1 pe tema deschisa.
@@ -698,6 +728,7 @@ def main():
         a.r9_touch_action_fara_gest(p, text, curat)
         a.r11_tipografie_bruta(p, text, curat)
         a.r10_zindex_literal(p, text, curat)
+        a.r15_strat_portat_sub_modal(p, text, curat)
         a.r11_hover_only(p, text, curat)
         a.r12_inaltime_control_bruta(p, text, curat)
         a.r13_spatiere_bruta(p, text, curat)
