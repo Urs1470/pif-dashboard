@@ -163,6 +163,15 @@ class Colector:
     def curate(self):
         return [e for e in self.erori if not any(z in e for z in IGNORATE)]
 
+    def taiate(self):
+        """Ce s-a filtrat prin `IGNORATE`, ca sa se poata SPUNE cand conteaza.
+
+        Zgomotul de retea nu e vina codului — de aceea e ignorat — dar nu e nici
+        fara urmari: daca cererea care nu pleaca e chiar CHUNKUL rutei, pagina
+        nu se randeaza deloc. Atunci raportul ramanea cu „GOALA" si fara cauza,
+        fiindca singurul semn fusese taiat. Vezi `verifica`."""
+        return [e for e in self.erori if any(z in e for z in IGNORATE)]
+
 
 def deschide(context, url, latime, inalt):
     page = context.new_page()
@@ -182,8 +191,19 @@ def deschide(context, url, latime, inalt):
     return page, col, blocata
 
 
-def verifica(context, baza, ruta, eticheta, ecran, taburi=False):
-    nume, latime, inalt = ecran
+def _motiv(linie):
+    """Doar codul de retea din linia colectata — `net::ERR_...`, fara URL."""
+    for z in IGNORATE:
+        if z in linie:
+            return z
+    return linie[:60]
+
+
+def _incearca(context, baza, ruta, latime, inalt, taburi):
+    """O singura vizita: intoarce `(probleme, zgomot_de_retea_filtrat)`.
+
+    Nu scrie nimic in raport — decizia e a lui `verifica`, fiindca doar el stie
+    daca mai are voie sa reia."""
     page, col, blocata = deschide(context, baza + '/#' + ruta, latime, inalt)
     probleme = []
     if blocata:
@@ -207,7 +227,36 @@ def verifica(context, baza, ruta, eticheta, ecran, taburi=False):
         probleme.append('GOALA: sub 40 de caractere in continut')
 
     probleme.extend(col.curate())
+    taiate = col.taiate()
     page.close()
+    return probleme, taiate
+
+
+def verifica(context, baza, ruta, eticheta, ecran, taburi=False):
+    nume, latime, inalt = ecran
+    probleme, taiate = _incearca(context, baza, ruta, latime, inalt, taburi)
+
+    # O PAGINA GOALA DIN CAUZA RETELEI NU E O PAGINA STRICATA — DAR NICI TACERE.
+    #
+    # Pe Windows, dupa sute de conexiuni scurte la rand, socketurile raman fara
+    # bufere: `net::ERR_NO_BUFFER_SPACE`, deja in `IGNORATE` fiindca „o cerere nu
+    # pleaca deloc". Adevarat despre CAUZA, dar nu si despre urmari: cand cererea
+    # care nu pleaca e chunkul lazy al rutei, nu se monteaza nimic — zero schelete
+    # (deci asteptarea trece), `#main-content` gol, si niciun mesaj, fiindca
+    # singurul semn tocmai a fost filtrat. Ramanea „GOALA", pe pagina de dupa cea
+    # mai grea (Calculator, 881 kB), la intamplare.
+    # Masurat pe 2026-08-26, reluand secventa reala de 8 ori: o singura cerere
+    # cazuta (`EditorLung`), si continutul paginii a scazut de la 270 la 94 de
+    # caractere. Cu chunkul rutei in loc, scade la zero si trece pragul de 40.
+    # Deci: se reia O DATA, si daca reluarea e curata se scrie de ce.
+    gol_si_retea = taiate and any(p.startswith(('GOALA', 'BLOCATA')) for p in probleme)
+    if gol_si_retea:
+        probleme, _ = _incearca(context, baza, ruta, latime, inalt, taburi)
+        if not probleme:
+            out('  %s  %-9s %-28s %s' % ('OK  ', nume, eticheta[:28],
+                                         '(reluat — %s)' % _motiv(taiate[0])))
+            return probleme
+        probleme = probleme + ['CAUZA PROBABILA: %s' % taiate[0][:140]]
 
     stare = 'OK  ' if not probleme else 'PICA'
     out('  %s  %-9s %-28s %s' % (stare, nume, eticheta[:28], '' if not probleme else probleme[0]))
