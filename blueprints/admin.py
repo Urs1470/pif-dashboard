@@ -977,6 +977,57 @@ def calendar_view():
     """)
     neplanificate = [dict(r) for r in cursor.fetchall()]
 
+    # ZIUA E INTREAGA: UNDE ESTI **SI** CE AI DE FACUT.
+    #
+    # Pana acum calendarul stia doar perioade, iar taskurile stateau in
+    # Planificator. Rezultatul se putea citi pe 25 august 2026: panoul zilei
+    # scria „Liber." — corect despre perioade — in timp ce trei taskuri erau
+    # scadente chiar atunci. Doua pagini, doua jumatati de adevar despre aceeasi
+    # zi. Cu Planificatorul scos, jumatatea cu taskuri n-ar mai fi avut unde sa
+    # stea, deci vine aici.
+    #
+    # CONDITIILE SUNT CELE DIN `/api/plan`, CUVANT CU CUVANT — proiect deschis,
+    # task nefinalizat, fara ocurentele viitoare ale unei recurente, iar globalele
+    # doar `sfera = 'munca'`. Regula fisierului `tasks.py` o spune deja: aceeasi
+    # intrebare nu poate avea doua raspunsuri pe doua rute care hranesc acelasi
+    # ecran. Cand ruta cealalta dispare, conditia ei trebuie sa supravietuiasca
+    # aici, altfel „ce am de facut" isi schimba tacit inţelesul.
+    #
+    # Se intorc taskurile din TOATA fereastra, nu doar din ziua selectata: panoul
+    # isi alege ziua fara sa mai ceara nimic, iar fereastra e de 49 de zile cu
+    # cateva zeci de randuri in ea.
+    cursor.execute("""
+        SELECT t.id, 'proiect' AS tip, t.titlu, t.status, t.data_scadenta,
+               COALESCE(t.recurenta, '') AS recurenta, '' AS categorie,
+               p.id AS proiect_id, p.nume AS proiect_nume
+        FROM tasks t JOIN proiecte p ON p.id = t.proiect_id
+        WHERE p.status NOT IN ('anulat', 'finalizat')
+          AND t.status != 'done'
+          AND t.data_scadenta IS NOT NULL AND TRIM(t.data_scadenta) <> ''
+          AND date(t.data_scadenta) >= date(?) AND date(t.data_scadenta) < date(?)
+          AND NOT (t.recurenta IS NOT NULL AND TRIM(t.recurenta) <> ''
+                   AND date(t.data_scadenta) > date('now'))
+        ORDER BY t.data_scadenta, t.titlu
+    """, (start, end_s))
+    taskuri = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT g.id, 'global' AS tip, g.titlu, g.status, g.data_scadenta,
+               COALESCE(g.recurenta, '') AS recurenta,
+               COALESCE(g.categorie, '') AS categorie,
+               NULL AS proiect_id, NULL AS proiect_nume
+        FROM global_tasks g
+        WHERE g.sfera = 'munca'
+          AND g.status != 'done'
+          AND g.data_scadenta IS NOT NULL AND TRIM(g.data_scadenta) <> ''
+          AND date(g.data_scadenta) >= date(?) AND date(g.data_scadenta) < date(?)
+          AND NOT (g.recurenta IS NOT NULL AND TRIM(g.recurenta) <> ''
+                   AND date(g.data_scadenta) > date('now'))
+        ORDER BY g.data_scadenta, g.titlu
+    """, (start, end_s))
+    taskuri += [dict(r) for r in cursor.fetchall()]
+    taskuri.sort(key=lambda t: ((t['data_scadenta'] or '')[:10], (t['titlu'] or '').lower()))
+
     # Nimic nu dispare in tacere. O data pe care SQLite nu o poate interpreta
     # (`date()` intoarce NULL) nu se aseaza pe nicio zi, deci randul lipseste din
     # calendar FARA niciun semn — asa a stat `23.02.2026` nevazut pe un proiect.
@@ -1010,6 +1061,7 @@ def calendar_view():
         'zile': zile,
         'today': datetime.now().date().isoformat(),
         'perioade': perioade,
+        'taskuri': taskuri,
         'de_decis': de_decis,
         'neplanificate': neplanificate,
         'probleme': probleme,

@@ -303,9 +303,6 @@
     { path: '/', label: 'Acasă', icon: 'home' },
     { path: '/projects', label: 'Proiecte', icon: 'projects' },
     { path: '/tasks', label: 'Taskuri', icon: 'tasks' },
-    /* `scurt` e eticheta de sub iconita pe telefon (desen: „Plan") — numele
-       intreg ramane in aria-label si in title. */
-    { path: '/plan', label: 'Planificator', scurt: 'Plan', icon: 'plan' },
     { path: '/calendar', label: 'Calendar', icon: 'calendar' },
     // Langa Calendar, nu la coada: dupa „unde sunt eu" urmeaza imediat „cine e unde".
     { path: '/departament', label: 'Departament', icon: 'departament' },
@@ -315,16 +312,16 @@
 
   // PE TELEFON, DOCK-UL TINE PATRU LUCRURI (cerinta Ion).
   //
-  // Sapte iconite plus cautarea inseamna opt tinte pe latimea unui telefon: la
+  // Sase iconite plus cautarea inseamna sapte tinte pe latimea unui telefon: la
   // 390px raman ~44px de tinta, adica exact minimul, fara aer intre ele — si
   // tocmai degetul mare, care ajunge acolo, e cel mai gros instrument de atins.
   // Raman rutele pe care le deschizi zilnic de pe teren: Acasa, Taskuri, Calendar.
   //
-  // PLANIFICATORUL A COBORAT IN FOAIE (Ion, 2026-08-24: „muta planificatorul in mai
-  // mult la 3 puncte"). Era al patrulea slot de navigatie; Ion l-a judecat o unealta
-  // de PLANIFICARE — ceva ce deschizi cand asezi saptamana, nu la fiecare atingere de
-  // pe teren, ca „ce am azi" (Taskuri) sau „unde sunt" (Calendar). Langa Proiecte,
-  // Departament si Calculator, in foaie.
+  // PLANIFICATORUL A PLECAT DE TOT (Ion, 2026-08-26: „vom ramane doar cu calendar").
+  // Pe 24 august coborase din dock in foaia „Mai mult" — judecat o unealta de
+  // PLANIFICARE, nu una de teren; doua zile mai tarziu a plecat cu totul, iar
+  // taskurile zilei se citesc in panoul Calendarului. Al treilea slot ramane
+  // „unde sunt", ca inainte.
   //
   // Ce NU trebuie sa se strice mutand o ruta in foaie: sa nu ramana singurul drum
   // spre ea butonul de cautare -> paleta de comanda -> tastatura. Patru pasi si o
@@ -332,7 +329,7 @@
   // rezolva exact asta: o atingere iti da rutele, la 44px fiecare.
   //
   // Al patrulea slot ramane „Mai mult": o foaie cu rutele scoase (Proiecte,
-  // Plan, Departament, Calculator, Setari) la 44px fiecare. Cautarea traieste
+  // Departament, Calculator, Setari) la 44px fiecare. Cautarea traieste
   // in Header (buton) si in paleta (Ctrl+K pe desktop).
   // Pe desktop nu se schimba nimic: acolo sunt toate, plus Ctrl+K.
   //

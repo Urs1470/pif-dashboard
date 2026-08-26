@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-08-26
+
+- [2026-08-26 Planificatorul scos, ziua întreagă în Calendar](2026-08-26-planificatorul-scos-ziua-intreaga.md) — `/plan` și `/api/plan` au plecat; panoul zilei capătă lista taskurilor scadente (o listă, nu o vedere). Ordinea contează: întâi panoul, apoi ștergerea — altfel „Liber." rămânea scris peste zile cu treabă. Invalidările de cache s-au MUTAT pe `/api/calendar`, nu s-au șters.
+
 ## 2026-08-24
 
 - [2026-08-24 Scara de mișcare Apple](2026-08-24-scara-de-miscare-apple.md) — 5 trepte (90/150/300/700/900ms), model WWDC 2023–2025; modal 700/500ms cu scale(.9) și blur(7px); pagini 900ms cu translateX+scale; taskuri 1100ms sosire / 800ms plecare; `--dur-slow` (0.28→0.9) auditat peste toți consumatorii

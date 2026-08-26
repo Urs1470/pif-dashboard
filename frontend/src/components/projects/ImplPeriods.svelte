@@ -44,11 +44,10 @@
   }
 
   /** Dupa orice scriere pe perioade: ce stia memoria e vechi, iar perioadele se
-   *  vad si in Calendar si in Planificator. Prefixul larg le acopera pe toate. */
+   *  vad si in Calendar. Prefixul larg le acopera pe toate. */
   function uitaPerioadele() {
     uita(`/api/proiecte/${projectId}`)
     uita('/api/calendar')
-    uita('/api/plan')
   }
   onMount(load)
 

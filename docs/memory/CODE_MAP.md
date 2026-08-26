@@ -30,7 +30,7 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `37:project_status_label`, `41:task_status_label`
 
-## blueprints/admin.py (1016 linii)
+## blueprints/admin.py (1068 linii)
 
 `57:get_stats`, `91:_pdf_safe_text`, `105:_pdf_make_styles`, `133:_pdf_section_header`, `146:_pdf_section_admin`, `174:_pdf_section_tech`, `192:_pdf_section_tasks`, `226:export_pdf`, `294:_ics_feed_key`, `308:export_ics_key`, `314:export_ics`, `440:backup_database`, `470:restore_database`, `633:admin_db_upload_page`, `679:admin_db_upload`, `756:admin_db_dump`, `799:_search_snippet`, `815:global_search`, `866:plan_departament_get`, `877:plan_departament_set`, `894:calendar_view`
 
@@ -50,7 +50,7 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `117:_setari`, `130:_valideaza_setari`, `166:_b64`, `170:_unb64`, `179:_secret_curent`, `195:mint_token`, `205:verifica_token`, `227:_priv_raw`, `236:_chei_vapid`, `266:_abonamente`, `273:_salveaza_abonamente`, `277:_hash_endpoint`, `285:send_to_all`, `327:taskuri_de_notificat`, `346:taskuri_scadente`, `366:taskuri_cu_ora`, `386:_ore_trimise`, `402:_minute`, `415:check_and_send_ore`, `481:_de_notificat`, `494:_zile_de_cand`, `502:check_and_send_daily`, `555:porneste_planificator`, `598:push_vapid_public`, `606:push_subscribe`, `625:push_unsubscribe`, `636:push_tokens`, `671:push_setari_get`, `677:push_setari_put`, `696:push_status`, `710:push_test`, `727:push_action`
 
-## blueprints/tasks.py (1079 linii)
+## blueprints/tasks.py (852 linii)
 
-`18:_skip_weekend`, `28:_next_recurrence_date`, `53:_spawn_recurring_task`, `81:_spawn_recurring_global_task`, `119:get_tasks`, `166:create_task`, `210:update_task`, `280:delete_task`, `301:get_subtasks`, `312:create_subtask`, `335:update_subtask`, `350:delete_subtask`, `374:_sfera_or_none`, `386:norm_ora`, `413:get_global_tasks`, `493:create_global_task`, `537:get_global_task`, `552:update_global_task`, `628:delete_global_task`, `658:_resolve_today`, `667:_agenda_item`, `705:get_agenda_today`, `772:get_agenda_candidates`, `827:reorder_agenda`, `855:_span_intersects`, `868:get_plan`
+`18:_skip_weekend`, `28:_next_recurrence_date`, `53:_spawn_recurring_task`, `81:_spawn_recurring_global_task`, `119:get_tasks`, `166:create_task`, `210:update_task`, `280:delete_task`, `301:get_subtasks`, `312:create_subtask`, `335:update_subtask`, `350:delete_subtask`, `374:_sfera_or_none`, `386:norm_ora`, `413:get_global_tasks`, `493:create_global_task`, `537:get_global_task`, `552:update_global_task`, `628:delete_global_task`, `658:_resolve_today`, `667:_agenda_item`, `705:get_agenda_today`, `772:get_agenda_candidates`, `827:reorder_agenda`
 

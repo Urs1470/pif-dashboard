@@ -25,7 +25,34 @@ function aterizareInitiala() {
   return ATERIZARE_TELEFON
 }
 
-const _aterizare = aterizareInitiala()
+// RUTELE CARE AU PLECAT NU DUC IN GOL.
+//
+// `resolveRoute` intoarce `null` pentru o cale necunoscuta, iar `App` nu
+// randeaza atunci NIMIC: pagina alba, fara nicio explicatie. Iar caile vechi
+// chiar mai sosesc dupa ce ruta a fost scoasa — dintr-un semn de carte, din
+// aplicatia de pe telefon (care isi tine ultima ruta si o cere la pornire) sau
+// dintr-o notificare mai veche.
+//
+// Rescrierea se face AICI, langa aterizare si din acelasi motiv: cu
+// `replaceState`, INAINTE de prima citire a hash-ului. Deci pagina buna se
+// deschide direct, fara sa clipeasca una goala, si fara sa lase in istoric o
+// treapta pe care „inapoi" s-ar intoarce tot in gol.
+//
+// `/plan` -> `/calendar`: Planificatorul a fost scos pe 2026-08-26 (Ion, „vom
+// ramane doar cu calendar"), iar taskurile zilei se citesc acum in panoul
+// Calendarului — deci calea veche duce exact la raspunsul ei.
+const MUTATE = { '/plan': '/calendar' }
+
+function rutaMutata() {
+  if (typeof window === 'undefined') return null
+  const brut = getRaw()
+  if (!brut) return null
+  const [cale, rest] = [brut.split('?')[0], brut.includes('?') ? brut.slice(brut.indexOf('?')) : '']
+  const dest = MUTATE[cale]
+  return dest ? dest + rest : null
+}
+
+const _aterizare = rutaMutata() || aterizareInitiala()
 if (_aterizare) {
   try { window.history.replaceState(null, '', '#' + _aterizare) }
   catch (_) { window.location.hash = '#' + _aterizare }

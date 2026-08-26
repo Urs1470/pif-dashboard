@@ -238,7 +238,6 @@ FERESTRE = [
     dict(nume='task-proiect', ruta='/projects', unde='telefon',
          pasi=[('sel', '.pcard'), ('sel', '.dock-fab')]),
     dict(nume='zi-calendar', ruta='/calendar', unde='telefon', pasi=[('sel', '.zi')]),
-    dict(nume='export-pdf', ruta='/plan', unde='ambele', pasi=[('text', 'ExportPDF')]),
 ]
 
 CUVINTE_RENUNTARE = ('nuleaz', 'enun', 'napoi')

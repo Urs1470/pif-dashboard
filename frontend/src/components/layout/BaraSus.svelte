@@ -44,7 +44,6 @@
     { path: '/', label: 'Acasă' },
     { path: '/projects', label: 'Proiecte' },
     { path: '/tasks', label: 'Taskuri' },
-    { path: '/plan', label: 'Planificator' },
     { path: '/calendar', label: 'Calendar' },
     { path: '/departament', label: 'Departament' },
     { path: '/calculator', label: 'Calculator' },

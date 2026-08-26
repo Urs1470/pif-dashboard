@@ -33,7 +33,6 @@
     // Vederea personala nu are loc in Dock (plin la cinci pe telefon) — paleta
     // e drumul ei de rezerva, pe langa comutatorul de pe /tasks.
     { label: 'Taskuri personale', path: '/tasks?sfera=personal', solid: 'tasks', keywords: 'personal acasa cumparaturi in afara jobului' },
-    { label: 'Planificator', path: '/plan', solid: 'plan', keywords: 'plan gantt planificator perioade' },
     { label: 'Calendar', path: '/calendar', solid: 'calendar', keywords: 'calendar unde sunt deplasare perioade zile teren replanifica' },
     // Departament lipsea de aici. Pe desktop nu se vedea, fiindca era in Dock;
     // pe telefon Dock-ul tine acum doar cinci lucruri, deci paleta e SINGURUL

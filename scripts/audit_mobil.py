@@ -58,7 +58,6 @@ RUTE = [
     ('/', 'Acasa'),
     ('/projects', 'Proiecte'),
     ('/tasks', 'Taskuri'),
-    ('/plan', 'Planificator'),
     ('/calendar', 'Calendar'),
     ('/departament', 'Departament'),
     ('/calculator', 'Calculator'),
@@ -80,11 +79,6 @@ PRAG_TINTA = 40      # sub atat raportam; tinta dorita e --tap-min (44)
 # Ce stim ca e sub prag CU BUNA STIINTA. Tine lista scurta si scrie MOTIVUL —
 # altfel auditul devine o lista de exceptii si nu mai spune nimic.
 ACCEPTATE = {
-    # Reper de o zi in Ganttul din Planificator. Pe 14 zile o zi are ~22px, deci
-    # doua repere alaturate s-ar acoperi la 44px: ai schimba o tinta mica pe una
-    # gresita. Ratarea nu costa nimic — reperul doar sare la randul taskului din
-    # lista de dedesubt, iar acel rand e cat toata latimea.
-    'mt-pin': 'reper de o zi in Gantt; la 44px reperele din zile alaturate s-ar suprapune',
     # Doar informativ in rezumat — logica sta in iesirea_randului(): cadrele
     # animatiei de iesire nu se numara in medii headless (acceptat 2026-08-04).
     'cadre-iesire': 'Chromium headless taie tranzitia de iesire la 1-2 cadre; pe hardware real e vizibila',
@@ -476,168 +470,6 @@ def gesturi(ctx, baza):
     return probleme
 
 
-def planificator_pe_telefon(ctx, baza):
-    """Grila de luna si lista zilei alese chiar se randeaza, CU DATE.
-
-    DE CE EXISTA, si merita citit inainte de a scurta functia asta.
-
-    Pe 2026-08-17 Planificatorul de pe telefon a plecat in producţie BLOCAT: lista
-    zilei se construia din benzile BRUTE (`plan.lanes`) in loc de cele decorate
-    (`views`), iar `perioadaDeAratat` face `lane.impl.length` pe fiecare card —
-    `impl` exista doar pe cele decorate. Prima randare arunca `TypeError` si pagina
-    rămânea goala. Ion: „planificatorul e stricat, se blocheaza aplicatia cand intru
-    pe el."
-
-    TOATE cele cinci audituri erau verzi, inclusiv `smoke_ui`, care CHIAR ascultă
-    `pageerror`. N-au prins-o pentru un motiv simplu: cardurile se randeaza numai
-    cand ziua selectata are taskuri, iar ziua selectata implicita e AZI. In baza de
-    test nu era niciun task scadent azi, deci bucla nu s-a executat nici o data si
-    linia care arunca n-a fost atinsa. Un ecran care se randeaza gol trece orice
-    test care intreaba „s-a randat?".
-
-    Deci verificarea nu e „exista grila", e: alege o zi care ARE ceva si cere ca
-    randurile sa apara. Fara asta, orice cod care cade doar pe drumul cu date poate
-    ajunge din nou pe telefonul lui Ion cu tot suita verde in urma lui.
-    """
-    out('--- planificator pe telefon (390x844) ---')
-    probleme = 0
-    erori = []
-    page = ctx.new_page()
-    page.on('pageerror', lambda e: erori.append(str(e).split('\n')[0]))
-    page.set_viewport_size({'width': 390, 'height': 844})
-    page.goto(baza + '/#/plan', wait_until='load')
-
-    def zi(cond, mesaj, detaliu=''):
-        nonlocal probleme
-        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
-        if not cond:
-            probleme += 1
-
-    # BAZA GOALA NU E O CADERE. Cu nimic planificat, Planificatorul arata (corect)
-    # starea goala, iar `.mlist` — deci si grila — nu se randeaza deloc. Fara
-    # distinctia asta proba pica pe orice masina care n-a tras inca baza de pe
-    # server (`scripts/sync_db_from_server.sh`), adica raporteaza „stricat" pentru
-    # un ecran care se poarta exact cum trebuie.
-    #
-    # Distinctia e cea din docstring, doar aplicata invers: nu „s-a randat ceva?",
-    # ci „daca AVEM ce planifica, apare grila?". Cand n-avem, se SARE si se spune
-    # de ce — un verde tacut pe o baza goala ar fi exact esecul de care se teme
-    # fisierul asta.
-    try:
-        page.wait_for_selector('.mgrila', timeout=15000)
-    except Exception as e:
-        gol = page.query_selector('.mlist') is None and page.query_selector('.empty-state, [class*="empty"]') is not None
-        if gol:
-            out('  SARI  nimic planificat in fereastra — grila nici nu se randeaza (baza goala)')
-            page.close()
-            out()
-            return probleme
-        zi(False, 'grila de luna se randeaza', str(e).split('\n')[0])
-        page.close()
-        out()
-        return probleme
-    page.wait_for_timeout(1400)
-
-    # Patru saptamani intregi, luni-prima. 28 exact: o grila cu 27 sau 29 de celule
-    # inseamna ca alinierea de luni s-a rupt, si atunci coloanele mint despre ziua
-    # saptamanii — cel mai prost fel de greseala intr-un calendar, fiindca arata bine.
-    n = page.eval_on_selector_all('.mg-cel', 'e => e.length')
-    zi(n == 28, 'grila are patru saptamani intregi (28 de celule)', n)
-    capete = page.eval_on_selector_all('.mg-zi-cap', 'e => e.map(x => x.textContent.trim())')
-    zi(len(capete) == 7, 'sapte capete de zi', capete)
-    zi(capete[:1] == ['Lu'], 'saptamana incepe LUNI', capete)
-    # PATRU semne de cand incarcarea se numara: un task · restant · facut ·
-    # deplasare. Weekendul a plecat din legenda (se deduce din poziţia in
-    # saptamana). Cifra e verificata, nu doar „exista o legenda": o legenda care
-    # rămâne in urma desenului e mai rea decat niciuna.
-    zi(page.locator('.mg-legenda .mgl').count() == 4, 'legenda are patru semne',
-       page.locator('.mg-legenda .mgl').count())
-    zi(page.locator('.mg-cap-zi').count() == 1, 'capul zilei alese e pe ecran')
-
-    # Celula selectata: EXACT una. Doua ar insemna ca resetarea celei vechi nu s-a
-    # facut, si n-ai mai sti ce zi citesti dedesubt.
-    zi(page.locator('.mg-cel.activa').count() == 1, 'exact o celula e selectata',
-       page.locator('.mg-cel.activa').count())
-
-    # ZIUA CU DATE — inima testului. `.mg-seg` se randeaza doar pe zilele cu
-    # taskuri, deci el E semnul c-avem ce apasa.
-    # (Era `.mg-bara`, bara unica a carei latime spunea incarcarea. A devenit
-    # segmente numarabile pe 2026-08-17, la cererea lui Ion — iar testul a semnalat
-    # singur schimbarea, prin „SARI", in loc s-o treaca in tacere.)
-    incarcate = page.locator('.mg-cel:has(.mg-seg)')
-    if incarcate.count() == 0:
-        # Nu se numara ca problema: poate chiar nu exista taskuri in fereastra. Dar
-        # se SPUNE, ca un „OK" verde sa nu ascunda faptul c-am sarit peste tot ce
-        # conteaza aici (regula „no silent caps").
-        out('  SARI  nicio zi cu taskuri in grila — drumul cu date NU s-a verificat')
-    else:
-        incarcate.first.click()
-        page.wait_for_timeout(1500)
-        carduri = page.eval_on_selector_all('.mgroup', 'e => e.length')
-        randuri = page.eval_on_selector_all('.mrow', 'e => e.length')
-        zi(carduri > 0, 'ziua cu taskuri randeaza carduri de proiect', carduri)
-        zi(randuri > 0, 'ziua cu taskuri randeaza randuri de task', randuri)
-        # Randul poarta gestul comun: fara pista de stanga, glisarea n-ar avea ce
-        # arata (aici era panoul de 118px, scos pe 2026-08-17).
-        zi(page.locator('.mrow .gl-pista-s').count() > 0,
-           'randul are pista „Planifică", nu panou de actiuni')
-        zi(page.locator('.gl-actiuni').count() == 0,
-           'panoul de actiuni de 118px nu mai exista')
-        # Numarul din capul zilei e cel al randurilor de dedesubt, nu al ferestrei.
-        nr_cap = (page.locator('.mg-cz-n').first.text_content() or '').strip()
-        zi(nr_cap == str(randuri), 'capul zilei numara exact randurile aratate',
-           '%s vs %s randuri' % (nr_cap, randuri))
-
-        # SEGMENTELE SE NUMARA. Rostul lor e sa poti spune „doua" sau „cinci" fara
-        # sa deschizi ziua, deci relatia dintre cate segmente vezi si cate randuri
-        # sunt trebuie sa se ţină. Plafonul e 4: peste atat ultimul segment devine
-        # „mai mult" (`.plus`), si ATUNCI numarul de segmente nu mai egaleaza
-        # randurile — dar plafonul trebuie sa fie ANUNTAT, altfel patru segmente ar
-        # insemna „exact patru" pentru o zi cu noua.
-        activa = page.locator('.mg-cel.activa')
-        n_seg = activa.locator('.mg-seg').count()
-        n_plus = activa.locator('.mg-seg.plus').count()
-        if randuri <= 4:
-            zi(n_seg == randuri, 'un segment per intrare (sub plafon)',
-               '%s segmente vs %s randuri' % (n_seg, randuri))
-            zi(n_plus == 0, 'sub plafon nu se marcheaza „mai mult"')
-        else:
-            zi(n_seg == 4, 'la plafon se desenează patru segmente', n_seg)
-            zi(n_plus == 1, 'plafonul e ANUNTAT (ultimul segment e „mai mult")')
-
-    # PERIOADA NU ARATA CA UN TASK. Ion: „ar trebui segmente de implementare sa se
-    # deosebeasca de taskuri." Verificarea nu e „exista banda" — e ca banda si
-    # segmentul sunt DOUA forme diferite: banda se intinde pe latime (continua, o
-    # fasie de timp), segmentul e o bucata de 7px. Daca cineva le-ar aduce vreodata
-    # la aceeasi geometrie, deosebirea ar dispărea fara sa crape nimic.
-    banda = page.locator('.mg-banda').first
-    if banda.count() == 0:
-        out('  SARI  nicio perioada de implementare in grila — deosebirea NU s-a verificat')
-    else:
-        seg = page.locator('.mg-seg').first
-        cb = banda.bounding_box()
-        cs = seg.bounding_box() if seg.count() else None
-        zi(cb and cb['width'] >= 20, 'banda de perioada se intinde pe latime', cb)
-        if cs:
-            zi(cb['width'] > cs['width'] * 2,
-               'banda si segmentul sunt DOUA forme, nu una',
-               'banda %s vs segment %s' % (round(cb['width']), round(cs['width'])))
-
-    # Ziua goala are o propozitie, nu o pagina taiata.
-    goale = page.locator('.mg-cel:not(:has(.mg-bara))')
-    if goale.count():
-        goale.first.click()
-        page.wait_for_timeout(1200)
-        zi(page.locator('.mg-liber').count() == 1 or page.eval_on_selector_all('.mgroup', 'e => e.length') > 0,
-           'ziua goala spune ca e goala')
-
-    zi(not erori, 'nicio excepţie in Planificator pe telefon', erori[:3])
-
-    page.close()
-    out()
-    return probleme
-
-
 def lista_de_facut(ctx, baza):
     """Ce face ca /tasks sa fie o lista DE FACUT, nu un depozit: gruparea dupa
     termen, adaugarea cu zi dintr-un singur gest, mutarea din glisare si
@@ -948,9 +780,10 @@ def dockul_pe_telefon(ctx, baza):
     ascundea. Asta se prinde doar deruland si masurand.
 
     Si numarul de tinte conteaza: daca cineva readauga rute in `PE_TELEFON` fara sa
-    scada marimea, dock-ul iese din ecran. PATRU de cand Ion a mutat Planificatorul in
-    foaia „Mai mult" (2026-08-24): Acasa, Taskuri, Calendar + „Mai mult". La 56px de
-    tinta incapeau cinci; patru incap cu si mai mult aer."""
+    scada marimea, dock-ul iese din ecran. PATRU: Acasa, Taskuri, Calendar + „Mai
+    mult". La 56px de tinta incapeau cinci; patru incap cu si mai mult aer.
+    (Al patrulea slot a fost al Planificatorului pana pe 2026-08-24, cand a coborat
+    in foaie; pe 2026-08-26 pagina a plecat cu totul.)"""
     out('--- dock pe telefon ---')
     probleme = 0
     page = ctx.new_page()
@@ -1608,7 +1441,6 @@ def main():
             if not arg.fara_gesturi:
                 probleme += perioadele_se_trag(browser, baza)
                 probleme += gesturi(ctx, baza)
-                probleme += planificator_pe_telefon(ctx, baza)
                 probleme += lista_de_facut(ctx, baza)
                 probleme += azi_peste_tot(ctx, baza)
                 probleme += iesirea_randului(ctx, baza)

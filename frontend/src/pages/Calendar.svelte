@@ -38,9 +38,10 @@
   // eticheta pe primul lui rand si lucrarile inauntru.
   import { onMount, onDestroy, tick } from 'svelte'
   import { fade, slide } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download, Repeat } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router, preincarca } from '../lib/router.svelte.js'
+  import { focusHref } from '../lib/focus.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
   import { motion, motionDuration, alunecare, sosire, DUR_BASE, EASE } from '../lib/motion.svelte.js'
   // `PROJECT_STATUS_LABELS` a plecat cu C14: sertarul „fara perioada" contine prin
@@ -103,12 +104,23 @@
    *  cel prin care a venit. Acum foaia coboara intai (drumul ei de iesire,
    *  220ms), iar pagina pleaca abia dupa ce a plecat ea. Ruta se incalzeste in
    *  aceeasi clipa, deci cele 220ms nu se aduna la asteptare, o acopera. */
-  function mergiLaProiect(id) {
-    const cale = `/projects/${id}`
+  function mergiLa(cale) {
     if (!foaieZi) { navigate(cale); return }
     preincarca(cale)
     foaieZi = false
     setTimeout(() => navigate(cale), motionDuration(DUR_BASE))
+  }
+  const mergiLaProiect = (id) => mergiLa(`/projects/${id}`)
+
+  /** Taskul se deschide ACOLO UNDE STA — pe pagina proiectului lui, sau in
+   *  /tasks daca e global — cu `?focus=`, deci randul se aduce in centru si se
+   *  hasureaza la sosire. Acelasi drum pe care il facea Planificatorul; el a
+   *  plecat, drumul ramane. Si aceeasi iesire in doi timpi ca la proiect: pe
+   *  telefon foaia coboara intai, pagina pleaca dupa ea. */
+  function mergiLaTask(t) {
+    mergiLa(t.tip === 'proiect' && t.proiect_id
+      ? focusHref(`/projects/${t.proiect_id}`, 'task', t.id)
+      : focusHref('/tasks', 'global', t.id))
   }
   // Coloana panoului exista doar cand are ce arata. Cand nu, grila e pe toata
   // latimea — ceea ce inseamna 176px pe zi in loc de 127, adica exact pragul de
@@ -295,6 +307,13 @@
 
   const selectate = $derived(aleZilei(selectata))
   const grupuriSelectate = $derived(grupurile(selectata))
+
+  // TASKURILE ZILEI ALESE. Vin din acelasi raspuns ca perioadele (`/api/calendar`
+  // le intoarce pe toate din fereastra), deci schimbarea zilei nu costa o cerere.
+  // `?.taskuri || []`: un raspuns ramas in cache de dinaintea campului nu are de
+  // unde sa-l aiba, iar panoul trebuie sa se randeze oricum.
+  const taskuriZilei = $derived(
+    (data?.taskuri || []).filter(t => (t.data_scadenta || '').slice(0, 10) === selectata))
 
   // ===== asezarea pe benzi =====
   // Ce s-a schimbat si de ce: pana acum ziua arata UN bloc per client, etichetat
@@ -1739,10 +1758,16 @@
                 {/if}
               </div>
             {/each}
-          {:else}
+          {:else if !taskuriZilei.length}
             <!-- O zi goala nu trebuie sa fie un ecran gol. Intrebarea reala nu e
                  „ce e azi", ci „cand ies data viitoare" — mai ales ca lunile
-                 intregi sunt libere si altfel ai naviga in gol ca s-o afli. -->
+                 intregi sunt libere si altfel ai naviga in gol ca s-o afli.
+                 „LIBER" INSEAMNA ACUM SI FARA TASKURI, nu doar fara perioade.
+                 Inainte cuvantul se referea la o singura jumatate a zilei: pe 25
+                 august 2026 panoul scria „Liber." peste trei taskuri scadente.
+                 De cand ziua isi tine amandoua jumatatile, cuvantul trebuie sa le
+                 acopere pe amandoua — altfel ramane exact minciuna de dinainte,
+                 doar cu raspunsul scris cu un centimetru mai jos. -->
             <div class="gol">Liber.</div>
             {#if ceUrmeaza}
               <button class="urm" onclick={() => { selectata = ceUrmeaza.start; ancoreazaPe(ceUrmeaza.start) }}>
@@ -1757,6 +1782,38 @@
             {:else}
               <div class="gol">Trage un proiect din „Proiecte fără perioadă" ca să-l planifici aici.</div>
             {/if}
+          {/if}
+
+          <!-- CE AI DE FACUT IN ZIUA ASTA.
+               Jumatatea care statea in Planificator. E o LISTA, nu o vedere:
+               fara bare, fara orizonturi, fara grupare pe proiect — Ion,
+               2026-08-26: „nu am nevoie atat de vizualizare taskuri". Randul
+               spune ce ai de facut si al cui e, iar atingerea il deschide acolo
+               unde taskul chiar traieste.
+               Sta DUPA perioade fiindca asta e ordinea intrebarilor: intai unde
+               esti, apoi ce faci acolo. -->
+          {#if taskuriZilei.length}
+            <div class="pan-h tsk-cap">
+              Ce ai de făcut <span class="cnt">{taskuriZilei.length}</span>
+            </div>
+            <div class="tsk-lista">
+              {#each taskuriZilei as t (t.tip + ':' + t.id)}
+                <button class="tsk" onclick={() => mergiLaTask(t)}
+                        title="Deschide taskul{t.proiect_nume ? ' în ' + t.proiect_nume : ''}">
+                  <span class="tsk-c">
+                    <span class="tsk-t">{t.titlu}</span>
+                    <!-- Al cui e taskul. La cele globale, categoria tine locul
+                         proiectului — acelasi rol, alt nume, ca in sertarul din
+                         Planificator. Cand n-are nici categorie, randul ramane pe
+                         o linie: un rand gol sub titlu ar arata ca un camp lipsa. -->
+                    {#if t.proiect_nume}<span class="tsk-s">{t.proiect_nume}</span>
+                    {:else if t.categorie}<span class="tsk-s">{t.categorie}</span>{/if}
+                  </span>
+                  {#if t.recurenta}<span class="tsk-rep" title="Se repetă: {t.recurenta}"><Repeat size={12} /></span>{/if}
+                  <ChevronRight size={15} class="tsk-chev" />
+                </button>
+              {/each}
+            </div>
           {/if}
         </div>
         {/key}
@@ -2443,6 +2500,33 @@
   :global(.modal:has(.pan.in-foaie) .modal-title) { display: none; }
   .pan-hint { font-size: var(--font-small); color: var(--text-dim); margin: var(--space-xs) 0 var(--space-sm); }
   .gol { font-size: var(--font-small); color: var(--text-dim); }
+
+  /* ===== CE AI DE FACUT — lista taskurilor zilei =====
+     Randurile sunt DELIBERAT mai usoare decat cutiile lucrarilor de deasupra:
+     acolo se si actioneaza (bifezi perioada, o muti, o scoti), aici doar te uiti
+     si pleci. Doua greutati egale pe acelasi panou ar cere ochiului sa aleaga
+     intre ele de fiecare data. De aceea: fara chenar, fara tenta, doar o linie
+     intre randuri — si un chevron care spune ca randul duce undeva. */
+  .tsk-cap { margin-top: var(--space-md); padding-top: var(--space-12); border-top: 1px solid var(--border); }
+  .tsk-lista { display: flex; flex-direction: column; margin-top: var(--space-6); }
+  .tsk {
+    display: flex; align-items: center; gap: var(--space-sm); width: 100%; text-align: left;
+    padding: var(--space-sm) 0; background: none; border: none;
+    border-bottom: 1px solid var(--border); color: var(--text); cursor: pointer;
+    transition: var(--transition-colors);
+  }
+  .tsk:last-child { border-bottom: none; }
+  .tsk:hover { color: var(--accent-deep); }
+  .tsk-c { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+  .tsk-t { font-size: var(--font-rand); font-weight: var(--w-row); line-height: var(--lh-snug); }
+  .tsk-s { font-size: var(--font-small); color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tsk-rep { display: inline-flex; color: var(--text-dim); flex: none; }
+  .tsk :global(.tsk-chev) { color: var(--text-dim); flex: none; }
+
+  /* In foaie randul e o tinta de deget, ca peste tot pe telefon. */
+  @media (max-width: 768px) {
+    .tsk { min-height: var(--tap-sheet); }
+  }
 
   .urm { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; margin-top: var(--space-10);
          padding: 9px 11px; border-radius: var(--radius-md); border: 1px solid var(--border);

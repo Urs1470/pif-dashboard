@@ -12,8 +12,8 @@ deschizi paginile pe date reale.
 
 De aceea testul nu se multumeste cu rutele: trece prin TOATE proiectele (ca sa
 atinga ramurile dupa tip/date), prin toate taburile paginii de proiect, si
-repeta totul pe latime de telefon (Planificatorul are markup exclusiv mobil, pe
-care desktopul nu-l randeaza niciodata).
+repeta totul pe latime de telefon (Calendarul isi comuta panoul zilei intr-o
+foaie sub 768px — markup pe care desktopul nu-l randeaza niciodata).
 
 RULARE
     python scripts/smoke_ui.py            # tot: rute + proiecte, desktop + mobil
@@ -59,7 +59,6 @@ RUTE = [
     # Vederea personala e un query pe aceeasi ruta — fara intrarea explicita,
     # smoke-ul n-ar vizita-o niciodata.
     ('/tasks?sfera=personal', 'Taskuri personale'),
-    ('/plan', 'Planificator'),
     ('/calendar', 'Calendar'),
     ('/departament', 'Departament'),
     ('/calculator', 'Calculator'),

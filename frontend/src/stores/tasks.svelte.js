@@ -7,20 +7,21 @@ import { preia, dinCache, uita } from '../lib/cache.js'
 // urmatoarea reincarcare. Pus in mutatii, nu la apelanti — jumatate din ele
 // (bifarea, mutarea termenului) isi scriu starea local si NU mai reincarca.
 // UN TASK SE VEDE IN TREI LOCURI, deci o scriere le invalideaza pe toate trei.
-// `/api/plan` e cel usor de uitat: Planificatorul isi ia randurile de acolo, iar
-// mutarile lui cheama `updateTask`/`updateGlobalTask` si apoi `loadPlan()` — care
-// de acum se seedeaza SINCRON din memorie. Fara linia asta, o bara trasa cu
-// degetul ar clipi inapoi in pozitia veche exact in clipa in care ridici degetul.
+// `/api/calendar` a luat locul lui `/api/plan` (Planificatorul a plecat pe
+// 2026-08-26): de cand panoul zilei scrie si „Ce ai de făcut", raspunsul
+// calendarului CONTINE taskuri, deci imbatraneste la fiecare scriere pe ele.
+// E linia cea mai usor de uitat, si acum si cea mai vizibila: bifezi un task,
+// deschizi Calendarul, si ziua ti-l arata inapoi nefacut.
 function uitaLista() {
   uita('/api/global-tasks')
-  uita('/api/plan')
+  uita('/api/calendar')
 }
 // Taskurile de PROIECT nu-si stiu proiectul aici (`updateTask` primeste doar
 // id-ul taskului), deci prefixul e cel larg. Costa o cerere in plus la
 // urmatoarea intrare pe /projects; alternativa ar fi o lista de proiecte care
 // arata alt numar de taskuri decat are.
 function uitaTaskuriProiect() {
-  uita('/api/plan')
+  uita('/api/calendar')
   uita('/api/proiecte')
 }
 // SUBTASKURILE SUNT DATE DE RAND, nu doar continut al panoului desfacut.

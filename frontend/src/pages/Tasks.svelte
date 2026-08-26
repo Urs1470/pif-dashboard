@@ -1703,8 +1703,8 @@
                z-index: 1; border-radius: 0; }
     /* FARA `will-change` PERMANENT. Il tinea fiecare rand din lista, deci pe 40 de
        taskuri erau 40 de straturi de compozitare pastrate tot timpul, si cand nu
-       atingeai nimic. Regula casei o scrie chiar proiectul, in `lib/tragereTimeline.js`:
-       `will-change` DOAR cat tine gestul. Il pune si il scoate `lib/glisare.js`. */
+       atingeai nimic. Regula casei: `will-change` DOAR cat tine gestul —
+       il pune si il scoate `lib/glisare.js`. */
     .trow-wrap.deschis .gl-fata { background: var(--bg-elevated); }
     /* `:global(...)` pe clasa pusa din JS, NU pe intreg selectorul.
        Svelte NU se multumeste sa avertizeze „Unused CSS selector": TAIE regula din

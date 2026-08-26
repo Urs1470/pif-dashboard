@@ -198,8 +198,8 @@ window.__continut = 0;
 })();
 """
 
-RUTE_TAB = [('/', 'Acasă'), ('/tasks', 'Taskuri'), ('/plan', 'Planificator'),
-            ('/calendar', 'Calendar')]
+RUTE_TAB = [('/', 'Acasă'), ('/tasks', 'Taskuri'), ('/calendar', 'Calendar'),
+            ('/projects', 'Proiecte')]
 
 
 def ruleaza_taburi(page, baza):
@@ -264,8 +264,7 @@ def ruleaza_taburi(page, baza):
 #     Reincarcarea se face cu `reload()`.
 #  2. Scrierea pe disc e amanata pe rand liber, deci intre prima incarcare si
 #     reload trebuie lasat timp; altfel testezi un disc gol.
-RUTE_REPORNIRE = [('#/plan', 'Planificator'), ('#/projects', 'Proiecte'),
-                  ('#/calendar', 'Calendar')]
+RUTE_REPORNIRE = [('#/projects', 'Proiecte'), ('#/calendar', 'Calendar')]
 
 
 def ruleaza_repornire(page, baza):

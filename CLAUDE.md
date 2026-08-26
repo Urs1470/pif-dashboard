@@ -36,14 +36,14 @@ csrf.py labels.py   # CSRF double-submit; etichetele de status
 
 blueprints/
   projects.py       # /api/proiecte/* — CRUD, perioade, snapshot, import debrief, export
-  tasks.py          # taskuri de proiect + globale + subtaskuri + agenda + /api/plan
+  tasks.py          # taskuri de proiect + globale + subtaskuri + agenda
   admin.py          # /api/calendar, /api/search, /api/stats, export ICS/PDF, backup
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
   push.py           # Web Push: o notificare pe zi per task personal
   app_update.py     # versiunea si APK-ul aplicatiei Android
 
 frontend/src/       # SPA Svelte 5 -> static/dist/ (Vite)
-  pages/            # Home, Projects, ProjectDetail, Tasks, Plan, Calendar, Calculator
+  pages/            # Home, Projects, ProjectDetail, Tasks, Calendar, Calculator
   components/ui/    # librarie proprie — FOLOSESTE-O, nu reinventa
   lib/driveCalc.js  # motorul Calculatorului (4.400 linii)
 frontend/android/   # Capacitor: WebView peste site + notificari native
@@ -72,8 +72,15 @@ Regulile care nu se deduc din cod uitandu-te la el, si care se strica tacut daca
    iar o valoare necunoscuta da 400, nu se corecteaza tacit.
 
 **Proprietatea suprafetelor.** Calendarul detine **perioadele** (se creeaza, se muta, se scot
-doar de acolo). Planificatorul detine **taskurile**; benzile de perioada sunt context. Pagina
-proiectului le detine pe amandoua.
+doar de acolo) si **arata** taskurile zilei alese, in panoul ei — o lista, nu o vedere: le
+deschide acolo unde stau, nu le editeaza. Taskurile se editeaza in `/tasks`, pe „Astazi" si in
+pagina proiectului. Pagina proiectului le detine pe amandoua.
+
+*Planificatorul (`/plan`, swimlane pe proiecte) a fost scos pe 2026-08-26, la cererea lui Ion:
+„vom ramane doar cu calendar, nu am nevoie atat de vizualizare taskuri". Ce ramasese de neinlocuit
+— „ce am de facut in ziua X" — a intrat in panoul zilei din Calendar. Ruta veche redirecteaza
+(vezi `MUTATE` in `lib/router.svelte.js`). Vezi
+`docs/decizii/2026-08-26-planificatorul-scos-ziua-intreaga.md`.*
 
 **Vocabular:** *perioada* = interval (unde esti), *termen* = punct (pana cand). „Data" nu se
 foloseste ca eticheta.

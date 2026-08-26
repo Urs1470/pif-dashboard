@@ -293,7 +293,7 @@ def main():
 
             print('')
             print('=== DERULARE, pe fiecare pagina ===')
-            for ruta in ['/', '/tasks', '/projects', '/plan', '/calendar']:
+            for ruta in ['/', '/tasks', '/projects', '/calendar']:
                 a.mergi(ruta)
                 page.evaluate('window.__cr()')
                 x = a.lat // 2

@@ -342,14 +342,35 @@ def sfera_leak_test():
         else:
             log("pass", "agenda/candidates excludes personal")
 
-        # 5) Planificatorul (banda Globale + backlog) e doar munca
-        plan = s.get(f"{BASE_URL}/api/plan", timeout=5).json()
-        plan_ids = {t['id'] for lane in plan.get('lanes', []) for t in lane.get('tasks', [])}
-        plan_ids |= {t['id'] for t in plan.get('backlog', [])}
-        if pid in plan_ids or pid2 in plan_ids:
-            log("fail", "sfera: personal LEAKS into /api/plan")
+        # 5) Taskurile zilei din Calendar sunt doar munca.
+        #    Proba statea pe `/api/plan`, ruta Planificatorului — scos pe
+        #    2026-08-26. Invariantul nu a plecat cu el: `sfera` ramane opt-in la
+        #    citire, iar Calendarul e o suprafata de MUNCA. S-a mutat pe ruta care
+        #    hraneste acum panoul zilei, nu s-a sters.
+        #
+        #    CU MARTOR, si asta nu e prisos. O proba negativa („nu apare X") trece
+        #    si cand interogarea n-a intors NIMIC — fereastra gresita, alt camp,
+        #    ruta mutata. Exact felul de verde fals gasit pe 2026-08-26 in
+        #    `audit_mobil`, unde un gest care rata tinta confirma o afirmatie.
+        #    Deci: un task de MUNCA scadent azi trebuie sa APARA, iar cel personal
+        #    din aceeasi zi sa NU apara. Daca martorul lipseste, proba spune ca
+        #    n-a verificat, nu ca e bine.
+        #    `pid2` (fara termen) nu intra in socoteala: calendarul cere o data, deci
+        #    absenta lui n-ar dovedi nimic despre sfera.
+        r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
+                   json={"titlu": "__proba_sfera_martor_munca__", "sfera": "munca",
+                         "status": "to_do", "data_scadenta": today})
+        wid = r.json()['id'] if r.status_code == 201 else None
+        if wid:
+            created.append(wid)
+        cal = s.get(f"{BASE_URL}/api/calendar?start={today}&zile=7", timeout=5).json()
+        cal_ids = {t['id'] for t in cal.get('taskuri', [])}
+        if wid and wid not in cal_ids:
+            log("fail", "/api/calendar nu intoarce taskul de munca scadent azi — proba nu poate verifica sfera")
+        elif pid in cal_ids:
+            log("fail", "sfera: personal LEAKS into /api/calendar")
         else:
-            log("pass", "/api/plan excludes personal")
+            log("pass", "/api/calendar: munca da, personal nu")
 
         # 6) Recurenta pastreaza sfera (altfel taskul migreaza la munca la bifare)
         r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
