@@ -964,15 +964,28 @@ def calendar_view():
     """)
     de_decis = [dict(r) for r in cursor.fetchall()]
 
+    # „DE PLANIFICAT" INSEAMNA ACUM: N-A AVUT NICIODATA O PERIOADA.
+    #
+    # Conditia era „nicio zi DE AZI INAINTE", deci un proiect caruia i s-a facut
+    # deplasarea si care a ramas deschis — pentru PV-uri, pentru o vizita nedatata
+    # — se intorcea in sertar a doua zi dupa ce ai fost acolo. Sertarul se umplea
+    # cu lucruri care nu mai asteptau nimic, iar cele care chiar n-au fost
+    # planificate niciodata se pierdeau printre ele.
+    #
+    # Ion, 2026-08-27: „proiectele care au avut o perioada de implementare
+    # efectuata sa nu mai apara ca proiecte de planificat, doar cele care nu au
+    # avut deloc. Chiar daca s-a implementat o perioada si nu s-a inchis
+    # proiectul, voi mai adauga manual daca va trebui."
+    #
+    # Deci sertarul e o COADA DE INTRARE, nu o lista de restante: un proiect intra
+    # in el o singura data, si iese definitiv cand primeste prima zi. A doua
+    # deplasare se adauga din pagina proiectului sau tragand pe o zi — nu prin
+    # reaparitia lui aici.
     cursor.execute("""
         SELECT id AS proiect_id, nume, client, status, tip
         FROM proiecte p
         WHERE p.status NOT IN ('finalizat', 'anulat')
-          AND NOT EXISTS (
-            SELECT 1 FROM implementari i
-            WHERE i.proiect_id = p.id
-              AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
-          )
+          AND NOT EXISTS (SELECT 1 FROM implementari i WHERE i.proiect_id = p.id)
         ORDER BY p.status DESC, p.nume
     """)
     neplanificate = [dict(r) for r in cursor.fetchall()]

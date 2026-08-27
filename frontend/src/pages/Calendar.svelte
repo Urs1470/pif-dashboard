@@ -38,7 +38,7 @@
   // eticheta pe primul lui rand si lucrarile inauntru.
   import { onMount, onDestroy, tick } from 'svelte'
   import { fade, slide } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download, Repeat, CheckCircle2, MoveRight } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download, Repeat, CheckCircle2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router, preincarca } from '../lib/router.svelte.js'
   import { focusHref } from '../lib/focus.js'
@@ -1655,9 +1655,9 @@
                    sa citeasca nimic.
                    Sunt `aria-hidden`: pentru cititorul de ecran intervalul intreg
                    e deja scris in `aria-label`-ul benzii. -->
-              {#if !b.inceput}<span class="banda-sos" aria-hidden="true"><MoveRight size={13} strokeWidth={2.4} /></span>{/if}
+              {#if !b.inceput}<span class="banda-sos" aria-hidden="true">{@render sageata()}</span>{/if}
               <span class="banda-t">{b.span > 1 ? etichetaLucrare(b.p) : etichetaBara(b.p)}</span>
-              {#if !b.sfarsit}<span class="banda-plec" aria-hidden="true"><MoveRight size={13} strokeWidth={2.4} /></span>{/if}
+              {#if !b.sfarsit}<span class="banda-plec" aria-hidden="true">{@render sageata()}</span>{/if}
               {#if b.sfarsit}
                 <button class="maner dr" onpointerdown={(e) => apucaCapat(e, b, 'sfarsit')}
                         onclick={(e) => e.stopPropagation()}
@@ -1676,9 +1676,9 @@
                  class:sfarsit={f.sfarsit}
                  style="grid-row: {f.rand}; grid-column: {f.col} / span {f.span}; --c: {culoareLucrare(f.p)}; --i: {f.banda}"
                  aria-hidden="true">
-              {#if !f.inceput}<span class="banda-sos" aria-hidden="true"><MoveRight size={13} strokeWidth={2.4} /></span>{/if}
+              {#if !f.inceput}<span class="banda-sos" aria-hidden="true">{@render sageata()}</span>{/if}
               <span class="banda-t">{etichetaBara(f.p)}</span>
-              {#if !f.sfarsit}<span class="banda-plec" aria-hidden="true"><MoveRight size={13} strokeWidth={2.4} /></span>{/if}
+              {#if !f.sfarsit}<span class="banda-plec" aria-hidden="true">{@render sageata()}</span>{/if}
             </div>
           {/each}
         </div>
@@ -1715,6 +1715,19 @@
              („un detaliu, o componenta"), aici e doar aplicata mai sus.
              Titlul zilei ramane in snippet pe desktop; pe telefon il scrie foaia,
              prin `title`, ca sa stea pe mânerul ei. -->
+        <!-- SAGEATA DE CONTINUARE, PLINA (Ion, 2026-08-27: „fa o sageata plina
+             aceeasi culoare cu fontul scrisului alb").
+             Lucide n-are sageata plina — toate iconitele lui sunt contur — iar un
+             contur de 2.4px langa un text de 12/600 se citea mai slab decat el.
+             Deci e desenata aici: coada dreptunghiulara si varf triunghiular, un
+             singur `path` umplut cu `currentColor`, deci ia exact cerneala pe care
+             o are numele lucrarii in starea aia. -->
+        {#snippet sageata()}
+          <svg class="sg" viewBox="0 0 12 12" width="11" height="11" aria-hidden="true" focusable="false">
+            <path d="M0 4.7 H6 V2.2 L12 6 L6 9.8 V7.3 H0 Z" fill="currentColor" />
+          </svg>
+        {/snippet}
+
         {#snippet panouZi(cuTitlu)}
         {#key selectata}
         <div class="pan" class:in-foaie={!cuTitlu} in:sosire|local>
@@ -1970,19 +1983,16 @@
                2026-08-10): slide pe --dur-base, ca orice panou care isi face
                loc. `|local`, ca la navigarea intre rute sa nu se mai joace. -->
           <div class="pan" transition:slide|local={{ duration: motionDuration(DUR_BASE), easing: EASE }}>
-            <!-- „DE PLANIFICAT", nu „fara perioada" (Ion, 2026-08-10: „de ce la
-                 apex imi apare ca proiect fara perioada daca acolo a fost
-                 implementat deja si e aratat pe calendar?").
-                 Lista era corecta, NUMELE mintea: interogarea intoarce proiectele
-                 active fara nicio zi DE AZI INAINTE (`neplanificate` in
-                 admin.py) — un proiect caruia i s-a facut deplasarea, dar care
-                 ramane deschis pentru PV-uri sau o vizita nedatata, chiar n-are
-                 nimic planificat inainte si TREBUIE sa stea aici (e chiar
-                 scenariul v39). Dar el ARE perioade, in trecut, si se vad in
-                 grila — de unde contradictia.
-                 Numele spune acum ce face sertarul: sursa din care iei lucru si
-                 il pui pe o zi. Sertarul din Planificator tine ALTCEVA (taskuri
-                 fara termen), deci numele raman diferite. -->
+            <!-- „DE PLANIFICAT" — o COADA DE INTRARE, nu o lista de restante.
+                 Intra proiectele care n-au avut NICIODATA o perioada, si ies
+                 definitiv la prima zi primita (`neplanificate` in admin.py).
+                 Numele s-a schimbat pe 2026-08-10, cand intrebarea lui Ion („de
+                 ce la apex imi apare ca proiect fara perioada daca acolo a fost
+                 implementat deja?") a aratat ca NUMELE mintea. Pe 2026-08-27 s-a
+                 schimbat si REGULA, tot la cererea lui: un proiect caruia i s-a
+                 facut deplasarea nu se mai intoarce aici a doua zi, chiar daca a
+                 ramas deschis. A doua deplasare se adauga din pagina proiectului
+                 sau tragand proiectul pe o zi. -->
             <div class="pan-h">De planificat <span class="cnt">{data.neplanificate.length}</span></div>
             <div class="pan-hint">
               {#if asezare}Atinge ziua în care începe.{:else}Alege un proiect, apoi ziua. (Sau trage-l pe o zi.){/if}
@@ -2368,7 +2378,14 @@
   .chenar { position: relative; z-index: 0; align-self: start; pointer-events: none;
             box-sizing: border-box;
             margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) + var(--space-2xs));
-            height: calc(var(--n) * var(--h-banda));
+            /* CEI 3px SUNT SEPARAREA DINTRE DOUA CUTII (Ion, 2026-08-27).
+               Randul are 27, bara 24, iar cutia lua toata inaltimea randului —
+               deci capatul de jos al unei iesiri cadea EXACT pe capatul de sus al
+               celei de dedesubt: doua chenare de 1px lipite se citesc ca o linie
+               groasa intre doua camere ale aceleiasi cutii, nu ca doua iesiri.
+               Se intampla rar (doua deplasari suprapuse pe aceeasi zi), dar cand
+               se intampla nu se poate desface din privire. */
+            height: calc(var(--n) * var(--h-banda) - 3px);
             border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
             /* MUCHIA TAIATA SE SCOATE PRIN LATIME, NU PRIN `style: none`.
                `border-left: none` pare inofensiv, dar prescurtarea scrie TREI
@@ -2397,7 +2414,7 @@
      2026-08-27). Continuarea o spun sagetile, nu marimea cutiei. */
   .chenar:not(.rand-et) {
     margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) - 5px);
-    height: calc(var(--n) * var(--h-banda) + 7px);
+    height: calc(var(--n) * var(--h-banda) + 4px);
   }
   .chenar.inceput { margin-left: 3px; border-left: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
                     border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
@@ -2551,7 +2568,12 @@
      usor sub 1: sageata e un semn de margine, nu al doilea subiect al benzii.
      PLECAREA e impinsa la capatul din dreapta (`margin-left: auto`), SOSIREA sta
      prima si isi ia un mic aer dupa ea. */
-  .banda-plec, .banda-sos { display: inline-flex; flex: none; opacity: 0.85; }
+  /* CERNEALA E A TEXTULUI, nu a celulei. Sagetile sunt FRATI cu `.banda-t`, nu
+     copii, deci mosteneau culoarea benzii (adica `--text` de pe pagina) si ieseau
+     inchise pe fillul plin, langa un nume alb. Iau acum aceeasi valoare ca el, in
+     fiecare stare — si la plin, si la tenta. */
+  .banda-plec, .banda-sos { display: inline-flex; flex: none; color: var(--accent-text); }
+  .banda-plec :global(.sg), .banda-sos :global(.sg) { display: block; }
   .banda-plec { margin-left: auto; padding-left: var(--space-6); }
   .banda-sos { margin-right: var(--space-6); }
   /* Muchia taiata n-are padding (vezi `.banda` fara `.inceput`/`.sfarsit`), deci

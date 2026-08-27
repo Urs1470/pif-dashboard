@@ -30,7 +30,7 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `37:project_status_label`, `41:task_status_label`
 
-## blueprints/admin.py (1068 linii)
+## blueprints/admin.py (1081 linii)
 
 `57:get_stats`, `91:_pdf_safe_text`, `105:_pdf_make_styles`, `133:_pdf_section_header`, `146:_pdf_section_admin`, `174:_pdf_section_tech`, `192:_pdf_section_tasks`, `226:export_pdf`, `294:_ics_feed_key`, `308:export_ics_key`, `314:export_ics`, `440:backup_database`, `470:restore_database`, `633:admin_db_upload_page`, `679:admin_db_upload`, `756:admin_db_dump`, `799:_search_snippet`, `815:global_search`, `866:plan_departament_get`, `877:plan_departament_set`, `894:calendar_view`
 
