@@ -597,15 +597,30 @@
       // Randul etichetei e capatul de sus al chenarului: numele iesirii sta
       // INAUNTRU, pe primul ei rand, iar lucrarile incep sub el.
       const et = impachetare.etichete.get(idDeplasare(d))
-      if (et !== undefined && et < sus) sus = et
-      for (const f of feliaza(d.start, d.end, sus, null)) {
+      // DAR NUMAI PE FELIA CARE CHIAR SCRIE ETICHETA.
+      //
+      // `sus` era coborat la randul etichetei o singura data, pentru toata
+      // deplasarea, deci si feliile de dupa granita de saptamana — care NU
+      // deseneaza eticheta (vezi `c.inceput` in sablon) — rezervau randul ei.
+      // Rezultatul, masurat pe o iesire de 8 zile care taie saptamana: bucata a
+      // doua avea 25px de chenar GOL deasupra barei, o buza de care nu atarna
+      // nimic. Ion, uitandu-se la ea: „uite ce rau arata trecerea dintr-o
+      // saptamana in alta". Nu bara era stramba — chenarul ei incepea prea sus.
+      // Acum fiecare felie porneste de unde chiar are continut: de la eticheta
+      // daca o scrie, de la prima banda daca nu.
+      const susBenzi = sus
+      const susEticheta = et !== undefined && et < sus ? et : sus
+      for (const f of feliaza(d.start, d.end, susEticheta, null)) {
+        const scrieEticheta = f.inceput && et !== undefined
+        const susF = scrieEticheta ? susEticheta : susBenzi
         const plafon = benziPeRand[f.rand - 1] ?? 1
-        if (sus >= plafon) continue
+        if (susF >= plafon) continue
         out.push({
           ...f,
           d,
-          areEticheta: et !== undefined,
-          inalt: Math.min(jos, plafon - 1) - sus + 1,
+          banda: susF,
+          areEticheta: scrieEticheta,
+          inalt: Math.min(jos, plafon - 1) - susF + 1,
           cheie: `${d.cheie}|${f.zile[0]}`,
         })
       }
