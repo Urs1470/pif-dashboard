@@ -489,6 +489,9 @@
   // (vezi nota lunga de la `--kb`).
   let trasY = $state(0)
   let hFoaie = $state(null)     // inaltimea ceruta in timpul gestului, in px
+  // Plafonul, in px, expus si in CSS: din el si din `--h-foaie` se scoate
+  // insetul de safe-area CONTINUU cat timp foaia urca (vezi `.gest` in CSS).
+  let hPlafon = $state(0)
   let trage = $state(false)
   let intins = $state(false)    // pe treapta de sus (ecran plin)
   let voalP = $state(1)         // opacitatea voalului, 0..1 — urmareste degetul
@@ -531,6 +534,7 @@
 
   function reimprospateazaTrepte() {
     const plin = plafonPlin()
+    hPlafon = plin
     if (inalt) {
       // Foaia care se deschide deja intinsa capata o treapta de MIJLOC: de acolo
       // se vede si ce e dedesubt, fara s-o inchizi. Pana acum singurul drum
@@ -1092,7 +1096,7 @@
     <div class="modal modal-{size}" class:sheet class:intins class:inalt class:trage class:varf
          class:acoperit class:gest={hFoaie !== null} class:mijloc={sheet && inalt && !intins}
          class:se-trage={trageManer}
-         bind:this={sheetEl} style:--trasY="{trasY}px" style:--h-foaie={hFoaie === null ? null : `${hFoaie}px`}
+         bind:this={sheetEl} style:--trasY="{trasY}px" style:--h-foaie={hFoaie === null ? null : `${hFoaie}px`} style:--plafon="{hPlafon}px"
          in:intra|global out:intra|global>
       {#if panou}
         <!-- Manerul de latime. `<button>`, nu `<div>`: e un control, deci se
@@ -1541,6 +1545,19 @@
     .modal.sheet.gest:not(.modal-doc) {
       height: var(--h-foaie);
       max-height: var(--h-foaie);
+      /* INSETUL DE SUS INTRA TREPTAT, NU DINTR-ODATA.
+         `.intins` pune `padding-top: var(--safe-top)` — pe telefonul lui Ion, 40px.
+         Cat timp tragi nu exista, deci in clipa in care foaia atinge treapta de sus
+         fereastra de derulare se micsora brusc cu 40px si TOT CONTINUTUL sarea.
+         Masurat pe aparat (Honor BVL-N49, `--safe-top: 40px`), cu foaia derulata
+         pana jos si ridicata: scrollTop cobora lin 431 -> 69 odata cu cresterea, si
+         apoi SAREA 69 -> 111 exact cand se aplica treapta. Pe emulator `--safe-top`
+         e 0, deci saltul nu exista si nicio proba nu-l putea vedea — aceeasi capcana
+         ca la foaia zilei, a treia oara.
+         Aici insetul e cat a intrat foaia in banda de sus: `safe-top - (plafon - h)`,
+         zero pana cand chiar ajunge acolo. La h = plafon da exact `--safe-top`, adica
+         fix ce pune `.intins` — deci trecerea nu mai schimba nimic. */
+      padding-top: max(0px, calc(var(--safe-top) - var(--plafon) + var(--h-foaie)));
     }
     /* Regula lui `.inalt` a plecat de aici: „se deschide pe tot ecranul" nu mai e
        o geometrie proprie, e TREAPTA DE SUS a oricarei foi (`.intins`, mai sus).

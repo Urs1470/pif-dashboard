@@ -71,7 +71,12 @@ DIN_JS = {'--gl-p', '--gl-s', '--trasY', '--kb', '--mx', '--my', '--spec', '--sp
 #             pliu, scrise de `lib/derulare.js`. Din ele isi ia sticla muchia de
 #             derulare si umbra care se adanceste — vezi WWDC25 „Meet Liquid Glass".
 #             Rezerva 0 in ambele: pe o pagina care nu deruleaza nu se aprind.
-          '--derulat', '--derulat-jos'}
+          '--derulat', '--derulat-jos',
+#   --plafon : inaltimea maxima a foii, in px, scrisa de `Modal.svelte` odata cu
+#             treptele. Din ea si din `--h-foaie` iese insetul de safe-area
+#             CONTINUU cat timp foaia urca — altfel el apare dintr-odata la
+#             treapta de sus si tot continutul sare (masurat pe aparat, 40px).
+          '--plafon'}
 
 # Fisiere in care valorile brute sunt legitime, cu motiv.
 SCUTITE_HEX = {
