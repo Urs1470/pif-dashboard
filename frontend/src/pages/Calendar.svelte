@@ -1933,8 +1933,14 @@
                amandoua jumatatile (vezi ramura de mai sus), iar un al doilea
                „nimic" sub el ar fi acelasi lucru spus de doua ori. -->
           {#if selectate.length || taskuriZilei.length}
+            <!-- CIFRA APARE DOAR CAND E CEVA DE NUMARAT. „Ce ai de făcut 0" era
+                 un numar care nu decide nimic — regula casei, aceeasi care tine
+                 zeroul departe de capetele de grupa din /tasks. Cand e zero,
+                 raspunsul il da propozitia de dedesubt, nu contorul. Vazut pe
+                 aplicatia LIVE, in ziua de 27 august. -->
             <div class="pan-h tsk-cap">
-              Ce ai de făcut <span class="cnt">{taskuriZilei.length}</span>
+              Ce ai de făcut
+              {#if taskuriZilei.length}<span class="cnt">{taskuriZilei.length}</span>{/if}
             </div>
             {#if !taskuriZilei.length}
               <div class="gol tsk-gol">Nimic scadent în ziua asta.</div>
