@@ -388,20 +388,9 @@ def sfera_leak_test():
             log("pass" if sp.get('sfera') == 'personal' else "fail",
                 f"recurring spawn keeps sfera ({sp.get('sfera')})")
 
-        # 7) ICS: feedul implicit fara personal; feedul personal doar cu el;
-        #    fara sesiune si fara cheie -> 401
-        ics = s.get(f"{BASE_URL}/api/export/ics", timeout=5).text
-        if '__proba_sfera_azi__' in ics:
-            log("fail", "sfera: personal LEAKS into work ICS feed")
-        else:
-            log("pass", "ICS default (munca) excludes personal")
-        ics_p = s.get(f"{BASE_URL}/api/export/ics?sfera=personal", timeout=5).text
-        log("pass" if '__proba_sfera_azi__' in ics_p else "fail", "ICS ?sfera=personal contains personal")
-        anon = requests.get(f"{BASE_URL}/api/export/ics?key=gresit", timeout=5)
-        log("pass" if anon.status_code == 401 else "fail", f"ICS wrong key -> {anon.status_code} (expected 401)")
-        key = s.get(f"{BASE_URL}/api/export/ics-key", timeout=5).json().get('key', '')
-        anon2 = requests.get(f"{BASE_URL}/api/export/ics?sfera=personal&key={key}", timeout=5)
-        log("pass" if anon2.status_code == 200 else "fail", f"ICS with feed key -> {anon2.status_code} (expected 200)")
+        # Proba feedului .ics a plecat odata cu el (2026-08-27). Invariantul lui
+        # `sfera` ramane acoperit de punctele 1-6 de mai sus si de proba din
+        # `/api/calendar`.
     finally:
         for tid in created:
             try: s.delete(f"{BASE_URL}/api/global-tasks/{tid}", headers=hdr(), timeout=5)

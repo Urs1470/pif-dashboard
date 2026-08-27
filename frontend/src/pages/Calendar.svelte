@@ -38,7 +38,7 @@
   // eticheta pe primul lui rand si lucrarile inauntru.
   import { onMount, onDestroy, tick } from 'svelte'
   import { fade, slide } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download, Repeat, CheckCircle2 } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Repeat, CheckCircle2 } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router, preincarca } from '../lib/router.svelte.js'
   import { focusHref } from '../lib/focus.js'
@@ -1433,17 +1433,11 @@
         <button class="ico" onclick={() => pas(-1)} aria-label="Înapoi"><ChevronLeft size={16} /></button>
         <button class="ico" onclick={() => pas(1)} aria-label="Înainte"><ChevronRight size={16} /></button>
         <button class="b-azi" onclick={laAzi}>Azi</button>
-        <!-- Exportul .ics a venit aici din Admin (sters): calendarul de abonat din
-             telefon apartine paginii de calendar, nu unui sertar de intretinere.
-             STA IN RANDUL DE NAVIGARE, imediat dupa „Azi", cum e desenat
-             (`Calendar.dc.html`, bara din 6a/7a/8a). Ramasese singur in `.mods` —
-             containerul comutatorului „Luna / 2 sapt.", care a fost sters: pe
-             desktop iesea un grup separat impins la capatul barei, iar pe telefon
-             `.mods { width: 100% }` ii dadea un RAND intreg doar lui, sub bara. -->
-        <button class="ics" onclick={() => window.open('/api/export/ics', '_blank')}
-                title="Descarcă .ics — perioadele și scadențele de task. Abonează-te din calendarul telefonului.">
-          <Download size={13} /> .ics
-        </button>
+        <!-- Exportul .ics a plecat pe 2026-08-27 (Ion: „scoate exportul ics, nu
+             ma intereseaza"). Odata cu butonul au plecat si rutele
+             `/api/export/ics` + `/api/export/ics-key` si cheia de feed din
+             `app_settings` — un feed public pe cheie in URL nu se tine pentru
+             nimeni. Randul de navigare ramane: ‹ › Azi. -->
       </div>
     </div>
     </div>
@@ -2144,14 +2138,13 @@
      pe care nu i-a ales nimeni.
      Treapta de text e `--font-body` (15/600), nu `--font-control` (13): bara
      Calendarului e ETICHETA DE PAGINA, nu un control asezat in rand. */
-  .ico, .b-azi, .ics { border: none; background: var(--bg-surface); color: var(--text-secondary);
+  .ico, .b-azi { border: none; background: var(--bg-surface); color: var(--text-secondary);
     box-shadow: var(--shadow-sm); transition: var(--transition-pressable);
     border-radius: var(--radius-sm); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   .ico { width: var(--ctrl-md); height: var(--ctrl-md); }
-  .b-azi, .ics { height: var(--ctrl-md); padding: 0 var(--space-12); font-size: var(--font-body); font-weight: var(--fw-semibold); }
-  .ico:hover, .b-azi:hover, .ics:hover { background: var(--bg-hover); color: var(--text); }
-  .ico:active, .b-azi:active, .ics:active { transform: scale(var(--press-scale)); }
-  .ics { gap: 5px; }
+  .b-azi { height: var(--ctrl-md); padding: 0 var(--space-12); font-size: var(--font-body); font-weight: var(--fw-semibold); }
+  .ico:hover, .b-azi:hover { background: var(--bg-hover); color: var(--text); }
+  .ico:active, .b-azi:active { transform: scale(var(--press-scale)); }
 
   /* SURSELE — controale cu numar in capul paginii, nu contoare.
      Fiecare DUCE undeva si cere ceva de facut; aceeasi haina ca perechea de pe
@@ -3123,10 +3116,6 @@
     /* Navigarea si butoanele barei: erau de 28px inaltime. */
     .ico { width: var(--tap-min); height: var(--tap-min); }
     .b-azi { height: var(--tap-min); padding: 0 var(--space-14); font-size: var(--font-small); }
-    /* `.ics` NU APARE PE TELEFON (M8). Descarci un fisier de abonament o data, de
-       pe calculator; pe telefon te abonezi din aplicatia de calendar, nu dintr-un
-       buton care ocupa un sfert din bara. */
-    .ics { display: none; }
     .nav { gap: var(--space-xs); }
     .bar { gap: var(--space-xs); }
 

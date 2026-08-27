@@ -37,7 +37,7 @@ csrf.py labels.py   # CSRF double-submit; etichetele de status
 blueprints/
   projects.py       # /api/proiecte/* — CRUD, perioade, snapshot, import debrief, export
   tasks.py          # taskuri de proiect + globale + subtaskuri + agenda
-  admin.py          # /api/calendar, /api/search, /api/stats, export ICS/PDF, backup
+  admin.py          # /api/calendar, /api/search, /api/stats, export PDF, backup
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
   push.py           # Web Push: o notificare pe zi per task personal
   app_update.py     # versiunea si APK-ul aplicatiei Android
@@ -66,8 +66,8 @@ Regulile care nu se deduc din cod uitandu-te la el, si care se strica tacut daca
 5. **„S-a facut" e despre PERIOADA**, nu despre proiect: scrie `implementari.confirmata`.
    Statusul proiectului se schimba doar din formularul lui. Altfel o deplasare bifata inchide
    lucrarea si urmatoarea vizita nu mai poate fi planificata.
-6. **Taierea perioadelor la `data_finalizare` se face doar la CITIRE** (`/api/calendar`,
-   `/api/export/ics`). Baza ramane neatinsa.
+6. **Taierea perioadelor la `data_finalizare` se face doar la CITIRE** (`/api/calendar`).
+   Baza ramane neatinsa.
 7. **`sfera`** (`munca`|`personal`) e opt-in la citire: implicit se intorc doar cele de munca,
    iar o valoare necunoscuta da 400, nu se corecteaza tacit.
 
@@ -97,7 +97,7 @@ se încarcă singur când atingi `frontend/src/**`. Sursa valorilor rămâne
 python scripts/lint.py              # pyflakes + compilatorul Svelte (secunde, fara Chromium)
 python scripts/audit_design.py      # coerenta sistemului de design (sub o secunda)
 python scripts/audit_contrast.py    # contrastul perechilor reale, pe amandoua temele
-python scripts/test_suite.py        # API + verificari statice (44 de probe)
+python scripts/test_suite.py        # API + verificari statice (40 de probe)
 python scripts/smoke_ui.py          # fiecare ruta in Chromium, desktop + mobil
 python scripts/audit_mobil.py       # geometrie si gesturi pe trei latimi de telefon
 python scripts/audit_navigare.py    # ce se intampla, masurat, cand schimbi tabul

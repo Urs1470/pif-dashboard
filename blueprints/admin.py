@@ -6,17 +6,13 @@ import os
 import shutil
 import tempfile
 import re
-import hmac
-import secrets
 import logging
 import html
 import sqlite3
 from datetime import datetime, timedelta
 from io import BytesIO
 
-from flask import (
-    Blueprint, request, jsonify, send_file, Response, session,
-)
+from flask import Blueprint, request, jsonify, send_file
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -29,7 +25,6 @@ from urllib.parse import urlparse
 from utils import (
     safe_table, login_required, get_json_or_400,
     get_app_setting, set_app_setting, PLAN_DEPT_KEY, PLAN_DEPT_HOST,
-    _check_api_token,
 )
 from database import get_db, row_to_dict, DATABASE_PATH
 from labels import project_status_label, task_status_label
@@ -287,149 +282,6 @@ def export_pdf():
         as_attachment=True,
         download_name=filename
     )
-
-ICS_FEED_KEY = 'ics_feed_key'
-
-
-def _ics_feed_key():
-    """Cheia secreta a feed-ului .ics — generata la prima cerere, tinuta in
-    app_settings (baza e gitignored, deci cheia nu ajunge in git). Exista pentru
-    ca Google Calendar descarca URL-ul de abonare de pe SERVERELE lui, fara
-    sesiune si fara headere — singura autentificare posibila e in URL."""
-    key = get_app_setting(ICS_FEED_KEY)
-    if not key:
-        key = secrets.token_urlsafe(32)
-        set_app_setting(ICS_FEED_KEY, key)
-    return key
-
-
-@admin_bp.route('/api/export/ics-key', methods=['GET'])
-@login_required
-def export_ics_key():
-    """Cheia feed-ului, pentru clientul care construieste URL-ul de abonare."""
-    return jsonify({'key': _ics_feed_key()})
-
-
-@admin_bp.route('/api/export/ics', methods=['GET'])
-def export_ics():
-    """Calendarul de abonat din telefon (Google/Apple Calendar).
-
-    `?sfera=munca` (implicit): perioadele de implementare + scadente de taskuri
-    de munca. `?sfera=personal`: DOAR scadentele taskurilor personale — feed
-    separat, ca in Google Calendar sa fie un calendar propriu, cu culoarea lui,
-    care se poate ascunde independent. Nu exista un feed combinat: sferele nu
-    se amesteca nici aici.
-
-    Continutul muncii, in ordinea utilitatii:
-      1. PERIOADELE de implementare — unde esti efectiv in fiecare zi, cu faza
-         (pregatire / implementare). Sunt singurul lucru planificat cu adevarat.
-      2. scadente de taskuri (proiect + globale)
-
-    Deadline-urile de proiect au plecat in v30: nu se lua nimeni dupa ele.
-    """
-    # Fara @login_required: pe langa sesiune si Bearer, feed-ul se serveste si
-    # cu cheia secreta din URL (`?key=`) — drumul prin care se aboneaza Google
-    # Calendar. Comparatia e constant-time, ca la Bearer.
-    if 'authenticated' not in session and not _check_api_token():
-        key = request.args.get('key') or ''
-        if not key or not hmac.compare_digest(_ics_feed_key(), key):
-            return jsonify({'error': 'Unauthorized'}), 401
-
-    sfera = request.args.get('sfera') or 'munca'
-    if sfera not in ('munca', 'personal'):
-        return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
-    personal = sfera == 'personal'
-
-    conn = get_db()
-    cur = conn.cursor()
-    now = datetime.now().strftime('%Y%m%dT%H%M%SZ')
-    lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PIF Dashboard//RO',
-             'CALSCALE:GREGORIAN',
-             'X-WR-CALNAME:PIF Personal' if personal else 'X-WR-CALNAME:PIF Dashboard']
-
-    def esc(s):
-        return (str(s or '')).replace('\\', '\\\\').replace(';', '\\;').replace(',', '\\,').replace('\n', '\\n')
-
-    def date_only(iso):
-        m = re.match(r'(\d{4})-(\d{2})-(\d{2})', str(iso or ''))
-        return (m.group(1) + m.group(2) + m.group(3)) if m else None
-
-    def add_event(uid, dt, summary, desc='', dt_end=None, loc=''):
-        d = date_only(dt)
-        if not d:
-            return
-        lines.extend(['BEGIN:VEVENT', f'UID:{uid}@pif.iupif.org', f'DTSTAMP:{now}',
-                      f'DTSTART;VALUE=DATE:{d}'])
-        # DTEND e EXCLUSIV in iCalendar: o iesire 29->30 se scrie ca 29 -> 31,
-        # altfel telefonul o arata pe o singura zi.
-        de = date_only(dt_end)
-        if de:
-            end_d = datetime.strptime(de, '%Y%m%d').date() + timedelta(days=1)
-            lines.append(f'DTEND;VALUE=DATE:{end_d.strftime("%Y%m%d")}')
-        lines.append(f'SUMMARY:{esc(summary)}')
-        if loc:
-            lines.append(f'LOCATION:{esc(loc)}')
-        if desc:
-            lines.append(f'DESCRIPTION:{esc(desc)}')
-        lines.append('END:VEVENT')
-
-    try:
-        if personal:
-            # Fara prefixul „Scadenta:" — intr-un calendar care se numeste deja
-            # „PIF Personal", prefixul pe fiecare eveniment ar fi zgomot.
-            cur.execute("SELECT id, titlu, data_scadenta FROM global_tasks WHERE sfera = 'personal' "
-                        "AND data_scadenta IS NOT NULL "
-                        "AND TRIM(data_scadenta) <> '' AND (data_finalizare IS NULL OR TRIM(data_finalizare) = '')")
-            for r in cur.fetchall():
-                add_event(f"gtask-{r['id']}", r['data_scadenta'], r['titlu'], 'Task personal')
-        else:
-            cur.execute("""
-                SELECT i.id, i.data_start,
-                       CASE WHEN p.status = 'finalizat'
-                             AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) > date(COALESCE(NULLIF(p.data_finalizare, ''), date('now')))
-                            THEN date(COALESCE(NULLIF(p.data_finalizare, ''), date('now')))
-                            ELSE i.data_sfarsit END AS data_sfarsit,
-                       i.eticheta, i.locatie, i.faza,
-                       p.nume, p.client, p.locatie AS locatie_proiect
-                FROM implementari i JOIN proiecte p ON p.id = i.proiect_id
-                WHERE i.data_start IS NOT NULL AND TRIM(i.data_start) <> ''
-                  -- vezi /api/calendar: un proiect inchis nu mai ocupa zile de dupa
-                  -- ziua inchiderii
-                  AND (p.status != 'finalizat' OR date(i.data_start) <= date(COALESCE(NULLIF(p.data_finalizare, ''), date('now'))))
-                ORDER BY i.data_start
-            """)
-            for r in cur.fetchall():
-                la_sediu = (r['locatie'] or 'site') == 'sediu'
-                titlu = r['eticheta'] or r['nume']
-                unde = 'Sediu EGB' if la_sediu else (r['locatie_proiect'] or r['client'] or '')
-                # Faza intra in titlu doar cand e pregatire: implementarea e cazul
-                # obisnuit, iar un prefix pe fiecare eveniment ar fi zgomot in telefon.
-                if (r['faza'] or 'implementare') == 'pregatire':
-                    titlu = f'Pregătire · {titlu}'
-                add_event(f"impl-{r['id']}", r['data_start'],
-                          f"{'Sediu' if la_sediu else (r['client'] or 'Teren')}: {titlu}",
-                          desc=r['nume'], dt_end=r['data_sfarsit'] or r['data_start'], loc=unde)
-
-            cur.execute("SELECT t.id, t.titlu, t.data_scadenta, p.nume AS pnume FROM tasks t "
-                        "JOIN proiecte p ON t.proiect_id = p.id WHERE t.data_scadenta IS NOT NULL "
-                        "AND TRIM(t.data_scadenta) <> '' AND (t.data_finalizare IS NULL OR TRIM(t.data_finalizare) = '')")
-            for r in cur.fetchall():
-                add_event(f"task-{r['id']}", r['data_scadenta'], f"Scadenta: {r['titlu']}", f"Proiect: {r['pnume']}")
-
-            cur.execute("SELECT id, titlu, data_scadenta FROM global_tasks WHERE sfera = 'munca' "
-                        "AND data_scadenta IS NOT NULL "
-                        "AND TRIM(data_scadenta) <> '' AND (data_finalizare IS NULL OR TRIM(data_finalizare) = '')")
-            for r in cur.fetchall():
-                add_event(f"gtask-{r['id']}", r['data_scadenta'], f"Scadenta: {r['titlu']}", 'Task global')
-    finally:
-        conn.close()
-
-    lines.append('END:VCALENDAR')
-    ics = '\r\n'.join(lines) + '\r\n'
-    fname = 'pif-personal.ics' if personal else 'pif-calendar.ics'
-    return Response(ics, mimetype='text/calendar',
-                    headers={'Content-Disposition': f'attachment; filename="{fname}"'})
-
 
 # ---------------------------------------------------------------------------
 # Backup / Restore

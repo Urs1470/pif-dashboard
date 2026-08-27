@@ -114,7 +114,6 @@
   })
 
   const acum = $derived(iesiri[0] || null)
-  const apoi = $derived(iesiri.slice(1, 3))
   const deClarificat = $derived((data?.de_decis || []).length)
   const faraPerioada = $derived((data?.neplanificate || []).length)
 
@@ -137,12 +136,6 @@
   function interval(d) {
     return d.start === d.end ? shortDate(d.start)
       : `${shortDate(d.start)}–${shortDate(d.end)}`
-  }
-  /** In „apoi", clientul apare DOAR daca difera de ieșirea curenta. Aproape tot
-   *  e la acelasi client, deci repetat ar fi zgomot, nu informatie. */
-  function undeApoi(d) {
-    if (d.sediu) return 'sediu'
-    return d.cheie === acum?.cheie ? '' : scurt(d.client)
   }
 </script>
 
@@ -177,18 +170,12 @@
         <span class="zile">{interval(acum)}</span>
       </button>
 
-      {#if apoi.length}
-        <span class="apoi">
-          apoi
-          <!-- ACEEASI ORDINE CA IN CHIPUL „ACUM": UNDE, apoi CAND.
-               Chipul din stanga scrie [Acum] [Continental] · [Deplasare Timișoara]
-               [18 aug–21 aug] — cine, ce, cand. Randul asta scria invers, [23
-               aug–25 aug] [Aquatim] — cand, cine. Aceeasi linie, patruzeci de
-               pixeli distanta, doua gramatici: ca sa citesti a doua ieșire
-               trebuia sa intorci propozitia in cap. -->
-          {#each apoi as d, i (d.start + d.cheie)}{#if i}<span class="pt">·</span>{/if}{#if undeApoi(d)}<span class="apc">{undeApoi(d)}</span>{/if}<span class="ap">{interval(d)}</span>{/each}
-        </span>
-      {/if}
+      <!-- COADA „apoi 31 aug · 1 oct" A PLECAT (Ion, 2026-08-27: „scoate te rog
+           textul asta cu apoi cu perioadele, sa ramana doar pastila principala").
+           Randul raspunde la O intrebare — „cand ies data viitoare" — iar
+           urmatoarele doua date nu o mai raspundeau pe ea, doar lungeau linia
+           langa singurul lucru pe care il apesi. Ce urmeaza dupa se vede in
+           Calendar, unde e si desenat. -->
     {:else}
       <!-- O ABSENTA E O USA, NU UN ANUNT.
            Aici statea „Nicio ieșire planificată" ca text palid — adica exact in
@@ -301,16 +288,6 @@
   .zile { font-family: var(--font-mono); font-size: var(--font-label); color: var(--text-dim);
           white-space: nowrap; letter-spacing: var(--tracking-normal); }
 
-  /* Următoarele două — text simplu, fără cadru: context, nu obiect. */
-  .apoi { font-size: var(--font-small); color: var(--text-dim); white-space: nowrap; }
-  /* Intervalul e informatie (dim); cuvantul de legatura „apoi" ramane faint. */
-  .ap { font-family: var(--font-mono); color: var(--text-dim); }
-  /* Spatiul dintre loc si interval vine din CSS, nu dintr-un caracter scris in
-     markup: un spatiu scris langa o expresie se pierde la compilare — asa
-     scria odata „31 iulsediu". Marginea e acum la DREAPTA, fiindca locul a
-     trecut inaintea intervalului (vezi nota din markup). */
-  .apc { color: var(--text-dim); margin-right: 5px; }
-  .pt { margin: 0 5px; }
 
   /* Ramura GOALA a liniei — vezi comentariul din markup. `.gol` a ramas doar
      pentru EROARE, care chiar e un anunt, nu o usa: acolo n-ai unde sa te duci
@@ -374,9 +351,6 @@
        randul de context n-are voie sa creasca in inaltime si sa impinga boardul,
        care e continutul paginii. Inaltimea de atingere ramane `--tap-min`. */
     .ctx { gap: var(--space-sm); flex-wrap: nowrap; }
-    /* Pe telefon rămâne doar ieșirea următoare — restul e context de desktop. */
-    .apoi { display: none; }
-
     .pr {
       /* Se STRANGE, nu ocupa tot: cipul de severitate din dreapta ramane pe
          acelasi rand fiindca e `flex: none`, iar ce cedeaza e descrierea. */

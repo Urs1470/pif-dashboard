@@ -643,8 +643,8 @@
   // `/oauth/google/*`, apelurile de sincronizare din tasks.py/push.py, si
   // cheile `google_*` din `app_settings` (migrarea v40 le sterge — tokenul de
   // refresh n-avea ce cauta intr-un backup de la care filtrul tocmai plecase).
-  // Ce NU s-a atins: feedul `.ics` (`/api/export/ics`), care e o abonare prin
-  // URL, fara OAuth, si merge in orice calendar. Daca integrarea se reia
+  // Feedul `.ics` supravietuise atunci (abonare prin URL, fara OAuth) — a plecat
+  // si el pe 2026-08-27, la cererea lui Ion. Daca vreuna din ele se reia
   // vreodata, se reia din istoricul git, cu ambele capete.
 
   // Punctul rosu de pe clopotel trebuie sa poata semnala o trimitere esuata
@@ -1224,7 +1224,7 @@
      egale, in care „Deconectează" (rar, si ireversibil pe jumatate) statea la fel
      de tare ca „Resincronizează" (des si inofensiv).
      Ordinea: iconita + nume + sursa · pastila de stare · ce se sincronizeaza ·
-     ultima sincronizare · (eroarea) · actiunea principala · (linie) · .ics si
+     ultima sincronizare · (eroarea) · actiunea principala · (linie) ·
      Deconectează. Zona de lipit JSON apare DOAR cand nu exista credentiale — nu e
      un camp permanent intr-un ecran deschis zilnic. -->
 <!-- Notificările zilnice au plecat în pagina Setări (2026-08-25). -->
