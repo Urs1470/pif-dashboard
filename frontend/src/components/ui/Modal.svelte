@@ -1491,6 +1491,17 @@
       scale: 0.94;
       transform-origin: bottom center;
     }
+    /* MANERUL PLEACA ODATA CU GESTUL.
+       O foaie acoperita nu se mai poate trage — gestul apartine celei de
+       deasupra — dar isi desena mai departe bara. Din foaia retrasa se vad doar
+       primii ~35px, adica exact bara: rezultatul era DOUA manere suprapuse la
+       75px distanta, peste o pagina stinsa, si teancul se citea ca o eroare de
+       randare, nu ca adancime. Fotografiat pe telefon, foaia „Perioadă de
+       implementare" cu calendarul deschis peste ea.
+       `opacity`, nu `display`: bara se stinge si se aprinde odata cu retragerea,
+       pe compozitor, deci intoarcerea nu clipeste. */
+    .modal.sheet.acoperit .sheet-grip { opacity: 0; }
+    .sheet-grip { transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease); }
 
     /* ===== TREPTELE FOII =====
        La ODIHNA inaltimea vine din CSS, in `dvh`, deci se strange singura cand

@@ -1563,6 +1563,7 @@
           {#each chenare as c (c.cheie)}
             {@const cDecizie = [...c.d.items.values()].some(p => p.necesita_decizie)}
             <div class="chenar"
+                 class:cu-eticheta={c.areEticheta}
                  class:inceput={c.inceput}
                  class:sfarsit={c.sfarsit}
                  class:sediu={c.d.sediu}
@@ -2366,6 +2367,20 @@
                vrea: o muchie de 0px nu se deseneaza. */
             border-left-width: 0; border-right-width: 0;
             background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  /* FELIA FARA ETICHETA ISI FACE SINGURA LOC SUS.
+     Cei `+2px` din `margin-top` presupun ca deasupra primei benzi mai e un rand:
+     al etichetei. Pe felia care n-o scrie — bucata de dupa granita de saptamana,
+     sau o iesire fara nume — randul nu exista, deci cutia pornea 2px SUB bara si
+     conturul ei taia prin ea. Asa arata acum: o dunga lipita de bara, nu o cutie
+     care o contine.
+     Aici isi ia acelasi respiro pe care il are deja jos (5px = 27 al randului
+     minus 24 ai barei, plus cei 2 de decalaj): urca 5 si creste cu 7, deci
+     capatul de jos ramane exact unde era. Cele doua bucati ale aceleiasi iesiri
+     se citesc atunci ca un obiect, nu ca doua accidente. */
+  .chenar:not(.cu-eticheta) {
+    margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) - 5px);
+    height: calc(var(--n) * var(--h-banda) + 7px);
+  }
   .chenar.inceput { margin-left: 3px; border-left: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
                     border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
   .chenar.sfarsit { margin-right: 3px; border-right: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
