@@ -312,7 +312,24 @@ def main():
                     cap_ = page.query_selector('.modal-header').bounding_box()
                     x = cap_['x'] + cap_['width'] / 2
                     # In sus: foaia urca pe treapta de sus.
+                    #
+                    # SE ASTEAPTA CONTRACTUL, NU O CIFRA. `trage` lasa 650ms dupa
+                    # ridicarea degetului — cat tinea arcul GESTULUI (0,42s). Din
+                    # 2026-08-27 drumul spre treapta de sus merge pe un arc de
+                    # 0,55s, apropiat de deschiderea foii (Ion: „sa fie ca
+                    # deschiderea de modal, nu brusc"), iar clasa `.intins` se pune
+                    # abia la finalul lui. Cu pauza fixa proba raporta „nu urca pe
+                    # treapta de sus" pentru o foaie care urca — doar mai lin.
+                    # Asteptarea e acum pe STARE, cu un plafon generos: daca chiar
+                    # nu ajunge, tot pica, dar dupa ce i-am dat timp real.
                     trage(page, cdp, x, cap_['y'] + cap_['height'] / 2, [-25] * 8)
+                    try:
+                        page.wait_for_function(
+                            "() => { const m = document.querySelector('.modal.sheet');"
+                            " return !!m && m.classList.contains('intins') }",
+                            timeout=1500, polling=50)
+                    except Exception:
+                        pass
                     sus = page.evaluate(MASOARA)
                     bifa(sus is not None and sus['intins'],
                          'trasa in sus, urca pe treapta de sus',
@@ -336,8 +353,18 @@ def main():
                              '%s -> %s px' % (sus['vizibil'], mij['vizibil']))
 
                         # ...si inapoi in sus. Drumul e continuu in ambele sensuri.
+                        # Aceeasi asteptare pe stare ca mai sus: arcul catre treapta
+                        # de sus tine 0,55s, deci `.intins` vine dupa pauza fixa a
+                        # lui `trage`.
                         cap_ = page.query_selector('.modal-header').bounding_box()
                         trage(page, cdp, x, cap_['y'] + cap_['height'] / 2, [-25] * 8)
+                        try:
+                            page.wait_for_function(
+                                "() => { const m = document.querySelector('.modal.sheet');"
+                                " return !!m && m.classList.contains('intins') }",
+                                timeout=1500, polling=50)
+                        except Exception:
+                            pass
                         inapoi = page.evaluate(MASOARA)
                         bifa(inapoi is not None and inapoi['intins'],
                              'urca la loc pe treapta de sus',

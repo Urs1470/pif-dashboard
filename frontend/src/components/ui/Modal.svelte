@@ -571,24 +571,52 @@
   let arcRuleaza = false
   let treaptaTinta = 0
 
+  const _scrieArc = ({ h }) => { if (h !== undefined) aseaza(h) }
+  const _finalArc = () => {
+    // PREDAREA MAI DEPARTE: arcul a terminat, acum CSS-ul isi ia inaltimea inapoi
+    // (`height: auto` pe treapta de baza), altfel foaia n-ar mai urma continutul.
+    arcRuleaza = false
+    trage = false
+    duLaTreapta(treaptaTinta)
+  }
+
   const arcFoaie = creeazaArc({
     durata: 0.42,
     bounce: 0.201,
-    scrie: ({ h }) => { if (h !== undefined) aseaza(h) },
-    laFinal: () => {
-      // PREDAREA MAI DEPARTE: arcul a terminat, acum CSS-ul isi ia inaltimea inapoi
-      // (`height: auto` pe treapta de baza), altfel foaia n-ar mai urma continutul.
-      arcRuleaza = false
-      trage = false
-      duLaTreapta(treaptaTinta)
-    },
+    scrie: _scrieArc,
+    laFinal: _finalArc,
   })
+
+  // SPRE TREAPTA DE SUS, FOAIA SOSESTE CA LA DESCHIDERE (Ion, 2026-08-27:
+  // „deschiderea pe pagina complet tot cu animatie asemanatoare ca deschidere
+  // modal, nu brusc ca acum").
+  //
+  // Arcul de mai sus e al GESTULUI: 0,42s cu saltare, ca sa raspunda scurt cand
+  // muti foaia intre trepte. Dar drumul catre ecranul plin nu mai e o corectie de
+  // cativa zeci de pixeli — e o SUPRAFATA care acopera pagina, adica exact ce face
+  // foaia cand se deschide. Aceea vine pe `DUR_MID` (0,5s) cu `--ease`, fara
+  // saltare; cu 0,42 si bounce 0,2 aceeasi sosire ajungea in ~180ms si se oprea
+  // cu un mic recul — de aici „brusc".
+  //
+  // 0,55 si o saltare aproape zero o aduc langa deschidere, dar PASTREAZA predarea
+  // de viteza: daca ai zvarlit-o, arcul continua elanul degetului, ceea ce o
+  // tranzitie CSS n-ar putea (vezi nota de mai sus si `lib/arc.js`).
+  const arcPlin = creeazaArc({
+    durata: 0.55,
+    bounce: 0.04,
+    scrie: _scrieArc,
+    laFinal: _finalArc,
+  })
+
+  /** Care arc duce foaia pe treapta `i`. */
+  const arcPentru = (i) => (trepte.length > 1 && i === trepte.length - 1 ? arcPlin : arcFoaie)
+  const opresteArcurile = () => { arcFoaie.opreste(); arcPlin.opreste() }
 
   function apuca(clientY) {
     // UN GEST NOU OPRESTE ARCUL, nu se bate cu el. „Be ready for a new transition
     // to start at any time" — daca apuci foaia in timp ce se aseaza, degetul o
     // preia de unde e, cu tot cu elanul ei.
-    arcFoaie.opreste()
+    opresteArcurile()
     arcRuleaza = false
     untrack(reimprospateazaTrepte)
     hApucat = inaltimeVizibila()
@@ -666,7 +694,7 @@
     treapta = cel
     arcRuleaza = true
     // `viteza()` e in px/ms; arcul lucreaza in px/s.
-    arcFoaie.preia('h', totalAcum, vit.viteza() * 1000, trepte[cel])
+    arcPentru(cel).preia('h', totalAcum, vit.viteza() * 1000, trepte[cel])
   }
 
   /** Aseaza foaia pe o treapta si PREDA inaltimea inapoi CSS-ului. */
