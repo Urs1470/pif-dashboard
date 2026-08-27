@@ -1,0 +1,1 @@
+import{B as e,P as t,z as n}from"./legacy-DCNYANK5.js";var r=new Set([`$$slots`,`$$events`,`$$legacy`]);function i(i,a){let o=n(a,r),s=[[`path`,{d:`M18 8L22 12L18 16`}],[`path`,{d:`M2 12H22`}]];t(i,e({name:`move-right`},()=>o,{get iconNode(){return s}}))}export{i as t};

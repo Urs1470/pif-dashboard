@@ -38,7 +38,7 @@
   // eticheta pe primul lui rand si lucrarile inauntru.
   import { onMount, onDestroy, tick } from 'svelte'
   import { fade, slide } from 'svelte/transition'
-  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download, Repeat, CheckCircle2 } from '@lucide/svelte'
+  import { ChevronLeft, ChevronRight, MapPin, Building2, Check, X, Undo2, ExternalLink, TriangleAlert, GripVertical, CalendarDays, CalendarX2, Download, Repeat, CheckCircle2, MoveRight } from '@lucide/svelte'
   import { apiJson } from '../lib/api.js'
   import { navigate, router, preincarca } from '../lib/router.svelte.js'
   import { focusHref } from '../lib/focus.js'
@@ -597,30 +597,33 @@
       // Randul etichetei e capatul de sus al chenarului: numele iesirii sta
       // INAUNTRU, pe primul ei rand, iar lucrarile incep sub el.
       const et = impachetare.etichete.get(idDeplasare(d))
-      // DAR NUMAI PE FELIA CARE CHIAR SCRIE ETICHETA.
+      // TOATE FELIILE AU ACEEASI INALTIME (Ion, 2026-08-27).
       //
-      // `sus` era coborat la randul etichetei o singura data, pentru toata
-      // deplasarea, deci si feliile de dupa granita de saptamana — care NU
-      // deseneaza eticheta (vezi `c.inceput` in sablon) — rezervau randul ei.
-      // Rezultatul, masurat pe o iesire de 8 zile care taie saptamana: bucata a
-      // doua avea 25px de chenar GOL deasupra barei, o buza de care nu atarna
-      // nimic. Ion, uitandu-se la ea: „uite ce rau arata trecerea dintr-o
-      // saptamana in alta". Nu bara era stramba — chenarul ei incepea prea sus.
-      // Acum fiecare felie porneste de unde chiar are continut: de la eticheta
-      // daca o scrie, de la prima banda daca nu.
-      const susBenzi = sus
-      const susEticheta = et !== undefined && et < sus ? et : sus
-      for (const f of feliaza(d.start, d.end, susEticheta, null)) {
-        const scrieEticheta = f.inceput && et !== undefined
-        const susF = scrieEticheta ? susEticheta : susBenzi
+      // Randul etichetei se rezerva o singura data, pentru toata deplasarea, deci
+      // si bucata de dupa granita de saptamana are exact cutia primei. Doua
+      // jumatati ale aceluiasi obiect trebuie sa fie la fel de inalte — altfel
+      // granita se citeste ca doua lucruri diferite, nu ca o taietura.
+      //
+      // Buza goala pe care o lasa randul etichetei in bucata a doua NU se repara
+      // stramtand cutia (am incercat: atunci conturul ajunge sa taie prin bara).
+      // Se repara SPUNAND ce e: sageata de plecare la capatul taiat de sus si cea
+      // de sosire la capatul taiat de jos — vezi `.banda-plec` / `.banda-sos`.
+      // Continuarea devine atunci un fapt scris, nu un gol de interpretat.
+      //
+      // `--rand-et`: 1 cand deplasarea are eticheta, 0 cand nu. O iesire fara nume
+      // n-are ce rezerva, iar cei `+2px` din `margin-top` ar impinge atunci cutia
+      // sub bara ei. Vezi regula din CSS.
+      const areRandEticheta = et !== undefined && et < sus
+      if (areRandEticheta) sus = et
+      for (const f of feliaza(d.start, d.end, sus, null)) {
         const plafon = benziPeRand[f.rand - 1] ?? 1
-        if (susF >= plafon) continue
+        if (sus >= plafon) continue
         out.push({
           ...f,
           d,
-          banda: susF,
-          areEticheta: scrieEticheta,
-          inalt: Math.min(jos, plafon - 1) - susF + 1,
+          randEticheta: areRandEticheta,
+          areEticheta: f.inceput && et !== undefined,
+          inalt: Math.min(jos, plafon - 1) - sus + 1,
           cheie: `${d.cheie}|${f.zile[0]}`,
         })
       }
@@ -1563,7 +1566,7 @@
           {#each chenare as c (c.cheie)}
             {@const cDecizie = [...c.d.items.values()].some(p => p.necesita_decizie)}
             <div class="chenar"
-                 class:cu-eticheta={c.areEticheta}
+                 class:rand-et={c.randEticheta}
                  class:inceput={c.inceput}
                  class:sfarsit={c.sfarsit}
                  class:sediu={c.d.sediu}
@@ -1641,7 +1644,20 @@
               <!-- Bifa sta INAINTEA numelui, ca pe randul de task: „s-a facut" e o
                    stare a lucrarii, deci se citeste odata cu ea, nu dupa. -->
               {#if b.p.confirmata}<Check size={12} class="banda-bifa" />{/if}
-              <span class="banda-t">{b.inceput ? '' : '… '}{b.span > 1 ? etichetaLucrare(b.p) : etichetaBara(b.p)}</span>
+              <!-- CONTINUAREA SE DESENEAZA, NU SE PUNCTEAZA (Ion, 2026-08-27).
+                   Capatul taiat de granita saptamanii scria „… " inaintea numelui:
+                   trei puncte care mancau din eticheta si nu spuneau in ce
+                   directie continua lucrarea. Acum capatul poarta o SAGEATA, in
+                   interiorul benzii, pe muchia taiata — PLECARE la capatul din
+                   dreapta al randului de sus, SOSIRE la capatul din stanga al
+                   randului urmator. Aceeasi sageata pleaca dintr-un rand si
+                   aterizeaza in celalalt, deci ochiul leaga cele doua bucati fara
+                   sa citeasca nimic.
+                   Sunt `aria-hidden`: pentru cititorul de ecran intervalul intreg
+                   e deja scris in `aria-label`-ul benzii. -->
+              {#if !b.inceput}<span class="banda-sos" aria-hidden="true"><MoveRight size={13} strokeWidth={2.4} /></span>{/if}
+              <span class="banda-t">{b.span > 1 ? etichetaLucrare(b.p) : etichetaBara(b.p)}</span>
+              {#if !b.sfarsit}<span class="banda-plec" aria-hidden="true"><MoveRight size={13} strokeWidth={2.4} /></span>{/if}
               {#if b.sfarsit}
                 <button class="maner dr" onpointerdown={(e) => apucaCapat(e, b, 'sfarsit')}
                         onclick={(e) => e.stopPropagation()}
@@ -1660,7 +1676,9 @@
                  class:sfarsit={f.sfarsit}
                  style="grid-row: {f.rand}; grid-column: {f.col} / span {f.span}; --c: {culoareLucrare(f.p)}; --i: {f.banda}"
                  aria-hidden="true">
-              <span class="banda-t">{f.inceput ? '' : '… '}{etichetaBara(f.p)}</span>
+              {#if !f.inceput}<span class="banda-sos" aria-hidden="true"><MoveRight size={13} strokeWidth={2.4} /></span>{/if}
+              <span class="banda-t">{etichetaBara(f.p)}</span>
+              {#if !f.sfarsit}<span class="banda-plec" aria-hidden="true"><MoveRight size={13} strokeWidth={2.4} /></span>{/if}
             </div>
           {/each}
         </div>
@@ -2367,17 +2385,17 @@
                vrea: o muchie de 0px nu se deseneaza. */
             border-left-width: 0; border-right-width: 0;
             background: color-mix(in srgb, var(--accent) 10%, transparent); }
-  /* FELIA FARA ETICHETA ISI FACE SINGURA LOC SUS.
+  /* IESIREA FARA NUME NU REZERVA RANDUL ETICHETEI.
      Cei `+2px` din `margin-top` presupun ca deasupra primei benzi mai e un rand:
-     al etichetei. Pe felia care n-o scrie — bucata de dupa granita de saptamana,
-     sau o iesire fara nume — randul nu exista, deci cutia pornea 2px SUB bara si
-     conturul ei taia prin ea. Asa arata acum: o dunga lipita de bara, nu o cutie
-     care o contine.
-     Aici isi ia acelasi respiro pe care il are deja jos (5px = 27 al randului
+     al etichetei. Cand deplasarea n-are nume, randul nu exista deloc — pe NICIO
+     felie — deci cutia pornea 2px SUB bara si conturul ei taia prin ea.
+     Isi ia atunci acelasi respiro pe care il are deja jos (5px = 27 al randului
      minus 24 ai barei, plus cei 2 de decalaj): urca 5 si creste cu 7, deci
-     capatul de jos ramane exact unde era. Cele doua bucati ale aceleiasi iesiri
-     se citesc atunci ca un obiect, nu ca doua accidente. */
-  .chenar:not(.cu-eticheta) {
+     capatul de jos ramane unde era.
+     Regula se uita la `--rand-et`, care e o proprietate a DEPLASARII, nu a
+     feliei: toate bucatile ei raman la fel de inalte (cerinta lui Ion,
+     2026-08-27). Continuarea o spun sagetile, nu marimea cutiei. */
+  .chenar:not(.rand-et) {
     margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) - 5px);
     height: calc(var(--n) * var(--h-banda) + 7px);
   }
@@ -2523,6 +2541,32 @@
      o bara plina stinsa. */
   .banda.pregatire { background: var(--bg-surface);
                      box-shadow: inset 0 0 0 1.5px var(--accent); }
+  /* ===== SAGETILE DE CONTINUARE =====
+     Stau IN banda, lipite de muchia taiata, si iau cerneala textului ei — deci
+     urmeaza automat cele patru stari (plina, pregatire, facuta, de clarificat)
+     fara nicio regula in plus. `currentColor` prin `.banda-t`? Nu: sunt frati,
+     nu copii, deci culoarea se ia de la banda si se corecteaza doar acolo unde
+     `.banda-t` chiar se abate (mai jos).
+     `flex: none` ca sa nu se stranga cand numele umple randul, si `opacity`
+     usor sub 1: sageata e un semn de margine, nu al doilea subiect al benzii.
+     PLECAREA e impinsa la capatul din dreapta (`margin-left: auto`), SOSIREA sta
+     prima si isi ia un mic aer dupa ea. */
+  .banda-plec, .banda-sos { display: inline-flex; flex: none; opacity: 0.85; }
+  .banda-plec { margin-left: auto; padding-left: var(--space-6); }
+  .banda-sos { margin-right: var(--space-6); }
+  /* Muchia taiata n-are padding (vezi `.banda` fara `.inceput`/`.sfarsit`), deci
+     sageata ar atinge marginea celulei. Doi pixeli o desprind de ea. */
+  .banda:not(.sfarsit) .banda-plec { margin-right: var(--space-2xs); }
+  .banda:not(.inceput) .banda-sos { margin-left: var(--space-2xs); }
+  .banda.pregatire .banda-plec, .banda.pregatire .banda-sos { color: var(--accent-deep); }
+  .banda.facuta .banda-plec, .banda.facuta .banda-sos { color: var(--success-deep); }
+  .banda.decizie .banda-plec, .banda.decizie .banda-sos { color: var(--accent-text); }
+  /* Pe telefon banda e o dunga de 4px fara text (M3): un semn de 13px n-ar avea
+     unde sa stea, si ar umfla randul. Pleaca odata cu numele. */
+  @media (max-width: 620px) {
+    .banda-plec, .banda-sos { display: none; }
+  }
+
   .banda.pregatire .banda-t { color: var(--accent-deep); }
   /* FACUTA — tenta de „facut" cu inel si bifa (C9). Verdele e o STARE, ca peste
      tot in sistem; nu se adauga o a treia culoare de identitate. Textul ia
