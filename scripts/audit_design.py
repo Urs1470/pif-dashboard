@@ -516,6 +516,37 @@ class Audit:
             self.abatere('R10 z-index in banda tokenurilor, scris de mana',
                          p, curat, m.start(), m.group(0))
 
+    # -- R16 ----------------------------------------------------------------
+    def r16_muchie_scoasa_cu_none(self, p, text, curat):
+        """Intr-un fisier care schimba `border-style`, o muchie nu se scoate cu
+        `border-<latura>: none`.
+
+        `border-left: none` pare ca sterge latura, dar prescurtarea scrie TREI
+        lucruri: stil `none`, latime `medium` (3px) si culoare `currentColor`.
+        Cat timp stilul ramane `none` nu se vede nimic. In clipa in care o alta
+        regula pune `border-style: ...` pe acelasi element — fie si pentru alta
+        latura, fiindca prescurtarea le atinge pe toate patru — latura INVIE, la
+        3px si in cerneala paginii.
+
+        S-A INTAMPLAT DE DOUA ORI, in doua fisiere:
+          · `Projects.svelte` — `.pcard.new-card` cu `border-style: dashed` peste
+            un card fara bordura: 3px in `currentColor`, reparat prin scrierea
+            intreaga (`1.5px dashed var(--border-strong)`).
+          · `Calendar.svelte` — chenarul unei iesiri la SEDIU, taiat de granita de
+            saptamana: muchia scoasa reaparea `3px dashed rgb(28,28,36)` langa
+            `1px dashed accent/0.26` pe cele adevarate. Raportat de Ion pe
+            2026-08-27, cu poza: „sunt punctele alea negre care nu au nicio treaba".
+        A doua oara e un tipar, nu un ghinion.
+
+        Regula se aplica DOAR fisierelor care chiar folosesc `border-style`: in
+        rest, `border-bottom: none` pe un `:last-child` nu poate face rau, si nu
+        merita rescris in tot proiectul. Reparatia: `border-<latura>-width: 0`."""
+        if 'border-style' not in curat:
+            return
+        for m in re.finditer(r'border-(left|right|top|bottom):\s*none\s*;', curat):
+            self.abatere('R16 muchie scoasa cu `: none` intr-un fisier cu `border-style`',
+                         p, curat, m.start(), m.group(0))
+
     # -- R15 ----------------------------------------------------------------
     def r15_strat_portat_sub_modal(self, p, text, curat):
         """Un strat mutat in `<body>` prin `use:portal` nu mai are voie sa stea
@@ -729,6 +760,7 @@ def main():
         a.r11_tipografie_bruta(p, text, curat)
         a.r10_zindex_literal(p, text, curat)
         a.r15_strat_portat_sub_modal(p, text, curat)
+        a.r16_muchie_scoasa_cu_none(p, text, curat)
         a.r11_hover_only(p, text, curat)
         a.r12_inaltime_control_bruta(p, text, curat)
         a.r13_spatiere_bruta(p, text, curat)

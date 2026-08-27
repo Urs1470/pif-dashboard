@@ -2351,7 +2351,20 @@
             margin-top: calc(var(--h-antet) + var(--i) * var(--h-banda) + var(--space-2xs));
             height: calc(var(--n) * var(--h-banda));
             border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
-            border-left: none; border-right: none;
+            /* MUCHIA TAIATA SE SCOATE PRIN LATIME, NU PRIN `style: none`.
+               `border-left: none` pare inofensiv, dar prescurtarea scrie TREI
+               lucruri: stil `none`, latime `medium` (3px) si culoare
+               `currentColor`. Cat timp stilul ramane `none`, latimea nu se vede.
+               Dar `.chenar.sediu` de mai jos pune `border-style: dashed` pe toate
+               patru laturile — deci INVIE muchia scoasa, la 3px si in cerneala
+               paginii. Asta erau „punctele negre" raportate de Ion pe 2026-08-27:
+               masurat pe o iesire la sediu care taie saptamana, muchia taiata avea
+               `3px dashed rgb(28,28,36)` fata de `1px dashed accent/0.26` pe cele
+               adevarate. Se vedeau doar la SEDIU (singurul care schimba stilul) si
+               doar la granita de saptamana (singurul loc cu muchii scoase).
+               Cu latimea pusa pe zero, orice regula de mai jos poate scrie ce stil
+               vrea: o muchie de 0px nu se deseneaza. */
+            border-left-width: 0; border-right-width: 0;
             background: color-mix(in srgb, var(--accent) 10%, transparent); }
   .chenar.inceput { margin-left: 3px; border-left: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
                     border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
@@ -2678,7 +2691,10 @@
     display: flex; align-items: center; gap: var(--space-sm); width: 100%;
     border-bottom: 1px solid var(--border);
   }
-  .tsk:last-child { border-bottom: none; }
+  /* Latime zero, nu `style: none` — vezi nota lunga de la `.chenar`: prescurtarea
+     lasa in urma o muchie de 3px in cerneala paginii, pe care orice regula de
+     `border-style` de mai tarziu o invie. */
+  .tsk:last-child { border-bottom-width: 0; }
   /* Bifa: acelasi obiect ca `.check` din „Astăzi" si /tasks — cerc gol, plin cand
      e facut. `.check-empty` vine din `global.css`, o singura data pentru toate. */
   .tsk .check {
