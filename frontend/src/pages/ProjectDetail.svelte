@@ -804,11 +804,24 @@
   // pozitia si materialul le tine `Dock.svelte`. Inainte, fiecare pagina cu lista
   // isi desena propriul `.fab` in coltul de jos - patru copii ale aceleiasi cutii,
   // care acopereau ultimul rand exact acolo unde te uitai.
-  // `$effect` cheama singur curatarea la demontare si la fiecare schimbare a
-  // conditiei, deci butonul dispare cand nu mai are ce crea (arhiva, alt tab).
+  // `$effect` cheama singur curatarea la demontare.
+  //
+  // PE TOATE SUBTABURILE, NU DOAR PE „Taskuri" (Ion, 2026-08-28: „daca ma aflu
+  // intr-un alt subtab trebuie sa ma duca inapoi la taskuri proiect si sa
+  // porneasca modalul"). Conditia veche (`activeTab === 'tasks'`) lasa Perioade
+  // si Wiki pe actiunea IMPLICITA — care naviga la /tasks si deschidea foaia
+  // taskurilor GENERALE. Dar taskul pe care vrei sa-l creezi din pagina unui
+  // proiect e al proiectului, oricare tab ar fi deschis. Deci: actiunea comuta
+  // intai pe „Taskuri" (ca sa vezi unde aterizeaza ce creezi), apoi deschide
+  // foaia proiectului. `FoaieAdauga` sta la radacina paginii, nu in blocul
+  // tabului, deci deschiderea nu depinde de comutare.
   $effect(() => {
-    if (!(activeTab === 'tasks' && project)) return
-    return inregistreazaActiune('Task nou in proiect', () => { taskEditat = null; showAdauga = true })
+    if (!project) return
+    return inregistreazaActiune('Task nou in proiect', () => {
+      if (activeTab !== 'tasks') alegeTab('tasks')
+      taskEditat = null
+      showAdauga = true
+    })
   })
 </script>
 

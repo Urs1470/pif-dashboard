@@ -326,10 +326,16 @@
   // pozitia si materialul le tine `Dock.svelte`. Inainte, fiecare pagina cu lista
   // isi desena propriul `.fab` in coltul de jos — patru copii ale aceleiasi cutii,
   // care acopereau ultimul rand exact acolo unde te uitai.
-  // `$effect` cheama singur curatarea la demontare si la fiecare schimbare a
-  // conditiei, deci butonul dispare cand nu mai are ce crea (arhiva, alt tab).
+  // `$effect` cheama singur curatarea la demontare.
+  //
+  // FARA POARTA DE TELEFON. Actiunea inregistrata nu hraneste doar FAB-ul din
+  // dock (care pe desktop nici nu exista) — o consuma si scurtatura „n" din
+  // paleta, care exista PE DESKTOP. Cu poarta, „n" pe Acasa cadea pe actiunea
+  // implicita si te muta la /tasks, desi boardul de azi are propria lui creare
+  // la un metru de cursor (Ion, 2026-08-28: „n" pleaca de pe pagina doar cand
+  // pagina chiar n-are taskuri). Inregistrarea pe desktop nu costa nimic: cine
+  // n-o consuma, n-o vede.
   $effect(() => {
-    if (!(peTelefon)) return
     return inregistreazaActiune('Adaugă task pentru azi', () => { puls(); taskEditat = null; showAdauga = true })
   })
 </script>
