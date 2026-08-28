@@ -884,22 +884,42 @@
   function corpTrage(e) {
     if (!sheet || !corpY0) return
     const dy = e.touches[0].clientY - corpY0
-    // IN SUS — urca o treapta, o SINGURA data si FARA `preventDefault`:
-    // derularea continua nestingherita sub acelasi deget, foaia doar creste in
-    // timp ce derulezi. Aici, spre deosebire de antet, cresterea NU urmareste
-    // degetul cadru cu cadru — s-ar bate cu scroll-ul pentru acelasi gest.
-    if (!corpJos && dy < 0) {
+    // GESTUL, ODATA HOTARAT, TINE DEGETUL IN AMBELE SENSURI — ca la maner.
+    // Inainte, continuarea trecea prin `if (dy <= 0) return`: o coborare care se
+    // razgandea si urca inapoi peste punctul de pornire isi pierdea foaia.
+    if (corpJos) {
+      if (e.cancelable) e.preventDefault()
+      aseaza(hApucat - (e.touches[0].clientY - yApucat))
+      return
+    }
+    if (dy < 0) {
       if (intins) { corpY0 = 0; return }
       untrack(reimprospateazaTrepte)
+      // FARA DERULARE SUB DEGET, FOAIA URMEAZA DEGETUL DE LA PRAG (Ion,
+      // 2026-08-28: „la ridicare parca are o sacadare, se opreste putin cand
+      // ridic"). Regula veche — cresterea nu urmareste degetul, ca sa nu se
+      // bata cu derularea — are sens DOAR cand exista o derulare cu care sa se
+      // bata. Pe o zi fara continut derulabil, pana la pragul de intindere
+      // (~35px) nu se misca NIMIC, iar arcul pornea apoi de la viteza zero sub
+      // un deget deja in miscare: pauza aia era sacadarea. Acum gestul e al
+      // foii de la 8px, cadru cu cadru, cu viteza predata arcului la ridicare
+      // — identic cu manerul.
+      if (corpEl && corpEl.scrollHeight - corpEl.clientHeight <= 4) {
+        if (-dy < PRAG_DIRECTIE) return
+        corpJos = true
+        apuca(corpY0 - PRAG_DIRECTIE)
+        if (e.cancelable) e.preventDefault()
+        aseaza(hApucat - (e.touches[0].clientY - yApucat))
+        return
+      }
+      // CU derulare sub deget: cresterea NU urmareste degetul cadru cu cadru —
+      // s-ar bate cu scroll-ul pentru acelasi gest. Urca o treapta, o SINGURA
+      // data si FARA `preventDefault`, pe ARCUL de deschidere, nu prin
+      // `duLaTreapta` direct: acela schimba clasa, iar `height` nu e in
+      // tranzitia foii (doar `translate`/`scale`) — foaia se facea plina
+      // intr-un cadru. Pe lista derulabila saltul se ascundea sub derulare;
+      // masurat pe zi goala se vedea intreg.
       if (trepte.length > 1 && dy < -trepte[0] * PRAG_INTINDE) {
-        // CU ARCUL DE DESCHIDERE, NU CU `duLaTreapta` DIRECT. `duLaTreapta`
-        // schimba clasa, iar `height` nu e in tranzitia foii (doar `translate`/
-        // `scale`) — deci foaia se facea plina INTR-UN CADRU. Pe o zi cu lista
-        // derulabila saltul se ascundea sub derularea care mergea sub acelasi
-        // deget; pe o zi fara continut derulabil se vedea intreg (Ion,
-        // 2026-08-28: „ai rezolvat doar pe cele cu taskuri existente"). Acelasi
-        // drum ca la maner: `trage` stinge tranzitiile CSS, arcul de deschidere
-        // duce inaltimea cadru cu cadru, iar `laFinal` preda clasa `.intins`.
         treaptaTinta = trepte.length - 1
         treapta = treaptaTinta
         trage = true
@@ -909,20 +929,18 @@
       }
       return
     }
-    if (dy <= 0) return
+    if (dy === 0) return
     // IN JOS — acelasi gest ca la antet, cu aceleasi trepte, acelasi prag si
     // aceeasi proiectie de viteza. Se ia decizia o singura data, dupa
     // `PRAG_DIRECTIE`, ca la orice alt gest din aplicatie; pana atunci degetul
     // poate inca sa fie pe drum spre o derulare.
-    if (!corpJos) {
-      if ((corpEl?.scrollTop ?? 0) > 0) { corpY0 = 0; return }
-      if (dy < PRAG_DIRECTIE) return
-      corpJos = true
-      // Se apuca de unde s-a DECIS directia, nu de unde a inceput atingerea:
-      // altfel cei 8px de hotarare s-ar aduna la deplasare si foaia ar sari
-      // sub deget in clipa in care gestul devine al ei.
-      apuca(corpY0 + PRAG_DIRECTIE)
-    }
+    if ((corpEl?.scrollTop ?? 0) > 0) { corpY0 = 0; return }
+    if (dy < PRAG_DIRECTIE) return
+    corpJos = true
+    // Se apuca de unde s-a DECIS directia, nu de unde a inceput atingerea:
+    // altfel cei 8px de hotarare s-ar aduna la deplasare si foaia ar sari
+    // sub deget in clipa in care gestul devine al ei.
+    apuca(corpY0 + PRAG_DIRECTIE)
     // Fara asta, browserul ar face si el ceva cu degetul (saltul de capat de
     // lista) exact cat timp foaia coboara — doua obiecte pe aceeasi axa.
     if (e.cancelable) e.preventDefault()
