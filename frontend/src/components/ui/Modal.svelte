@@ -892,7 +892,19 @@
       if (intins) { corpY0 = 0; return }
       untrack(reimprospateazaTrepte)
       if (trepte.length > 1 && dy < -trepte[0] * PRAG_INTINDE) {
-        duLaTreapta(trepte.length - 1)
+        // CU ARCUL DE DESCHIDERE, NU CU `duLaTreapta` DIRECT. `duLaTreapta`
+        // schimba clasa, iar `height` nu e in tranzitia foii (doar `translate`/
+        // `scale`) — deci foaia se facea plina INTR-UN CADRU. Pe o zi cu lista
+        // derulabila saltul se ascundea sub derularea care mergea sub acelasi
+        // deget; pe o zi fara continut derulabil se vedea intreg (Ion,
+        // 2026-08-28: „ai rezolvat doar pe cele cu taskuri existente"). Acelasi
+        // drum ca la maner: `trage` stinge tranzitiile CSS, arcul de deschidere
+        // duce inaltimea cadru cu cadru, iar `laFinal` preda clasa `.intins`.
+        treaptaTinta = trepte.length - 1
+        treapta = treaptaTinta
+        trage = true
+        arcRuleaza = true
+        arcPlin.preia('h', inaltimeVizibila(), 0, trepte[treaptaTinta])
         corpY0 = 0
       }
       return
