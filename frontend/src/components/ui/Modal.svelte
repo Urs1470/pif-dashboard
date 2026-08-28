@@ -268,7 +268,7 @@
     if (px < -120 || px > 220 || py < -120 || py > 220) return ''
     return `${px.toFixed(1)}% ${py.toFixed(1)}%`
   }
-  import { PRAG_INCHIDE, PRAG_INTINDE, PRAG_DIRECTIE, puls, urmaritor } from '../../lib/gesturi.js'
+  import { PRAG_INCHIDE, PRAG_DIRECTIE, puls, urmaritor } from '../../lib/gesturi.js'
   import { creeazaArc } from '../../lib/arc.js'
 
   // `onclose` se cheama DOAR cand utilizatorul inchide (X, fundal, Escape, tras in
@@ -895,38 +895,33 @@
     if (dy < 0) {
       if (intins) { corpY0 = 0; return }
       untrack(reimprospateazaTrepte)
-      // FARA DERULARE SUB DEGET, FOAIA URMEAZA DEGETUL DE LA PRAG (Ion,
-      // 2026-08-28: „la ridicare parca are o sacadare, se opreste putin cand
-      // ridic"). Regula veche — cresterea nu urmareste degetul, ca sa nu se
-      // bata cu derularea — are sens DOAR cand exista o derulare cu care sa se
-      // bata. Pe o zi fara continut derulabil, pana la pragul de intindere
-      // (~35px) nu se misca NIMIC, iar arcul pornea apoi de la viteza zero sub
-      // un deget deja in miscare: pauza aia era sacadarea. Acum gestul e al
-      // foii de la 8px, cadru cu cadru, cu viteza predata arcului la ridicare
-      // — identic cu manerul.
-      if (corpEl && corpEl.scrollHeight - corpEl.clientHeight <= 4) {
-        if (-dy < PRAG_DIRECTIE) return
-        corpJos = true
-        apuca(corpY0 - PRAG_DIRECTIE)
-        if (e.cancelable) e.preventDefault()
-        aseaza(hApucat - (e.touches[0].clientY - yApucat))
-        return
-      }
-      // CU derulare sub deget: cresterea NU urmareste degetul cadru cu cadru —
-      // s-ar bate cu scroll-ul pentru acelasi gest. Urca o treapta, o SINGURA
-      // data si FARA `preventDefault`, pe ARCUL de deschidere, nu prin
-      // `duLaTreapta` direct: acela schimba clasa, iar `height` nu e in
-      // tranzitia foii (doar `translate`/`scale`) — foaia se facea plina
-      // intr-un cadru. Pe lista derulabila saltul se ascundea sub derulare;
-      // masurat pe zi goala se vedea intreg.
-      if (trepte.length > 1 && dy < -trepte[0] * PRAG_INTINDE) {
-        treaptaTinta = trepte.length - 1
-        treapta = treaptaTinta
-        trage = true
-        arcRuleaza = true
-        arcPlin.preia('h', inaltimeVizibila(), 0, trepte[treaptaTinta])
-        corpY0 = 0
-      }
+      // FOAIA INTAI, DERULAREA DUPA — regula clasica a foilor de jos. Cat timp
+      // foaia mai are unde creste, gestul in sus ii apartine EI: urmeaza degetul
+      // de la 8px, cu `preventDefault`, exact ca la maner; continutul deruleaza
+      // abia cand foaia e intinsa.
+      //
+      // Aici au murit, pe rand, doua variante:
+      //   · arcul dupa pragul de intindere — pe APARAT, odata ce derularea
+      //     nativa incepe, WebView-ul nu mai livreaza `touchmove`, deci arcul
+      //     pornea abia la RIDICAREA degetului. Masurat pe 28 iulie (o lucrare,
+      //     fara taskuri, corp derulabil cu 75px): foaia a stat la 440 tot
+      //     gestul si a sarit la 800 dupa. Ion: „tot parca se blocheaza
+      //     modalul la zilele fara taskuri";
+      //   · urmarirea DOAR pe corpul nederulabil — impartea zilele in doua
+      //     comportamente dupa un fapt invizibil (cati pixeli de scroll are
+      //     panoul), si pe ecranul lui de 365px „zi goala" insemna de multe ori
+      //     „derulabila cu 75px".
+      // `preventDefault` inainte sa inceapa derularea inseamna ca ea nu mai
+      // porneste deloc cat foaia creste, deci lupta pentru deget nu mai exista.
+      // Ce se pierde: prima tragere in sus pe o lista lunga INTINDE foaia in
+      // loc sa deruleze — exact conventia din foile de sistem, si exact
+      // gestul pe care Ion il tot face („ridic pe toata pagina").
+      if (-dy < PRAG_DIRECTIE) return
+      if (trepte.length <= 1) { corpY0 = 0; return }
+      corpJos = true
+      apuca(corpY0 - PRAG_DIRECTIE)
+      if (e.cancelable) e.preventDefault()
+      aseaza(hApucat - (e.touches[0].clientY - yApucat))
       return
     }
     if (dy === 0) return
