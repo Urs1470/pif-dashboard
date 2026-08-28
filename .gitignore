@@ -81,3 +81,10 @@ AUDIT_*.md
 # Plansele generate de scripts/filmstrip.py — se refac la cerere, nu se versioneaza
 docs/filmstrip/
 urma_tastatura_reala.json
+
+# Cai Windows aplatizate: un redirect de shell caruia i s-au pierdut separatorii scrie
+# un fisier pe nume `C:Users...` in radacina. Windows nu accepta `:` intr-un nume, deci
+# el ajunge pe disc ca U+F03A (zona privata) — de-aia santinela autopull il raporteaza in
+# escape octal (`CïºUsers...`), ilizibil, si a bipait „MURDAR" 4 zile in
+# august 2026 (audit_out.txt, E-113). Caracterul de mai jos e chiar U+F03A, nu doua puncte.
+**
