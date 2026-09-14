@@ -57,6 +57,17 @@ const ZILE = [
   { zi: 7, forme: ['duminica'] },
 ]
 
+// SFERA, SCRISA CU CUVINTE — la fel ca ziua (Ion, 2026-09-14: „scrii cu cuvinte").
+// DOAR „personal": munca e sfera implicita a unui task nou, deci un cuvant pentru
+// ea n-ar comuta nimic (Ion: „job trebuie sa fie implicita de fapt, deci nu are
+// sens, cea personala trebuie"). Asa un singur camp poate trimite taskul si in
+// personal, nu doar in munca.
+// „munca"/„serviciu" n-ar fi oricum cuvinte-cheie bune: apar firesc in titluri de
+// lucru („revizie la munca"). Cuvantul se TAIE din titlu, deci apare ca chip (regula #1).
+const SFERE = [
+  { forma: 'personal', sfera: 'personal', eticheta: 'Personal' },
+]
+
 /** Expresie care prinde `cuvant` doar intreg, cu granite care includ diacritice. */
 function intreg(cuvant) {
   return new RegExp(`(^|[^${L}])(${cuvant})(?=[^${L}]|$)`, 'i')
@@ -97,6 +108,8 @@ const RE_ORA = (L) => [
  *   zi: string|null,        // ISO, daca s-a recunoscut o zi
  *   etichetaZi: string|null,// cum se scrie ea pe chip („azi", „mâine", „vineri")
  *   proiect: object|null,   // proiectul potrivit, daca exista
+ *   sfera: string|null,     // 'munca'|'personal', daca s-a scris „job"/„personal"
+ *   etichetaSfera: string|null, // cum se scrie pe chip („Muncă"/„Personal")
  *   ora: string|null,       // RECUNOSCUTA, dar NU scoasa din titlu (vezi antetul)
  * }}
  */
@@ -106,6 +119,8 @@ export function parseTask(text, opt = {}) {
   let zi = null
   let etichetaZi = null
   let proiect = null
+  let sfera = null
+  let etichetaSfera = null
 
   // --- ZIUA ---
   // Ordinea conteaza: „azi"/„mâine"/„poimâine" intai, fiindca sunt cele mai
@@ -159,6 +174,18 @@ export function parseTask(text, opt = {}) {
     break
   }
 
+  // --- SFERA ---
+  // Dupa proiect: un nume de proiect e mai specific decat un cuvant-cheie general,
+  // deci daca s-ar suprapune vreodata (improbabil) proiectul are prioritate la taiere.
+  for (const s of SFERE) {
+    const m = normalizeaza(rest).match(intreg(s.forma))
+    if (!m) continue
+    sfera = s.sfera
+    etichetaSfera = s.eticheta
+    rest = taieLa(rest, m.index + m[1].length, s.forma.length)
+    break
+  }
+
   // --- ORA ---
   // Se VALIDEAZA inainte de a se tăia: „presiune 25:99 bar" se potriveste ca forma,
   // dar 25:99 nu e o ora — iar un titlu ciuntit ar fi mai rau decat o ora nerecunoscuta.
@@ -174,7 +201,7 @@ export function parseTask(text, opt = {}) {
     break
   }
 
-  return { titlu: curata(rest), zi, etichetaZi, proiect, ora }
+  return { titlu: curata(rest), zi, etichetaZi, proiect, sfera, etichetaSfera, ora }
 }
 
 /** Scoate `lungime` caractere de la `start`, pe textul ORIGINAL (cu diacritice).

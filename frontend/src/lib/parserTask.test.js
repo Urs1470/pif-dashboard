@@ -132,7 +132,35 @@ test('text fara nimic de extras trece neatins', () => {
   const r = parseTask('schimbat filtrul de ulei', { proiecte: PROIECTE })
   assert.equal(r.zi, null)
   assert.equal(r.proiect, null)
+  assert.equal(r.sfera, null)
   assert.equal(r.titlu, 'schimbat filtrul de ulei')
+})
+
+test('sfera scrisa: „personal" comuta si se taie din titlu', () => {
+  const r = parseTask('personal sună la dentist')
+  assert.equal(r.sfera, 'personal')
+  assert.equal(r.etichetaSfera, 'Personal')
+  assert.equal(r.titlu, 'sună la dentist')
+})
+
+test('„personal" pe cuvant intreg: „personalul" NU e sfera', () => {
+  // Aceeasi capcana ca „azimut” -> „azi mut”: granita de dupa trebuie sa cada.
+  const r = parseTask('verificat personalul de tura')
+  assert.equal(r.sfera, null, 'personalul nu e personal')
+  assert.equal(r.titlu, 'verificat personalul de tura')
+})
+
+test('munca n-are cuvant-cheie (e implicita): „job" ramane in titlu', () => {
+  const r = parseTask('job nou de organizat')
+  assert.equal(r.sfera, null)
+  assert.equal(r.titlu, 'job nou de organizat')
+})
+
+test('sfera + zi deodata, titlul ramane curat', () => {
+  const r = parseTask('mâine personal sună dentist')
+  assert.equal(r.etichetaZi, 'mâine')
+  assert.equal(r.sfera, 'personal')
+  assert.equal(r.titlu, 'sună dentist')
 })
 
 test('normalizeaza pastreaza lungimea (indicii de taiere depind de asta)', () => {

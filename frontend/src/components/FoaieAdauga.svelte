@@ -28,7 +28,7 @@
   import { marcheazaAterizarea } from '../lib/focus.js'
   import { tick, untrack } from 'svelte'
   import { motion, motionDuration, DUR_NORMAL } from '../lib/motion.svelte.js'
-  import { Search, Mic, Plus, X, ChevronDown, Check } from '@lucide/svelte'
+  import { Search, Mic, Plus, X, ChevronDown, Check, User } from '@lucide/svelte'
   import Modal from './ui/Modal.svelte'
   import Skeleton from './ui/Skeleton.svelte'
   import Select from './ui/Select.svelte'
@@ -47,8 +47,16 @@
     open = $bindable(false),
     /** Proiectul paginii curente, cand foaia se deschide dintr-un proiect. */
     proiect = null,
-    /** 'munca' | 'personal' — sfera in care cade un task global nou. */
+    /** 'munca' | 'personal' — sfera in care cade un task global nou. Un cuvant
+     *  scris in titlu („job"/„personal") o bate, la fel ca proiectul. */
     sfera = 'munca',
+    /** Termenul implicit al unui task NOU cand nu s-a scris nicio zi in titlu.
+     *  Il pune boardul „Astăzi" pe azi: un task adaugat de pe Acasa se adauga
+     *  pentru azi (Ion, 2026-09-14). Restul paginilor nu-l trimit — acolo un task
+     *  nou fara termen e legitim (backlog), deci ramane fara termen ca pana acum.
+     *  Se aplica TACUT (fara chip): nu s-a scris nimic de aratat. O zi scrisa in
+     *  text o bate; scoaterea ei explicita (chip ×) lasa taskul fara termen. */
+    ziImplicita = null,
     /** Se cheama dupa orice scriere reusita, ca pagina sa-si reincarce lista. */
     onSchimbare = () => {},
     // ===== MODUL DE EDITARE =====
@@ -80,6 +88,7 @@
   /** Chipul de zi/proiect scos de utilizator rămâne scos cat timp foaia e deschisa. */
   let refuzZi = $state(false)
   let refuzProiect = $state(false)
+  let refuzSfera = $state(false)
   let refuzOra = $state(false)
 
   // FOAIA SE RIDICA IMEDIAT — si asta e o schimbare de contract, nu o scurtatura.
@@ -123,7 +132,12 @@
   // Proiectul paginii curente e implicit; unul scris in text il bate, fiindca e
   // mai recent si mai explicit decat contextul.
   const proiectAles = $derived(refuzProiect ? null : (brut.proiect || proiect))
-  const oraSePoate = $derived(sfera === 'personal' && !proiectAles)
+  // Sfera scrisa in titlu bate sfera paginii, la fel ca proiectul. Din `brut`
+  // (prima trecere), ca sa nu depinda de `oraSePoate` — altfel `sferaAleasa` ->
+  // `oraSePoate` -> `citit` -> `sferaAleasa` ar fi circular (vezi nota de mai sus).
+  const sferaScrisa = $derived(refuzSfera ? null : brut.sfera)
+  const sferaAleasa = $derived(sferaScrisa || sfera)
+  const oraSePoate = $derived(sferaAleasa === 'personal' && !proiectAles)
   const citit = $derived(oraSePoate ? parseTask(q, { proiecte: projects.items, cuOra: true }) : brut)
 
   const ziAleasa = $derived(refuzZi ? null : citit.zi)
@@ -170,6 +184,7 @@
       recurenta = ''
       refuzZi = false
       refuzProiect = false
+      refuzSfera = false
       refuzOra = false
       return
     }
@@ -312,7 +327,10 @@
       const comun = {
         titlu,
         status: 'to_do',
-        data_scadenta: ziAleasa || undefined,
+        // O zi scrisa in text bate implicitul; fara ea, `ziImplicita` (azi, pe
+        // boardul „Astăzi") — asa un task adaugat de pe Acasa aterizeaza pe azi,
+        // in loc sa se creeze fara termen si sa nu apara pe boardul din care vine.
+        data_scadenta: ziAleasa || ziImplicita || undefined,
         recurenta: recurenta || undefined,
       }
       // `ora` merge DOAR pe ramura globala, si numai cand `oraSePoate` — coloana
@@ -323,7 +341,7 @@
       else facut = await createGlobalTask({
         ...comun,
         categorie: categorie || 'General',
-        sfera,
+        sfera: sferaAleasa,
         ...(oraAleasa ? { ora: oraAleasa } : {}),
       }, { sfera: 'toate' })
       open = false
@@ -435,7 +453,7 @@
          adanca, cum cere regula: text pe tenta/langa accent ia `-deep`), proiectul cu
          punctul lui de culoare. Fiecare are un `×` mic: ce a ghicit aplicatia trebuie
          sa se poata refuza, altfel parserul devine o surpriza. -->
-    {#if (ziAleasa && citit.etichetaZi) || oraAleasa || proiectAles}
+    {#if (ziAleasa && citit.etichetaZi) || oraAleasa || proiectAles || sferaScrisa}
       <div class="fa-linie">
         {#if (ziAleasa && citit.etichetaZi) || oraAleasa}<span class="fa-l-lead">Se planifică</span>{/if}
         {#if ziAleasa && citit.etichetaZi}
@@ -456,6 +474,18 @@
             <span class="fa-dot" style="background: {culoareProiect(proiectAles.id)}"></span>
             {proiectAles.nume}
             <button onclick={() => refuzProiect = true} aria-label="Scoate proiectul"><X size={11} strokeWidth={3} /></button>
+          </span>
+        {/if}
+        <!-- Sfera scrisa („personal"). Semnul e acelasi `User` de pe comutatorul de
+             sfera din /tasks si de pe capul grupei personale de pe board — cele trei
+             suprafete se refera una la alta. Doar „personal" ajunge aici (munca e
+             implicita), deci iconita e mereu cea personala. -->
+        {#if sferaScrisa === 'personal'}
+          {#if (ziAleasa && citit.etichetaZi) || oraAleasa || proiectAles}<span class="fa-l-pct">·</span>{/if}
+          <span class="fa-cheie-sfera">
+            <User size={12} strokeWidth={2} />
+            {brut.etichetaSfera}
+            <button onclick={() => refuzSfera = true} aria-label="Scoate sfera personală"><X size={11} strokeWidth={3} /></button>
           </span>
         {/if}
       </div>
@@ -649,7 +679,8 @@
     color: var(--accent-deep);
     font-weight: var(--fw-medium);
   }
-  .fa-cheie-proj {
+  .fa-cheie-proj,
+  .fa-cheie-sfera {
     display: inline-flex;
     align-items: center;
     gap: var(--space-6);
@@ -660,7 +691,8 @@
   .fa-ora { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .fa-dot { width: 7px; height: 7px; border-radius: var(--radius-full); flex: none; }
   .fa-cheie button,
-  .fa-cheie-proj button {
+  .fa-cheie-proj button,
+  .fa-cheie-sfera button {
     display: grid;
     place-items: center;
     width: 22px;
@@ -673,7 +705,8 @@
     transition: var(--transition-colors);
   }
   .fa-cheie button:hover,
-  .fa-cheie-proj button:hover { opacity: 1; background: color-mix(in oklab, currentColor 14%, transparent); }
+  .fa-cheie-proj button:hover,
+  .fa-cheie-sfera button:hover { opacity: 1; background: color-mix(in oklab, currentColor 14%, transparent); }
 
   /* Si pe desktop lista are inaltime FIXA, din acelasi motiv: caseta e centrata,
      deci cand se scurteaza se muta si sus si jos — de doua ori mai mult decat pe

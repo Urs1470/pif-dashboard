@@ -27,6 +27,7 @@
   import DatePicker from './ui/DatePicker.svelte'
   import { motionDuration, DUR_BASE, EASE, plecare, sosire, INTARZIERE_BIFA } from '../lib/motion.svelte.js'
   import { inregistreazaActiune } from '../lib/actiuneNoua.svelte.js'
+  import { localToday } from '../lib/planDates.js'
 
   // Home paseaza un callback ca sa-si reincarce KPI-urile + cardul "urgente"/
   // "deadline-uri" dupa ce bifez / mut / scot un task (altfel ramaneau stale
@@ -565,8 +566,12 @@
 
 <!-- ACEEASI foaie de adaugare ca in /tasks si ca in tabul Taskuri al unui proiect.
      Aici a inlocuit `TaskPickerModal`, care putea doar sa CAUTE. -->
+<!-- `ziImplicita`: un task NOU adaugat de pe Acasa cade pe AZI cand nu scrii alta
+     zi in titlu (Ion, 2026-09-14). Boardul „Astăzi" e singura suprafata care o
+     trimite; in /tasks si in proiect un task nou fara termen ramane fara termen. -->
 <FoaieAdauga bind:open={showAdauga} onSchimbare={() => { loadAgendaToday(); onchange() }}
              sfera={taskEditat?.sfera || 'munca'}
+             ziImplicita={localToday()}
              editeaza={taskEditat}
              onSalveaza={async (d) => { await actualizeazaTask(taskEditat.tip, taskEditat.id, d) }} />
 
