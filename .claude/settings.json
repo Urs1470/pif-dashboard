@@ -1,5 +1,27 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_git.py\" 2>/dev/null || py -3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_git.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_read.py\" 2>/dev/null || py -3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_read.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
