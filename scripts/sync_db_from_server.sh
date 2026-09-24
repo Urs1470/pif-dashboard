@@ -36,13 +36,3 @@ rm -f "$COOKIES"
 
 echo ""
 echo "GATA. DB local sincronizat cu serverul."
-python - <<'EOF'
-import sqlite3
-conn = sqlite3.connect('pif_dashboard.db')
-cur = conn.cursor()
-cur.execute("SELECT familie, COUNT(*), SUM(CASE WHEN explicatie IS NOT NULL AND explicatie!='' THEN 1 ELSE 0 END) FROM parametri_master GROUP BY familie ORDER BY familie")
-for fam, tot, cu in cur.fetchall():
-    cu = cu or 0
-    print(f"  {fam:<25} {cu}/{tot}  ({cu*100//tot if tot else 0}%)")
-conn.close()
-EOF

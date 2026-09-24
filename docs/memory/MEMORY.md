@@ -24,7 +24,7 @@ ai nevoie.
 | Fosile | `task_dependencies` (Gantt, fara cititor), `calcule` (vie doar prin `/snapshot`) |
 | Sistem | `app_settings` (KV), `schema_version` |
 
-**Schema v40, 10 tabele.** Migrarile stau in `database.py` (`run_migrations()`), sunt
+**Schema v41, 10 tabele.** Migrarile stau in `database.py` (`run_migrations()`), sunt
 idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
 
 > **Ce s-a sters nu se reinvie.** v28 a scos `parametri_master`, `fault_codes`,
@@ -38,13 +38,14 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
 ## Stare (verificat 2026-08-15)
 
 - **Pagini:** Acasa, Proiecte, Proiect (taburi Taskuri · Perioade · Wiki), Taskuri,
-  Planificator, Calendar, Departament, Calculator (+ build public `/calc`).
+  Calendar, Departament, Calculator (+ build public `/calc`). Planificatorul, prezent la
+  verificare, a fost scos pe 2026-08-26.
 - **Verificatoare:** `audit_design` curat, `test_suite` 44/0 cu server pe o copie a bazei.
 - **Cei 7 invarianti de produs** (in `CLAUDE.md`) sunt respectati in cod — verificati unul
   cate unul. Singura slabiciune: statusul nu e validat pe server.
-- **Fara consumator in SPA:** rutele `calcule` ×3, `/api/proiecte/batch` (are si un bug — la
-  stergere uita `implementari`), `/api/export/ics-key` (ruta; helperul e viu), `/login-hash`,
-  `/api/obsidian/config` ×2. **`/api/stats` NU e moarta** — o citeste Cowork.
+- **Rutele fara consumator** gasite la verificare au fost scoase: `calcule` ×3,
+  `/api/proiecte/batch`, `/login-hash` si `/api/obsidian/config` ×2 in `97a5c791` (2026-08-15),
+  `/api/export/ics-key` in `847327ee` (2026-08-27). **`/api/stats` NU e moarta** — o citeste Cowork.
 - **Android „Torqa"** (Capacitor, `org.iupif.pif`): WebView peste site-ul live, notificari
   native + alarma de plecare pe teren. `frontend/android/`, `scripts/build-apk.ps1`.
 

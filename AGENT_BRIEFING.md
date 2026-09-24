@@ -51,8 +51,8 @@ Commit messages:
 Frontend (daca atingi UI):
 - SPA Svelte 5 in frontend/src/. Foloseste libraria de componente components/ui/
   (Button, Select, Modal, DatePicker, SolidIcon, Toast, ...) — NU stiluri ad-hoc.
-- Culori/spacing DOAR din frontend/src/styles/tokens.css (paleta Bento: dark warm #12100d +
-  amber #ffb454; text pe fill amber = ink --accent-text #1a1206). Iconite: <SolidIcon> pentru
+- Culori/spacing DOAR din frontend/src/styles/tokens.css (sursa unica a valorilor; regulile in
+  .claude/rules/design.md — paleta Bento a fost inlocuita la redesignul din 2026-08-08). Iconite: <SolidIcon> pentru
   nav/feature, Lucide outline pentru afordante mici.
 - Dupa modificari de cod previewabile, ruleaza dev server-ul si verifica in browser.
 
@@ -88,7 +88,7 @@ Hub-uri cu risc de coliziune (fii mic + rapid + `pull --rebase`): `App.svelte`,
 ```
 <SCOPE> = Import-Convertoare
 <TASK> = Lucreaza la parserele de parametri din scripts/parse_params/ (abb, danfoss,
-lenze, siemens). Endpoint relevant in blueprints/parametri.py. NU atinge frontend/.
+lenze, siemens). Le foloseste importul din blueprints/projects.py. NU atinge frontend/.
 ```
 
 ```

@@ -33,6 +33,10 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 ## 2026-08-21
 
 - [2026-08-21 Verifică instrumentul înainte de subiect](2026-08-21-verifica-instrumentul-inainte-de-subiect.md) — trei din patru „defecte" de pe mobil erau ale sondei; `:active` nu se vede prin atingere sintetică, orice regulă CSS are `cssRules` truthy, iar un control care răspunde sub 25 ms nu are nevoie de semn de apăsare.
+- [2026-08-21 Mișcarea din Taskuri: reparație de fond, după cercetare](2026-08-21-miscarea-din-taskuri-reparatie-de-fond.md) — trei cauze reale: CSS-ul anima 220 ms după o redimensionare pe care `SystemBars` (Capacitor) o face deja într-un cadru; rândul care pleacă anima layout (acum iese din flux); `audit_design` dădea aviz fals (extins la `animation` și `lib/**/*.js`).
+- [2026-08-21 O actualizare gata de aplicat nu mai poate fi pierdută](2026-08-21-actualizarea-nu-se-mai-pierde.md) — `oferaDacaAsteapta(reg)` re-oferă toastul la pornire, la revenire și din 15 în 15 minute cât timp există un worker în `waiting` (răsuflare de 3 minute); aplicarea rămâne decizia utilizatorului.
+- [2026-08-21 Foaia de creare redevine o foaie normală de jos](2026-08-21-foaia-de-creare-e-o-foaie-normala.md) — creare și „Proiect nou" = foi de jos ca detaliile taskului (DUR_SLOW 280, `--ease`); focusul vine după ce foaia s-a așezat, deci tastatura urcă a doua; forma „pagină" (`DUR_PAGINA`, `--scrim-plin`) ștearsă.
+- [2026-08-21 Deschidere vâscoasă, butoane proeminente, aterizare cu inel, swipe curat](2026-08-21-modal-vascos-fab-aterizare.md) — val de reglaje pe mobil; deschiderea vâscoasă a modalului de creare a fost înlocuită în aceeași zi de „Foaia de creare redevine o foaie normală".
 - [2026-08-21 Foile cu tastatura: o singură sosire](2026-08-21-foile-cu-tastatura-o-singura-sosire.md) — tastatura se PREVEDE (înălțimea știută, pusă pe `<html>` înainte de randare), o singură sursă `--kb` (editorul nu mai fixează bare), clicul de la ridicarea degetului nu e al foii, foaia taskului cu schelet în ≤120 ms, taskul din proiect în foaie/panou. Audit nou: `audit_tastatura.py`.
 
 ## 2026-08-17

@@ -20,7 +20,7 @@ modificari necomise.
 | unde e functia Y | `docs/memory/CODE_MAP.md` — **generat** |
 | harta, starea, capcanele | `docs/memory/MEMORY.md` |
 | cum scriu corect pe API | `SCHEMA_REFERENCE.md` |
-| **de ce am facut asa** | `docs/decizii/INDEX.md` (105 decizii, cu carlig fiecare) |
+| **de ce am facut asa** | `docs/decizii/INDEX.md` (116 decizii, cu carlig fiecare) |
 | ce culoare/marime/durata | `frontend/src/styles/tokens.css` — sursa unica |
 
 Cele trei harti se regenereaza la fiecare commit care atinge cod Python. Activeaza hook-ul
@@ -30,7 +30,7 @@ o data per clona: `git config core.hooksPath .githooks`.
 
 ```
 app.py              # intrare Flask, auth PIN, CSP, rate limit, webhook deploy
-database.py         # schema v40, migrari v1-v40 idempotente, WAL
+database.py         # schema v41, migrari v1-v41 idempotente, WAL
 utils.py            # login_required, UUID, app_settings, norm_date
 csrf.py labels.py   # CSRF double-submit; etichetele de status
 
@@ -97,7 +97,7 @@ se încarcă singur când atingi `frontend/src/**`. Sursa valorilor rămâne
 python scripts/lint.py              # pyflakes + compilatorul Svelte (secunde, fara Chromium)
 python scripts/audit_design.py      # coerenta sistemului de design (sub o secunda)
 python scripts/audit_contrast.py    # contrastul perechilor reale, pe amandoua temele
-python scripts/test_suite.py        # API + verificari statice (40 de probe)
+python scripts/test_suite.py        # API + verificari statice (41 de probe)
 python scripts/smoke_ui.py          # fiecare ruta in Chromium, desktop + mobil
 python scripts/audit_mobil.py       # geometrie si gesturi pe trei latimi de telefon
 python scripts/audit_navigare.py    # ce se intampla, masurat, cand schimbi tabul
