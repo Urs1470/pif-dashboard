@@ -8,7 +8,7 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseTask, normalizeaza } from './parserTask.js'
+import { parseTask, normalizeaza, sugereazaProiecte, faraCuvinte, marcheaza } from './parserTask.js'
 import { localToday, addDays } from './planDates.js'
 
 const PROIECTE = [
@@ -167,4 +167,117 @@ test('normalizeaza pastreaza lungimea (indicii de taiere depind de asta)', () =>
   for (const s of ['mâine', 'sâmbătă', 'șțĂÂÎ', 'Biochem Podari']) {
     assert.equal(normalizeaza(s).length, s.length, s)
   }
+})
+
+// ===== SUGESTIILE DE PROIECT =====
+// Lista REALA de pe server, 2026-09-28 (22 de proiecte, 4 deschise), in ordinea
+// API-ului (cele noi primele). Conteaza sa fie cea reala: pragul pentru „cuvant
+// comun" se sprijina pe cum se repeta cuvintele in numele lui Ion — „Upgrade" x7,
+// „G120" x7, „Continental" x12 — iar o lista inventata ar trece testele cu orice prag.
+const REALE = [
+  { id: 'p01', nume: 'Service FC302 132 kW — degajare de fum, vulcanizare', cod_proiect: 'TBD', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — Vulcanizare', status: 'pregatire' },
+  { id: 'p02', nume: 'Upgrade motoare Extruder TSRD — S120', cod_proiect: '26_208', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — Extruder TSRD-MBL', status: 'finalizat' },
+  { id: 'p03', nume: 'Service suflantă biogaz — G120', cod_proiect: '', client: 'MASPEX ROMANIA SRL', locatie: 'Vălenii de Munte, jud. Prahova', status: 'finalizat' },
+  { id: 'p04', nume: 'Service modul AI stație epurare — S7-1200', cod_proiect: '26_241', client: 'Comuna Zau de Câmpie', locatie: 'Zau de Câmpie, jud. Mureș — stația de epurare', status: 'finalizat' },
+  { id: 'p05', nume: 'Upgrade motoare Extruder TDE FML — S120', cod_proiect: '250326E_C1', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — Extruder TDE FML', status: 'finalizat' },
+  { id: 'p06', nume: 'Upgrade CU240S PN Carbon Black — G120', cod_proiect: '26_207', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — Carbon Black (Mixing)', status: 'finalizat' },
+  { id: 'p07', nume: 'Parametrizare Oromax Triplex 2 — 3WA', cod_proiect: '26_205', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — Oromax Triplex 2', status: 'pregatire' },
+  { id: 'p08', nume: 'Înlocuire fibră optică — S150', cod_proiect: '26_162', client: 'Continental Automotive Products SRL', locatie: 'Timișoara', status: 'finalizat' },
+  { id: 'p09', nume: 'Upgrade motoare Calandru TSRD — S120', cod_proiect: '26_105', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — Calandru TSRD-MBL', status: 'finalizat' },
+  { id: 'p10', nume: 'Service remote ventilator MOT308 — ACS880', cod_proiect: '', client: 'AGFD TANDAREI SRL', locatie: 'Aleea Teilor nr. 2, 925200 Țăndărei, jud. Ialomița', status: 'finalizat' },
+  { id: 'p11', nume: 'Migrare CU240S DP → CU240E-2 DP — G120', cod_proiect: '26_175', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — linia Polymer', status: 'finalizat' },
+  { id: 'p12', nume: 'Upgrade motor Calandru TDE FML — S120', cod_proiect: '26_083', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — Calandru TDE FML (POMINI)', status: 'finalizat' },
+  { id: 'p13', nume: 'PIF tablouri MCC Biochem Podari — G120', cod_proiect: '26_123', client: 'IMSAT SA', locatie: 'Podari, jud. Dolj', status: 'finalizat' },
+  { id: 'p14', nume: 'Service pompă noroi B — ACS880', cod_proiect: '', client: 'ICPE ACTEL S.A.', locatie: 'zona Ploiești, jud. Prahova', status: 'finalizat' },
+  { id: 'p15', nume: 'Upgrade drive-uri linie Duplex — S120', cod_proiect: '26_147', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — CAP, Linia Duplex', status: 'pregatire' },
+  { id: 'p16', nume: 'PIF pompă condensat Oil Field — ACS880', cod_proiect: '26_088', client: 'Spoting SA', locatie: 'Tank Farm 8-13/8-14, Rafinăria Petrobrazi', status: 'pregatire' },
+  { id: 'p17', nume: 'PIF linie granulare — ACS880', cod_proiect: '25_020', client: 'AN FEED SRL', locatie: 'Platforma Ungheni nr. 1, Ungheni, jud. Mureș', status: 'finalizat' },
+  { id: 'p18', nume: 'Upgrade PILZ și MM440 APEX — G120', cod_proiect: '26_154', client: 'Continental Automotive Products SRL', locatie: 'Timișoara', status: 'finalizat' },
+  { id: 'p19', nume: 'Retrofit FML3 — G120', cod_proiect: '260001E_C1', client: 'Continental Automotive Products SRL', locatie: 'Timișoara', status: 'finalizat' },
+  { id: 'p20', nume: 'PIF ventilatoare vulcanizare — FC302', cod_proiect: '25_041', client: 'Continental Automotive Products SRL', locatie: 'Timișoara — H1, H4', status: 'finalizat' },
+  { id: 'p21', nume: 'Lucrări electrice și automatizări Biomasa Deva — G120', cod_proiect: '250656E', client: 'Carmeuse SRL', locatie: 'Deva', status: 'finalizat' },
+  { id: 'p22', nume: 'PIF multidrive Holcim Aleșd — ACS880', cod_proiect: '250826E_C1', client: 'IMSAT SNEF SA', locatie: 'Aleșd, jud. Bihor', status: 'finalizat' },
+]
+const ids = (text) => sugereazaProiecte(text, REALE).map(s => s.proiect.id)
+
+test('sugestie dintr-o bucata de nume: „raport Oro" propune Oromax', () => {
+  assert.deepEqual(ids('raport Oro'), ['p07'])
+})
+
+test('si proiectele INCHISE se propun (Ion: „din toate proiectele")', () => {
+  assert.deepEqual(ids('trimite PV Biochem'), ['p13'])
+  assert.equal(REALE.find(p => p.id === 'p13').status, 'finalizat')
+})
+
+test('cuvintele comune tac: Upgrade x7, G120 x7, PIF x5, Continental x12', () => {
+  for (const text of ['upgrade firmware G120', 'PIF', 'Service', 'Continental', 'Timișoara']) {
+    assert.deepEqual(ids(text), [], text)
+  }
+  // Pragul e de FRECVENTA, nu de inteles: „motor" e un cuvant de rand, dar sta intr-un
+  // singur nume („motoare" nu incepe cu „motor"), deci propune. E doar o propunere —
+  // o ignori si apesi Enter; mai scump ar fi fost un proiect care nu apare deloc.
+  assert.deepEqual(ids('verificare motor'), ['p12'])
+})
+
+test('un cuvant comun langa unul care deosebeste: vorbeste doar al doilea', () => {
+  const [s] = sugereazaProiecte('upgrade firmware Duplex', REALE)
+  assert.equal(s.proiect.id, 'p15')
+  assert.deepEqual(s.cuvinte.map(c => c.w), ['duplex'], '„upgrade" nu e dintre cuvintele care l-au propus')
+})
+
+test('proiectul care le are pe AMANDOUA iese primul („Extruder TDE")', () => {
+  assert.deepEqual(ids('Extruder TDE'), ['p05', 'p02', 'p12'])
+})
+
+test('client, locatie si cod propun si ele — si se stie de unde', () => {
+  const [pb] = sugereazaProiecte('Petrobrazi', REALE)
+  assert.equal(pb.proiect.id, 'p16')
+  assert.ok(pb.campuri.has('locatie') && !pb.campuri.has('nume'))
+  const [mx] = sugereazaProiecte('maspex', REALE)
+  assert.equal(mx.proiect.id, 'p03')
+  assert.ok(mx.campuri.has('client'))
+  assert.deepEqual(ids('26_205'), ['p07'], 'codul ramane un cuvant, cu tot cu `_`')
+})
+
+test('la scor egal, cele deschise primele', () => {
+  // „26_20" atinge 26_208, 26_207, 26_205 — toate cu acelasi scor; doar 26_205 e deschis.
+  assert.equal(ids('26_20')[0], 'p07')
+})
+
+test('diacriticele sunt optionale: „suflanta", „alesd"', () => {
+  assert.deepEqual(ids('suflanta'), ['p03'])
+  assert.deepEqual(ids('alesd'), ['p22'])
+})
+
+test('cel mult trei sugestii, iar sub 3 litere nimic', () => {
+  assert.equal(ids('Bio').length, 3, 'biogaz, Biochem, Biomasa')
+  assert.deepEqual(ids('PV la 9'), [])
+})
+
+test('alegerea taie din camp cuvintele care au propus proiectul, nu pe celelalte', () => {
+  const text = 'upgrade firmware Duplex'
+  const [s] = sugereazaProiecte(text, REALE)
+  assert.equal(faraCuvinte(text, s.cuvinte), 'upgrade firmware ')
+
+  const t2 = 'trimite PV Biochem Podari'
+  const [s2] = sugereazaProiecte(t2, REALE)
+  assert.equal(faraCuvinte(t2, s2.cuvinte), 'trimite PV ')
+
+  // Proiectul scris primul, apoi ce ai de facut: nu ramane semn atarnat in fata.
+  const t3 = 'Oromax: raport final'
+  const [s3] = sugereazaProiecte(t3, REALE)
+  assert.equal(faraCuvinte(t3, s3.cuvinte), 'raport final ')
+
+  // Doar bucata de proiect scrisa: campul ramane gol, gata pentru titlu.
+  const [s4] = sugereazaProiecte('Oro', REALE)
+  assert.equal(faraCuvinte('Oro', s4.cuvinte), '')
+})
+
+test('marcheaza ingroasa inceputul cuvantului potrivit, pastrand diacriticele', () => {
+  assert.deepEqual(marcheaza('Service pompă noroi B', ['pomp']), [
+    { text: 'Service ', m: false },
+    { text: 'pomp', m: true },
+    { text: 'ă noroi B', m: false },
+  ])
+  assert.deepEqual(marcheaza('Biochem', []), [{ text: 'Biochem', m: false }])
 })

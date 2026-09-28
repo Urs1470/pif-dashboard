@@ -40,7 +40,7 @@
   import { grupeazaDupaTermen, ORDINE_GRUPE, etichetaTermen } from '../lib/grupare.js'
   import { dueRing } from '../lib/formatters.js'
   import { culoareProiect } from '../lib/culori.js'
-  import { parseTask } from '../lib/parserTask.js'
+  import { parseTask, sugereazaProiecte, faraCuvinte, marcheaza } from '../lib/parserTask.js'
   import { toast, toastUndo } from '../stores/ui.svelte.js'
 
   let {
@@ -90,6 +90,10 @@
   let refuzProiect = $state(false)
   let refuzSfera = $state(false)
   let refuzOra = $state(false)
+  /** Proiectul ales dintr-o SUGESTIE. Cuvintele care l-au propus pleaca din camp la
+   *  alegere (au devenit chipul lui), deci parserul nu-l mai poate gasi in text —
+   *  il tine starea asta pana la „×" sau la inchiderea foii. */
+  let ales = $state(null)
 
   // FOAIA SE RIDICA IMEDIAT — si asta e o schimbare de contract, nu o scurtatura.
   //
@@ -108,9 +112,9 @@
   // dintre cele trei pagini care o deschid ar trebui sa tina minte sa incarce
   // lista, iar cea care uita ar avea un parser care nu recunoaste proiecte —
   // adica aceeasi foaie purtandu-se diferit in functie de unde ai deschis-o.
-  // Lista poate fi filtrata de pagina Proiecte (`projects.filters`); atunci un
-  // proiect ascuns de filtru nu se recunoaste din text, dar se poate scrie oricum
-  // in titlu si taskul se creeaza global — nu se pierde nimic tacit.
+  // Vin toate — deschise si inchise, fiindca nimeni nu scrie `projects.filters` (a
+  // ramas in store, gol) — pana la limita implicita a rutei (100, cele mai noi).
+  // Deci si sugestiile vin din toate proiectele.
   $effect(() => {
     if (open && !projects.incarcat) loadProjects().catch(() => {})
   })
@@ -128,17 +132,50 @@
   // Deci: prima trecere afla proiectul si NU atinge ora; a doua taie ora, dar numai
   // cand exista unde s-o punem. Doua regexuri pe un titlu, la fiecare tasta —
   // nimic, si ne scapa de o stare intermediara pe care ar trebui s-o sincronizam.
-  const brut = $derived(parseTask(q, { proiecte: projects.items }))
+  // Cu un proiect ALES, parserul nu mai cauta altul in text: alegerea e cel mai
+  // explicit lucru din foaie, iar un nume intreg gasit pe langa ar fi taiat din
+  // titlu fara sa ajunga nicaieri.
+  const deCautat = $derived(ales ? [] : projects.items)
+  const brut = $derived(parseTask(q, { proiecte: deCautat }))
   // Proiectul paginii curente e implicit; unul scris in text il bate, fiindca e
-  // mai recent si mai explicit decat contextul.
-  const proiectAles = $derived(refuzProiect ? null : (brut.proiect || proiect))
+  // mai recent si mai explicit decat contextul — iar unul ales le bate pe amandoua.
+  const proiectAles = $derived(refuzProiect ? null : (ales || brut.proiect || proiect))
   // Sfera scrisa in titlu bate sfera paginii, la fel ca proiectul. Din `brut`
   // (prima trecere), ca sa nu depinda de `oraSePoate` — altfel `sferaAleasa` ->
   // `oraSePoate` -> `citit` -> `sferaAleasa` ar fi circular (vezi nota de mai sus).
   const sferaScrisa = $derived(refuzSfera ? null : brut.sfera)
   const sferaAleasa = $derived(sferaScrisa || sfera)
   const oraSePoate = $derived(sferaAleasa === 'personal' && !proiectAles)
-  const citit = $derived(oraSePoate ? parseTask(q, { proiecte: projects.items, cuOra: true }) : brut)
+  const citit = $derived(oraSePoate ? parseTask(q, { proiecte: deCautat, cuOra: true }) : brut)
+
+  // SUGESTIILE DE PROIECT (regulile lor: `sugereazaProiecte`, in parserTask.js).
+  // Doar cat timp taskul n-are inca proiect — dupa alegere, sau in pagina unui
+  // proiect, lista ar propune ce ai deja. La editare nu: salvarea nu muta taskul.
+  const sugestii = $derived(editeaza || proiectAles ? [] : sugereazaProiecte(q, projects.items))
+
+  function alegeProiect(s) {
+    ales = s.proiect
+    refuzProiect = false
+    q = faraCuvinte(q, s.cuvinte)
+    // Tastatura ramane sus: urmeaza titlul, sau Enter. `mousedown` e oprit pe rand,
+    // deci de regula focusul nici n-a plecat; daca a plecat totusi, il aducem inapoi.
+    if (document.activeElement !== campEl) campEl?.focus()
+  }
+
+  /** A doua linie a unei sugestii: ce deosebeste proiectul de vecinii cu nume
+   *  asemanator. „finalizat" primul — si cele inchise se propun, deci trebuie sa
+   *  se vada care sunt; codul, daca are cifre („TBD" nu spune nimic); apoi LOCATIA
+   *  daca de acolo vine potrivirea, altfel clientul — un proiect propus de
+   *  „Petrobrazi" trebuie sa aiba „Petrobrazi" undeva pe rand. */
+  function contextProiect(s) {
+    const p = s.proiect
+    const dinLocatie = s.campuri.has('locatie') && !s.campuri.has('nume')
+    return [
+      p.status === 'finalizat' ? 'finalizat' : '',
+      /\d/.test(p.cod_proiect || '') ? p.cod_proiect : '',
+      dinLocatie ? p.locatie : (p.client || ''),
+    ].filter(Boolean).join(' · ')
+  }
 
   const ziAleasa = $derived(refuzZi ? null : citit.zi)
   const oraAleasa = $derived(refuzOra ? null : (oraSePoate ? citit.ora : null))
@@ -186,6 +223,7 @@
       refuzProiect = false
       refuzSfera = false
       refuzOra = false
+      ales = null
       return
     }
     // La EDITARE campul porneste cu titlul curent — asta e tot rostul randului
@@ -473,7 +511,9 @@
           <span class="fa-cheie-proj">
             <span class="fa-dot" style="background: {culoareProiect(proiectAles.id)}"></span>
             {proiectAles.nume}
-            <button onclick={() => refuzProiect = true} aria-label="Scoate proiectul"><X size={11} strokeWidth={3} /></button>
+            <!-- „×" inseamna „fara proiect", oricum ar fi venit: din pagina, din text
+                 sau dintr-o sugestie. Sugestiile reapar, ca sa poti alege altul. -->
+            <button onclick={() => { ales = null; refuzProiect = true }} aria-label="Scoate proiectul"><X size={11} strokeWidth={3} /></button>
           </span>
         {/if}
         <!-- Sfera scrisa („personal"). Semnul e acelasi `User` de pe comutatorul de
@@ -507,6 +547,27 @@
           </span>
           <span class="fa-enter" aria-hidden="true">↵</span>
         </button>
+      {/if}
+
+      <!-- PENTRU PROIECTUL: imediat sub randul-erou, fiindca il completeaza — spune
+           UNDE se creeaza taskul. Randurile au geometria celor din „Există deja",
+           dar in locul bifei, punctul de culoare al proiectului (acelasi ca pe chip):
+           nu sunt taskuri, deci n-au ce bifa. `mousedown` oprit = tastatura ramane sus. -->
+      {#if sugestii.length}
+        <div class="fa-cap">Pentru proiectul</div>
+        {#each sugestii as s (s.proiect.id)}
+          {@const scrise = s.cuvinte.map(c => c.w)}
+          {@const context = contextProiect(s)}
+          <button class="fa-rand" onmousedown={(e) => e.preventDefault()} onclick={() => alegeProiect(s)}>
+            <span class="fa-pslot"><span class="fa-dot" style="background: {culoareProiect(s.proiect.id)}"></span></span>
+            <span class="fa-titlu">
+              <span class="fa-t1">
+                <span class="fa-tx">{#each marcheaza(s.proiect.nume, scrise) as b}{#if b.m}<mark>{b.text}</mark>{:else}{b.text}{/if}{/each}</span>
+              </span>
+              {#if context}<span class="fa-unde">{#each marcheaza(context, scrise) as b}{#if b.m}<mark>{b.text}</mark>{:else}{b.text}{/if}{/each}</span>{/if}
+            </span>
+          </button>
+        {/each}
       {/if}
 
       {#if loading && items.length === 0}
@@ -848,8 +909,14 @@
     color: var(--text);
   }
   /* Potrivirea se ingroasa in accent ADANC. Un fundal colorat pe rand ar fi a doua
-     codificare peste ceva ce textul spune deja. */
-  .fa-tx mark { background: none; color: var(--accent-deep); font-weight: var(--fw-semibold); }
+     codificare peste ceva ce textul spune deja. Si pe linia a doua a unei sugestii
+     de proiect: acolo sta potrivirea cand vine din client sau din locatie. */
+  .fa-tx mark,
+  .fa-unde mark { background: none; color: var(--accent-deep); font-weight: var(--fw-semibold); }
+
+  /* Locul bifei, la latimea ei (`.check-empty`: 18, pe telefon 20), ca titlurile
+     sugestiilor sa stea pe aceeasi verticala cu ale taskurilor de dedesubt. */
+  .fa-pslot { display: grid; place-items: center; flex: none; width: 18px; height: 18px; }
 
   .fa-hint { padding: 18px var(--space-12); font-size: var(--font-small); color: var(--text-dim); }
   .fa-schelet { padding: var(--space-sm) var(--space-12); }
@@ -902,5 +969,6 @@
     /* Indiciul „Enter creeaza" n-are cui — tastatura de telefon n-are Enter fizic. */
     .fa-enter { display: none; }
     .fa-creeaza { min-height: 62px; }
+    .fa-pslot { width: 20px; height: 20px; }
   }
 </style>

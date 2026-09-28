@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-09-28
+
+- [2026-09-28 Sugestii de proiect; proiectul închis trimite ce adaugi după](2026-09-28-sugestii-proiect-si-proiectul-inchis.md) — foaia de adăugare propune proiecte din orice cuvânt de ≥3 litere (nume, cod, client, locație), din TOATE proiectele; cuvântul prezent în >3 proiecte tace. Pe Astăzi / picker / Calendar, un proiect finalizat trimite doar taskurile adăugate după închidere și de la 2026-09-28 (`TASK_PROIECT_VIU`) — cele vechi, inclusiv „De trimis PV", rămân neatinse.
+
 ## 2026-08-26
 
 - [2026-08-26 Planificatorul scos, ziua întreagă în Calendar](2026-08-26-planificatorul-scos-ziua-intreaga.md) — `/plan` și `/api/plan` au plecat; panoul zilei capătă lista taskurilor scadente (o listă, nu o vedere). Ordinea contează: întâi panoul, apoi ștergerea — altfel „Liber." rămânea scris peste zile cu treabă. Invalidările de cache s-au MUTAT pe `/api/calendar`, nu s-au șters.

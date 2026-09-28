@@ -25,6 +25,7 @@ from urllib.parse import urlparse
 from utils import (
     safe_table, login_required, get_json_or_400,
     get_app_setting, set_app_setting, PLAN_DEPT_KEY, PLAN_DEPT_HOST,
+    TASK_PROIECT_VIU,
 )
 from database import get_db, row_to_dict, DATABASE_PATH
 from labels import project_status_label, task_status_label
@@ -851,12 +852,12 @@ def calendar_view():
     # zi. Cu Planificatorul scos, jumatatea cu taskuri n-ar mai fi avut unde sa
     # stea, deci vine aici.
     #
-    # CONDITIILE SUNT CELE DIN `/api/plan`, CUVANT CU CUVANT — proiect deschis,
+    # CONDITIILE SUNT CELE DE PE BOARDUL „ASTĂZI", CUVANT CU CUVANT — din proiectele
+    # inchise doar ce s-a adaugat dupa inchidere (`TASK_PROIECT_VIU`, utils.py),
     # task nefinalizat, fara ocurentele viitoare ale unei recurente, iar globalele
-    # doar `sfera = 'munca'`. Regula fisierului `tasks.py` o spune deja: aceeasi
+    # doar `sfera = 'munca'`. Au venit din `/api/plan`, scos pe 2026-08-26: aceeasi
     # intrebare nu poate avea doua raspunsuri pe doua rute care hranesc acelasi
-    # ecran. Cand ruta cealalta dispare, conditia ei trebuie sa supravietuiasca
-    # aici, altfel „ce am de facut" isi schimba tacit inţelesul.
+    # ecran, altfel „ce am de facut" isi schimba tacit inţelesul.
     #
     # Se intorc taskurile din TOATA fereastra, nu doar din ziua selectata: panoul
     # isi alege ziua fara sa mai ceara nimic, iar fereastra e de 49 de zile cu
@@ -866,7 +867,7 @@ def calendar_view():
                COALESCE(t.recurenta, '') AS recurenta, '' AS categorie,
                p.id AS proiect_id, p.nume AS proiect_nume
         FROM tasks t JOIN proiecte p ON p.id = t.proiect_id
-        WHERE p.status NOT IN ('anulat', 'finalizat')
+        WHERE """ + TASK_PROIECT_VIU + """
           AND t.status != 'done'
           AND t.data_scadenta IS NOT NULL AND TRIM(t.data_scadenta) <> ''
           AND date(t.data_scadenta) >= date(?) AND date(t.data_scadenta) < date(?)

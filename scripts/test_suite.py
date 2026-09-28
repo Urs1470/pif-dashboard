@@ -272,6 +272,24 @@ def api_smoke_test():
         except Exception as e:
             log("fail", f"GET {ep} -> ERROR: {e}")
 
+_SESIUNE = None
+
+
+def sesiune_logata():
+    """O sesiune autentificata, IMPARTITA intre probe. Loginul are limita lui,
+    stricta (5 incercari / 5 minute per IP, `app.py`): cu cate un login pe proba,
+    suita ajunge singura la limita, iar un login din browser in aceleasi cinci
+    minute pica probele de la coada cu 429 — un esec fara legatura cu ce verifica."""
+    global _SESIUNE
+    if _SESIUNE is None:
+        s = requests.Session()
+        r = s.post(f"{BASE_URL}/login", json={"pin": os.environ.get('PIF_DASHBOARD_PIN', '')}, timeout=5)
+        if r.status_code != 200:
+            raise RuntimeError(f"login -> {r.status_code}")
+        _SESIUNE = s
+    return _SESIUNE
+
+
 def sfera_leak_test():
     """Sferele (munca/personal, v38) — modul de esec e SCURGEREA: o interogare
     pe global_tasks fara filtru varsa personalul intr-o suprafata de munca.
@@ -280,11 +298,8 @@ def sfera_leak_test():
     pin = os.environ.get('PIF_DASHBOARD_PIN', '')
     if not pin:
         log("fail", "PIF_DASHBOARD_PIN required for sfera test"); return
-    s = requests.Session()
     try:
-        r = s.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
-        if r.status_code != 200:
-            log("fail", f"sfera: login -> {r.status_code}"); return
+        s = sesiune_logata()
     except Exception as e:
         log("fail", f"sfera: login failed: {e}"); return
 
@@ -395,6 +410,83 @@ def sfera_leak_test():
         for tid in created:
             try: s.delete(f"{BASE_URL}/api/global-tasks/{tid}", headers=hdr(), timeout=5)
             except Exception: pass
+
+def proiect_inchis_test():
+    """Ce trimite un proiect INCHIS pe „Astazi", in pickerul lui si in panoul zilei:
+    doar ce s-a adaugat in el DUPA inchidere (`TASK_PROIECT_VIU`, utils.py).
+
+    CU MARTOR in ambele sensuri: taskul nou trebuie sa APARA — altfel o absenta a
+    celui vechi n-ar dovedi nimic — iar cel vechi sa NU apara. „Vechi" se face
+    impingand `created_at` inapoi direct in baza: prin API nu se poate, si exact
+    data adaugarii deosebeste un rest al lucrarii de urmarea ei."""
+    print("\n=== PROIECT INCHIS (ce trimite pe Astazi) ===\n")
+    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
+    if not pin:
+        log("fail", "PIF_DASHBOARD_PIN required for proiect-inchis test"); return
+    try:
+        s = sesiune_logata()
+    except Exception as e:
+        log("fail", f"proiect inchis: login failed: {e}"); return
+
+    def hdr():
+        return {"X-CSRF-Token": s.cookies.get('csrf_token', '')}
+
+    from datetime import date, datetime as _dt, timedelta as _td
+    today = date.today().isoformat()
+    db = os.environ.get('PIF_DB_PATH') or str(DB_PATH)
+    pid = None
+    try:
+        r = s.post(f"{BASE_URL}/api/proiecte", headers=hdr(), timeout=5,
+                   json={"nume": "__proba_proiect_inchis__", "status": "pregatire"})
+        if r.status_code not in (200, 201):
+            log("fail", f"proiect inchis: POST proiect -> {r.status_code}"); return
+        pid = r.json().get('id')
+
+        def task(titlu, **extra):
+            r = s.post(f"{BASE_URL}/api/proiecte/{pid}/tasks", headers=hdr(), timeout=5,
+                       json={"titlu": titlu, "status": "to_do", **extra})
+            return r.json().get('id')
+
+        vechi = task("__proba_rest_cu_termen__", data_scadenta=today)
+        vechi_fara = task("__proba_rest_fara_termen__")
+        c = sqlite3.connect(db)
+        c.execute("UPDATE tasks SET created_at = ? WHERE id IN (?, ?)",
+                  ((_dt.now() - _td(days=10)).isoformat(), vechi, vechi_fara))
+        c.commit(); c.close()
+
+        r = s.put(f"{BASE_URL}/api/proiecte/{pid}", headers=hdr(), timeout=5,
+                  json={"status": "finalizat"})
+        if r.status_code != 200:
+            log("fail", f"proiect inchis: PUT finalizat -> {r.status_code}"); return
+        nou = task("__proba_urmare_azi__", data_scadenta=today)
+        nou_fara = task("__proba_urmare_fara_termen__")
+
+        def idset(url, cheie=None):
+            j = s.get(f"{BASE_URL}{url}", timeout=5).json()
+            return {x['id'] for x in (j.get(cheie, []) if cheie else j)}
+
+        suprafete = [
+            ("agenda/today", idset(f"/api/agenda/today?today={today}", 'items'), nou, vechi),
+            ("agenda/candidates", idset(f"/api/agenda/candidates?today={today}", 'items'), nou_fara, vechi_fara),
+            ("calendar", idset(f"/api/calendar?start={today}&zile=7", 'taskuri'), nou, vechi),
+        ]
+        for nume, ids, martor, rest in suprafete:
+            if martor not in ids:
+                log("fail", f"proiect inchis: {nume} nu arata taskul adaugat DUPA inchidere")
+            elif rest in ids:
+                log("fail", f"proiect inchis: {nume} scoate la iveala un rest de dinainte de inchidere")
+            else:
+                log("pass", f"proiect inchis: {nume} — urmarea da, restul nu")
+
+        # Fisa proiectului le arata pe toate: acolo se curata resturile.
+        fisa = idset(f"/api/proiecte/{pid}/tasks")
+        log("pass" if {vechi, vechi_fara, nou, nou_fara} <= fisa else "fail",
+            "proiect inchis: fisa proiectului arata si resturile, si urmarea")
+    finally:
+        if pid:
+            try: s.delete(f"{BASE_URL}/api/proiecte/{pid}", headers=hdr(), timeout=5)
+            except Exception: pass
+
 
 def backup_secrete_test():
     """Backup-ul nu scurge chei `push_*` (cheia VAPID privata + abonamentele).
@@ -704,6 +796,7 @@ if __name__ == "__main__":
     if '--static' not in sys.argv:
         api_smoke_test()
         sfera_leak_test()
+        proiect_inchis_test()
         backup_secrete_test()
         push_notifications_test()
     data_integrity()

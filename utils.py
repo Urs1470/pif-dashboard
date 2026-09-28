@@ -91,6 +91,30 @@ def get_json_or_400():
     return data
 
 
+# ============ CE TRIMITE UN PROIECT INCHIS ============
+# Conditia pe care o pun, cuvant cu cuvant, cele trei rute care raspund la „ce am
+# de facut": boardul „Astăzi", pickerul lui si panoul zilei din Calendar. Aceeasi
+# intrebare nu poate avea doua raspunsuri pe trei rute — de-asta sta intr-un loc.
+#
+# Un proiect deschis trimite tot. Unul INCHIS trimite doar ce ai adaugat in el
+# DUPA inchidere: urmarea lucrarii (PV-ul de trimis, factura de primit), nu
+# resturile ramase deschise din timpul ei. Ion, 2026-09-28: „trebuie sa apara in
+# astazi taskul ce il adaug si in fisa proiect; celelalte vechi nu trebuiesc
+# atinse din moment ce este inchis proiectul." Pana atunci nu trimitea NIMIC
+# (2026-08-21), deci un task adaugat de pe Acasa pentru azi pe un proiect
+# finalizat se crea si nu aparea decat in pagina proiectului.
+#
+# `>=` si nu `>`: ziua inchiderii e chiar ziua in care scrii „de trimis PV".
+# A doua conditie tine neatinse taskurile de dinainte de regula. Pe 2026-09-28
+# statea exact unul care ar fi trecut de prima: „De trimis PV" (Înlocuire fibră
+# optică, inchis pe 19.08, taskul adaugat pe 21.08, termen 21.08) — ar fi
+# reaparut pe Acasa ca restanta de cinci saptamani, si Ion a cerut ca cele vechi
+# sa ramana cum sunt. Aliasuri presupuse: `t` (tasks), `p` (proiecte).
+TASK_PROIECT_VIU = """(p.status != 'finalizat' OR (
+        date(t.created_at) >= date(p.data_finalizare)
+        AND date(t.created_at) >= date('2026-09-28')))"""
+
+
 VALID_TABLES = {
     'proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
     'clienti', 'global_tasks', 'implementari', 'calcule', 'app_settings',

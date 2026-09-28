@@ -18,9 +18,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:run_migrations`, `1749:init_db`, `1902:row_to_dict`
 
-## utils.py (172 linii)
+## utils.py (196 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `112:safe_table`, `118:generate_uuid`, `122:_check_api_token`, `140:login_required`, `154:get_app_setting`, `163:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `136:safe_table`, `142:generate_uuid`, `146:_check_api_token`, `164:login_required`, `178:get_app_setting`, `187:set_app_setting`
 
 ## csrf.py (82 linii)
 
@@ -30,9 +30,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `37:project_status_label`, `41:task_status_label`
 
-## blueprints/admin.py (933 linii)
+## blueprints/admin.py (934 linii)
 
-`52:get_stats`, `86:_pdf_safe_text`, `100:_pdf_make_styles`, `128:_pdf_section_header`, `141:_pdf_section_admin`, `169:_pdf_section_tech`, `187:_pdf_section_tasks`, `221:export_pdf`, `292:backup_database`, `322:restore_database`, `485:admin_db_upload_page`, `531:admin_db_upload`, `608:admin_db_dump`, `651:_search_snippet`, `667:global_search`, `718:plan_departament_get`, `729:plan_departament_set`, `746:calendar_view`
+`53:get_stats`, `87:_pdf_safe_text`, `101:_pdf_make_styles`, `129:_pdf_section_header`, `142:_pdf_section_admin`, `170:_pdf_section_tech`, `188:_pdf_section_tasks`, `222:export_pdf`, `293:backup_database`, `323:restore_database`, `486:admin_db_upload_page`, `532:admin_db_upload`, `609:admin_db_dump`, `652:_search_snippet`, `668:global_search`, `719:plan_departament_get`, `730:plan_departament_set`, `747:calendar_view`
 
 ## blueprints/app_update.py (135 linii)
 
@@ -50,7 +50,7 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `117:_setari`, `130:_valideaza_setari`, `166:_b64`, `170:_unb64`, `179:_secret_curent`, `195:mint_token`, `205:verifica_token`, `227:_priv_raw`, `236:_chei_vapid`, `266:_abonamente`, `273:_salveaza_abonamente`, `277:_hash_endpoint`, `285:send_to_all`, `327:taskuri_de_notificat`, `346:taskuri_scadente`, `366:taskuri_cu_ora`, `386:_ore_trimise`, `402:_minute`, `415:check_and_send_ore`, `481:_de_notificat`, `494:_zile_de_cand`, `502:check_and_send_daily`, `555:porneste_planificator`, `598:push_vapid_public`, `606:push_subscribe`, `625:push_unsubscribe`, `636:push_tokens`, `671:push_setari_get`, `677:push_setari_put`, `696:push_status`, `710:push_test`, `727:push_action`
 
-## blueprints/tasks.py (852 linii)
+## blueprints/tasks.py (851 linii)
 
-`18:_skip_weekend`, `28:_next_recurrence_date`, `53:_spawn_recurring_task`, `81:_spawn_recurring_global_task`, `119:get_tasks`, `166:create_task`, `210:update_task`, `280:delete_task`, `301:get_subtasks`, `312:create_subtask`, `335:update_subtask`, `350:delete_subtask`, `374:_sfera_or_none`, `386:norm_ora`, `413:get_global_tasks`, `493:create_global_task`, `537:get_global_task`, `552:update_global_task`, `628:delete_global_task`, `658:_resolve_today`, `667:_agenda_item`, `705:get_agenda_today`, `772:get_agenda_candidates`, `827:reorder_agenda`
+`18:_skip_weekend`, `28:_next_recurrence_date`, `53:_spawn_recurring_task`, `81:_spawn_recurring_global_task`, `119:get_tasks`, `166:create_task`, `210:update_task`, `280:delete_task`, `301:get_subtasks`, `312:create_subtask`, `335:update_subtask`, `350:delete_subtask`, `374:_sfera_or_none`, `386:norm_ora`, `413:get_global_tasks`, `493:create_global_task`, `537:get_global_task`, `552:update_global_task`, `628:delete_global_task`, `658:_resolve_today`, `667:_agenda_item`, `705:get_agenda_today`, `769:get_agenda_candidates`, `826:reorder_agenda`
 

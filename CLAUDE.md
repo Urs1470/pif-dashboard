@@ -20,7 +20,7 @@ modificari necomise.
 | unde e functia Y | `docs/memory/CODE_MAP.md` — **generat** |
 | harta, starea, capcanele | `docs/memory/MEMORY.md` |
 | cum scriu corect pe API | `SCHEMA_REFERENCE.md` |
-| **de ce am facut asa** | `docs/decizii/INDEX.md` (116 decizii, cu carlig fiecare) |
+| **de ce am facut asa** | `docs/decizii/INDEX.md` (117 decizii, cu carlig fiecare) |
 | ce culoare/marime/durata | `frontend/src/styles/tokens.css` — sursa unica |
 
 Cele trei harti se regenereaza la fiecare commit care atinge cod Python. Activeaza hook-ul

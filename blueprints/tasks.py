@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 
 from database import get_db, row_to_dict
-from utils import generate_uuid, login_required, get_json_or_400
+from utils import generate_uuid, login_required, get_json_or_400, TASK_PROIECT_VIU
 
 tasks_bp = Blueprint('tasks', __name__)
 logger = logging.getLogger(__name__)
@@ -714,16 +714,13 @@ def get_agenda_today():
         {'today': today})
     items = [_agenda_item(row_to_dict(r), 'global', today) for r in cursor.fetchall()]
 
-    # UN PROIECT INCHIS NU MAI TRIMITE NIMIC PE ACASA. Filtrul scria
-    # `p.status != 'anulat'` — un status care NU MAI EXISTA din v31 (doua stari:
-    # `pregatire` si `finalizat`), deci nu excludea absolut nimic. Aceeasi
-    # conditie ca in `/api/plan`, cuvant cu cuvant: Planificatorul decisese deja
-    # ca lucrarile incheiate ies din lumea planificarii, si nu se poate ca aceeasi
-    # intrebare sa aiba doua raspunsuri pe doua rute care hranesc acelasi ecran.
+    # UN PROIECT INCHIS TRIMITE PE ACASA DOAR CE AI ADAUGAT IN EL DUPA INCHIDERE
+    # (`TASK_PROIECT_VIU`, in utils.py — acolo e si povestea). Resturile ramase
+    # deschise din timpul lucrarii nu se intorc; taskul scris azi pentru azi, da.
     cursor.execute(
         '''SELECT t.*, p.nume AS proiect_nume
            FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
-           WHERE p.status NOT IN ('anulat', 'finalizat') AND ''' + _AGENDA_WHERE.format(alias='t'),
+           WHERE ''' + TASK_PROIECT_VIU + ' AND ' + _AGENDA_WHERE.format(alias='t'),
         {'today': today})
     items += [_agenda_item(row_to_dict(r), 'proiect', today) for r in cursor.fetchall()]
 
@@ -801,9 +798,11 @@ def get_agenda_candidates():
     # deci filtrul se citea ca o precautie si nu excludea nimic. Un task ramas
     # deschis intr-o lucrare incheiata nu e o optiune: nu-l poti PLANIFICA, e o
     # urma de curatat din pagina proiectului.
+    # Ce ai adaugat DUPA inchidere e alta poveste (2026-09-28): e urmarea lucrarii,
+    # deci se ofera ca orice task — aceeasi conditie ca boardul, `TASK_PROIECT_VIU`.
     tq = '''SELECT t.*, p.nume AS proiect_nume
             FROM tasks t JOIN proiecte p ON t.proiect_id = p.id
-            WHERE t.status != 'done' AND p.status NOT IN ('anulat', 'finalizat')
+            WHERE t.status != 'done' AND ''' + TASK_PROIECT_VIU + '''
               AND (t.data_scadenta IS NULL OR TRIM(t.data_scadenta) = ''
                    OR date(t.data_scadenta) > date(:today))
               AND NOT (

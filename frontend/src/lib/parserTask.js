@@ -220,3 +220,106 @@ function curata(s) {
     .replace(/^[\s,;.-]+|[\s,;.-]+$/g, '')
     .trim()
 }
+
+// ===== SUGESTIILE DE PROIECT =====
+//
+// `parseTask` recunoaste un proiect doar dupa NUMELE INTREG, iar numele sunt lungi:
+// 22 pe server la 2026-09-28, intre 20 si 53 de caractere, cu „—" si familia de
+// drive la coada („PIF tablouri MCC Biochem Podari — G120"). Nu le scrie nimeni
+// intr-un titlu. Ion, 2026-09-28: „trebuie toata denumirea proiectului, nu ai putea
+// sa faci sa-mi apara sugestii din toate proiectele nu doar din cele active?"
+//
+// Deci un al doilea drum, care PROPUNE si nu ghiceste: un cuvant scris (de la 3
+// litere) care e inceputul unui cuvant din numele, codul, clientul sau locatia unui
+// proiect il aduce in lista foii. Se ALEGE cu o atingere — nimic nu se ataseaza
+// singur. Din TOATE proiectele; la scor egal, cele deschise primele.
+//
+// UN CUVANT COMUN NU PROPUNE NIMIC. „Upgrade", „PIF", „Service", „G120",
+// „Continental" stau in 5–12 proiecte fiecare — si in jumatate din titlurile de
+// task, ca simple cuvinte. Un cuvant potrivit cu mai mult de `PRAG_CUVANT` proiecte
+// nu deosebeste nimic, deci tace; „Biochem", „Oromax", „Duplex", „26_205" deosebesc
+// unul-doua si vorbesc. Scorul: fiecare cuvant care vorbeste da `PRAG_CUVANT + 1 - n`
+// fiecaruia dintre cele n proiecte pe care le atinge — deci la „Extruder TDE"
+// iese primul proiectul care le are pe AMANDOUA.
+
+export const PRAG_CUVANT = 3
+const LITERE_MIN = 3
+const SUGESTII_MAX = 3
+const CAMPURI = ['nume', 'cod_proiect', 'client', 'locatie']
+
+// `_` e litera aici: codurile de proiect („26_205") trebuie sa ramana un cuvant.
+const RE_CUVANT = new RegExp(`[${L}_]+`, 'g')
+
+/** Cuvintele unui text, normalizate, cu locul lor — valabil si pe textul ORIGINAL,
+ *  fiindca normalizarea pastreaza lungimea (vezi `taieLa`). */
+function cuvinte(text) {
+  return [...normalizeaza(text).matchAll(RE_CUVANT)]
+    .map(m => ({ w: m[0], start: m.index, end: m.index + m[0].length }))
+}
+
+/**
+ * Proiectele propuse de text, cele mai sigure primele (cel mult `SUGESTII_MAX`).
+ * @returns {Array<{ proiect: object, scor: number,
+ *   cuvinte: Array<{w: string, start: number, end: number}>, campuri: Set<string> }>}
+ *   `cuvinte` = ce anume din text l-a propus (pleaca din camp la alegere);
+ *   `campuri` = unde s-a potrivit (randul arata locatia, daca de acolo vine).
+ */
+export function sugereazaProiecte(text, proiecte = []) {
+  const scrise = cuvinte(text).filter(c => c.w.length >= LITERE_MIN)
+  if (!scrise.length) return []
+  const index = proiecte.filter(p => p && p.id).map(p => ({
+    p,
+    campuri: CAMPURI.map(camp => ({ camp, w: cuvinte(p[camp]).map(c => c.w) })),
+  }))
+  const gasite = new Map()
+  for (const c of scrise) {
+    const lovite = []
+    for (const e of index) {
+      const campuri = e.campuri.filter(k => k.w.some(w => w.startsWith(c.w))).map(k => k.camp)
+      if (campuri.length) lovite.push({ e, campuri })
+    }
+    if (!lovite.length || lovite.length > PRAG_CUVANT) continue
+    for (const { e, campuri } of lovite) {
+      const s = gasite.get(e.p.id) || { proiect: e.p, scor: 0, cuvinte: [], campuri: new Set() }
+      s.scor += PRAG_CUVANT + 1 - lovite.length
+      s.cuvinte.push(c)
+      for (const k of campuri) s.campuri.add(k)
+      gasite.set(e.p.id, s)
+    }
+  }
+  // La egalitate: deschise intai, apoi ordinea listei (API-ul le da pe cele noi primele).
+  const loc = new Map(proiecte.map((p, i) => [p?.id, i]))
+  const inchis = p => (p.status === 'finalizat' ? 1 : 0)
+  return [...gasite.values()]
+    .sort((a, b) => (b.scor - a.scor)
+      || (inchis(a.proiect) - inchis(b.proiect))
+      || (loc.get(a.proiect.id) - loc.get(b.proiect.id)))
+    .slice(0, SUGESTII_MAX)
+}
+
+/** Textul fara cuvintele care au propus proiectul ales: au devenit chipul lui, deci
+ *  nu se mai scriu o data in titlu (regula #1, vazuta din partea cealalta). Un
+ *  spatiu ramane la coada, ca sa scrii mai departe fara sa-l pui tu. */
+export function faraCuvinte(text, taiate = []) {
+  let t = String(text || '')
+  for (const c of [...taiate].sort((a, b) => b.start - a.start)) t = t.slice(0, c.start) + t.slice(c.end)
+  t = t.replace(/\s{2,}/g, ' ').replace(/^[\s,;:.–—-]+|[\s,;:.–—-]+$/g, '')
+  return t ? t + ' ' : ''
+}
+
+/** Textul in bucati, cu inceputurile de cuvant potrivite marcate (`m: true`) — ca
+ *  randul unei sugestii sa arate DE CE a fost propus. `scrise` = cuvinte normalizate. */
+export function marcheaza(text, scrise = []) {
+  const t = String(text || '')
+  const out = []
+  let i = 0
+  for (const c of cuvinte(t)) {
+    const lung = Math.max(0, ...scrise.filter(w => c.w.startsWith(w)).map(w => w.length))
+    if (!lung) continue
+    if (c.start > i) out.push({ text: t.slice(i, c.start), m: false })
+    out.push({ text: t.slice(c.start, c.start + lung), m: true })
+    i = c.start + lung
+  }
+  if (i < t.length) out.push({ text: t.slice(i), m: false })
+  return out
+}

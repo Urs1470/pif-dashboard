@@ -10,17 +10,17 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/stats` | `get_stats` | 50 |
-| GET | `/api/export/pdf` | `export_pdf` | 219 |
-| GET | `/api/backup` | `backup_database` | 290 |
-| POST | `/api/restore` | `restore_database` | 320 |
-| GET | `/admin/db-upload` | `admin_db_upload_page` | 483 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 529 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 606 |
-| GET | `/api/search` | `global_search` | 665 |
-| GET | `/api/settings/plan-departament` | `plan_departament_get` | 716 |
-| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 727 |
-| GET | `/api/calendar` | `calendar_view` | 744 |
+| GET | `/api/stats` | `get_stats` | 51 |
+| GET | `/api/export/pdf` | `export_pdf` | 220 |
+| GET | `/api/backup` | `backup_database` | 291 |
+| POST | `/api/restore` | `restore_database` | 321 |
+| GET | `/admin/db-upload` | `admin_db_upload_page` | 484 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 530 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 607 |
+| GET | `/api/search` | `global_search` | 666 |
+| GET | `/api/settings/plan-departament` | `plan_departament_get` | 717 |
+| PUT | `/api/settings/plan-departament` | `plan_departament_set` | 728 |
+| GET | `/api/calendar` | `calendar_view` | 745 |
 
 ## blueprints/app_update.py (3 rute)
 
@@ -95,8 +95,8 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 550 |
 | DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 626 |
 | GET | `/api/agenda/today` | `get_agenda_today` | 703 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 770 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 825 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 767 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 824 |
 
 ## app.py (16 rute)
 
