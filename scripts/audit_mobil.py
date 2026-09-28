@@ -33,15 +33,19 @@ RULARE
     python scripts/audit_mobil.py                 # tot
     python scripts/audit_mobil.py --fara-gesturi  # doar geometrie
 
-Ca la `smoke_ui.py`: porneste singur aplicatia, pe un port liber si pe o COPIE a
-bazei. Iese cu 0 daca nu a gasit nimic.
+Porneste singur aplicatia (`banc.Aplicatia`), pe un port liber si pe o COPIE a bazei.
+Iesire: 0 curat, 1 abatere, 2 instrumentul (vezi banc.py).
+
+ASTEPTARILE SUNT PE CONDITIE (2026-09-28). Aici erau 57 de pauze fixe, ~66 s din cele
+111 ale unei rulari. Fiecare a devenit una din trei: `aseaza(page)` dupa o schimbare
+de interfata, `aseaza(page, server=True)` dupa o actiune care scrie pe server (vezi
+`banc.LINISTE_SERVER`), sau a ramas pauza — acolo unde pauza E stimulul: cat tii
+degetul apasat, cat de repede derulezi, cadrele dintre doua miscari.
 """
 
 import argparse
 import os
-import shutil
 import sys
-import tempfile
 import time
 
 # Numele lunilor din `DatePicker.svelte` — folosite ca sa stiu pe ce luna s-a
@@ -52,7 +56,9 @@ LUNI_DP = ['Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
 RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RADACINA, 'scripts'))
 
-import smoke_ui as S
+import banc  # noqa: E402
+import smoke_ui as S  # noqa: E402
+from banc import out  # noqa: E402
 
 RUTE = [
     ('/', 'Acasa'),
@@ -65,16 +71,10 @@ RUTE = [
 
 ECRANE = [('iphone-se', 375, 667), ('android-mic', 360, 740), ('iphone-14', 390, 844)]
 
-# FUSUL ORAR AL TESTELOR NU E UTC, CU BUNA STIINTA.
-# Ion lucreaza in Romania (UTC+2/+3), iar containerele de test ruleaza pe UTC —
-# unde ora locala si UTC coincid, deci orice greseala de conversie e INVIZIBILA.
-# Asa a trecut neobservat un bug pe care il vedea la fiecare atingere: butoanele
-# „Azi"/„Mâine" construiau data cu `new Date().toISOString()`, adica in UTC, iar
-# miezul noptii local intr-un fus de la est de Greenwich cade in ziua precedenta.
-# „Azi" scria IERI, la orice ora. Testele erau verzi.
-FUS_TEST = 'Europe/Bucharest'
 
-PRAG_TINTA = 40      # sub atat raportam; tinta dorita e --tap-min (44)
+# `--tap-min` (44). Pana pe 2026-09-28 pragul de aici era 40, o toleranta scrisa
+# doar in fisierul asta — `audit_ferestre` cerea 43, `audit_foaie` 44.
+PRAG_TINTA = banc.TINTA_MIN
 
 # Ce stim ca e sub prag CU BUNA STIINTA. Tine lista scurta si scrie MOTIVUL —
 # altfel auditul devine o lista de exceptii si nu mai spune nimic.
@@ -211,9 +211,18 @@ TRAGE = """([x0, y0, pasi, id]) => {
 }"""
 
 
-def out(s=''):
-    sys.stdout.buffer.write((str(s) + '\n').encode('utf-8', 'replace'))
-    sys.stdout.flush()
+def rand(cond, mesaj, detaliu=''):
+    """Un rand de raport; intoarce 1 daca e abatere, ca sa se poata aduna."""
+    out('  %-8s %s%s' % ('OK' if cond else 'PICA', mesaj,
+                         ('  — %s' % detaliu) if (detaliu and not cond) else ''))
+    return 0 if cond else 1
+
+
+def aseaza(page, server=False):
+    """In locul unei pauze fixe: pana cand pagina a stat linistita (fara cereri in
+    zbor, fara animatii finite, fara schelete) — mai mult dupa o scriere pe server,
+    ca sa prinda si cererea trimisa intarziat."""
+    banc.asteapta_linistea(page, liniste_ms=banc.LINISTE_SERVER if server else banc.LINISTE_UI)
 
 
 def acceptat(s):
@@ -226,19 +235,25 @@ def geometrie(ctx, baza):
     for nume, w, h in ECRANE:
         out('--- %s (%dx%d) ---' % (nume, w, h))
         for ruta, eticheta in RUTE:
-            page, _col, _blocata = S.deschide(ctx, baza + '/#' + ruta, w, h)
-            page.wait_for_timeout(600)
+            page, col, blocata = S.deschide(ctx, baza + '/#' + ruta, w, h)
             # CONTINUTUL VENIT DIN RETEA TREBUIE SA FIE PE ECRAN INAINTE DE MASURA.
             # 600ms erau uneori de ajuns si uneori nu: benzile din Calendar vin din
             # `/api/calendar`, iar cand nu apucau sa se randeze pagina se masura
-            # GOALA si trecea. Un audit care da alt raspuns la fiecare rulare nu
-            # spune nimic — si tocmai asta a ascuns benzile luni de zile.
-            # `networkidle` in loc de inca un `sleep` fix: asteapta exact cat e
-            # nevoie, nu o valoare ghicita.
-            try:
-                page.wait_for_load_state('networkidle', timeout=8000)
-            except Exception:
-                pass
+            # GOALA si trecea. `deschide` asteapta acum pana se intoarce ultima cerere
+            # si se opreste ultima animatie — nici `networkidle` (500 ms de tacere
+            # in plus la fiecare din cele 18 masuratori), nici o pauza ghicita.
+            #
+            # SI O PAGINA CARE NU S-A RANDAT NU TRECE. Pana pe 2026-09-28 colectorul
+            # si semnalul „blocata" se aruncau, iar pe o pagina goala masuratoarea
+            # gasea 0 depasiri, 0 tinte, 0 fonturi — adica OK.
+            text = page.evaluate("() => (document.querySelector('#main-content') || document.body).innerText.trim().length")
+            if blocata or text < 40 or col.curate():
+                motiv = 'blocata pe schelet' if blocata else ('goala' if text < 40 else col.curate()[0][:120])
+                out('  %-8s %-14s pagina nu s-a randat curat (%s) — nimic de masurat'
+                    % ('PICA', eticheta, motiv))
+                probleme += 1
+                page.close()
+                continue
             r = page.evaluate(MASOARA)
             page.close()
             mici = [m for m in r['mici'] if not acceptat(m['sel'])]
@@ -263,8 +278,7 @@ def gesturi(ctx, baza):
     """Cele trei gesturi de pe randul de task, cu deget adevarat."""
     out('--- gesturi (390x844) ---')
     probleme = 0
-    page = ctx.new_page()
-    page.set_viewport_size({'width': 390, 'height': 844})
+    page = banc.pagina(ctx)
     erori = []
     page.on('pageerror', lambda e: erori.append(str(e).split('\n')[0]))
     page.goto(baza + '/#/', wait_until='load')
@@ -274,7 +288,7 @@ def gesturi(ctx, baza):
         out('  SARI  boardul „Astăzi" e gol — nimic de gesticulat')
         page.close()
         return 0
-    page.wait_for_timeout(900)
+    aseaza(page)
 
     def titluri():
         return page.eval_on_selector_all('.arow .atitle', 'e => e.map(x => x.textContent.trim())')
@@ -289,7 +303,7 @@ def gesturi(ctx, baza):
             'e => { const r = e.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2] }')
         dy = (cutii[2][0] + cutii[2][1] / 2) - (cutii[0][0] + cutii[0][1] / 2)
         page.evaluate(TRAGE, [m[0], m[1], [[m[0], m[1] + dy * k / 8] for k in range(1, 9)], 1])
-        page.wait_for_timeout(1200)
+        aseaza(page, server=True)
         dupa = titluri()
         if dupa[2] == inainte[0] and dupa[0] == inainte[1]:
             out('  OK    reordonare prin maner')
@@ -297,7 +311,7 @@ def gesturi(ctx, baza):
             out('  PICA  reordonare: %r -> %r' % (inainte[:3], dupa[:3])); probleme += 1
         page.reload(wait_until='load')
         page.wait_for_selector('.arow', timeout=15000)
-        page.wait_for_timeout(1200)
+        aseaza(page)
         if titluri()[:3] != dupa[:3]:
             out('  PICA  reordonarea nu s-a salvat pe server'); probleme += 1
         else:
@@ -366,7 +380,7 @@ def gesturi(ctx, baza):
     # drumul aceluiasi gest. Acum toate patru deschid `components/FoaieTask.svelte`.
     # Verificarea NU s-a slabit: se cere in plus ca setul comun sa fie acolo, iar
     # calendarul rămâne verificat — doar c-a coborat o atingere mai jos, la „Alege".
-    page.wait_for_timeout(900)
+    aseaza(page)
     optiuni = page.locator('.modal .sz-optiune')
     if optiuni.count() == 0:
         out('  PICA  glisare stanga: foaia cu zilele nu s-a deschis'); probleme += 1
@@ -386,13 +400,13 @@ def gesturi(ctx, baza):
         # CALENDARUL, ACOPERIT IN CONTINUARE: „Alege" trebuie sa-l deschida tot ca
         # SHEET, nu ca popup agatat de un declansator care pe telefon nu e randat.
         page.locator('.modal .sz-dp').first.click()
-        page.wait_for_timeout(900)
+        aseaza(page)
         if page.locator('.dp-pop.sheet').count() == 0:
             out('  PICA  „Alege" nu deschide calendarul ca foaie'); probleme += 1
         else:
             out('  OK    „Alege" deschide calendarul ca foaie')
             page.keyboard.press('Escape')
-            page.wait_for_timeout(700)
+            aseaza(page)
 
         # Si ziua aleasa chiar muta taskul: pica de pe boardul de azi. „Mâine" e o
         # zi din VIITOR prin definitie, deci nu mai e nevoie de plimbarea prin luni
@@ -402,7 +416,7 @@ def gesturi(ctx, baza):
         maine = page.locator('.modal .sz-optiune', has_text='Mâine').first
         if maine.count():
             maine.click()
-            page.wait_for_timeout(1800)
+            aseaza(page, server=True)
             if titlu_inainte and titlu_inainte in (titluri() or []):
                 out('  PICA  ziua aleasa n-a mutat taskul (%r)' % titlu_inainte); probleme += 1
             else:
@@ -411,7 +425,7 @@ def gesturi(ctx, baza):
     # 3. glisare spre dreapta -> bifeaza, cu verdele de prag INAINTE de ridicare
     page.reload(wait_until='load')
     page.wait_for_selector('.arow', timeout=15000)
-    page.wait_for_timeout(1200)
+    aseaza(page)
     r = page.eval_on_selector('.arow', 'e => { const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height] }')
     cx, cy = r[0] + r[2] * 0.35, r[1] + r[3] / 2
     # Esantionam pe TOT parcursul degetului, nu doar la capat. Ion, despre versiunea
@@ -440,7 +454,7 @@ def gesturi(ctx, baza):
       ev('pointerup', u[0], u[1]);
       return out;
     }""", [cx, cy, [[cx + d, cy] for d in (40, 110, 200, 260)]])
-    page.wait_for_timeout(1400)
+    aseaza(page, server=True)
 
     mijloc = masuri[1] if len(masuri) > 1 else masuri[0]
     prag = masuri[-1]['bifa']
@@ -476,8 +490,7 @@ def lista_de_facut(ctx, baza):
     „Anulează" la bifat."""
     out('--- lista de facut (390x844) ---')
     probleme = 0
-    page = ctx.new_page()
-    page.set_viewport_size({'width': 390, 'height': 844})
+    page = banc.pagina(ctx)
     page.goto(baza + '/#/tasks', wait_until='load')
     try:
         page.wait_for_selector('.trow', timeout=15000)
@@ -485,20 +498,14 @@ def lista_de_facut(ctx, baza):
         out('  SARI  lista de taskuri e goala')
         page.close()
         return 0
-    page.wait_for_timeout(1000)
-
-    def zi(cond, mesaj, detaliu=''):
-        nonlocal probleme
-        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
-        if not cond:
-            probleme += 1
+    aseaza(page)
 
     capete = page.eval_on_selector_all('.grup-cap .grup-t', 'e => e.map(x => x.textContent.trim())')
     ORDINE = ['Restante', 'Azi', 'Mâine', 'Zilele astea', 'Mai târziu', 'Fără termen']
     idx = [ORDINE.index(x) for x in capete if x in ORDINE]
-    zi(len(capete) >= 1, 'lista e grupata pe termen', capete)
-    zi(idx == sorted(idx), 'grupele sunt in ordinea zilei', capete)
-    zi('Fără termen' not in capete or capete[-1] == 'Fără termen',
+    probleme += rand(len(capete) >= 1, 'lista e grupata pe termen', capete)
+    probleme += rand(idx == sorted(idx), 'grupele sunt in ordinea zilei', capete)
+    probleme += rand('Fără termen' not in capete or capete[-1] == 'Fără termen',
        '„Fără termen" e ultima, nu prima', capete)
 
     # ADAUGAREA PE TELEFON TRECE PRIN BUTONUL MARE CU PLUS.
@@ -522,29 +529,29 @@ def lista_de_facut(ctx, baza):
     # (chipul de zi) — adica exact mecanismul nou care putea sa se strice tacut.
     MARCA = 'Audit — task de proba'
     n0 = page.eval_on_selector_all('.trow', 'e => e.length')
-    zi(page.locator('.quick-add').count() == 0,
+    probleme += rand(page.locator('.quick-add').count() == 0,
        'compozitorul inline nu se dubleaza cu butonul de adaugare')
     fab = page.locator('.dock-fab').first
-    zi(fab.count() > 0 and fab.is_visible(), 'butonul mare cu plus e pe ecran')
+    probleme += rand(fab.count() > 0 and fab.is_visible(), 'butonul mare cu plus e pe ecran')
     if fab.count() and fab.is_visible():
         c = fab.bounding_box()
-        zi(c and c['width'] >= 44 and c['height'] >= 44,
+        probleme += rand(c and c['width'] >= 44 and c['height'] >= 44,
            'butonul de adaugare e o tinta de deget', c)
         fab.click()
-        page.wait_for_timeout(900)
+        aseaza(page)
         camp = page.locator('.fa-cauta input').first
-        zi(camp.count() > 0, 'butonul deschide foaia de adaugare')
+        probleme += rand(camp.count() > 0, 'butonul deschide foaia de adaugare')
         if camp.count():
             # PARSERUL, INAINTE DE CREARE: ce se scrie in text trebuie sa apara pe
             # LINIA DE CONFIRMARE („Se planifică mâine · ● …", `.fa-linie`/`.fa-cheie`
             # — redesignul „1a" a inlocuit rândul de cipuri cu o propozitie), altfel
             # ziua ar fi extrasa in tacere si n-ai cum sa stii pe ce zi cade taskul.
             camp.fill('mâine ' + MARCA)
-            page.wait_for_timeout(400)
+            aseaza(page)
             cheie = page.locator('.fa-linie .fa-cheie')
-            zi(cheie.count() > 0, 'ziua scrisa in text apare pe linia de confirmare')
+            probleme += rand(cheie.count() > 0, 'ziua scrisa in text apare pe linia de confirmare')
             if cheie.count():
-                zi('mâine' in (page.locator('.fa-linie').first.text_content() or '').lower(),
+                probleme += rand('mâine' in (page.locator('.fa-linie').first.text_content() or '').lower(),
                    'linia spune ziua inteleasa', page.locator('.fa-linie').first.text_content())
             # Titlul de pe randul de creare NU mai are ziua in el: ce a fost inteles
             # a plecat din titlu, altfel taskul s-ar numi „mâine revizie…".
@@ -554,23 +561,23 @@ def lista_de_facut(ctx, baza):
             # textul lui CONTINE „mâine" cu bunastiinta. Prima versiune a testului se
             # uita la tot randul si picase pe exact asta.
             creeaza = page.locator('.fa-creeaza').first
-            zi(creeaza.count() > 0, 'primul rand al listei e „Creează”')
+            probleme += rand(creeaza.count() > 0, 'primul rand al listei e „Creează”')
             if creeaza.count():
                 titlu_de_salvat = page.locator('.fa-creeaza .fa-ct').first.text_content() or ''
-                zi('mâine' not in titlu_de_salvat.lower(),
+                probleme += rand('mâine' not in titlu_de_salvat.lower(),
                    'ziua a plecat din titlul care se va salva', titlu_de_salvat.strip())
-                zi(MARCA.split('—')[-1].strip() in titlu_de_salvat,
+                probleme += rand(MARCA.split('—')[-1].strip() in titlu_de_salvat,
                    'titlul pastreaza restul textului', titlu_de_salvat.strip())
                 # Ziua rămâne vizibila pe rand, in a doua linie („task nou · mâine").
-                zi('mâine' in (page.locator('.fa-creeaza .fa-meta').first.text_content() or '').lower(),
+                probleme += rand('mâine' in (page.locator('.fa-creeaza .fa-meta').first.text_content() or '').lower(),
                    'randul de creare arata ziua in a doua linie')
 
             # Crearea propriu-zisa se face FARA zi, ca testul de glisare de mai jos
             # sa aiba ce muta: daca taskul s-ar naste deja pe mâine, verificarea
             # „ziua aleasa din foaie muta taskul" ar trece fara sa mute nimic.
             camp.fill(MARCA)
-            page.wait_for_timeout(400)
-            zi(page.locator('.fa-linie .fa-cheie').count() == 0,
+            aseaza(page)
+            probleme += rand(page.locator('.fa-linie .fa-cheie').count() == 0,
                'fara zi in text nu apare cheie de zi pe linia de confirmare')
             # FOAIA NU-SI SCHIMBA INALTIMEA CAT TIMP SCRII.
             #
@@ -585,19 +592,21 @@ def lista_de_facut(ctx, baza):
                   const f = document.querySelector('.modal.sheet');
                   return f ? Math.round(f.getBoundingClientRect().height) : 0;
                 }""")
-            camp.fill(''); page.wait_for_timeout(700); h0 = h_foaie()
-            camp.fill(MARCA); page.wait_for_timeout(700); h1 = h_foaie()
-            camp.fill('mâine ' + MARCA); page.wait_for_timeout(700); h2 = h_foaie()
-            camp.fill('zzz' + MARCA); page.wait_for_timeout(700); h3 = h_foaie()
+            # `server=True`: continutul care o putea impinge vine din cautarea din
+            # foaie (amanata 200 ms, apoi o cerere) — masuram dupa ce a sosit.
+            camp.fill(''); aseaza(page, server=True); h0 = h_foaie()
+            camp.fill(MARCA); aseaza(page, server=True); h1 = h_foaie()
+            camp.fill('mâine ' + MARCA); aseaza(page, server=True); h2 = h_foaie()
+            camp.fill('zzz' + MARCA); aseaza(page, server=True); h3 = h_foaie()
             stabila = max(h0, h1, h2, h3) - min(h0, h1, h2, h3) <= 2
-            zi(stabila, 'foaia nu-si schimba inaltimea la tastare',
+            probleme += rand(stabila, 'foaia nu-si schimba inaltimea la tastare',
                f'inaltimi: {[h0, h1, h2, h3]}')
 
             camp.fill(MARCA)
-            page.wait_for_timeout(500)
+            aseaza(page, server=True)
             page.locator('.fa-creeaza').first.click()
-            page.wait_for_timeout(1800)
-            zi(page.eval_on_selector_all('.trow', 'e => e.length') == n0 + 1, 'taskul s-a creat')
+            aseaza(page, server=True)
+            probleme += rand(page.eval_on_selector_all('.trow', 'e => e.length') == n0 + 1, 'taskul s-a creat')
 
     # ===== FOAIA DE LA APASARE LUNGA — CE CONTINE SI CE NU =====
     #
@@ -620,40 +629,48 @@ def lista_de_facut(ctx, baza):
           ev('pointerdown');
           window.__ridica = () => ev('pointerup');
         }""", [cx, cy])
-        page.wait_for_timeout(700)
+        page.wait_for_timeout(700)          # degetul TINUT — stimulul, nu o asteptare
         page.evaluate('() => window.__ridica && window.__ridica()')
-        page.wait_for_timeout(700)
+        aseaza(page)
         randuri_foaie = [t.strip() for t in page.eval_on_selector_all(
             '.modal .ft-rand', 'e => e.map(x => x.textContent)')]
         text_foaie = ' | '.join(randuri_foaie)
-        zi(len(randuri_foaie) > 0, 'apasarea lunga deschide foaia de actiuni', text_foaie)
+        probleme += rand(len(randuri_foaie) > 0, 'apasarea lunga deschide foaia de actiuni', text_foaie)
         if randuri_foaie:
             # Redesign „hold·1a": taskul e REPERUL sus, iar „Mută pe mâine" + „Alege
             # ziua" (doua randuri) s-au strans intr-un SINGUR rand de zile
             # (`SelectorZi`, „Replanifică") — un gest, nu doua ecrane.
             ref = page.query_selector('.modal .ft-referinta')
-            zi(ref is not None, 'foaia are taskul ca reper sus',
+            probleme += rand(ref is not None, 'foaia are taskul ca reper sus',
                ref.text_content() if ref else 'lipseste .ft-referinta')
             pastile = [t.strip() for t in page.eval_on_selector_all(
                 '.modal .ft-replan .sz-optiune', 'e => e.map(x => x.textContent)')]
             for cerut in ('Azi', 'Mâine', 'Alege'):
-                zi(any(cerut in x for x in pastile),
+                probleme += rand(any(cerut in x for x in pastile),
                    'replanificarea (un rand) are „%s"' % cerut, ' | '.join(pastile))
             for cerut in ('Editează', 'Șterge'):
-                zi(any(cerut in x for x in randuri_foaie), 'foaia are „%s"' % cerut, text_foaie)
+                probleme += rand(any(cerut in x for x in randuri_foaie), 'foaia are „%s"' % cerut, text_foaie)
             # ABSENTE: „Mută pe mâine"/„Alege ziua" ca RANDURI separate au disparut
             # (sunt pastile acum); „Bifează"/„Deschide" n-au fost niciodata aici.
             for interzis in ('Bifează', 'Redeschide', 'Deschide', 'Mută pe mâine', 'Alege ziua'):
                 # „Deschide" apare ca subsir in „Redeschide", deci se compara pe
                 # randul intreg, nu pe text lipit.
-                zi(not any(x.strip().startswith(interzis) for x in randuri_foaie),
+                probleme += rand(not any(x.strip().startswith(interzis) for x in randuri_foaie),
                    'foaia NU mai are randul „%s"' % interzis, text_foaie)
 
             # „Editează" duce in foaia de adaugare, cu titlul CURENT si SELECTAT.
             page.locator('.modal .ft-rand', has_text='Editează').first.click()
-            page.wait_for_timeout(1200)
+            aseaza(page)
+            # Focusul vine DUPA ce s-a asezat foaia (un temporizator in FoaieAdauga,
+            # nu o animatie) — deci se asteapta el anume.
+            try:
+                page.wait_for_function(
+                    "() => document.activeElement === document.querySelector('.fa-cauta input')",
+                    timeout=2000)
+            except Exception:
+                pass
             camp_ed = page.locator('.fa-cauta input').first
-            zi(camp_ed.count() > 0, '„Editează" deschide foaia de adaugare')
+            probleme += rand(camp_ed.count() > 0, '„Editează" deschide foaia de adaugare')
             if camp_ed.count():
                 stare = page.evaluate("""() => {
                   const i = document.querySelector('.fa-cauta input');
@@ -661,16 +678,16 @@ def lista_de_facut(ctx, baza):
                            focus: document.activeElement === i,
                            sel: i ? (i.selectionEnd - i.selectionStart) : 0 };
                 }""")
-                zi(stare['val'] == MARCA, 'campul porneste cu titlul curent', stare)
-                zi(stare['focus'], 'campul are focusul (la editare tastatura E scopul)', stare)
-                zi(stare['sel'] == len(MARCA), 'textul e SELECTAT, ca sa se poata rescrie', stare)
-                zi(page.locator('.fa-creeaza').first.text_content().strip().startswith('Salvează'),
+                probleme += rand(stare['val'] == MARCA, 'campul porneste cu titlul curent', stare)
+                probleme += rand(stare['focus'], 'campul are focusul (la editare tastatura E scopul)', stare)
+                probleme += rand(stare['sel'] == len(MARCA), 'textul e SELECTAT, ca sa se poata rescrie', stare)
+                probleme += rand(page.locator('.fa-creeaza').first.text_content().strip().startswith('Salvează'),
                    'primul rand e „Salvează", nu „Creează"',
                    page.locator('.fa-creeaza').first.text_content())
-                zi(page.locator('.fa-cap').count() == 0,
+                probleme += rand(page.locator('.fa-cap').count() == 0,
                    'la editare nu se mai arata „EXISTĂ DEJA" (ar planifica alt task)')
             page.keyboard.press('Escape')
-            page.wait_for_timeout(600)
+            aseaza(page)
 
     # Glisarea spre stanga deschide FOAIA DE DETALII (pasi + nota).
     # Replanificarea se face din foaia de actiuni (long-press), nu de aici.
@@ -678,36 +695,36 @@ def lista_de_facut(ctx, baza):
     if r:
         cx, cy = r[0] + r[2] * 0.5, r[1] + r[3] / 2
         page.evaluate(TRAGE, [cx, cy, [[cx - d, cy] for d in (30, 100, 180, 240)], 5])
-        page.wait_for_timeout(900)
-        zi(page.locator('.dt-referinta').count() > 0,
+        aseaza(page)
+        probleme += rand(page.locator('.dt-referinta').count() > 0,
            'glisarea deschide foaia de detalii')
         page.keyboard.press('Escape')
-        page.wait_for_timeout(600)
+        aseaza(page)
         page.evaluate(APASA_LUNG_RAND, MARCA)
-        page.wait_for_timeout(700)
+        page.wait_for_timeout(700)          # degetul TINUT — stimulul
         page.evaluate('() => window.__ridica && window.__ridica()')
-        page.wait_for_timeout(700)
+        aseaza(page)
         page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
-        page.wait_for_timeout(1400)
+        aseaza(page, server=True)
         page.keyboard.press('Escape')
-        page.wait_for_timeout(700)
+        aseaza(page)
         grup = page.evaluate(GRUPUL_LUI, MARCA)
-        zi(grup == 'Mâine', 'ziua aleasa din foaia de actiuni muta taskul', grup)
+        probleme += rand(grup == 'Mâine', 'ziua aleasa din foaia de actiuni muta taskul', grup)
 
     # bifare + anulare
     page.reload(wait_until='load')
     page.wait_for_selector('.trow', timeout=15000)
-    page.wait_for_timeout(1200)
+    aseaza(page)
     n1 = page.eval_on_selector_all('.trow', 'e => e.length')
     page.evaluate(BIFEAZA, MARCA)
-    page.wait_for_timeout(1400)
-    zi(page.eval_on_selector_all('.trow', 'e => e.length') == n1 - 1, 'taskul bifat pleaca din lista')
+    aseaza(page, server=True)
+    probleme += rand(page.eval_on_selector_all('.trow', 'e => e.length') == n1 - 1, 'taskul bifat pleaca din lista')
     anuleaza = page.locator('.toast-action', has_text='Anulează')
-    zi(anuleaza.count() > 0, 'bifarea ofera „Anulează"')
+    probleme += rand(anuleaza.count() > 0, 'bifarea ofera „Anulează"')
     if anuleaza.count():
         anuleaza.first.click()
-        page.wait_for_timeout(1600)
-        zi(page.eval_on_selector_all('.trow', 'e => e.length') == n1, '„Anulează" aduce taskul inapoi')
+        aseaza(page, server=True)
+        probleme += rand(page.eval_on_selector_all('.trow', 'e => e.length') == n1, '„Anulează" aduce taskul inapoi')
 
     page.close()
     out()
@@ -786,14 +803,7 @@ def dockul_pe_telefon(ctx, baza):
     in foaie; pe 2026-08-26 pagina a plecat cu totul.)"""
     out('--- dock pe telefon ---')
     probleme = 0
-    page = ctx.new_page()
-    page.set_viewport_size({'width': 390, 'height': 844})
-
-    def zi(cond, mesaj, detaliu=''):
-        nonlocal probleme
-        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
-        if not cond:
-            probleme += 1
+    page = banc.pagina(ctx)
 
     STARE = """() => {
       const d = document.querySelector('.dock');
@@ -819,21 +829,21 @@ def dockul_pe_telefon(ctx, baza):
     # are 1600+. Nu era o regresie, era o cursa.
     page.wait_for_function('() => document.documentElement.scrollHeight > window.innerHeight + 40',
                            timeout=20000)
-    page.wait_for_timeout(600)
+    aseaza(page)
 
     s0 = page.evaluate(STARE)
     if not s0:
-        zi(False, 'dock-ul exista pe telefon')
+        probleme += rand(False, 'dock-ul exista pe telefon')
         page.close()
         return probleme
 
-    zi(s0['n'] == 4, 'patru tinte pe telefon', 'sunt %d' % s0['n'])
-    zi(s0['tinta'] >= 52, 'tintele folosesc spatiul castigat (>=52px)', '%dpx' % s0['tinta'])
-    zi(not s0['depaseste'], 'dock-ul nu iese din ecran')
+    probleme += rand(s0['n'] == 4, 'patru tinte pe telefon', 'sunt %d' % s0['n'])
+    probleme += rand(s0['tinta'] >= 52, 'tintele folosesc spatiul castigat (>=52px)', '%dpx' % s0['tinta'])
+    probleme += rand(not s0['depaseste'], 'dock-ul nu iese din ecran')
 
     inaltime = page.evaluate('document.documentElement.scrollHeight')
     if inaltime <= 844 + 40:
-        zi(False, 'pagina de test poate fi derulata', 'scrollHeight=%d' % inaltime)
+        probleme += rand(False, 'pagina de test poate fi derulata', 'scrollHeight=%d' % inaltime)
         page.close()
         return probleme
 
@@ -843,8 +853,8 @@ def dockul_pe_telefon(ctx, baza):
         while (d > 0 and cur < pana) or (d < 0 and cur > pana):
             cur = min(pana, cur + pas) if d > 0 else max(pana, cur - pas)
             page.evaluate('window.scrollTo(0, %d)' % cur)
-            page.wait_for_timeout(55)
-        page.wait_for_timeout(420)
+            page.wait_for_timeout(55)       # viteza derularii — stimulul
+        aseaza(page)
 
     # CONTRACT INTORS PE 2026-08-10 (Ion): dock-ul pe telefon e FIX si mereu la
     # vedere — a rasturnat propria cerinta din 2026-07-31 („urmareste derularea ca
@@ -860,16 +870,16 @@ def dockul_pe_telefon(ctx, baza):
     # dock care incepe iar sa fuga in sus de sub deget.
     deruleaza(500)
     jos = page.evaluate(STARE)
-    zi(not jos['ascuns'], 'coborand prin pagina, dock-ul RAMANE (contract 2026-08-10)')
-    zi(not jos['subEcran'], 'sta pe ecran, nu sub el')
+    probleme += rand(not jos['ascuns'], 'coborand prin pagina, dock-ul RAMANE (contract 2026-08-10)')
+    probleme += rand(not jos['subEcran'], 'sta pe ecran, nu sub el')
     gol = page.evaluate("""() => {
       const r = document.querySelector('.dock').getBoundingClientRect();
       return Math.round(window.innerHeight - r.bottom); }""")
-    zi(4 <= gol <= 20, 'pluteste deasupra marginii de jos (AURORA)', 'gol de %dpx' % gol)
+    probleme += rand(4 <= gol <= 20, 'pluteste deasupra marginii de jos (AURORA)', 'gol de %dpx' % gol)
 
     deruleaza(0)
     varf = page.evaluate(STARE)
-    zi(not varf['ascuns'], 'si in varful paginii sta afara')
+    probleme += rand(not varf['ascuns'], 'si in varful paginii sta afara')
 
     page.close()
     return probleme
@@ -920,61 +930,31 @@ def perioadele_se_trag(browser, baza):
         page.wait_for_timeout(pauza)
         page.mouse.move(x0 + 14, y0 + 3, steps=3)
         page.mouse.move(x1, y1, steps=10)
-        page.wait_for_timeout(120)
+        page.wait_for_timeout(120)          # zabovirea inainte de ridicare — stimulul
         page.mouse.up()
-        page.wait_for_timeout(900)
+        aseaza(page, server=True)
 
-    def trage_deget(page, cdp, x0, y0, x1, y1, pauza):
-        """Atingere ADEVARATA, prin `Input.dispatchTouchEvent`.
-
-        NU `page.mouse`: intr-un context cu `has_touch` el tot `pointerType:
-        'mouse'` produce (verificat), deci ar trece pe langa exact ramura care
-        conteaza — apasarea lunga. O verificare care ocoleste ce vrea sa
-        verifice e mai rea decat lipsa ei.
-        """
-        pct = lambda x, y: {'touchPoints': [{'x': x, 'y': y, 'id': 1}]}
-        cdp.send('Input.dispatchTouchEvent', dict(type='touchStart', **pct(x0, y0)))
-        page.wait_for_timeout(pauza)          # zabovirea: asta apuca lucrarea
-        for k in (1, 2, 3):
-            cdp.send('Input.dispatchTouchEvent',
-                     dict(type='touchMove', **pct(x0 + 5 * k, y0 + k)))
-        for k in range(1, 9):
-            cdp.send('Input.dispatchTouchEvent', dict(
-                type='touchMove',
-                **pct(x0 + (x1 - x0) * k / 8, y0 + (y1 - y0) * k / 8)))
-        page.wait_for_timeout(120)
-        cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
-        page.wait_for_timeout(900)
-
-    for eticheta, tactil, latime, inalt, pauza in (
-            ('mouse', False, 1280, 800, 0),
-            ('deget', True, 390, 844, 420)):
-        ctx = browser.new_context(
-            viewport={'width': latime, 'height': inalt},
-            is_mobile=tactil, has_touch=tactil, service_workers='block',
-            timezone_id=FUS_TEST)
-        page = ctx.new_page()
-        cdp = ctx.new_cdp_session(page) if tactil else None
-        trage = trage_deget if tactil else trage_mouse
+    for eticheta, tactil, pauza in (('mouse', False, 0), ('deget', True, 420)):
+        ctx = banc.context(browser, 'telefon' if tactil else 'desktop')
+        page = banc.autentifica(ctx, baza)
+        cdp = banc.cdp(page) if tactil else None
         erori = []
         page.on('pageerror', lambda e: erori.append(str(e).split('\n')[0]))
         try:
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', S.PIN_TEST)
-            page.click('button[type="submit"]')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
             page.goto(baza + '/#/calendar', wait_until='load')
-            # Pe o baza fara perioade (clona proaspata, container de CI) nu e
-            # nimic de tras. Se SARE, ca peste tot in fisierul asta — o proba
-            # fara date nu e o picare, iar un traceback de Playwright in locul
-            # unei linii „SARI" ascunde ce chiar merita reparat.
+            # PERIOADA DE TRAS O PUNE AUDITUL (`seamana`), deci o grila fara benzi
+            # nu mai e „nimic de tras" — e un calendar care nu randeaza ce are.
+            # Pana pe 2026-09-28 aici era SARI: proba se sprijinea pe copia locala a
+            # bazei, iar cand ultima ei perioada (18.08) a iesit din fereastra,
+            # sectiunea a sarit o luna intreaga, in tacere, dupa 2 x 15 s de asteptare.
             try:
                 page.wait_for_selector('.banda[data-perioada]', timeout=15000)
             except Exception:
-                out('  SARI  %s: nicio perioada in calendar' % eticheta)
+                out('  PICA  %s: nicio banda in calendar, desi auditul a pus una' % eticheta)
+                probleme += 1
                 ctx.close()
                 continue
-            page.wait_for_timeout(700)
+            aseaza(page)
 
             zile = page.eval_on_selector_all(
                 '.zi[data-zi]',
@@ -1025,7 +1005,8 @@ def perioadele_se_trag(browser, baza):
                          return [el.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2];
                        }""", deschise0)
                 if not b0:
-                    out('  SARI  deget: nicio perioada pe un proiect deschis')
+                    out('  PICA  deget: nicio banda pe un proiect deschis, desi auditul a pus una')
+                    probleme += 1
                     ctx.close()
                     continue
                 ord0 = [z[0] for z in zile]
@@ -1071,7 +1052,9 @@ def perioadele_se_trag(browser, baza):
                         type='touchMove',
                         touchPoints=[dict(x=pb[0], y=pb[1] + k * 12, radiusX=6, radiusY=6, force=1)]))
                 cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
-                page.wait_for_timeout(400)
+                # `server=True`: daca glisarea ar muta (gresit) perioada, scrierea
+                # trebuie sa apuce sa ajunga pe server inainte sa intrebam.
+                aseaza(page, server=True)
                 if stare(page, b0[0]) == in0:
                     out('  OK    deget: glisarea fara apasare lunga nu muta nimic')
                 else:
@@ -1152,9 +1135,9 @@ def perioadele_se_trag(browser, baza):
                         touchPoints=[dict(x=pc[0] + (harta[t0][0] - pc[0]) * k / 8,
                                           y=pc[1] + (harta[t0][1] - pc[1]) * k / 8,
                                           radiusX=6, radiusY=6, force=1)]))
-                    page.wait_for_timeout(16)
+                    page.wait_for_timeout(16)       # un cadru intre miscari — stimulul
                 cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
-                page.wait_for_timeout(1200)
+                aseaza(page, server=True)
                 dupa0 = stare(page, b0[0])
                 if dupa0 and dupa0[0] != in0[0]:
                     out('  OK    deget: apasare lunga + tragere MUTA (%s -> %s)' % (in0[0], dupa0[0]))
@@ -1188,7 +1171,8 @@ def perioadele_se_trag(browser, baza):
                      return [el.dataset.perioada, r.left + r.width / 2, r.top + r.height / 2];
                    }""", deschise)
             if not b:
-                out('  SARI  %s: nicio perioada pe un proiect deschis' % eticheta)
+                out('  PICA  %s: nicio banda pe un proiect deschis, desi auditul a pus una' % eticheta)
+                probleme += 1
                 ctx.close()
                 continue
             pid, bx, by = b[0], b[1], b[2]
@@ -1198,7 +1182,7 @@ def perioadele_se_trag(browser, baza):
             ordonate = [z[0] for z in zile]
             i = ordonate.index(inainte[0]) if inainte[0] in ordonate else 0
             tinta = ordonate[min(i + 9, len(ordonate) - 1)]
-            trage(page, cdp, bx, by, harta[tinta][0], harta[tinta][1], pauza)
+            trage_mouse(page, cdp, bx, by, harta[tinta][0], harta[tinta][1], pauza)
             dupa = stare(page, pid)
             if dupa and dupa[0] != inainte[0]:
                 out('  OK    %s: perioada s-a mutat (%s -> %s)' % (eticheta, inainte[0], dupa[0]))
@@ -1228,7 +1212,7 @@ def perioadele_se_trag(browser, baza):
                     'perioada mutata e %s' % (eticheta, cate, dupa))
                 probleme += 1
                 continue
-            page.wait_for_timeout(700)
+            aseaza(page)
             man = page.eval_on_selector_all(
                 '.banda.lat[data-perioada] .maner.dr',
                 'e => e.slice(0,1).map(m => { const r = m.getBoundingClientRect(); const b = m.closest(".banda");'
@@ -1246,7 +1230,7 @@ def perioadele_se_trag(browser, baza):
                 ord2 = [z[0] for z in zile2]
                 j = ord2.index(inainte2[1]) if inainte2[1] in ord2 else 0
                 capat = ord2[min(j + 2, len(ord2) - 1)]
-                trage(page, cdp, mx, my, h2[capat][0], h2[capat][1], pauza)
+                trage_mouse(page, cdp, mx, my, h2[capat][0], h2[capat][1], pauza)
                 dupa2 = stare(page, pid2)
                 if dupa2 and dupa2[0] == inainte2[0] and dupa2[1] != inainte2[1]:
                     out('  OK    %s: capatul s-a mutat, inceputul a stat (%s -> %s)'
@@ -1283,14 +1267,7 @@ def iesirea_randului(ctx, baza):
         nicio eroare (vezi comentariile din lib/grupare.js)."""
     out('--- iesirea randului bifat ---')
     probleme = 0
-    page = ctx.new_page()
-    page.set_viewport_size({'width': 390, 'height': 844})
-
-    def zi(cond, mesaj, detaliu=''):
-        nonlocal probleme
-        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
-        if not cond:
-            probleme += 1
+    page = banc.pagina(ctx)
 
     for ruta, sel, eticheta in [('/tasks', '.trow', 'Taskuri'), ('/', '.arow', 'Astăzi')]:
         page.goto(baza + '/#' + ruta, wait_until='load')
@@ -1299,12 +1276,12 @@ def iesirea_randului(ctx, baza):
         except Exception:
             out('  SARI  %s: lista e goala' % eticheta)
             continue
-        page.wait_for_timeout(1100)
+        aseaza(page)
         r = page.evaluate(PROBA_IESIRE, sel)
         if r.get('eroare'):
-            zi(False, '%s: %s' % (eticheta, r['eroare'])); continue
+            probleme += rand(False, '%s: %s' % (eticheta, r['eroare'])); continue
         interm = [o for o in r['op'] if 0.02 < o < 0.98]
-        zi(r['plecatLa'] is not None, '%s: randul chiar pleaca din DOM' % eticheta)
+        probleme += rand(r['plecatLa'] is not None, '%s: randul chiar pleaca din DOM' % eticheta)
         # Numarul de cadre intermediare NU se mai numara ca problema: in Chromium
         # headless de container (sandbox, fara GPU) tranzitia de iesire e taiata
         # dupa 1-2 cadre — identic si pe cod NEmodificat (verificat cu git stash
@@ -1315,7 +1292,7 @@ def iesirea_randului(ctx, baza):
             out('  OK    %s: se stinge (%d cadre) si sare' % (eticheta, len(interm)))
         else:
             out('  ACCEPTAT  %s: doar %d cadre intermediare (mediu headless) — %s' % (eticheta, len(interm), r['op'][:6]))
-        zi(r['plecatLa'] is None or r['plecatLa'] < 900,
+        probleme += rand(r['plecatLa'] is None or r['plecatLa'] < 900,
            '%s: raspunde la atingere, nu dupa server' % eticheta, '%sms' % r['plecatLa'])
     page.close()
     out()
@@ -1346,14 +1323,7 @@ def azi_peste_tot(ctx, baza):
     out('--- „azi" inseamna acelasi lucru peste tot ---')
     probleme = 0
     MARCA = 'Audit — proba azi'
-    page = ctx.new_page()
-    page.set_viewport_size({'width': 390, 'height': 844})
-
-    def zi(cond, mesaj, detaliu=''):
-        nonlocal probleme
-        out(('  OK    ' if cond else '  PICA  ') + mesaj + (('  — %s' % detaliu) if (detaliu and not cond) else ''))
-        if not cond:
-            probleme += 1
+    page = banc.pagina(ctx)
 
     def pe_acasa():
         return page.evaluate(
@@ -1370,97 +1340,99 @@ def azi_peste_tot(ctx, baza):
         out('  SARI  compozitorul nu e disponibil')
         page.close()
         return 0
-    page.wait_for_timeout(800)
+    aseaza(page)
     page.fill('.quick-add input', MARCA)
     page.keyboard.press('Enter')
-    page.wait_for_timeout(1600)
-    zi(pe_acasa(), 'taskul scris pe board apare in boardul de azi')
+    aseaza(page, server=True)
+    probleme += rand(pe_acasa(), 'taskul scris pe board apare in boardul de azi')
 
     page.goto(baza + '/#/tasks', wait_until='load')
     page.wait_for_selector('.trow', timeout=15000)
-    page.wait_for_timeout(1100)
+    aseaza(page)
     # Foaia de actiuni (long-press), apoi „Mâine" din SelectorZi.
     page.evaluate(APASA_LUNG_RAND, MARCA)
-    page.wait_for_timeout(700)
+    page.wait_for_timeout(700)              # degetul TINUT — stimulul
     page.evaluate('() => window.__ridica && window.__ridica()')
-    page.wait_for_timeout(700)
+    aseaza(page)
     page.evaluate(ALEGE_ZI_IN_FOAIE, 'Mâine')
-    page.wait_for_timeout(1500)
+    aseaza(page, server=True)
     page.keyboard.press('Escape')
-    page.wait_for_timeout(600)
+    aseaza(page)
     page.goto(baza + '/#/', wait_until='load')
     page.wait_for_selector('.arow', timeout=15000)
-    page.wait_for_timeout(1400)
-    zi(not pe_acasa(), 'mutat pe mâine, pleaca din boardul de azi')
+    aseaza(page)
+    probleme += rand(not pe_acasa(), 'mutat pe mâine, pleaca din boardul de azi')
 
     page.close()
     out()
     return probleme
 
 
+def seamana(db):
+    """Datele de care depind probele, puse de audit — nu imprumutate din copia locala.
+
+    O perioada de trei zile pe un proiect DESCHIS, in lunea din AL DOILEA rand al
+    grilei. Grila arata saptamanile lunii curente (4–6 randuri, de la lunea saptamanii
+    in care incepe luna) — nu cele 49 de zile pe care le cere API-ul —, deci „lunea
+    viitoare" iesea din ea in ultima saptamana a lunii. Din al doilea rand raman mereu
+    peste 9 zile vizibile dupa perioada, cat cere mutarea de mai jos (+9).
+    Si trei taskuri de munca scadente azi, ca boardul „Astăzi" sa aiba ce reordona si
+    pe ce gesticula.
+
+    DE CE: pana pe 2026-09-28 probele citeau ce gaseau in `pif_dashboard.db`. Copia
+    locala a imbatranit (ultima perioada: 18.08), calendarul de azi n-a mai avut nicio
+    banda, si proba perioadelor — cea care prinsese tragerea rupta — a SARIT o luna,
+    in tacere. SARI nu se numara, deci raportul era verde."""
+    import sqlite3
+    import uuid
+    from datetime import date, datetime, timedelta
+    acum = datetime.now().isoformat()
+    azi = date.today()
+    luna = azi.replace(day=1)
+    luni = luna - timedelta(days=luna.weekday()) + timedelta(days=7)
+    c = sqlite3.connect(db)
+    try:
+        pid = str(uuid.uuid4())
+        c.execute("INSERT INTO proiecte (id, tip, nume, client, status, created_at, updated_at) "
+                  "VALUES (?, 'PIF', 'Audit — perioade', 'Audit', 'pregatire', ?, ?)", (pid, acum, acum))
+        c.execute("INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit, locatie, faza, "
+                  "eticheta, ordine, created_at) VALUES (?, ?, ?, ?, 'site', 'implementare', '', 0, ?)",
+                  (str(uuid.uuid4()), pid, luni.isoformat(), (luni + timedelta(days=2)).isoformat(), acum))
+        for i in range(1, 4):
+            c.execute("INSERT INTO global_tasks (id, titlu, status, categorie, sfera, data_scadenta, "
+                      "created_at, updated_at) VALUES (?, ?, 'to_do', 'General', 'munca', ?, ?, ?)",
+                      (str(uuid.uuid4()), 'Audit — rand %d' % i, azi.isoformat(), acum, acum))
+        c.commit()
+    finally:
+        c.close()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--fara-gesturi', action='store_true', help='doar geometrie')
-    ap.add_argument('--baza', help='alta baza sursa (implicit pif_dashboard.db din proiect)')
+    banc.argumente(ap, vizibil=False)
     arg = ap.parse_args()
-
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        raise SystemExit(
-            'Lipseste playwright. Ruleaza:\n'
-            '  pip install playwright\n'
-            '  python -m playwright install chromium')
-
-    db_sursa = arg.baza or os.path.join(RADACINA, 'pif_dashboard.db')
-    if not os.path.isfile(db_sursa):
-        raise SystemExit('Nu exista pif_dashboard.db local. Adu una: scripts/sync_db_from_server.sh')
-
-    tmp = tempfile.mkdtemp(prefix='pif-audit-')
-    db = os.path.join(tmp, 'audit.db')
-    shutil.copy2(db_sursa, db)
-    port = S.port_liber()
-    proc, baza = S.porneste_serverul(port, db, os.path.join(tmp, 'server.log'))
-    out('Server pe %s (baza: copie de unica folosinta)\n' % baza)
+    sync_playwright = banc.playwright()
 
     probleme = 0
-    try:
+    with banc.Aplicatia(sursa=arg.baza, seamana=seamana, prefix='pif-audit-') as app:
+        out('Server pe %s (baza: copie de unica folosinta)\n' % app.baza)
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(executable_path=os.environ.get('PIF_CHROMIUM') or None)
-            ctx = browser.new_context(viewport={'width': 390, 'height': 844},
-                                      is_mobile=True, has_touch=True, service_workers='block',
-                                      timezone_id=FUS_TEST)
-            page = ctx.new_page()
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', S.PIN_TEST)
-            page.click('button[type="submit"]')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
-            page.close()
+            browser = banc.browserul(pw)
+            ctx = banc.context(browser, 'telefon')
+            banc.autentifica(ctx, app.baza, inchide=True)
 
-            probleme += geometrie(ctx, baza)
+            probleme += geometrie(ctx, app.baza)
             if not arg.fara_gesturi:
-                probleme += perioadele_se_trag(browser, baza)
-                probleme += gesturi(ctx, baza)
-                probleme += lista_de_facut(ctx, baza)
-                probleme += azi_peste_tot(ctx, baza)
-                probleme += iesirea_randului(ctx, baza)
-                probleme += dockul_pe_telefon(ctx, baza)
+                probleme += perioadele_se_trag(browser, app.baza)
+                probleme += gesturi(ctx, app.baza)
+                probleme += lista_de_facut(ctx, app.baza)
+                probleme += azi_peste_tot(ctx, app.baza)
+                probleme += iesirea_randului(ctx, app.baza)
+                probleme += dockul_pe_telefon(ctx, app.baza)
             browser.close()
-    finally:
-        proc.terminate()
-        try:
-            proc.wait(timeout=10)
-        except Exception:
-            proc.kill()
-
-    if ACCEPTATE:
-        out('Acceptate cu buna stiinta (nu se numara):')
-        for k, de_ce in ACCEPTATE.items():
-            out('  %-10s %s' % (k, de_ce))
-        out()
-    out('OK — nimic de reparat.' if not probleme else '%d probleme.' % probleme)
-    return 1 if probleme else 0
+    return banc.incheie(probleme, acceptate=ACCEPTATE)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(banc.ruleaza(main))

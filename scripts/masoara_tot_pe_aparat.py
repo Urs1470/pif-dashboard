@@ -305,7 +305,7 @@ def main():
 
             print('')
             print('=== NAVIGAREA DIN DOCK ===')
-            for i, nume in [(1, 'Acasa'), (2, 'Taskuri'), (3, 'Plan'), (4, 'Calendar')]:
+            for i, nume in [(1, 'Acasa'), (2, 'Taskuri'), (3, 'Calendar'), (4, 'Mai mult')]:
                 sel = '.dock-item:nth-of-type(%d)' % i
                 if not a.exista(sel):
                     continue

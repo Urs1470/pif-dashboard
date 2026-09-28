@@ -25,13 +25,18 @@ import json
 import os
 import sys
 import sqlite3
-import tempfile
 
-RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(RADACINA, 'scripts'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import banc  # noqa: E402
+from banc import TELEFON, apuca, misca  # noqa: E402
+from audit_foaie import seamana  # noqa: E402
 
-from audit_foaie import (PIN_TEST, TELEFON, apuca, misca, porneste_serverul,
-                         port_liber, ridica, seamana)
+
+def ridica(cdp, page, pauza):
+    """Pe banc pauza e a celui care masoara — e un parametru, nu o asteptare ghicita."""
+    banc.ridica(cdp)
+    if pauza:
+        page.wait_for_timeout(pauza)
 
 # Telefonul lui Ion e edge-to-edge. Pe emulator `env(safe-area-*)` e 0, si exact
 # asa au trecut neobservate doua runde de reparatii la foaia zilei.
@@ -82,15 +87,11 @@ PANDA = r"""
 
 
 def goleste(cale):
-    """Baza cu schema, dar FARA niciun rand.
+    """Baza cu schema, dar FARA niciun rand — schema o scrie deja `banc`.
 
     Starile goale sunt cele mai rar privite si cele mai usor de stricat: nimeni
     nu ajunge la ele in timpul dezvoltarii, fiindca baza de proba are mereu date.
     """
-    sys.path.insert(0, RADACINA)
-    os.environ['PIF_DB_PATH'] = cale
-    import database
-    database.init_db()
 
 
 def umple(cale, proiecte=24, taskuri=120):
@@ -124,11 +125,11 @@ def umple(cale, proiecte=24, taskuri=120):
 
 
 class Banc:
-    """UN SINGUR BANC PER PROCES cand schimbi baza.
+    """Aplicatia pe o baza noua, un telefon logat si degetul pe el.
 
-    `database` retine calea de la primul import, iar `init_db()` chemat a doua
-    oara initializeaza tot baza DINTAI — al doilea `Banc` cu alte date cade cu
-    „no such table: proiecte". Doua volume de date = doua rulari de Python.
+    (Pana pe 2026-09-28 era „un singur banc per proces": `database` retinea calea de
+    la primul import, deci al doilea `Banc` cu alte date cadea cu „no such table".
+    `banc.schema_noua` schimba calea explicit, deci limita a plecat.)
     """
 
     def __init__(self, latime=None, inaltime=None, date='normal'):
@@ -137,26 +138,18 @@ class Banc:
         self.date = date
 
     def __enter__(self):
-        from playwright.sync_api import sync_playwright
-        self.lucru = tempfile.mkdtemp(prefix='pif-proba-')
-        db = os.path.join(self.lucru, 'proba.db')
-        {'gol': goleste, 'mult': umple}.get(self.date, seamana)(db)
-        port = port_liber()
-        self.proc, self.baza = porneste_serverul(
-            port, db, os.path.join(self.lucru, 'server.log'))
-        self._pw = sync_playwright().start()
-        self.br = self._pw.chromium.launch()
-        self.ctx = self.br.new_context(
-            viewport={'width': self.lat, 'height': self.inalt},
-            has_touch=True, is_mobile=True)
-        self.page = self.ctx.new_page()
-        self.cdp = self.ctx.new_cdp_session(self.page)
+        self.app = banc.Aplicatia(noua=True, prefix='pif-proba-',
+                                  seamana={'gol': goleste, 'mult': umple}.get(self.date, seamana))
+        self.app.__enter__()
+        self.baza = self.app.baza
+        self._pw = banc.playwright()().start()
+        self.br = banc.browserul(self._pw)
+        self.ctx = banc.context(self.br, 'telefon',
+                                viewport={'width': self.lat, 'height': self.inalt})
+        self.page = banc.autentifica(self.ctx, self.baza)
+        self.cdp = banc.cdp(self.page)
         self.erori = []
         self.page.on('pageerror', lambda e: self.erori.append(str(e)))
-        self.page.goto(self.baza + '/login')
-        self.page.fill('#pin', PIN_TEST)
-        self.page.press('#pin', 'Enter')
-        self.page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
         return self
 
     def __exit__(self, *a):
@@ -164,7 +157,7 @@ class Banc:
             self.br.close()
             self._pw.stop()
         finally:
-            self.proc.terminate()
+            self.app.__exit__(*a)
 
     # ------------------------------------------------------------- navigare
     def mergi(self, ruta, pauza=1500):

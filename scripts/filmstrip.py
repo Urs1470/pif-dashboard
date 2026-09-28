@@ -34,14 +34,21 @@ import base64
 import io
 import os
 import sys
-import tempfile
 import time
 
 RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RADACINA, 'scripts'))
 
-from audit_foaie import (PIN_TEST, TELEFON, apuca, misca, porneste_serverul,
-                         port_liber, ridica, seamana, trage)
+import banc  # noqa: E402
+from banc import TELEFON, apuca, misca  # noqa: E402
+from audit_foaie import seamana, trage  # noqa: E402
+
+
+def ridica(cdp, page, pauza=0):
+    """Pe plansa pauza de dupa ridicare e a scenei (cat se mai filmeaza), nu o asteptare."""
+    banc.ridica(cdp)
+    if pauza:
+        page.wait_for_timeout(pauza)
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -128,7 +135,7 @@ def _(page, cdp, baza):
 @scena('dock-schimba-tab', 'Trecerea dintr-un tab in altul, din dock')
 def _(page, cdp, baza):
     mergi(page, baza, '/tasks')
-    # Calendar, nu Proiecte: pe telefon dock-ul arata cinci intrari, iar
+    # Calendar, nu Proiecte: pe telefon dock-ul arata patru intrari, iar
     # „Proiecte" e sub „Mai mult" — deci un selector pe eticheta aia sare mereu.
     tinta = None
     for it in page.query_selector_all('.dock-item'):
@@ -434,33 +441,25 @@ def main():
         raise SystemExit('Nicio scena nu se potriveste cu %r.' % filtru)
 
     os.makedirs(IESIRE, exist_ok=True)
-    lucru = tempfile.mkdtemp(prefix='pif-film-')
-    db = os.path.join(lucru, 'proba.db')
-    seamana(db)
-    port = port_liber()
-    proc, baza = porneste_serverul(port, db, os.path.join(lucru, 'server.log'))
     facute = []
 
-    from playwright.sync_api import sync_playwright
-    try:
+    sync_playwright = banc.playwright()
+    with banc.Aplicatia(noua=True, seamana=seamana, prefix='pif-film-') as app:
+        baza = app.baza
         with sync_playwright() as p:
-            b = p.chromium.launch()
-            ctx = b.new_context(viewport=TELEFON, has_touch=True, is_mobile=True)
-            page = ctx.new_page()
-            cdp = ctx.new_cdp_session(page)
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', PIN_TEST)
-            page.press('#pin', 'Enter')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
+            b = banc.browserul(p)
+            ctx = banc.context(b, 'telefon')
+            page = banc.autentifica(ctx, baza)
+            cdp = banc.cdp(page)
 
             for nume, descriere, f in de_jucat:
                 try:
                     act = f(page, cdp, baza)
                 except Exception as e:
-                    out('  SARIT  %-24s pregatirea a crapat: %s' % (nume, e))
+                    out('  SARI   %-24s pregatirea a crapat: %s' % (nume, e))
                     continue
                 if act is None:
-                    out('  SARIT  %-24s selectorul nu exista in build-ul asta' % nume)
+                    out('  SARI   %-24s selectorul nu exista in build-ul asta' % nume)
                     continue
                 brute = inregistreaza(page, cdp, act)
                 cadre = alege_cadrele(brute)
@@ -473,8 +472,6 @@ def main():
                     % (nume, len(brute), len(cadre), cadre[-1][0]))
                 facute.append((nume, descriere, cadre[-1][0]))
             b.close()
-    finally:
-        proc.terminate()
 
     scrie_index(facute)
     out('\n%d planse in docs/filmstrip/ — deschide index.html' % len(facute))

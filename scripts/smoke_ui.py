@@ -16,41 +16,33 @@ repeta totul pe latime de telefon (Calendarul isi comuta panoul zilei intr-o
 foaie sub 768px — markup pe care desktopul nu-l randeaza niciodata).
 
 RULARE
-    python scripts/smoke_ui.py            # tot: rute + proiecte, desktop + mobil
-    python scripts/smoke_ui.py --rapid    # doar rutele, doar desktop
-    python scripts/smoke_ui.py --vizibil  # cu browserul pe ecran, pentru depanare
+    python scripts/smoke_ui.py             # tot: rute + TOATE proiectele, desktop + telefon
+    python scripts/smoke_ui.py --esantion  # rute + un proiect din fiecare fel (poarta)
+    python scripts/smoke_ui.py --rapid     # doar rutele, doar desktop
+    python scripts/smoke_ui.py --vizibil   # cu browserul pe ecran, pentru depanare
+
+ESANTIONUL (poarta, din 2026-09-28). Turul complet deschide aceeasi pagina de proiect
+de 42 de ori (21 de proiecte x 2 latimi) si dura 127 s — din care ~77 s erau pauze
+fixe. Ce cauta el sunt RAMURILE dupa date (`{#if project.tip === 'Service'}`), nu
+proiectele in sine: deci poarta ia cel mai nou proiect din fiecare combinatie
+tip x status x „are o perioada viitoare", iar turul complet ramane pentru
+`verifica.py --complet`.
 
 CERINTE (o singura data, doar pe masina de dezvoltare — NU intra in requirements.txt)
     pip install playwright
     python -m playwright install chromium
 
-Porneste singur aplicatia, pe un port liber si pe o COPIE a bazei de date
-(PIF_DB_PATH), deci nu atinge `pif_dashboard.db`. Iese cu 0 daca totul e curat,
-1 daca a gasit ceva.
+Porneste singur aplicatia (`banc.Aplicatia`), pe un port liber si pe o COPIE a bazei,
+deci nu atinge `pif_dashboard.db`. Iesire: 0 curat, 1 abatere, 2 instrumentul.
 """
 
 import argparse
 import os
-import shutil
-import socket
-import subprocess
 import sys
-import tempfile
-import time
-import urllib.error
-import urllib.request
 
-RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# FUSUL ORAR AL TESTELOR NU E UTC, CU BUNA STIINTA.
-# Ion lucreaza in Romania (UTC+2/+3), iar containerele de test ruleaza pe UTC —
-# unde ora locala si UTC coincid, deci orice greseala de conversie e INVIZIBILA.
-# Asa a trecut neobservat un bug pe care il vedea la fiecare atingere: butoanele
-# „Azi"/„Mâine" construiau data cu `new Date().toISOString()`, adica in UTC, iar
-# miezul noptii local intr-un fus de la est de Greenwich cade in ziua precedenta.
-# „Azi" scria IERI, la orice ora. Testele erau verzi.
-FUS_TEST = 'Europe/Bucharest'
-
-PIN_TEST = '000000'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import banc  # noqa: E402
+from banc import out  # noqa: E402
 
 RUTE = [
     ('/', 'Acasa'),
@@ -64,7 +56,10 @@ RUTE = [
     ('/calculator', 'Calculator'),
 ]
 
-ECRANE = [('desktop', 1280, 800), ('mobil', 390, 844)]
+# Telefonul e un context de TELEFON (atingere, `is_mobile`), nu un desktop ingustat:
+# pana pe 2026-09-28 „mobil" aici era 390x844 fara atingere, iar in celelalte audituri
+# un telefon adevarat — deci aceeasi pagina se putea purta altfel in doua probe.
+ECRANE = ['desktop', 'mobil']
 
 # Zgomot cunoscut, fara legatura cu codul aplicatiei. Tine lista SCURTA si
 # comenteaza fiecare intrare — altfel testul devine decorativ.
@@ -79,66 +74,6 @@ IGNORATE = (
     # VPN, IP nou). Cererea nu pleaca deloc — nu poate fi cauzata de codul nostru.
     'net::ERR_NETWORK_CHANGED',
 )
-
-
-def out(s=''):
-    sys.stdout.buffer.write((str(s) + '\n').encode('utf-8', 'replace'))
-    sys.stdout.flush()
-
-
-def port_liber():
-    s = socket.socket()
-    s.bind(('127.0.0.1', 0))
-    p = s.getsockname()[1]
-    s.close()
-    return p
-
-
-def porneste_serverul(port, db_temp, cale_log):
-    """Aplicatia Flask, pe baza de unica folosinta, fara HTTPS (suntem pe http local).
-
-    Logul merge intr-un FISIER, nu intr-un pipe. Serverul de dezvoltare scrie o
-    linie per cerere, iar o pagina trage ~40 de assets: cu stdout=PIPE si nimeni
-    care sa citeasca, bufferul sistemului (64 KB) se umple dupa doua pagini si
-    serverul se blocheaza in write() — arata identic cu o aplicatie moarta.
-    """
-    env = dict(os.environ)
-    env.update({
-        'PIF_DB_PATH': db_temp,
-        'PIF_DASHBOARD_PIN': PIN_TEST,
-        'SESSION_COOKIE_SECURE': 'false',
-        # Zeci de pagini la rand depasesc pragul normal de 60/minut si am obtine
-        # 429-uri peste tot — zgomot care ascunde erorile adevarate.
-        'PIF_RATE_LIMIT': '100000',
-        'PYTHONIOENCODING': 'utf-8',
-    })
-    cod = (
-        'from app import app\n'
-        'from database import init_db\n'
-        'init_db()\n'
-        'app.run(host="127.0.0.1", port=%d, debug=False, use_reloader=False, threaded=True)\n' % port
-    )
-    log = open(cale_log, 'wb')
-    proc = subprocess.Popen(
-        [sys.executable, '-c', cod],
-        cwd=RADACINA, env=env, stdout=log, stderr=subprocess.STDOUT,
-    )
-    proc._log = log
-    baza = 'http://127.0.0.1:%d' % port
-    for _ in range(120):
-        if proc.poll() is not None:
-            log.close()
-            out(open(cale_log, encoding='utf-8', errors='replace').read()[-3000:])
-            raise SystemExit('Serverul a murit la pornire.')
-        try:
-            urllib.request.urlopen(baza + '/login', timeout=1).read()
-            return proc, baza
-        except urllib.error.HTTPError:
-            return proc, baza          # raspunde, chiar daca nu cu 200
-        except Exception:
-            time.sleep(0.5)
-    proc.terminate()
-    raise SystemExit('Serverul nu a pornit in 60s.')
 
 
 class Colector:
@@ -172,9 +107,10 @@ class Colector:
         return [e for e in self.erori if any(z in e for z in IGNORATE)]
 
 
-def deschide(context, url, latime, inalt):
-    page = context.new_page()
-    page.set_viewport_size({'width': latime, 'height': inalt})
+def deschide(context, url, latime=None, inalt=None):
+    page = banc.pagina(context)
+    if latime:
+        page.set_viewport_size({'width': latime, 'height': inalt})
     col = Colector(page)
     page.goto(url, wait_until='load', timeout=30000)
     # Randarea e asincrona: asteptam sa dispara scheletele. Daca raman, pagina a
@@ -186,7 +122,10 @@ def deschide(context, url, latime, inalt):
         blocata = False
     except Exception:
         blocata = True
-    page.wait_for_timeout(350)
+    # In locul celor 350 ms fixi: pana se intoarce ultima cerere si se opreste ultima
+    # animatie — o eroare venita dintr-un fetch tarziu apuca sa ajunga in colector.
+    if not blocata:
+        banc.asteapta_linistea(page)
     return page, col, blocata
 
 
@@ -198,12 +137,12 @@ def _motiv(linie):
     return linie[:60]
 
 
-def _incearca(context, baza, ruta, latime, inalt, taburi):
+def _incearca(context, baza, ruta, taburi):
     """O singura vizita: intoarce `(probleme, zgomot_de_retea_filtrat)`.
 
     Nu scrie nimic in raport — decizia e a lui `verifica`, fiindca doar el stie
     daca mai are voie sa reia."""
-    page, col, blocata = deschide(context, baza + '/#' + ruta, latime, inalt)
+    page, col, blocata = deschide(context, baza + '/#' + ruta)
     probleme = []
     if blocata:
         probleme.append('BLOCATA: scheletele nu au disparut in 15s')
@@ -213,7 +152,9 @@ def _incearca(context, baza, ruta, latime, inalt, taburi):
         for i in range(butoane.count()):
             try:
                 butoane.nth(i).click(timeout=5000)
-                page.wait_for_timeout(450)
+                # In locul celor 450 ms fixi dupa fiecare tab (42 de vizite x 3 taburi
+                # = ~57 s din turul complet): pana s-a incarcat si s-a asezat tabul.
+                banc.asteapta_linistea(page)
             except Exception as e:
                 probleme.append('TAB %d: %s' % (i, str(e).split('\n')[0]))
 
@@ -231,9 +172,12 @@ def _incearca(context, baza, ruta, latime, inalt, taburi):
     return probleme, taiate
 
 
+def rand(ok, ecran, text, detaliu=''):
+    out('  %-8s %-8s %-30s %s' % ('OK' if ok else 'PICA', ecran, text[:30], detaliu))
+
+
 def verifica(context, baza, ruta, eticheta, ecran, taburi=False):
-    nume, latime, inalt = ecran
-    probleme, taiate = _incearca(context, baza, ruta, latime, inalt, taburi)
+    probleme, taiate = _incearca(context, baza, ruta, taburi)
 
     # O PAGINA GOALA DIN CAUZA RETELEI NU E O PAGINA STRICATA — DAR NICI TACERE.
     #
@@ -250,21 +194,19 @@ def verifica(context, baza, ruta, eticheta, ecran, taburi=False):
     # Deci: se reia O DATA, si daca reluarea e curata se scrie de ce.
     gol_si_retea = taiate and any(p.startswith(('GOALA', 'BLOCATA')) for p in probleme)
     if gol_si_retea:
-        probleme, _ = _incearca(context, baza, ruta, latime, inalt, taburi)
+        probleme, _ = _incearca(context, baza, ruta, taburi)
         if not probleme:
-            out('  %s  %-9s %-28s %s' % ('OK  ', nume, eticheta[:28],
-                                         '(reluat — %s)' % _motiv(taiate[0])))
+            rand(True, ecran, eticheta, '(reluat — %s)' % _motiv(taiate[0]))
             return probleme
         probleme = probleme + ['CAUZA PROBABILA: %s' % taiate[0][:140]]
 
-    stare = 'OK  ' if not probleme else 'PICA'
-    out('  %s  %-9s %-28s %s' % (stare, nume, eticheta[:28], '' if not probleme else probleme[0]))
+    rand(not probleme, ecran, eticheta, '' if not probleme else probleme[0])
     for p in probleme[1:]:
-        out('        %s' % p)
+        out('                    %s' % p)
     return probleme
 
 
-def verifica_aterizarea(context, baza):
+def verifica_aterizarea(contexte, baza):
     """Aterizarea implicita, adica ce vezi cand deschizi aplicatia FARA ruta in URL.
 
     Pe telefon trebuie sa fie taskurile personale (asa se deschide PWA-ul de pe
@@ -272,139 +214,93 @@ def verifica_aterizarea(context, baza):
     Probele de rute de mai jos NU acopera cazul asta: ele navigheaza mereu la
     `/#<ruta>`, deci hash-ul e deja pus si redirectarea nu se declanseaza
     niciodata — exact drumul pe care intra Ion in fiecare dimineata.
+
+    Fiecare ecran isi numara problemele LUI. Pana pe 2026-09-28 lista era comuna,
+    deci o problema pe telefon aparea si pe randul desktopului, ca PICA.
     """
-    probleme = []
-    for nume, latime, inalt, asteptat in (
-            ('mobil', 390, 844, '#/tasks?sfera=personal'),
-            ('desktop', 1280, 800, ''),
-    ):
-        page = context.new_page()
-        page.set_viewport_size({'width': latime, 'height': inalt})
+    total = 0
+    for ecran, asteptat in (('mobil', '#/tasks?sfera=personal'), ('desktop', '')):
+        probleme = []
+        page = contexte[ecran].new_page()
         page.goto(baza + '/', wait_until='load', timeout=30000)
-        page.wait_for_timeout(600)
+        try:
+            page.wait_for_function('(h) => location.hash === h', arg=asteptat, timeout=5000)
+        except Exception:
+            pass
         hash_final = page.evaluate('() => window.location.hash')
-        ok = hash_final == asteptat
-        if not ok:
-            probleme.append('%s: hash "%s", asteptat "%s"' % (nume, hash_final, asteptat))
+        if hash_final != asteptat:
+            probleme.append('hash "%s", asteptat "%s"' % (hash_final, asteptat))
         # Pe telefon nu e destul sa nimeresti ruta: sfera trebuie sa fie personala.
-        if ok and nume == 'mobil':
+        elif ecran == 'mobil':
             try:
                 page.wait_for_selector('button.seg.on', timeout=10000)
                 activ = page.inner_text('button.seg.on').strip()
                 if 'Personal' not in activ:
-                    probleme.append('mobil: segmentul activ e „%s", nu „Personal"' % activ)
+                    probleme.append('segmentul activ e „%s", nu „Personal"' % activ)
             except Exception as e:
-                probleme.append('mobil: comutatorul de sfera nu s-a randat (%s)'
-                                % str(e).split('\n')[0])
+                probleme.append('comutatorul de sfera nu s-a randat (%s)' % str(e).split('\n')[0])
         page.close()
-        out('  %s  %-9s aterizare implicita%s'
-            % ('OK  ' if not probleme else 'PICA', nume,
-               '' if not probleme else '  ' + probleme[-1]))
-    return probleme
+        rand(not probleme, ecran, 'aterizare implicita', '; '.join(probleme))
+        total += 1 if probleme else 0
+    return total
+
+
+def esantion(proiecte):
+    """Cel mai nou proiect din fiecare combinatie tip x status x „are o perioada
+    viitoare" — ramurile dupa date pe care turul complet le atingea de 21 de ori."""
+    alese = {}
+    for p in proiecte:                          # API-ul le da pe cele noi primele
+        alese.setdefault((p.get('tip'), p.get('status'), bool(p.get('urmatoarea'))), p)
+    return list(alese.values())
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--rapid', action='store_true', help='doar rutele, doar desktop')
-    ap.add_argument('--vizibil', action='store_true', help='cu browser pe ecran')
-    ap.add_argument('--baza', help='alta baza sursa (implicit pif_dashboard.db din proiect)')
+    g = ap.add_mutually_exclusive_group()
+    g.add_argument('--rapid', action='store_true', help='doar rutele, doar desktop')
+    g.add_argument('--esantion', action='store_true',
+                   help='un proiect din fiecare tip x status (poarta), nu toate')
+    banc.argumente(ap)
     arg = ap.parse_args()
-
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        raise SystemExit(
-            'Lipseste playwright. Ruleaza:\n'
-            '  pip install playwright\n'
-            '  python -m playwright install chromium')
-
-    db_sursa = arg.baza or os.path.join(RADACINA, 'pif_dashboard.db')
-    if not os.path.isfile(db_sursa):
-        raise SystemExit('Nu exista pif_dashboard.db local. Adu una: scripts/sync_db_from_server.sh')
-
-    tmp = tempfile.mkdtemp(prefix='pif-smoke-')
-    db_temp = os.path.join(tmp, 'smoke.db')
-    shutil.copy2(db_sursa, db_temp)
-
-    cale_log = os.path.join(tmp, 'server.log')
-    port = port_liber()
-    proc, baza = porneste_serverul(port, db_temp, cale_log)
-    out('Server pe %s (baza: copie de unica folosinta)' % baza)
+    sync_playwright = banc.playwright()
 
     esecuri = 0
-    try:
+    with banc.Aplicatia(sursa=arg.baza, prefix='pif-smoke-') as app:
+        out('Server pe %s (baza: copie de unica folosinta)' % app.baza)
         with sync_playwright() as pw:
-            # PIF_CHROMIUM: pentru masinile unde Chromium e deja instalat in alta
-            # parte si `playwright install` n-are voie sa descarce (containere,
-            # sesiuni la distanta). Gol = comportamentul dintotdeauna.
-            cale_chromium = os.environ.get('PIF_CHROMIUM') or None
-            browser = pw.chromium.launch(headless=not arg.vizibil,
-                                         executable_path=cale_chromium)
-            # service_workers='block' e blocarea nativa a lui Playwright. NU stubui
-            # navigator.serviceWorker cu undefined: aplicatia il apeleaza direct si
-            # ai obtine o „eroare" pe care ai fabricat-o tu, in fiecare pagina.
-            context = browser.new_context(
-                viewport={'width': 1280, 'height': 800}, service_workers='block',
-                timezone_id=FUS_TEST)
-
-            page = context.new_page()
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', PIN_TEST)
-            page.click('button[type="submit"]')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
-            out('Autentificat.')
-
-            proiecte = context.request.get(baza + '/api/proiecte').json()
-            if isinstance(proiecte, dict):
-                proiecte = proiecte.get('proiecte') or proiecte.get('data') or []
-            page.close()
-            out('%d proiecte de verificat.\n' % len(proiecte))
+            br = banc.browserul(pw, arg.vizibil)
+            contexte = {'desktop': banc.context(br, 'desktop'), 'mobil': banc.context(br, 'telefon')}
+            for ctx in contexte.values():
+                banc.autentifica(ctx, app.baza, inchide=True)
+            proiecte = contexte['desktop'].request.get(app.baza + '/api/proiecte').json()
+            de_vazut = [] if arg.rapid else esantion(proiecte) if arg.esantion else proiecte
+            out('%d proiecte in baza, %d de verificat%s.\n'
+                % (len(proiecte), len(de_vazut), ' (esantion)' if arg.esantion else ''))
 
             out('--- aterizarea implicita ---')
-            if verifica_aterizarea(context, baza):
-                esecuri += 1
+            esecuri += verifica_aterizarea(contexte, app.baza)
             out()
 
-            ecrane = ECRANE[:1] if arg.rapid else ECRANE
-            for ecran in ecrane:
-                out('--- %s ---' % ecran[0])
+            for ecran in (['desktop'] if arg.rapid else ECRANE):
+                out('--- %s ---' % ecran)
                 for ruta, eticheta in RUTE:
-                    if verifica(context, baza, ruta, eticheta, ecran):
+                    if verifica(contexte[ecran], app.baza, ruta, eticheta, ecran):
                         esecuri += 1
-                if not arg.rapid:
-                    for p in proiecte:
-                        et = '%s [%s]' % (p.get('nume', '?'), p.get('tip', '?'))
-                        if verifica(context, baza, '/projects/' + p['id'], et, ecran, taburi=True):
-                            esecuri += 1
+                for p in de_vazut:
+                    et = '%s [%s]' % (p.get('nume', '?'), p.get('tip', '?'))
+                    if verifica(contexte[ecran], app.baza, '/projects/' + p['id'], et, ecran, taburi=True):
+                        esecuri += 1
                 out()
-            browser.close()
-    finally:
-        proc.terminate()
-        try:
-            proc.wait(timeout=10)
-        except Exception:
-            proc.kill()
-        try:
-            proc._log.close()
-        except Exception:
-            pass
+            br.close()
         if esecuri:
             # Erorile 500 din server explica de multe ori ce a vazut browserul.
-            jurnal = open(cale_log, encoding='utf-8', errors='replace').read()
-            urme = [l for l in jurnal.splitlines()
-                    if 'Traceback' in l or 'ERROR' in l or ' 500 -' in l]
+            urme = app.urme()
             if urme:
-                out('\n--- din logul serverului ---')
-                for l in urme[-15:]:
+                out('--- din logul serverului ---')
+                for l in urme:
                     out('  ' + l)
-        shutil.rmtree(tmp, ignore_errors=True)
-
-    if esecuri:
-        out('PICAT: %d pagini cu probleme.' % esecuri)
-        return 1
-    out('OK — toate paginile s-au randat curat.')
-    return 0
+    return banc.incheie(esecuri)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(banc.ruleaza(main))

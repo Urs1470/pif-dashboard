@@ -16,6 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-09-28
 
+- [2026-09-28 Verificatoarele: un banc, trei trepte, teste unitare](2026-09-28-verificatoarele-un-banc-si-trei-trepte.md) — `scripts/banc.py` (server, baza, context, deget, raport, iesire 0/1/2) sub toate auditurile cu browser; `scripts/verifica.py --rapid|--poarta|--complet` e singura lista, poarta o importa; `test_suite` pe server propriu; `teste/` (unittest) + JS; asteptari pe conditie (inclusiv arcurile JS, `window.__arcuri`); `smoke_ui --esantion` in poarta. Testele noi au gasit un index pierdut de migrarea v19 si o gaura in garda de URL din markdown.
 - [2026-09-28 Sugestii de proiect; proiectul închis trimite ce adaugi după](2026-09-28-sugestii-proiect-si-proiectul-inchis.md) — foaia de adăugare propune proiecte din orice cuvânt de ≥3 litere (nume, cod, client, locație), din TOATE proiectele; cuvântul prezent în >3 proiecte tace. Pe Astăzi / picker / Calendar, un proiect finalizat trimite doar taskurile adăugate după închidere și de la 2026-09-28 (`TASK_PROIECT_VIU`) — cele vechi, inclusiv „De trimis PV", rămân neatinse.
 
 ## 2026-08-26

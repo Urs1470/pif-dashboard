@@ -47,23 +47,28 @@ RULARE
     python scripts/audit_ferestre.py --tema inchisa --latime telefon
 
 Ca la `smoke_ui.py`: porneste singur aplicatia, pe un port liber si pe o COPIE a
-bazei. Nicio scriere nu ajunge in baza adevarata. Iese cu 0 daca n-a gasit nimic.
+bazei. Nicio scriere nu ajunge in baza adevarata.
+Iesire: 0 curat, 1 abatere, 2 instrumentul (vezi banc.py).
+
+Ecranele sunt cele din banc (desktop 1280x800, ca in celelalte audituri — aici era
+1280x860, deci o fereastra care nu incapea pe un laptop obisnuit trecea doar aici).
+„Anulează" vs „Renunță" e o NOTA, nu o abatere: e o decizie de produs, iar pana pe
+2026-09-28 se numara ca problema si tinea auditul rosu permanent.
 """
 
 import argparse
 import os
-import shutil
 import sys
-import tempfile
 
-RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(RADACINA, 'scripts'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import banc  # noqa: E402
+from banc import out  # noqa: E402
 
-import smoke_ui as S
+TAP_MIN = banc.TINTA_MIN
 
-TAP_MIN = 44
-TELEFON = (390, 844)
-DESKTOP = (1280, 860)
+
+def aseaza(page):
+    banc.asteapta_linistea(page)
 
 SONDA = r"""
 (() => {
@@ -255,10 +260,6 @@ CUVINTE_RENUNTARE = ('nuleaz', 'enun', 'napoi')
 ETICHETE_RENUNTARE = {}
 
 
-def out(s=''):
-    S.out(s)
-
-
 def apasa_lung(page, cdp, tinta):
     """APASARE LUNGA, cu atingere adevarata. Vezi capcana 4 din antet."""
     e = page.locator(tinta).first
@@ -266,11 +267,9 @@ def apasa_lung(page, cdp, tinta):
     b = e.bounding_box(timeout=4000)
     if not b:
         raise RuntimeError('elementul nu are geometrie')
-    pct = {'touchPoints': [{'x': b['x'] + b['width'] / 2,
-                            'y': b['y'] + b['height'] / 2, 'id': 1}]}
-    cdp.send('Input.dispatchTouchEvent', dict(type='touchStart', **pct))
-    page.wait_for_timeout(620)          # peste `APASARE_MENIU`
-    cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
+    banc.apuca(cdp, b['x'] + b['width'] / 2, b['y'] + b['height'] / 2)
+    page.wait_for_timeout(620)          # peste `APASARE_MENIU` — stimulul
+    banc.ridica(cdp)
 
 
 def apasa(page, tip, tinta, jurnal, cdp=None):
@@ -285,7 +284,7 @@ def apasa(page, tip, tinta, jurnal, cdp=None):
             page.locator(tinta).first.click(timeout=4000)
         else:
             page.get_by_text(tinta, exact=False).first.click(timeout=4000)
-        page.wait_for_timeout(430)
+        aseaza(page)
         return True
     except Exception as exc:
         jurnal.append('nu s-a putut apasa %s "%s": %s'
@@ -296,15 +295,15 @@ def apasa(page, tip, tinta, jurnal, cdp=None):
 def masoara_fereastra(ctx, baza, f, tema, telefon):
     """Deschide o fereastra, o masoara, o inchide. Intoarce (probleme, note)."""
     note, probleme = [], []
-    page = ctx.new_page()
+    page = banc.pagina(ctx)
     page.add_init_script(SONDA)
-    cdp = ctx.new_cdp_session(page)
+    cdp = banc.cdp(page)
     try:
         page.goto(baza + '/#' + f['ruta'], wait_until='load')
-        page.wait_for_timeout(1500)
+        aseaza(page)
         page.evaluate("(t) => { document.documentElement.setAttribute('data-theme', t);"
                       " try { localStorage.setItem('pif-tema', t) } catch (e) {} }", tema)
-        page.wait_for_timeout(220)
+        aseaza(page)
 
         derulare_inainte = page.evaluate(
             "() => document.body.style.position + '|' + document.documentElement.style.overflow")
@@ -324,20 +323,16 @@ def masoara_fereastra(ctx, baza, f, tema, telefon):
         # „stricat doar pe desktop", ceea ce e chiar mai greu de crezut decat
         # adevarul.
         # Se asteapta ce se intampla, nu un numar: pana cand nu mai ruleaza nicio
-        # animatie, cu plafon — un plafon atins inseamna „pagina nu se aseaza", si
-        # atunci masuram oricum si se vede in raport.
-        try:
-            page.wait_for_function(
-                "() => document.getAnimations().filter(a => a.playState === 'running').length === 0",
-                timeout=2500, polling=80)
-        except Exception:
+        # animatie (nici arc JS, nici cerere), cu plafon — un plafon atins inseamna
+        # „pagina nu se aseaza", si atunci masuram oricum si se vede in raport.
+        if not banc.asteapta_linistea(page, timeout=2500):
             note.append('pagina nu s-a asezat in 2,5s inainte de masurare')
         page.evaluate("() => window.__f.reset()")
         page.evaluate("() => window.__f.urmareste(900)")
         tip, tinta = pasi[-1]
         if not apasa(page, tip, tinta, note, cdp):
             return ['nu s-a deschis'], note
-        page.wait_for_timeout(650)
+        page.wait_for_timeout(650)          # fereastra in care se numara sosirea — masuratoarea
         animatii = page.evaluate("() => window.__f.vazute")
         m = page.evaluate("() => window.__f.masoara()")
         montari = page.evaluate("() => window.__f.montari")
@@ -440,7 +435,7 @@ def masoara_fereastra(ctx, baza, f, tema, telefon):
             page.keyboard.press('Escape')
         except Exception:
             pass
-        page.wait_for_timeout(800)
+        aseaza(page)
         ramas = page.evaluate(
             "() => ({ f: document.querySelectorAll('.modal,.palette,.dp-pop,.so-pop').length,"
             " v: document.querySelectorAll('.backdrop,.palette-backdrop,.dp-voal,.so-voal').length })")
@@ -468,61 +463,36 @@ def main():
     ap.add_argument('--doar', help='doar ferestrele al caror nume contine textul asta')
     ap.add_argument('--tema', choices=['deschisa', 'inchisa', 'ambele'], default='ambele')
     ap.add_argument('--latime', choices=['telefon', 'desktop', 'ambele'], default='ambele')
-    ap.add_argument('--baza', help='alta baza sursa')
+    banc.argumente(ap, vizibil=False)
     arg = ap.parse_args()
-
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        raise SystemExit('Lipseste playwright. Ruleaza:\n'
-                         '  pip install playwright\n'
-                         '  python -m playwright install chromium')
-
-    db_sursa = arg.baza or os.path.join(RADACINA, 'pif_dashboard.db')
-    if not os.path.isfile(db_sursa):
-        raise SystemExit('Nu exista pif_dashboard.db local.')
+    sync_playwright = banc.playwright()
 
     lista = [f for f in FERESTRE if not arg.doar or arg.doar in f['nume']]
     teme = ['light', 'dark'] if arg.tema == 'ambele' else \
            (['light'] if arg.tema == 'deschisa' else ['dark'])
-    latimi = []
-    if arg.latime in ('telefon', 'ambele'):
-        latimi.append(('telefon', TELEFON, True))
-    if arg.latime in ('desktop', 'ambele'):
-        latimi.append(('desktop', DESKTOP, False))
-
-    tmp = tempfile.mkdtemp(prefix='pif-ferestre-')
-    db = os.path.join(tmp, 'audit.db')
-    shutil.copy2(db_sursa, db)
-    port = S.port_liber()
-    proc, baza = S.porneste_serverul(port, db, os.path.join(tmp, 'server.log'))
-    out('Server pe %s (baza: copie de unica folosinta)\n' % baza)
+    latimi = [x for x in ('telefon', 'desktop') if arg.latime in (x, 'ambele')]
 
     total = 0
-    try:
+    with banc.Aplicatia(sursa=arg.baza, prefix='pif-ferestre-') as app:
+        baza = app.baza
+        out('Server pe %s (baza: copie de unica folosinta)\n' % baza)
         with sync_playwright() as pw:
-            br = pw.chromium.launch(executable_path=os.environ.get('PIF_CHROMIUM') or None)
-            for eticheta, (w, h), telefon in latimi:
-                ctx = br.new_context(viewport={'width': w, 'height': h},
-                                     is_mobile=telefon, has_touch=telefon,
-                                     service_workers='block')
-                p = ctx.new_page()
-                p.goto(baza + '/login', wait_until='load')
-                p.fill('#pin', S.PIN_TEST)
-                p.click('button[type="submit"]')
-                p.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
-                p.close()
+            br = banc.browserul(pw)
+            for eticheta in latimi:
+                telefon = eticheta == 'telefon'
+                ctx = banc.context(br, eticheta)
+                banc.autentifica(ctx, baza, inchide=True)
                 for tema in teme:
                     out('=== %s, tema %s ==='
                         % (eticheta, 'deschisa' if tema == 'light' else 'inchisa'))
                     for f in lista:
                         if f['unde'] != 'ambele' and f['unde'] != eticheta:
-                            out('  --    %-17s (nu exista pe %s, prin desen)'
-                                % (f['nume'], eticheta))
+                            out('  %-8s %-17s (nu exista pe %s, prin desen)'
+                                % ('SARI', f['nume'], eticheta))
                             continue
                         probleme, note = masoara_fereastra(ctx, baza, f, tema, telefon)
-                        out('  %s  %-17s %s' % ('OK  ' if not probleme else 'PICA',
-                                                f['nume'], note[0] if note else ''))
+                        out('  %-8s %-17s %s' % ('OK' if not probleme else 'PICA',
+                                                 f['nume'], note[0] if note else ''))
                         for n in note[1:]:
                             out('           %s' % n)
                         for pr in probleme:
@@ -531,26 +501,17 @@ def main():
                     out()
                 ctx.close()
             br.close()
-    finally:
-        proc.terminate()
-        try:
-            proc.wait(timeout=10)
-        except Exception:
-            proc.kill()
 
+    note_finale = []
     if len(ETICHETE_RENUNTARE) > 1:
-        out('NECONCORDANTA: aplicatia numeste renuntarea in %d feluri:'
-            % len(ETICHETE_RENUNTARE))
-        for eticheta, unde in sorted(ETICHETE_RENUNTARE.items()):
-            out('    „%s" — %s' % (eticheta, ', '.join(sorted(set(unde)))))
-        out('  Acelasi gest, doua cuvinte. E o decizie de produs, nu un defect de cod:')
-        out('  proba o raporteaza, alegerea o face omul.')
-        out()
-        total += 1
-
-    out('OK — nimic de reparat.' if not total else '%d probleme.' % total)
-    return 1 if total else 0
+        note_finale.append(
+            'aplicatia numeste renuntarea in %d feluri — %s. Acelasi gest, doua cuvinte: '
+            'e o decizie de produs, nu un defect de cod; proba o raporteaza, alegerea o face omul.'
+            % (len(ETICHETE_RENUNTARE), '; '.join(
+                '„%s" (%s)' % (e, ', '.join(sorted(set(u))))
+                for e, u in sorted(ETICHETE_RENUNTARE.items()))))
+    return banc.incheie(total, note=note_finale)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(banc.ruleaza(main))

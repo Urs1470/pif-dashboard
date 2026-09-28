@@ -38,23 +38,22 @@ Iese cu 0 daca totul e curat, 1 daca a gasit ceva.
 import argparse
 import json
 import os
-import shutil
 import sys
-import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import banc  # noqa: E402
+from banc import out  # noqa: E402
 
-from smoke_ui import (  # noqa: E402  — reutilizam bootstrapul, nu-l rescriem
-    FUS_TEST, PIN_TEST, RADACINA, out, port_liber, porneste_serverul,
-)
+# PAUZELE DE AICI RAMAN PAUZE (2026-09-28), spre deosebire de celelalte audituri: aproape
+# toate sunt ferestre de masura (cate cereri pleaca la hover, cat dureaza drumul de la
+# hover la click) sau asteapta un TEMPORIZATOR al aplicatiei — scrierea amanata pe disc,
+# incalzirea pe timp liber — pe care nicio conditie de retea sau de animatie nu-l vede.
 
-PROBLEME = []
+R = banc.Raport()
 
 
 def nota(ok, eticheta, detaliu=''):
-    out('  %-5s %s%s' % ('OK' if ok else 'PICA', eticheta, ('  — ' + detaliu) if detaliu else ''))
-    if not ok:
-        PROBLEME.append(eticheta + (('  — ' + detaliu) if detaliu else ''))
+    R.bifa(ok, eticheta, detaliu)
 
 
 # ---------------------------------------------------------------- seed de date
@@ -75,9 +74,7 @@ def seed(ctx, baza):
     antete = {'Content-Type': 'application/json', 'X-CSRF-Token': csrf}
 
     r = ctx.request.get(baza + '/api/proiecte')
-    lista = r.json() if r.ok else []
-    if isinstance(lista, dict):
-        lista = lista.get('projects') or lista.get('proiecte') or []
+    lista = r.json() if r.ok else []           # ruta intoarce o lista simpla
     if lista:
         return lista[0]['id']
 
@@ -356,7 +353,8 @@ def ruleaza_taburi_proiect(page, baza, pid):
 def ruleaza(page, baza, pid):
     out('\n--- 1. prima incarcare: pagina SOSESTE ---')
     page.goto(baza + '/#/', wait_until='networkidle')
-    page.add_init_script(SPION)
+    # SPION e deja injectat din `main` (inainte era pus inca o data aici, deci
+    # fiecare `animationstart` se numara de doua ori).
     page.reload(wait_until='networkidle')
     page.wait_for_timeout(800)
     a = animatii(page)
@@ -377,8 +375,9 @@ def ruleaza(page, baza, pid):
          'gasite: %s' % sorted(set(vt)) if vt else '')
     nota(not page.evaluate("document.documentElement.classList.contains('prima-incarcare')"),
          'steagul s-a stins la prima navigare')
-    nota(page.locator('.cal').count() > 0 or page.locator('.page').count() > 0,
-         'Calendarul chiar s-a randat')
+    nota(page.locator('.zi[data-zi]').count() > 0,
+         'Calendarul chiar s-a randat (grila are zile)',
+         'nicio celula .zi[data-zi] — `.page` exista pe orice pagina, deci nu mai e dovada')
 
     out('\n--- 3. revenirea pe tab: fara schelet ---')
     mergi_la(page, '/tasks')
@@ -539,40 +538,27 @@ def ruleaza(page, baza, pid):
             nota(page.evaluate("window.__schelet") == 0,
                  'intrarea pe proiect dupa hover nu trece prin schelet',
                  '%d aparitii' % page.evaluate("window.__schelet"))
-            nota(page.locator('h1').count() > 0, 'pagina de proiect s-a randat')
+            nota(page.evaluate("location.hash").startswith('#/projects/')
+                 and page.locator('.rail-mini').count() > 0,
+                 'pagina de proiect s-a randat',
+                 'hash %s — un `h1` exista si pe lista, deci nu mai e dovada'
+                 % page.evaluate("location.hash"))
         else:
-            out('  SARI  nu exista card de proiect in lista')
+            nota(False, 'lista de proiecte are un card', 'niciun .pcard — `seed` pune unul')
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--vizibil', action='store_true', help='cu browser pe ecran')
+    banc.argumente(ap)
     arg = ap.parse_args()
+    sync_playwright = banc.playwright()
 
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        raise SystemExit('Lipseste playwright. Ruleaza:\n  pip install playwright\n'
-                         '  python -m playwright install chromium')
-
-    lucru = tempfile.mkdtemp(prefix='pif-nav-')
-    db_temp = os.path.join(lucru, 'audit.db')
-    sursa = os.path.join(RADACINA, 'pif_dashboard.db')
-    if os.path.exists(sursa):
-        shutil.copy2(sursa, db_temp)
-    port = port_liber()
-    proc, baza = porneste_serverul(port, db_temp, os.path.join(lucru, 'server.log'))
-
-    try:
+    with banc.Aplicatia(sursa=arg.baza, prefix='pif-nav-') as app:
+        baza = app.baza
         with sync_playwright() as pw:
-            br = pw.chromium.launch(headless=not arg.vizibil)
-            ctx = br.new_context(viewport={'width': 1280, 'height': 800},
-                                 timezone_id=FUS_TEST)
-            page = ctx.new_page()
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', PIN_TEST)
-            page.click('button[type="submit"]')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
+            br = banc.browserul(pw, arg.vizibil)
+            ctx = banc.context(br, 'desktop')
+            page = banc.autentifica(ctx, baza)
             out('Autentificat.')
 
             pid = seed(ctx, baza)
@@ -581,27 +567,8 @@ def main():
             page.add_init_script(SPION)
             ruleaza(page, baza, pid)
             br.close()
-    finally:
-        proc.terminate()
-        try:
-            proc.wait(timeout=5)
-        except Exception:
-            proc.kill()
-        try:
-            proc._log.close()
-        except Exception:
-            pass
-        shutil.rmtree(lucru, ignore_errors=True)
-
-    out('')
-    if PROBLEME:
-        out('%d contracte incalcate:' % len(PROBLEME))
-        for p in PROBLEME:
-            out('  - ' + p)
-        return 1
-    out('OK — navigarea respecta toate contractele.')
-    return 0
+    return R.incheie()
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(banc.ruleaza(main))

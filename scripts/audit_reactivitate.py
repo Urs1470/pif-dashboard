@@ -38,19 +38,25 @@ conditia asta — vezi nota din `audit_foaie.py`.
 """
 
 import os
-import shutil
 import sqlite3
-import subprocess
 import sys
-import tempfile
-import time
-import urllib.error
-import urllib.request
 import uuid
 
-RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PIN_TEST = '000000'
-TELEFON = {'width': 390, 'height': 844}
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import banc  # noqa: E402
+from banc import out, apuca, misca, ridica  # noqa: E402
+
+R = banc.Raport()
+bifa = R.bifa
+nota = R.nota
+
+
+def aseaza(page):
+    """Inainte de o masuratoare, pagina trebuie sa stea: nicio cerere, nicio
+    animatie, niciun arc. O pauza fixa lasa uneori un fetch sau o tranzitie sa curga
+    PESTE fereastra masurata — si atunci aplicatia e acuzata de munca altcuiva."""
+    banc.asteapta_linistea(page)
+
 
 # Pragul de raspuns, din `tokens.css` (`--dur-press`, nota lui).
 PRAG_RASPUNS = 100
@@ -62,37 +68,8 @@ CADRU_LUNG = 40
 # Cat poate ramane obiectul in urma degetului, in px.
 PRAG_URMARIRE = 12
 
-esecuri = []
-note = []
-
-
-def out(s=''):
-    sys.stdout.buffer.write((str(s) + '\n').encode('utf-8', 'replace'))
-    sys.stdout.flush()
-
-
-def bifa(ok, eticheta, detaliu='', nota=''):
-    coada = nota if ok else detaliu
-    out('  %-5s %s%s' % ('OK' if ok else 'PICA', eticheta, ('  — %s' % coada) if coada else ''))
-    if not ok:
-        esecuri.append('%s — %s' % (eticheta, detaliu))
-
-
-def port_liber():
-    import socket
-    s = socket.socket()
-    s.bind(('127.0.0.1', 0))
-    p = s.getsockname()[1]
-    s.close()
-    return p
-
-
 def seamana(cale):
-    """Destule randuri cat sa existe ce derula si ce atinge."""
-    sys.path.insert(0, RADACINA)
-    os.environ['PIF_DB_PATH'] = cale
-    import database
-    database.init_db()
+    """Destule randuri cat sa existe ce derula si ce atinge. Schema o scrie `banc`."""
     db = sqlite3.connect(cale)
     pid = str(uuid.uuid4())
     db.execute("INSERT INTO proiecte (id, nume, client, tip, status) VALUES (?,?,?,?,?)",
@@ -115,33 +92,6 @@ def seamana(cale):
                                            None if i % 2 else '2026-09-%02d' % (i + 3)))
     db.commit()
     db.close()
-
-
-def porneste_serverul(port, db_temp, cale_log):
-    env = dict(os.environ)
-    env.update({'PIF_DB_PATH': db_temp, 'PIF_DASHBOARD_PIN': PIN_TEST,
-                'SESSION_COOKIE_SECURE': 'false', 'PIF_RATE_LIMIT': '100000',
-                'PYTHONIOENCODING': 'utf-8'})
-    cod = ('from app import app\n'
-           'app.run(host="127.0.0.1", port=%d, debug=False, use_reloader=False, threaded=True)\n' % port)
-    log = open(cale_log, 'wb')
-    proc = subprocess.Popen([sys.executable, '-c', cod], cwd=RADACINA, env=env,
-                            stdout=log, stderr=subprocess.STDOUT)
-    baza = 'http://127.0.0.1:%d' % port
-    for _ in range(120):
-        if proc.poll() is not None:
-            log.close()
-            out(open(cale_log, encoding='utf-8', errors='replace').read()[-3000:])
-            raise SystemExit('Serverul a murit la pornire.')
-        try:
-            urllib.request.urlopen(baza + '/login', timeout=1).read()
-            return proc, baza
-        except urllib.error.HTTPError:
-            return proc, baza
-        except Exception:
-            time.sleep(0.5)
-    proc.terminate()
-    raise SystemExit('Serverul nu a pornit in 60s.')
 
 
 # ---------------------------------------------------------------- inregistrarea
@@ -285,11 +235,13 @@ def analizeaza(cadre, nume, drum_minim=8, apasat=0.0):
 
 def raporteaza(r, prag_pornire=PRAG_RASPUNS, prag_invers=6.0, prag_salt=45.0):
     n = r['nume']
+    # UN OBIECT CARE N-A APARUT SAU NU S-A MISCAT E O ABATERE, nu o nota (2026-09-28):
+    # pana atunci o foaie care nu se deschidea deloc trecea — „nimic de masurat".
     if r.get('gol'):
-        note.append('%s: sonda n-a intors numere (obiectul n-a existat)' % n)
+        bifa(False, '%s: obiectul exista' % n, 'sonda n-a intors numere — nu s-a deschis/randat')
         return
     if r.get('nemiscat'):
-        note.append('%s: obiectul nu s-a miscat (drum %s px)' % (n, r.get('drum')))
+        bifa(False, '%s: se misca' % n, 'drum %s px — n-a plecat din loc' % r.get('drum'))
         return
     # O MASURATOARE IN CARE NU AM INCREDERE NU ARE VOIE SA ACUZE.
     # Cand marcajul apasarii iese dupa primul cadru miscat, singurul lucru pe care
@@ -298,8 +250,8 @@ def raporteaza(r, prag_pornire=PRAG_RASPUNS, prag_invers=6.0, prag_salt=45.0):
     # scapari in cartea codului, si atunci fiecare rulare cere iar investigatie.
     # (Masurat curat, aceleasi drumuri pornesc la 34-38ms.)
     if r.get('marcaj_dubios'):
-        note.append('%s: momentul declansarii n-a fost prins curat — nu se poate judeca pornirea '
-                    '(cel mai devreme cadru miscat: %sms de la pornirea probei)' % (n, r['pornire']))
+        nota('%s: momentul declansarii n-a fost prins curat — nu se poate judeca pornirea '
+             '(cel mai devreme cadru miscat: %sms de la pornirea probei)' % (n, r['pornire']))
     else:
         bifa(r['pornire'] is not None and r['pornire'] <= prag_pornire,
              '%s: porneste sub %dms' % (n, prag_pornire),
@@ -313,59 +265,27 @@ def raporteaza(r, prag_pornire=PRAG_RASPUNS, prag_invers=6.0, prag_salt=45.0):
          'un cadru a facut %s%% din drum' % r['salt_pct'],
          'max %s%%/cadru' % r['salt_pct'])
     if r.get('sarite_construire'):
-        note.append('%s: %d cadru(e) lung(i) INAINTE de miscare — cost de construire, nu poticneala'
-                    % (n, r['sarite_construire']))
+        nota('%s: %d cadru(e) lung(i) INAINTE de miscare — cost de construire, nu poticneala'
+             % (n, r['sarite_construire']))
     bifa(r['cadre_sarite'] == 0,
          '%s: niciun cadru pierdut in timpul miscarii' % n,
          '%d cadre peste %dms (cel mai lung %sms)' % (r['cadre_sarite'], CADRU_LUNG, r['cadru_max']),
          'cadru max %sms' % r['cadru_max'])
 
 
-# ---------------------------------------------------------------- degetul
-def _pct(x, y):
-    return {'touchPoints': [{'x': x, 'y': y, 'id': 1, 'radiusX': 6, 'radiusY': 6, 'force': 1}]}
-
-
-def apuca(cdp, x, y):
-    cdp.send('Input.dispatchTouchEvent', dict(type='touchStart', **_pct(x, y)))
-
-
-def misca(cdp, x, y):
-    cdp.send('Input.dispatchTouchEvent', dict(type='touchMove', **_pct(x, y)))
-
-
-def ridica(cdp):
-    cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
-
-
-def atinge(cdp, x, y):
-    apuca(cdp, x, y)
-    ridica(cdp)
-
-
 def main():
-    from playwright.sync_api import sync_playwright
-
-    lucru = tempfile.mkdtemp(prefix='pif-react-')
-    db = os.path.join(lucru, 'proba.db')
-    seamana(db)
-    port = port_liber()
-    proc, baza = porneste_serverul(port, db, os.path.join(lucru, 'server.log'))
-
-    try:
+    sync_playwright = banc.playwright()
+    with banc.Aplicatia(noua=True, seamana=seamana, prefix='pif-react-') as app:
+        baza = app.baza
         with sync_playwright() as p:
-            b = p.chromium.launch()
-            ctx = b.new_context(viewport=TELEFON, has_touch=True, is_mobile=True)
-            page = ctx.new_page()
-            cdp = ctx.new_cdp_session(page)
+            b = banc.browserul(p)
+            ctx = banc.context(b, 'telefon')
+            page = banc.autentifica(ctx, baza)
+            cdp = banc.cdp(page)
             erori = []
             page.on('pageerror', lambda e: erori.append(str(e).split('\n')[0]))
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', PIN_TEST)
-            page.press('#pin', 'Enter')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
             page.goto(baza + '/#/tasks', wait_until='load')
-            page.wait_for_timeout(1800)
+            aseaza(page)
 
             # ============ A. RASPUNSUL LA ATINGERE ============
             out('\n--- A. raspunsul la atingere ---')
@@ -405,11 +325,11 @@ def main():
             for nume, sel in tinte:
                 el = page.query_selector(sel)
                 if el is None:
-                    note.append('%s: nu exista (`%s`)' % (nume, sel))
+                    bifa(False, '%s: exista' % nume, 'lipseste `%s`' % sel)
                     continue
                 box = el.bounding_box()
                 if not box:
-                    note.append('%s: fara geometrie' % nume)
+                    bifa(False, '%s: are geometrie' % nume, 'nu e randat')
                     continue
                 x, y = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
                 lant = page.evaluate(LANT, [x, y])
@@ -446,10 +366,10 @@ def main():
                 # crede — si a doua oara nici nu mai ajunge la tinta, fiindca
                 # voalul o acopera.
                 page.keyboard.press('Escape')
-                page.wait_for_timeout(420)
+                aseaza(page)
                 if not page.url.endswith('#/tasks'):
                     page.goto(baza + '/#/tasks', wait_until='load')
-                page.wait_for_timeout(900)
+                aseaza(page)
 
             # ============ B+C. PROFILUL MISCARII ============
             out('\n--- B. profilul miscarii (foaia taskului) ---')
@@ -458,7 +378,7 @@ def main():
 
             rand = page.query_selector('.trow-wrap .gl-fata') or page.query_selector('.trow')
             if rand is None:
-                note.append('niciun rand de task — sar profilul foii')
+                bifa(False, 'lista are un rand de task pentru profilul foii', 'niciun rand')
             else:
                 porneste_inregistrarea(page, SONDA_FOAIE, 900)
                 page.wait_for_timeout(60)
@@ -467,14 +387,14 @@ def main():
                 c = ia_cadrele(page, 900)
                 raporteaza(analizeaza(c, 'deschiderea foii', apasat=momentul_apasarii(page)))
 
-                page.wait_for_timeout(400)
+                aseaza(page)
                 porneste_inregistrarea(page, SONDA_FOAIE, 900)
                 page.wait_for_timeout(60)
                 armeaza(page)
                 page.keyboard.press('Escape')
                 c = ia_cadrele(page, 900)
                 raporteaza(analizeaza(c, 'inchiderea foii', apasat=momentul_apasarii(page)))
-                page.wait_for_timeout(400)
+                aseaza(page)
 
             # Schimbarea de tab NU se masoara aici: miscarea ei e a unui
             # pseudo-element (`::view-transition-*`), pe care `getComputedStyle`
@@ -485,10 +405,10 @@ def main():
             # ============ B2. FOAIA DE ADAUGARE + TRECEREA DE TEMA ============
             out('\n--- B. foaia de adaugare si trecerea de tema ---')
             page.goto(baza + '/#/tasks', wait_until='load')
-            page.wait_for_timeout(1500)
+            aseaza(page)
             fab = page.query_selector('.dock-fab')
             if fab is None:
-                note.append('fara buton plutitor — sar foaia de adaugare')
+                bifa(False, 'exista butonul de adaugare din dock', 'lipseste .dock-fab')
             else:
                 porneste_inregistrarea(page, SONDA_FOAIE, 1000)
                 page.wait_for_timeout(60)
@@ -497,7 +417,7 @@ def main():
                 c = ia_cadrele(page, 1000)
                 raporteaza(analizeaza(c, 'foaia de adaugare', apasat=momentul_apasarii(page)))
                 page.keyboard.press('Escape')
-                page.wait_for_timeout(600)
+                aseaza(page)
 
             # TRECEREA DE TEMA, pe drumul REAL: butonul din antet -> foaia de
             # tema -> alegerea unui mod. Nu simulata dintr-un `evaluate`, fiindca
@@ -509,13 +429,13 @@ def main():
               return Math.round(n * 10) / 10; }""")
             btnTema = page.query_selector('.tema-wrap .h-btn')
             if btnTema is None:
-                note.append('fara buton de tema in antet — sar trecerea de tema')
+                bifa(False, 'antetul are butonul de tema', 'lipseste .tema-wrap .h-btn')
             else:
                 btnTema.click()
-                page.wait_for_timeout(900)
+                aseaza(page)
                 moduri = page.query_selector_all('[role="menuitemradio"]')
                 if len(moduri) < 3:
-                    note.append('foaia de tema n-a randat cele trei moduri')
+                    bifa(False, 'foaia de tema are cele trei moduri', '%d moduri' % len(moduri))
                 else:
                     porneste_inregistrarea(page, SONDA_CADRU, 900)
                     page.wait_for_timeout(60)
@@ -527,7 +447,8 @@ def main():
                     r = analizeaza(c, 'trecerea de tema', drum_minim=20,
                                    apasat=momentul_apasarii(page))
                     if r.get('nemiscat') or r.get('gol'):
-                        note.append('trecerea de tema: fondul n-a variat destul ca sa fie masurat')
+                        bifa(False, 'trecerea de tema schimba fondul',
+                             'fondul n-a variat — din tema deschisa, „Întunecat" trebuia sa-l schimbe')
                     else:
                         # UN cadru lung e permis, si e chiar mecanismul.
                         # `startViewTransition` fotografiaza tot ecranul: ala e un
@@ -544,21 +465,21 @@ def main():
                              % (r['cadre_sarite'], CADRU_LUNG, r['cadru_max']),
                              '%d cadru de instantaneu, %sms' % (r['cadre_sarite'], r['cadru_max']))
                 page.keyboard.press('Escape')
-                page.wait_for_timeout(500)
+                aseaza(page)
 
             # ============ D. GESTUL URMARESTE DEGETUL ============
             out('\n--- D. gestul urmareste degetul ---')
             page.goto(baza + '/#/tasks', wait_until='load')
-            page.wait_for_timeout(1500)
+            aseaza(page)
             rand = page.query_selector('.trow-wrap .gl-fata') or page.query_selector('.trow')
             if rand is None:
-                note.append('niciun rand — sar urmarirea')
+                bifa(False, 'lista are un rand pentru urmarire', 'niciun rand')
             else:
                 rand.click()
-                page.wait_for_timeout(800)
+                aseaza(page)
                 cap = page.query_selector('.modal-header')
                 if cap is None:
-                    note.append('foaia n-are antet — sar urmarirea')
+                    bifa(False, 'foaia are antet (de el se trage)', 'lipseste .modal-header')
                 else:
                     bx = cap.bounding_box()
                     x, y = bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2
@@ -574,7 +495,7 @@ def main():
                         asteptat = sus0 + i * 12
                         ramaneri.append(abs(asteptat - sus))
                     ridica(cdp)
-                    page.wait_for_timeout(500)
+                    aseaza(page)
                     if ramaneri:
                         rmax = round(max(ramaneri), 1)
                         rmed = round(sum(ramaneri) / len(ramaneri), 1)
@@ -583,14 +504,14 @@ def main():
                              'a ramas pana la %spx in urma (media %s)' % (rmax, rmed),
                              'max %spx, media %spx' % (rmax, rmed))
                     else:
-                        note.append('gestul nu s-a inregistrat')
+                        bifa(False, 'gestul pe foaie se inregistreaza', 'foaia a disparut sub deget')
                 page.keyboard.press('Escape')
-                page.wait_for_timeout(500)
+                aseaza(page)
 
             # ============ E. TRAGE SA REINCARCI ============
             out('\n--- E. trage sa reincarci ---')
             page.goto(baza + '/#/tasks', wait_until='load')
-            page.wait_for_timeout(1500)
+            aseaza(page)
             page.evaluate('() => window.scrollTo(0, 0)')
             apuca(cdp, 195, 200)
             vazut = False
@@ -608,7 +529,11 @@ def main():
             bifa(vazut, 'arcul apare cand tragi de la capatul de sus', 'nu a aparut deloc')
             bifa(prag is True, 'arcul se umple pana la prag', 'n-a ajuns la prag (plin=%s)' % prag)
             bifa(roteste, 'dupa prag se roteste cat tine cererea', 'nu s-a rotit')
-            page.wait_for_timeout(1200)
+            # Pleaca dupa ce sosesc datele: se asteapta chiar asta, cu plafon.
+            try:
+                page.wait_for_function("() => !document.querySelector('.ptr')", timeout=4000)
+            except Exception:
+                pass
             plecat = page.query_selector('.ptr') is None
             bifa(plecat, 'arcul pleaca dupa ce sosesc datele', 'a ramas pe ecran')
 
@@ -616,37 +541,21 @@ def main():
             rand = page.query_selector('.trow-wrap .gl-fata') or page.query_selector('.trow')
             if rand:
                 rand.click()
-                page.wait_for_timeout(700)
+                aseaza(page)
                 apuca(cdp, 195, 300)
                 for i in range(1, 8):
                     misca(cdp, 195, 300 + i * 14)
                     page.wait_for_timeout(20)
                 fura = page.query_selector('.ptr') is not None
                 ridica(cdp)
-                page.wait_for_timeout(500)
+                aseaza(page)
                 bifa(not fura, 'sub o foaie deschisa, gestul ramane al foii',
                      'arcul de reincarcare a furat gestul foii')
 
             bifa(not erori, 'nicio exceptie in pagina', ' · '.join(erori[:3]))
             b.close()
-    finally:
-        proc.terminate()
-        try:
-            proc.wait(timeout=5)
-        except Exception:
-            proc.kill()
-        shutil.rmtree(lucru, ignore_errors=True)
-
-    out()
-    for n in note:
-        out('  nota: %s' % n)
-    if esecuri:
-        out('\n%d probleme de reactivitate:' % len(esecuri))
-        for e in esecuri:
-            out('  - %s' % e)
-        sys.exit(1)
-    out('OK — interactiunea raspunde la timp si curge.')
+    return R.incheie()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(banc.ruleaza(main))

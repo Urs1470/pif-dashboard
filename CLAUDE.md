@@ -20,7 +20,7 @@ modificari necomise.
 | unde e functia Y | `docs/memory/CODE_MAP.md` — **generat** |
 | harta, starea, capcanele | `docs/memory/MEMORY.md` |
 | cum scriu corect pe API | `SCHEMA_REFERENCE.md` |
-| **de ce am facut asa** | `docs/decizii/INDEX.md` (117 decizii, cu carlig fiecare) |
+| **de ce am facut asa** | `docs/decizii/INDEX.md` (118 decizii, cu carlig fiecare) |
 | ce culoare/marime/durata | `frontend/src/styles/tokens.css` — sursa unica |
 
 Cele trei harti se regenereaza la fiecare commit care atinge cod Python. Activeaza hook-ul
@@ -93,35 +93,31 @@ se încarcă singur când atingi `frontend/src/**`. Sursa valorilor rămâne
 
 ## Verificatoare
 
+Un singur punct de intrare. Lista pasilor si regulile portii stau in `scripts/verifica.py`,
+nu aici — de acolo le ia si poarta.
+
 ```bash
-python scripts/lint.py              # pyflakes + compilatorul Svelte (secunde, fara Chromium)
-python scripts/audit_design.py      # coerenta sistemului de design (sub o secunda)
-python scripts/audit_contrast.py    # contrastul perechilor reale, pe amandoua temele
-python scripts/test_suite.py        # API + verificari statice (41 de probe)
-python scripts/smoke_ui.py          # fiecare ruta in Chromium, desktop + mobil
-python scripts/audit_mobil.py       # geometrie si gesturi pe trei latimi de telefon
-python scripts/audit_navigare.py    # ce se intampla, masurat, cand schimbi tabul
-python scripts/audit_foaie.py       # foaia de pe telefon: trepte, viteza, voal
-python scripts/audit_reactivitate.py # cat de repede raspunde si cat de neted curge
-python scripts/audit_tastatura.py   # foile CU tastatura (IME emulat): o sosire, nimic sub ea
-python scripts/proba_mobil.py       # banc de lucru, nu verificator: ce face o pagina cand o atingi
+python scripts/verifica.py              # --rapid, ~15 s: lint, design, contrast, unitare py+js, API
+python scripts/verifica.py --poarta     # + build, smoke_ui (esantion), audit_mobil, audit_tastatura
+python scripts/verifica.py --complet    # tot: + smoke_ui pe toate proiectele, audit_foaie,
+                                        #   audit_reactivitate, audit_navigare, audit_ferestre
+python scripts/verifica.py --atinse <fisiere>   # exact ce ar rula poarta pentru ele
 ```
 
-Fiecare exista fiindca prinde un mod de esec care trece de build: importul lipsa care lasa
-pagina pe schelet, butonul taiat de marginea ecranului, a doua paleta rotita cu doua pozitii,
-foaia care se intinde si nu se mai poate trage inapoi. **Povestea fiecaruia si capcanele lui
-de masurare: `docs/verificatoare.md`** — se citeste cand lucrezi LA un verificator sau cand
-unul raporteaza ceva ciudat (ex. `css_probabil_nefolosit` = fisier „mut" pentru analiza
-Svelte, cazut pe verificarea textuala conservatoare).
+Testele unitare: `teste/` (Python, `unittest`) si `frontend/src/lib/*.test.js` (`node --test`).
+Auditurile cu browser stau pe `scripts/banc.py`: server si baza de unica folosinta, contextul
+de telefon/desktop, degetul, raportul (OK · PICA · NOTA · SARI · ACCEPTAT; iesire 0 curat,
+1 abatere, 2 instrumentul). Fiecare exista fiindca prinde un mod de esec care trece de build.
+**Ce pazeste fiecare si capcanele lui de masurare: `docs/verificatoare.md`** — se citeste cand
+lucrezi LA un verificator sau cand unul raporteaza ceva ciudat.
 
-**Poarta** (`.claude/hooks/gate.py`, la Stop) le ruleaza singura, pe ce s-a atins: orice `.py`
-sau sursa SPA → `lint` (prima, e cea mai ieftina); CSS/Svelte → `audit_design`; backend →
-`test_suite`; surse SPA → build + `smoke_ui` + `audit_mobil`.
-Nu blocheaza de mai mult de doua ori per sesiune. **O modificare doar in documentatie nu o
-declanseaza.** Supapa: `PIF_GATE=skip` — o si anunta in context, deci n-o poti folosi tacit.
+**Poarta** (`.claude/hooks/gate.py`, la Stop) ruleaza, din aceeasi lista (`pasi_pentru`), doar
+ce cer fisierele atinse. Nu blocheaza de mai mult de doua ori per sesiune. **O modificare doar
+in documentatie nu o declanseaza.** Supapa: `PIF_GATE=skip` — o si anunta in context, deci
+n-o poti folosi tacit.
 
 Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`):
-`pip install pyflakes playwright && python -m playwright install chromium`.
+`pip install pyflakes playwright requests && python -m playwright install chromium`.
 
 ## Mediu, server, deploy
 
@@ -156,5 +152,6 @@ Indexul git e comun, deci coordoneaza-te inainte sa pui in stage sau sa comiti. 
 - CSP foloseste `unsafe-inline`. A ramas din aplicatia veche cu sute de `onclick`; azi
   `static/dist/index.html` are un singur script inline (bootstrap-ul de tema), deci migrarea
   la nonce a devenit realista.
-- Nu exista framework de teste (pytest); probele din `scripts/` sunt scrise de mana.
+- Nu exista pytest: testele unitare folosesc biblioteca standard (`unittest`, `node --test`),
+  iar auditurile cu browser sunt scrise de mana, pe `scripts/banc.py`.
 - `UPLOAD_FOLDER` nu se poate configura din mediu.

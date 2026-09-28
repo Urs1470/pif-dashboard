@@ -52,22 +52,33 @@ De-aia `--kb` are acum un prag: zero se crede pe loc, o valoare nenula trebuie
 sa se tina. Sectiunea 1b pazeste celalalt capat al pragului.
 
     python scripts/audit_tastatura.py
+
+Porneste singur aplicatia (`banc.Aplicatia`), pe o baza noua umpluta de `audit_foaie.seamana`.
+Iesire: 0 curat, 1 abatere, 2 instrumentul (vezi banc.py).
+
+PAUZELE CARE AU RAMAS SUNT MASURATORI, nu asteptari (2026-09-28): ferestrele in care se
+inregistreaza cadrele dupa un gest (`urma`), pragurile lui `--kb` (60 / 460 ms), cat tii
+degetul apasat. Cele de „asezare" — dupa navigare, dupa o foaie inchisa, dupa tastatura —
+au devenit `aseaza(page)`. Si contextul vine din banc: pana atunci auditul rula fara
+fusul orar al lui Ion, cu service worker activ si ignora `PIF_CHROMIUM`.
 """
 
 import os
 import sys
-import tempfile
 
-RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(RADACINA, 'scripts'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import banc  # noqa: E402
+from banc import out, TELEFON, apuca, centru  # noqa: E402
+from audit_foaie import seamana  # noqa: E402
 
-from audit_foaie import (PIN_TEST, TELEFON, apuca, bifa, esecuri, out,
-                         porneste_serverul, port_liber, ridica, seamana)
+R = banc.Raport()
+bifa = R.bifa
 
-DESKTOP = {'width': 1280, 'height': 800}
 KB = 312   # inaltimea tastaturii emulate, in px — cat are o tastatura Gboard pe 844
-LAT = 420  # ms de la focus pana cand IME-ul e sus — masurat ca ordin de marime pe WebView
-KB_URCA = 200  # cat dureaza urcarea tastaturii insasi (vezi `KB_URCA` in Modal)
+
+
+def aseaza(page, server=False):
+    banc.asteapta_linistea(page, liniste_ms=banc.LINISTE_SERVER if server else banc.LINISTE_UI)
 
 # NU se mai falsifica `visualViewport`. Pe aparat, ce se schimba e CHIAR
 # viewportul (Capacitor micsoreaza WebView-ul), iar Playwright poate face exact
@@ -93,7 +104,7 @@ INIT = r"""
 """
 
 URMA_PORNESTE = 'window.__porneste()'
-URMA_OPRESTE = 'window.__go = false; window.__opreste()'
+URMA_OPRESTE = 'window.__opreste()'
 
 # Telefonul lui Ion are edge-to-edge: safe-area reala. Pe emulator e 0, si exact
 # asa au trecut neobservate doua runde de reparatii la foaia zilei.
@@ -111,12 +122,12 @@ def ridica_tastatura(page, kb=None):
     """Tastatura, ca pe aparat: viewportul se micsoreaza intr-un pas.
     (Capacitor pune padding pe parintele WebView-ului — vezi antetul.)"""
     page.set_viewport_size({'width': TELEFON['width'], 'height': TELEFON['height'] - (kb or KB)})
-    page.wait_for_timeout(350)
+    aseaza(page)
 
 
 def coboara_tastatura(page):
     page.set_viewport_size({'width': TELEFON['width'], 'height': TELEFON['height']})
-    page.wait_for_timeout(350)
+    aseaza(page)
 
 
 def kb_acum(page):
@@ -125,15 +136,16 @@ def kb_acum(page):
     return TELEFON['height'] - page.evaluate('window.innerHeight')
 
 
-def tap(cdp, page, x, y, pauza=400):
+def tap(cdp, page, x, y, pauza=None):
+    """O atingere scurta. Fara `pauza`: se asteapta sa se aseze pagina. Cu `pauza`
+    (inclusiv 0): e o masuratoare, iar cine cheama isi numara singur timpul."""
     apuca(cdp, x, y)
-    page.wait_for_timeout(30)
-    ridica(cdp, page, pauza)
-
-
-def centru(el):
-    b = el.bounding_box()
-    return b['x'] + b['width'] / 2, b['y'] + b['height'] / 2
+    page.wait_for_timeout(30)                      # cat sta degetul jos — stimulul
+    banc.ridica(cdp)
+    if pauza is None:
+        aseaza(page)
+    elif pauza:
+        page.wait_for_timeout(pauza)
 
 
 def urma(page, act, coada=900):
@@ -149,48 +161,29 @@ def inchide_tot(page):
         if not page.query_selector('.backdrop'):
             break
         page.keyboard.press('Escape')
-        page.wait_for_timeout(450)
+        aseaza(page)
     page.evaluate('document.activeElement && document.activeElement.blur && document.activeElement.blur()')
-    page.wait_for_timeout(400)
+    aseaza(page)
 
 
-def mergi(page, baza, ruta, pauza=1400):
+def mergi(page, baza, ruta):
     page.goto(baza + '/#' + ruta, wait_until='load')
-    page.wait_for_timeout(pauza)
+    aseaza(page)
     page.add_style_tag(content=SAFE)
 
 
-def cadre_in_repaus(u, de_la):
-    """Cadrele de dupa `de_la` ms: cat s-a mai miscat foaia dupa ce ar fi trebuit
-    sa stea — adica a doua sosire, daca exista."""
-    dupa = [p for p in u if p['t'] >= de_la and p['top'] is not None]
-    if not dupa:
-        return 0
-    return max(p['top'] for p in dupa) - min(p['top'] for p in dupa)
-
-
 def main():
-    from playwright.sync_api import sync_playwright
-
-    lucru = tempfile.mkdtemp(prefix='pif-tastatura-')
-    db = os.path.join(lucru, 'proba.db')
-    seamana(db)
-    port = port_liber()
-    proc, baza = porneste_serverul(port, db, os.path.join(lucru, 'server.log'))
-
-    try:
+    sync_playwright = banc.playwright()
+    with banc.Aplicatia(noua=True, seamana=seamana, prefix='pif-tastatura-') as app:
+        baza = app.baza
         with sync_playwright() as p:
-            b = p.chromium.launch()
-            ctx = b.new_context(viewport=TELEFON, has_touch=True, is_mobile=True)
+            b = banc.browserul(p)
+            ctx = banc.context(b, 'telefon')
             ctx.add_init_script(INIT)
-            page = ctx.new_page()
-            cdp = ctx.new_cdp_session(page)
+            page = banc.autentifica(ctx, baza)
+            cdp = banc.cdp(page)
             erori = []
             page.on('pageerror', lambda e: erori.append(str(e)))
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', PIN_TEST)
-            page.press('#pin', 'Enter')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
 
             # ===== 1. REGIMUL REAL: UN PAS, SI FOAIA IL URMEAZA IN ACELASI CADRU =====
             # Se micsoreaza CHIAR viewportul (ca `setPadding`-ul lui Capacitor),
@@ -204,7 +197,7 @@ def main():
                 bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .dock-fab')
             else:
                 x, y = centru(fab)
-                tap(cdp, page, x, y, 900)
+                tap(cdp, page, x, y)
                 inainte = page.evaluate(GEOM, '.modal.sheet')
                 bifa(inainte is not None, 'foaia de adaugare e deschisa', 'nu s-a deschis')
 
@@ -319,7 +312,7 @@ def main():
                     bifa(False, 'butonul de adaugare exista pe /tasks', 'fara .dock-fab')
                 else:
                     fx, fy = centru(fab)
-                    tap(cdp, page, fx, fy, 900)
+                    tap(cdp, page, fx, fy)
                     inainte = page.evaluate(GEOM, '.modal.sheet')
                     # Tastatura de BROWSER: `innerHeight` ramane pe loc, doar
                     # `visualViewport.height` scade. Exact ce NU face Capacitor.
@@ -357,15 +350,15 @@ def main():
                          '`are-tastatura` se pune in regimul browser', 'clasa lipseste')
                     inchide_tot(page)
                     page.reload()          # scapa de `visualViewport` falsificat
-                    page.wait_for_timeout(1200)
+                    aseaza(page)
 
                 # ===== 2. NIMIC SUB TASTATURA =====
                 out('\n--- nimic sub tastatura ---')
-                page.wait_for_timeout(300)
+                aseaza(page)
                 fab = page.query_selector('.dock-fab')
                 if fab is not None:
                     fx, fy = centru(fab)
-                    tap(cdp, page, fx, fy, 800)
+                    tap(cdp, page, fx, fy)
                 ridica_tastatura(page)
                 kb_sus = kb_acum(page)
                 bifa(kb_sus == KB, 'tastatura e sus (viewportul s-a micsorat)', 'kb=%s' % kb_sus)
@@ -385,7 +378,9 @@ def main():
                      'jos la %s' % (jos and jos['bottom']))
                 inainte_scris = page.evaluate(GEOM, '.modal.sheet')
                 page.keyboard.type('Verifica')
-                page.wait_for_timeout(400)
+                # `server=True`: ce putea schimba inaltimea e lista venita din cautare
+                # (amanata 200 ms, apoi o cerere) — se masoara dupa ce a sosit.
+                aseaza(page, server=True)
                 dupa = page.evaluate(GEOM, '.modal.sheet')
                 bifa(dupa is not None and inainte_scris is not None
                      and dupa['h'] == inainte_scris['h'],
@@ -420,7 +415,7 @@ def main():
                     bifa(False, 'foaia are „Adaugă subtask"', 'lipseste .sub-nou')
                 else:
                     xx, yy = centru(btn)
-                    tap(cdp, page, xx, yy, 500)
+                    tap(cdp, page, xx, yy)
                     ridica_tastatura(page)
                     camp = page.evaluate(GEOM, '.modal.sheet .sub-add input')
                     bifa(camp is not None and camp['bottom'] <= TELEFON['height'] - KB,
@@ -441,8 +436,8 @@ def main():
                 x, y = centru(randuri[1])
                 def lung():
                     apuca(cdp, x, y)
-                    page.wait_for_timeout(470)
-                    ridica(cdp, page, 0)
+                    page.wait_for_timeout(470)             # apasarea lunga — stimulul
+                    banc.ridica(cdp)
                 u = urma(page, lung, 900)
                 topuri = [q['top'] for q in u if q['top'] is not None]
                 bifa(len(set(topuri)) >= 6 and topuri[0] > topuri[-1] + 150,
@@ -455,7 +450,8 @@ def main():
                 apuca(cdp, x, y)
                 page.wait_for_timeout(460)     # dupa puls (420), inainte de pragul nativ (500)
                 sus = page.query_selector('.modal.sheet') is not None
-                ridica(cdp, page, 700)
+                banc.ridica(cdp)
+                aseaza(page)
                 inca = page.query_selector('.modal.sheet') is not None
                 bifa(sus, 'foaia de actiuni soseste sub deget', 'nu s-a deschis la 460 ms')
                 bifa(inca, 'ridicarea degetului NU inchide foaia si NU apasa un rand din ea',
@@ -464,12 +460,16 @@ def main():
                      'niciun task n-a fost sters sau mutat de clicul de la ridicare',
                      '%d -> %d randuri' % (nr, len(page.query_selector_all('.gl-fata'))))
                 # ...dar o atingere adevarata in foaie chiar apasa.
-                rand = page.query_selector('.modal.sheet .ft-rand')
-                if rand and inca:
+                rand = page.query_selector('.modal.sheet .ft-rand:has-text("Editează")')
+                if inca and rand is None:
+                    bifa(False, 'foaia de actiuni are randul „Editează"', 'lipseste')
+                elif rand and inca:
                     xx, yy = centru(rand)
-                    tap(cdp, page, xx, yy, 600)
-                    bifa(page.query_selector('.modal.sheet.varf') is None or page.query_selector('.fa') is not None,
-                         'o atingere pornita PE foaie apasa randul ei',
+                    tap(cdp, page, xx, yy)
+                    # Varianta veche trecea si cand foaia de actiuni disparea din ORICE
+                    # motiv (`.varf` lipsa); acum trebuie sa se fi intamplat CE face randul.
+                    bifa(page.query_selector('.fa') is not None,
+                         'o atingere pornita PE foaie apasa randul ei („Editează" deschide foaia de adaugare)',
                          'randul n-a raspuns')
                 inchide_tot(page)
 
@@ -479,13 +479,13 @@ def main():
             randuri = page.query_selector_all('.gl-fata')
             if len(randuri) > 3:
                 x, y = centru(randuri[3])
-                tap(cdp, page, x, y, 800)
+                tap(cdp, page, x, y)
                 link = page.query_selector('.modal.sheet .dt-nota-sec button')
                 if link is None:
                     bifa(False, 'foaia are „Adaugă notă"', 'lipseste afordanța de notă')
                 else:
                     xx, yy = centru(link)
-                    tap(cdp, page, xx, yy, 900)
+                    tap(cdp, page, xx, yy)
                     doc = page.evaluate(GEOM, '.modal-doc')
                     bifa(doc is not None, 'editorul se deschide ca foaie „doc"', 'fara .modal-doc')
                     if doc:
@@ -500,7 +500,7 @@ def main():
                              'la centrul butonului raspunde %s' % (salv and salv['cine']))
                         ed = page.query_selector('.modal-doc [contenteditable="true"]')
                         ex, ey = centru(ed)
-                        tap(cdp, page, ex, ey, 500)
+                        tap(cdp, page, ex, ey)
                         ridica_tastatura(page)
                         kb_sus = kb_acum(page)
                         doc2 = page.evaluate(GEOM, '.modal-doc')
@@ -544,7 +544,7 @@ def main():
                 bifa(False, 'exista un proiect in lista', 'niciun card')
             else:
                 card.click()
-                page.wait_for_timeout(1400)
+                aseaza(page)
                 page.add_style_tag(content=SAFE)
                 randuri = page.query_selector_all('.gl-fata')
                 if not randuri:
@@ -567,7 +567,7 @@ def main():
 
             # ===== 9. ATERIZAREA DE PE „ASTĂZI" =====
             out('\n--- atingerea unui task de pe Acasa: aterizare hasurata ---')
-            mergi(page, baza, '/', 1800)
+            mergi(page, baza, '/')
             randuri = page.query_selector_all('.gl-fata')
             if len(randuri) < 2:
                 bifa(False, 'boardul de azi are randuri', 'doar %d' % len(randuri))
@@ -618,43 +618,30 @@ def main():
 
             # ===== 6b. DESKTOP: PANOU =====
             out('\n--- taskul din proiect se deschide in panou (desktop) ---')
-            ctx = b.new_context(viewport=DESKTOP)
-            page = ctx.new_page()
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', PIN_TEST)
-            page.press('#pin', 'Enter')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
+            ctx = banc.context(b, 'desktop')
+            page = banc.autentifica(ctx, baza)
             page.goto(baza + '/#/projects', wait_until='load')
-            page.wait_for_timeout(1400)
+            aseaza(page)
             card = page.query_selector('.pcard[role="button"]')
             if card:
                 card.click()
-                page.wait_for_timeout(1400)
+                aseaza(page)
                 rand = page.query_selector('.tmain')
                 if rand:
                     rand.click()
-                    page.wait_for_timeout(700)
+                    aseaza(page)
                     bifa(page.query_selector('.modal-panou .dt-referinta') is not None,
                          'clicul pe rand deschide panoul lateral, ca in /tasks', 'fara .modal-panou')
                     # Panoul lasa lista la vedere sub un voal slab; un clic pe ea
                     # cade pe voal si inchide panoul — acelasi drum ca in /tasks.
                     bb = rand.bounding_box()
                     page.mouse.click(bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2)
-                    page.wait_for_timeout(600)
+                    aseaza(page)
                     bifa(page.query_selector('.modal-panou') is None,
                          'un clic pe lista de sub panou il inchide', 'panoul a ramas')
             b.close()
-    finally:
-        proc.terminate()
-
-    out('')
-    if esecuri:
-        out('PICA — %d contract(e) incalcat(e):' % len(esecuri))
-        for e in esecuri:
-            out('  - ' + e)
-        sys.exit(1)
-    out('OK — foile respecta contractele cu tastatura.')
+    return R.incheie()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(banc.ruleaza(main))

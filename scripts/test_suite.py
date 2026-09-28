@@ -1,817 +1,331 @@
 #!/usr/bin/env python3
-"""Comprehensive test suite for pif-dashboard - static analysis + API smoke tests."""
+"""Probele de API: invariantii care se vad doar prin HTTP, pe un server de UNICA FOLOSINTA.
 
-import json, os, re, sqlite3, sys, requests
-from pathlib import Path
+Porneste singur aplicatia (`scripts/banc.py`), pe o baza NOUA, cu PIN-ul de proba —
+deci nu cere nimic pregatit, nu atinge `pif_dashboard.db` si ruleaza in poarta.
 
-PROJECT_ROOT = Path(__file__).parent.parent
-DB_PATH = PROJECT_ROOT / "pif_dashboard.db"
-BASE_URL = "http://localhost:5000"
+CE A PLECAT DE AICI PE 2026-09-28, si de ce (auditul testelor):
+  - `js_function_check` si `api_route_check` scanau `static/app.js`, `core.js`,
+    `mobile.js`, sterse din iunie: ieseau „PASS" oricum, fara sa citeasca nimic;
+  - `undefined_names_check` era pyflakes a doua oara — `scripts/lint.py` il ruleaza
+    pe tot proiectul, nu doar pe 13 fisiere;
+  - `db_table_check` si `data_integrity` citeau copia LOCALA a bazei (gitignored,
+    veche) — despre cod nu spuneau nimic. Schema pe o baza goala o verifica acum
+    `teste/test_migrari.py`;
+  - partea de notificari care nu trece prin HTTP (logica zilnica, tokenul, cheia
+    VAPID, `send_to_all`) e in `teste/test_push.py`. Aici statea in spatele unui
+    login, iar curatenia ei stergea TOATE cheile `push_*` din baza pe care o gasea —
+    pe server, asta ar fi oprit notificarile fara niciun semn.
+Si serverul pe :5000 + PIN-ul real din mediu + cate un login pe proba: cu limita de
+5 logari / 5 minute (`app.py`), un login din browser in aceleasi cinci minute pica
+probele de la coada cu 429. Acum: server propriu, un singur login.
 
-results = {"pass": [], "fail": [], "warn": []}
+RULARE
+    python scripts/test_suite.py
+Iesire: 0 curat, 1 abatere, 2 instrumentul (serverul n-a pornit etc.) — vezi banc.py.
+"""
 
-def log(pt, msg):
-    prefix = {"pass": "[PASS]", "fail": "[FAIL]", "warn": "[WARN]"}[pt]
-    print(f"  {prefix} {msg}")
-    results[pt].append(msg)
+import json
+import os
+import sqlite3
+import sys
+from datetime import date, datetime, timedelta
 
-def static_analysis():
-    print("\n=== STATIC ANALYSIS ===\n")
-    js_function_check()
-    api_route_check()
-    db_table_check()
-    undefined_names_check()
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import banc  # noqa: E402
+from banc import out  # noqa: E402
 
+try:
+    import requests
+except ImportError:  # pragma: nu pe masina de dezvoltare
+    requests = None
 
-def undefined_names_check():
-    """Nume folosite dar nedefinite in codul de server.
-
-    DE CE EXISTA. Pe 2026-08-07 `send_to_all` chema `webpush(..., timeout=HTTP_TIMEOUT)`
-    cu constanta definita doar in `google_calendar.py` (modul sters intre timp,
-    odata cu integrarea Google). Argumentul se evalueaza
-    inaintea apelului, deci FIECARE dispozitiv pica cu NameError; eroarea era
-    prinsa de `except Exception` si raportata ca „trimitere esuata". Notificarile
-    n-au plecat deloc — nici cele de dimineata, nici „Trimite test" — iar suita
-    ramanea verde, pentru ca proba de trimitere apeleaza `webpush` direct si
-    ocoleste tocmai functia rupta. Un import lipsa pe ramura de eroare a unei
-    rute are exact aceeasi forma: nevizitat de teste, fatal cand se ajunge acolo.
-    Verificarea e statica, deci nu depinde de trecerea prin ramura.
-
-    pyflakes e unealta de dezvoltare (ca playwright pentru smoke_ui) si NU intra
-    in requirements.txt: daca lipseste, spunem si mergem mai departe.
-    """
-    print("--- Undefined Names (server) ---")
-    try:
-        import io as _io
-        from pyflakes import api as pfapi
-        from pyflakes import messages as pfmsg
-        from pyflakes.reporter import Reporter
-    except ImportError:
-        log("warn", "pyflakes lipseste — verificarea numelor nedefinite a fost sarita "
-                    "(pip install pyflakes)")
-        return
-
-    gasite = []
-
-    class _Colector(Reporter):
-        def __init__(self):
-            super().__init__(_io.StringIO(), _io.StringIO())
-
-        def flake(self, m):
-            if isinstance(m, pfmsg.UndefinedName):
-                gasite.append(f"{m.filename}:{m.lineno}: {m.message % m.message_args}")
-
-        def syntaxError(self, filename, msg, lineno, offset, text):
-            gasite.append(f"{filename}:{lineno}: eroare de sintaxa: {msg}")
-
-        def unexpectedError(self, filename, msg):
-            gasite.append(f"{filename}: {msg}")
-
-    tinte = sorted((PROJECT_ROOT / 'blueprints').glob('*.py'))
-    tinte += [PROJECT_ROOT / n for n in
-              ('app.py', 'database.py', 'utils.py', 'csrf.py', 'labels.py', 'backup_db.py')]
-    rep = _Colector()
-    for t in tinte:
-        if t.exists():
-            pfapi.checkPath(str(t), rep)
-
-    if gasite:
-        for g in gasite[:10]:
-            log("fail", f"nume nedefinit: {g}")
-        if len(gasite) > 10:
-            log("fail", f"... si inca {len(gasite) - 10}")
-    else:
-        log("pass", f"niciun nume nedefinit in {len(tinte)} fisiere de server")
-
-def js_function_check():
-    print("--- JS Function Check ---")
-    js_files = ["static/app.js", "static/core.js", "static/mobile.js"]
-    onclick_pattern = re.compile(r'onclick\s*=\s*"([^"]+)"')
-    issues = []
-    
-    for jsf in js_files:
-        p = PROJECT_ROOT / jsf
-        if not p.exists(): continue
-        content = p.read_text(encoding='utf-8')
-        for m in onclick_pattern.finditer(content):
-            handler = m.group(1).strip()
-            if '(' in handler and not handler.startswith('${'):
-                fn = handler.split('(')[0].strip().split('.')[-1]
-                if fn and fn not in KNOWN_GLOBAL_FUNCTIONS:
-                    issues.append(f"onclick handler '{fn}()' may not be globally defined")
-    
-    if issues:
-        for i in issues[:10]: log("warn", i)
-        if len(issues) > 10: log("warn", f"... and {len(issues)-10} more onclick handlers")
-    else:
-        log("pass", "All onclick handlers are defined")
-
-KNOWN_GLOBAL_FUNCTIONS = {
-    'String', 'Number', 'Boolean', 'Array', 'Object', 'JSON', 'Math', 'Date',
-    'encodeURIComponent', 'decodeURIComponent', 'parseInt', 'parseFloat', 'isNaN',
-    'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'console.log',
-    'formatDuration', 'if', 'else', 'return', 'showProjectDetail', 'toggleProjectSelection',
-    'toggleTodoDoneCollapse', 'changeProjectStatus', 'deleteSubtask', 'deleteJurnalEntry',
-    'downloadAllAttachments', 'openPreview', 'toggleTodo', 'addTodo', 'deleteTodo',
-    'editCurrentProject', 'deleteCurrentProject', 'saveServiceField', 'addSubtask',
-    'toggleSubtask', 'editGtTask', 'deleteGtTask', 'addSubtaskInline', 'addSubtaskInlineGt',
-    'toggleGtTimerInline', 'toggleInlineSubtaskAdd', 'toggleInlineSubtaskAddGt',
-    'toggleTaskTimerInline', 'cycleGtStatus', 'cycleGtPriority', 'cycleTodoStatus',
-    'cycleTodoPriority', 'confirmAction', 'openTaskEditModal', 'closeTaskEditModal',
-    'saveTaskFromModal', 'deleteTaskFromModal', 'selectTaskPriority', 'filterClientList',
-    'editClientFromList', 'deleteClientFromList', 'openLongTextEditor', 'closeLongTextEditor',
-    'saveLongText', 'copyLongTextContent', 'openFaultModal', 'closeFaultModal',
-    'editParamValue', 'deleteParam', 'editEchipament', 'deleteEchipament',
-    'faultSelectFamilie', 'faultSelectProducator', 'faultChangePage', 'batchDeleteProjects',
-    'batchUpdateStatus', 'clearLocalCache', 'exportExcel', 'exportMarkdown',
-    'exportCurrentProjectPDF', 'exportClientPDF', 'exportBackup', 'closeConfirmModal',
-    'closeGlobalSearch', 'closeAddClientModal', 'closeClientListModal', 'closeManualsModal',
-    'closeManualTimeModal', 'closeImportParamsModal', 'closeParamModal', 'closePreview',
-    'closeObsidianSearch', 'doObsidianSearch', 'doGlobalSearch', 'forceSWUpdate',
-    'confirmCallback', 'confirmParamValue', 'applyImportedParams', 'stopPropagation',
-    'downloadAttachment', 'deleteAttachment', 'toggleGtDoneCollapse', 'restoreTask',
-    'switchTab', 'addChecklistCategory', 'deleteChecklistItem', 'getElementById',
-    'toggleEchipamentCard', 'selectParam', 'selectClient', 'addNewClientFromAutocomplete',
-    'deleteTimerSession', 'toggleChecklistCategoryCollapse', 'addChecklistItem',
-    'hideEchipamentForm', 'saveEchipament', 'triggerImportParams', 'toggleAllImportParams',
-    'paramSelectProducator', 'paramSelectFamilie', 'openParamModal', '_tcardToggleExpand',
-    'switchProjectFilter', 'mobileParamSelectProducator', 'mobileParamSelectFamilie',
-    'openMobileParamModal', 'mobileFaultSelectProducator', 'mobileFaultSelectFamilie',
-    'openMobileFaultDetail', 'stopTimerFromHome', 'stopMobileTimer', 'startMobileTimer',
-    'openMobileManualTime', 'deleteMobileTimerSession', 'deleteMobileChecklistItem',
-    'addMobileChecklistItem', 'toggleMobileChecklistCat'
-}
-
-def api_route_check():
-    print("\n--- API Route Check ---")
-    routes_defined = set()
-    routes_called = set()
-    
-    rdef = re.compile(r"@([a-zA-Z_][a-zA-Z0-9_]*)\.route\(['\"]([^'\"]+)['\"]")
-    rcall = re.compile(r"fetch\(['\"]([^'\"]+)['\"]")
-    
-    blueprint_prefixes = {}
-    for pyp in [PROJECT_ROOT / "app.py"] + list((PROJECT_ROOT / "blueprints").glob("*.py")):
-        if not pyp.exists(): continue
-        # encoding EXPLICIT: pe Windows read_text() cade pe cp1252, iar sursele
-        # noastre au diacritice si ghilimele romanesti in comentarii. Testul
-        # crapa cu UnicodeDecodeError inainte sa verifice ceva.
-        txt = pyp.read_text(encoding='utf-8')
-        
-        bp_prefix_match = re.search(r"([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*Blueprint\([^)]*url_prefix\s*=\s*['\"]([^'\"]+)['\"]", txt)
-        if bp_prefix_match:
-            bp_name = bp_prefix_match.group(1)
-            bp_prefix = bp_prefix_match.group(2)
-            blueprint_prefixes[bp_name] = bp_prefix
-        
-        for m in rdef.finditer(txt):
-            bp_name = m.group(1)
-            route = m.group(2)
-            if bp_name in blueprint_prefixes:
-                full_route = blueprint_prefixes[bp_name] + route
-            elif bp_name == 'app':
-                full_route = route
-            else:
-                full_route = route
-            routes_defined.add(full_route)
-    
-    for jsf in ["static/app.js", "static/core.js", "static/mobile.js"]:
-        p = PROJECT_ROOT / jsf
-        if not p.exists(): continue
-        for m in rcall.finditer(p.read_text(encoding='utf-8')):
-            route = m.group(1).split('?')[0]
-            if route.startswith('/'):
-                # apiGet('/proiecte') uses API_BASE='/api' prefix — normalize
-                if not route.startswith('/api'):
-                    route = '/api' + route
-                routes_called.add(route)
-    
-    missing = routes_called - routes_defined
-    if missing:
-        for r in sorted(missing): log("fail", f"Route {r} called but not defined")
-    else:
-        log("pass", "All API routes are defined")
-
-def db_table_check():
-    print("\n--- DB Table Check ---")
-    if not DB_PATH.exists():
-        log("fail", "Database not found"); return
-    try:
-        conn = sqlite3.connect(str(DB_PATH))
-        cur = conn.cursor()
-        cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
-        actual = {r[0] for r in cur.fetchall()}
-        conn.close()
-    except Exception as e:
-        log("fail", f"Cannot access DB: {e}"); return
-    
-    # VALID_TABLES traieste in utils.py (a fost mutat din app.py la extragerea
-    # blueprint-urilor) — citim de acolo, altfel testul da mereu warn.
-    with open(PROJECT_ROOT / "utils.py", 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    valid_match = re.search(r"VALID_TABLES\s*=\s*\{([^}]+)\}", content)
-    if valid_match:
-        valid_tables = set(re.findall(r"'([a-zA-Z_][a-zA-Z0-9_]*)'", valid_match.group(1)))
-        missing_valid = valid_tables - actual
-        if missing_valid:
-            for t in sorted(missing_valid):
-                log("fail", f"Table '{t}' in VALID_TABLES but missing from DB")
-        else:
-            log("pass", "All VALID_TABLES exist in DB")
-    else:
-        log("warn", "Could not find VALID_TABLES definition")
-
-def api_smoke_test():
-    print("\n=== API SMOKE TEST ===\n")
-    
-    try:
-        r = requests.get(f"{BASE_URL}/api/healthz", timeout=5)
-        if r.status_code != 200: log("fail", "Server health check failed"); return
-        log("pass", "GET /api/healthz -> 200 (JSON ok)")
-    except requests.exceptions.ConnectionError:
-        log("fail", "Server not running on port 5000"); return
-    except Exception as e:
-        log("fail", f"Server error: {e}"); return
-    
-    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
-    if not pin:
-        log("fail", "PIF_DASHBOARD_PIN env var is required"); return
-    try:
-        r = requests.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
-        if r.status_code == 401: log("fail", "Login failed - invalid PIN"); return
-        if r.status_code != 200: log("fail", f"Login returned {r.status_code}"); return
-        log("pass", "Login successful")
-    except Exception as e:
-        log("fail", f"Login request failed: {e}"); return
-    
-    cookie_value = r.cookies.get('session')
-    if not cookie_value:
-        log("fail", "No session cookie received"); return
-    
-    headers = {"Cookie": f"session={cookie_value}"}
-    
-    endpoints = [
-        ("/api/proiecte", 200),
-        ("/api/global-tasks", 200),
-        ("/api/clienti", 200),
-        ("/api/stats", 200),
-    ]
-    
-    for ep, exp in endpoints:
-        try:
-            r = requests.get(f"{BASE_URL}{ep}", headers=headers, timeout=5)
-            if r.status_code == exp:
-                try:
-                    j = r.json()
-                    log("pass", f"GET {ep} -> {r.status_code}, {len(j) if isinstance(j, list) else 'ok'}")
-                except (ValueError, KeyError):
-                    log("pass", f"GET {ep} -> {r.status_code}")
-            else:
-                log("fail", f"GET {ep} -> {r.status_code} (expected {exp})")
-        except Exception as e:
-            log("fail", f"GET {ep} -> ERROR: {e}")
-
-_SESIUNE = None
+R = banc.Raport()
+APP = None          # banc.Aplicatia pornita in main()
 
 
-def sesiune_logata():
-    """O sesiune autentificata, IMPARTITA intre probe. Loginul are limita lui,
-    stricta (5 incercari / 5 minute per IP, `app.py`): cu cate un login pe proba,
-    suita ajunge singura la limita, iar un login din browser in aceleasi cinci
-    minute pica probele de la coada cu 429 — un esec fara legatura cu ce verifica."""
-    global _SESIUNE
-    if _SESIUNE is None:
-        s = requests.Session()
-        r = s.post(f"{BASE_URL}/login", json={"pin": os.environ.get('PIF_DASHBOARD_PIN', '')}, timeout=5)
-        if r.status_code != 200:
-            raise RuntimeError(f"login -> {r.status_code}")
-        _SESIUNE = s
-    return _SESIUNE
+def url(cale):
+    return APP.baza + cale
 
 
-def sfera_leak_test():
-    """Sferele (munca/personal, v38) — modul de esec e SCURGEREA: o interogare
-    pe global_tasks fara filtru varsa personalul intr-o suprafata de munca.
-    Fiecare asertie de aici corespunde unei suprafete."""
-    print("\n=== SFERA (munca/personal) ===\n")
-    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
-    if not pin:
-        log("fail", "PIF_DASHBOARD_PIN required for sfera test"); return
-    try:
-        s = sesiune_logata()
-    except Exception as e:
-        log("fail", f"sfera: login failed: {e}"); return
+def sectiune(titlu):
+    out('\n--- %s ---' % titlu)
 
-    def hdr():
-        # Double-submit CSRF: cookie-ul se citeste si se intoarce in header.
-        return {"X-CSRF-Token": s.cookies.get('csrf_token', '')}
 
-    from datetime import date
+def sesiune():
+    """UN singur login pentru toata suita (vezi antetul: limita de 5 / 5 minute)."""
+    s = requests.Session()
+    r = s.post(url('/login'), json={'pin': banc.PIN_TEST}, timeout=5)
+    if r.status_code != 200:
+        raise banc.InstrumentStricat('login pe serverul de proba -> %d' % r.status_code)
+    return s
+
+
+def hdr(s):
+    # Double-submit CSRF: cookie-ul se citeste si se intoarce in header.
+    return {'X-CSRF-Token': s.cookies.get('csrf_token', '')}
+
+
+# ---------------------------------------------------------------------- probe
+
+def api_smoke(s):
+    sectiune('RUTELE DE BAZA')
+    r = requests.get(url('/api/healthz'), timeout=5)
+    R.bifa(r.status_code == 200, 'GET /api/healthz -> 200', 'a raspuns %d' % r.status_code)
+    for ep in ('/api/proiecte', '/api/global-tasks', '/api/clienti', '/api/stats'):
+        r = s.get(url(ep), timeout=5)
+        R.bifa(r.status_code == 200, 'GET %s -> 200' % ep, 'a raspuns %d' % r.status_code)
+
+
+def sfera(s):
+    """Sferele (munca/personal, v38) — modul de esec e SCURGEREA: o interogare pe
+    global_tasks fara filtru varsa personalul intr-o suprafata de munca. Fiecare
+    asertie de aici corespunde unei suprafete."""
+    sectiune('SFERA (munca/personal)')
     today = date.today().isoformat()
-    created = []
+    creat = []
     try:
-        # 1) Creare personal + vizibilitate pe lista
-        r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
-                   json={"titlu": "__proba_sfera_azi__", "sfera": "personal",
-                         "status": "to_do", "data_scadenta": today})
+        r = s.post(url('/api/global-tasks'), headers=hdr(s), timeout=5,
+                   json={'titlu': '__proba_sfera_azi__', 'sfera': 'personal',
+                         'status': 'to_do', 'data_scadenta': today})
         if r.status_code != 201:
-            log("fail", f"sfera: POST personal -> {r.status_code}"); return
-        pid = r.json()['id']; created.append(pid)
+            R.pica('POST task personal', 'a raspuns %d' % r.status_code)
+            return
+        pid = r.json()['id']
+        creat.append(pid)
+        r = s.post(url('/api/global-tasks'), headers=hdr(s), timeout=5,
+                   json={'titlu': '__proba_sfera_fara_termen__', 'sfera': 'personal', 'status': 'to_do'})
+        pid2 = r.json()['id']
+        creat.append(pid2)
 
-        r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
-                   json={"titlu": "__proba_sfera_fara_termen__", "sfera": "personal",
-                         "status": "to_do"})
-        pid2 = r.json()['id']; created.append(pid2)
-
-        ids_default = {t['id'] for t in s.get(f"{BASE_URL}/api/global-tasks", timeout=5).json()}
-        ids_pers = {t['id'] for t in s.get(f"{BASE_URL}/api/global-tasks?sfera=personal", timeout=5).json()}
-        if pid in ids_default or pid2 in ids_default:
-            log("fail", "sfera: personal LEAKS into default /api/global-tasks")
-        else:
-            log("pass", "GET /api/global-tasks (default) excludes personal")
-        if pid in ids_pers and pid2 in ids_pers:
-            log("pass", "GET /api/global-tasks?sfera=personal returns personal")
-        else:
-            log("fail", "sfera: personal tasks missing from ?sfera=personal")
+        # 1) Lista implicita e doar munca; `?sfera=personal` le aduce pe ale lui.
+        ids_implicit = {t['id'] for t in s.get(url('/api/global-tasks'), timeout=5).json()}
+        ids_pers = {t['id'] for t in s.get(url('/api/global-tasks?sfera=personal'), timeout=5).json()}
+        R.bifa(pid not in ids_implicit and pid2 not in ids_implicit,
+               '/api/global-tasks (implicit) nu contine personalul', 'personalul SCURGE in lista de munca')
+        R.bifa(pid in ids_pers and pid2 in ids_pers,
+               '?sfera=personal intoarce personalul', 'taskurile personale lipsesc')
 
         # 2) Valoare necunoscuta -> 400 (fail-closed, nu coercitie)
-        r = s.get(f"{BASE_URL}/api/global-tasks?sfera=xyz", timeout=5)
-        log("pass" if r.status_code == 400 else "fail", f"GET ?sfera=xyz -> {r.status_code} (expected 400)")
+        r = s.get(url('/api/global-tasks?sfera=xyz'), timeout=5)
+        R.bifa(r.status_code == 400, '?sfera=xyz -> 400', 'a raspuns %d' % r.status_code)
 
         # 3) Boardul Astazi: personal in `personale`, nu in `items`
-        ag = s.get(f"{BASE_URL}/api/agenda/today?today={today}", timeout=5).json()
+        ag = s.get(url('/api/agenda/today?today=%s' % today), timeout=5).json()
         in_items = any(x['id'] == pid for x in ag.get('items', []))
         in_pers = any(x['id'] == pid for x in ag.get('personale', []))
         if in_items:
-            log("fail", "sfera: personal LEAKS into agenda items (work board)")
-        elif in_pers:
-            log("pass", "agenda/today: personal in `personale`, not in `items`")
+            R.pica('agenda/today', 'personalul SCURGE in `items` (boardul de munca)')
         else:
-            log("fail", "sfera: personal task due today missing from `personale`")
+            R.bifa(in_pers, 'agenda/today: personalul in `personale`, nu in `items`',
+                   'taskul personal scadent azi lipseste din `personale`')
 
         # 4) Pickerul boardului de munca nu ofera taskuri personale
-        cand = s.get(f"{BASE_URL}/api/agenda/candidates?today={today}", timeout=5).json()
-        if any(x['id'] == pid2 for x in cand.get('items', [])):
-            log("fail", "sfera: personal LEAKS into agenda candidates")
-        else:
-            log("pass", "agenda/candidates excludes personal")
+        cand = s.get(url('/api/agenda/candidates?today=%s' % today), timeout=5).json()
+        R.bifa(not any(x['id'] == pid2 for x in cand.get('items', [])),
+               'agenda/candidates exclude personalul', 'personalul SCURGE in picker')
 
-        # 5) Taskurile zilei din Calendar sunt doar munca.
-        #    Proba statea pe `/api/plan`, ruta Planificatorului — scos pe
-        #    2026-08-26. Invariantul nu a plecat cu el: `sfera` ramane opt-in la
-        #    citire, iar Calendarul e o suprafata de MUNCA. S-a mutat pe ruta care
-        #    hraneste acum panoul zilei, nu s-a sters.
-        #
-        #    CU MARTOR, si asta nu e prisos. O proba negativa („nu apare X") trece
-        #    si cand interogarea n-a intors NIMIC — fereastra gresita, alt camp,
-        #    ruta mutata. Exact felul de verde fals gasit pe 2026-08-26 in
-        #    `audit_mobil`, unde un gest care rata tinta confirma o afirmatie.
-        #    Deci: un task de MUNCA scadent azi trebuie sa APARA, iar cel personal
-        #    din aceeasi zi sa NU apara. Daca martorul lipseste, proba spune ca
-        #    n-a verificat, nu ca e bine.
-        #    `pid2` (fara termen) nu intra in socoteala: calendarul cere o data, deci
-        #    absenta lui n-ar dovedi nimic despre sfera.
-        r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
-                   json={"titlu": "__proba_sfera_martor_munca__", "sfera": "munca",
-                         "status": "to_do", "data_scadenta": today})
+        # 5) Taskurile zilei din Calendar sunt doar munca — CU MARTOR. O proba
+        #    negativa („nu apare X") trece si cand interogarea n-a intors NIMIC
+        #    (fereastra gresita, alt camp, ruta mutata). Deci un task de MUNCA scadent
+        #    azi trebuie sa APARA, iar cel personal din aceeasi zi sa NU apara.
+        r = s.post(url('/api/global-tasks'), headers=hdr(s), timeout=5,
+                   json={'titlu': '__proba_sfera_martor_munca__', 'sfera': 'munca',
+                         'status': 'to_do', 'data_scadenta': today})
         wid = r.json()['id'] if r.status_code == 201 else None
         if wid:
-            created.append(wid)
-        cal = s.get(f"{BASE_URL}/api/calendar?start={today}&zile=7", timeout=5).json()
+            creat.append(wid)
+        cal = s.get(url('/api/calendar?start=%s&zile=7' % today), timeout=5).json()
         cal_ids = {t['id'] for t in cal.get('taskuri', [])}
-        if wid and wid not in cal_ids:
-            log("fail", "/api/calendar nu intoarce taskul de munca scadent azi — proba nu poate verifica sfera")
-        elif pid in cal_ids:
-            log("fail", "sfera: personal LEAKS into /api/calendar")
+        if not wid or wid not in cal_ids:
+            R.pica('/api/calendar', 'nu intoarce martorul de munca scadent azi — proba n-a verificat sfera')
         else:
-            log("pass", "/api/calendar: munca da, personal nu")
+            R.bifa(pid not in cal_ids, '/api/calendar: munca da, personal nu', 'personalul SCURGE in calendar')
 
         # 6) Recurenta pastreaza sfera (altfel taskul migreaza la munca la bifare)
-        r = s.post(f"{BASE_URL}/api/global-tasks", headers=hdr(), timeout=5,
-                   json={"titlu": "__proba_sfera_recurenta__", "sfera": "personal",
-                         "status": "to_do", "data_scadenta": today, "recurenta": "zilnic"})
-        rid = r.json()['id']; created.append(rid)
-        r = s.put(f"{BASE_URL}/api/global-tasks/{rid}", headers=hdr(), timeout=5,
-                  json={"status": "done"})
-        spawned = r.json().get('recurring_spawned')
-        if not spawned:
-            log("fail", "sfera: recurring personal task did not spawn")
+        r = s.post(url('/api/global-tasks'), headers=hdr(s), timeout=5,
+                   json={'titlu': '__proba_sfera_recurenta__', 'sfera': 'personal',
+                         'status': 'to_do', 'data_scadenta': today, 'recurenta': 'zilnic'})
+        rid = r.json()['id']
+        creat.append(rid)
+        r = s.put(url('/api/global-tasks/%s' % rid), headers=hdr(s), timeout=5, json={'status': 'done'})
+        nou = r.json().get('recurring_spawned')
+        if not nou:
+            R.pica('recurenta personala', 'nu s-a generat urmatoarea aparitie')
         else:
-            created.append(spawned)
-            sp = s.get(f"{BASE_URL}/api/global-tasks/{spawned}", timeout=5).json()
-            log("pass" if sp.get('sfera') == 'personal' else "fail",
-                f"recurring spawn keeps sfera ({sp.get('sfera')})")
-
-        # Proba feedului .ics a plecat odata cu el (2026-08-27). Invariantul lui
-        # `sfera` ramane acoperit de punctele 1-6 de mai sus si de proba din
-        # `/api/calendar`.
+            creat.append(nou)
+            sp = s.get(url('/api/global-tasks/%s' % nou), timeout=5).json()
+            R.bifa(sp.get('sfera') == 'personal', 'aparitia noua pastreaza sfera',
+                   'a ajuns in %s' % sp.get('sfera'))
     finally:
-        for tid in created:
-            try: s.delete(f"{BASE_URL}/api/global-tasks/{tid}", headers=hdr(), timeout=5)
-            except Exception: pass
+        for tid in creat:
+            try:
+                s.delete(url('/api/global-tasks/%s' % tid), headers=hdr(s), timeout=5)
+            except Exception:
+                pass
 
-def proiect_inchis_test():
+
+def proiect_inchis(s):
     """Ce trimite un proiect INCHIS pe „Astazi", in pickerul lui si in panoul zilei:
     doar ce s-a adaugat in el DUPA inchidere (`TASK_PROIECT_VIU`, utils.py).
 
     CU MARTOR in ambele sensuri: taskul nou trebuie sa APARA — altfel o absenta a
     celui vechi n-ar dovedi nimic — iar cel vechi sa NU apara. „Vechi" se face
-    impingand `created_at` inapoi direct in baza: prin API nu se poate, si exact
-    data adaugarii deosebeste un rest al lucrarii de urmarea ei."""
-    print("\n=== PROIECT INCHIS (ce trimite pe Astazi) ===\n")
-    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
-    if not pin:
-        log("fail", "PIF_DASHBOARD_PIN required for proiect-inchis test"); return
-    try:
-        s = sesiune_logata()
-    except Exception as e:
-        log("fail", f"proiect inchis: login failed: {e}"); return
-
-    def hdr():
-        return {"X-CSRF-Token": s.cookies.get('csrf_token', '')}
-
-    from datetime import date, datetime as _dt, timedelta as _td
+    impingand `created_at` inapoi direct in baza: prin API nu se poate, si exact data
+    adaugarii deosebeste un rest al lucrarii de urmarea ei. Scrie DOAR in baza
+    serverului de proba (`APP.db`)."""
+    sectiune('PROIECT INCHIS (ce trimite pe Astazi)')
     today = date.today().isoformat()
-    db = os.environ.get('PIF_DB_PATH') or str(DB_PATH)
     pid = None
     try:
-        r = s.post(f"{BASE_URL}/api/proiecte", headers=hdr(), timeout=5,
-                   json={"nume": "__proba_proiect_inchis__", "status": "pregatire"})
+        r = s.post(url('/api/proiecte'), headers=hdr(s), timeout=5,
+                   json={'nume': '__proba_proiect_inchis__', 'status': 'pregatire'})
         if r.status_code not in (200, 201):
-            log("fail", f"proiect inchis: POST proiect -> {r.status_code}"); return
+            R.pica('POST proiect', 'a raspuns %d' % r.status_code)
+            return
         pid = r.json().get('id')
 
         def task(titlu, **extra):
-            r = s.post(f"{BASE_URL}/api/proiecte/{pid}/tasks", headers=hdr(), timeout=5,
-                       json={"titlu": titlu, "status": "to_do", **extra})
+            r = s.post(url('/api/proiecte/%s/tasks' % pid), headers=hdr(s), timeout=5,
+                       json=dict({'titlu': titlu, 'status': 'to_do'}, **extra))
             return r.json().get('id')
 
-        vechi = task("__proba_rest_cu_termen__", data_scadenta=today)
-        vechi_fara = task("__proba_rest_fara_termen__")
-        c = sqlite3.connect(db)
-        c.execute("UPDATE tasks SET created_at = ? WHERE id IN (?, ?)",
-                  ((_dt.now() - _td(days=10)).isoformat(), vechi, vechi_fara))
-        c.commit(); c.close()
+        vechi = task('__proba_rest_cu_termen__', data_scadenta=today)
+        vechi_fara = task('__proba_rest_fara_termen__')
+        c = sqlite3.connect(APP.db)
+        c.execute('UPDATE tasks SET created_at = ? WHERE id IN (?, ?)',
+                  ((datetime.now() - timedelta(days=10)).isoformat(), vechi, vechi_fara))
+        c.commit()
+        c.close()
 
-        r = s.put(f"{BASE_URL}/api/proiecte/{pid}", headers=hdr(), timeout=5,
-                  json={"status": "finalizat"})
+        r = s.put(url('/api/proiecte/%s' % pid), headers=hdr(s), timeout=5, json={'status': 'finalizat'})
         if r.status_code != 200:
-            log("fail", f"proiect inchis: PUT finalizat -> {r.status_code}"); return
-        nou = task("__proba_urmare_azi__", data_scadenta=today)
-        nou_fara = task("__proba_urmare_fara_termen__")
+            R.pica('PUT finalizat', 'a raspuns %d' % r.status_code)
+            return
+        nou = task('__proba_urmare_azi__', data_scadenta=today)
+        nou_fara = task('__proba_urmare_fara_termen__')
 
-        def idset(url, cheie=None):
-            j = s.get(f"{BASE_URL}{url}", timeout=5).json()
+        def idset(cale, cheie=None):
+            j = s.get(url(cale), timeout=5).json()
             return {x['id'] for x in (j.get(cheie, []) if cheie else j)}
 
-        suprafete = [
-            ("agenda/today", idset(f"/api/agenda/today?today={today}", 'items'), nou, vechi),
-            ("agenda/candidates", idset(f"/api/agenda/candidates?today={today}", 'items'), nou_fara, vechi_fara),
-            ("calendar", idset(f"/api/calendar?start={today}&zile=7", 'taskuri'), nou, vechi),
-        ]
-        for nume, ids, martor, rest in suprafete:
+        for nume, ids, martor, rest in [
+            ('agenda/today', idset('/api/agenda/today?today=%s' % today, 'items'), nou, vechi),
+            ('agenda/candidates', idset('/api/agenda/candidates?today=%s' % today, 'items'), nou_fara, vechi_fara),
+            ('calendar', idset('/api/calendar?start=%s&zile=7' % today, 'taskuri'), nou, vechi),
+        ]:
             if martor not in ids:
-                log("fail", f"proiect inchis: {nume} nu arata taskul adaugat DUPA inchidere")
-            elif rest in ids:
-                log("fail", f"proiect inchis: {nume} scoate la iveala un rest de dinainte de inchidere")
+                R.pica(nume, 'nu arata taskul adaugat DUPA inchidere')
             else:
-                log("pass", f"proiect inchis: {nume} — urmarea da, restul nu")
+                R.bifa(rest not in ids, '%s: urmarea da, restul nu' % nume,
+                       'scoate la iveala un rest de dinainte de inchidere')
 
         # Fisa proiectului le arata pe toate: acolo se curata resturile.
-        fisa = idset(f"/api/proiecte/{pid}/tasks")
-        log("pass" if {vechi, vechi_fara, nou, nou_fara} <= fisa else "fail",
-            "proiect inchis: fisa proiectului arata si resturile, si urmarea")
+        R.bifa({vechi, vechi_fara, nou, nou_fara} <= idset('/api/proiecte/%s/tasks' % pid),
+               'fisa proiectului arata si resturile, si urmarea', 'lipsesc taskuri din fisa')
     finally:
         if pid:
-            try: s.delete(f"{BASE_URL}/api/proiecte/{pid}", headers=hdr(), timeout=5)
-            except Exception: pass
+            try:
+                s.delete(url('/api/proiecte/%s' % pid), headers=hdr(s), timeout=5)
+            except Exception:
+                pass
 
 
-def backup_secrete_test():
-    """Backup-ul nu scurge chei `push_*` (cheia VAPID privata + abonamentele).
-
-    A fost pasul 7 din proba integrarii Google, stearsa odata cu ea (2026-08-10);
-    filtrul anti-scurgere din `admin.py` a ramas insa — si merita pazit singur.
-    """
-    print("\n=== BACKUP: secretele nu pleaca de pe masina ===\n")
-    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
-    if not pin:
-        log("fail", "PIF_DASHBOARD_PIN required for backup test"); return
-    s = requests.Session()
-    r = s.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
-    if r.status_code != 200:
-        log("fail", f"backup: login -> {r.status_code}"); return
-
-    import sqlite3 as _sq
-    db = os.environ.get('PIF_DB_PATH') or str(DB_PATH)
-    c = None
+def backup_secrete(s):
+    """Backup-ul nu scurge chei `push_*` (cheia VAPID privata + abonamentele). Cheia
+    falsa se scrie in baza serverului de proba — niciodata in cea de lucru."""
+    sectiune('BACKUP (secretele nu pleaca de pe masina)')
+    c = sqlite3.connect(APP.db)
     try:
-        c = _sq.connect(db)
         c.execute("INSERT OR REPLACE INTO app_settings (key, value, updated_at) "
                   "VALUES ('push_vapid_private', 'FALS-PUSH-TEST', '')")
         c.commit()
-        bk = s.get(f"{BASE_URL}/api/backup", timeout=15).json()
-        chei = {r0.get('key') for r0 in bk.get('app_settings', [])}
-        scurse = {k for k in chei if str(k).startswith('push_')}
-        log("pass" if not scurse else "fail",
-            "backup exclude cheile push_*" if not scurse else f"backup SCURGE {scurse}")
-        if 'FALS-PUSH-TEST' in json.dumps(bk):
-            log("fail", "backup contine valori de secrete")
     finally:
-        try:
-            if c is not None:
-                c.execute("DELETE FROM app_settings WHERE key LIKE 'push!_%' ESCAPE '!'")
-                c.commit(); c.close()
-        except Exception:
-            pass
+        c.close()
+    bk = s.get(url('/api/backup'), timeout=15).json()
+    chei = {r0.get('key') for r0 in bk.get('app_settings', [])}
+    scurse = {k for k in chei if str(k).startswith('push_')}
+    R.bifa(not scurse, 'backup-ul exclude cheile push_*', 'SCURGE %s' % sorted(scurse))
+    R.bifa('FALS-PUSH-TEST' not in json.dumps(bk), 'backup-ul nu contine valoarea secretului',
+           'valoarea cheii private e in backup')
 
 
-def push_notifications_test():
-    """Notificarile zilnice — fara serviciu push real: expeditorul se injecteaza,
-    iar tokenul si ruta de actiune se verifica direct."""
-    print("\n=== NOTIFICARI PUSH ===\n")
-    pin = os.environ.get('PIF_DASHBOARD_PIN', '')
-    if not pin:
-        log("fail", "PIF_DASHBOARD_PIN required for push test"); return
-    s = requests.Session()
-    r = s.post(f"{BASE_URL}/login", json={"pin": pin}, timeout=5)
-    if r.status_code != 200:
-        log("fail", f"push: login -> {r.status_code}"); return
-
-    def hdr():
-        return {"X-CSRF-Token": s.cookies.get('csrf_token', '')}
-
-    # 1) Status
-    st = s.get(f"{BASE_URL}/api/push/status", timeout=5)
+def push_http(s):
+    """Partea de notificari care trece prin HTTP. Restul (logica zilnica, tokenul,
+    lantul de trimitere) e in `teste/test_push.py`, in proces."""
+    sectiune('NOTIFICARI PUSH (rutele)')
+    st = s.get(url('/api/push/status'), timeout=5)
     if st.status_code != 200:
-        log("fail", f"push: status -> {st.status_code}")
+        R.pica('/api/push/status', 'a raspuns %d' % st.status_code)
     else:
         j = st.json()
-        ok = j.get('ora') == '08:00' and 'abonamente' in j and 'disponibil' in j
-        log("pass" if ok else "fail", f"status: ora={j.get('ora')}, disponibil={j.get('disponibil')}")
+        # Baza e noua, deci ora e cea implicita — nu setarea cuiva.
+        R.bifa(j.get('ora') == '08:00' and 'abonamente' in j and 'disponibil' in j,
+               'status: ora implicita 08:00, abonamente, disponibil',
+               'raspuns %s' % {k: j.get(k) for k in ('ora', 'abonamente', 'disponibil')})
 
-    # 2) Cheia VAPID e STABILA (regenerarea ar invalida abonamentele in tacere)
-    k1 = s.get(f"{BASE_URL}/api/push/vapid-public", timeout=5)
+    k1 = s.get(url('/api/push/vapid-public'), timeout=5)
     if k1.status_code == 503:
-        log("warn", "pywebpush lipseste in mediul de test — sar peste probele HTTP de push")
+        R.nota('pywebpush lipseste pe masina asta — cheia VAPID si abonarea nu s-au probat')
     elif k1.status_code != 200:
-        log("fail", f"vapid-public -> {k1.status_code}")
+        R.pica('/api/push/vapid-public', 'a raspuns %d' % k1.status_code)
     else:
-        k2 = s.get(f"{BASE_URL}/api/push/vapid-public", timeout=5)
+        # Cheia VAPID e STABILA (regenerarea ar invalida abonamentele in tacere)
+        k2 = s.get(url('/api/push/vapid-public'), timeout=5)
         cheie = k1.json().get('cheie', '')
-        log("pass" if cheie and cheie == k2.json().get('cheie') else "fail",
-            "cheia VAPID e stabila intre apeluri")
+        R.bifa(bool(cheie) and cheie == k2.json().get('cheie'), 'cheia VAPID e stabila intre apeluri')
 
-        # 3) Abonare / dezabonare
-        sub = {"endpoint": "https://fcm.googleapis.com/fake/T1",
-               "keys": {"p256dh": "cheie-falsa", "auth": "auth-fals"}}
-        n0 = s.get(f"{BASE_URL}/api/push/status", timeout=5).json()['abonamente']
-        s.post(f"{BASE_URL}/api/push/subscribe", headers=hdr(), json=sub, timeout=5)
-        n1 = s.get(f"{BASE_URL}/api/push/status", timeout=5).json()['abonamente']
-        s.post(f"{BASE_URL}/api/push/subscribe", headers=hdr(), json=sub, timeout=5)
-        n2 = s.get(f"{BASE_URL}/api/push/status", timeout=5).json()['abonamente']
-        log("pass" if n1 == n0 + 1 and n2 == n1 else "fail",
-            f"subscribe: {n0} -> {n1} -> {n2} (al doilea e upsert, nu duplicat)")
-        bad = s.post(f"{BASE_URL}/api/push/subscribe", headers=hdr(), json={"endpoint": "nu-e-https"}, timeout=5)
-        log("pass" if bad.status_code == 400 else "fail", f"subscribe invalid -> {bad.status_code} (expected 400)")
-        s.post(f"{BASE_URL}/api/push/unsubscribe", headers=hdr(), json={"endpoint": sub['endpoint']}, timeout=5)
-        n3 = s.get(f"{BASE_URL}/api/push/status", timeout=5).json()['abonamente']
-        log("pass" if n3 == n0 else "fail", f"unsubscribe -> {n3} (inapoi la {n0})")
-        # test fara abonamente -> 400 (un test „reusit" catre nimeni e o minciuna)
+        sub = {'endpoint': 'https://fcm.googleapis.com/fake/T1',
+               'keys': {'p256dh': 'cheie-falsa', 'auth': 'auth-fals'}}
+
+        def nr():
+            return s.get(url('/api/push/status'), timeout=5).json()['abonamente']
+        n0 = nr()
+        s.post(url('/api/push/subscribe'), headers=hdr(s), json=sub, timeout=5)
+        n1 = nr()
+        s.post(url('/api/push/subscribe'), headers=hdr(s), json=sub, timeout=5)
+        n2 = nr()
+        R.bifa(n1 == n0 + 1 and n2 == n1, 'abonarea: al doilea POST e upsert, nu duplicat',
+               '%d -> %d -> %d' % (n0, n1, n2))
+        bad = s.post(url('/api/push/subscribe'), headers=hdr(s), json={'endpoint': 'nu-e-https'}, timeout=5)
+        R.bifa(bad.status_code == 400, 'abonare invalida -> 400', 'a raspuns %d' % bad.status_code)
+        s.post(url('/api/push/unsubscribe'), headers=hdr(s), json={'endpoint': sub['endpoint']}, timeout=5)
+        n3 = nr()
+        R.bifa(n3 == n0, 'dezabonarea intoarce numarul la %d' % n0, 'a ramas %d' % n3)
         if n3 == 0:
-            t = s.post(f"{BASE_URL}/api/push/test", headers=hdr(), json={}, timeout=5)
-            log("pass" if t.status_code == 400 else "fail", f"test fara abonamente -> {t.status_code} (expected 400)")
+            # Un „test reusit" trimis catre nimeni ar fi o minciuna.
+            t = s.post(url('/api/push/test'), headers=hdr(s), json={}, timeout=5)
+            R.bifa(t.status_code == 400, 'testul fara abonamente -> 400', 'a raspuns %d' % t.status_code)
 
-    # 4) Logica zilnica + tokenul, prin import direct (fara HTTP, fara push real)
-    sys.path.insert(0, str(PROJECT_ROOT))
-    import sqlite3 as _sq
-    from datetime import datetime as _dt, timedelta as _td
-    db = os.environ.get('PIF_DB_PATH') or str(DB_PATH)
-    os.environ.setdefault('PIF_DB_PATH', db)
-    try:
-        from blueprints import push as pushmod
-    except Exception as e:
-        log("fail", f"push: import blueprints.push a esuat: {e}"); return
-
-    pushmod._secret = b'secret-de-test'
-    c = _sq.connect(db)
-    tid = 'proba-push-0001'
-    vechi = (_dt.now() - _td(days=3)).isoformat()
-    proaspat = (_dt.now() - _td(days=1)).isoformat()
-    try:
-        c.execute("DELETE FROM app_settings WHERE key = 'push_daily_last'")
-        c.execute("INSERT OR REPLACE INTO global_tasks (id, titlu, status, sfera, data_scadenta, created_at, updated_at) "
-                  "VALUES (?, ?, 'to_do', 'personal', '', ?, ?)", (tid, '__proba_push__', vechi, vechi))
-        c.commit()
-
-        capturate = []
-        azi8 = _dt.now().replace(hour=8, minute=5, second=0, microsecond=0)
-        azi7 = azi8.replace(hour=7)
-
-        r1 = pushmod.check_and_send_daily(now=azi7, trimite=capturate.append)
-        log("pass" if r1 == 'devreme' and not capturate else "fail", f"inainte de ora 8 -> {r1}, {len(capturate)} trimise")
-
-        r2 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
-        unul = [p for p in capturate if p.get('title') == '__proba_push__']
-        ok_forma = bool(unul) and unul[0]['tag'] == f'pif-task-{tid}' \
-            and f'focus=global:{tid}' in unul[0]['url'] and unul[0].get('actions') is True
-        log("pass" if r2 == 'trimis' and ok_forma else "fail",
-            f"la ora 8 -> {r2}; notificare PER task cu tag/url/actiuni corecte: {ok_forma}")
-
-        r3 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
-        log("pass" if r3 == 'claimed-gata' else "fail", f"a doua rulare in aceeasi zi -> {r3} (fara dublura)")
-
-        # Zi fara taskuri: claim consumat, zero notificari
-        c.execute("DELETE FROM app_settings WHERE key = 'push_daily_last'")
-        c.execute("UPDATE global_tasks SET status = 'done' WHERE id = ?", (tid,))
-        c.commit()
-        n_inainte = len(capturate)
-        r4 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
-        log("pass" if r4 == 'nimic' and len(capturate) == n_inainte else "fail", f"zi fara taskuri -> {r4}")
-
-        # Marginea de varsta: 1 zi = prea proaspat
-        c.execute("DELETE FROM app_settings WHERE key = 'push_daily_last'")
-        c.execute("UPDATE global_tasks SET status = 'to_do', created_at = ? WHERE id = ?", (proaspat, tid))
-        c.commit()
-        r5 = pushmod.check_and_send_daily(now=azi8, trimite=capturate.append)
-        log("pass" if r5 == 'nimic' else "fail", f"task de 1 zi -> {r5} (nu se notifica)")
-
-        # 4b) LANTUL REAL DE TRIMITERE: cheia VAPID -> criptare -> semnare.
-        # Verificarile de mai sus injecteaza un expeditor fals, deci NU ating
-        # niciodata `webpush`. Exact acolo statea bugul: cheia era salvata ca
-        # PKCS8 PEM, iar `py_vapid.from_string` cere scalarul brut (32 octeti
-        # base64url) — semnarea crapa inainte de orice apel spre Google, si
-        # „Trimite test" pica fara sa spuna de ce. Proba: un abonament fals dar
-        # VALID criptografic, cu endpointul spre un host mort; daca ajungem la
-        # retea, criptarea si semnarea au mers.
-        if pushmod._PUSH_OK:
-            import base64 as _b64m
-            from cryptography.hazmat.primitives import serialization as _ser
-            from cryptography.hazmat.primitives.asymmetric import ec as _ec
-            priv, pub = pushmod._chei_vapid()
-            brut_ok = '-----BEGIN' not in priv
-            try:
-                brut_ok = brut_ok and len(_b64m.urlsafe_b64decode(priv + '=' * (-len(priv) % 4))) == 32
-            except Exception:
-                brut_ok = False
-            log("pass" if brut_ok else "fail",
-                "cheia VAPID privata e in formatul citit de py_vapid (raw 32B)")
-
-            _k = _ec.generate_private_key(_ec.SECP256R1())
-            _p256dh = _b64m.urlsafe_b64encode(_k.public_key().public_bytes(
-                encoding=_ser.Encoding.X962,
-                format=_ser.PublicFormat.UncompressedPoint)).decode().rstrip('=')
-            _auth = _b64m.urlsafe_b64encode(os.urandom(16)).decode().rstrip('=')
-            from pywebpush import webpush as _wp
-            try:
-                _wp(subscription_info={'endpoint': 'https://fcm.googleapis.invalid:9/x',
-                                       'keys': {'p256dh': _p256dh, 'auth': _auth}},
-                    data=json.dumps({'title': 'proba'}),
-                    vapid_private_key=priv,
-                    vapid_claims={'sub': pushmod.PUSH_SUB},
-                    timeout=3)
-                log("warn", "proba de trimitere a reusit catre un host mort (neasteptat)")
-            except Exception as _e:
-                _t, _m = type(_e).__name__, str(_e)
-                retea = ('Connection' in _t or 'Connection' in _m or 'Max retries' in _m
-                         or 'resolve' in _m.lower() or 'timed out' in _m.lower())
-                log("pass" if retea else "fail",
-                    "criptare+semnare VAPID merg (a picat doar reteaua)" if retea
-                    else f"trimiterea crapa INAINTE de retea: {_t}: {_m[:90]}")
-
-            # 4c) `send_to_all` — FUNCTIA REALA prin care pleaca orice notificare.
-            # Proba de mai sus apeleaza `webpush` DIRECT, deci ocoleste tocmai
-            # functia asta; acolo statea al doilea bug, ramas dupa fixul cheii
-            # VAPID: `timeout=HTTP_TIMEOUT`, cu constanta nedefinita in modul
-            # (exista doar in `google_calendar.py`, modul sters intre timp).
-            # Argumentul se evalueaza inainte
-            # de apel, deci fiecare dispozitiv pica cu NameError, prins de
-            # `except Exception` si numarat ca esec — zero notificari trimise, si
-            # la „Trimite test", si dimineata. Aici `webpush` e un dublu, deci
-            # proba nu atinge reteaua si nu depinde de niciun serviciu extern.
-            subs_salvate = pushmod._abonamente()
-            eroare_salvata = pushmod.get_app_setting(pushmod.K_LAST_ERROR, '') or ''
-            apeluri = []
-            _wp_original = pushmod.webpush
-            pushmod.webpush = lambda **kw: apeluri.append(kw)
-            try:
-                pushmod._salveaza_abonamente({'proba': {
-                    'endpoint': 'https://fcm.googleapis.invalid/proba',
-                    'keys': {'p256dh': _p256dh, 'auth': _auth},
-                }})
-                trimise, esuate = pushmod.send_to_all({'title': 'proba', 'body': 'x'})
-            except Exception as _e:
-                trimise, esuate = -1, -1
-                log("fail", f"send_to_all a aruncat: {type(_e).__name__}: {str(_e)[:90]}")
-            finally:
-                pushmod.webpush = _wp_original
-                pushmod._salveaza_abonamente(subs_salvate)
-                pushmod.set_app_setting(pushmod.K_LAST_ERROR, eroare_salvata)
-            motiv_ramas = pushmod.get_app_setting(pushmod.K_LAST_ERROR, '') or ''
-            ok_send = (trimise, esuate) == (1, 0) and len(apeluri) == 1
-            log("pass" if ok_send else "fail",
-                f"send_to_all: {trimise} trimise / {esuate} esuate"
-                + ("" if ok_send else f" — {motiv_ramas[:90]}"))
-            are_timeout = bool(apeluri) and isinstance(apeluri[0].get('timeout'), (int, float)) \
-                and apeluri[0]['timeout'] > 0
-            log("pass" if are_timeout else "fail",
-                "send_to_all trimite un timeout numeric spre webpush")
-
-        # 5) Tokenul
-        tok = pushmod.mint_token(tid)
-        log("pass" if pushmod.verifica_token(tok) == tid else "fail", "token: mint -> verifica")
-        log("pass" if pushmod.verifica_token(tok[:-2] + 'xx') is None else "fail", "token alterat -> respins")
-        expirat = pushmod.mint_token(tid, acum=_dt.now() - _td(hours=pushmod.TOKEN_VALABIL_ORE + 1))
-        log("pass" if pushmod.verifica_token(expirat) is None else "fail", "token expirat -> respins")
-
-        # 6) Ruta de actiune: FARA header CSRF (SW-ul nu poate citi cookie-ul),
-        #    dar CU cookie de sesiune — pinneaza exceptia din csrf.py.
-        c.execute("UPDATE global_tasks SET status='to_do', data_scadenta='' WHERE id = ?", (tid,))
-        c.commit()
-        # tokenul serverului foloseste SECRET_KEY-ul lui, nu pe al nostru; il
-        # luam prin ruta, deci semnam cu secretul procesului server: aici
-        # verificam doar respingerea, plus forma raspunsului.
-        rej = s.post(f"{BASE_URL}/api/push/action", json={"token": "gunoi", "action": "done"}, timeout=5)
-        log("pass" if rej.status_code == 403 else "fail", f"action cu token invalid -> {rej.status_code} (expected 403)")
-        log("pass" if rej.status_code != 403 or 'CSRF' not in rej.text else "fail",
-            "action e scutita de CSRF (a ajuns la validarea tokenului)")
-    finally:
-        try:
-            c.execute("DELETE FROM global_tasks WHERE id = ?", (tid,))
-            c.execute("DELETE FROM app_settings WHERE key LIKE 'push!_%' ESCAPE '!'")
-            c.commit(); c.close()
-        except Exception:
-            pass
+    # Ruta de actiune din notificare: FARA header CSRF (service worker-ul nu poate
+    # citi cookie-ul), dar tokenul trebuie sa fie bun — pinneaza exceptia din csrf.py.
+    rej = s.post(url('/api/push/action'), json={'token': 'gunoi', 'action': 'done'}, timeout=5)
+    R.bifa(rej.status_code == 403, 'actiune cu token invalid -> 403', 'a raspuns %d' % rej.status_code)
+    R.bifa('CSRF' not in rej.text, 'actiunea e scutita de CSRF (a ajuns la validarea tokenului)',
+           'a fost oprita de CSRF, nu de token')
 
 
-def data_integrity():
-    print("\n=== DATA INTEGRITY ===\n")
-    if not DB_PATH.exists():
-        log("fail", "DB not found"); return
-    try:
-        conn = sqlite3.connect(str(DB_PATH)); conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-    except Exception as e:
-        log("fail", f"Cannot connect: {e}"); return
-    
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tables = {r[0] for r in cur.fetchall()}
-    
-    checks = [
-        ('tasks', 'proiecte', 'proiect_id', 'tasks'),
-        ('task_subtasks', 'tasks', 'task_id', 'subtasks'),
-        ('atasamente', 'proiecte', 'proiect_id', 'attachments'),
-    ]
-    
-    for child, parent, fk, label in checks:
-        if child in tables and parent in tables:
-            cur.execute(f"SELECT COUNT(*) FROM {child} c LEFT JOIN {parent} p ON c.{fk}=p.id WHERE p.id IS NULL AND c.{fk} IS NOT NULL")
-            n = cur.fetchone()[0]
-            if n > 0: log("warn", f"{n} {label} have orphaned references")
-            else: log("pass", f"No orphaned {label}")
-    
-    cur.execute("SELECT COUNT(*) FROM proiecte")
-    total = cur.fetchone()[0]
-    if total == 0: log("warn", "No projects in database")
-    else:
-        cur.execute("SELECT COUNT(DISTINCT proiect_id) FROM tasks WHERE proiect_id IS NOT NULL")
-        with_tasks = cur.fetchone()[0]
-        if with_tasks == 0: log("warn", "All projects have no tasks")
-        else: log("pass", "Projects have tasks assigned")
-    
-    conn.close()
+# ----------------------------------------------------------------------- main
 
-if __name__ == "__main__":
-    print("=" * 50)
-    print("  PIF DASHBOARD - TEST SUITE")
-    print("=" * 50)
-    
-    # `--static` sare peste proba pe API, singura care cere un server pornit pe
-    # :5000 SI PIN-ul real din mediu. Poarta de verificare (.claude/hooks/gate.py)
-    # o foloseste: PIN-ul n-are unde sa stea fara sa ajunga intr-un fisier
-    # versionat, iar partea de rulare o acopera oricum smoke_ui.py, care isi
-    # porneste singur aplicatia, pe portul lui si pe o copie a bazei.
-    static_analysis()
-    if '--static' not in sys.argv:
-        api_smoke_test()
-        sfera_leak_test()
-        proiect_inchis_test()
-        backup_secrete_test()
-        push_notifications_test()
-    data_integrity()
-    
-    print("\n" + "=" * 50)
-    print("  SUMMARY")
-    print("=" * 50)
-    print(f"  Passed:  {len(results['pass'])}")
-    print(f"  Failed:  {len(results['fail'])}")
-    print(f"  Warnings: {len(results['warn'])}")
-    
-    if results['fail']:
-        print("\n  FAILURES:")
-        for m in results['fail']: print(f"    - {m}")
-        sys.exit(1)
-    else:
-        print("\n  All tests passed!")
-        sys.exit(0)
+def main():
+    global APP
+    if requests is None:
+        raise banc.InstrumentStricat('lipseste `requests` (pip install requests)')
+    out('PROBELE DE API — server de unica folosinta, baza noua')
+    with banc.Aplicatia(noua=True, prefix='pif-suita-') as app:
+        APP = app
+        s = sesiune()
+        for proba in (api_smoke, sfera, proiect_inchis, backup_secrete, push_http):
+            proba(s)
+        cod = R.incheie()
+        if cod:
+            urme = app.urme()
+            if urme:
+                out('\n--- din logul serverului ---')
+                for l in urme:
+                    out('  ' + l)
+        return cod
+
+
+if __name__ == '__main__':
+    sys.exit(banc.ruleaza(main))

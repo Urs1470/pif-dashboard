@@ -16,63 +16,42 @@ Trei contracte, fiecare cu un mod de esec pe care l-a avut aplicatia:
   3. voalul URMARESTE degetul — cat timp foaia coboara, opacitatea scade odata
      cu ea, altfel gestul nu e reversibil cu ochii.
 
-Porneste singur aplicatia, pe un port liber si pe o baza de unica folosinta —
-acelasi tipar ca `smoke_ui.py`, ca sa nu ceara nimic pregatit dinainte.
+Porneste singur aplicatia (`banc.Aplicatia`), pe o baza NOUA in care isi scrie singur
+datele (`seamana`) — deci nu cere nimic pregatit si nu depinde de copia locala.
+Iesire: 0 curat, 1 abatere, 2 instrumentul (vezi banc.py).
+
+UN ELEMENT CARE LIPSESTE E O ABATERE, nu o nota (2026-09-28). Pana atunci un
+declansator de sortare, un buton de adaugare sau o foaie de ceas care nu apareau
+deveneau „nota:" si auditul iesea verde — desi datele le pune el, deci lipsa lor
+inseamna ca aplicatia s-a schimbat sub proba.
 """
 
 import os
-import shutil
-import socket
 import sqlite3
-import subprocess
 import sys
-import tempfile
-import time
-import urllib.error
-import urllib.request
+import uuid
 
-RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PIN_TEST = '000000'
-TELEFON = {'width': 390, 'height': 844}
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import banc  # noqa: E402
+from banc import out, TELEFON, apuca, misca  # noqa: E402
 
-esecuri = []
-note = []
+R = banc.Raport()
+bifa = R.bifa
 
 
-def out(s=''):
-    sys.stdout.buffer.write((str(s) + '\n').encode('utf-8', 'replace'))
-    sys.stdout.flush()
-
-
-def bifa(ok, eticheta, detaliu='', nota=''):
-    """`detaliu` explica ESECUL, `nota` insoteste reusita — altfel randul verde
-    ajunge sa poarte textul unei probleme care nu s-a intamplat."""
-    coada = nota if ok else detaliu
-    out('  %-5s %s%s' % ('OK' if ok else 'PICA', eticheta, ('  — %s' % coada) if coada else ''))
-    if not ok:
-        esecuri.append('%s — %s' % (eticheta, detaliu))
-
-
-def port_liber():
-    s = socket.socket()
-    s.bind(('127.0.0.1', 0))
-    p = s.getsockname()[1]
-    s.close()
-    return p
+def aseaza(page, server=False):
+    """In locul unei pauze fixe: pana cand pagina a stat linistita — mai mult dupa o
+    scriere pe server (vezi `banc.LINISTE_SERVER`)."""
+    banc.asteapta_linistea(page, liniste_ms=banc.LINISTE_SERVER if server else banc.LINISTE_UI)
 
 
 def seamana(cale):
     """Un proiect si cateva taskuri — foaia trebuie sa aiba CE arata.
 
     Cu baza goala fiecare proba de gest se sare, si atunci scriptul raporteaza
-    verde fara sa fi tras de nimic. Datele se scriu prin schema initializata de
-    `database.init_db()`, deci nu dubleaza definitia coloanelor.
+    verde fara sa fi tras de nimic. Schema o scrie deja `banc` (`init_db()`), deci
+    aici doar se umple. Folosita si de `audit_tastatura` si `proba_mobil`.
     """
-    sys.path.insert(0, RADACINA)
-    os.environ['PIF_DB_PATH'] = cale
-    import database
-    database.init_db()
-    import uuid
     db = sqlite3.connect(cale)
     # Cheile sunt UUID-uri de aplicatie (`id TEXT PRIMARY KEY`), nu autoincrement:
     # scrise fara ele, randurile intra cu `id` NULL si lista ramane goala.
@@ -110,37 +89,6 @@ def seamana(cale):
                     None if i % 2 else '2026-09-%02d' % (i + 3)))
     db.commit()
     db.close()
-
-
-def porneste_serverul(port, db_temp, cale_log):
-    env = dict(os.environ)
-    env.update({
-        'PIF_DB_PATH': db_temp,
-        'PIF_DASHBOARD_PIN': PIN_TEST,
-        'SESSION_COOKIE_SECURE': 'false',
-        'PIF_RATE_LIMIT': '100000',
-        'PYTHONIOENCODING': 'utf-8',
-    })
-    cod = ('from app import app\n'
-           'app.run(host="127.0.0.1", port=%d, debug=False, use_reloader=False, threaded=True)\n' % port)
-    log = open(cale_log, 'wb')
-    proc = subprocess.Popen([sys.executable, '-c', cod], cwd=RADACINA, env=env,
-                            stdout=log, stderr=subprocess.STDOUT)
-    baza = 'http://127.0.0.1:%d' % port
-    for _ in range(120):
-        if proc.poll() is not None:
-            log.close()
-            out(open(cale_log, encoding='utf-8', errors='replace').read()[-3000:])
-            raise SystemExit('Serverul a murit la pornire.')
-        try:
-            urllib.request.urlopen(baza + '/login', timeout=1).read()
-            return proc, baza
-        except urllib.error.HTTPError:
-            return proc, baza
-        except Exception:
-            time.sleep(0.5)
-    proc.terminate()
-    raise SystemExit('Serverul nu a pornit in 60s.')
 
 
 # ---------- masuratori in pagina ----------
@@ -213,21 +161,12 @@ def alfa(culoare):
 # foaia se inchide — adica proba ar raporta „s-a inchis" pentru un gest care nici
 # n-a existat. Acelasi tipar ca in `audit_mobil.py`.
 
-def _pct(x, y):
-    return {'touchPoints': [{'x': x, 'y': y, 'id': 1, 'radiusX': 6, 'radiusY': 6, 'force': 1}]}
-
-
-def apuca(cdp, x, y):
-    cdp.send('Input.dispatchTouchEvent', dict(type='touchStart', **_pct(x, y)))
-
-
-def misca(cdp, x, y):
-    cdp.send('Input.dispatchTouchEvent', dict(type='touchMove', **_pct(x, y)))
-
-
-def ridica(cdp, page, pauza=650):
-    cdp.send('Input.dispatchTouchEvent', dict(type='touchEnd', touchPoints=[]))
-    page.wait_for_timeout(pauza)
+def ridica(cdp, page):
+    """Ridica degetul si asteapta sa se aseze foaia — in locul celor 650 ms fixi (cat
+    tinea arcul gestului pana la 2026-08-27; de atunci drumul spre treapta de sus tine
+    0,55 s, si pauza fixa raporta „nu urca" pentru o foaie care urca, doar mai lin)."""
+    banc.ridica(cdp)
+    aseaza(page)
 
 
 def trage(page, cdp, x, y, pasi, dt=16):
@@ -236,7 +175,7 @@ def trage(page, cdp, x, y, pasi, dt=16):
     for dy in pasi:
         y += dy
         misca(cdp, x, y)
-        page.wait_for_timeout(dt)
+        page.wait_for_timeout(dt)                  # un cadru intre miscari — stimulul
     ridica(cdp, page)
 
 
@@ -246,7 +185,7 @@ def zvarle(page, cdp, x, y, distanta):
     pragul nu mai e doar distanta."""
     apuca(cdp, x, y)
     misca(cdp, x, y + 20)
-    page.wait_for_timeout(40)
+    page.wait_for_timeout(40)                      # pornirea lenta — stimulul
     for k in range(1, 6):
         misca(cdp, x, y + 20 + (distanta - 20) * k / 5)
     ridica(cdp, page)
@@ -255,34 +194,24 @@ def zvarle(page, cdp, x, y, distanta):
 def deschide_foaia(page, baza):
     """Foaia taskului, de pe /tasks: e cea mai folosita din aplicatie."""
     page.goto(baza + '/#/tasks', wait_until='load')
-    page.wait_for_timeout(1200)
+    aseaza(page)
     randuri = page.query_selector_all('.gl-fata')
     if not randuri:
         return False
     randuri[0].click()
-    page.wait_for_timeout(700)
+    aseaza(page)
     return page.query_selector('.modal.sheet') is not None
 
 
 def main():
-    from playwright.sync_api import sync_playwright
-
-    lucru = tempfile.mkdtemp(prefix='pif-foaie-')
-    db = os.path.join(lucru, 'proba.db')
-    seamana(db)
-    port = port_liber()
-    proc, baza = porneste_serverul(port, db, os.path.join(lucru, 'server.log'))
-
-    try:
+    sync_playwright = banc.playwright()
+    with banc.Aplicatia(noua=True, seamana=seamana, prefix='pif-foaie-') as app:
+        baza = app.baza
         with sync_playwright() as p:
-            b = p.chromium.launch()
-            ctx = b.new_context(viewport=TELEFON, has_touch=True, is_mobile=True)
-            page = ctx.new_page()
-            cdp = ctx.new_cdp_session(page)
-            page.goto(baza + '/login', wait_until='load')
-            page.fill('#pin', PIN_TEST)
-            page.press('#pin', 'Enter')
-            page.wait_for_url(lambda u: not u.endswith('/login'), timeout=15000)
+            b = banc.browserul(p)
+            ctx = banc.context(b, 'telefon')
+            page = banc.autentifica(ctx, baza)
+            cdp = banc.cdp(page)
 
             # ===== 1. TREPTELE, PE FOAIA CARE LE ARE MEREU =====
             # Foaia zilei din Calendar se deschide cu `inalt`, deci are
@@ -291,13 +220,13 @@ def main():
             # de sus exista drum INAPOI, nu doar spre inchidere.
             out('\n--- foaia zilei (Calendar): drum in ambele sensuri ---')
             page.goto(baza + '/#/calendar', wait_until='load')
-            page.wait_for_timeout(1500)
+            aseaza(page)
             zi = page.query_selector('[data-zi]')
             if zi is None:
                 bifa(False, 'grila de calendar se randeaza', 'nicio celula [data-zi]')
             else:
                 zi.click()
-                page.wait_for_timeout(800)
+                aseaza(page)
                 mij0 = page.evaluate(MASOARA)
                 # Ion, 2026-08-21: „nu se poate sa apara din prima pe toata
                 # pagina" — `inalt` a ajuns sa insemne „doua trepte", iar
@@ -392,7 +321,7 @@ def main():
                              'alfa %.2f -> %.2f (p=%.2f)' % (a_sus, a_jos, m_jos['voalP']))
                         bifa(m_jos['gest'],
                              'inaltimea e a gestului cat timp degetul e pe ecran',
-                             'clasa .gest activa')
+                             'clasa .gest lipseste', nota='clasa .gest activa')
                         ridica(cdp, page)
                         dupa = page.evaluate(MASOARA)
                         if dupa:
@@ -400,7 +329,7 @@ def main():
                                  'alfa %.2f' % alfa(dupa['voal']))
                             bifa(not dupa['gest'],
                                  'inaltimea se preda inapoi CSS-ului la ridicare',
-                                 'clasa .gest stinsa')
+                                 'clasa .gest a ramas', nota='clasa .gest stinsa')
 
             # ===== 3. VITEZA: aceeasi distanta, doua rezultate =====
             out('\n--- viteza ---')
@@ -420,7 +349,7 @@ def main():
                 trage(page, cdp, x, y, [distanta // 8] * 8)
                 lent = page.evaluate(MASOARA)
                 bifa(lent is not None, 'tragere LENTA sub prag: foaia ramane',
-                     '%s px, adica sub cei 28%%' % distanta)
+                     'a plecat la %s px, sub cei 28%%' % distanta, nota='%s px' % distanta)
 
                 if lent is not None:
                     cap_ = page.query_selector('.modal-header').bounding_box()
@@ -428,18 +357,18 @@ def main():
                     iute = page.evaluate(MASOARA)
                     bifa(iute is None,
                          'aruncare IUTE pe ACEEASI distanta: foaia pleaca',
-                         'inca deschisa — pragul n-asculta viteza', 'inchisa')
+                         'inca deschisa — pragul n-asculta viteza', nota='inchisa')
 
             # ===== 4. MENIUL E O FOAIE, NU UN DROPDOWN =====
             out('\n--- meniul de sortare ---')
             page.goto(baza + '/#/projects', wait_until='load')
-            page.wait_for_timeout(1500)
+            aseaza(page)
             decl = page.query_selector('.sort-trigger')
             if not decl:
-                note.append('pagina Proiecte n-are declansator de sortare')
+                bifa(False, 'pagina Proiecte are declansator de sortare', 'lipseste .sort-trigger')
             else:
                 decl.click()
-                page.wait_for_timeout(700)
+                aseaza(page)
                 foaie = page.query_selector('.modal.sheet')
                 bifa(foaie is not None, 'sortarea se deschide ca FOAIE pe telefon',
                      'a ramas dropdown')
@@ -463,7 +392,7 @@ def main():
             # Android ajunge in aplicatie exact asa.
             if page.query_selector('.modal.sheet'):
                 page.keyboard.press('Escape')
-                page.wait_for_timeout(600)
+                aseaza(page)
                 bifa(page.query_selector('.modal.sheet') is None,
                      'Escape inchide foaia de deasupra', 'foaia a ramas dupa Escape')
             buton = page.query_selector('.tema-wrap .h-btn')
@@ -471,7 +400,7 @@ def main():
                 bifa(False, 'butonul de tema exista in antet', 'nu s-a gasit .tema-wrap .h-btn')
             else:
                 buton.click()
-                page.wait_for_timeout(900)
+                aseaza(page)
                 foaie = page.query_selector('.modal.sheet')
                 bifa(foaie is not None, 'tema se deschide ca foaie dupa incarcarea lenesa',
                      'nu s-a deschis nimic — `bind:open` pe componenta dinamica')
@@ -481,10 +410,10 @@ def main():
                                  .map(e => Math.round(e.getBoundingClientRect().height))""")
                     bifa(len(randuri) == 3 and all(h >= 44 for h in randuri),
                          'trei moduri, fiecare cu tinta intreaga',
-                         'inaltimi %s' % randuri, '%s' % randuri)
+                         'inaltimi %s' % randuri, nota='%s' % randuri)
                     # Alegerea chiar comuta tema si inchide foaia.
                     page.query_selector_all('.modal.sheet [role=menuitemradio]')[2].click()
-                    page.wait_for_timeout(700)
+                    aseaza(page)
                     bifa(page.query_selector('.modal.sheet') is None,
                          'alegerea inchide foaia', 'a ramas deschisa')
                     bifa(page.evaluate("() => document.documentElement.getAttribute('data-theme')") == 'dark',
@@ -512,34 +441,42 @@ def main():
             # asezat, foaia NU MAI PLEACA NICAIERI. Aia prinde a doua sosire, oricare ar
             # fi cauza ei.
             out('\n--- foaia de adaugare vine cu tastatura ---')
-            page.goto(baza + '/#/tasks', wait_until='load')
-            page.wait_for_timeout(1000)
-            # Acasa se cere prin hash: pe telefon aterizarea implicita duce la
-            # taskurile personale, deci un `goto` direct n-ar ajunge niciodata.
-            page.evaluate("() => { location.hash = '#/' }")
-            page.wait_for_timeout(1600)
+            # Acasa, direct: pe telefon aterizarea implicita (taskurile personale) se
+            # declanseaza doar pe un hash GOL (`router.svelte.js`), deci `/#/` ajunge
+            # acolo dintr-un pas. Inainte era un ocol prin /tasks + `location.hash`,
+            # cu 2,6 s de pauze, pe o presupunere care nu mai era adevarata.
+            page.goto(baza + '/#/', wait_until='load')
+            aseaza(page)
             # Pe telefon adaugarea de pe Acasa vine din butonul de actiune din dock (`.dock-fab`);
             # `.bh-add` din capul boardului e ascuns pe telefon (2026-08-21).
             adauga = page.query_selector('.dock-fab')
             if adauga is None:
-                note.append('boardul „Astazi" n-are buton plutitor de adaugare')
+                bifa(False, 'Acasa are butonul de adaugare din dock', 'lipseste .dock-fab')
             else:
                 adauga.click()
-                page.wait_for_timeout(900)
+                aseaza(page)
+                # Focusul vine dupa ce s-a asezat foaia (un temporizator in
+                # FoaieAdauga), deci se asteapta el anume, cu plafon.
+                try:
+                    page.wait_for_function(
+                        "() => document.activeElement && document.activeElement.matches('.fa-cauta input')",
+                        timeout=2000)
+                except Exception:
+                    pass
                 stare = page.evaluate(STARE_ALEGERE)
                 bifa(stare['randuri'] > 0, 'foaia se deschide cu lista in mana',
                      'niciun rand — nu s-au randat candidatii')
                 bifa(stare['editabil'],
                      'campul are focusul, deci tastatura urca odata cu foaia',
                      'focus pe %s — ai nevoie de o atingere in plus ca sa scrii' % stare['tag'],
-                     'focus pe %s' % stare['tag'])
+                     nota='focus pe %s' % stare['tag'])
                 # ...si foaia sta pe loc dupa ce s-a asezat: o a doua masuratoare,
-                # la distanta, prinde orice miscare intarziata.
+                # la distanta, prinde orice miscare intarziata. Pauza E masuratoarea.
                 page.wait_for_timeout(500)
                 dupa = page.evaluate(SUS_FOAIE)
                 bifa(dupa is not None and stare['sus'] is not None and abs(dupa - stare['sus']) <= 2,
                      'dupa ce s-a asezat, foaia nu mai pleaca nicaieri',
-                     '%s -> %s px' % (stare['sus'], dupa), 'ramane la %s px' % dupa)
+                     '%s -> %s px' % (stare['sus'], dupa), nota='ramane la %s px' % dupa)
 
                 # FARA CHENAR PE CAMPUL FOCALIZAT. Ion: „este un chenar la campul «ce
                 # ai de făcut»? albastru, nu-mi place." Venea din regula globala
@@ -556,7 +493,7 @@ def main():
                 }""")
                 bifa(umbra in (None, 'none'),
                      'campul focalizat nu deseneaza un chenar',
-                     'box-shadow: %s' % umbra, 'fara box-shadow')
+                     'box-shadow: %s' % umbra, nota='fara box-shadow')
 
                 # ===== CEASUL NU STINGE PAGINA A DOUA OARA =====
                 # Ion: „cand il deschid parca pagina se stinge si se aprinde."
@@ -567,22 +504,23 @@ def main():
                 # acolo — `global_tasks.ora`, v41) si de foaia de la apasare lunga.
                 # Isi face singura cazul: altfel verificarea ar depinde de ce se
                 # intampla sa fie in baza, adica ar tacea exact cand baza e goala.
-                page.evaluate("() => { location.hash = '#/tasks?sfera=personal' }")
-                page.wait_for_timeout(1800)
+                page.goto(baza + '/#/tasks?sfera=personal', wait_until='load')
+                aseaza(page)
                 MARCA_P = 'Audit — ora de proba'
                 if page.locator('.trow', has_text=MARCA_P).count() == 0:
                     fab = page.locator('.dock-fab').first
                     if fab.count():
                         fab.click()
-                        page.wait_for_timeout(900)
+                        aseaza(page)
                         camp = page.locator('.fa-cauta input').first
                         if camp.count():
                             camp.fill('azi ' + MARCA_P)
-                            page.wait_for_timeout(500)
+                            aseaza(page, server=True)
                             page.locator('.fa-creeaza').first.click()
-                            page.wait_for_timeout(1800)
+                            aseaza(page, server=True)
                 if page.locator('.trow', has_text=MARCA_P).count() == 0:
-                    note.append('n-am putut crea un task personal pentru proba ceasului')
+                    bifa(False, 'taskul personal pentru proba ceasului s-a creat din foaie',
+                         'nu apare in lista personala')
                 else:
                     # Apasare lunga pe randul lui, ca sa vina foaia cu randul de ora.
                     r = page.evaluate("""(marca) => {
@@ -602,9 +540,9 @@ def main():
                           ev('pointerdown');
                           window.__sus = () => ev('pointerup');
                         }""", r)
-                        page.wait_for_timeout(700)
+                        page.wait_for_timeout(700)         # degetul TINUT — stimulul
                         page.evaluate('() => window.__sus && window.__sus()')
-                        page.wait_for_timeout(800)
+                        aseaza(page)
                         ok = page.evaluate("""() => {
                           const so = document.querySelector('.so-trigger');
                           if (!so) return 'fara-ceas';
@@ -612,9 +550,10 @@ def main():
                           return 'deschis';
                         }""")
                     if ok == 'fara-ceas':
-                        note.append('foaia de actiuni n-a adus randul de ora')
+                        bifa(False, 'foaia de actiuni a taskului personal are randul de ora',
+                             'lipseste .so-trigger')
                     else:
-                        page.wait_for_timeout(700)
+                        aseaza(page)
                         v = page.evaluate("""() => {
                           const el = document.querySelector('.so-voal');
                           if (!el) return null;
@@ -622,31 +561,15 @@ def main():
                                    bg: getComputedStyle(el).backgroundColor };
                         }""")
                         if v is None:
-                            note.append('ceasul nu s-a deschis ca foaie')
+                            bifa(False, 'ceasul se deschide ca foaie', 'lipseste .so-voal')
                         else:
                             bifa(v['slab'], 'peste o foaie, voalul ceasului doar separa',
                                  'voal INTREG peste unul existent: %s' % v['bg'],
-                                 v['bg'])
+                                 nota=v['bg'])
 
             b.close()
-    finally:
-        proc.terminate()
-        try:
-            proc.wait(timeout=5)
-        except Exception:
-            proc.kill()
-        shutil.rmtree(lucru, ignore_errors=True)
-
-    out()
-    for n in note:
-        out('  nota: %s' % n)
-    if esecuri:
-        out('\n%d contracte incalcate:' % len(esecuri))
-        for e in esecuri:
-            out('  - %s' % e)
-        sys.exit(1)
-    out('OK — foaia respecta toate contractele.')
+    return R.incheie()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(banc.ruleaza(main))
