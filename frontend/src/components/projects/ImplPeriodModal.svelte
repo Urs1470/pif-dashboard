@@ -300,7 +300,7 @@
 
 <style>
   /* Antetul lui Modal RAMANE (X-ul e singura iesire de aici — desenul n-are
-     „Renunță"), dar isi pierde titlul si linia: panoul isi scrie singur titlul,
+     „Anulează"), dar isi pierde titlul si linia: panoul isi scrie singur titlul,
      la 21/600, cu proiectul sub el. Doua titluri la doi centimetri distanta, cu
      doua greutati, se citesc ca doua lucruri. */
   :global(.modal:has(.ip) .modal-title) { display: none; }

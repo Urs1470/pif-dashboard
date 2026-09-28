@@ -149,7 +149,7 @@
           </button>
           {#if url}
             <button class="b" onclick={() => { ciorna = url; editeaza = false }}>
-              <X size={13} /> Renunță
+              <X size={13} /> Anulează
             </button>
           {/if}
         </div>

@@ -52,8 +52,10 @@ Iesire: 0 curat, 1 abatere, 2 instrumentul (vezi banc.py).
 
 Ecranele sunt cele din banc (desktop 1280x800, ca in celelalte audituri — aici era
 1280x860, deci o fereastra care nu incapea pe un laptop obisnuit trecea doar aici).
-„Anulează" vs „Renunță" e o NOTA, nu o abatere: e o decizie de produs, iar pana pe
-2026-09-28 se numara ca problema si tinea auditul rosu permanent.
+RENUNTAREA SE SPUNE „Anulează" (Ion, 2026-09-28). Pana atunci proba doar constata ca
+aplicatia folosea doua cuvinte pentru acelasi gest („Anulează" / „Renunță") si se tinea
+rosie permanent pe o decizie de produs neluata. Decizia e luata, deci acum orice alt
+cuvant pe un buton de renuntare e o abatere.
 """
 
 import argparse
@@ -255,8 +257,9 @@ FERESTRE = [
 
 CUVINTE_RENUNTARE = ('nuleaz', 'enun', 'napoi')
 
-# Ce cuvant foloseste aplicatia ca sa spuna „las-o balta". Daca iese mai mult
-# de unul, doua ferestre cer acelasi lucru cu doua cuvinte.
+# Cuvantul ales pentru „las-o balta" (Ion, 2026-09-28) si ce foloseste de fapt fiecare
+# fereastra. Un al doilea cuvant inseamna doua ferestre care cer acelasi lucru altfel.
+CUVANT_RENUNTARE = 'Anulează'
 ETICHETE_RENUNTARE = {}
 
 
@@ -502,15 +505,15 @@ def main():
                 ctx.close()
             br.close()
 
-    note_finale = []
-    if len(ETICHETE_RENUNTARE) > 1:
-        note_finale.append(
-            'aplicatia numeste renuntarea in %d feluri — %s. Acelasi gest, doua cuvinte: '
-            'e o decizie de produs, nu un defect de cod; proba o raporteaza, alegerea o face omul.'
-            % (len(ETICHETE_RENUNTARE), '; '.join(
-                '„%s" (%s)' % (e, ', '.join(sorted(set(u))))
-                for e, u in sorted(ETICHETE_RENUNTARE.items()))))
-    return banc.incheie(total, note=note_finale)
+    straine = {e: u for e, u in ETICHETE_RENUNTARE.items() if e != CUVANT_RENUNTARE}
+    if straine:
+        out('  %-8s renuntarea se spune „%s", dar apare si: %s' % (
+            'PICA', CUVANT_RENUNTARE, '; '.join(
+                '„%s" (%s)' % (e, ', '.join(sorted(set(u)))) for e, u in sorted(straine.items()))))
+        total += 1
+    elif ETICHETE_RENUNTARE:
+        out('  %-8s renuntarea se spune peste tot „%s"' % ('OK', CUVANT_RENUNTARE))
+    return banc.incheie(total)
 
 
 if __name__ == '__main__':

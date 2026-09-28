@@ -66,3 +66,7 @@ randat" nu mai inseamna „exista `.page`".
 
 „Anulează" (editarea taskului) vs „Renunță" (patru ferestre de proiect/stergere) — acelasi gest,
 doua cuvinte. `audit_ferestre` il raporteaza acum ca NOTA, nu ca abatere.
+
+**Hotarat in aceeasi zi — Ion: „anuleaza ramane".** Formularul de proiect, `ConfirmDialog`
+(stergerile) si editarea planului din Departament spun acum „Anulează". Cu decizia luata,
+`audit_ferestre` nu mai tine o nota: orice alt cuvant pe un buton de renuntare e PICA.

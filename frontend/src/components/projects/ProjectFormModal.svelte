@@ -180,7 +180,7 @@
   </form>
   {#snippet footer()}
     <div class="modal-actions">
-      <button type="button" class="pf-b pf-renunta" onclick={() => open = false}>Renunță</button>
+      <button type="button" class="pf-b pf-renunta" onclick={() => open = false}>Anulează</button>
       <!-- ACTIUNEA PRINCIPALA SPUNE CE FACE. „Creează" singur e un verb fara
            obiect; pe un buton citit intr-o secunda, obiectul e jumatate din sens.
            NU MAI E STINS CAND LIPSESTE NUMELE. Un buton stins nu spune de ce e

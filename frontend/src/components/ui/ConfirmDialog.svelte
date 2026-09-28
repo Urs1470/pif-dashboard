@@ -21,7 +21,9 @@
     title = 'Confirmare',
     message = 'Ești sigur?',
     confirmLabel = 'Confirmă',
-    cancelLabel = 'Renunță',
+    // „Anulează", nu „Renunță": un singur cuvant pentru acelasi gest in toata
+    // aplicatia (Ion, 2026-09-28). `audit_ferestre` pica daca revine al doilea.
+    cancelLabel = 'Anulează',
     danger = true,
     onconfirm,
   } = $props()
