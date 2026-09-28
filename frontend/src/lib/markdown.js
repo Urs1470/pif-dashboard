@@ -11,10 +11,18 @@ function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, ch => _ESC_MAP[ch])
 }
 
-// Allowlist scheme-uri sigure. javascript:/data:/vbscript:/file: → "#".
+// SCHEMELE PERMISE — o lista de ce TRECE, nu de ce se opreste. Pana pe 2026-09-28
+// era invers (javascript/data/vbscript/file -> „#") si se verifica pe textul brut, cu
+// `trim()`. Dar browserul sterge din capul unui URL TOATE caracterele de control C0,
+// nu doar spatiile: `\u0001javascript:alert(1)` trecea de regex si ramanea
+// `javascript:` pentru el (prins de markdown.test.js). Deci: intai scoatem ce ar
+// scoate si browserul, apoi o schema care nu e in lista devine „#". Fara schema =
+// link relativ sau ancora, si ramane.
+const _SCHEME_PERMISE = ['http:', 'https:', 'mailto:', 'tel:', 'obsidian:']
 function _safeUrl(url) {
-  const t = String(url || '').trim().toLowerCase()
-  if (/^(javascript|data|vbscript|file):/.test(t)) return '#'
+  const t = String(url || '').replace(/[\u0000- \u007f]/g, '').toLowerCase()
+  const schema = t.match(/^[a-z][a-z0-9+.-]*:/)
+  if (schema && !_SCHEME_PERMISE.includes(schema[0])) return '#'
   return url
 }
 

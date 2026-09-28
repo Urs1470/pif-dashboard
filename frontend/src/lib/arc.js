@@ -69,6 +69,15 @@ const PRAG_VITEZA = 6    // px/s
  *        final: foaia isi lasa inaltimea in px cat tine miscarea, iar dupa ea o da
  *        inapoi CSS-ului (`height: auto`), altfel n-ar mai urma continutul.
  */
+// CATE ARCURI SUNT IN MISCARE ACUM — pentru probe. `document.getAnimations()` nu vede
+// o miscare scrisa din JS cadru cu cadru, deci un audit care asteapta „sa se aseze
+// pagina" se oprea in mijlocul unui arc: pe 2026-09-28 foaia zilei a fost masurata cu
+// `.intins` inca pus, la jumatatea coborarii spre treapta de mijloc. Un numar pe
+// `globalThis`, citit de `scripts/banc.py`; aplicatia nu-l foloseste.
+function numara(d) {
+  globalThis.__arcuri = Math.max(0, (globalThis.__arcuri || 0) + d)
+}
+
 export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie, laFinal }) {
   const k = (2 * Math.PI / durata) ** 2
   const c = bounce >= 0
@@ -99,6 +108,7 @@ export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie, laFinal }) {
     if (cerere) return
     ultim = 0
     cerere = requestAnimationFrame(pas)
+    numara(1)
   }
 
   function pas(acum) {
@@ -138,8 +148,9 @@ export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie, laFinal }) {
     scrie(valori())
     if (inMiscare) {
       cerere = requestAnimationFrame(pas)
-    } else if (laFinal) {
-      laFinal()
+    } else {
+      numara(-1)
+      if (laFinal) laFinal()
     }
   }
 
@@ -199,7 +210,10 @@ export function creeazaArc({ durata = 0.38, bounce = 0.298, scrie, laFinal }) {
     },
 
     opreste() {
-      if (cerere) cancelAnimationFrame(cerere)
+      if (cerere) {
+        cancelAnimationFrame(cerere)
+        numara(-1)
+      }
       cerere = 0
       for (const ca of canale.values()) ca.gata = true
     },

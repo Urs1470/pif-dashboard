@@ -1891,7 +1891,13 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_subtasks_task_id ON task_subtasks(task_id)')
+    # `idx_task_subtasks_task_id` NU se mai creeaza aici. Pe o baza noua, v18->v19
+    # reconstruieste `task_subtasks` (DROP + RENAME) imediat dupa, deci indexul pus
+    # aici murea odata cu tabela, iar a DOUA pornire a serverului il punea la loc —
+    # schema difera intre prima si a doua pornire (prins de teste/test_migrari.py,
+    # 2026-09-28). E oricum redundant: v19 creeaza `idx_task_subtasks_task` pe
+    # `(task_id, ordine)`, care acopera orice cautare dupa `task_id`. Bazele vechi
+    # il pastreaza; nu strica nimic.
 
     conn.commit()
     conn.close()
