@@ -16,6 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-10-01
 
+- [2026-10-01 Torqa web pe același server și canal propriu pentru APK-ul Torqa](2026-10-01-torqa-web-si-canalul-apk.md) — build-ul web Angular se **urcă** (`POST /api/torqa/web/upload`, zip, doar tokenul de mașină, refuzat dispozitivului), nu stă în git: `uploads/torqa-web/<versiune>/` + pointer `current` rescris cu `os.replace`, live + 2 anterioare. La `/torqa/` documentul cere sesiune (redirect la `/login?next=/torqa/`), fișierele nu și nu ating sesiunea (altfel `Vary: Cookie` le scoate din cache). CSP propriu, găsit cu Chromium pe build-ul real. Service worker-ul dashboardului nu mai atinge `/torqa/*`, `X-Torqa` și cache-urile `ngsw:` (cel vechi le ștergea la fiecare deploy). `canal=pif|torqa` pe rutele APK (gol sau necunoscut = 400); `next` validat la login; `<base href>` verificat la urcare.
 - [2026-10-01 Torqa: imaginea completă și tokenul de dispozitiv](2026-10-01-torqa-imagine-si-token-dispozitiv.md) — `GET /api/sync/snapshot` dă tot (proiecte, taskuri și cele făcute cu `viu`, subtaskuri, globale din ambele sfere) într-o cerere; ce lipsește s-a șters (ștergerile sunt definitive, fără schemă nouă). Bifarea unui recurent naște apariția pe server, Torqa trimite doar „done”. `PIF_DEVICE_TOKEN` pentru Torqa, refuzat pe restore, backup, admin, deploy, upload APK și cheia vault-ului.
 
 ## 2026-09-28

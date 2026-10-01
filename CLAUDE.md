@@ -20,7 +20,7 @@ modificari necomise.
 | unde e functia Y | `docs/memory/CODE_MAP.md` — **generat** |
 | harta, starea, capcanele | `docs/memory/MEMORY.md` |
 | cum scriu corect pe API | `SCHEMA_REFERENCE.md` |
-| **de ce am facut asa** | `docs/decizii/INDEX.md` (119 decizii, cu carlig fiecare) |
+| **de ce am facut asa** | `docs/decizii/INDEX.md` (120 decizii, cu carlig fiecare) |
 | ce culoare/marime/durata | `frontend/src/styles/tokens.css` — sursa unica |
 
 Cele trei harti se regenereaza la fiecare commit care atinge cod Python. Activeaza hook-ul
@@ -40,7 +40,8 @@ blueprints/
   admin.py          # /api/calendar, /api/search, /api/stats, export PDF, backup
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
   push.py           # Web Push: o notificare pe zi per task personal
-  app_update.py     # versiunea si APK-ul aplicatiei Android
+  app_update.py     # versiunea si APK-ul aplicatiei Android (canale: pif, torqa)
+  torqa_web.py      # Torqa web (build Angular) la /torqa/: urcare, versiuni, servire
 
 frontend/src/       # SPA Svelte 5 -> static/dist/ (Vite)
   pages/            # Home, Projects, ProjectDetail, Tasks, Calendar, Calculator
@@ -48,7 +49,7 @@ frontend/src/       # SPA Svelte 5 -> static/dist/ (Vite)
   lib/driveCalc.js  # motorul Calculatorului (4.400 linii)
 frontend/android/   # Capacitor: WebView peste site + notificari native
 static/dist/        # build-ul, VERSIONAT (vezi capcana de mai jos)
-static/service-worker.js  # PWA + push; bumpeaza VERSION la orice schimbare de dist
+static/service-worker.js  # PWA + push; bumpeaza VERSION la orice schimbare de dist; nu atinge /torqa/
 ```
 
 ## Invarianti de produs
@@ -138,6 +139,12 @@ Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`)
 `git reset --hard` + `pip install` + restart. **Nu exista npm pe server**, deci `static/dist/`
 TREBUIE sa fie versionat — de aceea `.githooks/pre-commit` cere bump la `VERSION` din
 `static/service-worker.js` cand dist-ul se schimba: fara el, build-ul nou nu ajunge pe telefon.
+
+**Torqa web si APK-urile nu trec prin git** (`uploads/`, gitignored): build-ul Angular (`--base-href /torqa/`) se urca
+ca zip la `POST /api/torqa/web/upload` (camp `zip`, Bearer `PIF_API_TOKEN`) si apare la `/torqa/`; raman live + 2
+anterioare (`printf '<versiune>' > uploads/torqa-web/current` = intoarcere). APK-urile: `POST /api/app/upload`, cu
+`canal=torqa` pentru Torqa (fara `canal` = `pif`); citire `GET /api/app/version|apk?canal=`. Comenzile si motivele:
+`docs/decizii/2026-10-01-torqa-web-si-canalul-apk.md`.
 
 ## Mai multe sesiuni pe acelasi arbore
 
