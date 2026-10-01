@@ -143,20 +143,34 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
+# Rutele pe care tokenul de dispozitiv (PIF_DEVICE_TOKEN, folosit de Torqa pe telefon si
+# pe desktop) NU le deschide: ele restaureaza, exporta sau inlocuiesc baza, codul de pe
+# server, APK-ul ori cheia vault-ului. Un dispozitiv pierdut nu trebuie sa poata mai mult
+# decat sa citeasca si sa editeze proiecte si taskuri. Ele raman pe PIF_API_TOKEN.
+DEVICE_TOKEN_DENIED = (
+    '/api/restore', '/api/backup', '/api/admin/', '/admin/', '/api/deploy',
+    '/api/app/upload', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
+)
+
+
 def _check_api_token():
-    """Validate Bearer token from Authorization header against PIF_API_TOKEN env var.
-    Returns True if token is valid, False otherwise.  Sets g.api_token_auth = True
-    so CSRF can skip its check for machine-to-machine requests."""
+    """Valideaza Bearer-ul din Authorization: PIF_API_TOKEN (masini: Cowork, scripturi,
+    deploy) sau PIF_DEVICE_TOKEN (Torqa), cel din urma refuzat pe DEVICE_TOKEN_DENIED.
+    Intoarce True daca tokenul e valid aici. Pune g.api_token_auth = True, ca CSRF sa
+    sara verificarea pentru cererile masina-la-masina, si g.api_token_scope."""
     from flask import g
-    token = os.environ.get('PIF_API_TOKEN', '').strip()
-    if not token:
-        return False
+    import hmac as _hmac
     auth = request.headers.get('Authorization', '')
-    if auth.startswith('Bearer ') and len(auth) > 7:
-        import hmac as _hmac
-        provided = auth[7:].strip()
-        if _hmac.compare_digest(token, provided):
+    if not (auth.startswith('Bearer ') and len(auth) > 7):
+        return False
+    provided = auth[7:].strip()
+    for scope, env in (('full', 'PIF_API_TOKEN'), ('device', 'PIF_DEVICE_TOKEN')):
+        token = os.environ.get(env, '').strip()
+        if token and _hmac.compare_digest(token, provided):
+            if scope == 'device' and request.path.startswith(DEVICE_TOKEN_DENIED):
+                return False
             g.api_token_auth = True
+            g.api_token_scope = scope
             return True
     return False
 

@@ -15,9 +15,15 @@ Fisierul asta pastreaza doar ce nu se poate genera: regulile de scriere.
 | cine | cum |
 |---|---|
 | masina (Cowork, `pif-sync.py`, scripturi) | `Authorization: Bearer $PIF_API_TOKEN` — scutit de CSRF |
+| dispozitiv (Torqa, telefon si desktop) | `Authorization: Bearer $PIF_DEVICE_TOKEN` — scutit de CSRF; refuzat (401) pe restore, backup, admin, deploy, upload de APK si cheia vault-ului (`DEVICE_TOKEN_DENIED` in `utils.py`) |
 | browser | cookie de sesiune + `X-CSRF-Token` (valoarea cookie-ului `csrf_token`) |
 
 Rate limit: 60 cereri/minut per IP pe `/api/*`.
+
+**Sincronizarea Torqa:** `GET /api/sync/snapshot` da intr-o cerere proiectele, taskurile (si
+cele facute, cu `viu` dupa regula din Astazi), subtaskurile si taskurile globale din ambele
+sfere. Ce lipseste din imagine s-a sters pe server (stergerile sunt definitive). Scrierile
+trec prin rutele obisnuite; bifarea unui task recurent naste aparitia urmatoare pe server.
 
 ## Reguli de scriere
 

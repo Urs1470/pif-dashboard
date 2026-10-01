@@ -10,17 +10,17 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `64:precacheShell`, `208:cacheFirstWithNetwork`, `241:cacheFirstCDN`, `268:networkFirstWithCache`, `305:networkFirstWithNetwork`
 
-## app.py (648 linii)
+## app.py (650 linii)
 
-`47:_client_ip`, `57:get_or_create_secret_key`, `78:file_hash`, `96:_asset_path`, `111:inject_version`, `137:make_session_permanent`, `147:setup_logging`, `179:check_rate_limit`, `218:check_login_rate_limit`, `240:before_request_func`, `281:after_request_func`, `325:get_hashed_pin`, `334:_git_commit`, `348:healthz`, `354:health_redirect`, `359:whoami`, `366:login_page`, `373:login`, `385:logout`, `396:_serve_frontend`, `404:index`, `409:dist_assets`, `415:favicon`, `420:manifest`, `425:app_icon`, `434:calc_public`, `444:protected_docs`, `456:service_worker`, `461:add_sw_header`, `482:get_deploy_secret`, `490:webhook_deploy`, `575:api_deploy`, `631:page_not_found`, `638:internal_error`
+`49:_client_ip`, `59:get_or_create_secret_key`, `80:file_hash`, `98:_asset_path`, `113:inject_version`, `139:make_session_permanent`, `149:setup_logging`, `181:check_rate_limit`, `220:check_login_rate_limit`, `242:before_request_func`, `283:after_request_func`, `327:get_hashed_pin`, `336:_git_commit`, `350:healthz`, `356:health_redirect`, `361:whoami`, `368:login_page`, `375:login`, `387:logout`, `398:_serve_frontend`, `406:index`, `411:dist_assets`, `417:favicon`, `422:manifest`, `427:app_icon`, `436:calc_public`, `446:protected_docs`, `458:service_worker`, `463:add_sw_header`, `484:get_deploy_secret`, `492:webhook_deploy`, `577:api_deploy`, `633:page_not_found`, `640:internal_error`
 
 ## database.py (1915 linii)
 
 `13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:run_migrations`, `1749:init_db`, `1908:row_to_dict`
 
-## utils.py (196 linii)
+## utils.py (210 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `136:safe_table`, `142:generate_uuid`, `146:_check_api_token`, `164:login_required`, `178:get_app_setting`, `187:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `136:safe_table`, `142:generate_uuid`, `156:_check_api_token`, `178:login_required`, `192:get_app_setting`, `201:set_app_setting`
 
 ## csrf.py (82 linii)
 
@@ -49,6 +49,10 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 ## blueprints/push.py (784 linii)
 
 `117:_setari`, `130:_valideaza_setari`, `166:_b64`, `170:_unb64`, `179:_secret_curent`, `195:mint_token`, `205:verifica_token`, `227:_priv_raw`, `236:_chei_vapid`, `266:_abonamente`, `273:_salveaza_abonamente`, `277:_hash_endpoint`, `285:send_to_all`, `327:taskuri_de_notificat`, `346:taskuri_scadente`, `366:taskuri_cu_ora`, `386:_ore_trimise`, `402:_minute`, `415:check_and_send_ore`, `481:_de_notificat`, `494:_zile_de_cand`, `502:check_and_send_daily`, `555:porneste_planificator`, `598:push_vapid_public`, `606:push_subscribe`, `625:push_unsubscribe`, `636:push_tokens`, `671:push_setari_get`, `677:push_setari_put`, `696:push_status`, `710:push_test`, `727:push_action`
+
+## blueprints/sync.py (71 linii)
+
+`32:sync_snapshot`
 
 ## blueprints/tasks.py (851 linii)
 

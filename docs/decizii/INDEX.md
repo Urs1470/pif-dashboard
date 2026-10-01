@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-10-01
+
+- [2026-10-01 Torqa: imaginea completă și tokenul de dispozitiv](2026-10-01-torqa-imagine-si-token-dispozitiv.md) — `GET /api/sync/snapshot` dă tot (proiecte, taskuri și cele făcute cu `viu`, subtaskuri, globale din ambele sfere) într-o cerere; ce lipsește s-a șters (ștergerile sunt definitive, fără schemă nouă). Bifarea unui recurent naște apariția pe server, Torqa trimite doar „done”. `PIF_DEVICE_TOKEN` pentru Torqa, refuzat pe restore, backup, admin, deploy, upload APK și cheia vault-ului.
+
 ## 2026-09-28
 
 - [2026-09-28 Verificatoarele: un banc, trei trepte, teste unitare](2026-09-28-verificatoarele-un-banc-si-trei-trepte.md) — `scripts/banc.py` (server, baza, context, deget, raport, iesire 0/1/2) sub toate auditurile cu browser; `scripts/verifica.py --rapid|--poarta|--complet` e singura lista, poarta o importa; `test_suite` pe server propriu; `teste/` (unittest) + JS; asteptari pe conditie (inclusiv arcurile JS, `window.__arcuri`); `smoke_ui --esantion` in poarta. Testele noi au gasit un index pierdut de migrarea v19 si o gaura in garda de URL din markdown.

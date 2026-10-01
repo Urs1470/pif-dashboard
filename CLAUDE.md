@@ -20,7 +20,7 @@ modificari necomise.
 | unde e functia Y | `docs/memory/CODE_MAP.md` — **generat** |
 | harta, starea, capcanele | `docs/memory/MEMORY.md` |
 | cum scriu corect pe API | `SCHEMA_REFERENCE.md` |
-| **de ce am facut asa** | `docs/decizii/INDEX.md` (118 decizii, cu carlig fiecare) |
+| **de ce am facut asa** | `docs/decizii/INDEX.md` (119 decizii, cu carlig fiecare) |
 | ce culoare/marime/durata | `frontend/src/styles/tokens.css` — sursa unica |
 
 Cele trei harti se regenereaza la fiecare commit care atinge cod Python. Activeaza hook-ul
@@ -127,6 +127,7 @@ Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`)
 | `SECRET_KEY` | nu | fisier `.secret_key` | semnarea sesiunii |
 | `SESSION_COOKIE_SECURE` | nu | `true` | `false` pentru dev pe HTTP |
 | `PIF_API_TOKEN` | nu | — | Bearer pentru masini (Cowork, `pif-sync.py`); scutit de CSRF |
+| `PIF_DEVICE_TOKEN` | nu | — | Bearer pentru Torqa (telefon, desktop); fara restore, backup, admin, deploy, upload APK |
 | `PIF_DB_PATH` | nu | `pif_dashboard.db` | baza alternativa; o folosesc probele |
 | `PIF_RATE_LIMIT` | nu | `60` | cereri/minut per IP pe `/api/*` |
 
