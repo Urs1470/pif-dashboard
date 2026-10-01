@@ -50,9 +50,12 @@ def sync_snapshot():
         ''')
         tasks = [row_to_dict(r) for r in cursor.fetchall()]
 
+        # Parintele e un task de proiect SAU unul global (task_subtasks n-are cheie straina,
+        # tocmai ca sa le primeasca pe amandoua). Orfanii raman afara.
         cursor.execute(f'''
             SELECT {', '.join('s.' + c for c in SUBTASK_COLOANE)}
-            FROM task_subtasks s JOIN tasks t ON t.id = s.task_id
+            FROM task_subtasks s
+            WHERE s.task_id IN (SELECT id FROM tasks) OR s.task_id IN (SELECT id FROM global_tasks)
             ORDER BY s.task_id, s.ordine
         ''')
         subtasks = [row_to_dict(r) for r in cursor.fetchall()]

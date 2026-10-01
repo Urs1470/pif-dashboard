@@ -21,9 +21,12 @@ Fisierul asta pastreaza doar ce nu se poate genera: regulile de scriere.
 Rate limit: 60 cereri/minut per IP pe `/api/*`.
 
 **Sincronizarea Torqa:** `GET /api/sync/snapshot` da intr-o cerere proiectele, taskurile (si
-cele facute, cu `viu` dupa regula din Astazi), subtaskurile si taskurile globale din ambele
-sfere. Ce lipseste din imagine s-a sters pe server (stergerile sunt definitive). Scrierile
-trec prin rutele obisnuite; bifarea unui task recurent naste aparitia urmatoare pe server.
+cele facute, cu `viu` dupa regula din Astazi), subtaskurile (si ale taskurilor globale) si
+taskurile globale din ambele sfere. Ce lipseste din imagine s-a sters pe server (stergerile
+sunt definitive). Scrierile trec prin rutele obisnuite; bifarea unui task recurent naste
+aparitia urmatoare pe server. Crearea de task, task global si subtask primeste `id` de la
+client; un `id` existent da **409** cu `{id}` (nu dubleaza), un proiect sau un task parinte
+inexistent da 404.
 
 ## Reguli de scriere
 

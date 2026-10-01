@@ -87,22 +87,22 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 117 |
-| POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 164 |
-| PUT | `/api/tasks/<task_id>` | `update_task` | 208 |
-| DELETE | `/api/tasks/<task_id>` | `delete_task` | 278 |
-| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 299 |
-| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 310 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 333 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 348 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 411 |
-| POST | `/api/global-tasks` | `create_global_task` | 491 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 535 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 550 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 626 |
-| GET | `/api/agenda/today` | `get_agenda_today` | 703 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 767 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 824 |
+| GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 127 |
+| POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 174 |
+| PUT | `/api/tasks/<task_id>` | `update_task` | 228 |
+| DELETE | `/api/tasks/<task_id>` | `delete_task` | 298 |
+| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 319 |
+| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 330 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 364 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 379 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 442 |
+| POST | `/api/global-tasks` | `create_global_task` | 522 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 571 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 586 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 662 |
+| GET | `/api/agenda/today` | `get_agenda_today` | 739 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 803 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 860 |
 
 ## app.py (16 rute)
 

@@ -15,6 +15,16 @@ logger = logging.getLogger(__name__)
 # Helper functions
 # ---------------------------------------------------------------------------
 
+def _id_ocupat(cursor, tabela, item_id):
+    """Torqa creeaza cu id-ul facut pe dispozitiv, ca o cerere repetata dupa un raspuns
+    pierdut sa nu dubleze nimic. Id-ul existent primeste 409 cu id-ul in corp, nu 500 din
+    cheia primara: clientul afla ca e deja acolo si trece la PUT."""
+    cursor.execute(f'SELECT 1 FROM {tabela} WHERE id = ?', (item_id,))
+    if cursor.fetchone() is None:
+        return None
+    return jsonify({'error': 'Exista deja', 'id': item_id}), 409
+
+
 def _skip_weekend(d):
     """Ion nu lucreaza in weekend: o scadenta care cade sambata sau duminica se
     muta pe lunea urmatoare (inainte, nu inapoi). weekday(): luni=0 .. duminica=6."""
@@ -171,6 +181,16 @@ def create_task(project_id):
     now = datetime.now().isoformat()
     task_id = data.get('id') or generate_uuid()
 
+    cursor.execute('SELECT 1 FROM proiecte WHERE id = ?', (project_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'error': 'Proiect inexistent'}), 404
+    if data.get('id'):
+        ocupat = _id_ocupat(cursor, 'tasks', task_id)
+        if ocupat:
+            conn.close()
+            return ocupat
+
     # Get max ordine for this project
     cursor.execute('SELECT MAX(ordine) as max_ordine FROM tasks WHERE proiect_id = ?', (project_id,))
     result = cursor.fetchone()
@@ -317,9 +337,20 @@ def create_subtask(task_id):
     conn = get_db()
     try:
         cursor = conn.cursor()
+        # Parintele e un task de proiect sau unul global. task_subtasks n-are cheie straina
+        # (a pierdut-o ca sa le primeasca pe amandoua), deci un parinte lipsa se prinde aici,
+        # altfel subtaskul ar ramane orfan, nevazut nicaieri.
+        cursor.execute('SELECT 1 FROM tasks WHERE id = ? UNION ALL SELECT 1 FROM global_tasks WHERE id = ?',
+                       (task_id, task_id))
+        if cursor.fetchone() is None:
+            return jsonify({'error': 'Task inexistent'}), 404
+        sid = data.get('id') or generate_uuid()
+        if data.get('id'):
+            ocupat = _id_ocupat(cursor, 'task_subtasks', sid)
+            if ocupat:
+                return ocupat
         cursor.execute('SELECT COALESCE(MAX(ordine), -1) + 1 FROM task_subtasks WHERE task_id = ?', (task_id,))
         next_ordine = cursor.fetchone()[0]
-        sid = generate_uuid()
         cursor.execute(
             'INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at) VALUES (?, ?, ?, 0, ?, ?)',
             (sid, task_id, titlu, next_ordine, datetime.now().isoformat())
@@ -504,6 +535,11 @@ def create_global_task():
 
     now = datetime.now().isoformat()
     task_id = data.get('id') or generate_uuid()
+    if data.get('id'):
+        ocupat = _id_ocupat(cursor, 'global_tasks', task_id)
+        if ocupat:
+            conn.close()
+            return ocupat
 
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,

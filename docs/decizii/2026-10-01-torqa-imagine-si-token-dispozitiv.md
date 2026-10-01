@@ -25,11 +25,19 @@ fără rețea) și se sincronizează cu serverul.
    înseamnă baza în mâna altcuiva. Lista e de refuz, nu de permisiune: fazele următoare ale Torqa
    (proiecte, perioade, calendar, wiki) folosesc rutele existente fără să mai atingă garda.
 
+5. **Crearea e idempotentă** (completare din aceeași zi, la revizia clientului). Torqa creează
+   cu id-ul făcut pe dispozitiv; dacă răspunsul se pierde, repetă cererea. Un id existent dă
+   acum 409 cu `{id}`, nu 500 din cheia primară, care ar fi lăsat taskul nesincronizat pentru
+   totdeauna. Subtaskurile primesc și ele `id`, iar un părinte lipsă (proiect sau task) dă 404
+   în loc de un rând orfan. Imaginea include și subtaskurile taskurilor globale: pe server
+   erau 7, pe două globale, și lipseau din prima variantă.
+
 **Verificat.** `teste/test_sync.py`, 8 teste: imaginea întreagă, câmpurile, `viu`, 401 fără token,
 tokenul de dispozitiv refuzat pe toate cele 9 rute. Garda e probată pe funcția de verificare, nu pe
 rute: o gardă stricată ar fi rulat `git reset --hard` prin `/api/deploy` chiar în clona testului.
-Cu lista golită, 2 teste pică.
+Cu lista golită, 2 teste pică. Completarea de la punctul 5 adaugă 6 teste (14 în total); fără
+ea pică 6, cu ea trec toate, iar `verifica.py --atinse` pe cele trei fișiere e curat.
 
-**Ce rămâne.** Tokenul se pune o dată în `/etc/pif-dashboard.env` pe server (Ion), apoi
-`sudo systemctl restart pif-dashboard`. Valoarea stă în vault, lângă `PIF_API_TOKEN`
-(`wiki/job/pif-dashboard.md`), nu în repo.
+**Pe server.** Tokenul stă în `/etc/pif-dashboard.env` din 2026-10-01 (copia de dinainte:
+`/etc/pif-dashboard.env.bak-2026-10-01`); verificat în mediul masterului gunicorn și al ambilor
+workeri. Valoarea stă în vault, lângă `PIF_API_TOKEN` (`wiki/job/pif-dashboard.md`), nu în repo.

@@ -44,6 +44,9 @@ class ImagineaSiTokenul(CuBazaNoua):
         c.execute("INSERT INTO task_subtasks (id, task_id, titlu, done, ordine) VALUES ('s1', 't1', 'Rampe', 1, 0)")
         c.execute("INSERT INTO global_tasks (id, titlu, status, sfera, ora) VALUES ('g1', 'Raport', 'to_do', 'munca', '')")
         c.execute("INSERT INTO global_tasks (id, titlu, status, sfera, ora) VALUES ('g2', 'Sala', 'done', 'personal', '07:30')")
+        # Si taskurile globale au subtaskuri (pe server, 2026-10-01: 7, pe doua globale).
+        c.execute("INSERT INTO task_subtasks (id, task_id, titlu, done, ordine) VALUES ('s2', 'g1', 'Anexa', 0, 0)")
+        c.execute("INSERT INTO task_subtasks (id, task_id, titlu, done, ordine) VALUES ('s3', 'nimeni', 'Orfan', 0, 0)")
         conn.commit()
         conn.close()
 
@@ -75,7 +78,7 @@ class ImagineaSiTokenul(CuBazaNoua):
         self.assertEqual({p['id'] for p in d['proiecte']}, {'p-des', 'p-inc'})
         # Toate taskurile, si cele facute (orfani nu exista: cheia straina e activa).
         self.assertEqual({t['id'] for t in d['tasks']}, {'t1', 't2', 't3'})
-        self.assertEqual([s['id'] for s in d['subtasks']], ['s1'])
+        self.assertEqual({s['id'] for s in d['subtasks']}, {'s1', 's2'}, 'si ale globalelor, fara orfani')
         self.assertEqual({g['id'] for g in d['global_tasks']}, {'g1', 'g2'}, 'si cele facute, din ambele sfere')
         self.assertTrue(d['server_time'])
 
@@ -122,3 +125,74 @@ class ImagineaSiTokenul(CuBazaNoua):
         # Doar rute care citesc: daca garda ar ceda, raspunsul ar fi baza, nu o actiune.
         for ruta in ('/api/backup', '/api/admin/db-dump'):
             self.assertEqual(self.get(ruta, token=DEVICE).status_code, 401, ruta)
+
+
+class CreareaCuIdDeLaDispozitiv(CuBazaNoua):
+    """Torqa creeaza cu id-ul facut pe dispozitiv. Daca raspunsul se pierde pe drum, cererea
+    se repeta: a doua trebuie sa spuna „exista deja" (409), nu sa dubleze si nici sa cada cu
+    500 din cheia primara, altfel taskul ramane nesincronizat pentru totdeauna."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._env = {k: os.environ.get(k) for k in ('PIF_API_TOKEN', 'PIF_DEVICE_TOKEN')}
+        os.environ['PIF_API_TOKEN'] = FULL
+        os.environ['PIF_DEVICE_TOKEN'] = DEVICE
+        import app as app_module
+        app_module._startup_initialized = True
+        cls.client = app_module.app.test_client()
+        import database
+        conn = database.get_db()
+        conn.execute("INSERT INTO proiecte (id, tip, nume, status) VALUES ('p1', 'PIF', 'Deschis', 'pregatire')")
+        conn.commit()
+        conn.close()
+
+    @classmethod
+    def tearDownClass(cls):
+        for k, v in cls._env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        super().tearDownClass()
+
+    def post(self, path, body):
+        return self.client.post(path, json=body, headers={'Authorization': f'Bearer {DEVICE}'})
+
+    def imagine(self):
+        return self.client.get('/api/sync/snapshot', headers={'Authorization': f'Bearer {DEVICE}'}).get_json()
+
+    def test_task_de_proiect_a_doua_oara_409(self):
+        r = self.post('/api/proiecte/p1/tasks', {'id': 'tx', 'titlu': 'Primul'})
+        self.assertEqual((r.status_code, r.get_json()['id']), (201, 'tx'))
+        r = self.post('/api/proiecte/p1/tasks', {'id': 'tx', 'titlu': 'Repetat'})
+        self.assertEqual((r.status_code, r.get_json()['id']), (409, 'tx'))
+        titluri = [t['titlu'] for t in self.imagine()['tasks'] if t['id'] == 'tx']
+        self.assertEqual(titluri, ['Primul'], 'nici dublat, nici suprascris')
+
+    def test_task_in_proiect_inexistent_404(self):
+        r = self.post('/api/proiecte/sters/tasks', {'id': 'ty', 'titlu': 'Orfan'})
+        self.assertEqual(r.status_code, 404)
+
+    def test_global_a_doua_oara_409(self):
+        self.assertEqual(self.post('/api/global-tasks', {'id': 'gx', 'titlu': 'Raport'}).status_code, 201)
+        r = self.post('/api/global-tasks', {'id': 'gx', 'titlu': 'Raport'})
+        self.assertEqual((r.status_code, r.get_json()['id']), (409, 'gx'))
+        self.assertEqual(sum(1 for g in self.imagine()['global_tasks'] if g['id'] == 'gx'), 1)
+
+    def test_subtask_primeste_id_si_parinte_global(self):
+        self.assertEqual(self.post('/api/global-tasks', {'id': 'gp', 'titlu': 'Cu pasi'}).status_code, 201)
+        r = self.post('/api/tasks/gp/subtasks', {'id': 'sx', 'titlu': 'Pas'})
+        self.assertEqual((r.status_code, r.get_json()['id']), (201, 'sx'))
+        r = self.post('/api/tasks/gp/subtasks', {'id': 'sx', 'titlu': 'Pas'})
+        self.assertEqual((r.status_code, r.get_json()['id']), (409, 'sx'))
+        self.assertEqual([s['task_id'] for s in self.imagine()['subtasks'] if s['id'] == 'sx'], ['gp'])
+
+    def test_subtask_fara_id_merge_ca_inainte(self):
+        self.assertEqual(self.post('/api/proiecte/p1/tasks', {'id': 'tz', 'titlu': 'Parinte'}).status_code, 201)
+        r = self.post('/api/tasks/tz/subtasks', {'titlu': 'Din SPA'})
+        self.assertEqual(r.status_code, 201)
+        self.assertTrue(r.get_json()['id'])
+
+    def test_subtask_cu_parinte_inexistent_404(self):
+        self.assertEqual(self.post('/api/tasks/nimeni/subtasks', {'id': 'so', 'titlu': 'Orfan'}).status_code, 404)

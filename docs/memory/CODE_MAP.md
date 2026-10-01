@@ -50,11 +50,11 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `117:_setari`, `130:_valideaza_setari`, `166:_b64`, `170:_unb64`, `179:_secret_curent`, `195:mint_token`, `205:verifica_token`, `227:_priv_raw`, `236:_chei_vapid`, `266:_abonamente`, `273:_salveaza_abonamente`, `277:_hash_endpoint`, `285:send_to_all`, `327:taskuri_de_notificat`, `346:taskuri_scadente`, `366:taskuri_cu_ora`, `386:_ore_trimise`, `402:_minute`, `415:check_and_send_ore`, `481:_de_notificat`, `494:_zile_de_cand`, `502:check_and_send_daily`, `555:porneste_planificator`, `598:push_vapid_public`, `606:push_subscribe`, `625:push_unsubscribe`, `636:push_tokens`, `671:push_setari_get`, `677:push_setari_put`, `696:push_status`, `710:push_test`, `727:push_action`
 
-## blueprints/sync.py (71 linii)
+## blueprints/sync.py (74 linii)
 
 `32:sync_snapshot`
 
-## blueprints/tasks.py (851 linii)
+## blueprints/tasks.py (887 linii)
 
-`18:_skip_weekend`, `28:_next_recurrence_date`, `53:_spawn_recurring_task`, `81:_spawn_recurring_global_task`, `119:get_tasks`, `166:create_task`, `210:update_task`, `280:delete_task`, `301:get_subtasks`, `312:create_subtask`, `335:update_subtask`, `350:delete_subtask`, `374:_sfera_or_none`, `386:norm_ora`, `413:get_global_tasks`, `493:create_global_task`, `537:get_global_task`, `552:update_global_task`, `628:delete_global_task`, `658:_resolve_today`, `667:_agenda_item`, `705:get_agenda_today`, `769:get_agenda_candidates`, `826:reorder_agenda`
+`18:_id_ocupat`, `28:_skip_weekend`, `38:_next_recurrence_date`, `63:_spawn_recurring_task`, `91:_spawn_recurring_global_task`, `129:get_tasks`, `176:create_task`, `230:update_task`, `300:delete_task`, `321:get_subtasks`, `332:create_subtask`, `366:update_subtask`, `381:delete_subtask`, `405:_sfera_or_none`, `417:norm_ora`, `444:get_global_tasks`, `524:create_global_task`, `573:get_global_task`, `588:update_global_task`, `664:delete_global_task`, `694:_resolve_today`, `703:_agenda_item`, `741:get_agenda_today`, `805:get_agenda_candidates`, `862:reorder_agenda`
 
