@@ -58,7 +58,7 @@
             PIN incorect. Încearcă din nou.
         </div>
 
-        <form id="login-form" onsubmit="handleLogin(event)">
+        <form id="login-form" onsubmit="handleLogin(event)" data-next="{{ next_url|default('/', true) }}">
             <div class="form-group">
                 <label for="pin">Cod acces</label>
                 <input
@@ -127,11 +127,23 @@
         document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
         initTheme();
 
+        // Unde te intorci dupa PIN: `?next=` din adresa (ex. /torqa/), validat de server si
+        // verificat inca o data aici. Doar o cale a acestui site — o singura `/` la inceput,
+        // fara `\` (browserul il citeste ca `/`), doar ASCII tiparibil; orice altceva duce la
+        // `/`. Oglindeste utils.safe_next_url (un test le compara).
+        function destinatie(valoare) {
+            const ok = typeof valoare === 'string' && valoare.length <= 2048 &&
+                valoare.charAt(0) === '/' && valoare.charAt(1) !== '/' &&
+                /^[!-~]+$/.test(valoare) && valoare.indexOf('\\') === -1;
+            return ok ? valoare : '/';
+        }
+
         // Login handler
         async function handleLogin(event) {
             event.preventDefault();
             const pin = document.getElementById('pin').value;
             const errorMessage = document.getElementById('error-message');
+            const next = destinatie(document.getElementById('login-form').dataset.next);
 
             try {
                 const response = await fetch('/login', {
@@ -139,11 +151,13 @@
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
                     cache: 'no-store',
-                    body: JSON.stringify({ pin: pin })
+                    body: JSON.stringify({ pin: pin, next: next })
                 });
 
                 if (response.ok) {
-                    window.location.href = '/';
+                    let raspuns = null;
+                    try { raspuns = await response.json(); } catch (e) { /* ramane `/` */ }
+                    window.location.href = destinatie(raspuns && raspuns.next);
                 } else {
                     gresit();
                 }

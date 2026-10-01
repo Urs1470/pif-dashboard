@@ -17,7 +17,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from database import init_db, close_db
-from utils import login_required, get_json_or_400, PLAN_DEPT_HOST
+from utils import login_required, get_json_or_400, safe_next_url, PLAN_DEPT_HOST
 from csrf import init_csrf
 
 app = Flask(__name__)
@@ -32,6 +32,7 @@ from blueprints.admin import admin_bp
 from blueprints.push import push_bp
 from blueprints.app_update import app_update_bp
 from blueprints.sync import sync_bp
+from blueprints.torqa_web import torqa_web_bp, SesiuneFaraStatice, CSP_TORQA
 
 app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)
@@ -40,6 +41,12 @@ app.register_blueprint(admin_bp)
 app.register_blueprint(push_bp)
 app.register_blueprint(app_update_bp)
 app.register_blueprint(sync_bp)
+app.register_blueprint(torqa_web_bp)
+
+# Fisierele statice ale Torqa web (/torqa/<fisier>) nu citesc si nu scriu sesiunea: altfel
+# fiecare ar purta `Set-Cookie` si `Vary: Cookie`, iar browserul nu le-ar mai tine in cache.
+# Orice alta cerere merge ca inainte — vezi blueprints/torqa_web.py.
+app.session_interface = SesiuneFaraStatice()
 
 init_csrf(app)
 
@@ -304,6 +311,11 @@ def after_request_func(response):
             "connect-src 'self' blob: data:; "
             "frame-ancestors 'none'; base-uri 'self'"
         )
+    # Torqa web (build Angular) are politica lui, pe calea lui: cere `unsafe-eval` (runtime-ul
+    # de pluginuri) si nu cere nimic din exterior. Motivele, linie cu linie, stau langa
+    # constanta, in blueprints/torqa_web.py.
+    if request.path == '/torqa' or request.path.startswith('/torqa/'):
+        response.headers['Content-Security-Policy'] = CSP_TORQA
     response.headers.setdefault(
         'Content-Security-Policy',
         "default-src 'self'; "
@@ -366,9 +378,12 @@ def whoami():
 
 @app.route('/login')
 def login_page():
+    # `?next=` = unde te intorci dupa PIN (ex. /torqa/). Doar o cale a acestui site;
+    # orice altceva devine `/` — vezi utils.safe_next_url.
+    nxt = safe_next_url(request.args.get('next'))
     if session.get('authenticated'):
-        return redirect(url_for('index'))
-    return render_template('login.html')
+        return redirect(nxt)
+    return render_template('login.html', next_url=nxt)
 
 
 @app.route('/login', methods=['POST'])
@@ -378,7 +393,9 @@ def login():
     if check_password_hash(get_hashed_pin(), pin):
         session['authenticated'] = True
         logger.info(f"Login successful for IP: {request.remote_addr}")
-        return jsonify({'success': True})
+        # Serverul decide unde duce redirectul: pagina de login primeste `next` din query,
+        # dar tot ce vine de la client se valideaza din nou aici.
+        return jsonify({'success': True, 'next': safe_next_url(data.get('next'))})
     logger.warning(f"Login failed for IP: {request.remote_addr}")
     return jsonify({'error': 'Invalid PIN'}), 401
 

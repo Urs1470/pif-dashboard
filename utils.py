@@ -143,13 +143,37 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
+def safe_next_url(value, default='/'):
+    """Unde te intorci dupa login: `value` daca e o cale a ACESTUI site, altfel `default`.
+
+    Accepta doar o cale relativa care incepe cu UN singur `/`. Restul ar putea duce
+    browserul pe alt site dupa ce ai tastat PIN-ul: `//host` (relativ la protocol),
+    `/\\host` (browserul citeste `\\` ca `/`), `https://...` sau `javascript:...` (nu
+    incep cu `/`), si orice caracter de control sau spatiu — browserul scoate tab-ul si
+    newline-ul din URL, deci `/<tab>/host` devine `//host`. Caracterele permise sunt doar
+    ASCII tiparibil: un URL corect are restul percent-codat. Aceeasi regula e oglindita in
+    `destinatie()` din templates/login.html (un test le tine la fel).
+    """
+    if not isinstance(value, str) or not value or len(value) > 2048:
+        return default
+    if value[0] != '/' or value.startswith('//'):
+        return default
+    for ch in value:
+        if ch == '\\' or not ('!' <= ch <= '~'):
+            return default
+    return value
+
+
 # Rutele pe care tokenul de dispozitiv (PIF_DEVICE_TOKEN, folosit de Torqa pe telefon si
 # pe desktop) NU le deschide: ele restaureaza, exporta sau inlocuiesc baza, codul de pe
-# server, APK-ul ori cheia vault-ului. Un dispozitiv pierdut nu trebuie sa poata mai mult
-# decat sa citeasca si sa editeze proiecte si taskuri. Ele raman pe PIF_API_TOKEN.
+# server, APK-ul (oricare canal: `/api/app/upload` ii acopera pe amandoi), build-ul web al
+# Torqa (`/api/torqa/web/`, ca prefix: orice ruta de administrare adaugata acolo nu
+# trebuie sa pice pe deschis) ori cheia vault-ului. Un dispozitiv pierdut nu trebuie sa
+# poata mai mult decat sa citeasca si sa editeze proiecte si taskuri. Ele raman pe
+# PIF_API_TOKEN.
 DEVICE_TOKEN_DENIED = (
     '/api/restore', '/api/backup', '/api/admin/', '/admin/', '/api/deploy',
-    '/api/app/upload', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
+    '/api/app/upload', '/api/torqa/web/', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
 )
 
 
