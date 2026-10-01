@@ -4,23 +4,23 @@
 
 Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
-## static/service-worker.js (411 linii)
+## static/service-worker.js (441 linii)
 
 ### (top)
 
-`64:precacheShell`, `208:cacheFirstWithNetwork`, `241:cacheFirstCDN`, `268:networkFirstWithCache`, `305:networkFirstWithNetwork`
+`54:esteTorqa`, `84:precacheShell`, `234:cacheFirstWithNetwork`, `267:cacheFirstCDN`, `294:networkFirstWithCache`, `331:networkFirstWithNetwork`
 
-## app.py (650 linii)
+## app.py (667 linii)
 
-`49:_client_ip`, `59:get_or_create_secret_key`, `80:file_hash`, `98:_asset_path`, `113:inject_version`, `139:make_session_permanent`, `149:setup_logging`, `181:check_rate_limit`, `220:check_login_rate_limit`, `242:before_request_func`, `283:after_request_func`, `327:get_hashed_pin`, `336:_git_commit`, `350:healthz`, `356:health_redirect`, `361:whoami`, `368:login_page`, `375:login`, `387:logout`, `398:_serve_frontend`, `406:index`, `411:dist_assets`, `417:favicon`, `422:manifest`, `427:app_icon`, `436:calc_public`, `446:protected_docs`, `458:service_worker`, `463:add_sw_header`, `484:get_deploy_secret`, `492:webhook_deploy`, `577:api_deploy`, `633:page_not_found`, `640:internal_error`
+`56:_client_ip`, `66:get_or_create_secret_key`, `87:file_hash`, `105:_asset_path`, `120:inject_version`, `146:make_session_permanent`, `156:setup_logging`, `188:check_rate_limit`, `227:check_login_rate_limit`, `249:before_request_func`, `290:after_request_func`, `339:get_hashed_pin`, `348:_git_commit`, `362:healthz`, `368:health_redirect`, `373:whoami`, `380:login_page`, `390:login`, `404:logout`, `415:_serve_frontend`, `423:index`, `428:dist_assets`, `434:favicon`, `439:manifest`, `444:app_icon`, `453:calc_public`, `463:protected_docs`, `475:service_worker`, `480:add_sw_header`, `501:get_deploy_secret`, `509:webhook_deploy`, `594:api_deploy`, `650:page_not_found`, `657:internal_error`
 
 ## database.py (1915 linii)
 
 `13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:run_migrations`, `1749:init_db`, `1908:row_to_dict`
 
-## utils.py (210 linii)
+## utils.py (234 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `136:safe_table`, `142:generate_uuid`, `156:_check_api_token`, `178:login_required`, `192:get_app_setting`, `201:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `136:safe_table`, `142:generate_uuid`, `146:safe_next_url`, `180:_check_api_token`, `202:login_required`, `216:get_app_setting`, `225:set_app_setting`
 
 ## csrf.py (82 linii)
 
@@ -34,9 +34,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `53:get_stats`, `87:_pdf_safe_text`, `101:_pdf_make_styles`, `129:_pdf_section_header`, `142:_pdf_section_admin`, `170:_pdf_section_tech`, `188:_pdf_section_tasks`, `222:export_pdf`, `293:backup_database`, `323:restore_database`, `486:admin_db_upload_page`, `532:admin_db_upload`, `609:admin_db_dump`, `652:_search_snippet`, `668:global_search`, `719:plan_departament_get`, `730:plan_departament_set`, `747:calendar_view`
 
-## blueprints/app_update.py (135 linii)
+## blueprints/app_update.py (193 linii)
 
-`49:_meta`, `58:app_upload`, `113:app_version`, `123:app_apk`
+`66:_canal`, `78:_cai`, `85:_canal_necunoscut`, `90:_meta`, `99:app_upload`, `160:app_version`, `175:app_apk`
 
 ## blueprints/obsidian.py (531 linii)
 
@@ -57,4 +57,8 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 ## blueprints/tasks.py (887 linii)
 
 `18:_id_ocupat`, `28:_skip_weekend`, `38:_next_recurrence_date`, `63:_spawn_recurring_task`, `91:_spawn_recurring_global_task`, `129:get_tasks`, `176:create_task`, `230:update_task`, `300:delete_task`, `321:get_subtasks`, `332:create_subtask`, `366:update_subtask`, `381:delete_subtask`, `405:_sfera_or_none`, `417:norm_ora`, `444:get_global_tasks`, `524:create_global_task`, `573:get_global_task`, `588:update_global_task`, `664:delete_global_task`, `694:_resolve_today`, `703:_agenda_item`, `741:get_agenda_today`, `805:get_agenda_candidates`, `862:reorder_agenda`
+
+## blueprints/torqa_web.py (600 linii)
+
+`139:EroareBuild`, `149:arata_ca_fisier`, `161:cerere_statica`, `166:SesiuneFaraStatice`, `192:_cale_pointer`, `196:versiune_live`, `213:_cu_reincercari`, `229:_scrie_pointer`, `244:versiuni`, `256:_taie_vechi`, `270:_id_nou`, `287:_curata_resturi`, `311:_segmente`, `331:valideaza_zip`, `382:_extrage`, `404:_verifica_baza`, `425:instaleaza`, `494:torqa_web_upload`, `522:_cale_in`, `541:_tip`, `545:_cache_control`, `555:_trimite`, `561:_neinstalat`, `573:torqa_fara_slash`, `578:torqa_start`, `583:torqa_cale`, `587:_serveste`
 
