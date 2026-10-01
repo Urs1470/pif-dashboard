@@ -20,7 +20,7 @@
 // telefon. De atunci `.githooks/pre-commit` refuza un commit care atinge
 // `static/dist/` fara sa atinga si linia de mai jos.
 
-const VERSION = 'v283';
+const VERSION = 'v284';
 const STATIC_CACHE = 'torqa-static-' + VERSION;
 const API_CACHE = 'torqa-api-' + VERSION;
 
@@ -36,6 +36,26 @@ const APP_SHELL = [
   '/',
   '/calc'
 ];
+
+// TORQA WEB (/torqa/, build-ul Angular al Torqa, gazduit pe acelasi domeniu — vezi
+// blueprints/torqa_web.py) are propriul service worker (`ngsw-worker.js`, scope /torqa/)
+// si propriile cache-uri (`ngsw:...`). Worker-ul asta, cu scope /, ar prinde altfel
+// navigarea LA /torqa/ (la prima vizita, pana se instaleaza al lui), ar pune in cache
+// documentul si, mai rau, raspunsurile API cerute de pagina — si le-ar servi inapoi
+// cand cade reteaua. Deci nu se atinge nimic din ce tine de Torqa:
+//   - caile /torqa/ si /torqa/*;
+//   - cererile cu antetul `X-Torqa` (Torqa il pune pe apelurile lui de API);
+//   - cache-urile `ngsw:` ale lui Angular: `activate` (mai jos) le lasa in pace. Inainte sterga
+//     orice cache care nu era al lui, deci la fiecare deploy cu VERSION urcat dispareau toate.
+const CALE_TORQA = '/torqa/';
+const ANTET_TORQA = 'X-Torqa';
+const PREFIX_CACHE_TORQA = 'ngsw:';
+
+function esteTorqa(request, url) {
+  if (request.headers.has(ANTET_TORQA)) return true;
+  return url.origin === self.location.origin &&
+    (url.pathname === '/torqa' || url.pathname.startsWith(CALE_TORQA));
+}
 
 // Same-origin files the shell needs but does not reference as /assets/ or
 // /static/ (those are discovered by parsing the HTML — see precacheShell).
@@ -116,7 +136,8 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((cacheNames) => Promise.all(
         cacheNames
-          .filter((name) => name !== STATIC_CACHE && name !== API_CACHE)
+          .filter((name) => name !== STATIC_CACHE && name !== API_CACHE &&
+                            !name.startsWith(PREFIX_CACHE_TORQA))
           .map((name) => {
             console.log('[SW] Deleting old cache:', name);
             return caches.delete(name);
@@ -140,6 +161,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
+
+  // Torqa web: nici nu raspundem, nici nu punem in cache — vezi esteTorqa().
+  if (esteTorqa(request, url)) {
+    return;
+  }
 
   // Skip non-GET requests
   if (request.method !== 'GET') {
@@ -398,7 +424,11 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
       for (const w of wins) {
-        if (new URL(w.url).origin === self.location.origin && 'focus' in w) {
+        const u = new URL(w.url);
+        // Fereastra Torqa web nu ascunde dashboardul: nu intelege `NAVIGHEAZA`, iar
+        // notificarea ar ramane fara nicio navigare.
+        if (u.pathname === '/torqa' || u.pathname.startsWith(CALE_TORQA)) continue;
+        if (u.origin === self.location.origin && 'focus' in w) {
           // Ruterul e pe hash: postMessage, NU client.navigate — a doua ar
           // reincarca aplicatia si ar pierde starea.
           w.postMessage({ type: 'NAVIGHEAZA', url });
