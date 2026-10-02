@@ -46,22 +46,22 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 |---|---|---|---|
 | GET | `/api/proiecte` | `get_proiecte` | 28 |
 | POST | `/api/proiecte` | `create_proiect` | 78 |
-| GET | `/api/proiecte/<project_id>` | `get_proiect` | 136 |
-| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 164 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 282 |
-| GET | `/api/clienti` | `get_clienti` | 323 |
-| POST | `/api/clienti` | `create_client` | 354 |
-| GET | `/api/clienti/<client_id>` | `get_client` | 384 |
-| PUT | `/api/clienti/<client_id>` | `update_client` | 398 |
-| DELETE | `/api/clienti/<client_id>` | `delete_client` | 432 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 451 |
-| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 582 |
-| POST | `/api/import-archive/preview` | `preview_import_archive` | 792 |
-| POST | `/api/import/debrief` | `import_debrief` | 841 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1141 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1152 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1178 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1219 |
+| GET | `/api/proiecte/<project_id>` | `get_proiect` | 141 |
+| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 169 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 287 |
+| GET | `/api/clienti` | `get_clienti` | 328 |
+| POST | `/api/clienti` | `create_client` | 359 |
+| GET | `/api/clienti/<client_id>` | `get_client` | 389 |
+| PUT | `/api/clienti/<client_id>` | `update_client` | 403 |
+| DELETE | `/api/clienti/<client_id>` | `delete_client` | 437 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 456 |
+| POST | `/api/import-abb-multi/preview` | `preview_import_abb_multi` | 587 |
+| POST | `/api/import-archive/preview` | `preview_import_archive` | 797 |
+| POST | `/api/import/debrief` | `import_debrief` | 846 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 1146 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 1157 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 1188 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 1229 |
 
 ## blueprints/push.py (9 rute)
 
@@ -87,22 +87,22 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 127 |
-| POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 174 |
-| PUT | `/api/tasks/<task_id>` | `update_task` | 228 |
-| DELETE | `/api/tasks/<task_id>` | `delete_task` | 298 |
-| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 319 |
-| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 330 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 364 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 379 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 442 |
-| POST | `/api/global-tasks` | `create_global_task` | 522 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 571 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 586 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 662 |
-| GET | `/api/agenda/today` | `get_agenda_today` | 739 |
-| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 803 |
-| POST | `/api/agenda/reorder` | `reorder_agenda` | 860 |
+| GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 117 |
+| POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 164 |
+| PUT | `/api/tasks/<task_id>` | `update_task` | 218 |
+| DELETE | `/api/tasks/<task_id>` | `delete_task` | 288 |
+| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 309 |
+| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 320 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 354 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 369 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 432 |
+| POST | `/api/global-tasks` | `create_global_task` | 512 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 561 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 576 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 652 |
+| GET | `/api/agenda/today` | `get_agenda_today` | 729 |
+| GET | `/api/agenda/candidates` | `get_agenda_candidates` | 793 |
+| POST | `/api/agenda/reorder` | `reorder_agenda` | 850 |
 
 ## blueprints/torqa_web.py (4 rute)
 

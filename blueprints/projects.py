@@ -11,7 +11,7 @@ from flask import Blueprint, request, jsonify
 
 from database import get_db, row_to_dict
 from utils import (
-    safe_table, generate_uuid, login_required, UPLOAD_FOLDER,
+    safe_table, generate_uuid, login_required, UPLOAD_FOLDER, id_ocupat,
     get_app_setting, set_app_setting, get_json_or_400,
 )
 
@@ -84,6 +84,11 @@ def create_proiect():
 
     now = datetime.now().isoformat()
     project_id = data.get('id') or generate_uuid()
+    if data.get('id'):
+        ocupat = id_ocupat(cursor, 'proiecte', project_id)
+        if ocupat:
+            conn.close()
+            return ocupat
 
     # Invariantul din CLAUDE.md: `data_finalizare` exista daca si numai daca
     # statusul e `finalizat`. Crearea nu scria coloana DELOC, iar `status` vine din
@@ -1166,6 +1171,11 @@ def create_implementare(project_id):
         conn.close()
         return jsonify({'error': 'Proiect inexistent'}), 404
     impl_id = data.get('id') or generate_uuid()
+    if data.get('id'):
+        ocupat = id_ocupat(cursor, 'implementari', impl_id)
+        if ocupat:
+            conn.close()
+            return ocupat
     cursor.execute('''INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit, locatie, faza, eticheta, ordine, created_at)
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                    (impl_id, project_id, (data.get('data_start') or ''), (data.get('data_sfarsit') or ''),

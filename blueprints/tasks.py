@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 
 from database import get_db, row_to_dict
-from utils import generate_uuid, login_required, get_json_or_400, TASK_PROIECT_VIU
+from utils import generate_uuid, login_required, get_json_or_400, TASK_PROIECT_VIU, id_ocupat as _id_ocupat
 
 tasks_bp = Blueprint('tasks', __name__)
 logger = logging.getLogger(__name__)
@@ -14,16 +14,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
-def _id_ocupat(cursor, tabela, item_id):
-    """Torqa creeaza cu id-ul facut pe dispozitiv, ca o cerere repetata dupa un raspuns
-    pierdut sa nu dubleze nimic. Id-ul existent primeste 409 cu id-ul in corp, nu 500 din
-    cheia primara: clientul afla ca e deja acolo si trece la PUT."""
-    cursor.execute(f'SELECT 1 FROM {tabela} WHERE id = ?', (item_id,))
-    if cursor.fetchone() is None:
-        return None
-    return jsonify({'error': 'Exista deja', 'id': item_id}), 409
-
 
 def _skip_weekend(d):
     """Ion nu lucreaza in weekend: o scadenta care cade sambata sau duminica se

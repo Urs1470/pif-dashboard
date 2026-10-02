@@ -196,3 +196,31 @@ class CreareaCuIdDeLaDispozitiv(CuBazaNoua):
 
     def test_subtask_cu_parinte_inexistent_404(self):
         self.assertEqual(self.post('/api/tasks/nimeni/subtasks', {'id': 'so', 'titlu': 'Orfan'}).status_code, 404)
+
+    # Torqa creeaza si proiecte si perioade (2026-10-02): aceeasi regula, acelasi raspuns.
+    def test_proiect_a_doua_oara_409(self):
+        r = self.post('/api/proiecte', {'id': 'px', 'nume': 'Primul', 'tip': 'PIF'})
+        self.assertEqual((r.status_code, r.get_json()['id']), (201, 'px'))
+        r = self.post('/api/proiecte', {'id': 'px', 'nume': 'Repetat', 'tip': 'PIF'})
+        self.assertEqual((r.status_code, r.get_json()['id']), (409, 'px'))
+        nume = [p['nume'] for p in self.imagine()['proiecte'] if p['id'] == 'px']
+        self.assertEqual(nume, ['Primul'], 'nici dublat, nici suprascris')
+
+    def test_proiect_fara_id_merge_ca_inainte(self):
+        r = self.post('/api/proiecte', {'nume': 'Din SPA', 'tip': 'Service'})
+        self.assertEqual(r.status_code, 201)
+        self.assertTrue(r.get_json()['id'])
+
+    def test_perioada_a_doua_oara_409(self):
+        corp = {'id': 'ix', 'data_start': '2026-10-05', 'data_sfarsit': '2026-10-07', 'faza': 'implementare'}
+        r = self.post('/api/proiecte/p1/implementari', corp)
+        self.assertEqual((r.status_code, r.get_json()['id']), (201, 'ix'))
+        r = self.post('/api/proiecte/p1/implementari', dict(corp, data_start='2026-10-06'))
+        self.assertEqual((r.status_code, r.get_json()['id']), (409, 'ix'))
+        perioade = self.client.get('/api/proiecte/p1/implementari',
+                                   headers={'Authorization': f'Bearer {DEVICE}'}).get_json()
+        self.assertEqual([p['data_start'] for p in perioade if p['id'] == 'ix'], ['2026-10-05'])
+
+    def test_perioada_in_proiect_inexistent_404(self):
+        r = self.post('/api/proiecte/sters/implementari', {'id': 'iy', 'data_start': '2026-10-05'})
+        self.assertEqual(r.status_code, 404)

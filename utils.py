@@ -143,6 +143,16 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
+def id_ocupat(cursor, tabela, item_id):
+    """Torqa creeaza cu id-ul facut pe dispozitiv (taskuri, proiecte, perioade), ca o cerere repetata dupa un raspuns
+    pierdut sa nu dubleze nimic. Id-ul existent primeste 409 cu id-ul in corp, nu 500 din
+    cheia primara: clientul afla ca e deja acolo si trece la PUT."""
+    cursor.execute(f'SELECT 1 FROM {tabela} WHERE id = ?', (item_id,))
+    if cursor.fetchone() is None:
+        return None
+    return jsonify({'error': 'Exista deja', 'id': item_id}), 409
+
+
 def safe_next_url(value, default='/'):
     """Unde te intorci dupa login: `value` daca e o cale a ACESTUI site, altfel `default`.
 

@@ -18,9 +18,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:run_migrations`, `1749:init_db`, `1908:row_to_dict`
 
-## utils.py (234 linii)
+## utils.py (244 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `136:safe_table`, `142:generate_uuid`, `146:safe_next_url`, `180:_check_api_token`, `202:login_required`, `216:get_app_setting`, `225:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `136:safe_table`, `142:generate_uuid`, `146:id_ocupat`, `156:safe_next_url`, `190:_check_api_token`, `212:login_required`, `226:get_app_setting`, `235:set_app_setting`
 
 ## csrf.py (82 linii)
 
@@ -42,9 +42,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `33:_obsidian_vault`, `41:_obsidian_safe_path`, `55:_obsidian_walk`, `80:_obsidian_index`, `100:_obsidian_config_dict`, `127:obsidian_note_get`, `162:_scrub_secrets`, `167:_git_env`, `178:_git`, `184:_default_vault_repo`, `189:_maybe_refresh_vault`, `227:_dashboard_git_credentials`, `243:obsidian_vault_key`, `268:obsidian_vault_sync`, `324:_obsidian_safe_dir`, `340:project_wiki_notes`, `400:sync_project_frontmatter`, `472:obsidian_note_put`
 
-## blueprints/projects.py (1263 linii)
+## blueprints/projects.py (1273 linii)
 
-`30:get_proiecte`, `80:create_proiect`, `138:get_proiect`, `166:update_proiect`, `284:delete_proiect`, `325:get_clienti`, `343:_normalize_client_name`, `356:create_client`, `386:get_client`, `400:update_client`, `434:delete_client`, `453:get_project_snapshot`, `554:_familie_from_echipament`, `585:preview_import_abb_multi`, `686:_familie_param_meta`, `700:_equals_default`, `717:_is_zeroish`, `725:_filter_drive_params`, `794:preview_import_archive`, `843:import_debrief`, `1123:_impl_row`, `1143:get_implementari`, `1154:create_implementare`, `1180:update_implementare`, `1221:delete_implementare`, `1241:_calc_row`
+`30:get_proiecte`, `80:create_proiect`, `143:get_proiect`, `171:update_proiect`, `289:delete_proiect`, `330:get_clienti`, `348:_normalize_client_name`, `361:create_client`, `391:get_client`, `405:update_client`, `439:delete_client`, `458:get_project_snapshot`, `559:_familie_from_echipament`, `590:preview_import_abb_multi`, `691:_familie_param_meta`, `705:_equals_default`, `722:_is_zeroish`, `730:_filter_drive_params`, `799:preview_import_archive`, `848:import_debrief`, `1128:_impl_row`, `1148:get_implementari`, `1159:create_implementare`, `1190:update_implementare`, `1231:delete_implementare`, `1251:_calc_row`
 
 ## blueprints/push.py (784 linii)
 
@@ -54,9 +54,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `32:sync_snapshot`
 
-## blueprints/tasks.py (887 linii)
+## blueprints/tasks.py (877 linii)
 
-`18:_id_ocupat`, `28:_skip_weekend`, `38:_next_recurrence_date`, `63:_spawn_recurring_task`, `91:_spawn_recurring_global_task`, `129:get_tasks`, `176:create_task`, `230:update_task`, `300:delete_task`, `321:get_subtasks`, `332:create_subtask`, `366:update_subtask`, `381:delete_subtask`, `405:_sfera_or_none`, `417:norm_ora`, `444:get_global_tasks`, `524:create_global_task`, `573:get_global_task`, `588:update_global_task`, `664:delete_global_task`, `694:_resolve_today`, `703:_agenda_item`, `741:get_agenda_today`, `805:get_agenda_candidates`, `862:reorder_agenda`
+`18:_skip_weekend`, `28:_next_recurrence_date`, `53:_spawn_recurring_task`, `81:_spawn_recurring_global_task`, `119:get_tasks`, `166:create_task`, `220:update_task`, `290:delete_task`, `311:get_subtasks`, `322:create_subtask`, `356:update_subtask`, `371:delete_subtask`, `395:_sfera_or_none`, `407:norm_ora`, `434:get_global_tasks`, `514:create_global_task`, `563:get_global_task`, `578:update_global_task`, `654:delete_global_task`, `684:_resolve_today`, `693:_agenda_item`, `731:get_agenda_today`, `795:get_agenda_candidates`, `852:reorder_agenda`
 
 ## blueprints/torqa_web.py (600 linii)
 

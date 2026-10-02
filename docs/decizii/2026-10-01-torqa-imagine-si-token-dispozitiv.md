@@ -30,7 +30,9 @@ fără rețea) și se sincronizează cu serverul.
    acum 409 cu `{id}`, nu 500 din cheia primară, care ar fi lăsat taskul nesincronizat pentru
    totdeauna. Subtaskurile primesc și ele `id`, iar un părinte lipsă (proiect sau task) dă 404
    în loc de un rând orfan. Imaginea include și subtaskurile taskurilor globale: pe server
-   erau 7, pe două globale, și lipseau din prima variantă.
+   erau 7, pe două globale, și lipseau din prima variantă. Din 2026-10-02 aceeași regulă
+   acoperă și proiectele și perioadele, pe care Torqa le creează acum și el (helper-ul comun
+   `utils.id_ocupat`).
 
 **Verificat.** `teste/test_sync.py`, 8 teste: imaginea întreagă, câmpurile, `viu`, 401 fără token,
 tokenul de dispozitiv refuzat pe toate cele 9 rute. Garda e probată pe funcția de verificare, nu pe
