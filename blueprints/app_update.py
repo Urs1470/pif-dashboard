@@ -21,17 +21,13 @@
 # aceea cheia de release a APK-urilor sta in afara depozitului si nu se pierde;
 # acum o foloseste build-ul Torqa, din repo-ul Torqa (aici nu exista cod Android).
 #
-# CANALE. Doua aplicatii Android se actualizeaza de aici, fiecare cu semnatura ei:
-#   `pif`   — aplicatia veche (`org.iupif.pif`, un WebView peste site), retrasa pe
-#             2026-10-03 dar inca instalata cateva zile: se mai CITESTE (versiune,
-#             APK), iar pe canalul ei se urca doar cu `canal=pif` scris.
-#   `torqa` — Torqa nativ (`org.iupif.torqa`, build propriu din Super Productivity).
-# Canalul se alege cu `canal=` (camp de formular la urcare, parametru de query la
-# citire). Fiecare canal are fisierele lui, deci un APK nu il poate inlocui pe
-# celalalt. La CITIRE un apel fara `canal` raspunde pe `pif` (aplicatia veche nu stie
-# de canale). La URCARE `canal` e obligatoriu: lipsa lui, o valoare necunoscuta si una
-# GOALA dau 400 — o variabila nesetata in scriptul de build nu are voie sa cada pe un
-# canal implicit si sa suprascrie o aplicatie cu alta.
+# CANALE. Un singur canal: `torqa` (`org.iupif.torqa`, build propriu din Super
+# Productivity). Canalul `pif` (aplicatia veche `org.iupif.pif`, un WebView peste site)
+# a plecat pe 2026-10-03, dupa retragerea interfetei vechi; fisierele lui din
+# `uploads/app/` (`pif.apk`, `meta.json`) nu se mai servesc si nu le sterge codul.
+# `canal=` ramane obligatoriu si la URCARE si la CITIRE: lipsa lui, o valoare
+# necunoscuta (si `pif`) si una GOALA dau 400 — un apel fara canal nu are voie sa
+# cada pe un canal implicit.
 
 import hashlib
 import json
@@ -50,14 +46,8 @@ app_update_bp = Blueprint('app_update', __name__)
 
 DIR_APP = os.path.join(UPLOAD_FOLDER, 'app')
 
-# Canalul la CITIRE cand `canal` lipseste (aplicatia veche nu stie de canale). Urcarea nu
-# are canal implicit: vezi `app_upload`.
-CANAL_IMPLICIT = 'pif'
 # canal -> (fisierul APK, fisierul de meta, prefixul numelui la descarcare).
-# `pif` pastreaza numele de dinainte de canale: serverul de productie are deja
-# `uploads/app/pif.apk` + `meta.json`.
 CANALE = {
-    'pif': ('pif.apk', 'meta.json', 'pif'),
     'torqa': ('torqa.apk', 'torqa-meta.json', 'torqa'),
 }
 
@@ -68,16 +58,20 @@ MAX_APK = 100 * 1024 * 1024
 
 
 def _canal(valoare):
-    """Numele canalului pentru valoarea primita, sau None daca nu exista.
-
-    `None` (parametru absent) = canalul implicit, `pif`: doar la CITIRE — urcarea refuza lipsa
-    lui inainte sa ajunga aici (`app_upload`). Un sir gol NU e „absent": vezi comentariul de
-    la CANALE.
-    """
-    if valoare is None:
-        return CANAL_IMPLICIT
+    """Numele canalului pentru valoarea primita, sau None daca nu exista. Lipsa
+    parametrului se trateaza inainte, de cel care cheama (`_canal_lipsa`)."""
     nume = valoare.strip().lower()
     return nume if nume in CANALE else None
+
+
+def _canal_cerut(brut):
+    """(canal, None) sau (None, raspunsul 400): lipsa e altceva decat o valoare rea."""
+    if brut is None:
+        return None, _canal_lipsa()
+    canal = _canal(brut)
+    if canal is None:
+        return None, _canal_necunoscut(brut)
+    return canal, None
 
 
 def _cai(canal):
@@ -93,11 +87,11 @@ def _canal_necunoscut(valoare):
 
 
 def _canal_lipsa():
-    return jsonify({'error': 'Lipseste `canal` (canale: %s). Urcarea nu are canal implicit.'
+    return jsonify({'error': 'Lipseste `canal` (canale: %s). Nu exista canal implicit.'
                              % ', '.join(sorted(CANALE))}), 400
 
 
-def _meta(canal=CANAL_IMPLICIT):
+def _meta(canal):
     try:
         with open(_cai(canal)[1], encoding='utf-8') as fh:
             return json.load(fh)
@@ -111,16 +105,13 @@ def app_upload():
 
     Deliberat FARA sesiune: singurul care urca e scriptul de build, iar o ruta
     care accepta si sesiune ar putea fi declansata dintr-o pagina deschisa.
-    Campul `canal` alege aplicatia (`pif` sau `torqa`) si e OBLIGATORIU; vezi CANALE.
+    Campul `canal` (azi doar `torqa`) e OBLIGATORIU; vezi CANALE.
     """
     if not _check_api_token():
         return jsonify({'error': 'Unauthorized'}), 401
-    brut = request.form.get('canal')
-    if brut is None:
-        return _canal_lipsa()
-    canal = _canal(brut)
-    if canal is None:
-        return _canal_necunoscut(brut)
+    canal, eroare = _canal_cerut(request.form.get('canal'))
+    if eroare:
+        return eroare
     cale_apk, cale_meta = _cai(canal)
     f = request.files.get('apk')
     if f is None:
@@ -171,11 +162,10 @@ def app_upload():
 @login_required
 def app_version():
     """Ce versiune e disponibila. Aplicatia o compara cu a ei, la pornire.
-    `?canal=torqa` intreaba de Torqa nativ; fara parametru, raspunde pe `pif` (aplicatia veche)."""
-    brut = request.args.get('canal')
-    canal = _canal(brut)
-    if canal is None:
-        return _canal_necunoscut(brut)
+    `?canal=torqa` e obligatoriu."""
+    canal, eroare = _canal_cerut(request.args.get('canal'))
+    if eroare:
+        return eroare
     m = _meta(canal)
     if not m or not os.path.isfile(_cai(canal)[0]):
         return jsonify({'disponibil': False})
@@ -187,11 +177,10 @@ def app_version():
 def app_apk():
     """Fisierul propriu-zis. Numele include versiunea, ca sa se vada in
     descarcari CE s-a luat — un „pif.apk" peste altul nu spune nimic.
-    `?canal=torqa` da APK-ul Torqa (`torqa-<versionName>.apk`); fara parametru, cel vechi (`pif`)."""
-    brut = request.args.get('canal')
-    canal = _canal(brut)
-    if canal is None:
-        return _canal_necunoscut(brut)
+    `?canal=torqa` (obligatoriu) da APK-ul Torqa (`torqa-<versionName>.apk`)."""
+    canal, eroare = _canal_cerut(request.args.get('canal'))
+    if eroare:
+        return eroare
     cale_apk = _cai(canal)[0]
     m = _meta(canal) or {}
     if not os.path.isfile(cale_apk):
