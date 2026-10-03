@@ -1,10 +1,9 @@
-"""Centralised label dictionaries for project / task statuses.
-Source of truth for backend rendering (Excel exports, PDF, etc.).
+"""Vocabularul de status al proiectelor si taskurilor: ce valori scrie aplicatia si ce chei
+vechi mai pot sta in baza.
 
-Oglinda din `static/core.js` a plecat odata cu aplicatia legacy (2026-06-17).
-Astazi partea de client isi scrie etichetele in Svelte; fisierul asta ramane
-sursa pentru ce randeaza serverul, si e citit de `scripts/gen_memory.py` ca sa
-ajunga in `docs/memory/DB_MAP.md`.
+Serverul nu mai randeaza nicio eticheta: exportul PDF care le folosea a plecat pe 2026-10-03, iar
+Torqa isi scrie etichetele singur. Dictionarele raman pentru `scripts/gen_memory.py`, care le
+citeste (din text) ca sa puna in `docs/memory/DB_MAP.md` valorile de status.
 """
 
 # Doua statusuri, atat (v31, cerinta lui Ion). Un proiect ori e in lucru la el,
@@ -33,10 +32,3 @@ TASK_STATUS_LABELS = {
     'blocat': 'De făcut',
 }
 
-
-def project_status_label(s):
-    return PROJECT_STATUS_LABELS.get(s, s or '')
-
-
-def task_status_label(s):
-    return TASK_STATUS_LABELS.get(s, s or '')

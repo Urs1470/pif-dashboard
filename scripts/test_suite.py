@@ -73,7 +73,7 @@ def api_smoke(s):
     sectiune('RUTELE DE BAZA')
     r = requests.get(url('/api/healthz'), timeout=5)
     R.bifa(r.status_code == 200, 'GET /api/healthz -> 200', 'a raspuns %d' % r.status_code)
-    for ep in ('/api/proiecte', '/api/global-tasks', '/api/clienti', '/api/stats'):
+    for ep in ('/api/proiecte', '/api/global-tasks', '/api/stats', '/api/sync/snapshot'):
         r = s.get(url(ep), timeout=5)
         R.bifa(r.status_code == 200, 'GET %s -> 200' % ep, 'a raspuns %d' % r.status_code)
 
@@ -81,7 +81,8 @@ def api_smoke(s):
 def sfera(s):
     """Sferele (munca/personal, v38) — modul de esec e SCURGEREA: o interogare pe
     global_tasks fara filtru varsa personalul intr-o suprafata de munca. Fiecare
-    asertie de aici corespunde unei suprafete."""
+    asertie de aici corespunde unei suprafete. (Boardul „Astazi" si pickerul lui,
+    `/api/agenda/*`, au plecat pe 2026-10-03: nu le mai chema nimic.)"""
     sectiune('SFERA (munca/personal)')
     today = date.today().isoformat()
     creat = []
@@ -111,22 +112,14 @@ def sfera(s):
         r = s.get(url('/api/global-tasks?sfera=xyz'), timeout=5)
         R.bifa(r.status_code == 400, '?sfera=xyz -> 400', 'a raspuns %d' % r.status_code)
 
-        # 3) Boardul Astazi: personal in `personale`, nu in `items`
-        ag = s.get(url('/api/agenda/today?today=%s' % today), timeout=5).json()
-        in_items = any(x['id'] == pid for x in ag.get('items', []))
-        in_pers = any(x['id'] == pid for x in ag.get('personale', []))
-        if in_items:
-            R.pica('agenda/today', 'personalul SCURGE in `items` (boardul de munca)')
-        else:
-            R.bifa(in_pers, 'agenda/today: personalul in `personale`, nu in `items`',
-                   'taskul personal scadent azi lipseste din `personale`')
+        # 3) Imaginea pentru Torqa le da pe amandoua, fiecare cu sfera ei (Torqa le desparte)
+        snap = s.get(url('/api/sync/snapshot'), timeout=5).json().get('global_tasks', [])
+        sfere = {g['id']: g.get('sfera') for g in snap}
+        R.bifa(sfere.get(pid) == 'personal' and sfere.get(pid2) == 'personal',
+               '/api/sync/snapshot: taskurile personale poarta sfera `personal`',
+               'sfera lipseste sau e gresita: Torqa le-ar amesteca cu munca')
 
-        # 4) Pickerul boardului de munca nu ofera taskuri personale
-        cand = s.get(url('/api/agenda/candidates?today=%s' % today), timeout=5).json()
-        R.bifa(not any(x['id'] == pid2 for x in cand.get('items', [])),
-               'agenda/candidates exclude personalul', 'personalul SCURGE in picker')
-
-        # 5) Taskurile zilei din Calendar sunt doar munca — CU MARTOR. O proba
+        # 4) Taskurile zilei din Calendar sunt doar munca — CU MARTOR. O proba
         #    negativa („nu apare X") trece si cand interogarea n-a intors NIMIC
         #    (fereastra gresita, alt camp, ruta mutata). Deci un task de MUNCA scadent
         #    azi trebuie sa APARA, iar cel personal din aceeasi zi sa NU apara.
@@ -143,7 +136,7 @@ def sfera(s):
         else:
             R.bifa(pid not in cal_ids, '/api/calendar: munca da, personal nu', 'personalul SCURGE in calendar')
 
-        # 6) Recurenta pastreaza sfera (altfel taskul migreaza la munca la bifare)
+        # 5) Recurenta pastreaza sfera (altfel taskul migreaza la munca la bifare)
         r = s.post(url('/api/global-tasks'), headers=hdr(s), timeout=5,
                    json={'titlu': '__proba_sfera_recurenta__', 'sfera': 'personal',
                          'status': 'to_do', 'data_scadenta': today, 'recurenta': 'zilnic'})
@@ -167,8 +160,8 @@ def sfera(s):
 
 
 def proiect_inchis(s):
-    """Ce trimite un proiect INCHIS pe „Astazi", in pickerul lui si in panoul zilei:
-    doar ce s-a adaugat in el DUPA inchidere (`TASK_PROIECT_VIU`, utils.py).
+    """Ce trimite un proiect INCHIS in panoul zilei din Calendar si in imaginea pentru Torqa
+    (`viu`): doar ce s-a adaugat in el DUPA inchidere (`TASK_PROIECT_VIU`, utils.py).
 
     CU MARTOR in ambele sensuri: taskul nou trebuie sa APARA — altfel o absenta a
     celui vechi n-ar dovedi nimic — iar cel vechi sa NU apara. „Vechi" se face
@@ -210,16 +203,19 @@ def proiect_inchis(s):
             j = s.get(url(cale), timeout=5).json()
             return {x['id'] for x in (j.get(cheie, []) if cheie else j)}
 
-        for nume, ids, martor, rest in [
-            ('agenda/today', idset('/api/agenda/today?today=%s' % today, 'items'), nou, vechi),
-            ('agenda/candidates', idset('/api/agenda/candidates?today=%s' % today, 'items'), nou_fara, vechi_fara),
-            ('calendar', idset('/api/calendar?start=%s&zile=7' % today, 'taskuri'), nou, vechi),
-        ]:
-            if martor not in ids:
-                R.pica(nume, 'nu arata taskul adaugat DUPA inchidere')
-            else:
-                R.bifa(rest not in ids, '%s: urmarea da, restul nu' % nume,
-                       'scoate la iveala un rest de dinainte de inchidere')
+        ids = idset('/api/calendar?start=%s&zile=7' % today, 'taskuri')
+        if nou not in ids:
+            R.pica('calendar', 'nu arata taskul adaugat DUPA inchidere')
+        else:
+            R.bifa(vechi not in ids, 'calendar: urmarea da, restul nu',
+                   'scoate la iveala un rest de dinainte de inchidere')
+
+        # Torqa decide din `viu` ce arata pe Today: aceeasi regula, cu martor in ambele sensuri.
+        viu = {t['id']: t['viu'] for t in s.get(url('/api/sync/snapshot'), timeout=5).json()['tasks']}
+        for tid, asteptat, eticheta in [(nou, 1, 'urmarea cu termen'), (nou_fara, 1, 'urmarea fara termen'),
+                                        (vechi, 0, 'restul cu termen'), (vechi_fara, 0, 'restul fara termen')]:
+            R.bifa(viu.get(tid) == asteptat, 'sync/snapshot: %s are viu=%d' % (eticheta, asteptat),
+                   'are viu=%r' % viu.get(tid))
 
         # Fisa proiectului le arata pe toate: acolo se curata resturile.
         R.bifa({vechi, vechi_fara, nou, nou_fara} <= idset('/api/proiecte/%s/tasks' % pid),

@@ -1,31 +1,23 @@
 # Admin Blueprint
-# Provides stats, export (Excel/PDF), backup/restore, DB management,
-# global search, and dashboard home routes.
+# Statistici, backup/restore al datelor, administrarea fisierului bazei (upload / dump) si
+# calendarul. Exportul PDF si cautarea globala au plecat pe 2026-10-03
+# (nu le mai chema nimic); starea de dinainte e eticheta git `inainte-de-retragere`.
 
 import os
 import shutil
 import tempfile
 import re
 import logging
-import html
 import sqlite3
 from datetime import datetime, timedelta
-from io import BytesIO
 
 from flask import Blueprint, request, jsonify, send_file
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.enums import TA_LEFT
 
 from utils import (
     safe_table, login_required, get_json_or_400,
     TASK_PROIECT_VIU,
 )
 from database import get_db, row_to_dict, DATABASE_PATH
-from labels import project_status_label, task_status_label
 
 logger = logging.getLogger(__name__)
 
@@ -65,221 +57,6 @@ def get_stats():
         'finished': row['finished'] or 0
     })
 
-# ---------------------------------------------------------------------------
-# PDF export — palette & helpers
-# ---------------------------------------------------------------------------
-
-# PIF design palette (matches the web UI tokens 1:1)
-_PIF_BG = colors.HexColor('#11161e')
-_PIF_ACCENT = colors.HexColor('#58d1c9')
-_PIF_ACCENT_SOFT = colors.HexColor('#1d3835')
-_PIF_TEXT = colors.HexColor('#1f2937')
-_PIF_TEXT_DIM = colors.HexColor('#5a6473')
-_PIF_LINE = colors.HexColor('#dbe1ea')
-_PIF_SUCCESS = colors.HexColor('#16a34a')
-_PIF_DANGER = colors.HexColor('#dc2626')
-_PIF_WARNING = colors.HexColor('#d97706')
-
-
-def _pdf_safe_text(text):
-    """Escape HTML special chars and normalize line breaks for ReportLab Paragraph.
-
-    Mixed content from WYSIWYG: existing <br>/<div> tags are stripped, newlines
-    become <br/>, and remaining HTML chars are escaped to literal text.
-    """
-    if not text:
-        return ''
-    t = re.sub(r'<br\s*/?>', '\n', text)
-    t = re.sub(r'</?div[^>]*>', '', t)
-    t = html.escape(t)
-    return t.replace('\n', '<br/>')
-
-
-def _pdf_make_styles():
-    """ParagraphStyle palette used across the PDF report."""
-    base = getSampleStyleSheet()
-    return {
-        'title': ParagraphStyle(
-            'PIFTitle', parent=base['Heading1'],
-            fontSize=18, leading=22, spaceAfter=4,
-            textColor=_PIF_BG, alignment=TA_LEFT, fontName='Helvetica-Bold'),
-        'subtitle': ParagraphStyle(
-            'PIFSubtitle', parent=base['Normal'],
-            fontSize=10, leading=14, textColor=_PIF_TEXT_DIM, spaceAfter=18, fontName='Helvetica'),
-        'heading': ParagraphStyle(
-            'PIFHeading', parent=base['Heading2'],
-            fontSize=12, leading=16, spaceBefore=14, spaceAfter=8,
-            textColor=_PIF_ACCENT, fontName='Helvetica-Bold'),
-        'subheading': ParagraphStyle(
-            'PIFSubHeading', parent=base['Heading3'],
-            fontSize=10.5, leading=14, spaceBefore=8, spaceAfter=4,
-            textColor=_PIF_BG, fontName='Helvetica-Bold'),
-        'normal': ParagraphStyle(
-            'PIFNormal', parent=base['Normal'],
-            fontSize=9.5, leading=14, textColor=_PIF_TEXT, fontName='Helvetica'),
-        'small': ParagraphStyle(
-            'PIFSmall', parent=base['Normal'],
-            fontSize=8, leading=11, textColor=_PIF_TEXT_DIM, fontName='Helvetica'),
-    }
-
-
-def _pdf_section_header(elements, project_dict, is_pif, styles):
-    """Header band -- accent tip-label + project name + meta line."""
-    tip_label = 'PIF' if is_pif else 'Service'
-    elements.append(Paragraph(
-        f"<font color='#58d1c9'>{tip_label}</font> — {project_dict.get('nume', '')}",
-        styles['title']))
-    meta_bits = []
-    if project_dict.get('client'): meta_bits.append(project_dict['client'])
-    if project_dict.get('locatie'): meta_bits.append(project_dict['locatie'])
-    meta_bits.append(f"export {datetime.now().strftime('%d.%m.%Y')}")
-    elements.append(Paragraph(' · '.join(meta_bits), styles['subtitle']))
-
-
-def _pdf_section_admin(elements, project_dict, styles):
-    """1. Detalii administrative -- fixed two-column info table."""
-    elements.append(Paragraph("1. Detalii administrative", styles['heading']))
-    project_info = [
-        ['Client', project_dict.get('client') or '-'],
-        ['Locație', project_dict.get('locatie') or '-'],
-        ['Producător', project_dict.get('producator') or '-'],
-        ['Echipament principal', project_dict.get('echipament_principal') or '-'],
-        ['Status', project_status_label(project_dict.get('status', '')) or '-'],
-        ['Nr. comandă', project_dict.get('nr_comanda') or '-'],
-        ['Cod proiect', project_dict.get('cod_proiect') or '-'],
-    ]
-    info_table = Table(project_info, colWidths=[4.5*cm, 11*cm])
-    info_table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ('TEXTCOLOR', (0, 0), (0, -1), _PIF_TEXT_DIM),
-        ('TEXTCOLOR', (1, 0), (1, -1), _PIF_TEXT),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('LINEBELOW', (0, 0), (-1, -2), 0.3, _PIF_LINE),
-    ]))
-    elements.append(info_table)
-    elements.append(Spacer(1, 10))
-
-
-def _pdf_section_tech(elements, project_dict, is_pif, styles):
-    """2. Conținut tehnic -- PIF observații or Service before/after."""
-    if is_pif and project_dict.get('observatii'):
-        elements.append(Paragraph("2. Observații tehnice", styles['heading']))
-        elements.append(Paragraph(_pdf_safe_text(project_dict.get('observatii', '')), styles['normal']))
-        elements.append(Spacer(1, 6))
-    if not is_pif and (project_dict.get('service_before') or project_dict.get('service_after')):
-        elements.append(Paragraph("2. Fișă intervenție", styles['heading']))
-        if project_dict.get('service_before'):
-            elements.append(Paragraph("Constatări înainte de intervenție", styles['subheading']))
-            elements.append(Paragraph(_pdf_safe_text(project_dict.get('service_before', '')), styles['normal']))
-            elements.append(Spacer(1, 4))
-        if project_dict.get('service_after'):
-            elements.append(Paragraph("Acțiuni efectuate și rezultat", styles['subheading']))
-            elements.append(Paragraph(_pdf_safe_text(project_dict.get('service_after', '')), styles['normal']))
-            elements.append(Spacer(1, 4))
-
-
-def _pdf_section_tasks(elements, tasks, section_n, styles):
-    """N. Listă taskuri -- table of project tasks."""
-    elements.append(Paragraph(f"{section_n}. Listă taskuri", styles['heading']))
-    task_data = [['#', 'Titlu', 'Status', 'Prioritate', 'Termen']]
-    for i, t in enumerate(tasks, 1):
-        task_data.append([
-            str(i),
-            t.get('titlu', '-'),
-            task_status_label(t.get('status', '')) or '-',
-            t.get('data_scadenta') or '-',
-        ])
-    task_table = Table(task_data, colWidths=[0.8*cm, 8.5*cm, 2.2*cm, 1.8*cm, 2.2*cm])
-    task_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), _PIF_ACCENT),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8.5),
-        ('LINEBELOW', (0, 0), (-1, -1), 0.25, _PIF_LINE),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
-        ('ALIGN', (2, 0), (-1, -1), 'CENTER'),
-    ]))
-    elements.append(task_table)
-    elements.append(Spacer(1, 10))
-
-
-# ---------------------------------------------------------------------------
-# PDF export routes
-# ---------------------------------------------------------------------------
-
-@admin_bp.route('/api/export/pdf', methods=['GET'])
-@login_required
-def export_pdf():
-    """Export project to PDF format"""
-    project_id = request.args.get('project_id')
-    if not project_id:
-        return jsonify({'error': 'project_id is required'}), 400
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT * FROM proiecte WHERE id = ?', (project_id,))
-    project = cursor.fetchone()
-    if not project:
-        conn.close()
-        return jsonify({'error': 'Project not found'}), 404
-    project_dict = row_to_dict(project)
-
-    cursor.execute('SELECT * FROM tasks WHERE proiect_id = ? ORDER BY ordine ASC', (project_id,))
-    tasks = [row_to_dict(row) for row in cursor.fetchall()]
-    conn.close()
-
-    is_pif = (project_dict.get('tip') == 'PIF')
-
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(
-        buffer, pagesize=A4,
-        rightMargin=1.8*cm, leftMargin=1.8*cm, topMargin=2*cm, bottomMargin=2*cm,
-        title=f"PIF Report — {re.sub(r'[<>]', '', project_dict.get('nume', '') or '')}",
-        author='PIF Dashboard'
-    )
-
-    styles = _pdf_make_styles()
-    elements = []
-
-    _pdf_section_header(elements, project_dict, is_pif, styles)
-    _pdf_section_admin(elements, project_dict, styles)
-    _pdf_section_tech(elements, project_dict, is_pif, styles)
-
-    n_tasks = 3
-
-    if tasks:
-        _pdf_section_tasks(elements, tasks, n_tasks, styles)
-
-    # Footer
-    elements.append(Spacer(1, 16))
-    elements.append(Paragraph(
-        f"<font color='#5a6473'>Document generat automat din PIF Dashboard · {datetime.now().strftime('%d.%m.%Y %H:%M')} · Ion Ursu</font>",
-        styles['small']))
-
-    doc.build(elements)
-
-    buffer.seek(0)
-    safe_name = (project_dict.get('nume', 'project') or 'project').replace(' ', '_').replace('/', '_')
-    if project_dict.get('cod_proiect'):
-        filename = f"{project_dict['cod_proiect']}_{safe_name}_{datetime.now().strftime('%Y%m%d')}.pdf"
-    else:
-        filename = f"pif_report_{safe_name}_{datetime.now().strftime('%Y%m%d')}.pdf"
-    logger.info(f"PDF export: {filename}")
-
-    return send_file(
-        buffer,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=filename
-    )
 
 # ---------------------------------------------------------------------------
 # Backup / Restore
@@ -641,75 +418,6 @@ def admin_db_dump():
         download_name=f'pif_dashboard_{timestamp}.db',
         mimetype='application/octet-stream',
     )
-
-# ---------------------------------------------------------------------------
-# Global search
-# ---------------------------------------------------------------------------
-
-def _search_snippet(text, query, width=80):
-    """A short context window around the first match of `query` in `text`."""
-    if not text:
-        return ''
-    text = str(text)
-    low = text.lower()
-    idx = low.find(query.lower())
-    if idx < 0:
-        return text[:width].strip()
-    start = max(0, idx - 32)
-    end = min(len(text), idx + len(query) + width)
-    return ('…' if start > 0 else '') + text[start:end].strip() + ('…' if end < len(text) else '')
-
-
-@admin_bp.route('/api/search', methods=['GET'])
-@login_required
-def global_search():
-    """Unified search across everything in the app for the command palette."""
-    q = (request.args.get('q') or '').strip()
-    if len(q) < 2:
-        return jsonify({'results': [], 'query': q})
-    like = f'%{q}%'
-    results = []
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute('SELECT id, nume, client FROM proiecte '
-                'WHERE nume LIKE ? OR client LIKE ? OR cod_proiect LIKE ? OR locatie LIKE ? LIMIT 8',
-                (like, like, like, like))
-    for r in cur.fetchall():
-        results.append({'type': 'proiect', 'id': r['id'], 'title': r['nume'],
-                        'subtitle': r['client'] or '', 'snippet': '', 'proiect_id': r['id']})
-
-    cur.execute('SELECT id, nume, observatii FROM proiecte WHERE observatii LIKE ? LIMIT 8', (like,))
-    for r in cur.fetchall():
-        results.append({'type': 'observatie', 'id': r['id'], 'title': f"Observații — {r['nume']}",
-                        'subtitle': '', 'snippet': _search_snippet(r['observatii'], q), 'proiect_id': r['id']})
-
-    cur.execute('SELECT t.id, t.titlu, t.descriere, t.proiect_id, p.nume AS pnume FROM tasks t '
-                'JOIN proiecte p ON t.proiect_id = p.id '
-                'WHERE t.titlu LIKE ? OR t.descriere LIKE ? LIMIT 12', (like, like))
-    for r in cur.fetchall():
-        results.append({'type': 'task', 'id': r['id'], 'title': r['titlu'],
-                        'subtitle': r['pnume'], 'snippet': _search_snippet(r['descriere'], q),
-                        'proiect_id': r['proiect_id']})
-
-    # Cautarea e SINGURA suprafata cross-sfera — dar eticheteaza sfera in subtitlu.
-    cur.execute('SELECT id, titlu, descriere, categorie, sfera FROM global_tasks '
-                'WHERE titlu LIKE ? OR descriere LIKE ? LIMIT 10', (like, like))
-    for r in cur.fetchall():
-        subtitle = 'Personal' if r['sfera'] == 'personal' else (r['categorie'] or 'Task zilnic')
-        results.append({'type': 'global_task', 'id': r['id'], 'title': r['titlu'],
-                        'subtitle': subtitle, 'snippet': _search_snippet(r['descriere'], q),
-                        'sfera': r['sfera'] or 'munca'})
-
-    cur.execute('SELECT id, nume, telefon FROM clienti WHERE nume LIKE ? OR contact_principal LIKE ? LIMIT 6',
-                (like, like))
-    for r in cur.fetchall():
-        results.append({'type': 'client', 'id': r['id'], 'title': r['nume'],
-                        'subtitle': 'Client', 'snippet': r['telefon'] or ''})
-
-    conn.close()
-
-    return jsonify({'results': results, 'query': q, 'count': len(results)})
 
 
 @admin_bp.route('/api/calendar', methods=['GET'])

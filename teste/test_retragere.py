@@ -161,3 +161,64 @@ class PrevizualizarileAnonimeDeImport(CuAplicatia):
                     self.assertEqual(r.status_code, 401, 'raspunde fara login')
                     verificate += 1
         self.assertGreater(verificate, 30, 'garda trebuie sa vada rutele aplicatiei, nu o lista goala')
+
+
+class RuteleFaraApelantScoaseDupaRetragere(CuAplicatia):
+    """Rutele pe care nu le mai chema nimic (nici Torqa, nici uneltele din vault, nici un pas de
+    skill) au plecat pe 2026-10-03, la curatenia de dupa retragere: lista de clienti, agenda
+    „Astazi" si pickerul ei, cautarea globala si exportul PDF. Torqa isi face Today singur, din
+    `/api/sync/snapshot` (`viu`), iar cautarea si PDF-ul n-au ajuns in el."""
+
+    RUTE = (
+        ('get', '/api/clienti'), ('post', '/api/clienti'),
+        ('get', '/api/clienti/c1'), ('put', '/api/clienti/c1'), ('delete', '/api/clienti/c1'),
+        ('get', '/api/agenda/today'), ('get', '/api/agenda/candidates'), ('post', '/api/agenda/reorder'),
+        ('get', '/api/search'), ('get', '/api/export/pdf'),
+    )
+    # Ce ramane viu din vecinatatea lor: le tine un apelant (Cowork, un skill, Torqa, un script).
+    RAMASE = ('/api/stats', '/api/import/debrief', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
+              '/api/healthz', '/api/sync/snapshot', '/api/calendar', '/api/proiecte/<project_id>/snapshot',
+              '/api/backup', '/api/restore')
+
+    def test_rutele_dau_404_si_cu_token_de_masina(self):
+        # Cu Bearer, ca o POST/PUT/DELETE cu sesiune dar fara antet CSRF sa nu fie oprita de 403
+        # inainte sa se afle ca ruta nu exista.
+        for metoda, cale in self.RUTE:
+            with self.subTest(metoda=metoda, cale=cale):
+                r = getattr(self.client, metoda)(cale, json={}, headers=self.bearer())
+                self.assertEqual(r.status_code, 404)
+                self.assertEqual(r.get_json(), {'error': 'Endpoint inexistent'})
+
+    def test_nu_mai_exista_nicio_regula_pe_prefixele_plecate(self):
+        reguli = [r.rule for r in self.app_module.app.url_map.iter_rules()]
+        for prefix in ('/api/clienti', '/api/agenda', '/api/search', '/api/export'):
+            self.assertEqual([r for r in reguli if r.startswith(prefix)], [], prefix)
+
+    def test_ce_trebuia_sa_ramana_a_ramas(self):
+        reguli = {r.rule for r in self.app_module.app.url_map.iter_rules()}
+        for cale in self.RAMASE:
+            self.assertIn(cale, reguli, cale)
+        self.assertEqual(self.client.get('/api/stats', headers=self.bearer()).status_code, 200)
+        self.assertEqual(self.client.get('/api/healthz').status_code, 200)
+
+    def test_importul_de_debrief_scrie_clientul_iar_snapshotul_il_citeste(self):
+        # Tabela `clienti` nu mai are rute proprii, dar ramane vie: o scrie importul si o citeste
+        # snapshotul proiectului (de unde skill-ul de debrief isi ia clientul).
+        r = self.client.post('/api/import/debrief', headers=self.bearer(), json={
+            'meta': {'debrief_id': 'proba-curatenie'},
+            'client': {'nume': 'Client de Proba', 'email': 'client@proba.test'},
+            'proiect': {'nume': 'Pompa de proba', 'tip': 'PIF', 'status': 'finalizat'},
+            'tasks': [{'titlu': 'Un task importat'}],
+        })
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        corp = r.get_json()
+        self.assertEqual(corp['sumar']['taskuri_create'], 1)
+        import database
+        conn = database.get_db()
+        rand = conn.execute("SELECT nume, email FROM clienti WHERE nume = 'Client de Proba'").fetchone()
+        conn.close()
+        self.assertEqual(tuple(rand), ('Client de Proba', 'client@proba.test'))
+        snap = self.client.get('/api/proiecte/%s/snapshot' % corp['proiect_id'], headers=self.bearer())
+        self.assertEqual(snap.status_code, 200)
+        self.assertEqual(snap.get_json()['client']['email'], 'client@proba.test')
+        self.assertEqual([t['titlu'] for t in snap.get_json()['tasks']], ['Un task importat'])

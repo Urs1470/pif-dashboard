@@ -26,13 +26,13 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `26:_generate_token`, `35:_get_or_refresh_token`, `43:init_csrf`
 
-## labels.py (42 linii)
+## labels.py (34 linii)
 
-`37:project_status_label`, `41:task_status_label`
+_(fara definitii top-level)_
 
-## blueprints/admin.py (904 linii)
+## blueprints/admin.py (612 linii)
 
-`50:get_stats`, `84:_pdf_safe_text`, `98:_pdf_make_styles`, `126:_pdf_section_header`, `139:_pdf_section_admin`, `167:_pdf_section_tech`, `185:_pdf_section_tasks`, `219:export_pdf`, `290:backup_database`, `320:restore_database`, `483:admin_db_upload_page`, `529:admin_db_upload`, `606:admin_db_dump`, `649:_search_snippet`, `665:global_search`, `717:calendar_view`
+`42:get_stats`, `67:backup_database`, `97:restore_database`, `260:admin_db_upload_page`, `306:admin_db_upload`, `383:admin_db_dump`, `425:calendar_view`
 
 ## blueprints/app_update.py (205 linii)
 
@@ -42,17 +42,17 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `33:_obsidian_vault`, `41:_obsidian_safe_path`, `55:_obsidian_walk`, `80:_obsidian_index`, `100:_obsidian_config_dict`, `125:_in_dosar_de_proiect`, `164:obsidian_note_get`, `205:_scrub_secrets`, `210:_git_env`, `221:_git`, `227:_default_vault_repo`, `232:_maybe_refresh_vault`, `270:_dashboard_git_credentials`, `286:obsidian_vault_key`, `311:obsidian_vault_sync`, `367:_obsidian_safe_dir`, `383:project_wiki_notes`, `443:sync_project_frontmatter`, `515:obsidian_note_put`
 
-## blueprints/projects.py (983 linii)
+## blueprints/projects.py (855 linii)
 
-`27:get_proiecte`, `77:create_proiect`, `140:get_proiect`, `168:update_proiect`, `286:delete_proiect`, `327:get_clienti`, `345:_normalize_client_name`, `358:create_client`, `388:get_client`, `402:update_client`, `436:delete_client`, `455:get_project_snapshot`, `558:import_debrief`, `838:_impl_row`, `858:get_implementari`, `869:create_implementare`, `900:update_implementare`, `941:delete_implementare`, `961:_calc_row`
+`27:get_proiecte`, `77:create_proiect`, `140:get_proiect`, `168:update_proiect`, `286:delete_proiect`, `327:get_project_snapshot`, `430:import_debrief`, `710:_impl_row`, `730:get_implementari`, `741:create_implementare`, `772:update_implementare`, `813:delete_implementare`, `833:_calc_row`
 
 ## blueprints/sync.py (74 linii)
 
 `32:sync_snapshot`
 
-## blueprints/tasks.py (877 linii)
+## blueprints/tasks.py (666 linii)
 
-`18:_skip_weekend`, `28:_next_recurrence_date`, `53:_spawn_recurring_task`, `81:_spawn_recurring_global_task`, `119:get_tasks`, `166:create_task`, `220:update_task`, `290:delete_task`, `311:get_subtasks`, `322:create_subtask`, `356:update_subtask`, `371:delete_subtask`, `395:_sfera_or_none`, `407:norm_ora`, `434:get_global_tasks`, `514:create_global_task`, `563:get_global_task`, `578:update_global_task`, `654:delete_global_task`, `684:_resolve_today`, `693:_agenda_item`, `731:get_agenda_today`, `795:get_agenda_candidates`, `852:reorder_agenda`
+`16:_skip_weekend`, `26:_next_recurrence_date`, `51:_spawn_recurring_task`, `79:_spawn_recurring_global_task`, `117:get_tasks`, `164:create_task`, `218:update_task`, `288:delete_task`, `309:get_subtasks`, `320:create_subtask`, `354:update_subtask`, `369:delete_subtask`, `393:_sfera_or_none`, `405:norm_ora`, `432:get_global_tasks`, `512:create_global_task`, `561:get_global_task`, `576:update_global_task`, `652:delete_global_task`
 
 ## blueprints/torqa_web.py (600 linii)
 

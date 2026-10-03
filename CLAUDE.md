@@ -42,8 +42,8 @@ csrf.py labels.py   # CSRF double-submit; etichetele de status
 
 blueprints/
   projects.py       # /api/proiecte/* — CRUD, perioade, snapshot, import debrief, export
-  tasks.py          # taskuri de proiect + globale + subtaskuri + agenda
-  admin.py          # /api/calendar, /api/search, /api/stats, export PDF, backup/restore
+  tasks.py          # taskuri de proiect + globale + subtaskuri
+  admin.py          # /api/calendar, /api/stats, backup/restore, db-upload / db-dump
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
   sync.py           # /api/sync/snapshot — imaginea completa pentru Torqa
   app_update.py     # versiunea si APK-ul aplicatiei Android (canale: pif, torqa)
@@ -158,7 +158,9 @@ anterioare (`printf '<versiune>' > uploads/torqa-web/current` = intoarcere). APK
 **`/` duce la `/torqa/`** (302, fara sesiune; `/torqa/` cere el sesiunea si trimite la
 `/login?next=/torqa/`). `/service-worker.js` serveste worker-ul care se retrage singur, ca browserele
 cu interfata veche sa scape de ea; ruta ramane. `/calc`, `/assets/`, `/manifest.json`, `/docs/`,
-`/api/me`, `/api/push/*`, `/api/settings/plan-departament` dau 404.
+`/api/me`, `/api/push/*`, `/api/settings/plan-departament` dau 404, ca si rutele fara apelant scoase
+dupa retragere: `/api/clienti*`, `/api/agenda/*`, `/api/search`, `/api/export/pdf`,
+`/api/import-abb-multi/preview`, `/api/import-archive/preview`.
 
 ## Mai multe sesiuni pe acelasi arbore
 

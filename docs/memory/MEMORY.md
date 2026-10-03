@@ -51,10 +51,13 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
 - **Rutele fara consumator** gasite la verificare au fost scoase: `calcule` ×3,
   `/api/proiecte/batch`, `/login-hash` si `/api/obsidian/config` ×2 in `97a5c791` (2026-08-15),
   `/api/export/ics-key` in `847327ee` (2026-08-27). **`/api/stats` NU e moarta** — o citeste Cowork.
-  La retragerea din 2026-10-03 au plecat doar rutele interfetei vechi (push ×9, plan-departament ×2,
-  `/api/me`, `/calc`, `/docs`, fisierele SPA-ului). Au ramas `/api/search` si `/api/agenda/*` (le
-  citeaza skill-ul `proiect`), si `/api/clienti*` cu previzualizarile de import (niciun consumator
-  gasit, dar nu s-a putut dovedi ca nu le citeste nimeni).
+  La retragerea din 2026-10-03 au plecat rutele interfetei vechi (push ×9, plan-departament ×2,
+  `/api/me`, `/calc`, `/docs`, fisierele SPA-ului), iar la curatenia de dupa ea (aceeasi zi) cele ramase
+  fara apelant — nici in Torqa, nici in unelte, nici intr-un pas de skill: `/api/clienti*` ×5,
+  `/api/agenda/*` ×3, `/api/search`, `/api/export/pdf` si cele doua previzualizari de import, care erau
+  si FARA LOGIN (`docs/decizii/2026-10-03-curatenie-dupa-retragere.md`). Au ramas `/api/stats`,
+  `/api/import/debrief`, `/api/obsidian/vault-key` si `vault-sync`, sanatatea. Tabela `clienti` ramane
+  (o scrie importul de debrief, o citeste snapshotul), la fel `ordine_agenda` pe taskuri.
 - **Android:** `org.iupif.torqa` (Torqa nativ, build propriu din Super Productivity) are canalul de
   APK `torqa`. `org.iupif.pif` (WebView peste site) a fost retrasa; canalul `pif` din
   `blueprints/app_update.py` ramane servit.
