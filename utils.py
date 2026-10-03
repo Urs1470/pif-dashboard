@@ -123,15 +123,6 @@ VALID_TABLES = {
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Planul intregului departament SRP sta intr-o aplicatie externa, partajat printr-un
-# link care contine cheia de acces in FRAGMENT (dupa #), deci nu ajunge niciodata la
-# serverul lor prin cererea HTTP. Il tinem in app_settings — baza de date e gitignored
-# — si NU in cod sau in wiki, care sunt urmarite de git.
-# Acelasi domeniu apare in CSP (`frame-src` in app.py): daca se schimba, se schimba
-# in ambele locuri, altfel iframe-ul ramane alb fara nicio explicatie.
-PLAN_DEPT_KEY = 'plan_departament_url'
-PLAN_DEPT_HOST = 'app.projectplan-powerpoint.com'
-
 
 def safe_table(table_name):
     if table_name not in VALID_TABLES:

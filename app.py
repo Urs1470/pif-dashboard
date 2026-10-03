@@ -17,7 +17,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from database import init_db, close_db
-from utils import login_required, get_json_or_400, safe_next_url, PLAN_DEPT_HOST
+from utils import login_required, get_json_or_400, safe_next_url
 from csrf import init_csrf
 
 app = Flask(__name__)
@@ -29,7 +29,6 @@ from blueprints.projects import projects_bp
 from blueprints.tasks import tasks_bp
 from blueprints.obsidian import obsidian_bp
 from blueprints.admin import admin_bp
-from blueprints.push import push_bp
 from blueprints.app_update import app_update_bp
 from blueprints.sync import sync_bp
 from blueprints.torqa_web import torqa_web_bp, SesiuneFaraStatice, CSP_TORQA
@@ -38,7 +37,6 @@ app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)
 app.register_blueprint(obsidian_bp)
 app.register_blueprint(admin_bp)
-app.register_blueprint(push_bp)
 app.register_blueprint(app_update_bp)
 app.register_blueprint(sync_bp)
 app.register_blueprint(torqa_web_bp)
@@ -259,14 +257,6 @@ def before_request_func():
                         logger.warning("PIF_DASHBOARD_PIN nu este setat — mod DEBUG, se foloseste fallback.")
                     else:
                         logger.critical("PIF_DASHBOARD_PIN nu este setat! Loginul va esua. Seteaza Environment=PIF_DASHBOARD_PIN=... in systemd.")
-                # Planificatorul notificarilor zilnice. Pornit per worker —
-                # dedup-ul e in baza (claim pe ziua curenta), nu aici. Secretul
-                # ajunge acum, fiindca threadul nu are app context.
-                try:
-                    from blueprints.push import porneste_planificator
-                    porneste_planificator(secret=app.secret_key)
-                except Exception:
-                    logger.exception("Planificatorul de notificari nu a pornit")
                 _startup_initialized = True
                 logger.info("PIF Dashboard initialized")
 
@@ -324,10 +314,6 @@ def after_request_func(response):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
         "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
         "connect-src 'self' https://query1.finance.yahoo.com; "
-        # Planul de departament (aplicatie externa) se afiseaza incorporat in
-        # pagina /departament. Exact acest domeniu, nimic mai larg. Constanta e
-        # in utils.PLAN_DEPT_HOST — daca se schimba, se schimba in ambele locuri.
-        f"frame-src https://{PLAN_DEPT_HOST}; "
         "frame-ancestors 'none'; "
         "base-uri 'self'"
     )

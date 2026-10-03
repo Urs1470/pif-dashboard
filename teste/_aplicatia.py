@@ -81,8 +81,8 @@ class CuAplicatia(CuBazaNoua):
         os.environ['PIF_DEVICE_TOKEN'] = DEVICE
         os.environ['PIF_DASHBOARD_PIN'] = PIN
         import app as app_module
-        # Schema o scrie deja CuBazaNoua; primul request ar porni si planificatorul de
-        # notificari (thread), care n-are ce cauta intr-un test.
+        # Schema o scrie deja CuBazaNoua; primul request n-are de ce s-o refaca (init_db) si
+        # sa logheze o pornire a aplicatiei.
         app_module._startup_initialized = True
         cls.app_module = app_module
         # Hash-ul PIN-ului se tine minte la primul login si nu se mai recalculeaza: sa nu

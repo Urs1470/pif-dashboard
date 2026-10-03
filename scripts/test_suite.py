@@ -12,9 +12,10 @@ CE A PLECAT DE AICI PE 2026-09-28, si de ce (auditul testelor):
   - `db_table_check` si `data_integrity` citeau copia LOCALA a bazei (gitignored,
     veche) — despre cod nu spuneau nimic. Schema pe o baza goala o verifica acum
     `teste/test_migrari.py`;
-  - partea de notificari care nu trece prin HTTP (logica zilnica, tokenul, cheia
-    VAPID, `send_to_all`) e in `teste/test_push.py`. Aici statea in spatele unui
-    login, iar curatenia ei stergea TOATE cheile `push_*` din baza pe care o gasea —
+  - notificarile push (rutele si `teste/test_push.py`) au plecat pe 2026-10-03, odata cu
+    interfata veche. Randurile `push_*` raman in `app_settings` (baza nu s-a atins), deci
+    proba de backup de mai jos ramane: backup-ul nu are voie sa le scurga. Inainte,
+    curatenia probei de push stergea TOATE cheile `push_*` din baza pe care o gasea —
     pe server, asta ar fi oprit notificarile fara niciun semn.
 Si serverul pe :5000 + PIN-ul real din mediu + cate un login pe proba: cu limita de
 5 logari / 5 minute (`app.py`), un login din browser in aceleasi cinci minute pica
@@ -250,61 +251,6 @@ def backup_secrete(s):
            'valoarea cheii private e in backup')
 
 
-def push_http(s):
-    """Partea de notificari care trece prin HTTP. Restul (logica zilnica, tokenul,
-    lantul de trimitere) e in `teste/test_push.py`, in proces."""
-    sectiune('NOTIFICARI PUSH (rutele)')
-    st = s.get(url('/api/push/status'), timeout=5)
-    if st.status_code != 200:
-        R.pica('/api/push/status', 'a raspuns %d' % st.status_code)
-    else:
-        j = st.json()
-        # Baza e noua, deci ora e cea implicita — nu setarea cuiva.
-        R.bifa(j.get('ora') == '08:00' and 'abonamente' in j and 'disponibil' in j,
-               'status: ora implicita 08:00, abonamente, disponibil',
-               'raspuns %s' % {k: j.get(k) for k in ('ora', 'abonamente', 'disponibil')})
-
-    k1 = s.get(url('/api/push/vapid-public'), timeout=5)
-    if k1.status_code == 503:
-        R.nota('pywebpush lipseste pe masina asta — cheia VAPID si abonarea nu s-au probat')
-    elif k1.status_code != 200:
-        R.pica('/api/push/vapid-public', 'a raspuns %d' % k1.status_code)
-    else:
-        # Cheia VAPID e STABILA (regenerarea ar invalida abonamentele in tacere)
-        k2 = s.get(url('/api/push/vapid-public'), timeout=5)
-        cheie = k1.json().get('cheie', '')
-        R.bifa(bool(cheie) and cheie == k2.json().get('cheie'), 'cheia VAPID e stabila intre apeluri')
-
-        sub = {'endpoint': 'https://fcm.googleapis.com/fake/T1',
-               'keys': {'p256dh': 'cheie-falsa', 'auth': 'auth-fals'}}
-
-        def nr():
-            return s.get(url('/api/push/status'), timeout=5).json()['abonamente']
-        n0 = nr()
-        s.post(url('/api/push/subscribe'), headers=hdr(s), json=sub, timeout=5)
-        n1 = nr()
-        s.post(url('/api/push/subscribe'), headers=hdr(s), json=sub, timeout=5)
-        n2 = nr()
-        R.bifa(n1 == n0 + 1 and n2 == n1, 'abonarea: al doilea POST e upsert, nu duplicat',
-               '%d -> %d -> %d' % (n0, n1, n2))
-        bad = s.post(url('/api/push/subscribe'), headers=hdr(s), json={'endpoint': 'nu-e-https'}, timeout=5)
-        R.bifa(bad.status_code == 400, 'abonare invalida -> 400', 'a raspuns %d' % bad.status_code)
-        s.post(url('/api/push/unsubscribe'), headers=hdr(s), json={'endpoint': sub['endpoint']}, timeout=5)
-        n3 = nr()
-        R.bifa(n3 == n0, 'dezabonarea intoarce numarul la %d' % n0, 'a ramas %d' % n3)
-        if n3 == 0:
-            # Un „test reusit" trimis catre nimeni ar fi o minciuna.
-            t = s.post(url('/api/push/test'), headers=hdr(s), json={}, timeout=5)
-            R.bifa(t.status_code == 400, 'testul fara abonamente -> 400', 'a raspuns %d' % t.status_code)
-
-    # Ruta de actiune din notificare: FARA header CSRF (service worker-ul nu poate
-    # citi cookie-ul), dar tokenul trebuie sa fie bun — pinneaza exceptia din csrf.py.
-    rej = s.post(url('/api/push/action'), json={'token': 'gunoi', 'action': 'done'}, timeout=5)
-    R.bifa(rej.status_code == 403, 'actiune cu token invalid -> 403', 'a raspuns %d' % rej.status_code)
-    R.bifa('CSRF' not in rej.text, 'actiunea e scutita de CSRF (a ajuns la validarea tokenului)',
-           'a fost oprita de CSRF, nu de token')
-
-
 # ----------------------------------------------------------------------- main
 
 def main():
@@ -315,7 +261,7 @@ def main():
     with banc.Aplicatia(noua=True, prefix='pif-suita-') as app:
         APP = app
         s = sesiune()
-        for proba in (api_smoke, sfera, proiect_inchis, backup_secrete, push_http):
+        for proba in (api_smoke, sfera, proiect_inchis, backup_secrete):
             proba(s)
         cod = R.incheie()
         if cod:

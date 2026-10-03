@@ -1,21 +1,19 @@
-"""Gărzile: drumul prin vault, tabelele permise, secretele din iesirea git, tokenul push.
+"""Gărzile: drumul prin vault, tabelele permise, secretele din iesirea git.
 
 Fiecare functie de aici sta intre o intrare pe care n-o controlezi si ceva ce nu vrei
 atins: un fisier din afara vault-ului, o tabela oarecare intr-un SQL construit, un
-token de acces scris intr-un log, o actiune pe un task facuta de oricine are un link.
-Niciuna n-avea test pana pe 2026-09-28.
+token de acces scris intr-un log. Niciuna n-avea test pana pe 2026-09-28. (Tokenul de
+actiune al notificarilor push a plecat odata cu push-ul, 2026-10-03.)
 """
 
 import os
 import shutil
 import tempfile
 import unittest
-from datetime import datetime, timedelta
 
 from _baza import Test
 from utils import safe_table
 from blueprints.obsidian import _obsidian_safe_path, _obsidian_safe_dir, _scrub_secrets
-from blueprints import push
 
 
 class DrumulPrinVault(Test):
@@ -79,40 +77,6 @@ class SecreteleDinGit(Test):
                          'fatal: https://github.com/x/vault.git')
         self.assertEqual(_scrub_secrets(None), '')
         self.assertEqual(_scrub_secrets('git@github.com:x/vault.git'), 'git@github.com:x/vault.git')
-
-
-class TokenulDeActiune(Test):
-    """Capabilitate pe UN task, din butoanele notificarii (fara sesiune, fara CSRF)."""
-
-    def setUp(self):
-        self._secret = push._secret
-        push._secret = b'secret-de-test'
-
-    def tearDown(self):
-        push._secret = self._secret
-
-    def test_tokenul_bun_intoarce_taskul(self):
-        self.assertEqual(push.verifica_token(push.mint_token('t-1')), 't-1')
-
-    def test_tokenul_alterat_se_respinge(self):
-        tok = push.mint_token('t-1')
-        self.assertIsNone(push.verifica_token(tok[:-2] + ('xx' if not tok.endswith('xx') else 'yy')))
-        corp, sig = tok.split('.', 1)
-        alt_corp = push.mint_token('t-2').split('.', 1)[0]
-        self.assertIsNone(push.verifica_token(alt_corp + '.' + sig), 'semnatura altui task')
-
-    def test_tokenul_expirat_se_respinge(self):
-        vechi = push.mint_token('t-1', acum=datetime.now() - timedelta(hours=push.TOKEN_VALABIL_ORE + 1))
-        self.assertIsNone(push.verifica_token(vechi))
-
-    def test_alt_secret_nu_valideaza(self):
-        tok = push.mint_token('t-1')
-        push._secret = b'alt-secret'
-        self.assertIsNone(push.verifica_token(tok))
-
-    def test_gunoiul_nu_arunca(self):
-        for rau in ['', None, 'gunoi', 'a.b', '....']:
-            self.assertIsNone(push.verifica_token(rau), rau)
 
 
 if __name__ == '__main__':

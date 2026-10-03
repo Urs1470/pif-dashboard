@@ -24,8 +24,8 @@ class ImagineaSiTokenul(CuBazaNoua):
         os.environ['PIF_API_TOKEN'] = FULL
         os.environ['PIF_DEVICE_TOKEN'] = DEVICE
         import app as app_module
-        # Schema o scrie deja CuBazaNoua; primul request ar porni si planificatorul de
-        # notificari (thread), care n-are ce cauta intr-un test.
+        # Schema o scrie deja CuBazaNoua; primul request n-are de ce s-o refaca (init_db) si
+        # sa logheze o pornire a aplicatiei.
         app_module._startup_initialized = True
         cls.client = app_module.app.test_client()
 

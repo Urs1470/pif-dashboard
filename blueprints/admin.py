@@ -20,11 +20,8 @@ from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.enums import TA_LEFT
 
-from urllib.parse import urlparse
-
 from utils import (
     safe_table, login_required, get_json_or_400,
-    get_app_setting, set_app_setting, PLAN_DEPT_KEY, PLAN_DEPT_HOST,
     TASK_PROIECT_VIU,
 )
 from database import get_db, row_to_dict, DATABASE_PATH
@@ -713,33 +710,6 @@ def global_search():
     conn.close()
 
     return jsonify({'results': results, 'query': q, 'count': len(results)})
-
-@admin_bp.route('/api/settings/plan-departament', methods=['GET'])
-@login_required
-def plan_departament_get():
-    """Linkul catre planul intregului departament (aplicatie externa).
-
-    Contine cheia de acces, deci sta in app_settings (baza e gitignored) si se
-    intoarce doar unei sesiuni autentificate.
-    """
-    return jsonify({'url': get_app_setting(PLAN_DEPT_KEY, '') or '', 'host': PLAN_DEPT_HOST})
-
-
-@admin_bp.route('/api/settings/plan-departament', methods=['PUT'])
-@login_required
-def plan_departament_set():
-    data = get_json_or_400()
-    url = (data.get('url') or '').strip()
-    if url:
-        p = urlparse(url)
-        # Verificat pe server, nu doar in CSP: altfel un link gresit ar da un
-        # iframe alb, fara nicio explicatie de ce nu merge.
-        if p.scheme != 'https' or (p.hostname or '').lower() != PLAN_DEPT_HOST:
-            return jsonify({
-                'error': f'Se acceptă doar linkuri https către {PLAN_DEPT_HOST}'
-            }), 400
-    set_app_setting(PLAN_DEPT_KEY, url)
-    return jsonify({'url': url, 'host': PLAN_DEPT_HOST})
 
 
 @admin_bp.route('/api/calendar', methods=['GET'])

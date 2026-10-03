@@ -10,9 +10,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `34:esteCacheVechi`, `38:esteTorqa`, `57:retrage`
 
-## app.py (667 linii)
+## app.py (653 linii)
 
-`56:_client_ip`, `66:get_or_create_secret_key`, `87:file_hash`, `105:_asset_path`, `120:inject_version`, `146:make_session_permanent`, `156:setup_logging`, `188:check_rate_limit`, `227:check_login_rate_limit`, `249:before_request_func`, `290:after_request_func`, `339:get_hashed_pin`, `348:_git_commit`, `362:healthz`, `368:health_redirect`, `373:whoami`, `380:login_page`, `390:login`, `404:logout`, `415:_serve_frontend`, `423:index`, `428:dist_assets`, `434:favicon`, `439:manifest`, `444:app_icon`, `453:calc_public`, `463:protected_docs`, `475:service_worker`, `480:add_sw_header`, `501:get_deploy_secret`, `509:webhook_deploy`, `594:api_deploy`, `650:page_not_found`, `657:internal_error`
+`54:_client_ip`, `64:get_or_create_secret_key`, `85:file_hash`, `103:_asset_path`, `118:inject_version`, `144:make_session_permanent`, `154:setup_logging`, `186:check_rate_limit`, `225:check_login_rate_limit`, `247:before_request_func`, `280:after_request_func`, `325:get_hashed_pin`, `334:_git_commit`, `348:healthz`, `354:health_redirect`, `359:whoami`, `366:login_page`, `376:login`, `390:logout`, `401:_serve_frontend`, `409:index`, `414:dist_assets`, `420:favicon`, `425:manifest`, `430:app_icon`, `439:calc_public`, `449:protected_docs`, `461:service_worker`, `466:add_sw_header`, `487:get_deploy_secret`, `495:webhook_deploy`, `580:api_deploy`, `636:page_not_found`, `643:internal_error`
 
 ## database.py (1915 linii)
 
@@ -30,9 +30,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `37:project_status_label`, `41:task_status_label`
 
-## blueprints/admin.py (934 linii)
+## blueprints/admin.py (904 linii)
 
-`53:get_stats`, `87:_pdf_safe_text`, `101:_pdf_make_styles`, `129:_pdf_section_header`, `142:_pdf_section_admin`, `170:_pdf_section_tech`, `188:_pdf_section_tasks`, `222:export_pdf`, `293:backup_database`, `323:restore_database`, `486:admin_db_upload_page`, `532:admin_db_upload`, `609:admin_db_dump`, `652:_search_snippet`, `668:global_search`, `719:plan_departament_get`, `730:plan_departament_set`, `747:calendar_view`
+`50:get_stats`, `84:_pdf_safe_text`, `98:_pdf_make_styles`, `126:_pdf_section_header`, `139:_pdf_section_admin`, `167:_pdf_section_tech`, `185:_pdf_section_tasks`, `219:export_pdf`, `290:backup_database`, `320:restore_database`, `483:admin_db_upload_page`, `529:admin_db_upload`, `606:admin_db_dump`, `649:_search_snippet`, `665:global_search`, `717:calendar_view`
 
 ## blueprints/app_update.py (193 linii)
 
@@ -45,10 +45,6 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 ## blueprints/projects.py (1273 linii)
 
 `30:get_proiecte`, `80:create_proiect`, `143:get_proiect`, `171:update_proiect`, `289:delete_proiect`, `330:get_clienti`, `348:_normalize_client_name`, `361:create_client`, `391:get_client`, `405:update_client`, `439:delete_client`, `458:get_project_snapshot`, `559:_familie_from_echipament`, `590:preview_import_abb_multi`, `691:_familie_param_meta`, `705:_equals_default`, `722:_is_zeroish`, `730:_filter_drive_params`, `799:preview_import_archive`, `848:import_debrief`, `1128:_impl_row`, `1148:get_implementari`, `1159:create_implementare`, `1190:update_implementare`, `1231:delete_implementare`, `1251:_calc_row`
-
-## blueprints/push.py (784 linii)
-
-`117:_setari`, `130:_valideaza_setari`, `166:_b64`, `170:_unb64`, `179:_secret_curent`, `195:mint_token`, `205:verifica_token`, `227:_priv_raw`, `236:_chei_vapid`, `266:_abonamente`, `273:_salveaza_abonamente`, `277:_hash_endpoint`, `285:send_to_all`, `327:taskuri_de_notificat`, `346:taskuri_scadente`, `366:taskuri_cu_ora`, `386:_ore_trimise`, `402:_minute`, `415:check_and_send_ore`, `481:_de_notificat`, `494:_zile_de_cand`, `502:check_and_send_daily`, `555:porneste_planificator`, `598:push_vapid_public`, `606:push_subscribe`, `625:push_unsubscribe`, `636:push_tokens`, `671:push_setari_get`, `677:push_setari_put`, `696:push_status`, `710:push_test`, `727:push_action`
 
 ## blueprints/sync.py (74 linii)
 
