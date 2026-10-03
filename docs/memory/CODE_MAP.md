@@ -4,11 +4,11 @@
 
 Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
-## static/service-worker.js (89 linii)
+## static/service-worker.js (93 linii)
 
 ### (top)
 
-`34:esteCacheVechi`, `38:esteTorqa`, `57:retrage`
+`36:esteCacheVechi`, `40:esteTorqa`, `59:retrage`
 
 ## app.py (574 linii)
 

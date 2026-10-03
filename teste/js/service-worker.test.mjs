@@ -11,8 +11,8 @@
 //     si API-ul Torqa) si ar putea sa le serveasca din cache;
 //   - un `activate` care sterge `ngsw:...`: Torqa web ar „uita" datele si n-ar mai porni offline;
 //   - dezinregistrarea sarita sau pusa dupa reincarcare: ferestrele ar fi controlate iar de el;
-//   - reincarcare pe adresa cu fragment (`/#/tasks`): browserul face navigare in pagina, nu
-//     reincarcare, si interfata veche ramane pe ecran din cache.
+//   - fragmentul pastrat la reincarcare: interfata veche tinea ruta in fragment (`/#/tasks`), iar
+//     redirectul de la `/` il duce mai departe — fereastra ar ajunge la `/torqa/#/tasks`.
 //
 // Fisierul service-worker.js nu e modul si nu exporta nimic: se executa intr-un context `vm` cu un
 // `self` de mana, iar handler-ele inregistrate prin `addEventListener` se apeleaza cu evenimente
@@ -132,8 +132,9 @@ test('activate cere doar ferestrele controlate de el, nu pe cele necontrolate', 
 })
 
 test('activate reincarca ferestrele din afara /torqa/, pe adresa FARA fragment', async () => {
-  // Interfata veche tinea ruta in fragment: `navigate('/#/tasks')` din `/#/tasks` ar fi o navigare in
-  // pagina, nu o reincarcare. Fara fragment, cererea merge la server, care raspunde cu 302 spre /torqa/.
+  // Interfata veche tinea ruta in fragment, iar `client.url` il poarta cand documentul a fost creat cu
+  // el. Redirectul de la `/` il pastreaza (verificat in Chromium: `/#/tasks` -> `/torqa/#/tasks`), deci
+  // adresa se da fara el: destinatia e `/torqa/`, curat, iar serverul raspunde cu 302.
   const sw = incarca({ ferestre: ['/#/tasks/abc', '/', '/calc', '/login?next=/torqa/', '/torqa-vechi/x', '/torqau'] })
   await activeaza(sw)
   assert.deepEqual(navigate(sw), ['/', '/', '/calc', '/login?next=/torqa/', '/torqa-vechi/x', '/torqau'].sort())

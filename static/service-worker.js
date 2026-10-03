@@ -8,9 +8,11 @@
 // serveasca shell-ul vechi din cache. Stergerea fisierului nu retrage nimic: la verificarea
 // de actualizare browserul primeste 404 si pastreaza worker-ul vechi. De-aia URL-ul
 // ramane, iar continutul lui e acest worker. Browserul cauta o versiune noua a scriptului
-// la navigarea intr-o pagina din scope (cel mult o data la 24 de ore), il instaleaza peste
-// cel vechi, iar el isi sterge cache-urile, se dezinregistreaza si reincarca ferestrele pe
-// care le controla. Dupa asta browserul nu mai are niciun worker de dashboard.
+// la navigarea intr-o pagina din scope (cel mult o data la 24 de ore), iar interfata veche
+// mai cerea si singura, la 15 minute si la revenirea pe fila (`reg.update()` din main.js).
+// Browserul il instaleaza peste cel vechi, iar el isi sterge cache-urile, se dezinregistreaza
+// si reincarca ferestrele pe care le controla. Dupa asta nu mai ramane niciun worker de
+// dashboard.
 //
 // NU ATINGE TORQA WEB (/torqa/). Torqa are propriul service worker (`ngsw-worker.js`, scope
 // /torqa/) si propriile cache-uri (`ngsw:...`). Worker-ul de aici:
@@ -69,9 +71,11 @@ async function retrage() {
   }
 
   // Doar ferestrele controlate de acest worker (`includeUncontrolled` ramane fals): pe cele
-  // necontrolate `navigate()` oricum e refuzat. Fara fragment (`/#/tasks` -> `/`): navigarea
-  // spre aceeasi adresa cu fragment e o navigare in pagina, nu o reincarcare, iar interfata
-  // veche tinea ruta in fragment.
+  // necontrolate `navigate()` oricum e refuzat. Adresa se da FARA fragment: interfata veche
+  // tinea ruta in fragment (`/#/tasks`), `client.url` il poarta cand documentul a fost creat cu
+  // el, iar redirectul de la `/` il pastreaza — fereastra ar ajunge la `/torqa/#/tasks`, cu ruta
+  // interfetei vechi agatata de Torqa. (Chromium reincarca si cu fragment; se scoate pentru
+  // destinatie, nu ca sa se produca reincarcarea.)
   try {
     const ferestre = await self.clients.matchAll({ type: 'window' });
     await Promise.allSettled(
