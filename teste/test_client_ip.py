@@ -63,6 +63,15 @@ class AdresaClientului(CuAplicatia):
             with self.subTest(antet=rau):
                 self.assertEqual(self.ip_folosit('127.0.0.1', **{'CF-Connecting-IP': rau}), '127.0.0.1')
 
+    def test_gunicorn_pe_socket_unix_nu_are_adresa_de_peer_si_proxy_ul_e_local(self):
+        # `--bind unix:...`: REMOTE_ADDR e gol (sau o cale). La un socket UNIX ajung doar procese de pe
+        # masina, deci cloudflared e local; altfel toti clientii ar primi aceeasi adresa.
+        for socket_ in ('', '/run/pif-dashboard.sock'):
+            with self.subTest(socket=socket_):
+                self.assertEqual(self.ip_folosit(socket_, **{'CF-Connecting-IP': CLIENT_A}), CLIENT_A)
+                self.assertEqual(self.ip_folosit(socket_, **{'X-Forwarded-For': CLIENT_B}), CLIENT_B)
+                self.assertEqual(self.ip_folosit(socket_), '127.0.0.1')
+
     def test_clientii_diferiti_prin_proxy_au_fiecare_limita_lui(self):
         # Calea de productie: un singur socket (cloudflared), mai multi clienti dupa antet.
         for n in range(8):

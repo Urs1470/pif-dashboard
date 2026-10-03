@@ -98,6 +98,10 @@ def _ip_valid(text):
 
 
 def _proxy_de_incredere(adresa):
+    # Gunicorn pe un socket UNIX (`--bind unix:...`) nu are adresa de peer (REMOTE_ADDR gol sau o
+    # cale): la un socket UNIX ajung doar procese de pe aceeasi masina, deci proxy-ul e local.
+    if not str(adresa).strip() or str(adresa).startswith('/'):
+        return True
     ip = _ip_valid(adresa)
     if ip is None:
         return False
@@ -119,11 +123,12 @@ def _client_ip():
     adresa socketului, fara sa se uite la antete."""
     socket_ = _adresa_socket()
     if _proxy_de_incredere(socket_):
-        cf = _ip_valid(request.headers.get('CF-Connecting-IP', ''))
-        if cf is not None:
-            return str(cf)
-        return request.remote_addr or socket_
-    return socket_ or '127.0.0.1'
+        for candidat in (request.headers.get('CF-Connecting-IP', ''), request.remote_addr or ''):
+            ip = _ip_valid(candidat)
+            if ip is not None:
+                return str(ip)
+        return '127.0.0.1'
+    return socket_
 
 
 # ============ SECRET KEY ============

@@ -10,9 +10,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `36:esteCacheVechi`, `40:esteTorqa`, `59:retrage`
 
-## app.py (644 linii)
+## app.py (667 linii)
 
-`75:_retele_de_incredere`, `89:_ip_valid`, `100:_proxy_de_incredere`, `108:_adresa_socket`, `114:_client_ip`, `134:get_or_create_secret_key`, `152:file_hash`, `179:inject_version`, `203:make_session_permanent`, `213:setup_logging`, `245:check_rate_limit`, `284:check_login_rate_limit`, `306:before_request_func`, `339:after_request_func`, `372:get_hashed_pin`, `381:_git_commit`, `395:healthz`, `401:health_redirect`, `406:login_page`, `416:login`, `430:logout`, `439:index`, `452:service_worker`, `457:add_sw_header`, `478:get_deploy_secret`, `486:webhook_deploy`, `571:api_deploy`, `627:page_not_found`, `634:internal_error`
+`75:_retele_de_incredere`, `89:_ip_valid`, `100:_proxy_de_incredere`, `112:_adresa_socket`, `118:_client_ip`, `139:get_or_create_secret_key`, `157:file_hash`, `184:inject_version`, `208:make_session_permanent`, `218:setup_logging`, `250:check_rate_limit`, `289:check_login_rate_limit`, `311:before_request_func`, `343:_default_csp`, `371:after_request_func`, `395:get_hashed_pin`, `404:_git_commit`, `418:healthz`, `424:health_redirect`, `429:login_page`, `439:login`, `453:logout`, `462:index`, `475:service_worker`, `480:add_sw_header`, `501:get_deploy_secret`, `509:webhook_deploy`, `594:api_deploy`, `650:page_not_found`, `657:internal_error`
 
 ## database.py (1915 linii)
 
@@ -22,25 +22,25 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `127:safe_table`, `133:generate_uuid`, `137:id_ocupat`, `147:safe_next_url`, `189:device_token_denied`, `199:_check_api_token`, `222:login_required`, `236:get_app_setting`, `245:set_app_setting`
 
-## csrf.py (82 linii)
+## csrf.py (79 linii)
 
-`26:_generate_token`, `35:_get_or_refresh_token`, `43:init_csrf`
+`25:_generate_token`, `34:_get_or_refresh_token`, `42:init_csrf`
 
 ## labels.py (34 linii)
 
 _(fara definitii top-level)_
 
-## blueprints/admin.py (581 linii)
+## blueprints/admin.py (584 linii)
 
-`42:get_stats`, `75:backup_database`, `115:_reinsereaza`, `133:_termen_din_planificata`, `140:_ajusteaza_global`, `145:_ajusteaza_perioada`, `151:_ajusteaza_dependenta`, `168:restore_database`, `229:admin_db_upload_page`, `275:admin_db_upload`, `352:admin_db_dump`, `394:calendar_view`
+`42:get_stats`, `75:backup_database`, `115:_reinsereaza`, `133:_termen_din_planificata`, `140:_ajusteaza_global`, `145:_ajusteaza_perioada`, `151:_ajusteaza_dependenta`, `168:restore_database`, `229:admin_db_upload_page`, `278:admin_db_upload`, `355:admin_db_dump`, `397:calendar_view`
 
 ## blueprints/app_update.py (205 linii)
 
 `70:_canal`, `83:_cai`, `90:_canal_necunoscut`, `95:_canal_lipsa`, `100:_meta`, `109:app_upload`, `172:app_version`, `187:app_apk`
 
-## blueprints/obsidian.py (574 linii)
+## blueprints/obsidian.py (578 linii)
 
-`33:_obsidian_vault`, `41:_obsidian_safe_path`, `55:_obsidian_walk`, `80:_obsidian_index`, `100:_obsidian_config_dict`, `125:_in_dosar_de_proiect`, `164:obsidian_note_get`, `205:_scrub_secrets`, `210:_git_env`, `221:_git`, `227:_default_vault_repo`, `232:_maybe_refresh_vault`, `270:_dashboard_git_credentials`, `286:obsidian_vault_key`, `311:obsidian_vault_sync`, `367:_obsidian_safe_dir`, `383:project_wiki_notes`, `443:sync_project_frontmatter`, `515:obsidian_note_put`
+`37:_obsidian_vault`, `45:_obsidian_safe_path`, `59:_obsidian_walk`, `84:_obsidian_index`, `104:_obsidian_config_dict`, `129:_in_dosar_de_proiect`, `168:obsidian_note_get`, `209:_scrub_secrets`, `214:_git_env`, `225:_git`, `231:_default_vault_repo`, `236:_maybe_refresh_vault`, `274:_dashboard_git_credentials`, `290:obsidian_vault_key`, `315:obsidian_vault_sync`, `371:_obsidian_safe_dir`, `387:project_wiki_notes`, `447:sync_project_frontmatter`, `519:obsidian_note_put`
 
 ## blueprints/projects.py (855 linii)
 

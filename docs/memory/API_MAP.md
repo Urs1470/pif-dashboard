@@ -14,9 +14,9 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | GET | `/api/backup` | `backup_database` | 73 |
 | POST | `/api/restore` | `restore_database` | 166 |
 | GET | `/admin/db-upload` | `admin_db_upload_page` | 227 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 273 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 350 |
-| GET | `/api/calendar` | `calendar_view` | 392 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 276 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 353 |
+| GET | `/api/calendar` | `calendar_view` | 395 |
 
 ## blueprints/app_update.py (3 rute)
 
@@ -30,11 +30,11 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/obsidian/note` | `obsidian_note_get` | 162 |
-| POST | `/api/obsidian/vault-key` | `obsidian_vault_key` | 284 |
-| POST | `/api/obsidian/vault-sync` | `obsidian_vault_sync` | 309 |
-| GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 381 |
-| PUT | `/api/obsidian/note` | `obsidian_note_put` | 513 |
+| GET | `/api/obsidian/note` | `obsidian_note_get` | 166 |
+| POST | `/api/obsidian/vault-key` | `obsidian_vault_key` | 288 |
+| POST | `/api/obsidian/vault-sync` | `obsidian_vault_sync` | 313 |
+| GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 385 |
+| PUT | `/api/obsidian/note` | `obsidian_note_put` | 517 |
 
 ## blueprints/projects.py (11 rute)
 
@@ -89,13 +89,13 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/healthz` | `healthz` | 394 |
-| GET | `/api/health` | `health_redirect` | 400 |
-| GET | `/login` | `login_page` | 405 |
-| POST | `/login` | `login` | 415 |
-| GET | `/logout` | `logout` | 429 |
-| GET | `/` | `index` | 438 |
-| GET | `/service-worker.js` | `service_worker` | 451 |
-| POST | `/webhook/deploy` | `webhook_deploy` | 485 |
-| POST | `/api/deploy` | `api_deploy` | 570 |
+| GET | `/api/healthz` | `healthz` | 417 |
+| GET | `/api/health` | `health_redirect` | 423 |
+| GET | `/login` | `login_page` | 428 |
+| POST | `/login` | `login` | 438 |
+| GET | `/logout` | `logout` | 452 |
+| GET | `/` | `index` | 461 |
+| GET | `/service-worker.js` | `service_worker` | 474 |
+| POST | `/webhook/deploy` | `webhook_deploy` | 508 |
+| POST | `/api/deploy` | `api_deploy` | 593 |
 
