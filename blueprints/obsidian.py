@@ -1,8 +1,12 @@
-# Obsidian Vault Integration Blueprint (read-only)
-# Ion keeps study notes in an Obsidian vault synced to the laptop-server via
-# InSync (Google Drive). The app reads .md files directly -- never writes -- so
-# there is no risk of sync conflicts. The vault path is configured at runtime
-# from the Administrativ tab and stored in app_settings.
+# Obsidian vault <-> server
+# Vault-ul lui Ion (repo-ul git Knowledge) are o oglinda pe server, o clona in
+# `~/Projects/Knowledge`; calea ei sta in `app_settings` (`obsidian_vault_path`) si o pune
+# `vault-sync` la prima clonare. Din ea serverul:
+#   - listeaza notele unui proiect (`proiecte.vault_folder`) si le citeste, pentru butonul Wiki din Torqa;
+#   - scrie inapoi frontmatter-ul README-ului unui proiect (statusul), cu commit + push;
+#   - rescrie o nota la cerere (`PUT /api/obsidian/note`), tot cu commit + push, doar cu tokenul
+#     de masina sau sesiunea cu PIN (nu cu tokenul de dispozitiv).
+# Oglinda se reimprospateaza din git (fetch + reset --hard), deci repo-ul ramane sursa adevarului.
 
 import os
 import re
@@ -115,8 +119,8 @@ def _obsidian_config_dict():
 
 # Cele doua rute `/api/obsidian/config` (GET/PUT calea vaultului) au plecat pe
 # 2026-08-15: erau ale unei pagini de administrare scoase din navigatie in iulie.
-# Nimic nu le mai chema. Calea se seteaza pe server, direct in `app_settings`, sau
-# se descopera singura (clona de langa cod / `~/Projects/Knowledge`).
+# Nimic nu le mai chema. Calea nu se mai seteaza dintr-o pagina: o pune `vault-sync` la
+# prima clonare (in `~/Projects/Knowledge`) sau se scrie direct in `app_settings`.
 #
 # `_obsidian_config_dict()` si `OBSIDIAN_SETTING_KEY` RAMAN — le foloseste
 # `vault-sync`, care e viu.

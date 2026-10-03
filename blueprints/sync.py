@@ -1,6 +1,6 @@
 """Imaginea completa pentru Torqa: tot ce se sincronizeaza, intr-o singura cerere.
 
-Torqa (fork-ul Tasks.org, pe telefon si pe desktop) tine o copie locala si o compara
+Torqa (build propriu din Super Productivity, pe telefon, pe desktop si pe web) tine o copie locala si o compara
 la fiecare sincronizare cu imaginea de aici: ce lipseste din imagine s-a sters pe
 server. Stergerile din baza sunt definitive (DELETE FROM), deci altfel n-ar avea de
 unde afla de ele. Datele sunt putine (zeci de proiecte, sute de taskuri), asa ca

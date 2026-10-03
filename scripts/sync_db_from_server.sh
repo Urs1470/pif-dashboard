@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sincronizeaza DB-ul local Windows cu cel de pe server (dupa ce Hermes a rulat enrichment).
+# Aduce o copie a DB-ului de pe server in cel local (pentru audit pe date reale, `scripts/banc.py`).
 # Foloseste /api/admin/db-dump (hot backup SQLite, safe vs scrieri concurente).
 #
 # Usage:  bash scripts/sync_db_from_server.sh
