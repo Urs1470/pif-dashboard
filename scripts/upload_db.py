@@ -13,9 +13,13 @@ DB_PATH = pathlib.Path("pif_dashboard.db")
 
 def login():
     s = requests.Session()
+    # Fara User-Agent-ul asta, Cloudflare raspunde 1010 inainte sa ajunga cererea la server.
+    s.headers["User-Agent"] = "Cowork-PIF/1.0"
     r = s.post(f"{SERVER}/login", json={"pin": PIN}, timeout=30)
     if not r.json().get("success"):
         sys.exit(f"LOGIN FAILED: {r.text}")
+    # Scrierile cu sesiune cer tokenul CSRF din cookie (csrf.py), altfel 403.
+    s.headers["X-CSRF-Token"] = s.cookies.get("csrf_token", "")
     return s
 
 

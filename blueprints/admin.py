@@ -230,7 +230,9 @@ def admin_db_upload_page():
     """Minimal HTML form for uploading a local DB file.
 
     Stilul si scriptul sunt inline, deci poarta nonce-ul cererii (`request._csp_nonce`, pus in
-    `before_request` din app.py): politica de continut a serverului nu lasa nimic inline fara el."""
+    `before_request` din app.py): politica de continut a serverului nu lasa nimic inline fara el.
+    Cererea de urcare poarta `X-CSRF-Token` din cookie-ul `csrf_token` (vezi csrf.py): fara el,
+    cu sesiunea de PIN, serverul o refuza cu 403."""
     return '''<!doctype html>
 <html><head><meta charset="utf-8"><title>DB upload</title>
 <style nonce="__NONCE__">
@@ -261,8 +263,9 @@ const f=document.getElementById('f'),btn=document.getElementById('submit'),out=d
 f.addEventListener('submit',async e=>{
   e.preventDefault();btn.disabled=true;out.textContent='Uploading...';
   const fd=new FormData(f);
+  const csrf=decodeURIComponent((document.cookie.match(/(?:^|; )csrf_token=([^;]*)/)||[])[1]||'');
   try{
-    const r=await fetch('/api/admin/db-upload',{method:'POST',body:fd});
+    const r=await fetch('/api/admin/db-upload',{method:'POST',body:fd,headers:{'X-CSRF-Token':csrf}});
     const j=await r.json();
     out.textContent=JSON.stringify(j,null,2);
     out.className=r.ok?'ok':'err';

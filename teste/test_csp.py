@@ -129,6 +129,23 @@ class PoliticaImplicita(CuAplicatia):
         r2 = self.client.get('/admin/db-upload')
         self.assertNotEqual(nonce_din(r2.headers['Content-Security-Policy']), nonce)
 
+    def test_db_upload_trimite_tokenul_csrf_din_cookie(self):
+        # Fara header, sesiunea de PIN primea 403 la urcare (csrf.py): pagina nu-l trimitea.
+        self.assertEqual(self.login().status_code, 200)
+        html = self.client.get('/admin/db-upload').get_data(as_text=True)
+        self.assertIn('csrf_token=', html, 'scriptul citeste cookie-ul')
+        self.assertIn("headers:{'X-CSRF-Token':csrf}", html, 'si il trimite la urcare')
+
+    def test_urcarea_cu_sesiune_trece_de_csrf_doar_cu_header(self):
+        # Fara fisier, ca nicio baza sa nu fie inlocuita: 400 = a trecut de CSRF, 403 = nu.
+        self.assertEqual(self.login().status_code, 200)
+        self.client.get('/admin/db-upload')                # cookie-ul csrf vine pe raspuns
+        token = self.client.get_cookie('csrf_token').value
+        self.assertEqual(self.client.post('/api/admin/db-upload').status_code, 403)
+        r = self.client.post('/api/admin/db-upload', headers={'X-CSRF-Token': token})
+        self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+        self.assertIn("'db'", r.get_json()['error'])
+
     def test_db_upload_nu_se_deschide_cu_tokenul_de_dispozitiv_si_fara_sesiune(self):
         from _aplicatia import DEVICE
         self.assertEqual(self.client.get('/admin/db-upload', headers=self.bearer(DEVICE)).status_code, 302)
