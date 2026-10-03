@@ -10,9 +10,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `34:esteCacheVechi`, `38:esteTorqa`, `57:retrage`
 
-## app.py (653 linii)
+## app.py (574 linii)
 
-`54:_client_ip`, `64:get_or_create_secret_key`, `85:file_hash`, `103:_asset_path`, `118:inject_version`, `144:make_session_permanent`, `154:setup_logging`, `186:check_rate_limit`, `225:check_login_rate_limit`, `247:before_request_func`, `280:after_request_func`, `325:get_hashed_pin`, `334:_git_commit`, `348:healthz`, `354:health_redirect`, `359:whoami`, `366:login_page`, `376:login`, `390:logout`, `401:_serve_frontend`, `409:index`, `414:dist_assets`, `420:favicon`, `425:manifest`, `430:app_icon`, `439:calc_public`, `449:protected_docs`, `461:service_worker`, `466:add_sw_header`, `487:get_deploy_secret`, `495:webhook_deploy`, `580:api_deploy`, `636:page_not_found`, `643:internal_error`
+`54:_client_ip`, `64:get_or_create_secret_key`, `82:file_hash`, `109:inject_version`, `133:make_session_permanent`, `143:setup_logging`, `175:check_rate_limit`, `214:check_login_rate_limit`, `236:before_request_func`, `269:after_request_func`, `302:get_hashed_pin`, `311:_git_commit`, `325:healthz`, `331:health_redirect`, `336:login_page`, `346:login`, `360:logout`, `369:index`, `382:service_worker`, `387:add_sw_header`, `408:get_deploy_secret`, `416:webhook_deploy`, `501:api_deploy`, `557:page_not_found`, `564:internal_error`
 
 ## database.py (1915 linii)
 

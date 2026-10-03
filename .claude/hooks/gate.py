@@ -2,20 +2,17 @@
 """Stop hook: poarta de verificare a pif-dashboard.
 
 De ce exista. Verificatoarele sunt construite fiecare pe un mod de esec care trecea
-de build: importul lipsa care lasa pagina pe schelet (27.07), butonul taiat de
-marginea ecranului (30.07), a doua paleta rotita cu doua pozitii (30.07). Existau, dar
-rularea lor era la discretia agentului — iar Ion nu revizuieste cod, deci
-"criterii bifate" era o declaratie fara nimic care s-o contrazica. Poarta le
+de build. Existau, dar rularea lor era la discretia agentului — iar Ion nu revizuieste
+cod, deci "criterii bifate" era o declaratie fara nimic care s-o contrazica. Poarta le
 ruleaza automat, pe fisierele atinse de sesiune, si NU lasa tura sa se incheie
 daca pica.
 
 Ce ruleaza vine din `scripts/verifica.py` (`pasi_pentru`), aceeasi lista pe care o
 rulezi si de mana (`python scripts/verifica.py --atinse <fisiere>`). Pana pe 2026-09-28
 lista statea aici, iar documentatia si poarta ajunsesera sa spuna lucruri diferite.
-
-Build-ul nu e optional. `smoke_ui` porneste Flask, care serveste `static/dist/`
-— pe surse editate si neconstruite ar testa build-ul VECHI si ar da verde fals,
-fix minciuna pe care poarta trebuie s-o prinda.
+Din 2026-10-03, odata cu interfata veche, au ramas patru pasi (lint Python, teste JS ale
+fisierelor servite, teste Python, probele de API), toti fara browser si fara build; treptele
+mai grele de dinainte (build, smoke_ui, auditurile de telefon) au plecat cu SPA-ul.
 
 Doua plafoane, ca poarta sa nu se transforme in capcana:
   - dupa MAX_BLOCARI blocari intr-o sesiune nu mai blocheaza, doar raporteaza
@@ -72,7 +69,7 @@ def coada(text):
 
 
 # ------------------------------------------------------------------- porti
-# Pasii, selectia lor dupa fisiere si mediul in care ruleaza (npm pe Windows, venv,
+# Pasii, selectia lor dupa fisiere si mediul in care ruleaza (node pe Windows, venv,
 # UTF-8) stau in `scripts/verifica.py` — un singur loc pentru lista verificatoarelor.
 sys.path.insert(0, str(SCRIPTURI))
 import verifica as V  # noqa: E402
@@ -93,7 +90,7 @@ def main():
     if os.environ.get('PIF_GATE', '').lower() == 'skip':
         raporteaza('PIF_GATE=skip: poarta a fost sarita in mod deliberat. '
                    'Verificatoarele NU au rulat — spune-i lui Ion explicit ce n-a '
-                   'fost verificat, sau ruleaza manual `python scripts/verifica.py --poarta`.')
+                   'fost verificat, sau ruleaza manual `python scripts/verifica.py --rapid`.')
 
     sid = sid_curat(date.get('session_id', ''))
     STARE.mkdir(parents=True, exist_ok=True)
@@ -130,9 +127,8 @@ def main():
     # Se calculeaza DOAR peste fisierele care declanseaza o poarta. Inainte se
     # calcula peste tot ce s-a atins, iar fiecare sesiune se incheie cu o retusare
     # in CLAUDE.md / docs/memory/ — deci semnatura se schimba dupa ce verificarea
-    # trecuse deja, si urmatorul Stop relua build + smoke_ui + audit_mobil (3-6
-    # minute) pentru un text care nu intra in bundle. Un fisier de documentatie nu
-    # poate strica nici build-ul, nici geometria de pe telefon.
+    # trecuse deja, si urmatorul Stop relua toti pasii pentru un text care nu intra
+    # in niciunul. Un fisier de documentatie nu poate strica nici un test, nici o proba.
     semnatura = []
     for r in V.relevante(atinse):
         p = RADACINA / r

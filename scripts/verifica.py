@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
-"""UN SINGUR PUNCT DE INTRARE PENTRU TOATE VERIFICATOARELE.
+"""UN SINGUR PUNCT DE INTRARE PENTRU VERIFICATOARE.
 
     python scripts/verifica.py              # = --rapid
-    python scripts/verifica.py --rapid      # secunde: lint, design, contrast, teste unitare, API
-    python scripts/verifica.py --poarta     # ce ruleaza poarta la o schimbare de interfata
-    python scripts/verifica.py --complet    # tot, inclusiv auditurile care nu stau in poarta
-    python scripts/verifica.py --atinse frontend/src/pages/Home.svelte blueprints/tasks.py
+    python scripts/verifica.py --rapid      # lint, teste JS, teste Python, probele de API (~35 s)
+    python scripts/verifica.py --atinse app.py blueprints/tasks.py
                                             # exact ce ar rula poarta pentru fisierele astea
     --continua                              # nu te opri la primul esec
 
-DE CE EXISTA (auditul testelor, 2026-09-28). Lista verificatoarelor statea in trei
-locuri — `CLAUDE.md`, antetul portii si `porti_pentru` din ea — si cele trei nu mai
-spuneau acelasi lucru: documentatia omitea `audit_tastatura` din poarta si
-`audit_ferestre` cu totul, iar cele mai ieftine teste (unitare JS, probele de API)
-nu rulau automat nicaieri. Acum lista e AICI, o data: poarta (`.claude/hooks/gate.py`)
-o importa (`pasi_pentru`), iar `CLAUDE.md` descrie treptele, nu scripturile.
+DE CE EXISTA. Lista verificatoarelor statea in trei locuri (`CLAUDE.md`, antetul portii si
+`porti_pentru` din ea) si cele trei nu mai spuneau acelasi lucru (auditul testelor,
+2026-09-28). Acum lista e AICI, o data: poarta (`.claude/hooks/gate.py`) o importa
+(`pasi_pentru`), iar `CLAUDE.md` descrie pasii, nu scripturile.
 
-ORDINEA E A COSTULUI: ce e ieftin si prinde mult merge primul, ca un esec sa se vada
-in secunde, nu dupa trei minute de Chromium.
+CE A PLECAT PE 2026-10-03, odata cu interfata veche: build-ul si lintul SPA-ului, testele JS
+ale codului lui, auditurile de design si de contrast, `smoke_ui` si toate auditurile cu
+browser (si bancul lor de Chromium din `banc.py`). Au ramas patru pasi, toti fara browser.
+Cum se aduc inapoi: `docs/decizii/2026-10-03-retragerea-interfetei-vechi.md`.
+
+ORDINEA E A COSTULUI: ce e ieftin si prinde mult merge primul, ca un esec sa se vada in
+secunde.
 """
 
 import argparse
+import glob
 import os
 import shutil
 import subprocess
@@ -30,11 +32,11 @@ from collections import namedtuple
 
 RADACINA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPTURI = os.path.join(RADACINA, 'scripts')
-FRONTEND = os.path.join(RADACINA, 'frontend')
 
 FISIERE_API = {'database.py', 'app.py', 'utils.py', 'labels.py', 'csrf.py', 'backup_db.py'}
 
-Pas = namedtuple('Pas', 'eticheta argv cwd manual')
+# `lipsa` = ce se spune cand pasul nu poate porni (argv None): unealta lui nu s-a gasit.
+Pas = namedtuple('Pas', 'eticheta argv cwd manual lipsa')
 
 
 # ------------------------------------------------------------------- mediul
@@ -42,11 +44,10 @@ Pas = namedtuple('Pas', 'eticheta argv cwd manual')
 def cai_persistente():
     """Directoarele din PATH-ul PERSISTENT (registru), pe langa cel mostenit.
 
-    Node-ul de pe masina lui Ion e portabil (`Tools\\node-v24...`) si sta DOAR in
-    PATH-ul de utilizator din registru. Un proces pornit inainte ca intrarea sa fie
-    adaugata nu-l vede — iar hookul mosteneste mediul aplicatiei, care poate fi
-    deschisa de saptamani. Poarta spunea atunci „npm nu exista in PATH" si pica,
-    desi `npm run build` merge perfect intr-un terminal nou.
+    Pe unele masini Node-ul e portabil si sta DOAR in PATH-ul de utilizator din registru. Un
+    proces pornit inainte ca intrarea sa fie adaugata nu-l vede — iar hookul mosteneste mediul
+    aplicatiei, care poate fi deschisa de saptamani. Poarta ar spune atunci „node nu exista in
+    PATH" si ar pica, desi comanda merge perfect intr-un terminal nou.
     """
     if os.name != 'nt':
         return []
@@ -68,22 +69,22 @@ def cai_persistente():
     return cai
 
 
-def gaseste_npm():
-    gasit = shutil.which('npm.cmd') or shutil.which('npm')
+def gaseste_node():
+    gasit = shutil.which('node.exe') or shutil.which('node')
     if gasit:
         return gasit
     supl = cai_persistente()
     if not supl:
         return None
     unde = os.pathsep.join(supl)
-    return shutil.which('npm.cmd', path=unde) or shutil.which('npm', path=unde)
+    return shutil.which('node.exe', path=unde) or shutil.which('node', path=unde)
 
 
 def python_probe():
     """Interpretorul verificatoarelor: `venv/` daca exista (acelasi pe care il activeaza
     deployul), altfel cel curent. NU orbeste `sys.executable` din hook: pe unele masini
-    python-ul de sistem n-are nici flask, nici playwright, iar poarta ar pica cu
-    ModuleNotFoundError — rosu care nu spune NIMIC despre cod."""
+    python-ul de sistem n-are flask, iar poarta ar pica cu ModuleNotFoundError — rosu care
+    nu spune NIMIC despre cod."""
     for rel in ('venv/Scripts/python.exe', 'venv/bin/python'):
         p = os.path.join(RADACINA, rel)
         if os.path.exists(p):
@@ -92,17 +93,17 @@ def python_probe():
 
 
 PYTHON = python_probe()
-NPM = gaseste_npm()
+NODE = gaseste_node()
 PY_MANUAL = 'venv\\Scripts\\python' if PYTHON != sys.executable else 'python'
 
 
 def mediu():
-    """Mediul proceselor copil: UTF-8 (consola Windows e cp1252 cand iesirea e
-    redirectata) si directorul lui Node IN FATA PATH-ului — `npm.cmd` e un shim care
-    cheama `node` din PATH, deci fara el build-ul murea cu `'"node"' is not recognized`."""
+    """Mediul proceselor copil: UTF-8 (consola Windows e cp1252 cand iesirea e redirectata)
+    si directorul lui Node IN FATA PATH-ului, ca un `node` cerut de un test (test_login_next
+    ruleaza `destinatie()` din pagina de login) sa fie gasit si el."""
     m = dict(os.environ, PYTHONIOENCODING='utf-8', PYTHONUTF8='1')
-    if NPM:
-        dir_node = os.path.dirname(NPM)
+    if NODE:
+        dir_node = os.path.dirname(NODE)
         cale = m.get('PATH') or ''
         if dir_node and dir_node not in cale.split(os.pathsep):
             m['PATH'] = dir_node + os.pathsep + cale
@@ -111,134 +112,96 @@ def mediu():
 
 # -------------------------------------------------------------------- pasii
 
-def _py(script, *arg, manual_arg=''):
+def _py(script, *arg):
     return Pas(script, [PYTHON, os.path.join(SCRIPTURI, script + '.py')] + list(arg), RADACINA,
-               '%s scripts/%s.py%s' % (PY_MANUAL, script, (' ' + manual_arg) if manual_arg else
-                                      (' ' + ' '.join(arg) if arg else '')))
+               '%s scripts/%s.py%s' % (PY_MANUAL, script, (' ' + ' '.join(arg)) if arg else ''), '')
 
 
-def _npm(eticheta, *arg):
-    manual = 'npm %s (in frontend/)' % ' '.join(arg)
-    return Pas(eticheta, [NPM] + list(arg) if NPM else None, FRONTEND, manual)
+def _teste_js():
+    """Testele JS ale fisierelor pe care le serveste serverul (login.html, service-worker.js),
+    cu runner-ul built-in al lui Node: fara npm, fara pachete. Fisierele se dau pe nume, nu ca
+    sablon: un sablon intre ghilimele e expandat de Node abia din v21."""
+    fisiere = sorted(glob.glob(os.path.join(RADACINA, 'teste', 'js', '*.test.mjs')))
+    manual = 'node --test teste/js/*.test.mjs'
+    if not fisiere:
+        return Pas('unitare_js', None, RADACINA, manual,
+                   'nu exista niciun teste/js/*.test.mjs: fara fisiere, `node --test` ar cauta '
+                   'teste prin tot proiectul. Daca testele JS au plecat, scoate pasul din verifica.py.')
+    if not NODE:
+        return Pas('unitare_js', None, RADACINA, manual,
+                   'node nu s-a gasit nici in PATH-ul mostenit, nici in cel persistent din '
+                   'registru, deci `%s` nu poate rula. Verifica unde e instalat Node si '
+                   'adauga-l in PATH-ul de utilizator.' % manual)
+    return Pas('unitare_js', [NODE, '--test'] + fisiere, RADACINA, manual, '')
 
 
 PASI = {
     'lint': _py('lint'),
-    'audit_design': _py('audit_design', manual_arg='--lista'),
-    'audit_contrast': _py('audit_contrast'),
-    'unitare_js': _npm('unitare_js', 'test'),
+    'unitare_js': _teste_js(),
     'unitare_py': Pas('unitare_py', [PYTHON, '-m', 'unittest', 'discover', '-s', 'teste'], RADACINA,
-                      '%s -m unittest discover -s teste' % PY_MANUAL),
+                      '%s -m unittest discover -s teste' % PY_MANUAL, ''),
     'test_suite': _py('test_suite'),
-    'build': _npm('build', 'run', 'build'),
-    # In poarta: un proiect din fiecare fel (37 s); turul complet (toate proiectele)
-    # e al treptei `--complet` — vezi antetul lui smoke_ui.py.
-    'smoke_ui': _py('smoke_ui', '--esantion'),
-    'smoke_ui_complet': _py('smoke_ui'),
-    'audit_mobil': _py('audit_mobil'),
-    'audit_tastatura': _py('audit_tastatura'),
-    'audit_navigare': _py('audit_navigare'),
-    'audit_foaie': _py('audit_foaie'),
-    'audit_reactivitate': _py('audit_reactivitate'),
-    'audit_ferestre': _py('audit_ferestre'),
-}
-PASI['smoke_ui_complet'] = PASI['smoke_ui_complet']._replace(eticheta='smoke_ui_complet')
-
-ORDINE = ['lint', 'audit_design', 'audit_contrast', 'unitare_js', 'unitare_py', 'test_suite',
-          'build', 'smoke_ui', 'smoke_ui_complet', 'audit_mobil', 'audit_tastatura',
-          'audit_foaie', 'audit_reactivitate', 'audit_navigare', 'audit_ferestre']
-
-TREPTE = {
-    'rapid': ['lint', 'audit_design', 'audit_contrast', 'unitare_js', 'unitare_py', 'test_suite'],
-    'poarta': ['lint', 'audit_design', 'audit_contrast', 'unitare_js', 'unitare_py', 'test_suite',
-               'build', 'smoke_ui', 'audit_mobil', 'audit_tastatura'],
-    'complet': ['lint', 'audit_design', 'audit_contrast', 'unitare_js', 'unitare_py', 'test_suite',
-                'build', 'smoke_ui_complet', 'audit_mobil', 'audit_tastatura', 'audit_foaie',
-                'audit_reactivitate', 'audit_navigare', 'audit_ferestre'],
 }
 
-# Verificatoarele cu browser — toate stau pe `banc.py`, deci o schimbare acolo le
-# poate strica pe toate, inclusiv pe cele care nu sunt in poarta.
-CU_BROWSER = ('smoke_ui', 'audit_mobil', 'audit_tastatura', 'audit_foaie',
-              'audit_reactivitate', 'audit_navigare', 'audit_ferestre')
+ORDINE = ['lint', 'unitare_js', 'unitare_py', 'test_suite']
 
 
 def _backend(p):
     return (p.startswith('blueprints/') and p.endswith('.py')) or p in FISIERE_API
 
 
+def _servit(p):
+    """Fisierele pe care le serveste serverul si pe care le citesc teste: pagina de login si
+    service worker-ul care se retrage."""
+    return p in ('templates/login.html', 'static/service-worker.js')
+
+
+def _test_js(p):
+    return p.startswith('teste/js/') and p.endswith('.mjs')
+
+
 def relevante(atinse):
     """Fisierele care pot declansa un pas — doar ele intra in semnatura portii.
 
-    Tine pasul cu `pasi_pentru`: un criteriu nou acolo apare si aici, altfel o
-    modificare ar declansa un pas fara sa intre in semnatura, si poarta ar rula
-    la nesfarsit. Documentatia nu intra: nu poate strica nici build-ul, nici
-    geometria de pe telefon.
+    Tine pasul cu `pasi_pentru`: un criteriu nou acolo apare si aici, altfel o modificare ar
+    declansa un pas fara sa intre in semnatura, si poarta ar rula la nesfarsit. Documentatia
+    nu intra: nu poate strica nici un test, nici o proba.
     """
-    return [p for p in atinse
-            if (p.startswith('frontend/src/') and p.endswith(('.svelte', '.css', '.js')))
-            or p.endswith('.py')
-            or p == 'scripts/lint_svelte.mjs']
+    return [p for p in atinse if p.endswith('.py') or _servit(p) or _test_js(p)]
 
 
 def pasi_pentru(atinse):
     """Pasii pe care ii cer fisierele atinse, in ordinea costului."""
-    fe = [p for p in atinse if p.startswith('frontend/src/')]
-    # Ce ajunge in bundle. Testele nu ajung: o modificare DOAR intr-un `*.test.js`
-    # ruleaza testele, nu build-ul si trei minute de Chromium.
-    spa = any(p.endswith(('.svelte', '.js')) and not p.endswith('.test.js') for p in fe)
-    stil = any(p.endswith(('.svelte', '.css')) for p in fe)
-    lib = any(p.startswith('frontend/src/lib/') and p.endswith('.js') for p in fe)
     backend = any(_backend(p) for p in atinse)
+    servit = any(_servit(p) for p in atinse)
     scripturi = {os.path.basename(p)[:-3] for p in atinse
                  if p.startswith('scripts/') and p.endswith('.py')}
     banc = 'banc' in scripturi
 
     alese = set()
-    if fe or any(p.endswith('.py') for p in atinse) or 'scripts/lint_svelte.mjs' in atinse:
+    if any(p.endswith('.py') for p in atinse):
         alese.add('lint')
-    # Doar CSS => doar audit_design si contrast, fara Chromium (criteriul aprobat de
-    # Ion). Consecinta, scrisa ca s-o vada cineva: o modificare doar in tokens.css /
-    # global.css nu trece prin audit_mobil.
-    if stil:
-        alese |= {'audit_design', 'audit_contrast'}
-    if lib:
+    if servit or any(_test_js(p) for p in atinse):
         alese.add('unitare_js')
-    if backend or banc or any(p.startswith('teste/') for p in atinse):
+    if backend or banc or servit or any(p.startswith('teste/') and p.endswith('.py') for p in atinse):
         alese.add('unitare_py')
+    # `test_suite` porneste serverul real pe `banc.py`: o schimbare in banc le poate strica pe amandoua.
     if backend or banc or 'test_suite' in scripturi:
         alese.add('test_suite')
-    if spa:
-        alese.add('build')
-    # smoke_ui si pe backend: el prinde ruta care da 500 dupa o curatenie in
-    # blueprints (gantt.pdf a stat rupt din v32 fara ca nimic sa-l atinga).
-    if spa or backend:
-        alese.add('smoke_ui')
-    if spa:
-        alese |= {'audit_mobil', 'audit_tastatura'}
-    # Un verificator atins se ruleaza: altfel poarta ar trece peste chiar proba pe
-    # care ai schimbat-o. `banc.py` le atinge pe toate.
-    for nume in CU_BROWSER:
-        if banc or nume in scripturi:
-            alese.add(nume)
-    if 'audit_foaie' in scripturi:        # audit_tastatura ii importa bucati
-        alese.add('audit_tastatura')
     return [PASI[k] for k in ORDINE if k in alese]
 
 
-def pasi_treapta(treapta):
-    return [PASI[k] for k in ORDINE if k in TREPTE[treapta]]
+def pasi_rapid():
+    return [PASI[k] for k in ORDINE]
 
 
 # --------------------------------------------------------------------- rulare
 
 def ruleaza_pas(pas, limita=None):
-    """(cod, iesire). `argv` None = unealta lipseste (npm), ceea ce e un esec: fara
-    build, smoke_ui ar testa static/dist/ vechi si ar trece pe langa orice."""
+    """(cod, iesire). `argv` None = unealta lipseste (node), ceea ce e un esec: un pas
+    sarit tacut arata exact ca unul trecut, si asta e singurul mod de esec interzis."""
     if pas.argv is None:
-        return 2, ('npm nu s-a gasit nici in PATH-ul mostenit, nici in cel persistent din '
-                   'registru, deci `%s` nu poate rula. Verifica unde e instalat Node si '
-                   'adauga-l in PATH-ul de utilizator.' % pas.manual)
+        return 2, pas.lipsa
     p = subprocess.run(pas.argv, cwd=pas.cwd, env=mediu(), timeout=limita,
                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return p.returncode, p.stdout.decode('utf-8', 'replace')
@@ -252,9 +215,7 @@ def _scrie(s=''):
 def main():
     ap = argparse.ArgumentParser(description='Toate verificatoarele, dintr-un loc.')
     g = ap.add_mutually_exclusive_group()
-    g.add_argument('--rapid', action='store_true', help='secunde (implicit)')
-    g.add_argument('--poarta', action='store_true', help='ce ruleaza poarta la o schimbare de interfata')
-    g.add_argument('--complet', action='store_true', help='tot')
+    g.add_argument('--rapid', action='store_true', help='toti pasii (implicit)')
     g.add_argument('--atinse', nargs='+', metavar='FISIER', help='ce ar rula poarta pentru fisierele astea')
     ap.add_argument('--continua', action='store_true', help='nu te opri la primul esec')
     arg = ap.parse_args()
@@ -264,9 +225,8 @@ def main():
         pasi = pasi_pentru(atinse)
         titlu = 'pentru %d fisier(e)' % len(atinse)
     else:
-        treapta = 'poarta' if arg.poarta else 'complet' if arg.complet else 'rapid'
-        pasi = pasi_treapta(treapta)
-        titlu = 'treapta %s' % treapta
+        pasi = pasi_rapid()
+        titlu = 'treapta rapid'
     if not pasi:
         _scrie('Nimic de rulat %s.' % titlu)
         return 0

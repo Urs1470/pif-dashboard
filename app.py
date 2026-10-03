@@ -11,13 +11,13 @@ from datetime import timedelta
 from logging.handlers import RotatingFileHandler
 from flask import (
     Flask, request, jsonify, render_template,
-    session, redirect, url_for, send_from_directory,
+    session, redirect, url_for,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from database import init_db, close_db
-from utils import login_required, get_json_or_400, safe_next_url
+from utils import get_json_or_400, safe_next_url
 from csrf import init_csrf
 
 app = Flask(__name__)
@@ -31,7 +31,7 @@ from blueprints.obsidian import obsidian_bp
 from blueprints.admin import admin_bp
 from blueprints.app_update import app_update_bp
 from blueprints.sync import sync_bp
-from blueprints.torqa_web import torqa_web_bp, SesiuneFaraStatice, CSP_TORQA
+from blueprints.torqa_web import torqa_web_bp, SesiuneFaraStatice, CSP_TORQA, PREFIX_URL
 
 app.register_blueprint(projects_bp)
 app.register_blueprint(tasks_bp)
@@ -79,9 +79,6 @@ app.teardown_appcontext(close_db)
 
 # ============ VERSION HASH ============
 
-_USE_DIST = os.environ.get('PIF_USE_DIST', 'true').lower() in ('1', 'true', 'yes')
-
-
 def file_hash(filepath):
     try:
         with open(filepath, 'rb') as f:
@@ -100,16 +97,10 @@ def file_hash(filepath):
             return 'dev'
 
 
-def _asset_path(name):
-    """Return 'dist/<name>' when minified builds are active, else '<name>'."""
-    if _USE_DIST and os.path.isfile(os.path.join('static', 'dist', name)):
-        return f'dist/{name}'
-    return name
-
-
 _asset_versions = {
-    # Only the login page remains a server-rendered template; it versions
-    # login.css via `style_version`. The Svelte SPA self-versions its assets.
+    # The login page is the only server-rendered template; it versions login.css
+    # via `style_version`. (The Svelte SPA that used to self-version its assets
+    # was retired on 2026-10-03.)
     'style_version': file_hash('static/login.css'),
 }
 
@@ -117,8 +108,6 @@ _asset_versions = {
 @app.context_processor
 def inject_version():
     ctx = dict(_asset_versions)
-    ctx['use_dist'] = _USE_DIST
-    ctx['asset_path'] = _asset_path
     ctx['csp_nonce'] = getattr(request, '_csp_nonce', '')
     return ctx
 
@@ -175,8 +164,8 @@ logger = setup_logging()
 
 rate_limit_store = {}
 # 60/minut e potrivit pentru un singur utilizator care navigheaza normal, dar
-# prea putin cand deschizi zeci de pagini la rand: testul de fum (scripts/smoke_ui.py)
-# ridica pragul prin PIF_RATE_LIMIT. In productie ramane 60.
+# prea putin cand o proba trimite zeci de cereri la rand: serverul de proba al
+# scripts/banc.py ridica pragul prin PIF_RATE_LIMIT. In productie ramane 60.
 RATE_LIMIT = int(os.environ.get('PIF_RATE_LIMIT', '60'))
 RATE_WINDOW = 60
 _RATE_MAX_IPS = 10000
@@ -280,27 +269,15 @@ def before_request_func():
 def after_request_func(response):
     if request.path.startswith('/api/'):
         logger.info(f"{request.method} {request.path} - Status: {response.status_code}")
-    # HTML shell must never be served stale: without this, the browser's
-    # heuristic HTTP cache (and the SW's fetch passing through it) keeps the
-    # old index.html with old ?v= asset hashes after a deploy.
+    # HTML (the login page, error pages) must never be served stale: without this,
+    # the browser's heuristic HTTP cache keeps the old page with the old
+    # login.css ?v= hash after a deploy.
     if response.content_type and response.content_type.startswith('text/html'):
         response.headers.setdefault('Cache-Control', 'no-cache, must-revalidate')
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('X-Frame-Options', 'DENY')
     response.headers.setdefault('Referrer-Policy', 'same-origin')
     response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
-    # Vizualizatorul PDF.js (gazduit local) are nevoie de worker/wasm/blob — CSP dedicat doar pe calea lui.
-    if request.path.startswith('/static/pdfjs/'):
-        response.headers['Content-Security-Policy'] = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: blob:; "
-            "font-src 'self' data: blob:; "
-            "worker-src 'self' blob:; "
-            "connect-src 'self' blob: data:; "
-            "frame-ancestors 'none'; base-uri 'self'"
-        )
     # Torqa web (build Angular) are politica lui, pe calea lui: cere `unsafe-eval` (runtime-ul
     # de pluginuri) si nu cere nimic din exterior. Motivele, linie cu linie, stau langa
     # constanta, in blueprints/torqa_web.py.
@@ -355,13 +332,6 @@ def health_redirect():
     return redirect('/api/healthz', code=301)
 
 
-@app.route('/api/me')
-def whoami():
-    """Stare autentificare (public). Folosit de /calc ca sa afiseze extrasele de carti
-    (protejate) doar daca esti logat, fara a le expune colegilor anonimi."""
-    return jsonify({'authenticated': bool(session.get('authenticated'))})
-
-
 @app.route('/login')
 def login_page():
     # `?next=` = unde te intorci dupa PIN (ex. /torqa/). Doar o cale a acestui site;
@@ -393,69 +363,20 @@ def logout():
 
 
 
-# ============ FRONTEND ROUTES ============
-
-_DIST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'dist')
-
-
-def _serve_frontend():
-    """Serve the Svelte build (the only frontend; the legacy vanilla-JS app and
-    its `/m` mobile twin were removed — the responsive SPA covers both)."""
-    return send_from_directory(_DIST_DIR, 'index.html')
-
+# ============ INTRARE ============
 
 @app.route('/')
-@login_required
 def index():
-    return _serve_frontend()
+    """Interfata veche (SPA-ul Svelte) a fost retrasa pe 2026-10-03; serverul e backend-ul
+    Torqa. Radacina duce la Torqa web (`/torqa/`), care cere singur sesiunea si trimite la
+    `/login?next=/torqa/` cand lipseste. Fara login_required aici: redirectul nu da nimic."""
+    return redirect(PREFIX_URL)
 
 
-@app.route('/assets/<path:filename>')
-def dist_assets(filename):
-    """Serve Vite-built assets (JS/CSS with content hashes)."""
-    return send_from_directory(os.path.join(_DIST_DIR, 'assets'), filename)
-
-
-@app.route('/favicon.svg')
-def favicon():
-    return send_from_directory(_DIST_DIR, 'favicon.svg')
-
-
-@app.route('/manifest.json')
-def manifest():
-    return send_from_directory(_DIST_DIR, 'manifest.json')
-
-
-@app.route('/icon-<int:size>.png')
-def app_icon(size):
-    """Iconite raster pentru notificari (showNotification nu randeaza sigur un
-    SVG sau un data: URI pe Android)."""
-    if size not in (192, 512):
-        return '', 404
-    return send_from_directory(_DIST_DIR, f'icon-{size}.png')
-
-
-@app.route('/calc')
-def calc_public():
-    """Calculator actionari electrice — varianta de sine statatoare, PUBLICA (fara login),
-    de impartit cu echipa. Doar calculatorul (fara sidebar/proiecte/date). Build: calc.html."""
-    return send_from_directory(_DIST_DIR, 'calc.html')
-
-
-_DOCS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'private_docs')
-
-
-@app.route('/docs/<path:filename>')
-def protected_docs(filename):
-    """Extrase din manuale (DOAR paginile citate, drept de autor respectat) — accesibile public,
-    inclusiv din /calc. Folosit de linkurile 'Documentatie' din calculator (vizualizatorul PDF.js).
-    X-Robots-Tag: noindex/noarchive ca extrasele sa nu fie indexate de motoarele de cautare."""
-    resp = send_from_directory(_DOCS_DIR, filename)
-    resp.headers['X-Robots-Tag'] = 'noindex, noarchive'
-    return resp
-
-
-# ============ PWA ROUTES ============
+# ============ SERVICE WORKER (RETRAS) ============
+# `/service-worker.js` serveste worker-ul care se retrage singur (static/service-worker.js):
+# browserele care au instalat interfata veche il gasesc aici, il instaleaza peste cel vechi,
+# iar el isi sterge cache-urile si se dezinregistreaza. Ruta trebuie sa ramana.
 
 @app.route('/service-worker.js')
 def service_worker():

@@ -65,10 +65,6 @@ AUDIT_*.md
 .claude/*
 !.claude/settings.json
 !.claude/hooks/
-# Regulile cu `paths:` sunt sistemul de design mutat din CLAUDE.md — se incarca doar
-# cand atingi frontendul. Trebuie versionate: auto-memoria e locala per masina, deci
-# git e singurul lucru care le duce si pe celalalt PC.
-!.claude/rules/
 
 # Secrets
 .secret_key
@@ -77,10 +73,6 @@ AUDIT_*.md
 .assistant_config
 
 .venv-sandbox/
-
-# Plansele generate de scripts/filmstrip.py — se refac la cerere, nu se versioneaza
-docs/filmstrip/
-urma_tastatura_reala.json
 
 # Cai Windows aplatizate: un redirect de shell caruia i s-au pierdut separatorii scrie
 # un fisier pe nume `C:Users...` in radacina. Windows nu accepta `:` intr-un nume, deci

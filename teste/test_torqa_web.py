@@ -771,18 +771,19 @@ class Servirea(CuWeb):
         self.login()
         self.get('/torqa/main-ABCDEFGH.js')
         self.assertEqual(self.get('/torqa/').status_code, 200, 'inca autentificat')
-        self.assertTrue(self.get('/api/me').get_json()['authenticated'])
+        self.assertEqual(self.get('/api/stats').status_code, 200, 'sesiunea de API a ramas')
 
     def test_sesiunea_dashboardului_merge_ca_inainte(self):
         # Interfata de sesiune e inlocuita aplicatiei intregi: restul rutelor nu trebuie sa simta.
-        self.assertFalse(self.get('/api/me').get_json()['authenticated'])
+        self.assertEqual(self.get('/api/stats').status_code, 401, 'fara login, API-ul cere sesiune')
         r = self.login()
         self.assertEqual(r.status_code, 200)
         cookie_uri = ' '.join(r.headers.getlist('Set-Cookie'))
         self.assertIn('session=', cookie_uri)
         self.assertIn('csrf_token=', cookie_uri)
-        self.assertTrue(self.get('/api/me').get_json()['authenticated'])
-        self.assertEqual(self.get('/').status_code, 200)
+        self.assertEqual(self.get('/api/stats').status_code, 200)
+        r = self.get('/')
+        self.assertEqual((r.status_code, r.headers['Location']), (302, '/torqa/'))
 
     # ---- calea nu iese din versiune
 
@@ -885,18 +886,15 @@ class PoliticaDeContinut(CuWeb):
         self.login()
         self.assertEqual(self.csp('/torqa/'), torqa_web.CSP_TORQA, 'neinstalat, 503')
 
-    def test_dashboardul_si_pdfjs_isi_pastreaza_politicile(self):
+    def test_restul_serverului_isi_pastreaza_politica_lui(self):
         self.instaleaza()
         self.login()
-        pdfjs = self.csp('/static/pdfjs/inexistent.js')
-        for cale in ('/login', '/', '/api/me', '/torqa-altceva', '/torqau/x'):
+        for cale in ('/login', '/', '/api/stats', '/torqa-altceva', '/torqau/x'):
             with self.subTest(cale=cale):
                 csp = self.csp(cale)
                 self.assertNotEqual(csp, torqa_web.CSP_TORQA)
                 self.assertNotIn("'unsafe-eval'", csp, 'unsafe-eval e doar al Torqa')
                 self.assertIn('https://cdn.jsdelivr.net', csp)
-        self.assertIn("'wasm-unsafe-eval'", pdfjs)
-        self.assertNotEqual(pdfjs, torqa_web.CSP_TORQA)
 
     def test_politica_nu_deschide_nimic_in_exterior(self):
         csp = torqa_web.CSP_TORQA

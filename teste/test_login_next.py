@@ -139,13 +139,13 @@ class DupaLogin(CuAplicatia):
         r = self.client.post('/login', json={'pin': 'gresit', 'next': '/torqa/'})
         self.assertEqual(r.status_code, 401)
         self.assertEqual(r.get_json(), {'error': 'Invalid PIN'})
-        self.assertFalse(self.client.get('/api/me').get_json()['authenticated'])
+        self.assertEqual(self.client.get('/api/stats').status_code, 401, 'sesiunea nu s-a pus')
         self.assertEqual(self.client.get('/torqa/').status_code, 302)
 
     def test_pinul_bun_cu_next_torqa_te_pune_pe_sesiune(self):
         r = self.client.post('/login', json={'pin': PIN, 'next': '/torqa/'})
         self.assertEqual(r.get_json()['next'], '/torqa/')
-        self.assertTrue(self.client.get('/api/me').get_json()['authenticated'])
+        self.assertEqual(self.client.get('/api/stats').status_code, 200, 'sesiunea e pusa')
 
     # ---- aceeasi regula in browser
 

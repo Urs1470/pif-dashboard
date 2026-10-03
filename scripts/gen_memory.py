@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / 'docs' / 'memory'
 
 # `static/{app,mobile,core}.js` au fost sterse odata cu aplicatia legacy (2026-06-17).
-# Singurul JS ramas in static/ e service-worker.js; restul e Svelte, compilat in dist.
+# Singurul JS din static/ e service-worker.js (cel care se retrage singur); SPA-ul Svelte
+# si build-ul lui din static/dist/ au plecat pe 2026-10-03.
 JS_FILES = [
     'static/service-worker.js',
 ]

@@ -2,27 +2,14 @@
 # Auto-regenerare memorie proiect (docs/memory/CODE_MAP.md + API_MAP.md + DB_MAP.md)
 # Activare (o singura data per clona): git config core.hooksPath .githooks
 # Ruleaza doar daca commit-ul atinge cod relevant; nu blocheaza commit-ul la eroare.
+#
+# Pana pe 2026-10-03 hook-ul avea aici si o poarta pentru `static/dist/`: refuza un commit care
+# schimba build-ul SPA-ului fara sa urce `VERSION` din `static/service-worker.js`. Interfata
+# veche a fost retrasa, `static/dist/` nu mai exista, iar service worker-ul nu mai are versiune
+# (se retrage singur), deci poarta a plecat. Cum se aduce inapoi:
+# docs/decizii/2026-10-03-retragerea-interfetei-vechi.md.
 
 STAGED=$(git diff --cached --name-only --diff-filter=ACMRD)
-
-# ---- Poarta service worker-ului -------------------------------------------
-# Un build nou nu ajunge pe telefon daca `static/service-worker.js` ramane
-# identic pe octeti: browserul compara FISIERUL, nu continutul cache-ului, deci
-# `updatefound` nu se declanseaza si toastul de actualizare nu apare niciodata.
-# Pe telefon, unde aplicatia nu se inchide complet, ramai pe versiunea veche la
-# nesfarsit — s-a intamplat cu tot redesignul din 8 august (8 commituri).
-# De aceea porti `static/dist/` si `VERSION` impreuna. Blocheaza commit-ul:
-# regula asta nu are cum sa fie reparata mai tarziu, se vede abia pe telefon.
-if echo "$STAGED" | grep -qE '^static/dist/'; then
-    if ! echo "$STAGED" | grep -qx 'static/service-worker.js' \
-       || ! git diff --cached -U0 -- static/service-worker.js | grep -qE '^\+const VERSION'; then
-        echo "[pre-commit] OPRIT: ai schimbat static/dist/ fara sa urci VERSION din static/service-worker.js." >&2
-        echo "             Fara asta, build-ul nou NU ajunge pe telefon (vezi comentariul din fisier)." >&2
-        echo "             Urca VERSION (v100 -> v101), 'git add static/service-worker.js', apoi comite din nou." >&2
-        exit 1
-    fi
-fi
-# ---------------------------------------------------------------------------
 
 echo "$STAGED" | grep -qE '^(app\.py|database\.py|utils\.py|csrf\.py|labels\.py|blueprints/.*\.py|static/service-worker\.js)$' || exit 0
 
