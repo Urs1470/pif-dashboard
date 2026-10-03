@@ -66,6 +66,13 @@ AUDIT_*.md
 !.claude/settings.json
 !.claude/hooks/
 
+# Scoase din depozit pe 2026-10-03 (depozitul e public, iar motivul lor, calculatorul, a plecat):
+# extrasele din carti si standarde, manualele de drive si cele doua ghiduri ABB. Raman in istoric;
+# copiile locale sunt ignorate, ca sa nu intre inapoi din greseala.
+/private_docs/
+/manuals/
+/static/docs/
+
 # Secrets
 .secret_key
 .env

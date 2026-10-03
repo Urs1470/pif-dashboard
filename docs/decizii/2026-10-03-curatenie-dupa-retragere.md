@@ -62,13 +62,21 @@ zonă interzisă, a fost aprobat explicit pentru ea.
   (verificat cu o probă locală). Torqa nu trimite niciodată `vault_folder`, deci câmpul se refuză acum tokenului de
   dispozitiv cu 403, pe toate trei rutele (`utils.refuse_device_token_fields`); tokenul de mașină (`pif-sync.py link`)
   și sesiunea cu PIN îl scriu ca înainte. Testele din `teste/test_sync.py` pică fără regulă.
-- **`/admin/db-upload` nu poate urca cu sesiunea de PIN**: `fetch`-ul lui nu pune `X-CSRF-Token`, deci primește 403
-  (la fel `scripts/upload_db.py`); merge cu tokenul de mașină. Pagina se deschide și scriptul ei rulează sub CSP-ul nou;
-  nu s-a schimbat comportamentul unui formular care înlocuiește baza.
-- **`app_settings`, neatins** (în afara cererii): `push_*` (cheia VAPID privată, abonamente), `plan_departament_url`,
-  `ics_feed_key` (o cheie de 43 de caractere într-o copie locală din august; **nu e în `CHEI_PROTEJATE`**, deci iese în
-  `/api/backup`, deși feedul `.ics` nu mai există) și `fault_data_rev`.
-- **Documentația din vault** (în afara depozitului) listează încă rutele scoase la punctul 5.
+- **Închis după revizie: `/admin/db-upload` cu sesiunea de PIN.** `fetch`-ul paginii și `scripts/upload_db.py`
+  trimit acum `X-CSRF-Token` din cookie (scriptul și `User-Agent: Cowork-PIF/1.0`, fără de care Cloudflare dă 1010).
+- **Închis după revizie: `app_settings`.** Migrarea v42 șterge `push_*`, `plan_departament_url`, `ics_feed_key` și
+  `fault_data_rev`, pe care nu le mai citește niciun cod.
+- **Închis după revizie: documentația din vault** nu mai listează rutele scoase (Knowledge `c897353`).
+
+## După revizie: cele 6 puncte (Ion, 2026-10-03: „Fă cele 6 puncte”)
+
+Pe lângă `app_settings` și `/admin/db-upload` de mai sus:
+
+- **Canalul APK `pif` a plecat.** Aplicația veche (`org.iupif.pif`) se dezinstalează; `torqa` e singurul canal, iar
+  `canal` e obligatoriu și la citire (fără el, 400). Fișierele vechi din `uploads/app/` (`pif.apk`, `meta.json`)
+  nu se mai servesc; nu le șterge codul.
+- **`private_docs/` (11 MB), `manuals/` (69 MB) și `static/docs/` (6,4 MB) au ieșit din depozit**, care e public:
+  motivul lor, calculatorul, a plecat. Rămân în istoricul git; copiile locale sunt în `.gitignore`.
 
 ## Cum se aduce înapoi
 

@@ -3,9 +3,9 @@
 > **Calculatorul a fost retras pe 2026-10-03**, odată cu interfața veche (`/calc`, pagina din
 > dashboard, `frontend/src/lib/driveCalc.js`); codul e în eticheta `inainte-de-retragere`
 > (`docs/decizii/2026-10-03-retragerea-interfetei-vechi.md`). Documentul rămâne ca listă de surse.
-> `private_docs/` și `static/docs/` rămân ca date, dar `/docs` și vizualizatorul PDF.js nu mai
-> există: `private_docs/` nu mai e servit deloc (doar pe disc și în git), iar `static/docs/` rămâne
-> public la `/static/docs/...`. Secțiunea 6 descrie starea de dinainte.
+> `private_docs/`, `manuals/` și `static/docs/` au fost scoase și din depozit pe 2026-10-03 (depozitul e
+> public): nu se mai servesc, iar fișierele rămân doar în istoricul git (înainte de commitul care le
+> scoate) și în copiile locale, ignorate. Secțiunea 6 descrie starea de dinainte.
 
 Lista consolidată a tuturor surselor folosite în calculator. Fiecare card
 afișează sursa proprie; aici sunt grupate pe tip.
