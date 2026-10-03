@@ -77,6 +77,24 @@ Intoarce `meta`, `client`, `proiect{}`, `tasks[]` (cu `subtasks[]`), `calcule[]`
 **Nu** intoarce echipamente, checklist, jurnal, ore sau perioade — pentru perioade
 cere `GET /api/proiecte/<id>/implementari`.
 
+## Backup si restore — `GET /api/backup`, `POST /api/restore`
+
+Doar tokenul de masina sau sesiunea cu PIN (dispozitivul e refuzat). Backup-ul e un JSON cu cate o
+lista per tabela (`proiecte`, `tasks`, `task_subtasks`, `task_dependencies`, `implementari`,
+`calcule`, `global_tasks`, `clienti`, `app_settings`), fiecare rand cu TOATE coloanele tabelei;
+cheile `push_*` din `app_settings` nu pleaca niciodata de pe masina.
+
+Restore sterge tabelele si le reinsereaza dintr-o singura tranzactie (un fisier stricat anuleaza
+totul). **Coloanele vin din schema, nu dintr-o lista din cod:** ce are si tabela, si randul din fisier
+se scrie ca atare (inclusiv `NULL` si `''`). Backup-urile facute inainte de azi raman restaurabile,
+formatul nu s-a schimbat: o coloana care lipseste din rand (backup mai vechi decat coloana) ia valoarea
+implicita a tabelei, o coloana pe care tabela nu o mai are se ignora, `data_planificata` (inainte de
+v33) devine termen acolo unde termenul lipseste, iar tabelele disparute (`jurnal`, `checklist_pif`, ...)
+nu se citesc. Starea `push_*` a masinii se pastreaza, iar un rand `push_*` din fisier nu intra.
+Pana pe 2026-10-03 restore-ul pierdea in tacere `proiecte.data_finalizare` / `vault_folder` /
+`notify_on_complete`, `global_tasks.ora` si `tasks.data_start` / `progres` / `is_milestone`;
+`teste/test_backup_restore.py` compara acum toate coloanele tuturor tabelelor dupa un dus-intors.
+
 ## Sincronizarea cu vault-ul
 
 `Knowledge/tools/pif-sync.py`: `list · status [slug] · create <slug> · push [slug] ·

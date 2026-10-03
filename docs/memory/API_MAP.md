@@ -11,12 +11,12 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
 | GET | `/api/stats` | `get_stats` | 40 |
-| GET | `/api/backup` | `backup_database` | 65 |
-| POST | `/api/restore` | `restore_database` | 95 |
-| GET | `/admin/db-upload` | `admin_db_upload_page` | 258 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 304 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 381 |
-| GET | `/api/calendar` | `calendar_view` | 423 |
+| GET | `/api/backup` | `backup_database` | 73 |
+| POST | `/api/restore` | `restore_database` | 166 |
+| GET | `/admin/db-upload` | `admin_db_upload_page` | 227 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 273 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 350 |
+| GET | `/api/calendar` | `calendar_view` | 392 |
 
 ## blueprints/app_update.py (3 rute)
 

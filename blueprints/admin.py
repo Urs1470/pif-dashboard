@@ -62,6 +62,14 @@ def get_stats():
 # Backup / Restore
 # ---------------------------------------------------------------------------
 
+# Tabelele din backup, in ordinea in care se pot reinsera: parintii inaintea copiilor (cheile
+# straine din `tasks`, `implementari` si `calcule` arata spre `proiecte`, cele din
+# `task_dependencies` spre `tasks` si `proiecte`). Backup-ul exporta fiecare tabela cu TOATE
+# coloanele ei (`SELECT *`); restaurarea le pune inapoi pe toate.
+TABELE_BACKUP = ('proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
+                 'implementari', 'calcule', 'global_tasks', 'clienti', 'app_settings')
+
+
 @admin_bp.route('/api/backup', methods=['GET'])
 @login_required
 def backup_database():
@@ -70,13 +78,11 @@ def backup_database():
 
     backup = {}
 
-    tables = ['proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
-                  'implementari', 'calcule', 'global_tasks', 'clienti', 'app_settings']
     # sarim tabelele absente
     # ca sa nu pice backup-ul cu 500.
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     existing = {row[0] for row in cursor.fetchall()}
-    for table in tables:
+    for table in TABELE_BACKUP:
         if table not in existing:
             backup[table] = []
             continue
@@ -90,6 +96,71 @@ def backup_database():
     conn.close()
 
     return jsonify(backup)
+
+
+# ---- restaurarea: coloanele vin din schema, nu dintr-o lista scrisa in cod ----------------
+#
+# DE CE. INSERT-urile de mana ale restaurarii enumerau coloanele, iar o coloana adaugata
+# dupa ele nu se mai restaura: backup-ul o exporta (`SELECT *`), restore-ul o arunca in
+# tacere. Asa s-au pierdut `proiecte.data_finalizare`, `vault_folder` si `notify_on_complete`,
+# `global_tasks.ora` si `tasks.data_start` / `progres` / `is_milestone` — auditul din
+# 2026-10-03 a facut backup apoi restore si le-a gasit goale. Acum fiecare INSERT ia
+# coloanele din `PRAGMA table_info`: ce are si tabela, si randul din fisier, se scrie ca atare
+# (inclusiv NULL si ''); ce lipseste din rand (backup mai vechi decat coloana) ramane pe
+# valoarea implicita a coloanei; ce are randul si tabela nu mai are (coloane scoase de
+# migrari: `prioritate`, `data_planificata`, ...) se ignora. Un test de dus-intors
+# (`teste/test_backup_restore.py`) compara toate coloanele tuturor tabelelor, ca o coloana
+# viitoare sa nu se mai piarda.
+
+def _reinsereaza(cursor, tabela, randuri, ajusteaza=None):
+    """Pune `randuri` (din fisierul de backup) in `tabela`, cu fiecare coloana comuna.
+
+    `ajusteaza(rand)` modifica o COPIE a randului inainte de scriere (reguli de compatibilitate
+    cu backup-uri vechi)."""
+    nume = safe_table(tabela)
+    coloane = [r[1] for r in cursor.execute(f'PRAGMA table_info({nume})')]
+    for rand in randuri:
+        rand = dict(rand)
+        if ajusteaza:
+            ajusteaza(rand)
+        comune = [c for c in coloane if c in rand]
+        cursor.execute(
+            'INSERT INTO %s (%s) VALUES (%s)' % (
+                nume, ', '.join('"%s"' % c for c in comune), ', '.join('?' * len(comune))),
+            [rand[c] for c in comune])
+
+
+def _termen_din_planificata(rand):
+    """Backup-uri dinainte de v33 aveau `data_planificata` pe langa termen; taskul are acum o
+    singura data (`data_scadenta`), deci acolo unde termenul lipseste planul devine termen."""
+    if not rand.get('data_scadenta') and rand.get('data_planificata'):
+        rand['data_scadenta'] = rand['data_planificata']
+
+
+def _ajusteaza_global(rand):
+    _termen_din_planificata(rand)
+    rand['sfera'] = rand.get('sfera') or 'munca'
+
+
+def _ajusteaza_perioada(rand):
+    rand['locatie'] = rand.get('locatie') or 'site'
+    rand['faza'] = rand.get('faza') or 'implementare'
+    rand['confirmata'] = 1 if rand.get('confirmata') else 0
+
+
+def _ajusteaza_dependenta(rand):
+    rand['tip'] = rand.get('tip') or 'FS'
+
+
+# Tabelele care nu mai exista (jurnal, timer_sessions din v22; checklist_pif, checklist_categorii,
+# project_templates, assistant_memory din v23) pot aparea in backup-uri vechi: restore-ul citeste
+# doar tabelele din TABELE_BACKUP, deci le ignora.
+AJUSTARI_RESTORE = {
+    'tasks': _termen_din_planificata,
+    'global_tasks': _ajusteaza_global,
+    'implementari': _ajusteaza_perioada,
+    'task_dependencies': _ajusteaza_dependenta,
+}
 
 
 @admin_bp.route('/api/restore', methods=['POST'])
@@ -111,128 +182,26 @@ def restore_database():
                        "WHERE " + CHEI_PROTEJATE_SQL)
         protejate_pastrate = [tuple(r) for r in cursor.fetchall()]
         # Clear existing data (skip tables absent on this deploy)
-        tables = ['proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
-                  'implementari', 'calcule', 'global_tasks', 'clienti', 'app_settings']
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         existing = {row[0] for row in cursor.fetchall()}
-        for table in tables:
+        for table in TABELE_BACKUP:
             if table in existing:
                 cursor.execute(f'DELETE FROM {safe_table(table)}')
 
-        # Restore proiecte
-        for p in data.get('proiecte', []):
-            cursor.execute('''
-                INSERT INTO proiecte (id, tip, nume, client, locatie, echipament_principal, producator,
-                    cod_proiect, folder_server, data_crearii,
-                    status, observatii, nr_comanda, service_before, service_after,
-                    confirmat_client, client_nume_confirmare, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                p.get('id'), p.get('tip'), p.get('nume'), p.get('client'), p.get('locatie'),
-                p.get('echipament_principal'), p.get('producator'), p.get('cod_proiect'),
-                p.get('folder_server'),
-                p.get('data_crearii'), p.get('status'), p.get('observatii'), p.get('nr_comanda'),
-                p.get('service_before'), p.get('service_after'),
-                p.get('confirmat_client', 0), p.get('client_nume_confirmare'),
-                p.get('created_at'), p.get('updated_at')
-            ))
-
-        # Restore tasks. `data_planificata` din backup-uri vechi (dinainte de v33)
-        # se ignora: taskul are o singura data acum, iar migrarea a mutat deja
-        # planul in termen acolo unde termenul lipsea.
-        for t in data.get('tasks', []):
-            cursor.execute('''
-                INSERT INTO tasks (id, proiect_id, titlu, descriere, status,
-                    data_scadenta, data_finalizare, ordine, recurenta, created_at, updated_at,
-                    ordine_agenda)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (t.get('id'), t.get('proiect_id'), t.get('titlu'), t.get('descriere'),
-                  t.get('status'),
-                  t.get('data_scadenta') or t.get('data_planificata'),
-                  t.get('data_finalizare'), t.get('ordine', 0), t.get('recurenta'),
-                  t.get('created_at'), t.get('updated_at'),
-                  t.get('ordine_agenda', 0)))
-
-        # jurnal / timer_sessions din backup-uri vechi se ignora (v22 a scos featureul)
-        # checklist_pif / checklist_categorii / project_templates din backup-uri vechi
-        # se ignora (v23 a sters featureurile Checklist + Template)
-
-        # Restore global_tasks — vezi nota de mai sus despre `data_planificata`.
-        for gt in data.get('global_tasks', []):
-            cursor.execute('''
-                INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,
-                    data_scadenta, data_finalizare, recurenta, created_at, updated_at,
-                    ordine_agenda)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (gt.get('id'), gt.get('titlu'), gt.get('descriere'),
-                  gt.get('status'), gt.get('categorie'),
-                  gt.get('sfera') or 'munca',
-                  gt.get('data_scadenta') or gt.get('data_planificata'),
-                  gt.get('data_finalizare'), gt.get('recurenta'),
-                  gt.get('created_at'), gt.get('updated_at'),
-                  gt.get('ordine_agenda', 0)))
-
-        # Restore clienti
-        for c in data.get('clienti', []):
-            cursor.execute('''
-                INSERT INTO clienti (id, nume, adresa, telefon, email, contact_principal, note, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (c.get('id'), c.get('nume'), c.get('adresa'), c.get('telefon'),
-                  c.get('email'), c.get('contact_principal'), c.get('note'), c.get('created_at')))
-
-        # Restore task_subtasks (schema: id, task_id, titlu, done, ordine, created_at)
-        for s in data.get('task_subtasks', []):
-            cursor.execute('''
-                INSERT INTO task_subtasks (id, task_id, titlu, done, ordine, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (s.get('id'), s.get('task_id'), s.get('titlu'),
-                  s.get('done', 0), s.get('ordine', 0), s.get('created_at')))
-
-        # Restore implementari (perioadele de implementare — planificarea reala
-        # a lui Ion). Lipseau din backup pana in 2026-07-27: un restore le pierdea
-        # in tacere.
-        for im in data.get('implementari', []):
-            cursor.execute('''
-                INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit,
-                    locatie, faza, eticheta, ordine, confirmata, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (im.get('id'), im.get('proiect_id'), im.get('data_start'),
-                  im.get('data_sfarsit'), im.get('locatie') or 'site',
-                  im.get('faza') or 'implementare',
-                  im.get('eticheta'), im.get('ordine', 0),
-                  1 if im.get('confirmata') else 0, im.get('created_at')))
-
-        # Calcule atasate proiectelor (v37). Campurile JSON se scriu ca text, asa
-        # cum stau in tabela — restore-ul nu le interpreteaza.
-        for c in data.get('calcule', []):
-            cursor.execute('''
-                INSERT INTO calcule (id, proiect_id, titlu, modul_id, modul_titlu,
-                    intrari, rezultate, verdicte, stare, nota, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (c.get('id'), c.get('proiect_id'), c.get('titlu'), c.get('modul_id'),
-                  c.get('modul_titlu'), c.get('intrari'), c.get('rezultate'),
-                  c.get('verdicte'), c.get('stare'), c.get('nota'), c.get('created_at')))
-
-        # Restore task_dependencies (dupa tasks — FK pe ambele capete)
-        for dep in data.get('task_dependencies', []):
-            cursor.execute('''
-                INSERT INTO task_dependencies (id, proiect_id, predecessor_id,
-                    successor_id, tip, lag, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (dep.get('id'), dep.get('proiect_id'), dep.get('predecessor_id'),
-                  dep.get('successor_id'), dep.get('tip') or 'FS',
-                  dep.get('lag', 0), dep.get('created_at')))
+        # Toate tabelele in afara de `app_settings`, parintii inaintea copiilor. Perioadele
+        # (`implementari`) lipseau din backup pana in 2026-07-27: un restore le pierdea in tacere.
+        # Campurile JSON din `calcule` (v37) se scriu ca text, asa cum stau in tabela.
+        for table in TABELE_BACKUP:
+            if table != 'app_settings':
+                _reinsereaza(cursor, table, data.get(table, []), AJUSTARI_RESTORE.get(table))
 
         # Restore app_settings (vault Obsidian, cheile de idempotenta debrief).
-        # assistant_memory din backup-uri vechi se ignora (v23 a sters Hermes).
         # Cheile protejate din FISIER se ignora si ele: backup-ul nu le contine
         # niciodata (filtrate la export), deci un rand `push_*` intr-un fisier
         # de restore e editat de mana — nu acceptam un secret injectat.
-        for s in data.get('app_settings', []):
-            if str(s.get('key', '')).startswith(CHEI_PROTEJATE):
-                continue
-            cursor.execute('INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)',
-                           (s.get('key'), s.get('value'), s.get('updated_at')))
+        _reinsereaza(cursor, 'app_settings',
+                     [s for s in data.get('app_settings', [])
+                      if not str(s.get('key', '')).startswith(CHEI_PROTEJATE)])
 
         # Starea per-masina (push) se pastreaza peste restore (vezi citirea de
         # dinainte de DELETE).
