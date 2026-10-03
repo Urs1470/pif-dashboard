@@ -1,6 +1,7 @@
 // Teste pe scriptul paginii de login (templates/login.html): unde te duce dupa PIN.
 //
-// Rulare: `npm test` (runner-ul built-in `node --test`).
+// Rulare: `node --test teste/js/login.test.mjs` (runner-ul built-in, fara pachete npm), sau
+// `python scripts/verifica.py`, care le ruleaza pe toate din teste/js/.
 //
 // De ce. `/login?next=/torqa/` trebuie sa te intoarca la Torqa dupa PIN, iar un `next`
 // care ar duce pe alt site trebuie sa duca la `/`. Regula e verificata pe server
@@ -14,7 +15,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 
-const HTML = readFileSync(new URL('../../../templates/login.html', import.meta.url), 'utf8')
+const HTML = readFileSync(new URL('../../templates/login.html', import.meta.url), 'utf8')
 // Cele doua <script>-uri cu nonce: primul e bootstrap-ul de tema din <head>, ultimul e logica.
 const SCRIPTURI = [...HTML.matchAll(/<script nonce="\{\{ csp_nonce \}\}">([\s\S]*?)<\/script>/g)].map((m) => m[1])
 const SCRIPT_LOGIN = SCRIPTURI[SCRIPTURI.length - 1]

@@ -4,11 +4,11 @@
 
 Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
-## static/service-worker.js (441 linii)
+## static/service-worker.js (89 linii)
 
 ### (top)
 
-`54:esteTorqa`, `84:precacheShell`, `234:cacheFirstWithNetwork`, `267:cacheFirstCDN`, `294:networkFirstWithCache`, `331:networkFirstWithNetwork`
+`34:esteCacheVechi`, `38:esteTorqa`, `57:retrage`
 
 ## app.py (667 linii)
 
@@ -18,9 +18,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:run_migrations`, `1749:init_db`, `1908:row_to_dict`
 
-## utils.py (244 linii)
+## utils.py (235 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `136:safe_table`, `142:generate_uuid`, `146:id_ocupat`, `156:safe_next_url`, `190:_check_api_token`, `212:login_required`, `226:get_app_setting`, `235:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `127:safe_table`, `133:generate_uuid`, `137:id_ocupat`, `147:safe_next_url`, `181:_check_api_token`, `203:login_required`, `217:get_app_setting`, `226:set_app_setting`
 
 ## csrf.py (82 linii)
 
