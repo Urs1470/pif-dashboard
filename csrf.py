@@ -1,11 +1,12 @@
-"""Lightweight CSRF protection for SPA + JSON API.
+"""Lightweight CSRF protection for the JSON API (Torqa web and the pages the server renders).
 
 Strategy: double-submit cookie.
-- On every response, a CSRF token is set in a readable cookie (`csrf_token`).
+- On every authenticated response, a CSRF token is set in a readable cookie (`csrf_token`).
 - JS reads the cookie and sends it back in the `X-CSRF-Token` header.
-- The server validates that the header matches the cookie.
+- The server validates that the header matches the session's token.
 - State-changing methods (POST/PUT/DELETE/PATCH) are protected.
 - Safe methods (GET/HEAD/OPTIONS) are exempt.
+- Requests carrying a Bearer token (machines, Torqa on the phone) are exempt: no ambient cookie.
 - The webhook endpoint is exempt (uses HMAC auth instead).
 """
 import os
@@ -14,11 +15,9 @@ import hashlib
 
 from flask import request, session, abort, g
 
-# Actiunile din notificarea push („Facut" / „Azi") sunt trimise de SERVICE
-# WORKER, care nu poate citi cookie-uri — deci nu are cum sa trimita tokenul
-# CSRF, desi cererea lui poarta cookie-ul de sesiune. Ruta se apara singura cu
-# un token HMAC legat de UN task, valabil 48h (vezi blueprints/push.py).
-_EXEMPT_ENDPOINTS = frozenset({'push.push_action'})
+# Singura exceptie pe cale: webhook-ul de deploy, care se apara cu HMAC. (Pana pe 2026-10-03 mai era
+# una pe endpoint, `push.push_action`, pentru actiunile din notificarea push trimise de service
+# worker; push-ul a plecat si exceptia odata cu el.)
 _EXEMPT_PREFIXES = ('/webhook/',)
 _SAFE_METHODS = frozenset(('GET', 'HEAD', 'OPTIONS'))
 
@@ -64,8 +63,6 @@ def init_csrf(app):
         for prefix in _EXEMPT_PREFIXES:
             if request.path.startswith(prefix):
                 return
-        if request.endpoint and request.endpoint in _EXEMPT_ENDPOINTS:
-            return
         # API-token (Bearer) requests are machine-to-machine — no CSRF needed.
         # Check both: already-set flag (from login_required) or raw header presence.
         if getattr(g, 'api_token_auth', False):
