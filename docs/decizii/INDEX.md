@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-10-03
+
+- [2026-10-03 Retragerea interfeței vechi: serverul rămâne doar backend-ul Torqa](2026-10-03-retragerea-interfetei-vechi.md) — SPA-ul Svelte cu `static/dist/`, calculatorul `/calc` (cu `/api/me`, `/docs`, PDF.js), planul de departament și notificările push pleacă; `/` duce la `/torqa/`, iar `/service-worker.js` servește un worker fără `fetch` care șterge cache-urile vechi (nu `ngsw:`), se dezînregistrează și reîncarcă ferestrele din afara `/torqa/`. Baza nu se atinge (`push_*` rămân, backup-ul le exclude); verificatoarele rămân patru, fără browser; restaurare din eticheta `inainte-de-retragere`.
+
 ## 2026-10-01
 
 - [2026-10-01 Torqa web pe același server și canal propriu pentru APK-ul Torqa](2026-10-01-torqa-web-si-canalul-apk.md) — build-ul web Angular se **urcă** (`POST /api/torqa/web/upload`, zip, doar tokenul de mașină, refuzat dispozitivului), nu stă în git: `uploads/torqa-web/<versiune>/` + pointer `current` rescris cu `os.replace`, live + 2 anterioare. La `/torqa/` documentul cere sesiune (redirect la `/login?next=/torqa/`), fișierele nu și nu ating sesiunea (altfel `Vary: Cookie` le scoate din cache). CSP propriu, găsit cu Chromium pe build-ul real. Service worker-ul dashboardului nu mai atinge `/torqa/*`, `X-Torqa` și cache-urile `ngsw:` (cel vechi le ștergea la fiecare deploy). `canal=pif|torqa` pe rutele APK (gol sau necunoscut = 400); `next` validat la login; `<base href>` verificat la urcare.
