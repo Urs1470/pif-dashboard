@@ -52,8 +52,9 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
   `/api/proiecte/batch`, `/login-hash` si `/api/obsidian/config` ×2 in `97a5c791` (2026-08-15),
   `/api/export/ics-key` in `847327ee` (2026-08-27). **`/api/stats` NU e moarta** — o citeste Cowork.
   La retragerea din 2026-10-03 au plecat doar rutele interfetei vechi (push ×9, plan-departament ×2,
-  `/api/me`, `/calc`, `/docs`, fisierele SPA-ului); `/api/search`, `/api/agenda/*`, `/api/clienti*` si
-  previzualizarile de import au ramas, fiindca nu s-a putut dovedi ca nu le citeste nimeni.
+  `/api/me`, `/calc`, `/docs`, fisierele SPA-ului). Au ramas `/api/search` si `/api/agenda/*` (le
+  citeaza skill-ul `proiect`), si `/api/clienti*` cu previzualizarile de import (niciun consumator
+  gasit, dar nu s-a putut dovedi ca nu le citeste nimeni).
 - **Android:** `org.iupif.torqa` (Torqa nativ, build propriu din Super Productivity) are canalul de
   APK `torqa`. `org.iupif.pif` (WebView peste site) a fost retrasa; canalul `pif` din
   `blueprints/app_update.py` ramane servit.
