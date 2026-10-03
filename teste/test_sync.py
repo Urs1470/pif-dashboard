@@ -6,8 +6,8 @@ Trei lucruri pazite aici, toate tacute daca se strica:
   - tokenul de dispozitiv NU deschide restore, backup, admin, deploy, upload de APK si
     cheia vault-ului. Un telefon pierdut nu trebuie sa poata inlocui sau descarca baza.
   - nici vault-ul: dispozitivul citeste doar notele din `vault_folder` al unui proiect (ce
-    citeste butonul Wiki din Torqa) si nu scrie nicio nota. Restul vault-ului tine nota cu
-    tokenul de masina si PIN-ul, iar PUT-ul impinge in repo-ul Knowledge cu cheia de scriere.
+    citeste butonul Wiki din Torqa) si nu scrie nicio nota. Restul vault-ului il citesc
+    tokenul de masina si PIN-ul; scrierea notelor prin server a plecat pe 2026-10-03.
 """
 
 import os
@@ -90,7 +90,7 @@ class ImagineaSiTokenul(CuBazaNoua):
         d = self.get('/api/sync/snapshot', token=DEVICE).get_json()
         t1 = next(t for t in d['tasks'] if t['id'] == 't1')
         for camp in ('proiect_id', 'titlu', 'descriere', 'status', 'data_scadenta', 'recurenta',
-                     'ordine', 'ordine_agenda', 'updated_at', 'viu'):
+                     'ordine', 'updated_at', 'viu'):
             self.assertIn(camp, t1)
         self.assertEqual(t1['recurenta'], 'saptamanal')
         g2 = next(g for g in d['global_tasks'] if g['id'] == 'g2')
@@ -117,7 +117,7 @@ class ImagineaSiTokenul(CuBazaNoua):
         from utils import _check_api_token
         for metoda, ruta in [('GET', '/api/backup'), ('POST', '/api/restore'),
                              ('GET', '/api/admin/db-dump'), ('POST', '/api/admin/db-upload'),
-                             ('GET', '/admin/db-upload'), ('POST', '/api/deploy'),
+                             ('GET', '/admin/db-upload'),
                              ('POST', '/api/app/upload'), ('POST', '/api/obsidian/vault-key'),
                              ('POST', '/api/obsidian/vault-sync'),
                              # Nota din vault se SCRIE doar cu tokenul de masina (sau PIN): regula
@@ -281,9 +281,9 @@ class NoteleDinVaultSiDispozitivul(CuAplicatia):
     """`GET /api/obsidian/note` cu tokenul de dispozitiv: doar notele dintr-un `vault_folder` de
     proiect, adica exact ce deschide butonul Wiki din Torqa (lista vine de la
     `/api/proiecte/<id>/wiki`). Orice altceva da 403 — la fel pentru o nota care exista si pentru
-    una care nu, ca dispozitivul sa nu poata deduce ce fisiere are vault-ul. `PUT` e refuzat
-    dispozitivului (401, ca restul listei); tokenul de masina si sesiunea cu PIN raman netinute
-    in loc."""
+    una care nu, ca dispozitivul sa nu poata deduce ce fisiere are vault-ul. Scrierea (`PUT`)
+    a plecat pe 2026-10-03, pentru oricine; tokenul de masina si sesiunea cu PIN citesc orice
+    nota."""
 
     @classmethod
     def setUpClass(cls):
@@ -415,13 +415,12 @@ class NoteleDinVaultSiDispozitivul(CuAplicatia):
 
     # ---------------------------------------------------------------- scrierea (PUT)
 
-    def test_dispozitivul_nu_scrie_nicio_nota(self):
-        # In dosarul unui proiect, in afara lui, sau una care nu exista: tot 401, ca restul listei.
+    def test_nimeni_nu_mai_scrie_nota_prin_server(self):
+        # `PUT /api/obsidian/note` a plecat pe 2026-10-03: 405 cu orice credentiala; nimic scris.
         for path in (INAUNTRU, AFARA, 'wiki/job/projects/acme/pompa/nu-exista.md'):
-            with self.subTest(cale=path):
-                r = self.scrie(path)
-                self.assertEqual(r.status_code, 401, r.get_data(as_text=True))
-                self.assertEqual(r.get_json(), {'error': 'Unauthorized'})
+            for token in (DEVICE, FULL):
+                with self.subTest(cale=path, token=token):
+                    self.assertEqual(self.scrie(path, token=token).status_code, 405)
         self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: README', 'nimic nu s-a scris')
         self.assertEqual(self.pe_disc(AFARA), NOTE_VAULT[AFARA])
         self.assertFalse(os.path.exists(os.path.join(self.vault, 'wiki', 'job', 'projects', 'acme', 'pompa',
@@ -435,23 +434,14 @@ class NoteleDinVaultSiDispozitivul(CuAplicatia):
                 self.assertIn(r.status_code, (401, 405))
         self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: README')
 
-    def test_tokenul_de_masina_scrie_nota(self):
-        r = self.scrie(INAUNTRU, 'Pompa: editata', token=FULL)
-        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
-        self.assertTrue(r.get_json()['saved'])
-        self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: editata')
-        # Si in afara dosarelor de proiect: restrictia e a dispozitivului, nu a rutei.
-        self.assertEqual(self.scrie(AFARA, 'si asta', token=FULL).status_code, 200)
-        self.assertEqual(self.pe_disc(AFARA), 'si asta')
-
-    def test_sesiunea_cu_pin_scrie_nota(self):
+    def test_sesiunea_cu_pin_nu_mai_scrie_nota(self):
         self.assertEqual(self.login().status_code, 200)
         self.client.get('/api/stats')                       # cookie-ul csrf apare pe un raspuns autentificat
         token = self.client.get_cookie('csrf_token').value
         r = self.client.put('/api/obsidian/note', json={'path': INAUNTRU, 'content': 'Pompa: din sesiune'},
                             headers={'X-CSRF-Token': token})
-        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
-        self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: din sesiune')
+        self.assertEqual(r.status_code, 405)
+        self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: README')
 
     # ------------------------------------------ `vault_folder`: cheia regulii de mai sus
 
@@ -483,12 +473,6 @@ class NoteleDinVaultSiDispozitivul(CuAplicatia):
                              headers=self.bearer(DEVICE))
         self.assertEqual(r.status_code, 403, r.get_data(as_text=True))
         self.assertIsNone(self.vault_folder('p-nou-dispozitiv'), 'proiectul nu s-a creat')
-
-    def test_dispozitivul_nu_importa_debrief_cu_dosar_de_vault(self):
-        r = self.client.post('/api/import/debrief',
-                             json={'proiect': {'nume': 'Debrief dispozitiv', 'vault_folder': 'wiki/personal'}},
-                             headers=self.bearer(DEVICE))
-        self.assertEqual(r.status_code, 403, r.get_data(as_text=True))
 
     def test_dispozitivul_editeaza_proiectul_fara_dosar_ca_inainte(self):
         # Ce trimite Torqa (fara `vault_folder`) trece ca pana acum.

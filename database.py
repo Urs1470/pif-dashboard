@@ -109,7 +109,7 @@ def close_db(exc=None):
 #      data cu `.slice(0, 10)` si compara zile ca text („restant" = `zi < today`).
 #      O data-cu-ora ar trece prin fiecare din comparatiile alea si le-ar strica
 #      pe cele care taie exact 10 caractere.
-SCHEMA_VERSION = 42
+SCHEMA_VERSION = 43
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1484,6 +1484,44 @@ def migrate_v41_to_v42():
     logger.info("Migration v41->v42 completed (chei app_settings fara cod; %s sterse)", sterse)
 
 
+def migrate_v42_to_v43():
+    """v42 -> v43: tabelele si coloanele ramase fara cod pleaca.
+
+    Ion, 2026-10-03: a ales din inventarul functiilor optiunile «Coloane și tabele fosile» si
+    «Importul debrief și clienții». Ce pleaca si de ce nu-l mai foloseste nimic:
+      - `task_dependencies` si `tasks.data_start` / `progres` / `is_milestone`: Ganttul de
+        proiect, scos pe 2026-08-08 (in backup-ul din 2026-10-03: 0 dependente, 0 taskuri cu
+        progres sau reper, 1 cu data_start);
+      - `ordine_agenda` pe `tasks` si `global_tasks`: ordinea boardului „Astazi", plecat cu
+        interfata veche; Torqa nu o citeste;
+      - `calcule`: calculele Calculatorului retras (0 randuri);
+      - `proiecte.notify_on_complete`: notificarile push au plecat;
+      - `clienti` si cheile `import_debrief:*`: importul de debrief (nefolosit din iulie) a
+        plecat cu ruta lui; clientul proiectului ramane textul din `proiecte.client`.
+    `implementari.data_start` (perioadele) NU e atins: e alta coloana, cu acelasi nume.
+
+    Ca la v33: `DROP COLUMN` (SQLite >= 3.35) doar unde coloana exista, tabelele cu `DROP TABLE
+    IF EXISTS`. Self-heal-urile care le readaugau (v20->v21, v23->v24, v36->v37) si crearea lor
+    din `init_db()` au plecat in acelasi commit; altfel ar fi revenit la prima pornire.
+    Idempotenta.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    for tabel in ('task_dependencies', 'calcule', 'clienti'):
+        cursor.execute(f'DROP TABLE IF EXISTS {tabel}')
+    for tabel, coloane in (('tasks', ('data_start', 'progres', 'is_milestone', 'ordine_agenda')),
+                           ('global_tasks', ('ordine_agenda',)),
+                           ('proiecte', ('notify_on_complete',))):
+        existente = {r[1] for r in cursor.execute(f'PRAGMA table_info({tabel})')}
+        for coloana in coloane:
+            if coloana in existente:
+                cursor.execute(f'ALTER TABLE {tabel} DROP COLUMN {coloana}')
+    cursor.execute("DELETE FROM app_settings WHERE key LIKE 'import!_debrief:%' ESCAPE '!'")
+    conn.commit()
+    conn.close()
+    logger.info('Migration v42->v43 completed (Gantt, agenda, calcule, clienti, notify_on_complete)')
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1693,6 +1731,11 @@ def run_migrations():
         set_schema_version(42)
         current_version = 42
 
+    if current_version < 43:
+        migrate_v42_to_v43()
+        set_schema_version(43)
+        current_version = 43
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1705,11 +1748,9 @@ def run_migrations():
     has_descriere = 'descriere' in tasks_cols
     has_tasks_recurenta = 'recurenta' in tasks_cols
     has_tasks_updated_at = 'updated_at' in tasks_cols
-    has_task_ordine = 'ordine_agenda' in tasks_cols
     cursor.execute("PRAGMA table_info(global_tasks)")
     gt_cols = {row[1] for row in cursor.fetchall()}
     has_gt_recurenta = 'recurenta' in gt_cols
-    has_gt_ordine = 'ordine_agenda' in gt_cols
     # Nota: nu mai exista self-heal pentru fault_codes / parametri_master —
     # v28 le sterge intentionat, iar un self-heal le-ar reinvia la fiecare pornire.
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -1722,11 +1763,8 @@ def run_migrations():
     if not has_gt_recurenta:
         logger.warning("Self-heal: re-running v8->v9 (global_tasks.recurenta missing)")
         migrate_v8_to_v9()
-    # Verificam DOAR `ordine_agenda`: `data_planificata` a plecat in v33, iar un
-    # self-heal pe ea ar readuce coloana imediat dupa ce migrarea o sterge.
-    if not has_task_ordine or not has_gt_ordine:
-        logger.warning("Self-heal: re-running v20->v21 (ordine_agenda missing)")
-        migrate_v20_to_v21()
+    # Fara self-heal pe `ordine_agenda` (v21): a plecat in v43, ca `data_planificata` in v33, si
+    # un self-heal pe ea ar readuce coloana la prima pornire de dupa migrare.
     # Aditiv-only: cheia e DOAR pe lipsa coloanei, niciodata pe versiune — nu
     # exista nicio migrare viitoare pe care s-o poata anula (capcanele v32/v33/v36).
     if 'sfera' not in gt_cols:
@@ -1739,11 +1777,8 @@ def run_migrations():
     if 'ora' not in gt_cols:
         logger.warning("Self-heal: re-running v40->v41 (global_tasks.ora missing)")
         migrate_v40_to_v41()
-    has_gantt_cols = {'data_start', 'progres', 'is_milestone'}.issubset(tasks_cols)
-    has_deps_table = 'task_dependencies' in existing_tables
-    if not has_gantt_cols or not has_deps_table:
-        logger.warning("Self-heal: re-running v23->v24 (tasks.data_start/progres/is_milestone or task_dependencies missing)")
-        migrate_v23_to_v24()
+    # Fara self-heal pe v23->v24 (Ganttul de proiect): coloanele si `task_dependencies` au plecat
+    # in v43.
     # Self-heal-ul pentru `tasks.faza` a plecat odata cu coloana (v32): ar fi
     # readus la loc exact ce tocmai a sters migrarea.
     if 'implementari' not in existing_tables:
@@ -1760,9 +1795,7 @@ def run_migrations():
     if 'confirmata' not in impl_cols:
         logger.warning("Self-heal: re-running v38->v39 (implementari.confirmata missing)")
         migrate_v38_to_v39()
-    if 'calcule' not in existing_tables:
-        logger.warning("Self-heal: re-running v36->v37 (calcule table missing)")
-        migrate_v36_to_v37()
+    # Fara self-heal pe v36->v37: `calcule` a plecat in v43.
     cursor2 = get_db().cursor()
     cursor2.execute("PRAGMA table_info(proiecte)")
     proiecte_cols = {row[1] for row in cursor2.fetchall()}
@@ -1810,7 +1843,6 @@ def init_db():
             client_nume_confirmare TEXT,
             created_at TEXT,
             updated_at TEXT,
-            notify_on_complete INTEGER DEFAULT 1,
             vault_folder TEXT
         )
     ''')
@@ -1829,23 +1861,10 @@ def init_db():
         )
     ''')
 
-    # Gantt de proiect: dependente intre taskuri (predecesor -> succesor).
-    # Coloanele Gantt (data_start/progres/is_milestone) se adauga prin migratia v28.
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS task_dependencies (
-            id TEXT PRIMARY KEY,
-            proiect_id TEXT NOT NULL,
-            predecessor_id TEXT NOT NULL,
-            successor_id TEXT NOT NULL,
-            tip TEXT DEFAULT 'FS',
-            lag INTEGER DEFAULT 0,
-            created_at TEXT,
-            FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE,
-            FOREIGN KEY (predecessor_id) REFERENCES tasks(id) ON DELETE CASCADE,
-            FOREIGN KEY (successor_id) REFERENCES tasks(id) ON DELETE CASCADE
-        )
-    ''')
-
+    # `task_dependencies` (Ganttul de proiect) si `clienti` nu se mai creeaza aici: v43 le-a scos,
+    # iar un `CREATE TABLE IF NOT EXISTS` la fiecare pornire le-ar fi readus goale. Pe o baza noua
+    # le creeaza tot migrarile vechi (v1->v2 `clienti`, v23->v24 `task_dependencies`), iar v43
+    # le sterge la capatul lantului.
     # Perioade de implementare per proiect (separate de taskuri): Site / Sediu EGB.
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS implementari (
@@ -1875,19 +1894,6 @@ def init_db():
             data_finalizare TEXT,
             created_at TEXT,
             updated_at TEXT
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS clienti (
-            id TEXT PRIMARY KEY,
-            nume TEXT NOT NULL,
-            adresa TEXT,
-            telefon TEXT,
-            email TEXT,
-            contact_principal TEXT,
-            note TEXT,
-            created_at TEXT
         )
     ''')
 
@@ -1921,7 +1927,6 @@ def init_db():
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_proiect_id ON tasks(proiect_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_global_tasks_status ON global_tasks(status)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_clienti_nume ON clienti(nume)')
     # `idx_task_subtasks_task_id` NU se mai creeaza aici. Pe o baza noua, v18->v19
     # reconstruieste `task_subtasks` (DROP + RENAME) imediat dupa, deci indexul pus
     # aici murea odata cu tabela, iar a DOUA pornire a serverului il punea la loc —

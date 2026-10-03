@@ -57,9 +57,6 @@ def _spawn_recurring_task(cursor, existing, recurenta):
     next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
     cursor.execute('SELECT MAX(ordine) FROM tasks WHERE proiect_id = ?', (existing['proiect_id'],))
     max_ordine = cursor.fetchone()[0] or 0
-    # ordine_agenda e deliberat NECOPIAT: urmatoarea
-    # occurrence is born unplanned and surfaces on the Astazi board later via its
-    # future data_scadenta, not the moment the current one is completed.
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta,
                            data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
@@ -82,7 +79,7 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
     new_id = generate_uuid()
     now = datetime.now().isoformat()
     next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
-    # ordine_agenda deliberat necopiat (vezi _spawn_recurring_task). `sfera` se
+    # `sfera` se
     # copiaza OBLIGATORIU: altfel un task personal recurent ar migra in lista
     # de munca la prima bifare (INSERT-ul ar cadea pe default-ul 'munca').
     # `ora` (v41) se copiaza din ACELASI motiv, si e cazul cel mai probabil sa se
@@ -186,9 +183,8 @@ def create_task(project_id):
 
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta,
-                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at,
-                           ordine_agenda, data_start, progres, is_milestone)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         project_id,
@@ -200,11 +196,7 @@ def create_task(project_id):
         now,
         data.get('descriere', ''),
         data.get('recurenta', ''),
-        now,
-        data.get('ordine_agenda', 0),
-        data.get('data_start', ''),
-        data.get('progres', 0),
-        1 if data.get('is_milestone') else 0
+        now
     ))
 
     conn.commit()
@@ -243,10 +235,6 @@ def update_task(task_id):
             ordine = COALESCE(?, ordine),
             descriere = COALESCE(?, descriere),
             recurenta = COALESCE(?, recurenta),
-            ordine_agenda = COALESCE(?, ordine_agenda),
-            data_start = COALESCE(?, data_start),
-            progres = COALESCE(?, progres),
-            is_milestone = COALESCE(?, is_milestone),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -257,10 +245,6 @@ def update_task(task_id):
         data.get('ordine'),
         data.get('descriere'),
         data.get('recurenta'),
-        data.get('ordine_agenda'),
-        data.get('data_start'),
-        data.get('progres'),
-        (1 if data.get('is_milestone') else 0) if data.get('is_milestone') is not None else None,
         datetime.now().isoformat(),
         task_id
     ))
@@ -290,7 +274,6 @@ def delete_task(task_id):
     try:
         cursor = conn.cursor()
         cursor.execute('DELETE FROM task_subtasks WHERE task_id = ?', (task_id,))
-        cursor.execute('DELETE FROM task_dependencies WHERE predecessor_id = ? OR successor_id = ?', (task_id, task_id))
         cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
         deleted = cursor.rowcount
         conn.commit()
@@ -531,9 +514,8 @@ def create_global_task():
 
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,
-                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta,
-                                  ordine_agenda, ora)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta, ora)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         data.get('titlu', ''),
@@ -546,7 +528,6 @@ def create_global_task():
         now,
         now,
         data.get('recurenta', ''),
-        data.get('ordine_agenda', 0),
         ora
     ))
 
@@ -609,7 +590,6 @@ def update_global_task(task_id):
             data_scadenta = COALESCE(?, data_scadenta),
             data_finalizare = COALESCE(?, data_finalizare),
             recurenta = COALESCE(?, recurenta),
-            ordine_agenda = COALESCE(?, ordine_agenda),
             sfera = COALESCE(?, sfera),
             ora = COALESCE(?, ora),
             updated_at = ?
@@ -622,7 +602,6 @@ def update_global_task(task_id):
         data.get('data_scadenta'),
         data.get('data_finalizare'),
         data.get('recurenta'),
-        data.get('ordine_agenda'),
         data.get('sfera'),
         ora,
         now,

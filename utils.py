@@ -116,8 +116,8 @@ TASK_PROIECT_VIU = """(p.status != 'finalizat' OR (
 
 
 VALID_TABLES = {
-    'proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
-    'clienti', 'global_tasks', 'implementari', 'calcule', 'app_settings',
+    'proiecte', 'tasks', 'task_subtasks',
+    'global_tasks', 'implementari', 'app_settings',
 }
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
@@ -173,7 +173,7 @@ def safe_next_url(value, default='/'):
 # dispozitiv pierdut nu trebuie sa poata mai mult decat sa citeasca si sa editeze
 # proiecte si taskuri. Ele raman pe PIF_API_TOKEN.
 DEVICE_TOKEN_DENIED = (
-    '/api/restore', '/api/backup', '/api/admin/', '/admin/', '/api/deploy',
+    '/api/restore', '/api/backup', '/api/admin/', '/admin/',
     '/api/app/upload', '/api/torqa/web/', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
 )
 

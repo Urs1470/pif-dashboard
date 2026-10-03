@@ -423,11 +423,6 @@ def healthz():
                     'commit': _git_commit()})
 
 
-@app.route('/api/health')
-def health_redirect():
-    return redirect('/api/healthz', code=301)
-
-
 @app.route('/login')
 def login_page():
     # `?next=` = unde te intorci dupa PIN (ex. /torqa/). Doar o cale a acestui site;
@@ -593,58 +588,8 @@ def webhook_deploy():
     return 'Deploy triggered', 200
 
 
-@app.route('/api/deploy', methods=['POST'])
-def api_deploy():
-    """Deploy via Bearer token (PIF_API_TOKEN).
-
-    Simpler alternative to the GitHub webhook for machine-to-machine deploys
-    when the HMAC secret is not available (e.g. different network).
-    """
-    from utils import _check_api_token
-    if not _check_api_token():
-        return jsonify({'error': 'Unauthorized'}), 401
-
-    project_dir = os.path.dirname(os.path.abspath(__file__))
-    try:
-        fetch = subprocess.run(
-            ['git', 'fetch', 'origin', 'master'],
-            cwd=project_dir, capture_output=True, text=True, timeout=30
-        )
-        if fetch.returncode != 0:
-            return jsonify({'error': f'Fetch failed: {fetch.stderr}'}), 500
-        result = subprocess.run(
-            ['git', 'reset', '--hard', 'origin/master'],
-            cwd=project_dir, capture_output=True, text=True, timeout=30
-        )
-        if result.returncode != 0:
-            return jsonify({'error': f'Reset failed: {result.stderr}'}), 500
-        git_msg = result.stdout.strip()
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-    # Install deps
-    venv_pip = os.path.join(project_dir, 'venv', 'bin', 'pip')
-    venv_python = os.path.join(project_dir, 'venv', 'bin', 'python')
-    req_file = os.path.join(project_dir, 'requirements.txt')
-    if os.path.exists(req_file):
-        pip_cmds = []
-        if os.path.exists(venv_python):
-            pip_cmds.append([venv_python, '-m', 'pip', 'install', '-r', req_file, '--quiet'])
-        if os.path.exists(venv_pip):
-            pip_cmds.append([venv_pip, 'install', '-r', req_file, '--quiet'])
-        for pip_cmd in pip_cmds:
-            try:
-                pip_result = subprocess.run(pip_cmd, cwd=project_dir, capture_output=True, text=True, timeout=120)
-                if pip_result.returncode == 0:
-                    break
-            except Exception:
-                pass
-
-    # Restart service
-    subprocess.Popen(['sudo', 'systemctl', 'restart', 'pif-dashboard'], cwd=project_dir)
-    logger.info(f"API deploy triggered: {git_msg}")
-
-    return jsonify({'status': 'ok', 'git': git_msg}), 200
+# `POST /api/deploy` (acelasi deploy, cu tokenul de masina in loc de HMAC) a plecat pe 2026-10-03:
+# nu-l chema nimic; deploy-ul merge prin `/webhook/deploy`, la push pe master.
 
 
 # ============ ERROR HANDLERS ============

@@ -19,12 +19,11 @@ ai nevoie.
 
 | domeniu | tabele |
 |---|---|
-| Proiecte | `proiecte`, `clienti`, `implementari` (perioadele) |
+| Proiecte | `proiecte`, `implementari` (perioadele) |
 | Taskuri | `tasks`, `task_subtasks`, `global_tasks` |
-| Fosile | `task_dependencies` (Gantt, fara cititor), `calcule` (vie doar prin `/snapshot`) |
 | Sistem | `app_settings` (KV), `schema_version` |
 
-**Schema v41, 10 tabele.** Migrarile stau in `database.py` (`run_migrations()`), sunt
+**Schema v43, 7 tabele.** Migrarile stau in `database.py` (`run_migrations()`), sunt
 idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
 
 > **Ce s-a sters nu se reinvie.** v28 a scos `parametri_master`, `fault_codes`,
@@ -55,9 +54,10 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
   `/api/me`, `/calc`, `/docs`, fisierele SPA-ului), iar la curatenia de dupa ea (aceeasi zi) cele ramase
   fara apelant — nici in Torqa, nici in unelte, nici intr-un pas de skill: `/api/clienti*` ×5,
   `/api/agenda/*` ×3, `/api/search`, `/api/export/pdf` si cele doua previzualizari de import, care erau
-  si FARA LOGIN (`docs/decizii/2026-10-03-curatenie-dupa-retragere.md`). Au ramas `/api/stats`,
-  `/api/import/debrief`, `/api/obsidian/vault-key` si `vault-sync`, sanatatea. Tabela `clienti` ramane
-  (o scrie importul de debrief, o citeste snapshotul), la fel `ordine_agenda` pe taskuri.
+  si FARA LOGIN (`docs/decizii/2026-10-03-curatenie-dupa-retragere.md`). Apoi, la alegerea lui Ion
+  din inventarul functiilor, `/api/import/debrief`, `PUT /api/obsidian/note`, `/api/deploy` si
+  `/api/health`, iar din baza (v43) Ganttul, `ordine_agenda`, `calcule`, `clienti` si
+  `notify_on_complete`. Au ramas `/api/stats`, `/api/obsidian/vault-key` si `vault-sync`, sanatatea.
 - **Android:** `org.iupif.torqa` (Torqa nativ, build propriu din Super Productivity) are canalul de
   APK `torqa`. `org.iupif.pif` (WebView peste site) a fost retrasa; canalul `pif` din
   `blueprints/app_update.py` ramane servit.

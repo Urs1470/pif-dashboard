@@ -42,11 +42,7 @@ def implicit(dflt):
 LEGATURI = {
     ('tasks', 'proiect_id'): lambda n: 'proiecte-%d' % n,
     ('task_subtasks', 'task_id'): lambda n: 'tasks-%d' % n,
-    ('task_dependencies', 'proiect_id'): lambda n: 'proiecte-1',
-    ('task_dependencies', 'predecessor_id'): lambda n: 'tasks-%d' % n,
-    ('task_dependencies', 'successor_id'): lambda n: 'tasks-%d' % (3 - n),
     ('implementari', 'proiect_id'): lambda n: 'proiecte-%d' % n,
-    ('calcule', 'proiect_id'): lambda n: 'proiecte-%d' % n,
 }
 RANDURI = 2
 
@@ -203,16 +199,14 @@ class BackupSiRestore(CuAplicatia):
             self.assertEqual(citeste(self.destinatie, tabela), citeste(self.sursa, tabela), tabela)
 
     def test_coloanele_pierdute_pe_2_octombrie_se_intorc(self):
-        # Cele 7 coloane care lipseau din INSERT-urile de mana, numite, ca cine citeste testul
-        # sa vada ce s-a intamplat (testul generic de sus nu le enumera).
+        # Coloanele care lipseau din INSERT-urile de mana, numite, ca cine citeste testul sa vada
+        # ce s-a intamplat (testul generic de sus nu le enumera). `notify_on_complete` si cele trei
+        # ale Ganttului (`tasks.data_start`, `progres`, `is_milestone`) au plecat din schema in v43.
         genereaza(self.sursa)
         r = self.restaureaza(self.backup(), self.destinatie)
         self.assertEqual(r.status_code, 200)
         p = citeste(self.destinatie, 'proiecte')[0]
-        self.assertEqual((p['data_finalizare'], p['vault_folder'], p['notify_on_complete']),
-                         ('2026-09-11', 'proiecte.vault_folder#1', 0))
-        t = citeste(self.destinatie, 'tasks')[0]
-        self.assertEqual((t['data_start'], t['progres'], t['is_milestone']), ('2026-09-11', 1, 1))
+        self.assertEqual((p['data_finalizare'], p['vault_folder']), ('2026-09-11', 'proiecte.vault_folder#1'))
         self.assertEqual(citeste(self.destinatie, 'global_tasks')[0]['ora'], 'global_tasks.ora#1')
 
     def test_secretele_push_nu_pleaca_in_backup_si_nu_se_pierd_la_restore(self):
@@ -260,20 +254,23 @@ class BackupSiRestore(CuAplicatia):
                               'data_planificata': '2025-02-04', 'sfera': None}],
             'implementari': [{'id': 'i1', 'proiect_id': 'p1', 'data_start': '2025-03-01', 'locatie': '',
                               'faza': None, 'confirmata': True}],
-            'task_dependencies': [], 'calcule': [], 'clienti': [{'id': 'c1', 'nume': 'ACME'}],
             'app_settings': [{'key': 'obsidian_vault_path', 'value': '/x', 'updated_at': 'z'}],
             # tabele disparute din schema: backup-urile vechi le au, restore-ul nu le citeste
             'jurnal': [{'id': 'j1'}], 'checklist_pif': [{'id': 'k1'}], 'assistant_memory': [{'id': 'a1'}],
+            'task_dependencies': [{'id': 'd1'}], 'calcule': [{'id': 'k1'}],
+            'clienti': [{'id': 'c1', 'nume': 'ACME'}],
         }
         r = self.restaureaza(vechi, self.destinatie)
         self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
         p = citeste(self.destinatie, 'proiecte')[0]
         self.assertEqual((p['status'], p['confirmat_client'], p['client']), ('in_lucru', 1, 'ACME'))
-        self.assertEqual((p['notify_on_complete'], p['vault_folder'], p['data_finalizare']), (1, None, None),
+        self.assertEqual((p['vault_folder'], p['data_finalizare']), (None, None),
                          'coloanele care nu erau in backup iau implicita')
+        self.assertNotIn('notify_on_complete', p, 'coloana scoasa in v43 nu revine din backup')
         t = citeste(self.destinatie, 'tasks')[0]
         self.assertEqual((t['data_scadenta'], t['ordine'], t['status']), ('2025-02-03', 2, 'in_lucru'))
-        self.assertEqual((t['data_start'], t['progres'], t['is_milestone']), (None, 0, 0))
+        self.assertFalse({'data_start', 'progres', 'is_milestone', 'ordine_agenda'} & set(t),
+                         'coloanele Ganttului si ale agendei nu revin din backup')
         g = citeste(self.destinatie, 'global_tasks')[0]
         self.assertEqual((g['data_scadenta'], g['sfera'], g['ora'], g['categorie']), ('2025-02-04', 'munca', None, 'General'))
         i = citeste(self.destinatie, 'implementari')[0]
@@ -285,7 +282,8 @@ class BackupSiRestore(CuAplicatia):
             tabele = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         finally:
             c.close()
-        self.assertFalse(tabele & {'jurnal', 'checklist_pif', 'assistant_memory'}, 'nu se creeaza tabele')
+        self.assertFalse(tabele & {'jurnal', 'checklist_pif', 'assistant_memory', 'task_dependencies',
+                                   'calcule', 'clienti'}, 'nu se creeaza tabele')
 
     def test_un_backup_fara_unele_tabele_le_goleste_pe_cele_lipsa(self):
         genereaza(self.sursa)

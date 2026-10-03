@@ -63,11 +63,12 @@ def get_stats():
 # ---------------------------------------------------------------------------
 
 # Tabelele din backup, in ordinea in care se pot reinsera: parintii inaintea copiilor (cheile
-# straine din `tasks`, `implementari` si `calcule` arata spre `proiecte`, cele din
-# `task_dependencies` spre `tasks` si `proiecte`). Backup-ul exporta fiecare tabela cu TOATE
-# coloanele ei (`SELECT *`); restaurarea le pune inapoi pe toate.
-TABELE_BACKUP = ('proiecte', 'tasks', 'task_subtasks', 'task_dependencies',
-                 'implementari', 'calcule', 'global_tasks', 'clienti', 'app_settings')
+# straine din `tasks` si `implementari` arata spre `proiecte`). Backup-ul exporta fiecare tabela
+# cu TOATE coloanele ei (`SELECT *`); restaurarea le pune inapoi pe toate. `task_dependencies`,
+# `calcule` si `clienti` au plecat in v43: un backup vechi care le are se restaureaza, iar ele
+# se ignora, ca orice tabela care nu mai exista.
+TABELE_BACKUP = ('proiecte', 'tasks', 'task_subtasks', 'implementari', 'global_tasks',
+                 'app_settings')
 
 
 @admin_bp.route('/api/backup', methods=['GET'])
@@ -148,10 +149,6 @@ def _ajusteaza_perioada(rand):
     rand['confirmata'] = 1 if rand.get('confirmata') else 0
 
 
-def _ajusteaza_dependenta(rand):
-    rand['tip'] = rand.get('tip') or 'FS'
-
-
 # Tabelele care nu mai exista (jurnal, timer_sessions din v22; checklist_pif, checklist_categorii,
 # project_templates, assistant_memory din v23) pot aparea in backup-uri vechi: restore-ul citeste
 # doar tabelele din TABELE_BACKUP, deci le ignora.
@@ -159,7 +156,6 @@ AJUSTARI_RESTORE = {
     'tasks': _termen_din_planificata,
     'global_tasks': _ajusteaza_global,
     'implementari': _ajusteaza_perioada,
-    'task_dependencies': _ajusteaza_dependenta,
 }
 
 
@@ -190,7 +186,6 @@ def restore_database():
 
         # Toate tabelele in afara de `app_settings`, parintii inaintea copiilor. Perioadele
         # (`implementari`) lipseau din backup pana in 2026-07-27: un restore le pierdea in tacere.
-        # Campurile JSON din `calcule` (v37) se scriu ca text, asa cum stau in tabela.
         for table in TABELE_BACKUP:
             if table != 'app_settings':
                 _reinsereaza(cursor, table, data.get(table, []), AJUSTARI_RESTORE.get(table))

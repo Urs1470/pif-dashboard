@@ -37,7 +37,7 @@ o data per clona: `git config core.hooksPath .githooks`.
 ```
 app.py              # intrare Flask, auth PIN, CSP (nonce, fara surse externe), rate limit pe IP-ul din
                     #   socket (CF-Connecting-IP doar de la proxy de incredere), webhook deploy; / duce la /torqa/
-database.py         # schema v41, migrari v1-v41 idempotente, WAL
+database.py         # schema v43, migrari v1-v43 idempotente, WAL
 utils.py            # login_required, UUID, app_settings, norm_date, tokenurile de masina/dispozitiv
 csrf.py labels.py   # CSRF double-submit; etichetele de status
 
@@ -161,7 +161,8 @@ anterioare (`printf '<versiune>' > uploads/torqa-web/current` = intoarcere). APK
 cu interfata veche sa scape de ea; ruta ramane. `/calc`, `/assets/`, `/manifest.json`, `/docs/`,
 `/api/me`, `/api/push/*`, `/api/settings/plan-departament` dau 404, ca si rutele fara apelant scoase
 dupa retragere: `/api/clienti*`, `/api/agenda/*`, `/api/search`, `/api/export/pdf`,
-`/api/import-abb-multi/preview`, `/api/import-archive/preview`.
+`/api/import-abb-multi/preview`, `/api/import-archive/preview`, apoi (alegerile lui Ion din
+inventarul functiilor) `/api/import/debrief`, `PUT /api/obsidian/note`, `/api/deploy` si `/api/health`.
 
 ## Mai multe sesiuni pe acelasi arbore
 
@@ -174,12 +175,10 @@ Indexul git e comun, deci coordoneaza-te inainte sa pui in stage sau sa comiti. 
 
 - Statusurile sunt string-uri magice, centralizate in `labels.py` dar **neimpuse la nivel de
   baza** — un `UPDATE` direct poate scrie orice.
-- Baza nu s-a atins la retragere: randurile `push_*` din `app_settings` (cheia VAPID **privata**,
-  abonamentele) si `plan_departament_url` au ramas fara cititor. `/api/backup` exclude `push_*`
-  (`CHEI_PROTEJATE`, pazit de `test_suite`); `/api/admin/db-dump` e baza bruta. Tabela `calcule`
-  mai e citita de `/api/proiecte/<id>/snapshot`.
-- `/admin/db-upload` (formularul) nu poate trimite fisierul cu sesiunea de PIN: `fetch`-ul lui nu pune
-  `X-CSRF-Token`, deci serverul raspunde 403. `POST /api/admin/db-upload` merge cu tokenul de masina (curl);
-  `scripts/upload_db.py` are aceeasi problema. Pagina se deschide si scriptul ei ruleaza sub CSP-ul de azi.
+- Ce a ramas fara cod dupa retragere a plecat din baza: cheile `app_settings` `push_*`,
+  `plan_departament_url`, `ics_feed_key`, `fault_data_rev` in v42; Ganttul (`task_dependencies`,
+  `tasks.data_start/progres/is_milestone`), `ordine_agenda`, `calcule`, `clienti` si
+  `proiecte.notify_on_complete` in v43. `/api/backup` exclude inca `push_*` (`CHEI_PROTEJATE`), ca un
+  secret pus de mana sa nu plece; `/api/admin/db-dump` e baza bruta.
 - Nu exista pytest: testele folosesc biblioteca standard (`unittest`, `node --test`).
 - `UPLOAD_FOLDER` nu se poate configura din mediu.

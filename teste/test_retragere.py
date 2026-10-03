@@ -146,7 +146,7 @@ class PrevizualizarileAnonimeDeImport(CuAplicatia):
 
     # Gardianul clasei: o ruta de API care raspunde fara nicio credentiala a fost exact aici
     # (doua, ramase de la calculatorul public). Singurele publice sunt sanatatea serverului.
-    PUBLICE = {'/api/healthz', '/api/health'}
+    PUBLICE = {'/api/healthz'}
 
     def test_nicio_alta_ruta_de_api_nu_raspunde_anonim(self):
         import re
@@ -174,9 +174,12 @@ class RuteleFaraApelantScoaseDupaRetragere(CuAplicatia):
         ('get', '/api/clienti/c1'), ('put', '/api/clienti/c1'), ('delete', '/api/clienti/c1'),
         ('get', '/api/agenda/today'), ('get', '/api/agenda/candidates'), ('post', '/api/agenda/reorder'),
         ('get', '/api/search'), ('get', '/api/export/pdf'),
+        # A doua curatenie, tot pe 2026-10-03 (inventarul functiilor, alegerea lui Ion): importul
+        # de debrief, deploy-ul cu token si redirectul vechi de sanatate.
+        ('post', '/api/import/debrief'), ('post', '/api/deploy'), ('get', '/api/health'),
     )
     # Ce ramane viu din vecinatatea lor: le tine un apelant (Cowork, un skill, Torqa, un script).
-    RAMASE = ('/api/stats', '/api/import/debrief', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
+    RAMASE = ('/api/stats', '/api/obsidian/vault-key', '/api/obsidian/vault-sync', '/api/obsidian/note',
               '/api/healthz', '/api/sync/snapshot', '/api/calendar', '/api/proiecte/<project_id>/snapshot',
               '/api/backup', '/api/restore')
 
@@ -201,24 +204,22 @@ class RuteleFaraApelantScoaseDupaRetragere(CuAplicatia):
         self.assertEqual(self.client.get('/api/stats', headers=self.bearer()).status_code, 200)
         self.assertEqual(self.client.get('/api/healthz').status_code, 200)
 
-    def test_importul_de_debrief_scrie_clientul_iar_snapshotul_il_citeste(self):
-        # Tabela `clienti` nu mai are rute proprii, dar ramane vie: o scrie importul si o citeste
-        # snapshotul proiectului (de unde skill-ul de debrief isi ia clientul).
-        r = self.client.post('/api/import/debrief', headers=self.bearer(), json={
-            'meta': {'debrief_id': 'proba-curatenie'},
-            'client': {'nume': 'Client de Proba', 'email': 'client@proba.test'},
-            'proiect': {'nume': 'Pompa de proba', 'tip': 'PIF', 'status': 'finalizat'},
-            'tasks': [{'titlu': 'Un task importat'}],
-        })
+    def test_nota_din_vault_nu_se_mai_scrie_prin_server(self):
+        # `PUT /api/obsidian/note` a plecat; `GET` ramane (butonul Wiki din Torqa).
+        r = self.client.put('/api/obsidian/note', json={'path': 'a.md', 'content': 'x'}, headers=self.bearer())
+        self.assertEqual(r.status_code, 405)
+
+    def test_snapshotul_proiectului_fara_client_si_calcule(self):
+        # `clienti` si `calcule` au plecat in v43; snapshotul (pasul 0A al debrief-ului) da
+        # proiectul, cu clientul ca text, si taskurile.
+        r = self.client.post('/api/proiecte', headers=self.bearer(),
+                             json={'id': 'p-snap', 'tip': 'PIF', 'nume': 'Pompa', 'client': 'ACME'})
         self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
-        corp = r.get_json()
-        self.assertEqual(corp['sumar']['taskuri_create'], 1)
+        snap = self.client.get('/api/proiecte/p-snap/snapshot', headers=self.bearer()).get_json()
+        self.assertEqual(set(snap), {'meta', 'proiect', 'tasks'})
+        self.assertEqual(snap['proiect']['client'], 'ACME')
         import database
         conn = database.get_db()
-        rand = conn.execute("SELECT nume, email FROM clienti WHERE nume = 'Client de Proba'").fetchone()
+        tabele = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         conn.close()
-        self.assertEqual(tuple(rand), ('Client de Proba', 'client@proba.test'))
-        snap = self.client.get('/api/proiecte/%s/snapshot' % corp['proiect_id'], headers=self.bearer())
-        self.assertEqual(snap.status_code, 200)
-        self.assertEqual(snap.get_json()['client']['email'], 'client@proba.test')
-        self.assertEqual([t['titlu'] for t in snap.get_json()['tasks']], ['Un task importat'])
+        self.assertFalse(tabele & {'clienti', 'calcule', 'task_dependencies'})

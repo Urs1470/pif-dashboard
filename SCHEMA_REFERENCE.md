@@ -50,7 +50,11 @@ dubleaza), un proiect sau un task parinte inexistent da 404.
 8. **`sfera`** (`munca`|`personal`) pe `global_tasks` e opt-in la citire: implicit,
    listele intorc doar `munca`. O valoare necunoscuta da 400, nu se corecteaza tacit.
 
-## Import de debrief — `POST /api/import/debrief`
+## Import de debrief — scos
+
+`POST /api/import/debrief` a plecat pe 2026-10-03, cu tabela `clienti` pe care o umplea (v43): nu-l
+mai chema nimic din iulie. Debrief-ul scrie prin rutele de proiect si task. Ce urmeaza descrie
+contractul de dinainte, pentru istoric.
 
 Scrie `client{}`, `proiect{}` si `tasks[]`.
 
@@ -75,15 +79,16 @@ Scrie `client{}`, `proiect{}` si `tasks[]`.
 
 ## Export — `GET /api/proiecte/<id>/snapshot`
 
-Intoarce `meta`, `client`, `proiect{}`, `tasks[]` (cu `subtasks[]`), `calcule[]`.
+Intoarce `meta`, `proiect{}` (clientul e textul `proiect.client`) si `tasks[]` (cu `subtasks[]`).
+`client{}` si `calcule[]` au plecat in v43, cu tabelele lor.
 **Nu** intoarce echipamente, checklist, jurnal, ore sau perioade — pentru perioade
 cere `GET /api/proiecte/<id>/implementari`.
 
 ## Backup si restore — `GET /api/backup`, `POST /api/restore`
 
 Doar tokenul de masina sau sesiunea cu PIN (dispozitivul e refuzat). Backup-ul e un JSON cu cate o
-lista per tabela (`proiecte`, `tasks`, `task_subtasks`, `task_dependencies`, `implementari`,
-`calcule`, `global_tasks`, `clienti`, `app_settings`), fiecare rand cu TOATE coloanele tabelei;
+lista per tabela (`proiecte`, `tasks`, `task_subtasks`, `implementari`, `global_tasks`,
+`app_settings`), fiecare rand cu TOATE coloanele tabelei;
 cheile `push_*` din `app_settings` nu pleaca niciodata de pe masina.
 
 Restore sterge tabelele si le reinsereaza dintr-o singura tranzactie (un fisier stricat anuleaza
@@ -126,4 +131,10 @@ Scoase in aceeasi zi, la curatenia de dupa retragere, fiindca nu le mai chema ni
 snapshotul), `/api/agenda/today|candidates|reorder` (Torqa isi face Today din `viu` din
 `/api/sync/snapshot`), `/api/search`, `/api/export/pdf` si cele doua previzualizari de import
 `/api/import-abb-multi/preview` si `/api/import-archive/preview` (erau FARA LOGIN). Raman `/api/stats`,
-`/api/import/debrief`, `/api/obsidian/vault-key|vault-sync` si sanatatea.
+`/api/obsidian/vault-key|vault-sync` si sanatatea.
+
+Scoase tot pe 2026-10-03, la alegerea lui Ion din inventarul functiilor: `/api/import/debrief`,
+`PUT /api/obsidian/note` (notele se editeaza in Obsidian), `/api/deploy` (deploy-ul merge prin
+`/webhook/deploy`) si `/api/health` (redirect spre `/api/healthz`); din baza, in v43, Ganttul
+(`task_dependencies`, `tasks.data_start/progres/is_milestone`), `ordine_agenda`, `calcule`, `clienti`
+si `proiecte.notify_on_complete`.

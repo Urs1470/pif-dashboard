@@ -78,6 +78,27 @@ Pe lângă `app_settings` și `/admin/db-upload` de mai sus:
 - **`private_docs/` (11 MB), `manuals/` (69 MB) și `static/docs/` (6,4 MB) au ieșit din depozit**, care e public:
   motivul lor, calculatorul, a plecat. Rămân în istoricul git; copiile locale sunt în `.gitignore`.
 
+## A doua curățenie: alegerile lui Ion din inventarul funcțiilor (2026-10-03)
+
+Un inventar al funcțiilor (Torqa, server, vault) a propus ce se poate scoate; Ion a ales din el:
+
+- **Rute fără apelant:** `PUT /api/obsidian/note` (scria și făcea push în Knowledge; Torqa doar citește
+  wiki-ul), `/api/deploy` (deploy-ul merge prin webhook) și `/api/health` (doar redirecționa). Acum 404,
+  iar PUT-ul pe notă 405.
+- **Importul debrief și clienții:** `/api/import/debrief`, tabela `clienti` (10 rânduri) și cheile
+  `import_debrief:*`. Snapshotul proiectului nu mai are `client{}` și `calcule[]`.
+- **Coloane și tabele fosile (v43):** `task_dependencies`, `calcule`, `tasks.data_start/progres/
+  is_milestone/ordine_agenda`, `global_tasks.ordine_agenda`, `proiecte.notify_on_complete`.
+  `global_tasks.ordine_agenda` nu era numită în alegere; e aceeași ordine a boardului „Astăzi” ca pe
+  taskuri, deci a plecat cu ea. Self-heal-urile care le readaugau și crearea lor din `init_db()` au
+  plecat în același commit. Încercată pe o copie a bazei reale (v41 → v43): `integrity_check` ok,
+  aceleași rânduri în proiecte, taskuri, subtaskuri, globale și perioade, 16/16 perioade cu dată, a
+  doua pornire nu schimbă nimic. Copia de dinainte: `raw/pif-dashboard/backups/inainte-de-v42-2026-10-03/`
+  (Knowledge); `clienti` e și în backup-ul zilnic din 2026-10-03.
+- **Fișierele interfeței vechi:** `design/`, `docs/mochete/`, `static/fonts/` (rămân în istoric).
+- **Pagina de login** arată ca Torqa (fontul sistemului, culorile și cardul de sticlă din Liquid Glass,
+  iconița aplicației) și e în engleză, ca aplicația (varianta aleasă de Ion dintre cele propuse).
+
 ## Cum se aduce înapoi
 
 Fiecare punct e un commit separat pe ramura `curatare`; `git revert <commit>`. Starea de dinainte de toată curățenia
