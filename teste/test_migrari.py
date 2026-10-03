@@ -49,5 +49,43 @@ class SchemaDeLaZero(CuBazaNoua):
         self.assertEqual(_schema(self.db), inainte)
 
 
+class CheileFaraCodPleaca(CuBazaNoua):
+    """v42 (Ion, 2026-10-03, „Fă cele 6 puncte"): din `app_settings` pleaca `push_*`,
+    `plan_departament_url`, `ics_feed_key` si `fault_data_rev`; orice alta cheie ramane."""
+
+    PLEACA = ('push_vapid_private', 'push_sub_telefon', 'plan_departament_url', 'ics_feed_key',
+              'fault_data_rev')
+    RAMAN = ('obsidian_vault_path', 'pushover', 'debrief_abc', 'push')
+
+    def _chei(self):
+        c = sqlite3.connect(self.db)
+        try:
+            return {r[0] for r in c.execute('SELECT key FROM app_settings')}
+        finally:
+            c.close()
+
+    def test_se_sterg_doar_cheile_fara_cod(self):
+        import database
+        c = sqlite3.connect(self.db)
+        try:
+            c.executemany("INSERT OR REPLACE INTO app_settings (key, value, updated_at) "
+                          "VALUES (?, 'x', '')", [(k,) for k in self.PLEACA + self.RAMAN])
+            c.commit()
+        finally:
+            c.close()
+        database.migrate_v41_to_v42()
+        chei = self._chei()
+        self.assertEqual(chei & set(self.PLEACA), set())
+        # `pushover` si `push` nu incep cu `push_`: LIKE-ul are `_` scapat, nu „orice caracter".
+        self.assertTrue(set(self.RAMAN) <= chei, set(self.RAMAN) - chei)
+
+    def test_a_doua_rulare_nu_strica_nimic(self):
+        import database
+        database.migrate_v41_to_v42()
+        inainte = self._chei()
+        database.migrate_v41_to_v42()
+        self.assertEqual(self._chei(), inainte)
+
+
 if __name__ == '__main__':
     unittest.main()

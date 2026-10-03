@@ -109,7 +109,7 @@ def close_db(exc=None):
 #      data cu `.slice(0, 10)` si compara zile ca text („restant" = `zi < today`).
 #      O data-cu-ora ar trece prin fiecare din comparatiile alea si le-ar strica
 #      pe cele care taie exact 10 caractere.
-SCHEMA_VERSION = 41
+SCHEMA_VERSION = 42
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1458,6 +1458,32 @@ def migrate_v40_to_v41():
     logger.info("Migration v40->v41 completed (global_tasks.ora, NULL = fara ora)")
 
 
+def migrate_v41_to_v42():
+    """v41 -> v42: cheile `app_settings` pe care nu le mai citeste niciun cod se sterg.
+
+    Ion, 2026-10-03 („Fă cele 6 puncte", dupa curatenia de dupa retragerea interfetei
+    vechi). Ce pleaca, si de ce n-are cine sa le citeasca:
+      - `push_*`: cheia VAPID privata si abonamentele telefoanelor; notificarile push au
+        plecat odata cu interfata veche (2026-10-03);
+      - `plan_departament_url`: planul de departament, scos din plan (2026-10-01);
+      - `ics_feed_key`: feedul `.ics` a fost sters, dar cheia (un secret) iesea inca in
+        `/api/backup`, deci si in copiile zilnice din Drive;
+      - `fault_data_rev`: tabelele de coduri de eroare, sterse in v28.
+    Ca la v40 (cheile Google): un secret fara consumator nu are de ce sa stea in baza.
+
+    Idempotenta: un `DELETE` pe chei care lipsesc nu face nimic.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM app_settings WHERE key LIKE 'push!_%' ESCAPE '!' "
+        "OR key IN ('plan_departament_url', 'ics_feed_key', 'fault_data_rev')")
+    sterse = cursor.rowcount
+    conn.commit()
+    conn.close()
+    logger.info("Migration v41->v42 completed (chei app_settings fara cod; %s sterse)", sterse)
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1661,6 +1687,11 @@ def run_migrations():
         migrate_v40_to_v41()
         set_schema_version(41)
         current_version = 41
+
+    if current_version < 42:
+        migrate_v41_to_v42()
+        set_schema_version(42)
+        current_version = 42
 
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations

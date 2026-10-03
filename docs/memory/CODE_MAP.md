@@ -14,9 +14,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `78:_retele_de_incredere`, `92:_ip_valid`, `103:_proxy_de_incredere`, `115:_adresa_socket`, `121:_client_ip`, `142:get_or_create_secret_key`, `160:file_hash`, `187:inject_version`, `211:make_session_permanent`, `221:setup_logging`, `253:check_rate_limit`, `292:check_login_rate_limit`, `314:before_request_func`, `346:_default_csp`, `374:after_request_func`, `398:get_hashed_pin`, `407:_git_commit`, `421:healthz`, `427:health_redirect`, `432:login_page`, `442:login`, `456:logout`, `465:index`, `478:service_worker`, `483:add_sw_header`, `504:get_deploy_secret`, `512:webhook_deploy`, `597:api_deploy`, `653:page_not_found`, `660:internal_error`
 
-## database.py (1915 linii)
+## database.py (1946 linii)
 
-`13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:run_migrations`, `1749:init_db`, `1908:row_to_dict`
+`13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:migrate_v41_to_v42`, `1487:run_migrations`, `1780:init_db`, `1939:row_to_dict`
 
 ## utils.py (278 linii)
 
@@ -30,13 +30,13 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 _(fara definitii top-level)_
 
-## blueprints/admin.py (584 linii)
+## blueprints/admin.py (587 linii)
 
-`42:get_stats`, `75:backup_database`, `115:_reinsereaza`, `133:_termen_din_planificata`, `140:_ajusteaza_global`, `145:_ajusteaza_perioada`, `151:_ajusteaza_dependenta`, `168:restore_database`, `229:admin_db_upload_page`, `278:admin_db_upload`, `355:admin_db_dump`, `397:calendar_view`
+`42:get_stats`, `75:backup_database`, `115:_reinsereaza`, `133:_termen_din_planificata`, `140:_ajusteaza_global`, `145:_ajusteaza_perioada`, `151:_ajusteaza_dependenta`, `168:restore_database`, `229:admin_db_upload_page`, `281:admin_db_upload`, `358:admin_db_dump`, `400:calendar_view`
 
-## blueprints/app_update.py (205 linii)
+## blueprints/app_update.py (194 linii)
 
-`70:_canal`, `83:_cai`, `90:_canal_necunoscut`, `95:_canal_lipsa`, `100:_meta`, `109:app_upload`, `172:app_version`, `187:app_apk`
+`60:_canal`, `67:_canal_cerut`, `77:_cai`, `84:_canal_necunoscut`, `89:_canal_lipsa`, `94:_meta`, `103:app_upload`, `163:app_version`, `177:app_apk`
 
 ## blueprints/obsidian.py (578 linii)
 

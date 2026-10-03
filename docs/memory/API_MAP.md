@@ -14,17 +14,17 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | GET | `/api/backup` | `backup_database` | 73 |
 | POST | `/api/restore` | `restore_database` | 166 |
 | GET | `/admin/db-upload` | `admin_db_upload_page` | 227 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 276 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 353 |
-| GET | `/api/calendar` | `calendar_view` | 395 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 279 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 356 |
+| GET | `/api/calendar` | `calendar_view` | 398 |
 
 ## blueprints/app_update.py (3 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| POST | `/api/app/upload` | `app_upload` | 108 |
-| GET | `/api/app/version` | `app_version` | 170 |
-| GET | `/api/app/apk` | `app_apk` | 185 |
+| POST | `/api/app/upload` | `app_upload` | 102 |
+| GET | `/api/app/version` | `app_version` | 161 |
+| GET | `/api/app/apk` | `app_apk` | 175 |
 
 ## blueprints/obsidian.py (5 rute)
 
