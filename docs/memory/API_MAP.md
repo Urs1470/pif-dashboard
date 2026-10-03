@@ -32,11 +32,11 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/obsidian/note` | `obsidian_note_get` | 125 |
-| POST | `/api/obsidian/vault-key` | `obsidian_vault_key` | 241 |
-| POST | `/api/obsidian/vault-sync` | `obsidian_vault_sync` | 266 |
-| GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 338 |
-| PUT | `/api/obsidian/note` | `obsidian_note_put` | 470 |
+| GET | `/api/obsidian/note` | `obsidian_note_get` | 162 |
+| POST | `/api/obsidian/vault-key` | `obsidian_vault_key` | 284 |
+| POST | `/api/obsidian/vault-sync` | `obsidian_vault_sync` | 309 |
+| GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 381 |
+| PUT | `/api/obsidian/note` | `obsidian_note_put` | 513 |
 
 ## blueprints/projects.py (18 rute)
 

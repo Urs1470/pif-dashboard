@@ -1,14 +1,18 @@
 """Imaginea pentru Torqa (/api/sync/snapshot) si tokenul de dispozitiv.
 
-Doua lucruri pazite aici, amandoua tacute daca se strica:
+Trei lucruri pazite aici, toate tacute daca se strica:
   - imaginea e INTREAGA: ce lipseste din ea, Torqa sterge local. Un task scapat din
     imagine dispare de pe telefon fara nicio eroare.
   - tokenul de dispozitiv NU deschide restore, backup, admin, deploy, upload de APK si
     cheia vault-ului. Un telefon pierdut nu trebuie sa poata inlocui sau descarca baza.
+  - nici vault-ul: dispozitivul citeste doar notele din `vault_folder` al unui proiect (ce
+    citeste butonul Wiki din Torqa) si nu scrie nicio nota. Restul vault-ului tine nota cu
+    tokenul de masina si PIN-ul, iar PUT-ul impinge in repo-ul Knowledge cu cheia de scriere.
 """
 
 import os
 
+from _aplicatia import CuAplicatia
 from _baza import CuBazaNoua
 
 FULL = 'token-masina-test'
@@ -115,11 +119,33 @@ class ImagineaSiTokenul(CuBazaNoua):
                              ('GET', '/api/admin/db-dump'), ('POST', '/api/admin/db-upload'),
                              ('GET', '/admin/db-upload'), ('POST', '/api/deploy'),
                              ('POST', '/api/app/upload'), ('POST', '/api/obsidian/vault-key'),
-                             ('POST', '/api/obsidian/vault-sync')]:
+                             ('POST', '/api/obsidian/vault-sync'),
+                             # Nota din vault se SCRIE doar cu tokenul de masina (sau PIN): regula
+                             # depinde de metoda, nu doar de cale.
+                             ('PUT', '/api/obsidian/note'), ('POST', '/api/obsidian/note'),
+                             ('DELETE', '/api/obsidian/note'), ('PATCH', '/api/obsidian/note')]:
             for token, asteptat in ((DEVICE, False), (FULL, True)):
                 with app_module.app.test_request_context(
                         ruta, method=metoda, headers={'Authorization': f'Bearer {token}'}):
                     self.assertIs(_check_api_token(), asteptat, f'{metoda} {ruta} cu {token}')
+
+    def test_dispozitivul_citeste_notele_dar_nu_le_scrie(self):
+        # Garda de token lasa citirea sa treaca; ce nota se poate citi hotaraste ruta
+        # (`NoteleDinVaultSiDispozitivul`). Doar PUT si celelalte scrieri sunt oprite aici.
+        import app as app_module
+        from utils import _check_api_token, device_token_denied
+        for metoda in ('GET', 'HEAD', 'OPTIONS'):
+            with app_module.app.test_request_context(
+                    '/api/obsidian/note?path=a.md', method=metoda,
+                    headers={'Authorization': f'Bearer {DEVICE}'}):
+                self.assertIs(_check_api_token(), True, metoda)
+        for metoda in ('PUT', 'POST', 'DELETE', 'PATCH'):
+            self.assertTrue(device_token_denied(metoda, '/api/obsidian/note'), metoda)
+        self.assertFalse(device_token_denied('GET', '/api/obsidian/note'))
+        # Lista notelor unui proiect si restul API-ului de lucru nu sunt atinse de regula.
+        for metoda, ruta in (('GET', '/api/proiecte/p-des/wiki'), ('PUT', '/api/proiecte/p-des'),
+                             ('PUT', '/api/tasks/t1')):
+            self.assertFalse(device_token_denied(metoda, ruta), f'{metoda} {ruta}')
 
     def test_rutele_de_citire_a_bazei_raspund_401_dispozitivului(self):
         # Doar rute care citesc: daca garda ar ceda, raspunsul ar fi baza, nu o actiune.
@@ -224,3 +250,205 @@ class CreareaCuIdDeLaDispozitiv(CuBazaNoua):
     def test_perioada_in_proiect_inexistent_404(self):
         r = self.post('/api/proiecte/sters/implementari', {'id': 'iy', 'data_start': '2026-10-05'})
         self.assertEqual(r.status_code, 404)
+
+
+# ====================================================== notele din vault si dispozitivul
+
+# Vault-ul de proba. Dosarul `pompa` e al proiectului `p-pompa`; restul nu apartine niciunui
+# proiect. `Secrete.md` e stand-in pentru nota care tine tokenul de masina si PIN-ul.
+NOTE_VAULT = {
+    'wiki/job/projects/acme/pompa/README.md': 'Pompa: README',
+    'wiki/job/projects/acme/pompa/sub/pas.md': 'Pompa: un pas',
+    'wiki/job/projects/acme/pompa/.trash/sterse.md': 'Pompa: stearsa',
+    'wiki/job/projects/acme/pompa-vecina/README.md': 'Alt dosar, acelasi prefix',
+    'wiki/job/projects/acme/fara-proiect/README.md': 'Dosar fara proiect',
+    'wiki/job/projects/acme/dos-win/n.md': 'Dosar scris cu backslash',
+    'wiki/personal/Tehnologie/Secrete.md': 'token-masina-inchipuit si PIN-inchipuit',
+    'README.md': 'Radacina vault-ului',
+}
+PROIECTE_VAULT = (
+    ('p-pompa', 'wiki/job/projects/acme/pompa'),
+    ('p-fara', ''),                                          # fara dosar de vault
+    ('p-radacina', '.'),                                     # arata spre radacina: nu deschide nimic
+    ('p-lipsa', 'wiki/job/projects/acme/nu-exista'),         # dosar absent din copia asta a vault-ului
+    ('p-win', 'wiki\\job\\projects\\acme\\dos-win\\'),       # backslash si slash la coada
+)
+INAUNTRU = 'wiki/job/projects/acme/pompa/README.md'
+AFARA = 'wiki/personal/Tehnologie/Secrete.md'
+
+
+class NoteleDinVaultSiDispozitivul(CuAplicatia):
+    """`GET /api/obsidian/note` cu tokenul de dispozitiv: doar notele dintr-un `vault_folder` de
+    proiect, adica exact ce deschide butonul Wiki din Torqa (lista vine de la
+    `/api/proiecte/<id>/wiki`). Orice altceva da 403 — la fel pentru o nota care exista si pentru
+    una care nu, ca dispozitivul sa nu poata deduce ce fisiere are vault-ul. `PUT` e refuzat
+    dispozitivului (401, ca restul listei); tokenul de masina si sesiunea cu PIN raman netinute
+    in loc."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        import database
+        conn = database.get_db()
+        for pid, folder in PROIECTE_VAULT:
+            conn.execute("INSERT INTO proiecte (id, tip, nume, status, vault_folder) "
+                         "VALUES (?, 'PIF', ?, 'pregatire', ?)", (pid, pid, folder))
+        conn.commit()
+        conn.close()
+
+    def setUp(self):
+        super().setUp()
+        self.vault = os.path.join(self.dir_temp(), 'vault')
+        for rel, continut in NOTE_VAULT.items():
+            cale = os.path.join(self.vault, *rel.split('/'))
+            os.makedirs(os.path.dirname(cale), exist_ok=True)
+            with open(cale, 'w', encoding='utf-8', newline='') as fh:
+                fh.write(continut)
+        from utils import set_app_setting
+        set_app_setting('obsidian_vault_path', self.vault)
+
+    def nota(self, path, token=DEVICE):
+        return self.client.get('/api/obsidian/note', query_string={'path': path}, headers=self.bearer(token))
+
+    def scrie(self, path, continut='SCRIS', token=DEVICE):
+        return self.client.put('/api/obsidian/note', json={'path': path, 'content': continut},
+                               headers=self.bearer(token))
+
+    def pe_disc(self, rel):
+        with open(os.path.join(self.vault, *rel.split('/')), encoding='utf-8', newline='') as fh:
+            return fh.read()
+
+    # ------------------------------------------------------------- citirea, dispozitiv
+
+    def test_nota_din_dosarul_unui_proiect_se_citeste(self):
+        r = self.nota(INAUNTRU)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        corp = r.get_json()
+        self.assertEqual((corp['path'], corp['title'], corp['content']), (INAUNTRU, 'README', 'Pompa: README'))
+        self.assertEqual(self.nota('wiki/job/projects/acme/pompa/sub/pas.md').get_json()['content'], 'Pompa: un pas')
+
+    def test_forma_caii_nu_conteaza_cat_timp_nota_e_inauntru(self):
+        for forma in ('/' + INAUNTRU, INAUNTRU.replace('/', '\\'),
+                      'wiki/job/projects/acme/pompa/sub/../README.md',
+                      'wiki/job/projects/acme/./pompa/README.md'):
+            with self.subTest(cale=forma):
+                self.assertEqual(self.nota(forma).status_code, 200)
+
+    def test_dosarul_din_proiect_scris_cu_backslash_se_potriveste(self):
+        self.assertEqual(self.nota('wiki/job/projects/acme/dos-win/n.md').status_code, 200)
+
+    def test_orice_alta_nota_din_vault_da_403(self):
+        for path in (AFARA, 'README.md', 'wiki/job/projects/acme/fara-proiect/README.md'):
+            with self.subTest(cale=path):
+                r = self.nota(path)
+                self.assertEqual(r.status_code, 403, r.get_data(as_text=True))
+                self.assertNotIn('inchipuit', r.get_data(as_text=True), 'corpul 403 nu poarta nota')
+
+    def test_un_dosar_frate_cu_acelasi_prefix_nu_trece(self):
+        # `pompa-vecina` incepe cu `pompa`: o comparatie pe text ar lasa-o sa treaca.
+        self.assertEqual(self.nota('wiki/job/projects/acme/pompa-vecina/README.md').status_code, 403)
+
+    def test_iesirea_din_dosar_prin_puncte_nu_trece(self):
+        for path in ('wiki/job/projects/acme/pompa/../../../../personal/Tehnologie/Secrete.md',
+                     'wiki\\job\\projects\\acme\\pompa\\..\\..\\..\\..\\personal\\Tehnologie\\Secrete.md',
+                     'wiki/job/projects/acme/pompa/../pompa-vecina/README.md'):
+            with self.subTest(cale=path):
+                self.assertEqual(self.nota(path).status_code, 403)
+        # In afara vault-ului nici macar nu e o nota: 404, ca pentru oricine.
+        for path in ('../afara.md', 'wiki/../../afara.md', os.path.join(os.path.dirname(self.vault), 'afara.md')):
+            with self.subTest(cale=path):
+                self.assertEqual(self.nota(path).status_code, 404)
+
+    def test_o_legatura_simbolica_din_dosar_spre_afara_nu_trece(self):
+        legatura = os.path.join(self.vault, 'wiki', 'job', 'projects', 'acme', 'pompa', 'scapare.md')
+        try:
+            os.symlink(os.path.join(self.vault, *AFARA.split('/')), legatura)
+        except (OSError, NotImplementedError):
+            self.skipTest('legaturile simbolice cer drepturi pe masina asta')
+        self.assertEqual(self.nota('wiki/job/projects/acme/pompa/scapare.md').status_code, 403)
+
+    def test_dosarele_ascunse_din_proiect_nu_se_citesc(self):
+        # Lista Wiki le sare (`project_wiki_notes`), deci nici citirea nu le da.
+        self.assertEqual(self.nota('wiki/job/projects/acme/pompa/.trash/sterse.md').status_code, 403)
+
+    def test_un_proiect_cu_vault_folder_pe_radacina_nu_deschide_vault_ul(self):
+        # `p-radacina` are vault_folder='.': tot vault-ul ar parea „inauntru". Nu e un proiect.
+        self.assertEqual(self.nota(AFARA).status_code, 403)
+        self.assertEqual(self.nota('README.md').status_code, 403)
+
+    def test_403_si_404_nu_arata_ce_fisiere_are_vault_ul(self):
+        # In afara dosarelor de proiect raspunsul e acelasi, exista nota sau nu.
+        self.assertEqual(self.nota('wiki/personal/Tehnologie/Nu-exista.md').status_code, 403)
+        self.assertEqual(self.nota(AFARA).status_code, 403)
+        # In dosar, o nota lipsa e 404 obisnuit.
+        self.assertEqual(self.nota('wiki/job/projects/acme/pompa/nu-exista.md').status_code, 404)
+
+    def test_ce_listeaza_butonul_wiki_se_si_citeste(self):
+        r = self.client.get('/api/proiecte/p-pompa/wiki', headers=self.bearer(DEVICE))
+        self.assertEqual(r.status_code, 200)
+        note = r.get_json()['notes']
+        self.assertEqual({n['path'] for n in note},
+                         {INAUNTRU, 'wiki/job/projects/acme/pompa/sub/pas.md'}, 'lista sare folderul ascuns')
+        for n in note:
+            with self.subTest(nota=n['path']):
+                self.assertEqual(self.nota(n['path']).status_code, 200)
+
+    def test_vault_neconfigurat_ramane_400(self):
+        from utils import set_app_setting
+        set_app_setting('obsidian_vault_path', os.path.join(self.vault, 'nu-exista'))
+        self.assertEqual(self.nota(INAUNTRU).status_code, 400)
+
+    # ----------------------------------------------- tokenul de masina si sesiunea cu PIN
+
+    def test_tokenul_de_masina_citeste_orice_nota(self):
+        for path in (INAUNTRU, AFARA, 'README.md'):
+            with self.subTest(cale=path):
+                self.assertEqual(self.nota(path, token=FULL).status_code, 200)
+        self.assertEqual(self.nota('wiki/personal/nu-exista.md', token=FULL).status_code, 404)
+
+    def test_sesiunea_cu_pin_citeste_orice_nota(self):
+        self.assertEqual(self.login().status_code, 200)
+        for path in (INAUNTRU, AFARA, 'README.md'):
+            with self.subTest(cale=path):
+                r = self.client.get('/api/obsidian/note', query_string={'path': path})
+                self.assertEqual(r.status_code, 200)
+
+    # ---------------------------------------------------------------- scrierea (PUT)
+
+    def test_dispozitivul_nu_scrie_nicio_nota(self):
+        # In dosarul unui proiect, in afara lui, sau una care nu exista: tot 401, ca restul listei.
+        for path in (INAUNTRU, AFARA, 'wiki/job/projects/acme/pompa/nu-exista.md'):
+            with self.subTest(cale=path):
+                r = self.scrie(path)
+                self.assertEqual(r.status_code, 401, r.get_data(as_text=True))
+                self.assertEqual(r.get_json(), {'error': 'Unauthorized'})
+        self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: README', 'nimic nu s-a scris')
+        self.assertEqual(self.pe_disc(AFARA), NOTE_VAULT[AFARA])
+        self.assertFalse(os.path.exists(os.path.join(self.vault, 'wiki', 'job', 'projects', 'acme', 'pompa',
+                                                     'nu-exista.md')))
+
+    def test_dispozitivul_nu_scrie_nici_cu_alta_metoda(self):
+        for metoda in ('post', 'delete', 'patch'):
+            with self.subTest(metoda=metoda):
+                r = getattr(self.client, metoda)('/api/obsidian/note', json={'path': INAUNTRU, 'content': 'x'},
+                                                 headers=self.bearer(DEVICE))
+                self.assertIn(r.status_code, (401, 405))
+        self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: README')
+
+    def test_tokenul_de_masina_scrie_nota(self):
+        r = self.scrie(INAUNTRU, 'Pompa: editata', token=FULL)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertTrue(r.get_json()['saved'])
+        self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: editata')
+        # Si in afara dosarelor de proiect: restrictia e a dispozitivului, nu a rutei.
+        self.assertEqual(self.scrie(AFARA, 'si asta', token=FULL).status_code, 200)
+        self.assertEqual(self.pe_disc(AFARA), 'si asta')
+
+    def test_sesiunea_cu_pin_scrie_nota(self):
+        self.assertEqual(self.login().status_code, 200)
+        self.client.get('/api/stats')                       # cookie-ul csrf apare pe un raspuns autentificat
+        token = self.client.get_cookie('csrf_token').value
+        r = self.client.put('/api/obsidian/note', json={'path': INAUNTRU, 'content': 'Pompa: din sesiune'},
+                            headers={'X-CSRF-Token': token})
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: din sesiune')

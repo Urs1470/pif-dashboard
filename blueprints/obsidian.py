@@ -10,7 +10,7 @@ import subprocess
 import threading
 import time
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 
 from database import get_db
 from utils import get_app_setting, set_app_setting, login_required
@@ -122,6 +122,43 @@ def _obsidian_config_dict():
 # `vault-sync`, care e viu.
 
 
+def _in_dosar_de_proiect(vault, abspath):
+    """True daca `abspath` (calea REALA a unei note, din `_obsidian_safe_path`) sta intr-un
+    `vault_folder` de proiect.
+
+    Tokenul de dispozitiv citeste doar asa. Butonul Wiki din Torqa listeaza notele unui
+    proiect (`GET /api/proiecte/<id>/wiki`) si le deschide una cate una cu
+    `GET /api/obsidian/note?path=`, deci exact notele din `vault_folder`; restul vault-ului
+    (inclusiv nota cu tokenul de masina si PIN-ul) ramane inchis unui telefon pierdut.
+
+    Comparatia e pe cai reale pe ambele parti, nu pe text: `..`, legaturile simbolice si
+    un frate cu acelasi prefix (`proiect-vecin` fata de `proiect`) nu trec. Un `vault_folder`
+    care lipseste din copia asta a vault-ului sau arata spre radacina lui nu deschide nimic
+    (un proiect nu e tot vault-ul). Ca in lista din `project_wiki_notes`, folderele ascunse
+    si cele din `_OBSIDIAN_SKIP_DIRS` nu se citesc."""
+    conn = get_db()
+    try:
+        folders = [r['vault_folder'] for r in conn.execute(
+            "SELECT DISTINCT vault_folder FROM proiecte "
+            "WHERE vault_folder IS NOT NULL AND TRIM(vault_folder) <> ''")]
+    finally:
+        conn.close()
+    radacina = os.path.normcase(os.path.realpath(vault))
+    nota = os.path.normcase(abspath)
+    for folder in folders:
+        absdir = _obsidian_safe_dir(vault, folder.strip())
+        if not absdir:
+            continue
+        absdir = os.path.normcase(absdir)
+        if absdir == radacina or not nota.startswith(absdir + os.sep):
+            continue
+        dosare = os.path.relpath(nota, absdir).split(os.sep)[:-1]
+        if any(d.startswith('.') or d in _OBSIDIAN_SKIP_DIRS for d in dosare):
+            continue
+        return True
+    return False
+
+
 @obsidian_bp.route('/api/obsidian/note', methods=['GET'])
 @login_required
 def obsidian_note_get():
@@ -130,7 +167,13 @@ def obsidian_note_get():
         return jsonify({'error': 'Vault Obsidian neconfigurat'}), 400
     rel = request.args.get('path', '')
     abspath = _obsidian_safe_path(vault, rel)
-    if not abspath or not os.path.isfile(abspath):
+    if not abspath:
+        return jsonify({'error': 'Nota nu a fost găsită'}), 404
+    # Tokenul de dispozitiv: doar notele din dosarul unui proiect. Verificarea vine INAINTE de
+    # `isfile`, ca 403 vs 404 sa nu arate dispozitivului ce fisiere exista in restul vault-ului.
+    if getattr(g, 'api_token_scope', None) == 'device' and not _in_dosar_de_proiect(vault, abspath):
+        return jsonify({'error': 'Tokenul de dispozitiv citeste doar notele din dosarul unui proiect'}), 403
+    if not os.path.isfile(abspath):
         return jsonify({'error': 'Nota nu a fost găsită'}), 404
     try:
         with open(abspath, 'r', encoding='utf-8', errors='ignore') as fh:

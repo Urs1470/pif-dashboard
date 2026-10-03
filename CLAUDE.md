@@ -135,7 +135,7 @@ Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`)
 | `SECRET_KEY` | nu | fisier `.secret_key` | semnarea sesiunii |
 | `SESSION_COOKIE_SECURE` | nu | `true` | `false` pentru dev pe HTTP |
 | `PIF_API_TOKEN` | nu | — | Bearer pentru masini (Cowork, `pif-sync.py`); scutit de CSRF |
-| `PIF_DEVICE_TOKEN` | nu | — | Bearer pentru Torqa (telefon, desktop); fara restore, backup, admin, deploy, upload APK |
+| `PIF_DEVICE_TOKEN` | nu | — | Bearer pentru Torqa (telefon, desktop); fara restore, backup, admin, deploy, upload APK; din vault citeste doar notele din `vault_folder` de proiect si nu scrie nicio nota |
 | `PIF_DB_PATH` | nu | `pif_dashboard.db` | baza alternativa; o folosesc probele |
 | `PIF_RATE_LIMIT` | nu | `60` | cereri/minut per IP pe `/api/*` |
 

@@ -15,7 +15,7 @@ Fisierul asta pastreaza doar ce nu se poate genera: regulile de scriere.
 | cine | cum |
 |---|---|
 | masina (Cowork, `pif-sync.py`, scripturi) | `Authorization: Bearer $PIF_API_TOKEN` — scutit de CSRF |
-| dispozitiv (Torqa, telefon si desktop) | `Authorization: Bearer $PIF_DEVICE_TOKEN` — scutit de CSRF; refuzat (401) pe restore, backup, admin, deploy, upload de APK si cheia vault-ului (`DEVICE_TOKEN_DENIED` in `utils.py`) |
+| dispozitiv (Torqa, telefon si desktop) | `Authorization: Bearer $PIF_DEVICE_TOKEN` — scutit de CSRF; refuzat (401) pe restore, backup, admin, deploy, upload de APK si cheia vault-ului (`DEVICE_TOKEN_DENIED` in `utils.py`). Notele din vault: `GET /api/obsidian/note` doar pentru o nota din `vault_folder` al unui proiect (ce citeste butonul Wiki; altfel **403**), `PUT` refuzat (401, `DEVICE_TOKEN_READ_ONLY`) |
 | browser | cookie de sesiune + `X-CSRF-Token` (valoarea cookie-ului `csrf_token`) |
 
 Rate limit: 60 cereri/minut per IP pe `/api/*`.

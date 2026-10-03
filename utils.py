@@ -166,23 +166,42 @@ def safe_next_url(value, default='/'):
 
 
 # Rutele pe care tokenul de dispozitiv (PIF_DEVICE_TOKEN, folosit de Torqa pe telefon si
-# pe desktop) NU le deschide: ele restaureaza, exporta sau inlocuiesc baza, codul de pe
-# server, APK-ul (oricare canal: `/api/app/upload` ii acopera pe amandoi), build-ul web al
-# Torqa (`/api/torqa/web/`, ca prefix: orice ruta de administrare adaugata acolo nu
-# trebuie sa pice pe deschis) ori cheia vault-ului. Un dispozitiv pierdut nu trebuie sa
-# poata mai mult decat sa citeasca si sa editeze proiecte si taskuri. Ele raman pe
-# PIF_API_TOKEN.
+# pe desktop) NU le deschide, cu orice metoda: ele restaureaza, exporta sau inlocuiesc
+# baza, codul de pe server, APK-ul (oricare canal: `/api/app/upload` ii acopera pe
+# amandoi), build-ul web al Torqa (`/api/torqa/web/`, ca prefix: orice ruta de
+# administrare adaugata acolo nu trebuie sa pice pe deschis) ori cheia vault-ului. Un
+# dispozitiv pierdut nu trebuie sa poata mai mult decat sa citeasca si sa editeze
+# proiecte si taskuri. Ele raman pe PIF_API_TOKEN.
 DEVICE_TOKEN_DENIED = (
     '/api/restore', '/api/backup', '/api/admin/', '/admin/', '/api/deploy',
     '/api/app/upload', '/api/torqa/web/', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
 )
 
+# Rutele pe care dispozitivul doar CITESTE. `PUT /api/obsidian/note` rescrie o nota din
+# vault si o impinge in repo-ul Knowledge cu cheia de scriere a serverului; Torqa n-o
+# cheama niciodata (butonul Wiki doar citeste). `GET` ramane deschis, dar nu oricum:
+# nota trebuie sa stea intr-un `vault_folder` de proiect — conditia e in
+# `blueprints/obsidian.py`, fiindca depinde de baza si de vault, nu de cale.
+DEVICE_TOKEN_READ_ONLY = ('/api/obsidian/note',)
+_METODE_DE_CITIRE = frozenset(('GET', 'HEAD', 'OPTIONS'))
+
+
+def device_token_denied(method, path):
+    """True daca tokenul de dispozitiv nu are voie sa faca `method` pe `path`.
+
+    O singura regula pentru toata lista, in functie de metoda: ce se refuza cu totul sta in
+    DEVICE_TOKEN_DENIED, ce se poate doar citi in DEVICE_TOKEN_READ_ONLY."""
+    if path.startswith(DEVICE_TOKEN_DENIED):
+        return True
+    return path in DEVICE_TOKEN_READ_ONLY and method not in _METODE_DE_CITIRE
+
 
 def _check_api_token():
     """Valideaza Bearer-ul din Authorization: PIF_API_TOKEN (masini: Cowork, scripturi,
-    deploy) sau PIF_DEVICE_TOKEN (Torqa), cel din urma refuzat pe DEVICE_TOKEN_DENIED.
-    Intoarce True daca tokenul e valid aici. Pune g.api_token_auth = True, ca CSRF sa
-    sara verificarea pentru cererile masina-la-masina, si g.api_token_scope."""
+    deploy) sau PIF_DEVICE_TOKEN (Torqa), cel din urma refuzat unde zice
+    `device_token_denied`. Intoarce True daca tokenul e valid aici. Pune
+    g.api_token_auth = True, ca CSRF sa sara verificarea pentru cererile
+    masina-la-masina, si g.api_token_scope."""
     from flask import g
     import hmac as _hmac
     auth = request.headers.get('Authorization', '')
@@ -192,7 +211,7 @@ def _check_api_token():
     for scope, env in (('full', 'PIF_API_TOKEN'), ('device', 'PIF_DEVICE_TOKEN')):
         token = os.environ.get(env, '').strip()
         if token and _hmac.compare_digest(token, provided):
-            if scope == 'device' and request.path.startswith(DEVICE_TOKEN_DENIED):
+            if scope == 'device' and device_token_denied(request.method, request.path):
                 return False
             g.api_token_auth = True
             g.api_token_scope = scope
