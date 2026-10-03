@@ -23,6 +23,12 @@ LAN = '192.168.0.50'         # alt calculator din retea
 
 class AdresaClientului(CuAplicatia):
 
+    def setUp(self):
+        super().setUp()
+        # Aici conteaza doar adresa, nu PIN-ul: cu hash-ul real (scrypt) fiecare incercare costa zeci
+        # de milisecunde, iar testele fac sute. PIN-ul gresit ramane gresit.
+        self.patch(self.app_module, 'check_password_hash', lambda *_: False)
+
     def cerere(self, socket_, **antete):
         """O logare cu PIN gresit venita de la `socket_`; intoarce raspunsul."""
         return self.client.post('/login', json={'pin': 'gresit'}, headers=antete,
