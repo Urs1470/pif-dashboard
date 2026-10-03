@@ -1,8 +1,10 @@
 import os
 import time
 import logging
+import functools
 import hashlib
 import hmac
+import ipaddress
 import secrets
 import subprocess
 import threading
@@ -50,10 +52,78 @@ init_csrf(app)
 
 # ============ CLIENT IP ============
 
+# Cum ajunge o cerere la gunicorn: Cloudflare Tunnel -> `cloudflared`, pe aceeasi masina ->
+# gunicorn, deci conexiunea TCP vine de la loopback, iar Cloudflare a pus deja in cerere
+# `CF-Connecting-IP` (adresa reala, suprascrisa pe marginea lor) si `X-Forwarded-For`.
+# Atat se stie din depozit; adresa pe care asculta gunicorn si unde ruleaza cloudflared sta in
+# unitatea systemd de pe server, nu in repo (vezi docs/decizii/2026-10-03-curatenie-dupa-retragere.md).
+#
+# Antetele astea le poate scrie ORICINE ajunge direct la gunicorn (un client din LAN, daca
+# portul nu e legat doar la loopback). `ProxyFix` mai jos le crede fara sa intrebe de unde vin,
+# deci `request.remote_addr` se poate falsifica cu un `X-Forwarded-For`, iar un
+# `CF-Connecting-IP` inventat ar da fiecarei incercari de PIN o „adresa" noua: limita de 5 /
+# 5 minute n-ar mai limita nimic. De aceea antetele conteaza doar daca SOCKETUL care a
+# ajuns la gunicorn e al unui proxy de incredere; altfel adresa clientului e adresa socketului.
+#
+# Implicit proxy-ul de incredere e loopback-ul. Daca `cloudflared` ajunge la gunicorn pe alta
+# adresa (de pilda IP-ul din LAN al masinii), se adauga in `PIF_TRUSTED_PROXIES` (adrese sau
+# retele CIDR, separate prin virgula).
+PROXY_DE_INCREDERE_IMPLICIT = '127.0.0.1,::1'
+
+
+@functools.lru_cache(maxsize=8)
+def _retele_de_incredere(brut):
+    retele = []
+    for parte in brut.split(','):
+        parte = parte.strip()
+        if not parte:
+            continue
+        try:
+            retele.append(ipaddress.ip_network(parte, strict=False))
+        except ValueError:
+            logging.getLogger('pif_dashboard').error(
+                "PIF_TRUSTED_PROXIES: ignor %r (nu e adresa sau retea)", parte)
+    return tuple(retele)
+
+
+def _ip_valid(text):
+    """`ipaddress.ip_address(text)` sau None. IPv4 mapat in IPv6 (`::ffff:1.2.3.4`) devine IPv4."""
+    try:
+        ip = ipaddress.ip_address(str(text).strip())
+    except ValueError:
+        return None
+    if ip.version == 6 and ip.ipv4_mapped is not None:
+        return ip.ipv4_mapped
+    return ip
+
+
+def _proxy_de_incredere(adresa):
+    ip = _ip_valid(adresa)
+    if ip is None:
+        return False
+    brut = os.environ.get('PIF_TRUSTED_PROXIES', PROXY_DE_INCREDERE_IMPLICIT)
+    return any(ip.version == net.version and ip in net for net in _retele_de_incredere(brut))
+
+
+def _adresa_socket():
+    """Adresa socketului care a ajuns la gunicorn, asa cum era INAINTE de `ProxyFix`."""
+    orig = request.environ.get('werkzeug.proxy_fix.orig') or {}
+    return orig.get('REMOTE_ADDR') or request.environ.get('REMOTE_ADDR') or ''
+
 
 def _client_ip():
-    """Real client IP, preferring CF-Connecting-IP (set by Cloudflare Tunnel)."""
-    return (request.headers.get('CF-Connecting-IP') or request.remote_addr or '127.0.0.1')
+    """Adresa clientului, pentru limitele de cereri si pentru log.
+
+    De la un proxy de incredere (cloudflared, local): `CF-Connecting-IP`, altfel adresa din
+    `X-Forwarded-For` pe care `ProxyFix` a pus-o in `remote_addr`. De la oricine altcineva:
+    adresa socketului, fara sa se uite la antete."""
+    socket_ = _adresa_socket()
+    if _proxy_de_incredere(socket_):
+        cf = _ip_valid(request.headers.get('CF-Connecting-IP', ''))
+        if cf is not None:
+            return str(cf)
+        return request.remote_addr or socket_
+    return socket_ or '127.0.0.1'
 
 
 # ============ SECRET KEY ============
@@ -262,7 +332,7 @@ def before_request_func():
     request._csp_nonce = secrets.token_urlsafe(16)
 
     if request.path.startswith('/api/'):
-        logger.info(f"{request.method} {request.path} - IP: {request.remote_addr}")
+        logger.info(f"{request.method} {request.path} - IP: {_client_ip()}")
 
 
 @app.after_request
@@ -348,11 +418,11 @@ def login():
     pin = data.get('pin', '')
     if check_password_hash(get_hashed_pin(), pin):
         session['authenticated'] = True
-        logger.info(f"Login successful for IP: {request.remote_addr}")
+        logger.info(f"Login successful for IP: {_client_ip()}")
         # Serverul decide unde duce redirectul: pagina de login primeste `next` din query,
         # dar tot ce vine de la client se valideaza din nou aici.
         return jsonify({'success': True, 'next': safe_next_url(data.get('next'))})
-    logger.warning(f"Login failed for IP: {request.remote_addr}")
+    logger.warning(f"Login failed for IP: {_client_ip()}")
     return jsonify({'error': 'Invalid PIN'}), 401
 
 
