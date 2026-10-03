@@ -80,8 +80,20 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
   cand statusul e `finalizat` si accepta `vault_folder`. Reparat pe 2026-08-15: pana atunci
   `tasks[]` era acceptat si nu-l scria nimic. Detalii: `SCHEMA_REFERENCE.md`.
 - **CSRF:** clientul citeste cookie-ul `csrf_token` si-l trimite ca `X-CSRF-Token`. Scutite:
-  GET/HEAD/OPTIONS, `/webhook/*`, si cererile cu Bearer (plus endpointul `push.push_action`, mort
-  din 2026-10-03: `csrf.py` n-a fost atins).
+  GET/HEAD/OPTIONS, `/webhook/*`, si cererile cu Bearer.
+- **CSP implicit (tot ce nu e `/torqa/`):** `script-src` si `style-src` cer nonce-ul cererii, fara
+  `unsafe-inline` si fara surse externe (`_default_csp` in `app.py`). O pagina randata de server cu un
+  `onclick=`, `onsubmit=` sau `style="..."` inline se strica TACUT in browser; `teste/test_csp.py`
+  scaneaza paginile, iar `teste/js/login.test.mjs` pazeste formularul de login legat din script.
+- **IP-ul clientului** (limita de login, 5 incercari / 5 minute) vine din socket; `CF-Connecting-IP`
+  conteaza doar daca socketul e al unui proxy de incredere (implicit loopback, `PIF_TRUSTED_PROXIES`).
+  Daca dupa un deploy toate cererile din tunel apar cu aceeasi adresa in `logs/app.log`, cloudflared nu
+  ajunge pe loopback: adresa lui se adauga in `PIF_TRUSTED_PROXIES`.
+- **Tokenul de dispozitiv si vault-ul:** citeste doar notele din `vault_folder` de proiect, nu scrie
+  nicio nota (`utils.device_token_denied`, `obsidian._in_dosar_de_proiect`). Dar poate scrie `vault_folder`
+  pe un proiect (`PUT /api/proiecte/<id>`), deci limita aceea ocoleste un dispozitiv care stie API-ul.
+- **Restore:** coloanele vin din schema (`PRAGMA table_info`), nu dintr-o lista din cod; o coloana noua se
+  restaureaza singura, iar `teste/test_backup_restore.py` compara toate coloanele dupa un dus-intors.
 - **Taskurile recurente** (zilnic/saptamanal/lunar) isi nasc urmatoarea instanta la bifare —
   orice atingere a logicii de bifare trebuie sa pastreze asta.
 - **Cache-busting** pentru pagina de login: `static/login.css?v=<SHA256>` prin context
@@ -108,6 +120,7 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
 
 Arhiva completa, cu carlig per decizie: **`docs/decizii/INDEX.md`**.
 
+- [2026-10-03 Curatenie dupa retragere: dispozitivul si vault-ul, rute anonime, IP, CSP, restore](../decizii/2026-10-03-curatenie-dupa-retragere.md)
 - [2026-10-03 Retragerea interfetei vechi](../decizii/2026-10-03-retragerea-interfetei-vechi.md)
 - [2026-10-01 Torqa web pe acelasi server si canal propriu pentru APK](../decizii/2026-10-01-torqa-web-si-canalul-apk.md)
 - [2026-10-01 Torqa: imaginea completa si tokenul de dispozitiv](../decizii/2026-10-01-torqa-imagine-si-token-dispozitiv.md)

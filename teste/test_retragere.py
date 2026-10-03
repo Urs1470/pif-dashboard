@@ -145,7 +145,7 @@ class PrevizualizarileAnonimeDeImport(CuAplicatia):
             self.assertFalse(hasattr(projects, ramas), ramas)
 
     # Gardianul clasei: o ruta de API care raspunde fara nicio credentiala a fost exact aici
-    # (doua, uitate 5 luni). Singurele publice sunt sanatatea serverului.
+    # (doua, ramase de la calculatorul public). Singurele publice sunt sanatatea serverului.
     PUBLICE = {'/api/healthz', '/api/health'}
 
     def test_nicio_alta_ruta_de_api_nu_raspunde_anonim(self):

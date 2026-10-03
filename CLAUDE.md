@@ -35,7 +35,8 @@ o data per clona: `git config core.hooksPath .githooks`.
 ## Arhitectura
 
 ```
-app.py              # intrare Flask, auth PIN, CSP, rate limit, webhook deploy; / duce la /torqa/
+app.py              # intrare Flask, auth PIN, CSP (nonce, fara surse externe), rate limit pe IP-ul din
+                    #   socket (CF-Connecting-IP doar de la proxy de incredere), webhook deploy; / duce la /torqa/
 database.py         # schema v41, migrari v1-v41 idempotente, WAL
 utils.py            # login_required, UUID, app_settings, norm_date, tokenurile de masina/dispozitiv
 csrf.py labels.py   # CSRF double-submit; etichetele de status
@@ -173,14 +174,12 @@ Indexul git e comun, deci coordoneaza-te inainte sa pui in stage sau sa comiti. 
 
 - Statusurile sunt string-uri magice, centralizate in `labels.py` dar **neimpuse la nivel de
   baza** — un `UPDATE` direct poate scrie orice.
-- CSP-ul implicit (pagina de login, API, erori) foloseste `unsafe-inline` si mai listeaza surse din
-  vremea SPA-ului (CDN-uri, `query1.finance.yahoo.com`) pe care nu le mai cere nimic: de strans.
-  Pe `/torqa/` politica e a Torqa (`CSP_TORQA`, `blueprints/torqa_web.py`).
 - Baza nu s-a atins la retragere: randurile `push_*` din `app_settings` (cheia VAPID **privata**,
   abonamentele) si `plan_departament_url` au ramas fara cititor. `/api/backup` exclude `push_*`
   (`CHEI_PROTEJATE`, pazit de `test_suite`); `/api/admin/db-dump` e baza bruta. Tabela `calcule`
   mai e citita de `/api/proiecte/<id>/snapshot`.
-- `csrf.py` mai are exceptia pentru endpointul `push.push_action`, care nu mai exista (inofensiva;
-  `csrf.py` nu s-a atins la retragere).
+- `/admin/db-upload` (formularul) nu poate trimite fisierul cu sesiunea de PIN: `fetch`-ul lui nu pune
+  `X-CSRF-Token`, deci serverul raspunde 403. `POST /api/admin/db-upload` merge cu tokenul de masina (curl);
+  `scripts/upload_db.py` are aceeasi problema. Pagina se deschide si scriptul ei ruleaza sub CSP-ul de azi.
 - Nu exista pytest: testele folosesc biblioteca standard (`unittest`, `node --test`).
 - `UPLOAD_FOLDER` nu se poate configura din mediu.

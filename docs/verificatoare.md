@@ -17,8 +17,8 @@ masurati pe masina de dezvoltare, 2026-10-03.
 | pas | ce pazeste | datele | timp |
 |---|---|---|---|
 | `lint` (`scripts/lint.py`) | ce e SCRIS si nu ajunge sa se intample: nume nedefinit, import ramas in urma, variabila moarta (pyflakes) | — | ~2 s |
-| `unitare_js` (`teste/js/*.test.mjs`) | scriptul din `templates/login.html` (unde te duce dupa PIN) si `static/service-worker.js` (se retrage singur, nu atinge `ngsw:`) | — | <1 s |
-| `unitare_py` (`teste/`, `unittest`) | functiile pure, garzile, schema pe o baza goala, rutele prin clientul de test (APK, Torqa web, login, sync), `test_retragere` | baza noua | ~20-26 s |
+| `unitare_js` (`teste/js/*.test.mjs`) | scriptul din `templates/login.html` (unde te duce dupa PIN; formularul si tema se leaga din script, fara handlere sau stiluri inline, ca sa treaca de CSP) si `static/service-worker.js` (se retrage singur, nu atinge `ngsw:`) | — | <1 s |
+| `unitare_py` (`teste/`, `unittest`) | functiile pure, garzile, schema pe o baza goala, rutele prin clientul de test (APK, Torqa web, login, sync, notele din vault si tokenul de dispozitiv, IP-ul clientului, CSP), backup apoi restore pe toate coloanele, `requirements.txt` fata de importuri, `test_retragere` | baza noua | ~25-40 s |
 | `test_suite` (`scripts/test_suite.py`) | invariantii vazuti prin HTTP: sfera, ce trimite un proiect inchis, backup-ul fara secrete | baza noua | ~4 s |
 
 Probele de HTTP stau pe **`scripts/banc.py`**: serverul pe un port liber, baza de unica folosinta
@@ -64,6 +64,22 @@ verde oricum. Primele teste scrise in locul ei au gasit pe loc o migrare care pi
 prima pornire (schema difera intre prima si a doua pornire a serverului).
 
 **`test_retragere` e o garda, nu o proba de comportament.** Tine la 404 rutele si fisierele plecate
-(`/calc`, `/assets/`, `/api/push/*`, `/api/me`, ...), ca un `git checkout` din eticheta
-`inainte-de-retragere` sau un merge prost sa apara ca test picat, nu ca o suprafata veche care
-renaste in tacere. Daca restaurezi interfata veche cu buna stiinta, sterge-i testele odata cu ea.
+(`/calc`, `/assets/`, `/api/push/*`, `/api/me`, `/api/clienti*`, `/api/agenda/*`, ...), ca un `git checkout`
+din eticheta `inainte-de-retragere` sau un merge prost sa apara ca test picat, nu ca o suprafata veche care
+renaste in tacere. Mai tine o garda de clasa: nicio ruta `/api` nu raspunde fara credentiale in afara de
+`healthz` (doua previzualizari de import au ramas fara login dupa calculatorul public care le folosea). Daca restaurezi interfata veche cu buna
+stiinta, sterge-i testele odata cu ea.
+
+**Un test de dus-intors trebuie sa poata PIERDE coloana.** `test_backup_restore` umple fiecare coloana cu o
+valoare DIFERITA de cea implicita a coloanei (si o verifica singur): daca ar scrie valoarea implicita, o coloana
+pierduta la restaurare ar reveni oricum pe ea si testul ar trece. Coloanele si valorile vin din `PRAGMA
+table_info`, nu dintr-o lista, deci o coloana viitoare intra singura. S-a provocat: restore-ul de dinainte (cu
+coloanele enumerate de mana) pica testul, iar pe o copie a bazei locale (din august) pierdea `data_finalizare` pe 2
+proiecte si `ora` pe 1 task global.
+
+**O politica de continut stricta strica in tacere ce are inca ceva inline.** Un `onsubmit=` sau un
+`style="..."` ramas intr-o pagina nu da nicio eroare in aplicatie: browserul doar nu-l executa. `test_csp`
+scaneaza paginile randate (login, `/admin/db-upload`) dupa handlere, atribute `style` si `<script>`/`<style>` fara
+nonce, iar `login.test.mjs` pazeste legarea formularului din script. Cum se vede cu adevarat: Chromium real pe un
+server de unica folosinta, cu un ascultator `securitypolicyviolation` (nu cu `read_console_messages` pe un tab
+folosit: buffer-ul arunca mesajele vechi).

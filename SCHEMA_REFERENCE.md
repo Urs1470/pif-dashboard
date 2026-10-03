@@ -18,7 +18,9 @@ Fisierul asta pastreaza doar ce nu se poate genera: regulile de scriere.
 | dispozitiv (Torqa, telefon si desktop) | `Authorization: Bearer $PIF_DEVICE_TOKEN` — scutit de CSRF; refuzat (401) pe restore, backup, admin, deploy, upload de APK si cheia vault-ului (`DEVICE_TOKEN_DENIED` in `utils.py`). Notele din vault: `GET /api/obsidian/note` doar pentru o nota din `vault_folder` al unui proiect (ce citeste butonul Wiki; altfel **403**), `PUT` refuzat (401, `DEVICE_TOKEN_READ_ONLY`) |
 | browser | cookie de sesiune + `X-CSRF-Token` (valoarea cookie-ului `csrf_token`) |
 
-Rate limit: 60 cereri/minut per IP pe `/api/*`.
+Rate limit: 60 cereri/minut per IP pe `/api/*`; la login, 5 incercari / 5 minute per IP. IP-ul e adresa
+socketului, iar `CF-Connecting-IP` (cloudflared) se crede doar de la un proxy de incredere (`PIF_TRUSTED_PROXIES`,
+implicit loopback).
 
 **Sincronizarea Torqa:** `GET /api/sync/snapshot` da intr-o cerere proiectele, taskurile (si
 cele facute, cu `viu` dupa regula din Astazi), subtaskurile (si ale taskurilor globale) si
@@ -118,3 +120,10 @@ Retrase pe 2026-10-03, odata cu interfata veche (dau 404; baza nu s-a atins): `/
 `/api/me`, `/api/push/*` (notificarile web), `/api/settings/plan-departament`, fisierele SPA-ului
 (`/assets/*`, `/manifest.json`, `/favicon.svg`, `/icon-*.png`). `/` duce la `/torqa/`. Starea de
 dinainte: eticheta git `inainte-de-retragere`.
+
+Scoase in aceeasi zi, la curatenia de dupa retragere, fiindca nu le mai chema nimic (si 404 acum):
+`/api/clienti*` (lista de clienti; tabela `clienti` ramane, o scrie importul de debrief si o citeste
+snapshotul), `/api/agenda/today|candidates|reorder` (Torqa isi face Today din `viu` din
+`/api/sync/snapshot`), `/api/search`, `/api/export/pdf` si cele doua previzualizari de import
+`/api/import-abb-multi/preview` si `/api/import-archive/preview` (erau FARA LOGIN). Raman `/api/stats`,
+`/api/import/debrief`, `/api/obsidian/vault-key|vault-sync` si sanatatea.
