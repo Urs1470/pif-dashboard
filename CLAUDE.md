@@ -1,8 +1,14 @@
 # PIF Dashboard
 
-Aplicatie de organizare si monitorizare a proiectelor de punere in functiune, pentru un
-singur utilizator (Ion). Flask + SQLite in spate, SPA Svelte 5 in fata, PWA + aplicatie
-Android „Torqa". Live la `pif.iupif.org` prin Cloudflare Tunnel.
+Backend-ul Torqa pentru organizarea si monitorizarea proiectelor de punere in functiune, pentru
+un singur utilizator (Ion): Flask + SQLite, API-ul `/api/*`, loginul cu PIN si Torqa web la
+`/torqa/` (build-ul Angular al Torqa, urcat pe server). Live la `pif.iupif.org` prin Cloudflare
+Tunnel.
+
+**Interfata veche a fost retrasa pe 2026-10-03** (SPA-ul Svelte 5, calculatorul `/calc`, planul de
+departament, notificarile push, aplicatia Android `org.iupif.pif`): Torqa a preluat tot ce
+foloseste Ion. Ultima stare cu ea e eticheta git `inainte-de-retragere`; ce s-a scos, ce a
+ramas si cum se aduce inapoi: `docs/decizii/2026-10-03-retragerea-interfetei-vechi.md`.
 
 ## Pull FIRST — inainte de orice task
 
@@ -20,8 +26,8 @@ modificari necomise.
 | unde e functia Y | `docs/memory/CODE_MAP.md` — **generat** |
 | harta, starea, capcanele | `docs/memory/MEMORY.md` |
 | cum scriu corect pe API | `SCHEMA_REFERENCE.md` |
-| **de ce am facut asa** | `docs/decizii/INDEX.md` (120 decizii, cu carlig fiecare) |
-| ce culoare/marime/durata | `frontend/src/styles/tokens.css` — sursa unica |
+| **de ce am facut asa** | `docs/decizii/INDEX.md` (decizii, cu carlig fiecare) |
+| ce a fost interfata veche | eticheta `inainte-de-retragere` + `docs/decizii/2026-10-03-retragerea-interfetei-vechi.md` |
 
 Cele trei harti se regenereaza la fiecare commit care atinge cod Python. Activeaza hook-ul
 o data per clona: `git config core.hooksPath .githooks`.
@@ -29,32 +35,34 @@ o data per clona: `git config core.hooksPath .githooks`.
 ## Arhitectura
 
 ```
-app.py              # intrare Flask, auth PIN, CSP, rate limit, webhook deploy
+app.py              # intrare Flask, auth PIN, CSP, rate limit, webhook deploy; / duce la /torqa/
 database.py         # schema v41, migrari v1-v41 idempotente, WAL
-utils.py            # login_required, UUID, app_settings, norm_date
+utils.py            # login_required, UUID, app_settings, norm_date, tokenurile de masina/dispozitiv
 csrf.py labels.py   # CSRF double-submit; etichetele de status
 
 blueprints/
   projects.py       # /api/proiecte/* — CRUD, perioade, snapshot, import debrief, export
   tasks.py          # taskuri de proiect + globale + subtaskuri + agenda
-  admin.py          # /api/calendar, /api/search, /api/stats, export PDF, backup
+  admin.py          # /api/calendar, /api/search, /api/stats, export PDF, backup/restore
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
-  push.py           # Web Push: o notificare pe zi per task personal
+  sync.py           # /api/sync/snapshot — imaginea completa pentru Torqa
   app_update.py     # versiunea si APK-ul aplicatiei Android (canale: pif, torqa)
   torqa_web.py      # Torqa web (build Angular) la /torqa/: urcare, versiuni, servire
 
-frontend/src/       # SPA Svelte 5 -> static/dist/ (Vite)
-  pages/            # Home, Projects, ProjectDetail, Tasks, Calendar, Calculator
-  components/ui/    # librarie proprie — FOLOSESTE-O, nu reinventa
-  lib/driveCalc.js  # motorul Calculatorului (4.400 linii)
-frontend/android/   # Capacitor: WebView peste site + notificari native
-static/dist/        # build-ul, VERSIONAT (vezi capcana de mai jos)
-static/service-worker.js  # PWA + push; bumpeaza VERSION la orice schimbare de dist; nu atinge /torqa/
+templates/login.html  static/login.css   # singura pagina randata de server (PIN)
+static/service-worker.js                 # worker care se retrage singur: scapa browserele
+                                         #   care au instalat interfata veche de ea
+teste/                                   # unittest (Python) si teste/js/ (node --test)
+scripts/                                 # verifica.py, lint.py, test_suite.py, banc.py,
+                                         #   gen_memory.py, parse_params/ (importul de parametri)
 ```
+
+Nu exista pas de build in repo si nu exista npm pe server: ce se construieste (Torqa web, APK-ul
+Torqa) vine din repo-ul Torqa si se urca (vezi mai jos).
 
 ## Invarianti de produs
 
-Regulile care nu se deduc din cod uitandu-te la el, si care se strica tacut daca le incalci:
+Regulile datelor, care nu se deduc din cod uitandu-te la el, si care se strica tacut daca le incalci:
 
 1. **Un task are O SINGURA data** — `data_scadenta`, termenul. Nu exista „data planificata".
    A pune un task pe azi = a-i da termenul de azi; a-l scoate = a-i sterge data.
@@ -72,25 +80,21 @@ Regulile care nu se deduc din cod uitandu-te la el, si care se strica tacut daca
 7. **`sfera`** (`munca`|`personal`) e opt-in la citire: implicit se intorc doar cele de munca,
    iar o valoare necunoscuta da 400, nu se corecteaza tacit.
 
-**Proprietatea suprafetelor.** Calendarul detine **perioadele** (se creeaza, se muta, se scot
-doar de acolo) si **arata** taskurile zilei alese, in panoul ei — o lista, nu o vedere: le
-deschide acolo unde stau, nu le editeaza. Taskurile se editeaza in `/tasks`, pe „Astazi" si in
-pagina proiectului. Pagina proiectului le detine pe amandoua.
-
-*Planificatorul (`/plan`, swimlane pe proiecte) a fost scos pe 2026-08-26, la cererea lui Ion:
-„vom ramane doar cu calendar, nu am nevoie atat de vizualizare taskuri". Ce ramasese de neinlocuit
-— „ce am de facut in ziua X" — a intrat in panoul zilei din Calendar. Ruta veche redirecteaza
-(vezi `MUTATE` in `lib/router.svelte.js`). Vezi
-`docs/decizii/2026-08-26-planificatorul-scos-ziua-intreaga.md`.*
+*Regulile de proprietate a suprafetelor (ce se editeaza in Calendar, in Taskuri, pe „Astazi") si
+planificatorul scos pe 2026-08-26 descriau interfata veche; sunt istorie, in
+`docs/decizii/2026-07-27-proprietatea-suprafetelor.md` si
+`docs/decizii/2026-08-26-planificatorul-scos-ziua-intreaga.md`. Suprafetele de azi sunt ale Torqa.*
 
 **Vocabular:** *perioada* = interval (unde esti), *termen* = punct (pana cand). „Data" nu se
 foloseste ca eticheta.
 
 ## Design system
 
-Regulile complete (culoare, tipografie, mișcare, componente): **`.claude/rules/design.md`** —
-se încarcă singur când atingi `frontend/src/**`. Sursa valorilor rămâne
-`frontend/src/styles/tokens.css`; verificarea, `python scripts/audit_design.py` înainte de commit.
+Retras odata cu interfata veche (`frontend/src/styles/tokens.css`, regulile din
+`.claude/rules/design.md`, `audit_design`, `audit_contrast`): serverul nu mai are interfata de
+proiectat. Ce a ramas: pagina de login isi tine propria copie a tokenurilor in `static/login.css`
+(singura pagina randata de server), iar Torqa isi are sistemul de design in repo-ul lui. Sistemul
+vechi se citeste din eticheta: `git show inainte-de-retragere:frontend/src/styles/tokens.css`.
 
 ## Verificatoare
 
@@ -98,27 +102,30 @@ Un singur punct de intrare. Lista pasilor si regulile portii stau in `scripts/ve
 nu aici — de acolo le ia si poarta.
 
 ```bash
-python scripts/verifica.py              # --rapid, ~15 s: lint, design, contrast, unitare py+js, API
-python scripts/verifica.py --poarta     # + build, smoke_ui (esantion), audit_mobil, audit_tastatura
-python scripts/verifica.py --complet    # tot: + smoke_ui pe toate proiectele, audit_foaie,
-                                        #   audit_reactivitate, audit_navigare, audit_ferestre
+python scripts/verifica.py              # = --rapid, ~30 s: lint, teste JS, teste Python, probe API
 python scripts/verifica.py --atinse <fisiere>   # exact ce ar rula poarta pentru ele
+python scripts/verifica.py --continua   # nu te opri la primul esec
 ```
 
-Testele unitare: `teste/` (Python, `unittest`) si `frontend/src/lib/*.test.js` (`node --test`).
-Auditurile cu browser stau pe `scripts/banc.py`: server si baza de unica folosinta, contextul
-de telefon/desktop, degetul, raportul (OK · PICA · NOTA · SARI · ACCEPTAT; iesire 0 curat,
-1 abatere, 2 instrumentul). Fiecare exista fiindca prinde un mod de esec care trece de build.
-**Ce pazeste fiecare si capcanele lui de masurare: `docs/verificatoare.md`** — se citeste cand
-lucrezi LA un verificator sau cand unul raporteaza ceva ciudat.
+Patru pasi, toti fara browser si fara build:
+
+1. `lint` — pyflakes pe tot proiectul (`scripts/lint.py`).
+2. `unitare_js` — `node --test teste/js/*.test.mjs`: scriptul din `templates/login.html` (unde te
+   duce dupa PIN) si `static/service-worker.js` (se retrage singur, nu atinge `ngsw:`). Runner-ul
+   built-in al lui Node, fara pachete npm.
+3. `unitare_py` — `python -m unittest discover -s teste`: functiile pure, garzile, schema pe o baza
+   goala, rutele prin clientul de test (APK, Torqa web, login, sync) si `test_retragere` (ce a
+   plecat nu mai raspunde).
+4. `test_suite` — probele de API prin HTTP pe un server de unica folosinta, cu baza noua
+   (`scripts/banc.py`): sfera, ce trimite un proiect inchis, backup-ul fara secrete.
 
 **Poarta** (`.claude/hooks/gate.py`, la Stop) ruleaza, din aceeasi lista (`pasi_pentru`), doar
 ce cer fisierele atinse. Nu blocheaza de mai mult de doua ori per sesiune. **O modificare doar
 in documentatie nu o declanseaza.** Supapa: `PIF_GATE=skip` — o si anunta in context, deci
-n-o poti folosi tacit.
+n-o poti folosi tacit. Ce pazeste fiecare pas si capcanele lui: `docs/verificatoare.md`.
 
 Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`):
-`pip install pyflakes playwright requests && python -m playwright install chromium`.
+`pip install pyflakes requests` si Node (doar `node`, fara npm; il gaseste si in PATH-ul din registru).
 
 ## Mediu, server, deploy
 
@@ -136,9 +143,9 @@ Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`)
 (`sudo systemctl restart pif-dashboard`), Gunicorn 2 workers.
 
 **Deploy:** `git push origin master` → webhook `POST /webhook/deploy` (HMAC) face
-`git reset --hard` + `pip install` + restart. **Nu exista npm pe server**, deci `static/dist/`
-TREBUIE sa fie versionat — de aceea `.githooks/pre-commit` cere bump la `VERSION` din
-`static/service-worker.js` cand dist-ul se schimba: fara el, build-ul nou nu ajunge pe telefon.
+`git reset --hard` + `pip install` + restart. Nimic de construit pe server si nimic versionat din
+build: SPA-ul si `static/dist/` au plecat odata cu interfata veche, iar `.githooks/pre-commit` nu
+mai cere bump de `VERSION` (service worker-ul de azi nu are versiune).
 
 **Torqa web si APK-urile nu trec prin git** (`uploads/`, gitignored): build-ul Angular (`--base-href /torqa/`) se urca
 ca zip la `POST /api/torqa/web/upload` (camp `zip`, Bearer `PIF_API_TOKEN`) si apare la `/torqa/`; raman live + 2
@@ -146,20 +153,30 @@ anterioare (`printf '<versiune>' > uploads/torqa-web/current` = intoarcere). APK
 `canal=torqa` pentru Torqa (fara `canal` = `pif`); citire `GET /api/app/version|apk?canal=`. Comenzile si motivele:
 `docs/decizii/2026-10-01-torqa-web-si-canalul-apk.md`.
 
+**`/` duce la `/torqa/`** (302, fara sesiune; `/torqa/` cere el sesiunea si trimite la
+`/login?next=/torqa/`). `/service-worker.js` serveste worker-ul care se retrage singur, ca browserele
+cu interfata veche sa scape de ea; ruta ramane. `/calc`, `/assets/`, `/manifest.json`, `/docs/`,
+`/api/me`, `/api/push/*`, `/api/settings/plan-departament` dau 404.
+
 ## Mai multe sesiuni pe acelasi arbore
 
 Indexul git e comun, deci coordoneaza-te inainte sa pui in stage sau sa comiti. **Niciodata
 `git add -A`** si niciodata force-push — ambele blocate acum si mecanic de hook-ul
-`guard_git` (PreToolUse). Verifica ce e al tau cu
-`git status -- . ':!static/dist'`. Sablonul de pornire: `AGENT_BRIEFING.md`.
+`guard_git` (PreToolUse). Verifica ce e al tau cu `git status`. Sablonul de pornire:
+`AGENT_BRIEFING.md`.
 
 ## Limitari cunoscute
 
 - Statusurile sunt string-uri magice, centralizate in `labels.py` dar **neimpuse la nivel de
   baza** — un `UPDATE` direct poate scrie orice.
-- CSP foloseste `unsafe-inline`. A ramas din aplicatia veche cu sute de `onclick`; azi
-  `static/dist/index.html` are un singur script inline (bootstrap-ul de tema), deci migrarea
-  la nonce a devenit realista.
-- Nu exista pytest: testele unitare folosesc biblioteca standard (`unittest`, `node --test`),
-  iar auditurile cu browser sunt scrise de mana, pe `scripts/banc.py`.
+- CSP-ul implicit (pagina de login, API, erori) foloseste `unsafe-inline` si mai listeaza surse din
+  vremea SPA-ului (CDN-uri, `query1.finance.yahoo.com`) pe care nu le mai cere nimic: de strans.
+  Pe `/torqa/` politica e a Torqa (`CSP_TORQA`, `blueprints/torqa_web.py`).
+- Baza nu s-a atins la retragere: randurile `push_*` din `app_settings` (cheia VAPID **privata**,
+  abonamentele) si `plan_departament_url` au ramas fara cititor. `/api/backup` exclude `push_*`
+  (`CHEI_PROTEJATE`, pazit de `test_suite`); `/api/admin/db-dump` e baza bruta. Tabela `calcule`
+  mai e citita de `/api/proiecte/<id>/snapshot`.
+- `csrf.py` mai are exceptia pentru endpointul `push.push_action`, care nu mai exista (inofensiva;
+  `csrf.py` nu s-a atins la retragere).
+- Nu exista pytest: testele folosesc biblioteca standard (`unittest`, `node --test`).
 - `UPLOAD_FOLDER` nu se poate configura din mediu.

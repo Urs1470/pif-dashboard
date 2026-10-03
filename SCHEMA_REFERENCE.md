@@ -95,3 +95,8 @@ tabelele `jurnal`, `checklist_pif`, `echipamente`, `atasamente`, `parametri_mast
 `fault_codes`, `project_templates`, ruta `GET /api/dashboard/home`, Gantt-ul de
 proiect si `gantt.pdf`, tabul Calcule, `static/app.js`, `static/core.js`,
 integrarea Google Calendar.
+
+Retrase pe 2026-10-03, odata cu interfata veche (dau 404; baza nu s-a atins): `/calc`, `/docs/*`,
+`/api/me`, `/api/push/*` (notificarile web), `/api/settings/plan-departament`, fisierele SPA-ului
+(`/assets/*`, `/manifest.json`, `/favicon.svg`, `/icon-*.png`). `/` duce la `/torqa/`. Starea de
+dinainte: eticheta git `inainte-de-retragere`.
