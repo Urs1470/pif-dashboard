@@ -1,11 +1,4 @@
-# Core web framework
+# Ce importa serverul sau ce il porneste. teste/test_cerinte.py tine lista asta si importurile
+# la fel: un pachet nefolosit sau un import care lipseste de aici pica testul.
 flask==3.1.3
-flask-compress==1.24
 gunicorn==23.0.0
-
-# Data & config
-pyyaml==6.0.3
-
-# Document generation
-pymupdf==1.27.2.3
-openpyxl==3.1.5
