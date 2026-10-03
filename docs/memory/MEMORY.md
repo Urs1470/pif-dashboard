@@ -90,8 +90,8 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
   Daca dupa un deploy toate cererile din tunel apar cu aceeasi adresa in `logs/app.log`, cloudflared nu
   ajunge pe loopback: adresa lui se adauga in `PIF_TRUSTED_PROXIES`.
 - **Tokenul de dispozitiv si vault-ul:** citeste doar notele din `vault_folder` de proiect, nu scrie
-  nicio nota (`utils.device_token_denied`, `obsidian._in_dosar_de_proiect`). Dar poate scrie `vault_folder`
-  pe un proiect (`PUT /api/proiecte/<id>`), deci limita aceea ocoleste un dispozitiv care stie API-ul.
+  nicio nota (`utils.device_token_denied`, `obsidian._in_dosar_de_proiect`) si nu scrie `vault_folder`
+  (`utils.refuse_device_token_fields`, 403 pe proiecte si debrief): altfel si-ar muta singur dosarul citit.
 - **Restore:** coloanele vin din schema (`PRAGMA table_info`), nu dintr-o lista din cod; o coloana noua se
   restaureaza singura, iar `teste/test_backup_restore.py` compara toate coloanele dupa un dus-intors.
 - **Taskurile recurente** (zilnic/saptamanal/lunar) isi nasc urmatoarea instanta la bifare —

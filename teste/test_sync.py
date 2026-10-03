@@ -452,3 +452,60 @@ class NoteleDinVaultSiDispozitivul(CuAplicatia):
                             headers={'X-CSRF-Token': token})
         self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
         self.assertEqual(self.pe_disc(INAUNTRU), 'Pompa: din sesiune')
+
+    # ------------------------------------------ `vault_folder`: cheia regulii de mai sus
+
+    def vault_folder(self, pid):
+        import database
+        conn = database.get_db()
+        try:
+            row = conn.execute('SELECT vault_folder FROM proiecte WHERE id = ?', (pid,)).fetchone()
+            return row['vault_folder'] if row else None
+        finally:
+            conn.close()
+
+    def test_dispozitivul_nu_muta_dosarul_unui_proiect_ca_sa_citeasca_altceva(self):
+        # Ocolul gasit la curatenie: PUT pe proiect cu alt dosar, apoi GET pe o nota de acolo.
+        r = self.client.put('/api/proiecte/p-pompa', json={'vault_folder': 'wiki/personal'},
+                            headers=self.bearer(DEVICE))
+        self.assertEqual(r.status_code, 403, r.get_data(as_text=True))
+        self.assertEqual(self.vault_folder('p-pompa'), 'wiki/job/projects/acme/pompa')
+        self.assertEqual(self.nota(AFARA).status_code, 403)
+        # Nici impreuna cu un camp permis: cererea se refuza intreaga, nu pe jumatate.
+        r = self.client.put('/api/proiecte/p-fara', json={'nume': 'Alt nume', 'vault_folder': 'wiki'},
+                            headers=self.bearer(DEVICE))
+        self.assertEqual(r.status_code, 403)
+        self.assertEqual(self.vault_folder('p-fara'), '')
+
+    def test_dispozitivul_nu_creeaza_proiect_cu_dosar_de_vault(self):
+        r = self.client.post('/api/proiecte', json={'id': 'p-nou-dispozitiv', 'tip': 'PIF', 'nume': 'Nou',
+                                                    'vault_folder': 'wiki/personal'},
+                             headers=self.bearer(DEVICE))
+        self.assertEqual(r.status_code, 403, r.get_data(as_text=True))
+        self.assertIsNone(self.vault_folder('p-nou-dispozitiv'), 'proiectul nu s-a creat')
+
+    def test_dispozitivul_nu_importa_debrief_cu_dosar_de_vault(self):
+        r = self.client.post('/api/import/debrief',
+                             json={'proiect': {'nume': 'Debrief dispozitiv', 'vault_folder': 'wiki/personal'}},
+                             headers=self.bearer(DEVICE))
+        self.assertEqual(r.status_code, 403, r.get_data(as_text=True))
+
+    def test_dispozitivul_editeaza_proiectul_fara_dosar_ca_inainte(self):
+        # Ce trimite Torqa (fara `vault_folder`) trece ca pana acum.
+        r = self.client.put('/api/proiecte/p-lipsa', json={'locatie': 'Iasi'}, headers=self.bearer(DEVICE))
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual(self.vault_folder('p-lipsa'), 'wiki/job/projects/acme/nu-exista')
+
+    def test_tokenul_de_masina_seteaza_dosarul_ca_inainte(self):
+        # `pif-sync.py link` scrie `vault_folder` cu tokenul de masina; regula e a dispozitivului.
+        try:
+            r = self.client.put('/api/proiecte/p-fara', json={'vault_folder': 'wiki/job/projects/acme/dos-win'},
+                                headers=self.bearer(FULL))
+            self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+            self.assertEqual(self.vault_folder('p-fara'), 'wiki/job/projects/acme/dos-win')
+        finally:
+            import database
+            conn = database.get_db()
+            conn.execute("UPDATE proiecte SET vault_folder = '' WHERE id = 'p-fara'")
+            conn.commit()
+            conn.close()

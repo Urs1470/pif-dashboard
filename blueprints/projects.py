@@ -12,7 +12,7 @@ from flask import Blueprint, request, jsonify
 from database import get_db, row_to_dict
 from utils import (
     safe_table, generate_uuid, login_required, UPLOAD_FOLDER, id_ocupat,
-    get_app_setting, set_app_setting, get_json_or_400,
+    get_app_setting, set_app_setting, get_json_or_400, refuse_device_token_fields,
 )
 
 logger = logging.getLogger('pif_dashboard')
@@ -76,6 +76,7 @@ def get_proiecte():
 @login_required
 def create_proiect():
     data = get_json_or_400()
+    refuse_device_token_fields(data)
     conn = get_db()
     cursor = conn.cursor()
 
@@ -167,6 +168,7 @@ def get_proiect(project_id):
 @login_required
 def update_proiect(project_id):
     data = get_json_or_400()
+    refuse_device_token_fields(data)
     conn = get_db()
     cursor = conn.cursor()
 
@@ -449,6 +451,7 @@ def import_debrief():
         return jsonify({'error': 'JSON body required'}), 400
 
     proiect_data = data.get('proiect') or {}
+    refuse_device_token_fields(data, proiect_data)
     if not proiect_data.get('nume'):
         return jsonify({'error': 'proiect.nume is required'}), 400
 

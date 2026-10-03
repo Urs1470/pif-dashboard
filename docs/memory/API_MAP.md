@@ -42,15 +42,15 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 |---|---|---|---|
 | GET | `/api/proiecte` | `get_proiecte` | 25 |
 | POST | `/api/proiecte` | `create_proiect` | 75 |
-| GET | `/api/proiecte/<project_id>` | `get_proiect` | 138 |
-| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 166 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 284 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 325 |
-| POST | `/api/import/debrief` | `import_debrief` | 428 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 728 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 739 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 770 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 811 |
+| GET | `/api/proiecte/<project_id>` | `get_proiect` | 139 |
+| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 167 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 286 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 327 |
+| POST | `/api/import/debrief` | `import_debrief` | 430 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 731 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 742 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 773 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 814 |
 
 ## blueprints/sync.py (1 rute)
 

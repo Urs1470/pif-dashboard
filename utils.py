@@ -196,6 +196,30 @@ def device_token_denied(method, path):
     return path in DEVICE_TOKEN_READ_ONLY and method not in _METODE_DE_CITIRE
 
 
+# Campurile pe care tokenul de dispozitiv nu le scrie, pe nicio ruta. `vault_folder` hotaraste
+# ce note din vault citeste dispozitivul (`blueprints/obsidian.py`) si in ce README scrie
+# serverul statusul proiectului; fara regula asta, un `PUT {vault_folder: "wiki/personal"}`
+# urmat de un GET deschidea orice folder. Torqa nu-l trimite niciodata; il seteaza
+# `pif-sync.py link`, cu PIF_API_TOKEN.
+DEVICE_TOKEN_DENIED_FIELDS = ('vault_folder',)
+
+
+def refuse_device_token_fields(*bodies):
+    """Opreste cu 403 scrierea facuta cu tokenul de dispozitiv care atinge un camp din
+    DEVICE_TOKEN_DENIED_FIELDS, in oricare dintre corpurile date (un debrief tine proiectul
+    intr-un sub-obiect). Sesiunea cu PIN si tokenul de masina trec neatinse."""
+    from flask import g
+    if getattr(g, 'api_token_scope', None) != 'device':
+        return
+    for body in bodies:
+        if not isinstance(body, dict):
+            continue
+        for camp in DEVICE_TOKEN_DENIED_FIELDS:
+            if camp in body:
+                abort(make_response(jsonify(
+                    {'error': f'{camp} nu se scrie cu tokenul de dispozitiv'}), 403))
+
+
 def _check_api_token():
     """Valideaza Bearer-ul din Authorization: PIF_API_TOKEN (masini: Cowork, scripturi,
     deploy) sau PIF_DEVICE_TOKEN (Torqa), cel din urma refuzat unde zice

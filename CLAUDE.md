@@ -136,7 +136,7 @@ Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`)
 | `SECRET_KEY` | nu | fisier `.secret_key` | semnarea sesiunii |
 | `SESSION_COOKIE_SECURE` | nu | `true` | `false` pentru dev pe HTTP |
 | `PIF_API_TOKEN` | nu | — | Bearer pentru masini (Cowork, `pif-sync.py`); scutit de CSRF |
-| `PIF_DEVICE_TOKEN` | nu | — | Bearer pentru Torqa (telefon, desktop); fara restore, backup, admin, deploy, upload APK; din vault citeste doar notele din `vault_folder` de proiect si nu scrie nicio nota |
+| `PIF_DEVICE_TOKEN` | nu | — | Bearer pentru Torqa (telefon, desktop); fara restore, backup, admin, deploy, upload APK; din vault citeste doar notele din `vault_folder` de proiect, nu scrie nicio nota si nu scrie `vault_folder` |
 | `PIF_DB_PATH` | nu | `pif_dashboard.db` | baza alternativa; o folosesc probele |
 | `PIF_RATE_LIMIT` | nu | `60` | cereri/minut per IP pe `/api/*` |
 | `PIF_TRUSTED_PROXIES` | nu | `127.0.0.1,::1` | adrese sau retele CIDR de la care se crede `CF-Connecting-IP` (cloudflared); de la oricine altcineva, IP-ul clientului e adresa socketului. Daca cloudflared nu ajunge la gunicorn pe loopback, adresa lui se adauga aici; altfel toti clientii prin tunel primesc aceeasi adresa, deci aceeasi limita |

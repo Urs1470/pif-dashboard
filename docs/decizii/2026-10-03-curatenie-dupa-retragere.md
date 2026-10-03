@@ -57,10 +57,11 @@ zonă interzisă, a fost aprobat explicit pentru ea.
 
 ## Ce a rămas, deschis
 
-- **Dispozitivul își poate lărgi singur citirea.** Poate scrie `vault_folder` pe un proiect (`PUT /api/proiecte/<id>`,
-  `POST /api/proiecte`, `POST /api/import/debrief`), iar apoi citește orice dosar prin ruta Wiki. Verificat cu o proba
-  locală. Torqa nu trimite niciodată `vault_folder` (nu apare în sursa lui), deci l-ar putea refuza dispozitivului
-  fără pagubă; nu s-a făcut, fiindcă schimbă comportamentul altor rute decât cele aprobate.
+- **Închis după revizie: dispozitivul nu-și mai poate lărgi singur citirea.** Putea scrie `vault_folder` pe un proiect
+  (`PUT /api/proiecte/<id>`, `POST /api/proiecte`, `POST /api/import/debrief`) și apoi citi orice dosar prin ruta Wiki
+  (verificat cu o probă locală). Torqa nu trimite niciodată `vault_folder`, deci câmpul se refuză acum tokenului de
+  dispozitiv cu 403, pe toate trei rutele (`utils.refuse_device_token_fields`); tokenul de mașină (`pif-sync.py link`)
+  și sesiunea cu PIN îl scriu ca înainte. Testele din `teste/test_sync.py` pică fără regulă.
 - **`/admin/db-upload` nu poate urca cu sesiunea de PIN**: `fetch`-ul lui nu pune `X-CSRF-Token`, deci primește 403
   (la fel `scripts/upload_db.py`); merge cu tokenul de mașină. Pagina se deschide și scriptul ei rulează sub CSP-ul nou;
   nu s-a schimbat comportamentul unui formular care înlocuiește baza.
