@@ -89,13 +89,13 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/healthz` | `healthz` | 417 |
-| GET | `/api/health` | `health_redirect` | 423 |
-| GET | `/login` | `login_page` | 428 |
-| POST | `/login` | `login` | 438 |
-| GET | `/logout` | `logout` | 452 |
-| GET | `/` | `index` | 461 |
-| GET | `/service-worker.js` | `service_worker` | 474 |
-| POST | `/webhook/deploy` | `webhook_deploy` | 508 |
-| POST | `/api/deploy` | `api_deploy` | 593 |
+| GET | `/api/healthz` | `healthz` | 420 |
+| GET | `/api/health` | `health_redirect` | 426 |
+| GET | `/login` | `login_page` | 431 |
+| POST | `/login` | `login` | 441 |
+| GET | `/logout` | `logout` | 455 |
+| GET | `/` | `index` | 464 |
+| GET | `/service-worker.js` | `service_worker` | 477 |
+| POST | `/webhook/deploy` | `webhook_deploy` | 511 |
+| POST | `/api/deploy` | `api_deploy` | 596 |
 

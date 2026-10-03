@@ -10,9 +10,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `36:esteCacheVechi`, `40:esteTorqa`, `59:retrage`
 
-## app.py (667 linii)
+## app.py (670 linii)
 
-`75:_retele_de_incredere`, `89:_ip_valid`, `100:_proxy_de_incredere`, `112:_adresa_socket`, `118:_client_ip`, `139:get_or_create_secret_key`, `157:file_hash`, `184:inject_version`, `208:make_session_permanent`, `218:setup_logging`, `250:check_rate_limit`, `289:check_login_rate_limit`, `311:before_request_func`, `343:_default_csp`, `371:after_request_func`, `395:get_hashed_pin`, `404:_git_commit`, `418:healthz`, `424:health_redirect`, `429:login_page`, `439:login`, `453:logout`, `462:index`, `475:service_worker`, `480:add_sw_header`, `501:get_deploy_secret`, `509:webhook_deploy`, `594:api_deploy`, `650:page_not_found`, `657:internal_error`
+`78:_retele_de_incredere`, `92:_ip_valid`, `103:_proxy_de_incredere`, `115:_adresa_socket`, `121:_client_ip`, `142:get_or_create_secret_key`, `160:file_hash`, `187:inject_version`, `211:make_session_permanent`, `221:setup_logging`, `253:check_rate_limit`, `292:check_login_rate_limit`, `314:before_request_func`, `346:_default_csp`, `374:after_request_func`, `398:get_hashed_pin`, `407:_git_commit`, `421:healthz`, `427:health_redirect`, `432:login_page`, `442:login`, `456:logout`, `465:index`, `478:service_worker`, `483:add_sw_header`, `504:get_deploy_secret`, `512:webhook_deploy`, `597:api_deploy`, `653:page_not_found`, `660:internal_error`
 
 ## database.py (1915 linii)
 

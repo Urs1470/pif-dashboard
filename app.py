@@ -52,11 +52,14 @@ init_csrf(app)
 
 # ============ CLIENT IP ============
 
-# Cum ajunge o cerere la gunicorn: Cloudflare Tunnel -> `cloudflared`, pe aceeasi masina ->
-# gunicorn, deci conexiunea TCP vine de la loopback, iar Cloudflare a pus deja in cerere
-# `CF-Connecting-IP` (adresa reala, suprascrisa pe marginea lor) si `X-Forwarded-For`.
-# Atat se stie din depozit; adresa pe care asculta gunicorn si unde ruleaza cloudflared sta in
-# unitatea systemd de pe server, nu in repo (vezi docs/decizii/2026-10-03-curatenie-dupa-retragere.md).
+# Cum ajunge o cerere la gunicorn. DIN DEPOZIT SE STIE doar ca site-ul sta in spatele unui
+# Cloudflare Tunnel (CLAUDE.md) si ca `ProxyFix(x_for=1)` crede un singur hop. Adresa pe care
+# asculta gunicorn si de unde se conecteaza `cloudflared` stau in unitatea systemd de pe
+# server, nu in repo (docs/decizii/2026-10-03-curatenie-dupa-retragere.md). PRESUPUNEREA de
+# aici: cloudflared ruleaza pe aceeasi masina si ajunge la gunicorn de la loopback (sau pe un
+# socket UNIX), iar Cloudflare a pus deja in cerere `CF-Connecting-IP` (adresa reala,
+# suprascrisa pe marginea lor) si `X-Forwarded-For`. Daca nu e asa, cererile din tunel apar in
+# log cu adresa lui cloudflared: se repara cu `PIF_TRUSTED_PROXIES`, fara cod.
 #
 # Antetele astea le poate scrie ORICINE ajunge direct la gunicorn (un client din LAN, daca
 # portul nu e legat doar la loopback). `ProxyFix` mai jos le crede fara sa intrebe de unde vin,
