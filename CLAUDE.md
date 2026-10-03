@@ -151,7 +151,8 @@ mai cere bump de `VERSION` (service worker-ul de azi nu are versiune).
 **Torqa web si APK-urile nu trec prin git** (`uploads/`, gitignored): build-ul Angular (`--base-href /torqa/`) se urca
 ca zip la `POST /api/torqa/web/upload` (camp `zip`, Bearer `PIF_API_TOKEN`) si apare la `/torqa/`; raman live + 2
 anterioare (`printf '<versiune>' > uploads/torqa-web/current` = intoarcere). APK-urile: `POST /api/app/upload`, cu
-`canal=torqa` pentru Torqa (fara `canal` = `pif`); citire `GET /api/app/version|apk?canal=`. Comenzile si motivele:
+`canal=torqa` pentru Torqa (`canal` e obligatoriu la urcare: fara el, 400); citire `GET /api/app/version|apk?canal=`
+(fara `canal`, citirea raspunde pe `pif`, pentru aplicatia veche inca instalata). Comenzile si motivele:
 `docs/decizii/2026-10-01-torqa-web-si-canalul-apk.md`.
 
 **`/` duce la `/torqa/`** (302, fara sesiune; `/torqa/` cere el sesiunea si trimite la

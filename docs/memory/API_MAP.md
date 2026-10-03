@@ -24,9 +24,9 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| POST | `/api/app/upload` | `app_upload` | 98 |
-| GET | `/api/app/version` | `app_version` | 158 |
-| GET | `/api/app/apk` | `app_apk` | 173 |
+| POST | `/api/app/upload` | `app_upload` | 108 |
+| GET | `/api/app/version` | `app_version` | 170 |
+| GET | `/api/app/apk` | `app_apk` | 185 |
 
 ## blueprints/obsidian.py (5 rute)
 

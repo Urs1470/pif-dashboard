@@ -34,9 +34,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `50:get_stats`, `84:_pdf_safe_text`, `98:_pdf_make_styles`, `126:_pdf_section_header`, `139:_pdf_section_admin`, `167:_pdf_section_tech`, `185:_pdf_section_tasks`, `219:export_pdf`, `290:backup_database`, `320:restore_database`, `483:admin_db_upload_page`, `529:admin_db_upload`, `606:admin_db_dump`, `649:_search_snippet`, `665:global_search`, `717:calendar_view`
 
-## blueprints/app_update.py (193 linii)
+## blueprints/app_update.py (205 linii)
 
-`66:_canal`, `78:_cai`, `85:_canal_necunoscut`, `90:_meta`, `99:app_upload`, `160:app_version`, `175:app_apk`
+`70:_canal`, `83:_cai`, `90:_canal_necunoscut`, `95:_canal_lipsa`, `100:_meta`, `109:app_upload`, `172:app_version`, `187:app_apk`
 
 ## blueprints/obsidian.py (574 linii)
 
