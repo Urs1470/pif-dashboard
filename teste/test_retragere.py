@@ -7,9 +7,10 @@ suprafata veche care renaste in tacere. Ce NU s-a retras e acoperit de testele l
 (`test_torqa_web`, `test_sync`, `test_login_next`, `scripts/test_suite.py`).
 """
 
+import io
 import os
 
-from _aplicatia import CuAplicatia
+from _aplicatia import DEVICE, CuAplicatia
 from _baza import RADACINA
 
 
@@ -100,3 +101,63 @@ class InterfataVeche(CuAplicatia):
         self.assertEqual(self.login().status_code, 200)
         r = self.client.get('/login', query_string={'next': '/torqa/'})
         self.assertEqual((r.status_code, r.headers['Location']), (302, '/torqa/'))
+
+
+class PrevizualizarileAnonimeDeImport(CuAplicatia):
+    """Ultimele doua rute fara login, mostenite de la calculatorul public: parsau un `.dcparamsbak`
+    ABB si o arhiva STARTER si intorceau parametrii drive-ului. Au plecat pe 2026-10-03 (curatenia
+    de dupa retragere), cu parserele din `scripts/parse_params/` care nu mai serveau nimic."""
+
+    RUTE = ('/api/import-abb-multi/preview', '/api/import-archive/preview')
+
+    def upload(self, cale, **extra):
+        date = {'files': (io.BytesIO(b'PK\x03\x04'), 'drive.dcparamsbak'),
+                'file': (io.BytesIO(b'PK\x03\x04'), 'proiect.zip')}
+        return self.client.post(cale, data=date, content_type='multipart/form-data', **extra)
+
+    def test_dau_404_fara_sesiune_cu_sesiune_si_cu_token(self):
+        for cale in self.RUTE:
+            with self.subTest(cale=cale, cine='anonim'):
+                r = self.upload(cale)
+                self.assertEqual(r.status_code, 404)
+                self.assertEqual(r.get_json(), {'error': 'Endpoint inexistent'})
+        for cine, antete in (('masina', self.bearer()), ('dispozitiv', self.bearer(DEVICE))):
+            for cale in self.RUTE:
+                with self.subTest(cale=cale, cine=cine):
+                    self.assertEqual(self.upload(cale, headers=antete).status_code, 404)
+        self.assertEqual(self.login().status_code, 200)
+        for cale in self.RUTE:
+            with self.subTest(cale=cale, cine='sesiune'):
+                self.client.get('/api/stats')                 # cookie-ul csrf apare pe un raspuns autentificat
+                token = self.client.get_cookie('csrf_token').value
+                self.assertEqual(self.upload(cale, headers={'X-CSRF-Token': token}).status_code, 404)
+
+    def test_nu_mai_exista_nicio_regula_pe_ele(self):
+        reguli = [r.rule for r in self.app_module.app.url_map.iter_rules()]
+        for cale in self.RUTE:
+            self.assertNotIn(cale, reguli)
+        self.assertEqual([r for r in reguli if 'import-abb' in r or 'import-archive' in r], [])
+
+    def test_parserele_de_parametri_au_plecat_odata_cu_ele(self):
+        self.assertFalse(os.path.exists(os.path.join(RADACINA, 'scripts', 'parse_params')))
+        import blueprints.projects as projects
+        for ramas in ('parse_archive', 'parse_abb', 'abb_drive_info', '_filter_drive_params'):
+            self.assertFalse(hasattr(projects, ramas), ramas)
+
+    # Gardianul clasei: o ruta de API care raspunde fara nicio credentiala a fost exact aici
+    # (doua, uitate 5 luni). Singurele publice sunt sanatatea serverului.
+    PUBLICE = {'/api/healthz', '/api/health'}
+
+    def test_nicio_alta_ruta_de_api_nu_raspunde_anonim(self):
+        import re
+        verificate = 0
+        for regula in self.app_module.app.url_map.iter_rules():
+            if not regula.rule.startswith('/api/') or regula.rule in self.PUBLICE:
+                continue
+            cale = re.sub(r'<[^>]+>', 'x', regula.rule)
+            for metoda in sorted(regula.methods - {'HEAD', 'OPTIONS'}):
+                with self.subTest(metoda=metoda, cale=regula.rule):
+                    r = self.client.open(cale, method=metoda, json={})
+                    self.assertEqual(r.status_code, 401, 'raspunde fara login')
+                    verificate += 1
+        self.assertGreater(verificate, 30, 'garda trebuie sa vada rutele aplicatiei, nu o lista goala')

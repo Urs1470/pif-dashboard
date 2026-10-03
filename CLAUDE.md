@@ -54,7 +54,7 @@ static/service-worker.js                 # worker care se retrage singur: scapa 
                                          #   care au instalat interfata veche de ea
 teste/                                   # unittest (Python) si teste/js/ (node --test)
 scripts/                                 # verifica.py, lint.py, test_suite.py, banc.py,
-                                         #   gen_memory.py, parse_params/ (importul de parametri)
+                                         #   gen_memory.py, upload_db.py, sync_db_from_server.sh
 ```
 
 Nu exista pas de build in repo si nu exista npm pe server: ce se construieste (Torqa web, APK-ul

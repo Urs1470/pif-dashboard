@@ -76,7 +76,6 @@ TASK-UL TAU:
 | **Schemă / migrații** | `database.py` (anunță prin commit message clar) |
 | **Torqa web / APK (urcare, versiuni)** | `blueprints/torqa_web.py`, `blueprints/app_update.py` |
 | **Login, sesiune, CSRF, tokenuri** | `app.py`, `utils.py`, `csrf.py`, `templates/login.html` |
-| **Import parametri** | `scripts/parse_params/*.py` |
 | **Teste și verificatoare** | `teste/`, `scripts/verifica.py`, `scripts/test_suite.py`, `.claude/hooks/gate.py` |
 | **Memory Ion** (`~/.claude/.../memory/*`) | **NU atinge** — local Ion |
 
@@ -86,9 +85,9 @@ Hub-uri cu risc de coliziune (fii mic + rapid + `pull --rebase`): `app.py`, `dat
 ## Exemple de scope
 
 ```
-<SCOPE> = Import-Convertoare
-<TASK> = Lucreaza la parserele de parametri din scripts/parse_params/ (abb, danfoss,
-lenze, siemens). Le foloseste importul din blueprints/projects.py. NU atinge blueprints/tasks.py.
+<SCOPE> = Backup-Restore
+<TASK> = Lucreaza la backup/restore din blueprints/admin.py. Adauga teste in teste/ pentru
+ce schimbi. NU atinge database.py (schema) si NU rula restore pe baza de lucru.
 ```
 
 ```
