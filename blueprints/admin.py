@@ -227,10 +227,13 @@ def restore_database():
 @admin_bp.route('/admin/db-upload', methods=['GET'])
 @login_required
 def admin_db_upload_page():
-    """Minimal HTML form for uploading a local DB file."""
+    """Minimal HTML form for uploading a local DB file.
+
+    Stilul si scriptul sunt inline, deci poarta nonce-ul cererii (`request._csp_nonce`, pus in
+    `before_request` din app.py): politica de continut a serverului nu lasa nimic inline fara el."""
     return '''<!doctype html>
 <html><head><meta charset="utf-8"><title>DB upload</title>
-<style>
+<style nonce="__NONCE__">
 body{background:#0a0d12;color:#e3e8ef;font-family:system-ui,sans-serif;
      max-width:560px;margin:60px auto;padding:0 24px}
 h1{font-size:20px;margin:0 0 16px}
@@ -253,7 +256,7 @@ pre{background:#0a0d12;border:1px solid #232a36;border-radius:6px;
 <div class="note">DB-ul curent va fi salvat in <code>backups/</code> automat inainte de inlocuire.</div>
 <pre id="out"></pre>
 </div>
-<script>
+<script nonce="__NONCE__">
 const f=document.getElementById('f'),btn=document.getElementById('submit'),out=document.getElementById('out');
 f.addEventListener('submit',async e=>{
   e.preventDefault();btn.disabled=true;out.textContent='Uploading...';
@@ -267,7 +270,7 @@ f.addEventListener('submit',async e=>{
   btn.disabled=false;
 });
 </script>
-</body></html>'''
+</body></html>'''.replace('__NONCE__', getattr(request, '_csp_nonce', ''))
 
 
 @admin_bp.route('/api/admin/db-upload', methods=['POST'])

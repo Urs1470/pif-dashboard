@@ -894,7 +894,10 @@ class PoliticaDeContinut(CuWeb):
                 csp = self.csp(cale)
                 self.assertNotEqual(csp, torqa_web.CSP_TORQA)
                 self.assertNotIn("'unsafe-eval'", csp, 'unsafe-eval e doar al Torqa')
-                self.assertIn('https://cdn.jsdelivr.net', csp)
+                # Politica de dinainte lista aici CDN-uri; cea de acum (nonce, fara surse externe) e
+                # verificata in detaliu de teste/test_csp.py.
+                self.assertNotIn('https://', csp)
+                self.assertNotIn("'unsafe-inline'", csp, 'unsafe-inline e doar al Torqa')
 
     def test_politica_nu_deschide_nimic_in_exterior(self):
         csp = torqa_web.CSP_TORQA

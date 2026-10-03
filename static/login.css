@@ -1,7 +1,7 @@
 /* Pagina de autentificare — singurul sablon randat pe server.
-   Isi tine propria copie a tokenurilor fiindca nu incarca bundle-ul SPA-ului;
-   valorile sunt aceleasi cu `frontend/src/styles/tokens.css` si se schimba
-   IMPREUNA cu el. Self-hosted (OFL-1.1), fisierele in static/fonts/. */
+   Isi tine propria copie a tokenurilor: nu incarca nimic din Torqa si nu are de unde
+   sa le importe. Valorile urmeaza paleta Torqa (repo-ul Torqa); daca se schimba acolo,
+   se schimba cu mana aici. Self-hosted (OFL-1.1), fisierele in static/fonts/. */
 @font-face {
   font-family: 'Hanken Grotesk';
   src: url('/static/fonts/HankenGrotesk-Variable.woff2') format('woff2');
@@ -75,9 +75,7 @@
   --text: #1c1c24;
   --text-secondary: #55555f;
   --text-dim: #6b6b77;
-  /* Aceeasi valoare ca in `frontend/src/styles/tokens.css` — pagina de login e
-     server-rendered si nu poate importa tokenurile, deci le copiaza. Vezi acolo
-     de ce accentul de tema deschisa e `#4e7192` si nu `#5980a6`. */
+  /* Copie a accentului din paleta Torqa, pentru tema deschisa (vezi nota din antet). */
   --accent: #63638f;
   --accent-deep: #4a4a72;
   --accent-subtle: #ececf4;
@@ -136,6 +134,10 @@ body {
   color: var(--text);
 }
 .theme-toggle:active { transform: scale(.965); transition: transform var(--dur-press) var(--ease); }
+
+/* Iconita de tema care nu e activa. Clasa, nu `style="display:none"` inline: politica de
+   continut (app.py) nu lasa atribute `style` in pagina. */
+.theme-icon-hidden { display: none; }
 
 .login-container {
   background: var(--bg-surface);

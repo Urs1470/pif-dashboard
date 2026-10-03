@@ -340,6 +340,33 @@ def before_request_func():
         logger.info(f"{request.method} {request.path} - IP: {_client_ip()}")
 
 
+def _default_csp(nonce):
+    """Politica de continut a tot ce nu e Torqa web (`/torqa/` si-o are pe a lui, `CSP_TORQA`).
+
+    Cat serveste serverul fara Torqa: pagina de login (`templates/login.html`), `/admin/db-upload`,
+    raspunsurile JSON ale API-ului, paginile de eroare si fisierele din `/static/`. Nimic din exterior
+    (pana pe 2026-10-03 mai listau CDN-uri, Google Fonts si `query1.finance.yahoo.com`, ramase de la
+    SPA si calculator), si niciun script sau stil inline fara nonce-ul cererii: nici `'unsafe-inline'`,
+    nici atribute `style` sau handlere `onclick=`/`onsubmit=` in pagini (un test le cauta).
+
+    Nonce-ul il pune `before_request_func` pe cerere si il ia in template `inject_version`
+    (`csp_nonce`), deci e acelasi in antet si in pagina. Un raspuns dat inainte sa existe nonce
+    (429 de la limita de cereri, 403 de la CSRF) primeste politica fara el: n-are nimic inline.
+    """
+    n = " 'nonce-%s'" % nonce if nonce else ''
+    return (
+        "default-src 'self'; "
+        "img-src 'self' data:; "          # `data:` = iconita paginii de login
+        "script-src 'self'%s; "
+        "style-src 'self'%s; "
+        "font-src 'self'; "
+        "connect-src 'self'; "
+        "form-action 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'" % (n, n)
+    )
+
+
 @app.after_request
 def after_request_func(response):
     if request.path.startswith('/api/'):
@@ -358,17 +385,8 @@ def after_request_func(response):
     # constanta, in blueprints/torqa_web.py.
     if request.path == '/torqa' or request.path.startswith('/torqa/'):
         response.headers['Content-Security-Policy'] = CSP_TORQA
-    response.headers.setdefault(
-        'Content-Security-Policy',
-        "default-src 'self'; "
-        "img-src 'self' data: blob: https:; "
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
-        "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
-        "connect-src 'self' https://query1.finance.yahoo.com; "
-        "frame-ancestors 'none'; "
-        "base-uri 'self'"
-    )
+    response.headers.setdefault('Content-Security-Policy',
+                                _default_csp(getattr(request, '_csp_nonce', '')))
     return response
 
 
