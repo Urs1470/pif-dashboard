@@ -1,288 +1,249 @@
 /* Pagina de autentificare — singurul sablon randat pe server.
-   Isi tine propria copie a tokenurilor: nu incarca nimic din Torqa si nu are de unde
-   sa le importe. Valorile urmeaza paleta Torqa (repo-ul Torqa); daca se schimba acolo,
-   se schimba cu mana aici. Self-hosted (OFL-1.1), fisierele in static/fonts/. */
-@font-face {
-  font-family: 'Hanken Grotesk';
-  src: url('/static/fonts/HankenGrotesk-Variable.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Hanken Grotesk';
-  src: url('/static/fonts/HankenGrotesk-Variable-ext.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'DM Mono';
-  src: url('/static/fonts/DMMono-500.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
+   Arata ca Torqa (tema Liquid Glass din Super Productivity, aleasa de Ion pe 2026-10-03): fontul
+   sistemului, accentul albastru, card de sticla pe fondul temei. Pagina nu incarca nimic din
+   Torqa, deci valorile sunt copiate de mana din `src/assets/themes/liquid-glass.css` si
+   `src/styles/_fonts.scss` (repo-ul torqa-sp); daca se schimba acolo, se schimba si aici. */
 
 :root {
-  --bg: #15151a;
-  --bg-surface: #1e1e25;
-  --bg-elevated: #27272f;
-  --border: #30303a;
-  --border-strong: #45454f;
-  --text: #ededf2;
-  --text-secondary: #a9a9b5;
-  --text-dim: #8d8d96;
-  --accent: #a3a3cc;
-  --accent-deep: #c4c4e6;
-  --accent-subtle: #262633;
-  --accent-text: #14141b;
-  --danger: #e08a7c;
-  --danger-deep: #f0a598;
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, .30), 0 24px 48px -28px rgba(0, 0, 0, .80);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text', 'Segoe UI', Roboto, 'Inter',
+    'Open Sans', 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
 
-  --font-sans: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
-  --font-mono: 'DM Mono', ui-monospace, 'Fira Code', monospace;
-
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-
-  --radius-xs: 999px;
-  --radius-sm: 14px;
-  --radius-md: 24px;
-
-  --font-body: 0.9375rem;
-  --font-small: 0.8125rem;
-  --font-label: 0.75rem;
-  --font-brand: 1.125rem;
-
-  --dur-fast: 0.3s;
-  --dur-press: 0.09s;
-  --ease: cubic-bezier(.32, .72, .28, 1);
-}
-
-[data-theme="light"] {
-  --bg: #f5f5f9;
-  --bg-surface: #ffffff;
-  --bg-elevated: #eeeef4;
-  --border: #e3e3eb;
-  --border-strong: #c7c7d4;
-  --text: #1c1c24;
-  --text-secondary: #55555f;
-  --text-dim: #6b6b77;
-  /* Copie a accentului din paleta Torqa, pentru tema deschisa (vezi nota din antet). */
-  --accent: #63638f;
-  --accent-deep: #4a4a72;
-  --accent-subtle: #ececf4;
+  --wallpaper: linear-gradient(180deg, #eff2f8 0px, #e7ebf3 900px);
+  --card-bg: rgba(255, 255, 255, 0.72);
+  --card-rim: inset 1px 1px 1px 0 rgba(255, 255, 255, 0.32), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.18);
+  --card-shadow: 0 2px 8px rgba(60, 60, 67, 0.1), 0 24px 56px rgba(60, 60, 67, 0.12);
+  --hairline: rgba(0, 0, 0, 0.08);
+  --text: rgba(28, 28, 30, 1);
+  --text-muted: rgba(60, 60, 67, 0.74);
+  --field-bg: rgba(118, 118, 128, 0.12);
+  --accent: #007aff;
+  --accent-hover: #1a8aff;
+  --accent-active: #0062cc;
   --accent-text: #ffffff;
-  --danger: #a8483a;
-  --danger-deep: #85372b;
-  --shadow-md: 0 2px 4px rgba(40, 40, 70, .05), 0 24px 48px -30px rgba(40, 40, 70, .28);
+  --warn: rgb(225, 24, 38);
+  --warn-bg: rgba(225, 24, 38, 0.1);
+
+  --radius-card: 20px;
+  --radius-field: 12px;
+  --gap: 16px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+[data-theme='dark'] {
+  --wallpaper: radial-gradient(ellipse 1400px 900px at 260px -90px, rgba(255, 255, 255, 0.05), transparent 70%),
+    linear-gradient(180deg, #141927 0px, #0d1019 900px);
+  --card-bg: rgba(44, 46, 54, 0.88);
+  --card-rim: inset 1px 1px 1px 0 rgba(255, 255, 255, 0.12), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.06);
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 24px 56px rgba(0, 0, 0, 0.55);
+  --hairline: rgba(255, 255, 255, 0.1);
+  --text: rgba(245, 245, 247, 0.96);
+  --text-muted: rgba(235, 235, 245, 0.72);
+  --field-bg: rgba(118, 118, 128, 0.24);
+  --accent: #0a84ff;
+  --accent-hover: #3395ff;
+  --accent-active: #0a6fd6;
+  --warn: #ff453a;
+  --warn-bg: rgba(255, 69, 58, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
 
 body {
-  font-family: var(--font-sans);
-  /* Fara gradient in spate: caseta se desprinde prin umbra, ca orice suprafata
-     din aplicatie. Un halou de accent sub ea ar fi fost singurul loc din
-     produs unde accentul e decor. */
-  background: var(--bg);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.4;
   color: var(--text);
+  background: var(--wallpaper) fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.55;
-  font-size: var(--font-body);
+  min-height: 100dvh;
+  padding: calc(var(--gap) + env(safe-area-inset-top)) var(--gap) calc(var(--gap) + env(safe-area-inset-bottom));
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
-
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.theme-toggle {
-  position: fixed;
-  top: var(--space-md);
-  right: var(--space-md);
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease);
-  z-index: 100;
-}
-
-.theme-toggle:hover {
-  background: var(--bg-elevated);
-  color: var(--text);
-}
-.theme-toggle:active { transform: scale(.965); transition: transform var(--dur-press) var(--ease); }
-
-/* Iconita de tema care nu e activa. Clasa, nu `style="display:none"` inline: politica de
-   continut (app.py) nu lasa atribute `style` in pagina. */
-.theme-icon-hidden { display: none; }
 
 .login-container {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-xl);
-  width: 90%;
-  max-width: 380px;
-  box-shadow: var(--shadow-md);
+  width: 100%;
+  max-width: 360px;
+  padding: 28px 24px 24px;
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--card-rim), var(--card-shadow);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
 }
 
 .login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
   text-align: center;
-  margin-bottom: var(--space-xl);
 }
 
 .login-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-sm);
+  gap: 10px;
 }
 
 .brand-logo {
-  width: 52px;
-  height: 52px;
-  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
 }
 
-/* Marca: un singur font, o greutate, fara separator. */
 .brand-wordmark {
-  font-family: var(--font-sans);
-  font-size: var(--font-brand);
+  font-size: 20px;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--text);
+  letter-spacing: 0.01em;
 }
 
 .login-subtitle {
-  color: var(--text-dim);
-  font-size: var(--font-small);
+  font-size: 14px;
+  color: var(--text-muted);
 }
 
-.form-group { margin-bottom: var(--space-md); }
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: var(--gap);
+}
 
 .form-group label {
-  display: block;
-  margin-bottom: var(--space-sm);
-  color: var(--text-dim);
-  font-size: var(--font-label);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 .form-group input {
   width: 100%;
-  padding: 14px 16px;
-  border: 1px solid var(--border-strong);
-  background: var(--bg-elevated);
+  height: 44px;
+  padding: 0 14px;
+  font-family: var(--font);
+  font-size: 17px;
+  letter-spacing: 0.2em;
   color: var(--text);
-  font-size: var(--font-h2);
-  font-family: var(--font-mono);
-  text-align: center;
-  letter-spacing: 8px;
-  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
-  caret-color: var(--accent);
-  border-radius: var(--radius-sm);
-}
-
-.form-group input:focus {
+  background: var(--field-bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-field);
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .form-group input::placeholder {
-  color: var(--text-dim);
-  letter-spacing: 4px;
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
 }
 
-/* PIN GRESIT: CHENAR PE CAMP, nu doar mesajul de deasupra.
-   Handlerul goleste campul si il refocalizeaza, deci cursorul se intoarce
-   acolo — iar daca singurul semnal e un rand de text peste formular, ochiul e
-   in alt loc decat degetul. Chenarul de restant sta unde te-ai intors. */
-.form-group input.eroare,
-.form-group input.eroare:focus {
-  border-color: var(--danger);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 30%, transparent);
+.form-group input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.form-group input.eroare {
+  border-color: var(--warn);
+  box-shadow: 0 0 0 3px var(--warn-bg);
 }
 
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
-  min-height: 44px;
-  padding: 12px 24px;
-  font-weight: 600;
-  font-size: var(--font-body);
-  cursor: pointer;
-  transition: background-color var(--dur-fast) var(--ease);
-  border: none;
-  font-family: var(--font-sans);
   width: 100%;
-  border-radius: var(--radius-sm);
+  height: 44px;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-field);
+  cursor: pointer;
+  transition: background-color 0.15s;
 }
 
 .btn-primary {
-  background: var(--accent);
   color: var(--accent-text);
+  background: var(--accent);
 }
 
-.btn-primary:hover { background: var(--accent-deep); }
-.btn-primary:active { transform: scale(.965); transition: transform var(--dur-press) var(--ease); }
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
 
-/* Tenta de restant poarta cerneala ADANCA, niciodata culoarea plina:
-   `--danger` pe `--danger-subtle` e aceeasi familie la aceeasi luminozitate. */
+.btn-primary:active {
+  background: var(--accent-active);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .error-message {
-  background: color-mix(in oklab, var(--danger) 14%, var(--bg-surface));
-  color: var(--danger-deep);
-  padding: 10px 14px;
-  margin-bottom: var(--space-md);
-  font-size: var(--font-small);
   display: none;
-  border-radius: var(--radius-xs);
+  margin-bottom: var(--gap);
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--warn);
+  background: var(--warn-bg);
+  border-radius: var(--radius-field);
+  text-align: center;
 }
 
-.error-message.show { display: block; }
+.error-message.show {
+  display: block;
+}
 
-@media (max-width: 768px) {
-  body { padding: var(--space-md); }
-  .login-container { padding: var(--space-lg); width: 100%; }
-  .form-group input { font-size: 16px; padding: 14px; }
-  .theme-toggle { top: var(--space-sm); right: var(--space-sm); }
+.theme-toggle {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top));
+  right: calc(12px + env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--text-muted);
+  background: var(--card-bg);
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  box-shadow: var(--card-rim);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Clasa, nu `style="display:none"`: politica de continut nu lasa atribute `style` inline. */
+.theme-icon-hidden {
+  display: none;
 }
 
 @media (max-width: 480px) {
-  body { padding: var(--space-sm); }
-  .login-container { padding: var(--space-md); }
-  .brand-logo { width: 46px; height: 46px; }
-}
+  .login-container {
+    padding: 24px 18px 18px;
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  * { transition-duration: .12s !important; }
-  .theme-toggle:active, .btn-primary:active { transform: none; }
+  /* 16px: iOS nu mai face zoom pe camp la focus. */
+  .form-group input {
+    font-size: 16px;
+  }
 }
