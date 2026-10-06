@@ -171,6 +171,27 @@ Indexul git e comun, deci coordoneaza-te inainte sa pui in stage sau sa comiti. 
 `guard_git` (PreToolUse). Verifica ce e al tau cu `git status`. Sablonul de pornire:
 `AGENT_BRIEFING.md`.
 
+## Agentii de dezvoltare
+
+Agentii din `Knowledge/.claude/agents/` care lucreaza aici (`backend-architect`,
+`api-platform-engineer`, `database-optimizer`, `api-tester` si ceilalti) iau regulile de mai jos din
+acest fisier; pana pe 2026-10-05 stateau in agentul `pif-dashboard-dev`.
+
+- Inainte de orice modificare citesti, in worktree: acest fisier, `AGENT_BRIEFING.md`,
+  `docs/memory/API_MAP.md`, `docs/memory/DB_MAP.md` si sectiunea „Constante pif-dashboard” din
+  `C:\Users\ion.ursu\Knowledge\.claude\skills\sistem\brief\MOD.md` (PUT, nu PATCH; campurile HTML;
+  header-ul User-Agent; tokenul doar din `.secrets`).
+- Lucrezi intr-un worktree sub `C:\Users\ion.ursu\pif-dashboard-wt\`, pe un branch nou din
+  `master`. Checkout-ul din `C:\Users\ion.ursu\pif-dashboard` nu-l atingi.
+- Nu impingi si nu faci deploy: deploy-ul e push pe `master` si il face sesiunea principala, dupa ce
+  iti citeste munca. Nu chemi serverul de productie.
+- Repo-ul e public: niciun secret in cod, teste, commituri sau loguri.
+- Te opresti si raportezi, fara sa continui, la: migrare sau schimbare de schema, tabela
+  `implementari`, rutele de backup si restore, deploy, stergerea unui fisier pe care brieful nu-l
+  numeste, o dependenta noua, a doua eroare nerezolvata.
+- Poarta: `python scripts/verifica.py --rapid` trece la final, iar fiecare comportament din brief
+  are un test.
+
 ## Limitari cunoscute
 
 - Statusurile sunt string-uri magice, centralizate in `labels.py` dar **neimpuse la nivel de
