@@ -39,7 +39,8 @@ dubleaza), un proiect sau un task parinte inexistent da 404.
 3. **`observatii` e HTML**, nu markdown si nu text simplu (o scrie editorul din UI).
 4. **Statusuri.** Proiect: `pregatire` | `finalizat`. Task: `to_do` | `done`. Cheile
    vechi (`in_lucru`, `blocat`, …) sunt mapate DOAR la citire, ca un rand nemigrat sa
-   nu apara brut; nu le scrie.
+   nu apara brut; nu le scrie. `POST`/`PUT /api/proiecte` primesc doar statusurile de
+   proiect (cheile vechi se strang in `pregatire`), orice altceva e 400 (de la 2026-10-09).
 5. **`data_finalizare` exista daca si numai daca statusul e `finalizat`.** Serverul o
    pune singur la inchidere si o STERGE la redeschidere — nu o trimite pe cont propriu
    decat cand corectezi ziua unei lucrari inchise mai tarziu.
