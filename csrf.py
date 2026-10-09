@@ -75,5 +75,5 @@ def init_csrf(app):
             return
         expected = session.get('_csrf_token')
         provided = request.headers.get('X-CSRF-Token', '')
-        if not expected or not hmac.compare_digest(expected, provided):
+        if not expected or not hmac.compare_digest(expected.encode('utf-8'), provided.encode('utf-8')):
             abort(403)

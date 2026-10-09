@@ -516,7 +516,7 @@ def webhook_deploy():
     expected = 'sha256=' + hmac.new(
         secret.encode(), request.data, hashlib.sha256
     ).hexdigest()
-    if not hmac.compare_digest(signature, expected):
+    if not hmac.compare_digest(signature.encode('utf-8'), expected.encode('utf-8')):
         return 'Bad signature', 403
 
     # Replay guard: reject a delivery already processed.

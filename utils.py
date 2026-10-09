@@ -234,7 +234,8 @@ def _check_api_token():
     provided = auth[7:].strip()
     for scope, env in (('full', 'PIF_API_TOKEN'), ('device', 'PIF_DEVICE_TOKEN')):
         token = os.environ.get(env, '').strip()
-        if token and _hmac.compare_digest(token, provided):
+        # Pe octeti: compare_digest pe `str` cu un caracter non-ASCII (antet murdar) arunca TypeError, deci 500.
+        if token and _hmac.compare_digest(token.encode('utf-8'), provided.encode('utf-8')):
             if scope == 'device' and device_token_denied(request.method, request.path):
                 return False
             g.api_token_auth = True
