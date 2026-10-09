@@ -310,17 +310,39 @@ def obsidian_vault_key():
                     'hint': 'GitHub -> Urs1470/knowledge -> Settings -> Deploy keys -> Add deploy key'})
 
 
+_REF_GIT = re.compile(r'[A-Za-z0-9_][A-Za-z0-9._/-]{0,99}')
+
+
+def _ref_git_valid(branch):
+    """Numele unui branch, ca submultime stricta a `git check-ref-format`: fara `-` la inceput
+    (git l-ar citi ca optiune, de ex. `--upload-pack=<comanda>`), fara `..`, `//`, `/` sau `.` la
+    capat, fara `.lock`. Nu primeste nimic din ce are nevoie shell-ul sau revizia (`@{`, `~`, `^`)."""
+    return (isinstance(branch, str) and _REF_GIT.fullmatch(branch) is not None
+            and '..' not in branch and '//' not in branch
+            and not branch.endswith(('/', '.', '.lock')) and '/.' not in branch)
+
+
 @obsidian_bp.route('/api/obsidian/vault-sync', methods=['POST'])
 @login_required
 def obsidian_vault_sync():
     """Clone (first run) or update (fetch + reset --hard) the vault git repo on
     this server, then point obsidian_vault_path at it if unset/invalid. The
     server copy is a read-only mirror — reset --hard is always safe here.
-    Body (all optional): {repo_url, dest, branch}."""
+    Body (all optional): {repo_url, dest, branch}. `repo_url` si `dest` pot fi doar valorile
+    configurate (nimeni nu trimite altele), iar `branch` trebuie sa fie un nume de ref git."""
     data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict) or not all(
+            isinstance(data.get(k) or '', str) for k in ('repo_url', 'dest', 'branch')):
+        return jsonify({'ok': False, 'error': 'Corp invalid: repo_url, dest si branch sunt text'}), 400
     repo = (data.get('repo_url') or _default_vault_repo()).strip()
     dest = os.path.expanduser((data.get('dest') or DEFAULT_VAULT_DEST).strip())
     branch = (data.get('branch') or DEFAULT_VAULT_BRANCH).strip()
+    if repo not in (DEFAULT_VAULT_REPO_HTTPS, DEFAULT_VAULT_REPO_SSH):
+        return jsonify({'ok': False, 'error': 'repo_url: doar repo-ul configurat'}), 400
+    if os.path.normpath(dest) != os.path.normpath(os.path.expanduser(DEFAULT_VAULT_DEST)):
+        return jsonify({'ok': False, 'error': 'dest: doar folderul configurat'}), 400
+    if not _ref_git_valid(branch):
+        return jsonify({'ok': False, 'error': 'branch: nume de ref git invalid'}), 400
     steps = []
 
     try:
@@ -333,7 +355,7 @@ def obsidian_vault_sync():
             if rc0 == 0 and cur != repo:
                 _git(['remote', 'set-url', 'origin', repo], cwd=dest)
                 steps.append(f'remote set-url: {cur} -> {repo}')
-            rc, out, err = _git(['fetch', '--depth', '1', 'origin', branch], cwd=dest)
+            rc, out, err = _git(['fetch', '--depth', '1', '--', 'origin', branch], cwd=dest)
             steps.append(f'fetch: rc={rc} {err or out}')
             if rc == 0:
                 rc, out, err = _git(['reset', '--hard', f'origin/{branch}'], cwd=dest)
@@ -341,13 +363,13 @@ def obsidian_vault_sync():
         else:
             action = 'clone'
             os.makedirs(os.path.dirname(dest), exist_ok=True)
-            rc, out, err = _git(['clone', '--depth', '1', '--branch', branch, repo, dest])
+            rc, out, err = _git(['clone', '--depth', '1', '--branch', branch, '--', repo, dest])
             steps.append(f'clone: rc={rc} {err or out}')
             if rc != 0:  # probabil auth pe repo privat — reîncearcă cu credențialele repo-ului dashboard
                 creds = _dashboard_git_credentials()
                 if creds:
                     auth_repo = repo.replace('https://', f'https://{creds}@', 1)
-                    rc, out, err = _git(['clone', '--depth', '1', '--branch', branch, auth_repo, dest])
+                    rc, out, err = _git(['clone', '--depth', '1', '--branch', branch, '--', auth_repo, dest])
                     steps.append(f'clone(cu credentialele repo-ului dashboard): rc={rc} {err or out}')
     except subprocess.TimeoutExpired:
         return jsonify({'ok': False, 'error': 'git a depășit timeout-ul', 'steps': steps}), 500
@@ -452,7 +474,11 @@ def sync_project_frontmatter(vault_folder, fields):
     what keeps the wiki from going stale when the project is updated from the
     app (e.g. on-site, from the phone)."""
     folder = (vault_folder or '').strip().replace('\\', '/').strip('/')
-    updates = {k: str(v).strip() for k, v in (fields or {}).items() if v is not None and str(v).strip()}
+    # O valoare = o linie de frontmatter: orice spatiu alb (si newline-urile, `\r`, U+2028) se
+    # strange intr-un singur spatiu, ca un text liber sa nu poata inchide frontmatter-ul si sa
+    # scrie in README (se comite si se impinge in Knowledge).
+    updates = {k: ' '.join(str(v).split()) for k, v in (fields or {}).items() if v is not None}
+    updates = {k: v for k, v in updates.items() if v}
     if not folder or not updates:
         return
 
