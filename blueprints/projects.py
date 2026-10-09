@@ -2,6 +2,7 @@
 # Provides all project-related CRUD routes extracted from app.py
 
 import os
+import re
 import shutil
 import logging
 from datetime import datetime
@@ -9,6 +10,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify
 
 from database import get_db, row_to_dict
+from labels import PROJECT_STATUS_LABELS
 from utils import (
     safe_table, generate_uuid, login_required, UPLOAD_FOLDER, id_ocupat,
     get_json_or_400, refuse_device_token_fields,
@@ -17,6 +19,42 @@ from utils import (
 logger = logging.getLogger('pif_dashboard')
 
 projects_bp = Blueprint('projects', __name__)
+
+# Statusul vine din corpul cererii, inclusiv de la tokenul de dispozitiv, si ajunge in baza si in
+# frontmatter-ul README-ului din vault (se comite in Knowledge). Primeste doar cele doua valori
+# ale invariantului 2; cheile vechi din labels.py (`in_lucru`...) se strang in `pregatire`, ca un
+# `pif-sync.py create` cu un frontmatter vechi sa nu pice.
+def status_proiect(valoare):
+    """'pregatire' | 'finalizat' pentru o valoare cunoscuta, altfel None."""
+    if not isinstance(valoare, str):
+        return None
+    valoare = valoare.strip()
+    if valoare not in PROJECT_STATUS_LABELS:
+        return None
+    return 'finalizat' if valoare == 'finalizat' else 'pregatire'
+
+
+_STATUS_NECUNOSCUT = 'Status necunoscut: pregatire sau finalizat'
+
+# In `uploads/` stau si dosarele aplicatiei (APK-urile, build-ul Torqa web); un id de proiect nu
+# are voie sa le ia locul, nici sa iasa din `uploads/` (`..`).
+_DOSARE_APLICATIEI = ('app', 'torqa-web')
+_ID_DE_DOSAR = re.compile(r'[A-Za-z0-9_-]{1,64}')
+
+
+def dosar_de_incarcari(project_id):
+    """Calea reala a lui `uploads/<project_id>`, sau None daca id-ul nu poate fi un dosar de
+    proiect: alt format decat UUID / nanoid, numele unui dosar al aplicatiei, ori o cale care
+    nu iese direct sub `uploads/` (legatura simbolica)."""
+    if not isinstance(project_id, str) or not _ID_DE_DOSAR.fullmatch(project_id):
+        return None
+    if project_id.lower() in _DOSARE_APLICATIEI:
+        return None
+    baza = os.path.realpath(UPLOAD_FOLDER)
+    cale = os.path.realpath(os.path.join(baza, project_id))
+    if os.path.normcase(os.path.dirname(cale)) != os.path.normcase(baza):
+        return None
+    return cale
 
 
 # ============ PROJECTS ============
@@ -95,7 +133,10 @@ def create_proiect():
     # data lipseste: deplasarea ramane afisata pana azi in loc sa se opreasca
     # atunci. Aceeasi gaura fusese deja astupata pe drumul de import debrief; asta
     # era celalalt capat al ei.
-    status_nou = data.get('status', 'pregatire')
+    status_nou = status_proiect(data['status']) if 'status' in data else 'pregatire'
+    if status_nou is None:
+        conn.close()
+        return jsonify({'error': _STATUS_NECUNOSCUT}), 400
     data_final = (data.get('data_finalizare') or now[:10]) if status_nou == 'finalizat' else ''
 
     cursor.execute('''
@@ -168,6 +209,10 @@ def get_proiect(project_id):
 def update_proiect(project_id):
     data = get_json_or_400()
     refuse_device_token_fields(data)
+    if data.get('status') is not None:
+        data['status'] = status_proiect(data['status'])
+        if data['status'] is None:
+            return jsonify({'error': _STATUS_NECUNOSCUT}), 400
     conn = get_db()
     cursor = conn.cursor()
 
@@ -287,6 +332,12 @@ def update_proiect(project_id):
 def delete_proiect(project_id):
     conn = get_db()
     cursor = conn.cursor()
+    # Un proiect care nu exista da 404, inainte de orice stergere (Torqa tine 404 drept „sters
+    # deja", deci nu se strica nimic la o reincercare).
+    cursor.execute('SELECT 1 FROM proiecte WHERE id = ?', (project_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'error': 'Project not found'}), 404
     try:
         # Subtasks are keyed by task_id (not proiect_id) — remove them first.
         cursor.execute(
@@ -306,7 +357,11 @@ def delete_proiect(project_id):
     conn.close()
     # Remove the project's uploaded files from disk (orphans otherwise).
     try:
-        shutil.rmtree(os.path.join(UPLOAD_FOLDER, project_id), ignore_errors=True)
+        dosar = dosar_de_incarcari(project_id)
+        if dosar is None:
+            logger.warning("Uploads not removed for project id with no safe folder name")
+        else:
+            shutil.rmtree(dosar, ignore_errors=True)
     except Exception as e:
         logger.warning(f"Failed to remove uploads for {project_id}: {e}")
     logger.info(f"Project deleted: {project_id}")

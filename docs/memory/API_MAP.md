@@ -32,23 +32,23 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 |---|---|---|---|
 | GET | `/api/obsidian/note` | `obsidian_note_get` | 166 |
 | POST | `/api/obsidian/vault-key` | `obsidian_vault_key` | 288 |
-| POST | `/api/obsidian/vault-sync` | `obsidian_vault_sync` | 313 |
-| GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 385 |
+| POST | `/api/obsidian/vault-sync` | `obsidian_vault_sync` | 325 |
+| GET | `/api/proiecte/<project_id>/wiki` | `project_wiki_notes` | 407 |
 
 ## blueprints/projects.py (10 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/proiecte` | `get_proiecte` | 24 |
-| POST | `/api/proiecte` | `create_proiect` | 74 |
-| GET | `/api/proiecte/<project_id>` | `get_proiect` | 138 |
-| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 166 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 285 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 326 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 433 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 444 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 475 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 516 |
+| GET | `/api/proiecte` | `get_proiecte` | 62 |
+| POST | `/api/proiecte` | `create_proiect` | 112 |
+| GET | `/api/proiecte/<project_id>` | `get_proiect` | 179 |
+| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 207 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 330 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 381 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 488 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 499 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 530 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 571 |
 
 ## blueprints/sync.py (1 rute)
 
