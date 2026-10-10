@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-10-10
+
+- [2026-10-10 Limita de PIN comună, `.map` cu login, CSRF doar pentru Bearer valid, `PIF_UPLOAD_FOLDER`](2026-10-10-limita-de-pin-comuna-map-csrf-upload.md) — limita de 5 încercări / 5 min stă într-un fișier SQLite separat lângă bază (`<PIF_DB_PATH>.ratelimit`, `ratelimit.py`), comun celor 2 workeri și păstrat peste redeploy, fără schemă; `*.map` din `/torqa/` dau 401 fără sesiune; `csrf.py` sare doar pentru un Bearer valid; `PIF_UPLOAD_FOLDER` (implicit `uploads/`). Închide E-289 și E-004.
+
 ## 2026-10-03
 
 - [2026-10-03 Curățenie după retragere: dispozitivul și vault-ul, rute anonime, IP-ul clientului, CSP, restore](2026-10-03-curatenie-dupa-retragere.md) — tokenul de dispozitiv citește din vault doar notele din `vault_folder` de proiect (altfel 403) și nu scrie nicio notă (regula pe metodă, `device_token_denied`); scoase cele două previzualizări de import fără login, cu `scripts/parse_params/`, și rutele fără apelant (`/api/clienti*`, `/api/agenda/*`, `/api/search`, `/api/export/pdf`); `CF-Connecting-IP` se crede doar de la un proxy de încredere (`PIF_TRUSTED_PROXIES`, implicit loopback); `canal` obligatoriu la urcarea APK-ului; CSP implicit fără surse externe și fără `unsafe-inline` (nonce, pagini fără nimic inline); restore-ul ia coloanele din schemă (pierdea `data_finalizare`, `vault_folder`, `notify_on_complete`, `ora`, `data_start`, `progres`, `is_milestone`), formatul backup-ului neschimbat. Rămas deschis: dispozitivul își poate scrie singur `vault_folder`.

@@ -40,6 +40,7 @@ app.py              # intrare Flask, auth PIN, CSP (nonce, fara surse externe), 
 database.py         # schema v43, migrari v1-v43 idempotente, WAL
 utils.py            # login_required, UUID, app_settings, norm_date, tokenurile de masina/dispozitiv
 csrf.py labels.py   # CSRF double-submit; etichetele de status
+ratelimit.py        # limita de PIN pe fisier SQLite separat (comuna workerilor, peste redeploy)
 
 blueprints/
   projects.py       # /api/proiecte/* — CRUD, perioade, snapshot, import debrief, export
@@ -48,7 +49,7 @@ blueprints/
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
   sync.py           # /api/sync/snapshot — imaginea completa pentru Torqa
   app_update.py     # versiunea si APK-ul aplicatiei Android (canale: pif, torqa)
-  torqa_web.py      # Torqa web (build Angular) la /torqa/: urcare, versiuni, servire
+  torqa_web.py      # Torqa web (build Angular) la /torqa/: urcare, versiuni, servire (fisierele publice, `.map` cu login)
 
 templates/login.html  static/login.css   # singura pagina randata de server (PIN)
 static/service-worker.js                 # worker care se retrage singur: scapa browserele
@@ -135,10 +136,12 @@ Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`)
 | `PIF_DASHBOARD_PIN` | da (prod) | — | fara ea login-ul pica |
 | `SECRET_KEY` | nu | fisier `.secret_key` | semnarea sesiunii |
 | `SESSION_COOKIE_SECURE` | nu | `true` | `false` pentru dev pe HTTP |
-| `PIF_API_TOKEN` | nu | — | Bearer pentru masini (Cowork, `pif-sync.py`); scutit de CSRF |
+| `PIF_API_TOKEN` | nu | — | Bearer pentru masini (Cowork, `pif-sync.py`); un Bearer VALID scuteste de CSRF, unul gresit nu |
 | `PIF_DEVICE_TOKEN` | nu | — | Bearer pentru Torqa (telefon, desktop); fara restore, backup, admin, deploy, upload APK; din vault citeste doar notele din `vault_folder` de proiect, nu scrie nicio nota si nu scrie `vault_folder` |
 | `PIF_DB_PATH` | nu | `pif_dashboard.db` | baza alternativa; o folosesc probele |
 | `PIF_RATE_LIMIT` | nu | `60` | cereri/minut per IP pe `/api/*` |
+| `PIF_UPLOAD_FOLDER` | nu | `uploads/` langa cod | directorul fisierelor urcate (APK-uri, build Torqa web, anexe); relativ = fata de directorul de lucru; goala = implicitul |
+| `PIF_RATE_DB` | nu | `<PIF_DB_PATH>.ratelimit` | fisierul SQLite al limitei de PIN (5 incercari / 5 min / IP), comun worker-ilor si pastrat peste redeploy; separat de baza aplicatiei, deci fara schema si fara migrare (`ratelimit.py`) |
 | `PIF_TRUSTED_PROXIES` | nu | `127.0.0.1,::1` | adrese sau retele CIDR de la care se crede `CF-Connecting-IP` (cloudflared); de la oricine altcineva, IP-ul clientului e adresa socketului. Daca cloudflared nu ajunge la gunicorn pe loopback, adresa lui se adauga aici; altfel toti clientii prin tunel primesc aceeasi adresa, deci aceeasi limita |
 
 **Server:** `ion-ursu@192.168.0.107`, `/home/ion-ursu/Projects/pif-dashboard`, systemd
