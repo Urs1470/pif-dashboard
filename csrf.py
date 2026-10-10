@@ -6,7 +6,8 @@ Strategy: double-submit cookie.
 - The server validates that the header matches the session's token.
 - State-changing methods (POST/PUT/DELETE/PATCH) are protected.
 - Safe methods (GET/HEAD/OPTIONS) are exempt.
-- Requests carrying a Bearer token (machines, Torqa on the phone) are exempt: no ambient cookie.
+- Requests carrying a VALID Bearer token (machines, Torqa on the phone) are exempt: no ambient cookie.
+  An invalid Bearer does not exempt anything: the request is checked as if the header were absent.
 - The webhook endpoint is exempt (uses HMAC auth instead).
 """
 import os
@@ -63,14 +64,17 @@ def init_csrf(app):
         for prefix in _EXEMPT_PREFIXES:
             if request.path.startswith(prefix):
                 return
-        # API-token (Bearer) requests are machine-to-machine — no CSRF needed.
-        # Check both: already-set flag (from login_required) or raw header presence.
+        # Cererile cu un Bearer VALID (masini, Torqa pe telefon) sunt masina-la-masina: nu au cookie
+        # ambiant, deci nu au ce CSRF sa fie. Conteaza tokenul valid, nu prezenta antetului: un
+        # `Authorization: Bearer <orice>` pus de un atacator pe o cerere cu sesiunea victimei nu
+        # trebuie sa scuteasca cererea. Un Bearer gresit (sau tokenul de dispozitiv pe o ruta
+        # interzisa lui) cade pe verificarea de mai jos, ca o cerere fara antet.
         if getattr(g, 'api_token_auth', False):
             return
-        auth_header = request.headers.get('Authorization', '')
-        if auth_header.startswith('Bearer '):
-            # Will be validated by login_required; skip CSRF here.
-            return
+        if request.headers.get('Authorization', '').startswith('Bearer '):
+            from utils import _check_api_token
+            if _check_api_token():
+                return
         if 'authenticated' not in session:
             return
         expected = session.get('_csrf_token')

@@ -12,7 +12,7 @@ import tempfile
 import unittest
 
 import csrf
-from _aplicatia import CuAplicatia
+from _aplicatia import DEVICE, CuAplicatia
 from _baza import Test
 from utils import safe_table
 from blueprints.obsidian import _obsidian_safe_path, _obsidian_safe_dir, _scrub_secrets
@@ -103,6 +103,42 @@ class ExceptiileCsrf(CuAplicatia):
     def test_cererile_cu_bearer_nu_cer_antet_csrf(self):
         r = self.client.post('/api/global-tasks', json={'titlu': 'x'}, headers=self.bearer())
         self.assertEqual(r.status_code, 201)
+
+    def _cu_sesiune_si_csrf(self):
+        self.assertEqual(self.login().status_code, 200)
+        self.client.get('/api/stats')
+        return self.client.get_cookie('csrf_token').value
+
+    def test_bearer_gresit_cu_sesiune_nu_scuteste_de_csrf(self):
+        # Atacul din E-289: o cerere cu cookie-ul victimei si un `Authorization: Bearer <orice>`.
+        self._cu_sesiune_si_csrf()
+        for antet in ('Bearer gresit', 'Bearer ', 'Bearer  ', 'Bearer caf\u00e9'):
+            with self.subTest(antet=antet):
+                r = self.client.post('/api/global-tasks', json={'titlu': 'x'},
+                                     headers={'Authorization': antet})
+                self.assertEqual(r.status_code, 403)
+
+    def test_bearer_gresit_cu_antet_csrf_bun_trece_pe_sesiune(self):
+        token = self._cu_sesiune_si_csrf()
+        r = self.client.post('/api/global-tasks', json={'titlu': 'x'},
+                             headers={'Authorization': 'Bearer gresit', 'X-CSRF-Token': token})
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+
+    def test_bearer_valid_cu_sesiune_ramane_scutit(self):
+        self._cu_sesiune_si_csrf()
+        r = self.client.post('/api/global-tasks', json={'titlu': 'x'}, headers=self.bearer())
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        r = self.client.post('/api/global-tasks', json={'titlu': 'y'}, headers=self.bearer(DEVICE))
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+
+    def test_tokenul_de_dispozitiv_pe_ruta_interzisa_lui_nu_scuteste_de_csrf(self):
+        self._cu_sesiune_si_csrf()
+        r = self.client.post('/api/torqa/web/upload', headers=self.bearer(DEVICE))
+        self.assertEqual(r.status_code, 403)
+
+    def test_bearer_gresit_fara_sesiune_ramane_401(self):
+        r = self.client.post('/api/global-tasks', json={'titlu': 'x'}, headers={'Authorization': 'Bearer gresit'})
+        self.assertEqual(r.status_code, 401)
 
     def test_webhook_ul_nu_e_oprit_de_csrf_nici_cu_sesiune(self):
         self.assertEqual(self.login().status_code, 200)
