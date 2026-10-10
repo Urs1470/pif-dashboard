@@ -135,7 +135,7 @@ class DupaLogin(CuAplicatia):
         self.assertEqual(r.get_json()['next'], '/')
 
     def test_pinul_gresit_nu_autentifica_si_nu_da_destinatie(self):
-        self.app_module._login_attempts.clear()
+        self.app_module.login_limit.goleste()
         r = self.client.post('/login', json={'pin': 'gresit', 'next': '/torqa/'})
         self.assertEqual(r.status_code, 401)
         self.assertEqual(r.get_json(), {'error': 'Invalid PIN'})

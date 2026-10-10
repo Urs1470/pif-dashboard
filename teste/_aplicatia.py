@@ -107,11 +107,11 @@ class CuAplicatia(CuBazaNoua):
     def setUp(self):
         # Limitele de cereri sunt in memoria procesului si se aduna intre teste.
         self.app_module.rate_limit_store.clear()
-        self.app_module._login_attempts.clear()
+        self.app_module.login_limit.goleste()
         self.client = self.app_module.app.test_client()
 
     def login(self, **extra):
-        self.app_module._login_attempts.clear()
+        self.app_module.login_limit.goleste()
         return self.client.post('/login', json={'pin': PIN, **extra})
 
     def dir_temp(self):

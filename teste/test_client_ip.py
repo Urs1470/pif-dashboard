@@ -7,7 +7,7 @@ si limita n-ar mai limita nimic. Pe server cererile vin prin `cloudflared`, de p
 (loopback), care a primit deja de la Cloudflare adresa reala.
 
 Testele trec prin `ProxyFix`, ca in productie: cererea de logare gresita lasa adresa folosita ca
-cheie in `_login_attempts`.
+cheie in `login_limit` (ratelimit.py).
 """
 
 import os
@@ -36,9 +36,9 @@ class AdresaClientului(CuAplicatia):
 
     def ip_folosit(self, socket_, **antete):
         """Adresa pe care a tinut-o aplicatia pentru o cerere de la `socket_` cu antetele date."""
-        self.app_module._login_attempts.clear()
+        self.app_module.login_limit.goleste()
         self.assertEqual(self.cerere(socket_, **antete).status_code, 401)
-        chei = list(self.app_module._login_attempts)
+        chei = self.app_module.login_limit.adrese()
         self.assertEqual(len(chei), 1, chei)
         return chei[0]
 
@@ -108,7 +108,7 @@ class AdresaClientului(CuAplicatia):
             antete = {'CF-Connecting-IP': '198.51.100.%d' % (100 + n), 'X-Forwarded-For': '198.51.101.%d' % n}
             statusuri.append(self.cerere(PUBLIC, **antete).status_code)
         self.assertEqual(statusuri, [401] * 5 + [429] * 3, 'a sasea incercare de la acelasi socket e oprita')
-        self.assertEqual(list(self.app_module._login_attempts), [PUBLIC])
+        self.assertEqual(self.app_module.login_limit.adrese(), [PUBLIC])
 
     def test_adrese_inventate_nu_umplu_tabela_limitei_generale(self):
         for n in range(20):

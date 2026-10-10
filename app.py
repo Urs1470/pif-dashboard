@@ -21,6 +21,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from database import init_db, close_db
 from utils import get_json_or_400, safe_next_url
 from csrf import init_csrf
+from ratelimit import LimitaIncercari
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
@@ -281,27 +282,19 @@ def check_rate_limit():
     return True
 
 
-# Limita dedicata, stricta, pe login: 5 incercari / 5 minute per IP.
-# Limita generala (60/min, in-memory per worker, golita la fiecare autodeploy)
-# permitea brute-force pe un PIN scurt.
+# Limita dedicata, stricta, pe login: 5 incercari / 5 minute per IP, comuna celor 2 workeri
+# Gunicorn si pastrata peste redeploy (fisier SQLite separat, langa baza: vezi ratelimit.py).
+# Limita generala de mai sus (60/min) ramane in memoria fiecarui worker: ea nu apara un secret,
+# iar o scriere pe disc la fiecare cerere de API n-ar avea ce cumpara. Cand erau amandoua
+# in memorie, un PIN scurt se putea incerca de pana la 10 ori pe fereastra si se reseta la
+# fiecare autodeploy.
 LOGIN_LIMIT = 5
 LOGIN_WINDOW = 300
-_login_attempts = {}
+login_limit = LimitaIncercari(LOGIN_LIMIT, LOGIN_WINDOW)
 
 
 def check_login_rate_limit():
-    client_ip = _client_ip()
-    now = time.time()
-    attempts = [ts for ts in _login_attempts.get(client_ip, []) if now - ts < LOGIN_WINDOW]
-    if len(attempts) >= LOGIN_LIMIT:
-        _login_attempts[client_ip] = attempts
-        return False
-    attempts.append(now)
-    _login_attempts[client_ip] = attempts
-    if len(_login_attempts) > 5000:
-        for ip in [ip for ip, a in _login_attempts.items() if all(now - ts >= LOGIN_WINDOW for ts in a)]:
-            del _login_attempts[ip]
-    return True
+    return login_limit.permite(_client_ip())
 
 
 # ============ STARTUP + BEFORE/AFTER REQUEST ============
