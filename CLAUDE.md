@@ -205,4 +205,3 @@ acest fisier; pana pe 2026-10-05 stateau in agentul `pif-dashboard-dev`.
   `proiecte.notify_on_complete` in v43. `/api/backup` exclude inca `push_*` (`CHEI_PROTEJATE`), ca un
   secret pus de mana sa nu plece; `/api/admin/db-dump` e baza bruta.
 - Nu exista pytest: testele folosesc biblioteca standard (`unittest`, `node --test`).
-- `UPLOAD_FOLDER` nu se poate configura din mediu.
