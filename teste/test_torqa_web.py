@@ -660,6 +660,39 @@ class Servirea(CuWeb):
                 self.assertEqual(r.status_code, 200)
                 self.assertEqual(r.get_data(), continut.encode())
 
+    # ---- source map-urile cer sesiune (E-289)
+
+    def test_map_fara_login_da_401_nu_continutul(self):
+        self.instaleaza(zip_build(extra={'main-ABCDEFGH.js.map': '{"version":3}',
+                                         'assets/x.MAP': '{"version":3}'}))
+        for cale in ('/torqa/main-ABCDEFGH.js.map', '/torqa/assets/x.MAP', '/torqa/lipsa-ABCDEFGH.js.map'):
+            with self.subTest(cale=cale):
+                r = self.get(cale)
+                self.assertEqual(r.status_code, 401)
+                self.assertEqual(r.get_json(), {'error': 'Unauthorized'})
+                self.assertNotIn(b'version', r.get_data())
+
+    def test_map_cu_login_se_da_si_nu_se_pune_in_cache_public(self):
+        self.instaleaza(zip_build(extra={'main-ABCDEFGH.js.map': '{"version":3}'}))
+        self.login()
+        r = self.get('/torqa/main-ABCDEFGH.js.map')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.get_data(), b'{"version":3}')
+        self.assertEqual(r.headers['Cache-Control'], 'private, no-cache')
+
+    def test_map_lipsa_cu_login_e_404(self):
+        self.instaleaza()
+        self.login()
+        self.assertEqual(self.get('/torqa/lipsa-ABCDEFGH.js.map').status_code, 404)
+
+    def test_celelalte_fisiere_raman_publice_si_fara_cookie(self):
+        self.instaleaza(zip_build(extra={'main-ABCDEFGH.js.map': '{"version":3}'}))
+        r = self.get('/torqa/main-ABCDEFGH.js')
+        self.assertEqual(r.status_code, 200)
+        self.assertNotIn('Set-Cookie', r.headers)
+        self.assertNotIn('Vary', r.headers)
+        self.assertEqual(r.headers['Cache-Control'], IMUABIL)
+
     def test_un_fisier_lipsa_e_404_nu_documentul(self):
         self.instaleaza()
         self.login()
@@ -694,6 +727,7 @@ class Servirea(CuWeb):
             'o.xyz': 'application/octet-stream', 'P.PNG': 'image/png',
         }
         self.instaleaza(zip_cu(('index.html', 'x'), *[(n, 'x') for n in asteptate]))
+        self.login()                       # `.map` cere sesiune (E-289); restul s-ar da si fara
         for nume, tip in asteptate.items():
             with self.subTest(nume=nume):
                 r = self.get('/torqa/%s' % nume)

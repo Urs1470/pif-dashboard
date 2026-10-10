@@ -27,6 +27,12 @@
 # pagina in fata care sa te trimita la PIN. Datele raman in `/api/*`, protejat. Fisierele
 # nu ating nici sesiunea: fara Set-Cookie si fara `Vary: Cookie` (vezi SesiuneFaraStatice),
 # ca sa se poata tine in cache.
+#
+# EXCEPTIE: `*.map` (source map-uri) cer sesiune, ca documentul. Sunt codul sursa al aplicatiei,
+# nu o resursa de care are nevoie un browser ca sa afiseze pagina; pe ele nu le cere nici
+# service worker-ul, nici pagina, doar uneltele de dezvoltare ale unui browser deja logat.
+# Fara sesiune dau 401 (nu redirect: nu e o pagina). Fiind pe sesiune, nu ating cache-ul
+# public: `private, no-cache`, iar sesiunea se citeste ca la orice alta ruta.
 
 import logging
 import os
@@ -158,9 +164,18 @@ def arata_ca_fisier(rest):
     return '.' in rest.rsplit('/', 1)[-1]
 
 
+def e_harta(rest):
+    """True pentru un source map (`*.map`): singurul fisier Torqa care cere login."""
+    return rest.rsplit('/', 1)[-1].lower().endswith('.map')
+
+
 def cerere_statica(cale):
-    """True pentru calea unei cereri de fisier static Torqa (nu pentru document)."""
-    return cale.startswith(PREFIX_URL) and arata_ca_fisier(cale[len(PREFIX_URL):])
+    """True pentru calea unei cereri de fisier static Torqa public (nu pentru document, nu
+    pentru `.map`, care citeste sesiunea)."""
+    if not cale.startswith(PREFIX_URL):
+        return False
+    rest = cale[len(PREFIX_URL):]
+    return arata_ca_fisier(rest) and not e_harta(rest)
 
 
 class SesiuneFaraStatice(SecureCookieSessionInterface):
@@ -554,7 +569,7 @@ def _cache_control(rest):
 
 def _trimite(cale, rest):
     r = send_file(cale, mimetype=_tip(rest), conditional=True)
-    r.headers['Cache-Control'] = _cache_control(rest)
+    r.headers['Cache-Control'] = 'private, no-cache' if e_harta(rest) else _cache_control(rest)
     return r
 
 
@@ -585,8 +600,10 @@ def torqa_cale(rest):
 
 
 def _serveste(rest):
-    """Documentul cere sesiune; fisierele nu. Vezi antetul modulului."""
+    """Documentul cere sesiune; fisierele nu, in afara de `.map`. Vezi antetul modulului."""
     fisier = arata_ca_fisier(rest)
+    if fisier and e_harta(rest) and 'authenticated' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
     if not fisier:
         if 'authenticated' not in session:
             return redirect(LOGIN_CU_INTOARCERE)
