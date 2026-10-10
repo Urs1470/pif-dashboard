@@ -120,7 +120,18 @@ VALID_TABLES = {
     'global_tasks', 'implementari', 'app_settings',
 }
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+UPLOAD_IMPLICIT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+
+
+def cale_uploads(env=None):
+    """Directorul fisierelor urcate (APK-uri, build-ul Torqa web, anexe): `PIF_UPLOAD_FOLDER`,
+    altfel `uploads/` de langa cod, ca inainte de variabila. O valoare goala sau doar spatii
+    cade pe implicit; una relativa se rezolva fata de directorul de lucru al procesului."""
+    brut = (os.environ if env is None else env).get('PIF_UPLOAD_FOLDER', '').strip()
+    return os.path.abspath(brut) if brut else UPLOAD_IMPLICIT
+
+
+UPLOAD_FOLDER = cale_uploads()
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 

@@ -78,20 +78,20 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| POST | `/api/torqa/web/upload` | `torqa_web_upload` | 493 |
-| GET | `/torqa` | `torqa_fara_slash` | 572 |
-| GET | `/torqa/` | `torqa_start` | 577 |
-| GET | `/torqa/<path:rest>` | `torqa_cale` | 582 |
+| POST | `/api/torqa/web/upload` | `torqa_web_upload` | 508 |
+| GET | `/torqa` | `torqa_fara_slash` | 587 |
+| GET | `/torqa/` | `torqa_start` | 592 |
+| GET | `/torqa/<path:rest>` | `torqa_cale` | 597 |
 
 ## app.py (7 rute)
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/healthz` | `healthz` | 420 |
-| GET | `/login` | `login_page` | 426 |
-| POST | `/login` | `login` | 436 |
-| GET | `/logout` | `logout` | 450 |
-| GET | `/` | `index` | 459 |
-| GET | `/service-worker.js` | `service_worker` | 472 |
-| POST | `/webhook/deploy` | `webhook_deploy` | 506 |
+| GET | `/api/healthz` | `healthz` | 413 |
+| GET | `/login` | `login_page` | 419 |
+| POST | `/login` | `login` | 429 |
+| GET | `/logout` | `logout` | 443 |
+| GET | `/` | `index` | 452 |
+| GET | `/service-worker.js` | `service_worker` | 465 |
+| POST | `/webhook/deploy` | `webhook_deploy` | 499 |
 

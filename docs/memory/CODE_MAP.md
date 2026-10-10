@@ -10,21 +10,21 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `36:esteCacheVechi`, `40:esteTorqa`, `59:retrage`
 
-## app.py (615 linii)
+## app.py (608 linii)
 
-`78:_retele_de_incredere`, `92:_ip_valid`, `103:_proxy_de_incredere`, `115:_adresa_socket`, `121:_client_ip`, `142:get_or_create_secret_key`, `160:file_hash`, `187:inject_version`, `211:make_session_permanent`, `221:setup_logging`, `253:check_rate_limit`, `292:check_login_rate_limit`, `314:before_request_func`, `346:_default_csp`, `374:after_request_func`, `398:get_hashed_pin`, `407:_git_commit`, `421:healthz`, `427:login_page`, `437:login`, `451:logout`, `460:index`, `473:service_worker`, `478:add_sw_header`, `499:get_deploy_secret`, `507:webhook_deploy`, `598:page_not_found`, `605:internal_error`
+`79:_retele_de_incredere`, `93:_ip_valid`, `104:_proxy_de_incredere`, `116:_adresa_socket`, `122:_client_ip`, `143:get_or_create_secret_key`, `161:file_hash`, `188:inject_version`, `212:make_session_permanent`, `222:setup_logging`, `254:check_rate_limit`, `296:check_login_rate_limit`, `307:before_request_func`, `339:_default_csp`, `367:after_request_func`, `391:get_hashed_pin`, `400:_git_commit`, `414:healthz`, `420:login_page`, `430:login`, `444:logout`, `453:index`, `466:service_worker`, `471:add_sw_header`, `492:get_deploy_secret`, `500:webhook_deploy`, `591:page_not_found`, `598:internal_error`
 
 ## database.py (1951 linii)
 
 `13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:migrate_v41_to_v42`, `1487:migrate_v42_to_v43`, `1525:run_migrations`, `1813:init_db`, `1944:row_to_dict`
 
-## utils.py (279 linii)
+## utils.py (290 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `127:safe_table`, `133:generate_uuid`, `137:id_ocupat`, `147:safe_next_url`, `189:device_token_denied`, `207:refuse_device_token_fields`, `223:_check_api_token`, `247:login_required`, `261:get_app_setting`, `270:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `126:cale_uploads`, `138:safe_table`, `144:generate_uuid`, `148:id_ocupat`, `158:safe_next_url`, `200:device_token_denied`, `218:refuse_device_token_fields`, `234:_check_api_token`, `258:login_required`, `272:get_app_setting`, `281:set_app_setting`
 
-## csrf.py (79 linii)
+## csrf.py (83 linii)
 
-`25:_generate_token`, `34:_get_or_refresh_token`, `42:init_csrf`
+`26:_generate_token`, `35:_get_or_refresh_token`, `43:init_csrf`
 
 ## labels.py (34 linii)
 
@@ -54,7 +54,7 @@ _(fara definitii top-level)_
 
 `16:_skip_weekend`, `26:_next_recurrence_date`, `51:_spawn_recurring_task`, `76:_spawn_recurring_global_task`, `114:get_tasks`, `161:create_task`, `210:update_task`, `272:delete_task`, `292:get_subtasks`, `303:create_subtask`, `337:update_subtask`, `352:delete_subtask`, `376:_sfera_or_none`, `388:norm_ora`, `415:get_global_tasks`, `495:create_global_task`, `542:get_global_task`, `557:update_global_task`, `631:delete_global_task`
 
-## blueprints/torqa_web.py (600 linii)
+## blueprints/torqa_web.py (617 linii)
 
-`139:EroareBuild`, `149:arata_ca_fisier`, `161:cerere_statica`, `166:SesiuneFaraStatice`, `192:_cale_pointer`, `196:versiune_live`, `213:_cu_reincercari`, `229:_scrie_pointer`, `244:versiuni`, `256:_taie_vechi`, `270:_id_nou`, `287:_curata_resturi`, `311:_segmente`, `331:valideaza_zip`, `382:_extrage`, `404:_verifica_baza`, `425:instaleaza`, `494:torqa_web_upload`, `522:_cale_in`, `541:_tip`, `545:_cache_control`, `555:_trimite`, `561:_neinstalat`, `573:torqa_fara_slash`, `578:torqa_start`, `583:torqa_cale`, `587:_serveste`
+`145:EroareBuild`, `155:arata_ca_fisier`, `167:e_harta`, `172:cerere_statica`, `181:SesiuneFaraStatice`, `207:_cale_pointer`, `211:versiune_live`, `228:_cu_reincercari`, `244:_scrie_pointer`, `259:versiuni`, `271:_taie_vechi`, `285:_id_nou`, `302:_curata_resturi`, `326:_segmente`, `346:valideaza_zip`, `397:_extrage`, `419:_verifica_baza`, `440:instaleaza`, `509:torqa_web_upload`, `537:_cale_in`, `556:_tip`, `560:_cache_control`, `570:_trimite`, `576:_neinstalat`, `588:torqa_fara_slash`, `593:torqa_start`, `598:torqa_cale`, `602:_serveste`
 
