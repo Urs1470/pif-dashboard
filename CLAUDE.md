@@ -37,7 +37,7 @@ o data per clona: `git config core.hooksPath .githooks`.
 ```
 app.py              # intrare Flask, auth PIN, CSP (nonce, fara surse externe), rate limit pe IP-ul din
                     #   socket (CF-Connecting-IP doar de la proxy de incredere), webhook deploy; / duce la /torqa/
-database.py         # schema v43, migrari v1-v43 idempotente, WAL
+database.py         # schema v44, migrari v1-v44 idempotente, WAL
 utils.py            # login_required, UUID, app_settings, norm_date, tokenurile de masina/dispozitiv
 csrf.py labels.py   # CSRF double-submit; etichetele de status
 ratelimit.py        # limita de PIN pe fisier SQLite separat (comuna workerilor, peste redeploy)
