@@ -74,9 +74,10 @@ dubleaza), un proiect sau un task parinte inexistent da 404.
     `stare_curenta` / `stare_data` (ultima stare; `null` fara).
 12. **Sabloane de lucrare** (v44): `GET/POST /api/sabloane`, `PUT/DELETE /api/sabloane/<id>`, cu `id`
     dat de client (409 daca exista) sau generat. `nume` nevid; `continut` e un obiect
-    `{"sare_weekend": bool, "taskuri": [{"titlu": text nevid, "descriere": text (optional),
-    "decalaj_zile": intreg, "subtaskuri": [text]}]}`, altfel 400 cu mesajul campului. Serverul doar il
-    pastreaza si il intoarce ca obiect; taskurile se creeaza prin rutele de task cu ancora.
+    `{"sare_weekend": bool (optional, implicit false), "taskuri": [{"titlu": text nevid,
+    "descriere": text (optional), "decalaj_zile": intreg, "subtaskuri": [text] (optional, implicit [])}]}`,
+    altfel 400 cu mesajul campului; cheile optionale se verifica doar cand sunt prezente. Serverul le
+    scrie mereu pe `sare_weekend` si `subtaskuri` (completate cu implicitul) si il intoarce ca obiect; taskurile se creeaza prin rutele de task cu ancora.
 
 ## Import de debrief — scos
 

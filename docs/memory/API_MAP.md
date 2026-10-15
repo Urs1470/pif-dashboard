@@ -52,10 +52,10 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | GET | `/api/proiecte/<project_id>/stari` | `get_stari` | 614 |
 | POST | `/api/proiecte/<project_id>/stari` | `create_stare` | 626 |
 | DELETE | `/api/stari/<stare_id>` | `delete_stare` | 668 |
-| GET | `/api/sabloane` | `get_sabloane` | 719 |
-| POST | `/api/sabloane` | `create_sablon` | 730 |
-| PUT | `/api/sabloane/<sablon_id>` | `update_sablon` | 756 |
-| DELETE | `/api/sabloane/<sablon_id>` | `delete_sablon` | 782 |
+| GET | `/api/sabloane` | `get_sabloane` | 728 |
+| POST | `/api/sabloane` | `create_sablon` | 739 |
+| PUT | `/api/sabloane/<sablon_id>` | `update_sablon` | 765 |
+| DELETE | `/api/sabloane/<sablon_id>` | `delete_sablon` | 791 |
 
 ## blueprints/sync.py (1 rute)
 

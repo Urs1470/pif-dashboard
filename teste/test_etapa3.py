@@ -395,7 +395,6 @@ class Sabloane(Baza):
 
         gresit(None, 'obiect')
         gresit('{"sare_weekend": true, "taskuri": []}', 'obiect')
-        gresit({'taskuri': []}, 'sare_weekend')
         gresit({'sare_weekend': 1, 'taskuri': []}, 'sare_weekend')
         gresit({'sare_weekend': True}, 'taskuri')
         gresit({'sare_weekend': True, 'taskuri': {}}, 'taskuri')
@@ -409,7 +408,37 @@ class Sabloane(Baza):
         gresit({'sare_weekend': True, 'taskuri': [{**corect, 'decalaj_zile': 1.5}]}, 'decalaj_zile')
         gresit({'sare_weekend': True, 'taskuri': [{**corect, 'subtaskuri': 'a'}]}, 'subtaskuri')
         gresit({'sare_weekend': True, 'taskuri': [{**corect, 'subtaskuri': [1]}]}, 'subtaskuri')
-        gresit({'sare_weekend': True, 'taskuri': [{'titlu': 'T', 'decalaj_zile': 0}]}, 'subtaskuri')
+        gresit({'sare_weekend': None, 'taskuri': []}, 'sare_weekend')
+        gresit({'sare_weekend': 'false', 'taskuri': []}, 'sare_weekend')
+        gresit({'sare_weekend': True, 'taskuri': [{**corect, 'subtaskuri': None}]}, 'subtaskuri')
+
+    def test_cheile_omise_se_completeaza_la_scriere(self):
+        # sare_weekend lipsa = false, subtaskuri lipsa = []; ambele ajung scrise in baza.
+        sid = self.sablon(continut={'taskuri': [{'titlu': 'A', 'decalaj_zile': 0},
+                                                {'titlu': 'B', 'decalaj_zile': 1, 'subtaskuri': ['x']}]})
+        asteptat = {'sare_weekend': False, 'taskuri': [{'titlu': 'A', 'decalaj_zile': 0, 'subtaskuri': []},
+                                                       {'titlu': 'B', 'decalaj_zile': 1, 'subtaskuri': ['x']}]}
+        s = {x['id']: x for x in self.api('get', '/api/sabloane').get_json()}[sid]
+        self.assertEqual(s['continut'], asteptat)
+        import json
+        text = self.sql('SELECT continut FROM sabloane WHERE id = ?', sid)[0][0]
+        self.assertEqual(json.loads(text), asteptat, 'normalizat in baza, nu doar la citire')
+
+        # Si la PUT; descrierea, cand e data, ramane.
+        self.assertEqual(self.api('put', '/api/sabloane/%s' % sid, {'continut': {'taskuri': [
+            {'titlu': 'C', 'descriere': 'd', 'decalaj_zile': 2}]}}).status_code, 200)
+        s = {x['id']: x for x in self.api('get', '/api/sabloane').get_json()}[sid]
+        self.assertEqual(s['continut'], {'sare_weekend': False, 'taskuri': [
+            {'titlu': 'C', 'descriere': 'd', 'decalaj_zile': 2, 'subtaskuri': []}]})
+
+    def test_cheile_optionale_gresite_ca_tip_dau_400_si_la_put(self):
+        sid = self.sablon()
+        for continut in ({'sare_weekend': 1, 'taskuri': []},
+                         {'taskuri': [{'titlu': 'T', 'decalaj_zile': 0, 'subtaskuri': 'a'}]},
+                         {'taskuri': [{'titlu': 'T', 'decalaj_zile': 0, 'subtaskuri': [1]}]}):
+            self.assertEqual(self.api('put', '/api/sabloane/%s' % sid, {'continut': continut}).status_code, 400)
+        s = {x['id']: x for x in self.api('get', '/api/sabloane').get_json()}[sid]
+        self.assertEqual(s['continut'], SABLON, 'un 400 nu schimba nimic')
 
     def test_descrierea_e_optionala_iar_lista_goala_de_taskuri_trece(self):
         r = self.api('post', '/api/sabloane', {'nume': 'Gol', 'continut': {'sare_weekend': False, 'taskuri': []}})
@@ -423,7 +452,7 @@ class Sabloane(Baza):
     def test_put_valideaza_si_da_404(self):
         sid = self.sablon()
         self.assertEqual(self.api('put', '/api/sabloane/%s' % sid, {'nume': ''}).status_code, 400)
-        self.assertEqual(self.api('put', '/api/sabloane/%s' % sid, {'continut': {'taskuri': []}}).status_code, 400)
+        self.assertEqual(self.api('put', '/api/sabloane/%s' % sid, {'continut': {'taskuri': {}}}).status_code, 400)
         self.assertEqual(self.api('put', '/api/sabloane/nu-exista', {'nume': 'X'}).status_code, 404)
         self.assertEqual(self.api('delete', '/api/sabloane/nu-exista').status_code, 404)
         # Un 400 nu schimba nimic.

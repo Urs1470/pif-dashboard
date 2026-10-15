@@ -42,9 +42,9 @@ _(fara definitii top-level)_
 
 `37:_obsidian_vault`, `45:_obsidian_safe_path`, `59:_obsidian_walk`, `84:_obsidian_index`, `104:_obsidian_config_dict`, `129:_in_dosar_de_proiect`, `168:obsidian_note_get`, `209:_scrub_secrets`, `214:_git_env`, `225:_git`, `231:_default_vault_repo`, `236:_maybe_refresh_vault`, `274:_dashboard_git_credentials`, `290:obsidian_vault_key`, `316:_ref_git_valid`, `327:obsidian_vault_sync`, `393:_obsidian_safe_dir`, `409:project_wiki_notes`, `469:sync_project_frontmatter`
 
-## blueprints/projects.py (793 linii)
+## blueprints/projects.py (802 linii)
 
-`29:status_proiect`, `47:dosar_de_incarcari`, `75:get_proiecte`, `125:create_proiect`, `192:get_proiect`, `220:update_proiect`, `343:delete_proiect`, `394:get_project_snapshot`, `481:_impl_row`, `501:get_implementari`, `512:create_implementare`, `543:update_implementare`, `590:delete_implementare`, `616:get_stari`, `628:create_stare`, `670:delete_stare`, `686:_eroare_continut`, `713:_sablon`, `721:get_sabloane`, `732:create_sablon`, `758:update_sablon`, `784:delete_sablon`
+`29:status_proiect`, `47:dosar_de_incarcari`, `75:get_proiecte`, `125:create_proiect`, `192:get_proiect`, `220:update_proiect`, `343:delete_proiect`, `394:get_project_snapshot`, `481:_impl_row`, `501:get_implementari`, `512:create_implementare`, `543:update_implementare`, `590:delete_implementare`, `616:get_stari`, `628:create_stare`, `670:delete_stare`, `686:_eroare_continut`, `714:_continut_json`, `722:_sablon`, `730:get_sabloane`, `741:create_sablon`, `767:update_sablon`, `793:delete_sablon`
 
 ## blueprints/sync.py (75 linii)
 

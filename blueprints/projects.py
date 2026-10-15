@@ -685,11 +685,12 @@ def delete_stare(stare_id):
 
 def _eroare_continut(continut):
     """Mesajul unui 400 daca `continut` nu are forma
-    {"sare_weekend": bool, "taskuri": [{"titlu": str nevid, "descriere": str (optional),
-    "decalaj_zile": int, "subtaskuri": [str]}]}, altfel None."""
+    {"sare_weekend": bool (optional), "taskuri": [{"titlu": str nevid, "descriere": str (optional),
+    "decalaj_zile": int, "subtaskuri": [str] (optional)}]}, altfel None. Cheile optionale se
+    verifica doar cand sunt prezente."""
     if not isinstance(continut, dict):
         return 'continut trebuie sa fie un obiect'
-    if not isinstance(continut.get('sare_weekend'), bool):
+    if 'sare_weekend' in continut and not isinstance(continut['sare_weekend'], bool):
         return 'continut.sare_weekend trebuie sa fie true sau false'
     taskuri = continut.get('taskuri')
     if not isinstance(taskuri, list):
@@ -704,10 +705,18 @@ def _eroare_continut(continut):
             return unde + '.descriere trebuie sa fie text'
         if not isinstance(t.get('decalaj_zile'), int) or isinstance(t['decalaj_zile'], bool):
             return unde + '.decalaj_zile trebuie sa fie un numar intreg'
-        sub = t.get('subtaskuri')
-        if not isinstance(sub, list) or not all(isinstance(x, str) for x in sub):
+        if 'subtaskuri' in t and not (isinstance(t['subtaskuri'], list)
+                                      and all(isinstance(x, str) for x in t['subtaskuri'])):
             return unde + '.subtaskuri trebuie sa fie o lista de texte'
     return None
+
+
+def _continut_json(continut):
+    """Continutul validat, ca text JSON cu `sare_weekend` (implicit false) si `subtaskuri` (implicit [])
+    mereu scrise: cine citeste din baza sau din backup nu se mai intreaba daca lipsesc."""
+    complet = {**continut, 'sare_weekend': continut.get('sare_weekend', False),
+               'taskuri': [{**t, 'subtaskuri': t.get('subtaskuri', [])} for t in continut['taskuri']]}
+    return json.dumps(complet, ensure_ascii=False)
 
 
 def _sablon(row):
@@ -747,7 +756,7 @@ def create_sablon():
             return ocupat
     now = datetime.now().isoformat()
     cursor.execute('INSERT INTO sabloane (id, nume, continut, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-                   (sablon_id, nume.strip(), json.dumps(data['continut'], ensure_ascii=False), now, now))
+                   (sablon_id, nume.strip(), _continut_json(data['continut']), now, now))
     conn.commit()
     conn.close()
     return jsonify({'id': sablon_id}), 201
@@ -765,7 +774,7 @@ def update_sablon(sablon_id):
         eroare = _eroare_continut(continut)
         if eroare:
             return jsonify({'error': eroare}), 400
-        continut = json.dumps(continut, ensure_ascii=False)
+        continut = _continut_json(continut)
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('UPDATE sabloane SET nume = COALESCE(?, nume), continut = COALESCE(?, continut), '

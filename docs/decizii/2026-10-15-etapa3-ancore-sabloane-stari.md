@@ -35,12 +35,15 @@ un task are O SINGURĂ dată, `data_scadenta`; ancora doar o recalculează.
 ## Șabloane de lucrare
 
 Tabelă `sabloane` (`id`, `nume`, `continut` JSON text, `created_at`, `updated_at`). `continut` =
-`{"sare_weekend": bool, "taskuri": [{"titlu", "descriere" (opțional), "decalaj_zile", "subtaskuri": [str]}]}`;
-orice altă formă e 400 cu mesaj. Rute `GET/POST /api/sabloane`, `PUT/DELETE /api/sabloane/<id>`
+`{"sare_weekend": bool (opțional, implicit false), "taskuri": [{"titlu", "descriere" (opțional), "decalaj_zile", "subtaskuri": [str] (opțional, implicit [])}]}`;
+`sare_weekend` și `subtaskuri` se validează doar când sunt prezente, iar la scriere se completează cu
+implicitul, deci în baza și în backup sunt mereu scrise. Orice altă formă e 400 cu mesaj. Rute `GET/POST /api/sabloane`, `PUT/DELETE /api/sabloane/<id>`
 (în `blueprints/projects.py`, ca perioadele; fără blueprint nou). `continut` se primește și se
 întoarce ca obiect. Serverul doar păstrează șablonul; aplicarea lui (taskurile create cu decalaje
 față de o perioadă) o face clientul prin rutele de task cu ancoră. Intră în `VALID_TABLES` și în
 backup/restore.
+
+Șabloanele și stările nu intră în `/api/sync/snapshot`: Torqa le citește prin rutele lor.
 
 ## Starea proiectului
 
