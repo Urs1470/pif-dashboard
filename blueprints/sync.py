@@ -21,10 +21,11 @@ sync_bp = Blueprint('sync', __name__)
 
 PROIECT_COLOANE = ('id', 'nume', 'status', 'client', 'cod_proiect', 'data_finalizare', 'updated_at')
 TASK_COLOANE = ('id', 'proiect_id', 'titlu', 'descriere', 'status', 'data_scadenta',
-                'data_finalizare', 'recurenta', 'ordine', 'created_at', 'updated_at')
+                'data_finalizare', 'recurenta', 'recurenta_baza', 'implementare_id', 'decalaj_zile',
+                'ordine', 'created_at', 'updated_at')
 SUBTASK_COLOANE = ('id', 'task_id', 'titlu', 'done', 'ordine', 'created_at')
 GLOBAL_COLOANE = ('id', 'titlu', 'descriere', 'status', 'categorie', 'sfera', 'data_scadenta', 'ora',
-                  'data_finalizare', 'recurenta', 'created_at', 'updated_at')
+                  'data_finalizare', 'recurenta', 'recurenta_baza', 'created_at', 'updated_at')
 
 
 @sync_bp.route('/api/sync/snapshot', methods=['GET'])

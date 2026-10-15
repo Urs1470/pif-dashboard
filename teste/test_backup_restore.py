@@ -43,6 +43,9 @@ LEGATURI = {
     ('tasks', 'proiect_id'): lambda n: 'proiecte-%d' % n,
     ('task_subtasks', 'task_id'): lambda n: 'tasks-%d' % n,
     ('implementari', 'proiect_id'): lambda n: 'proiecte-%d' % n,
+    ('tasks', 'implementare_id'): lambda n: 'implementari-%d' % n,
+    ('stari_proiect', 'proiect_id'): lambda n: 'proiecte-%d' % n,
+    ('stari_proiect', 'implementare_id'): lambda n: 'implementari-%d' % n,
 }
 RANDURI = 2
 
@@ -208,6 +211,39 @@ class BackupSiRestore(CuAplicatia):
         p = citeste(self.destinatie, 'proiecte')[0]
         self.assertEqual((p['data_finalizare'], p['vault_folder']), ('2026-09-11', 'proiecte.vault_folder#1'))
         self.assertEqual(citeste(self.destinatie, 'global_tasks')[0]['ora'], 'global_tasks.ora#1')
+
+    def test_ancora_sablon_si_stare_supravietuiesc_dusului_intors(self):
+        """Etapa 3: taskul ancorat tine legatura cu perioada (cheia straina cere perioada inainte de
+        task la reinserare), iar sabloanele si starile se intorc."""
+        def api(metoda, url, corp=None):
+            r = getattr(self.client, metoda)(url, json=corp, headers=self.bearer())
+            self.assertIn(r.status_code, (200, 201), r.get_data(as_text=True))
+            return r.get_json()
+
+        pid = api('post', '/api/proiecte', {'nume': 'Etapa 3', 'tip': 'PIF'})['id']
+        iid = api('post', '/api/proiecte/%s/implementari' % pid, {'data_start': '2026-10-12'})['id']
+        tid = api('post', '/api/proiecte/%s/tasks' % pid,
+                  {'titlu': 'Ancorat', 'implementare_id': iid, 'decalaj_zile': 3, 'recurenta_baza': 'finalizare'})['id']
+        api('post', '/api/proiecte/%s/stari' % pid, {'stare': 'risc', 'data': '2026-10-13', 'implementare_id': iid})
+        continut = {'sare_weekend': True, 'taskuri': [{'titlu': 'T', 'decalaj_zile': 1, 'subtaskuri': ['a']}]}
+        api('post', '/api/sabloane', {'id': 's1', 'nume': 'Sablon', 'continut': continut})
+        backup = self.backup()
+
+        self.assertEqual(self.restaureaza(backup, self.destinatie).status_code, 200)
+        t = [r for r in citeste(self.destinatie, 'tasks') if r['id'] == tid][0]
+        self.assertEqual((t['implementare_id'], t['decalaj_zile'], t['data_scadenta'], t['recurenta_baza']),
+                         (iid, 3, '2026-10-15', 'finalizare'))
+        stare = citeste(self.destinatie, 'stari_proiect')[0]
+        self.assertEqual((stare['stare'], stare['implementare_id'], stare['data']), ('risc', iid, '2026-10-13'))
+        self.assertEqual(self.client.get('/api/sabloane', headers=self.bearer()).get_json()[0]['continut'], continut)
+
+    def test_un_backup_fara_tabelele_noi_se_restaureaza_cu_ele_goale(self):
+        vechi = {'proiecte': [{'id': 'p1', 'tip': 'PIF', 'nume': 'Vechi'}],
+                 'tasks': [{'id': 't1', 'proiect_id': 'p1', 'titlu': 'Vechi', 'data_scadenta': '2026-10-14'}]}
+        self.assertEqual(self.restaureaza(vechi, self.destinatie).status_code, 200)
+        t = citeste(self.destinatie, 'tasks')[0]
+        self.assertEqual((t['implementare_id'], t['decalaj_zile'], t['recurenta_baza']), (None, None, 'scadenta'))
+        self.assertEqual((citeste(self.destinatie, 'sabloane'), citeste(self.destinatie, 'stari_proiect')), ([], []))
 
     def test_secretele_push_nu_pleaca_in_backup_si_nu_se_pierd_la_restore(self):
         genereaza(self.sursa)

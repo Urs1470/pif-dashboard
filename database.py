@@ -109,7 +109,41 @@ def close_db(exc=None):
 #      data cu `.slice(0, 10)` si compara zile ca text („restant" = `zi < today`).
 #      O data-cu-ora ar trece prin fiecare din comparatiile alea si le-ar strica
 #      pe cele care taie exact 10 caractere.
-SCHEMA_VERSION = 43
+# v44: etapa 3 din Torqa — taskuri ancorate de o perioada (`tasks.implementare_id`,
+#      `decalaj_zile`), `recurenta_baza` pe tasks si global_tasks, tabelele `sabloane`
+#      (sabloane de lucrare) si `stari_proiect` (jurnalul starii proiectului). Decizia:
+#      docs/decizii/2026-10-15-etapa3-ancore-sabloane-stari.md.
+SCHEMA_VERSION = 44
+
+# DDL-ul celor doua tabele noi din v44 sta intr-un singur loc: il folosesc si `init_db()`, si
+# `migrate_v43_to_v44()`; scris de doua ori, cele doua s-ar putea abate si schema ar diferi intre
+# prima pornire si a doua (vezi teste/test_migrari.py).
+SQL_SABLOANE = '''
+    CREATE TABLE IF NOT EXISTS sabloane (
+        id TEXT PRIMARY KEY,
+        nume TEXT NOT NULL,
+        continut TEXT NOT NULL,
+        created_at TEXT,
+        updated_at TEXT
+    )
+'''
+SQL_STARI_PROIECT = '''
+    CREATE TABLE IF NOT EXISTS stari_proiect (
+        id TEXT PRIMARY KEY,
+        proiect_id TEXT NOT NULL,
+        stare TEXT NOT NULL,
+        facut TEXT,
+        blocaje TEXT,
+        urmator TEXT,
+        data TEXT NOT NULL,
+        implementare_id TEXT,
+        created_at TEXT,
+        FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE,
+        FOREIGN KEY (implementare_id) REFERENCES implementari(id) ON DELETE SET NULL
+    )
+'''
+SQL_STARI_PROIECT_INDEX = (
+    'CREATE INDEX IF NOT EXISTS idx_stari_proiect_proiect_data ON stari_proiect(proiect_id, data)')
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1522,6 +1556,43 @@ def migrate_v42_to_v43():
     logger.info('Migration v42->v43 completed (Gantt, agenda, calcule, clienti, notify_on_complete)')
 
 
+def migrate_v43_to_v44():
+    """v43 -> v44: etapa 3 din Torqa (ancore de perioada, sabloane, starea proiectului, recurenta
+    de la finalizare). Decizia: docs/decizii/2026-10-15-etapa3-ancore-sabloane-stari.md.
+
+      - `tasks.implementare_id` (cheie straina spre `implementari`, `ON DELETE SET NULL`) si
+        `tasks.decalaj_zile`: taskul ancorat de o perioada isi tine termenul la `data_start` +
+        decalaj. Fara DEFAULT: NULL = taskul nu e ancorat (SQLite cere NULL ca implicit cand
+        `ADD COLUMN` poarta `REFERENCES`).
+      - `tasks.recurenta_baza` si `global_tasks.recurenta_baza` ('scadenta'|'finalizare'): de la ce
+        data se numara aparitia urmatoare. Randurile vechi iau 'scadenta' = comportamentul de pana acum.
+      - tabelele `sabloane` si `stari_proiect`.
+
+    Idempotenta: `ADD COLUMN` doar cand lipseste, `CREATE ... IF NOT EXISTS`. Fara backfill.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(tasks)")
+    tcols = {row[1] for row in cursor.fetchall()}
+    if 'implementare_id' not in tcols:
+        cursor.execute('ALTER TABLE tasks ADD COLUMN implementare_id TEXT '
+                       'REFERENCES implementari(id) ON DELETE SET NULL')
+    if 'decalaj_zile' not in tcols:
+        cursor.execute('ALTER TABLE tasks ADD COLUMN decalaj_zile INTEGER')
+    if 'recurenta_baza' not in tcols:
+        cursor.execute("ALTER TABLE tasks ADD COLUMN recurenta_baza TEXT NOT NULL DEFAULT 'scadenta'")
+    cursor.execute("PRAGMA table_info(global_tasks)")
+    gcols = {row[1] for row in cursor.fetchall()}
+    if 'recurenta_baza' not in gcols:
+        cursor.execute("ALTER TABLE global_tasks ADD COLUMN recurenta_baza TEXT NOT NULL DEFAULT 'scadenta'")
+    cursor.execute(SQL_SABLOANE)
+    cursor.execute(SQL_STARI_PROIECT)
+    cursor.execute(SQL_STARI_PROIECT_INDEX)
+    conn.commit()
+    conn.close()
+    logger.info("Migration v43->v44 completed (ancore, recurenta_baza, sabloane, stari_proiect)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1736,6 +1807,11 @@ def run_migrations():
         set_schema_version(43)
         current_version = 43
 
+    if current_version < 44:
+        migrate_v43_to_v44()
+        set_schema_version(44)
+        current_version = 44
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1804,6 +1880,19 @@ def run_migrations():
         logger.warning("Self-heal: re-running v26->v27 (proiecte.vault_folder missing)")
         migrate_v26_to_v27()
 
+    # Aditiv-only, ca mai sus: cheia e lipsa coloanei/tabelei, nu versiunea. PRAGMA se citeste
+    # aici, dupa healul `implementari`, ca sa nu dam ALTER pe ceva ce tocmai s-a creat.
+    conn_v44 = get_db()
+    cols_t = {row[1] for row in conn_v44.execute("PRAGMA table_info(tasks)")}
+    cols_g = {row[1] for row in conn_v44.execute("PRAGMA table_info(global_tasks)")}
+    tabele_v44 = {row[0] for row in conn_v44.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    conn_v44.close()
+    if (not {'implementare_id', 'decalaj_zile', 'recurenta_baza'} <= cols_t
+            or 'recurenta_baza' not in cols_g
+            or not {'sabloane', 'stari_proiect'} <= tabele_v44):
+        logger.warning("Self-heal: re-running v43->v44 (ancore / recurenta_baza / sabloane / stari_proiect missing)")
+        migrate_v43_to_v44()
+
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
     else:
@@ -1857,6 +1946,10 @@ def init_db():
             data_finalizare TEXT,
             ordine INTEGER DEFAULT 0,
             created_at TEXT,
+            -- Ancora de perioada (v44): NULL = taskul nu e ancorat.
+            implementare_id TEXT REFERENCES implementari(id) ON DELETE SET NULL,
+            decalaj_zile INTEGER,
+            recurenta_baza TEXT NOT NULL DEFAULT 'scadenta',
             FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
         )
     ''')
@@ -1893,7 +1986,8 @@ def init_db():
             data_scadenta TEXT,
             data_finalizare TEXT,
             created_at TEXT,
-            updated_at TEXT
+            updated_at TEXT,
+            recurenta_baza TEXT NOT NULL DEFAULT 'scadenta'
         )
     ''')
 
@@ -1919,6 +2013,11 @@ def init_db():
             FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
         )
     ''')
+
+    # v44: sabloane de lucrare si jurnalul starii proiectului.
+    cursor.execute(SQL_SABLOANE)
+    cursor.execute(SQL_STARI_PROIECT)
+    cursor.execute(SQL_STARI_PROIECT_INDEX)
 
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')

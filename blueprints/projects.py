@@ -1,6 +1,7 @@
 # Projects Blueprint
 # Provides all project-related CRUD routes extracted from app.py
 
+import json
 import os
 import re
 import shutil
@@ -9,11 +10,12 @@ from datetime import datetime
 
 from flask import Blueprint, request, jsonify
 
+from blueprints.tasks import muta_taskurile_ancorate
 from database import get_db, row_to_dict
 from labels import PROJECT_STATUS_LABELS
 from utils import (
     safe_table, generate_uuid, login_required, UPLOAD_FOLDER, id_ocupat,
-    get_json_or_400, refuse_device_token_fields,
+    get_json_or_400, refuse_device_token_fields, norm_date,
 )
 
 logger = logging.getLogger('pif_dashboard')
@@ -59,6 +61,15 @@ def dosar_de_incarcari(project_id):
 
 # ============ PROJECTS ============
 
+# Ultima stare a proiectului (v44), ca doua coloane in plus langa `p.*`. Aceeasi ordine ca la
+# `GET /api/proiecte/<id>/stari`: cea mai noua zi, iar in aceeasi zi cea scrisa ultima.
+_STARE_CURENTA = ''',
+        (SELECT s.stare FROM stari_proiect s WHERE s.proiect_id = p.id
+          ORDER BY s.data DESC, s.created_at DESC LIMIT 1) AS stare_curenta,
+        (SELECT s.data FROM stari_proiect s WHERE s.proiect_id = p.id
+          ORDER BY s.data DESC, s.created_at DESC LIMIT 1) AS stare_data'''
+
+
 @projects_bp.route('/api/proiecte', methods=['GET'])
 @login_required
 def get_proiecte():
@@ -83,7 +94,7 @@ def get_proiecte():
         (SELECT i.faza FROM implementari i
           WHERE i.proiect_id = p.id
             AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
-          ORDER BY i.data_start LIMIT 1) AS urmatoarea_faza
+          ORDER BY i.data_start LIMIT 1) AS urmatoarea_faza''' + _STARE_CURENTA + '''
         FROM proiecte p WHERE 1=1'''
     params = []
 
@@ -194,7 +205,7 @@ def get_proiect(project_id):
         (SELECT i.faza FROM implementari i
           WHERE i.proiect_id = p.id
             AND date(COALESCE(NULLIF(i.data_sfarsit, ''), i.data_start)) >= date('now')
-          ORDER BY i.data_start LIMIT 1) AS urmatoarea_faza
+          ORDER BY i.data_start LIMIT 1) AS urmatoarea_faza''' + _STARE_CURENTA + '''
         FROM proiecte p WHERE p.id = ?''', (project_id,))
     row = cursor.fetchone()
     conn.close()
@@ -549,6 +560,8 @@ def update_implementare(impl_id):
         confirmata = 1 if confirmata in (1, True, '1', 'true') else 0
     conn = get_db()
     cursor = conn.cursor()
+    cursor.execute('SELECT data_start FROM implementari WHERE id = ?', (impl_id,))
+    vechi = cursor.fetchone()
     cursor.execute('''UPDATE implementari SET
                         data_start = COALESCE(?, data_start),
                         data_sfarsit = COALESCE(?, data_sfarsit),
@@ -561,6 +574,10 @@ def update_implementare(impl_id):
                    (data.get('data_start'), data.get('data_sfarsit'), loc, faza,
                     data.get('eticheta'), data.get('ordine'), confirmata, impl_id))
     updated = cursor.rowcount
+    if updated:
+        # Taskurile ancorate de perioada merg dupa ea, in aceeasi tranzactie.
+        cursor.execute('SELECT data_start FROM implementari WHERE id = ?', (impl_id,))
+        muta_taskurile_ancorate(cursor, impl_id, vechi['data_start'], cursor.fetchone()['data_start'])
     conn.commit()
     conn.close()
     if updated == 0:
@@ -573,10 +590,204 @@ def update_implementare(impl_id):
 def delete_implementare(impl_id):
     conn = get_db()
     cursor = conn.cursor()
+    # Cheia straina (`ON DELETE SET NULL`) goleste `implementare_id`; `decalaj_zile` ramane, deci
+    # ancora se goleste intreaga aici, inainte de stergere.
+    cursor.execute('UPDATE tasks SET implementare_id = NULL, decalaj_zile = NULL WHERE implementare_id = ?',
+                   (impl_id,))
     cursor.execute('DELETE FROM implementari WHERE id = ?', (impl_id,))
     deleted = cursor.rowcount
     conn.commit()
     conn.close()
     if deleted == 0:
         return jsonify({'error': 'Perioada inexistenta'}), 404
+    return jsonify({'message': 'ok'})
+
+
+# ---------------------------------------------------------------------------
+# Starea proiectului (v44): un jurnal de randuri adaugate, nu un camp de pe proiect
+# ---------------------------------------------------------------------------
+
+# „finalizat" nu e stare: e statusul proiectului (invariantul 2).
+_STARI = ('in_grafic', 'risc', 'blocat', 'asteptare')
+
+
+@projects_bp.route('/api/proiecte/<project_id>/stari', methods=['GET'])
+@login_required
+def get_stari(project_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM stari_proiect WHERE proiect_id = ? ORDER BY data DESC, created_at DESC',
+                   (project_id,))
+    rows = [row_to_dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
+@projects_bp.route('/api/proiecte/<project_id>/stari', methods=['POST'])
+@login_required
+def create_stare(project_id):
+    data = get_json_or_400()
+    stare = data.get('stare')
+    if stare not in _STARI:
+        return jsonify({'error': 'Stare necunoscuta: %s' % ', '.join(_STARI)}), 400
+    # `data` lipseste/goala = azi. Nu e in DATE_FIELDS (utils.py): cheia se cheama la fel peste tot
+    # in corpurile JSON, deci o validam doar aici.
+    try:
+        zi = norm_date(data.get('data'), 'data') or datetime.now().date().isoformat()
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT 1 FROM proiecte WHERE id = ?', (project_id,))
+    if cursor.fetchone() is None:
+        conn.close()
+        return jsonify({'error': 'Proiect inexistent'}), 404
+    impl_id = data.get('implementare_id') or None
+    if impl_id is not None:
+        cursor.execute('SELECT proiect_id FROM implementari WHERE id = ?', (impl_id,))
+        perioada = cursor.fetchone()
+        if perioada is None or perioada['proiect_id'] != project_id:
+            conn.close()
+            return jsonify({'error': 'Perioada nu exista in proiect'}), 400
+    stare_id = data.get('id') or generate_uuid()
+    if data.get('id'):
+        ocupat = id_ocupat(cursor, 'stari_proiect', stare_id)
+        if ocupat:
+            conn.close()
+            return ocupat
+    cursor.execute(
+        '''INSERT INTO stari_proiect (id, proiect_id, stare, facut, blocaje, urmator, data, implementare_id, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (stare_id, project_id, stare, data.get('facut') or '', data.get('blocaje') or '',
+         data.get('urmator') or '', zi[:10], impl_id, datetime.now().isoformat()))
+    conn.commit()
+    conn.close()
+    return jsonify({'id': stare_id}), 201
+
+
+@projects_bp.route('/api/stari/<stare_id>', methods=['DELETE'])
+@login_required
+def delete_stare(stare_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM stari_proiect WHERE id = ?', (stare_id,))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if deleted == 0:
+        return jsonify({'error': 'Stare inexistenta'}), 404
+    return jsonify({'message': 'ok'})
+
+
+# ---------------------------------------------------------------------------
+# Sabloane de lucrare (v44): lista de taskuri cu decalaje fata de inceputul perioadei
+# ---------------------------------------------------------------------------
+
+def _eroare_continut(continut):
+    """Mesajul unui 400 daca `continut` nu are forma
+    {"sare_weekend": bool, "taskuri": [{"titlu": str nevid, "descriere": str (optional),
+    "decalaj_zile": int, "subtaskuri": [str]}]}, altfel None."""
+    if not isinstance(continut, dict):
+        return 'continut trebuie sa fie un obiect'
+    if not isinstance(continut.get('sare_weekend'), bool):
+        return 'continut.sare_weekend trebuie sa fie true sau false'
+    taskuri = continut.get('taskuri')
+    if not isinstance(taskuri, list):
+        return 'continut.taskuri trebuie sa fie o lista'
+    for i, t in enumerate(taskuri):
+        unde = 'continut.taskuri[%d]' % i
+        if not isinstance(t, dict):
+            return unde + ' trebuie sa fie un obiect'
+        if not isinstance(t.get('titlu'), str) or not t['titlu'].strip():
+            return unde + '.titlu trebuie sa fie un text nevid'
+        if 'descriere' in t and not isinstance(t['descriere'], str):
+            return unde + '.descriere trebuie sa fie text'
+        if not isinstance(t.get('decalaj_zile'), int) or isinstance(t['decalaj_zile'], bool):
+            return unde + '.decalaj_zile trebuie sa fie un numar intreg'
+        sub = t.get('subtaskuri')
+        if not isinstance(sub, list) or not all(isinstance(x, str) for x in sub):
+            return unde + '.subtaskuri trebuie sa fie o lista de texte'
+    return None
+
+
+def _sablon(row):
+    d = row_to_dict(row)
+    d['continut'] = json.loads(d['continut'])
+    return d
+
+
+@projects_bp.route('/api/sabloane', methods=['GET'])
+@login_required
+def get_sabloane():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM sabloane ORDER BY created_at')
+    rows = [_sablon(r) for r in cursor.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+
+@projects_bp.route('/api/sabloane', methods=['POST'])
+@login_required
+def create_sablon():
+    data = get_json_or_400()
+    nume = data.get('nume')
+    if not isinstance(nume, str) or not nume.strip():
+        return jsonify({'error': 'nume trebuie sa fie un text nevid'}), 400
+    eroare = _eroare_continut(data.get('continut'))
+    if eroare:
+        return jsonify({'error': eroare}), 400
+    conn = get_db()
+    cursor = conn.cursor()
+    sablon_id = data.get('id') or generate_uuid()
+    if data.get('id'):
+        ocupat = id_ocupat(cursor, 'sabloane', sablon_id)
+        if ocupat:
+            conn.close()
+            return ocupat
+    now = datetime.now().isoformat()
+    cursor.execute('INSERT INTO sabloane (id, nume, continut, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+                   (sablon_id, nume.strip(), json.dumps(data['continut'], ensure_ascii=False), now, now))
+    conn.commit()
+    conn.close()
+    return jsonify({'id': sablon_id}), 201
+
+
+@projects_bp.route('/api/sabloane/<sablon_id>', methods=['PUT'])
+@login_required
+def update_sablon(sablon_id):
+    data = get_json_or_400()
+    nume = data.get('nume')
+    if nume is not None and (not isinstance(nume, str) or not nume.strip()):
+        return jsonify({'error': 'nume trebuie sa fie un text nevid'}), 400
+    continut = data.get('continut')
+    if continut is not None:
+        eroare = _eroare_continut(continut)
+        if eroare:
+            return jsonify({'error': eroare}), 400
+        continut = json.dumps(continut, ensure_ascii=False)
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('UPDATE sabloane SET nume = COALESCE(?, nume), continut = COALESCE(?, continut), '
+                   'updated_at = ? WHERE id = ?',
+                   (nume.strip() if nume else None, continut, datetime.now().isoformat(), sablon_id))
+    updated = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if updated == 0:
+        return jsonify({'error': 'Sablon inexistent'}), 404
+    return jsonify({'message': 'ok'})
+
+
+@projects_bp.route('/api/sabloane/<sablon_id>', methods=['DELETE'])
+@login_required
+def delete_sablon(sablon_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM sabloane WHERE id = ?', (sablon_id,))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if deleted == 0:
+        return jsonify({'error': 'Sablon inexistent'}), 404
     return jsonify({'message': 'ok'})

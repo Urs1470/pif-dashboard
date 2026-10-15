@@ -63,12 +63,13 @@ def get_stats():
 # ---------------------------------------------------------------------------
 
 # Tabelele din backup, in ordinea in care se pot reinsera: parintii inaintea copiilor (cheile
-# straine din `tasks` si `implementari` arata spre `proiecte`). Backup-ul exporta fiecare tabela
+# straine din `tasks` si `implementari` arata spre `proiecte`; `tasks.implementare_id` si
+# `stari_proiect` arata spre `implementari`, deci aceasta vine inaintea lor). Backup-ul exporta fiecare tabela
 # cu TOATE coloanele ei (`SELECT *`); restaurarea le pune inapoi pe toate. `task_dependencies`,
 # `calcule` si `clienti` au plecat in v43: un backup vechi care le are se restaureaza, iar ele
 # se ignora, ca orice tabela care nu mai exista.
-TABELE_BACKUP = ('proiecte', 'tasks', 'task_subtasks', 'implementari', 'global_tasks',
-                 'app_settings')
+TABELE_BACKUP = ('proiecte', 'implementari', 'tasks', 'task_subtasks', 'global_tasks',
+                 'sabloane', 'stari_proiect', 'app_settings')
 
 
 @admin_bp.route('/api/backup', methods=['GET'])

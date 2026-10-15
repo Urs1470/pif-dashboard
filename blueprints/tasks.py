@@ -23,6 +23,84 @@ def _skip_weekend(d):
     return d
 
 
+def _azi():
+    """Ziua de azi a serverului. Singura cale spre ceas a recurentei „de la finalizare", ca testele
+    s-o poata fixa."""
+    return datetime.now().date()
+
+
+def _baza_recurenta(existing):
+    """De la ce data se numara aparitia urmatoare a unui task recurent bifat. 'finalizare' = azi
+    (Torqa trimite doar `status: done`, deci ziua bifarii e ziua serverului); 'scadenta' = termenul
+    vechi, ca pana la v44."""
+    if existing['recurenta_baza'] == 'finalizare':
+        return _azi().isoformat()
+    return existing['data_scadenta'] or ''
+
+
+RECURENTE = ('', 'zilnic', 'saptamanal', 'lunar')
+RECURENTA_BAZE = ('scadenta', 'finalizare')
+
+
+def _eroare_recurenta(data):
+    """Mesajul unui 400 daca body-ul poarta o `recurenta` sau o `recurenta_baza` necunoscuta, altfel None.
+    None = cheia lipseste sau e null (la PUT, COALESCE o lasa neatinsa)."""
+    recurenta = data.get('recurenta')
+    if recurenta is not None and recurenta not in RECURENTE:
+        return "recurenta invalida (acceptat: '', 'zilnic', 'saptamanal', 'lunar')"
+    baza = data.get('recurenta_baza')
+    if baza is not None and baza not in RECURENTA_BAZE:
+        return "recurenta_baza invalida (acceptat: 'scadenta' sau 'finalizare')"
+    return None
+
+
+def _zi(text):
+    """Data din 'YYYY-MM-DD' (sau un timestamp ISO), ori None daca textul nu e o data."""
+    try:
+        return datetime.strptime((text or '')[:10], '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return None
+
+
+def _ancora(cursor, proiect_id, data):
+    """Ancora ceruta de body-ul unui task: None daca nu cere niciuna (`implementare_id` lipseste,
+    e null sau ''), altfel (implementare_id, decalaj_zile, data_scadenta) cu termenul calculat
+    din `data_start` al perioadei. ValueError cu mesajul unui 400 cand perioada nu exista in
+    proiectul taskului, nu are data de start, sau decalajul nu e un intreg."""
+    impl_id = data.get('implementare_id')
+    if not impl_id:
+        return None
+    decalaj = data.get('decalaj_zile')
+    if not isinstance(impl_id, str) or not isinstance(decalaj, int) or isinstance(decalaj, bool):
+        raise ValueError('implementare_id cere un decalaj_zile intreg')
+    cursor.execute('SELECT proiect_id, data_start FROM implementari WHERE id = ?', (impl_id,))
+    perioada = cursor.fetchone()
+    if perioada is None or perioada['proiect_id'] != proiect_id:
+        raise ValueError('Perioada nu exista in proiectul taskului')
+    start = _zi(perioada['data_start'])
+    if start is None:
+        raise ValueError('Perioada nu are data de start')
+    try:
+        return impl_id, decalaj, (start + timedelta(days=decalaj)).isoformat()
+    except OverflowError:
+        raise ValueError('decalaj_zile in afara calendarului')
+
+
+def muta_taskurile_ancorate(cursor, impl_id, start_vechi, start_nou):
+    """Perioada si-a mutat `data_start`: taskurile ei nefacute isi iau termenul `start_nou` + decalaj
+    (zile calendaristice, fara ajustare de weekend). Nu face nimic cand startul nou e gol/invalid
+    sau nu s-a schimbat. `updated_at` se actualizeaza: Torqa le trage din imagine."""
+    start = _zi(start_nou)
+    if start is None or start_nou == start_vechi:
+        return
+    cursor.execute("SELECT id, decalaj_zile FROM tasks WHERE implementare_id = ? AND status != 'done' "
+                   "AND decalaj_zile IS NOT NULL", (impl_id,))
+    now = datetime.now().isoformat()
+    for task in cursor.fetchall():
+        cursor.execute('UPDATE tasks SET data_scadenta = ?, updated_at = ? WHERE id = ?',
+                       ((start + timedelta(days=task['decalaj_zile'])).isoformat(), now, task['id']))
+
+
 def _next_recurrence_date(base_str, recurenta):
     """base_str: 'YYYY-MM-DD' (flatpickr format) or empty. Returns the next
     occurrence date as 'YYYY-MM-DD'. Falls back to today when base is unparsable.
@@ -54,15 +132,18 @@ def _spawn_recurring_task(cursor, existing, recurenta):
     `existing` is the sqlite Row of the completed task. Returns the new id."""
     new_id = generate_uuid()
     now = datetime.now().isoformat()
-    next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
+    next_scad = _next_recurrence_date(_baza_recurenta(existing), recurenta)
     cursor.execute('SELECT MAX(ordine) FROM tasks WHERE proiect_id = ?', (existing['proiect_id'],))
     max_ordine = cursor.fetchone()[0] or 0
+    # Ancora (implementare_id, decalaj_zile) NU se copiaza: aparitia urmatoare e la o data pe care
+    # o da recurenta, nu perioada; o copie ancorata si-ar muta termenul la urmatoarea mutare a perioadei.
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta,
-                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
-        VALUES (?, ?, ?, 'to_do', ?, '', ?, ?, ?, ?, ?)
+                           data_finalizare, ordine, created_at, descriere, recurenta, recurenta_baza, updated_at)
+        VALUES (?, ?, ?, 'to_do', ?, '', ?, ?, ?, ?, ?, ?)
     ''', (new_id, existing['proiect_id'], existing['titlu'],
-          next_scad, max_ordine + 1, now, existing['descriere'] or '', recurenta, now))
+          next_scad, max_ordine + 1, now, existing['descriere'] or '', recurenta,
+          existing['recurenta_baza'], now))
     # Carry the subtasks over, all unchecked -- a recurring checklist repeats clean.
     cursor.execute('SELECT titlu, ordine FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (existing['id'],))
     for srow in cursor.fetchall():
@@ -78,7 +159,7 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
     title/priority/category/description + fresh subtasks. Returns the new id."""
     new_id = generate_uuid()
     now = datetime.now().isoformat()
-    next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
+    next_scad = _next_recurrence_date(_baza_recurenta(existing), recurenta)
     # `sfera` se
     # copiaza OBLIGATORIU: altfel un task personal recurent ar migra in lista
     # de munca la prima bifare (INSERT-ul ar cadea pe default-ul 'munca').
@@ -92,11 +173,12 @@ def _spawn_recurring_global_task(cursor, existing, recurenta):
     ora_veche = (existing['ora'] if 'ora' in existing.keys() else '') or ''
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,
-                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta, ora)
-        VALUES (?, ?, ?, 'to_do', ?, ?, ?, '', ?, ?, ?, ?)
+                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta, ora,
+                                  recurenta_baza)
+        VALUES (?, ?, ?, 'to_do', ?, ?, ?, '', ?, ?, ?, ?, ?)
     ''', (new_id, existing['titlu'], existing['descriere'] or '',
           existing['categorie'], existing['sfera'] or 'munca',
-          next_scad, now, now, recurenta, ora_veche))
+          next_scad, now, now, recurenta, ora_veche, existing['recurenta_baza']))
     cursor.execute('SELECT titlu, ordine FROM task_subtasks WHERE task_id = ? ORDER BY ordine', (existing['id'],))
     for srow in cursor.fetchall():
         cursor.execute(
@@ -160,6 +242,9 @@ def get_tasks(project_id):
 @login_required
 def create_task(project_id):
     data = get_json_or_400()
+    eroare = _eroare_recurenta(data)
+    if eroare:
+        return jsonify({'error': eroare}), 400
     conn = get_db()
     cursor = conn.cursor()
 
@@ -176,6 +261,14 @@ def create_task(project_id):
             conn.close()
             return ocupat
 
+    # Task ancorat de o perioada: termenul se calculeaza aici, o data trimisa in paralel se ignora.
+    try:
+        ancora = _ancora(cursor, project_id, data)
+    except ValueError as e:
+        conn.close()
+        return jsonify({'error': str(e)}), 400
+    data_scadenta = ancora[2] if ancora else data.get('data_scadenta', '')
+
     # Get max ordine for this project
     cursor.execute('SELECT MAX(ordine) as max_ordine FROM tasks WHERE proiect_id = ?', (project_id,))
     result = cursor.fetchone()
@@ -183,20 +276,24 @@ def create_task(project_id):
 
     cursor.execute('''
         INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta,
-                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           data_finalizare, ordine, created_at, descriere, recurenta, updated_at,
+                           implementare_id, decalaj_zile, recurenta_baza)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         project_id,
         data.get('titlu', ''),
         data.get('status', 'to_do'),
-        data.get('data_scadenta', ''),
+        data_scadenta,
         data.get('data_finalizare', ''),
         max_ordine + 1,
         now,
         data.get('descriere', ''),
         data.get('recurenta', ''),
-        now
+        now,
+        ancora[0] if ancora else None,
+        ancora[1] if ancora else None,
+        data.get('recurenta_baza') or 'scadenta'
     ))
 
     conn.commit()
@@ -209,6 +306,9 @@ def create_task(project_id):
 @login_required
 def update_task(task_id):
     data = get_json_or_400()
+    eroare = _eroare_recurenta(data)
+    if eroare:
+        return jsonify({'error': eroare}), 400
     conn = get_db()
     cursor = conn.cursor()
 
@@ -218,6 +318,20 @@ def update_task(task_id):
         conn.close()
         return jsonify({'error': 'Task not found'}), 404
     old_status = existing['status']
+
+    # Ancora. Cu `implementare_id` nevid taskul se ancoreaza si termenul se calculeaza (data trimisa
+    # in paralel se ignora). `implementare_id` null/'' il desprinde. Fara cheia asta, un termen
+    # schimbat il desprinde si el: ancora ar mai da o data, dar nu pe cea aleasa acum.
+    try:
+        ancora = _ancora(cursor, existing['proiect_id'], data)
+    except ValueError as e:
+        conn.close()
+        return jsonify({'error': str(e)}), 400
+    if ancora:
+        data['data_scadenta'] = ancora[2]
+    nou_termen = data.get('data_scadenta')
+    desprinde = not ancora and ('implementare_id' in data or (
+        nou_termen is not None and nou_termen != (existing['data_scadenta'] or '')))
 
     # Tranzitia la 'done' e atomica (WHERE status != 'done'): doua PUT-uri
     # concurente (dublu-click / 2 workere) nu mai spawneaza doua recurente.
@@ -235,6 +349,7 @@ def update_task(task_id):
             ordine = COALESCE(?, ordine),
             descriere = COALESCE(?, descriere),
             recurenta = COALESCE(?, recurenta),
+            recurenta_baza = COALESCE(?, recurenta_baza),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -245,9 +360,13 @@ def update_task(task_id):
         data.get('ordine'),
         data.get('descriere'),
         data.get('recurenta'),
+        data.get('recurenta_baza'),
         datetime.now().isoformat(),
         task_id
     ))
+    if ancora or desprinde:
+        cursor.execute('UPDATE tasks SET implementare_id = ?, decalaj_zile = ? WHERE id = ?',
+                       (ancora[0], ancora[1], task_id) if ancora else (None, None, task_id))
 
     # A recurring task just completed -> spawn the next occurrence.
     spawned_id = None
@@ -255,7 +374,7 @@ def update_task(task_id):
     if transitioned_to_done and (existing['recurenta'] or '').strip():
         recurenta = existing['recurenta'].strip()
         spawned_id = _spawn_recurring_task(cursor, existing, recurenta)
-        next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
+        next_scad = _next_recurrence_date(_baza_recurenta(existing), recurenta)
 
     conn.commit()
     conn.close()
@@ -494,6 +613,9 @@ def get_global_tasks():
 @login_required
 def create_global_task():
     data = get_json_or_400()
+    eroare = _eroare_recurenta(data)
+    if eroare:
+        return jsonify({'error': eroare}), 400
     sfera = data.get('sfera') or 'munca'
     if _sfera_or_none(sfera) is None:
         return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
@@ -514,8 +636,9 @@ def create_global_task():
 
     cursor.execute('''
         INSERT INTO global_tasks (id, titlu, descriere, status, categorie, sfera,
-                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta, ora)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                  data_scadenta, data_finalizare, created_at, updated_at, recurenta, ora,
+                                  recurenta_baza)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         task_id,
         data.get('titlu', ''),
@@ -528,7 +651,8 @@ def create_global_task():
         now,
         now,
         data.get('recurenta', ''),
-        ora
+        ora,
+        data.get('recurenta_baza') or 'scadenta'
     ))
 
     conn.commit()
@@ -556,6 +680,9 @@ def get_global_task(task_id):
 @login_required
 def update_global_task(task_id):
     data = get_json_or_400()
+    eroare = _eroare_recurenta(data)
+    if eroare:
+        return jsonify({'error': eroare}), 400
     # Patch de sfera permis (portita API pentru un task creat in sfera gresita);
     # fara UI de mutare deocamdata. None = neatins (COALESCE).
     if data.get('sfera') is not None and _sfera_or_none(data.get('sfera')) is None:
@@ -592,6 +719,7 @@ def update_global_task(task_id):
             recurenta = COALESCE(?, recurenta),
             sfera = COALESCE(?, sfera),
             ora = COALESCE(?, ora),
+            recurenta_baza = COALESCE(?, recurenta_baza),
             updated_at = ?
         WHERE id = ?
     ''', (
@@ -604,6 +732,7 @@ def update_global_task(task_id):
         data.get('recurenta'),
         data.get('sfera'),
         ora,
+        data.get('recurenta_baza'),
         now,
         task_id
     ))
@@ -614,7 +743,7 @@ def update_global_task(task_id):
     if transitioned_to_done and (existing['recurenta'] or '').strip():
         recurenta = existing['recurenta'].strip()
         spawned_id = _spawn_recurring_global_task(cursor, existing, recurenta)
-        next_scad = _next_recurrence_date(existing['data_scadenta'] or '', recurenta)
+        next_scad = _next_recurrence_date(_baza_recurenta(existing), recurenta)
 
     conn.commit()
     conn.close()

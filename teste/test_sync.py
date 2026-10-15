@@ -39,8 +39,11 @@ class ImagineaSiTokenul(CuBazaNoua):
         c.execute("INSERT INTO proiecte (id, tip, nume, status) VALUES ('p-des', 'PIF', 'Deschis', 'pregatire')")
         c.execute("INSERT INTO proiecte (id, tip, nume, status, data_finalizare) "
                   "VALUES ('p-inc', 'PIF', 'Inchis', 'finalizat', '2026-09-01')")
-        c.execute("INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta, recurenta, created_at) "
-                  "VALUES ('t1', 'p-des', 'Parametrizare', 'to_do', '2026-10-02', 'saptamanal', '2026-09-30')")
+        c.execute("INSERT INTO implementari (id, proiect_id, data_start) VALUES ('i1', 'p-des', '2026-09-29')")
+        c.execute("INSERT INTO tasks (id, proiect_id, titlu, status, data_scadenta, recurenta, created_at, "
+                  "implementare_id, decalaj_zile, recurenta_baza) "
+                  "VALUES ('t1', 'p-des', 'Parametrizare', 'to_do', '2026-10-02', 'saptamanal', '2026-09-30', "
+                  "'i1', 3, 'finalizare')")
         c.execute("INSERT INTO tasks (id, proiect_id, titlu, status, created_at) "
                   "VALUES ('t2', 'p-inc', 'Vechi', 'done', '2026-08-01')")
         c.execute("INSERT INTO tasks (id, proiect_id, titlu, status, created_at) "
@@ -93,8 +96,12 @@ class ImagineaSiTokenul(CuBazaNoua):
                      'ordine', 'updated_at', 'viu'):
             self.assertIn(camp, t1)
         self.assertEqual(t1['recurenta'], 'saptamanal')
+        # v44: ancora de perioada si baza recurentei; un task fara ele le arata ca NULL / 'scadenta'.
+        self.assertEqual((t1['implementare_id'], t1['decalaj_zile'], t1['recurenta_baza']), ('i1', 3, 'finalizare'))
+        t2 = next(t for t in d['tasks'] if t['id'] == 't2')
+        self.assertEqual((t2['implementare_id'], t2['decalaj_zile'], t2['recurenta_baza']), (None, None, 'scadenta'))
         g2 = next(g for g in d['global_tasks'] if g['id'] == 'g2')
-        self.assertEqual((g2['sfera'], g2['ora']), ('personal', '07:30'))
+        self.assertEqual((g2['sfera'], g2['ora'], g2['recurenta_baza']), ('personal', '07:30', 'scadenta'))
 
     def test_viu_urmeaza_regula_din_astazi(self):
         d = self.get('/api/sync/snapshot', token=DEVICE).get_json()
