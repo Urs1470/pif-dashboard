@@ -14,9 +14,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `79:_retele_de_incredere`, `93:_ip_valid`, `104:_proxy_de_incredere`, `116:_adresa_socket`, `122:_client_ip`, `143:get_or_create_secret_key`, `161:file_hash`, `188:inject_version`, `212:make_session_permanent`, `222:setup_logging`, `254:check_rate_limit`, `296:check_login_rate_limit`, `307:before_request_func`, `339:_default_csp`, `367:after_request_func`, `391:get_hashed_pin`, `400:_git_commit`, `414:healthz`, `420:login_page`, `430:login`, `444:logout`, `453:index`, `466:service_worker`, `471:add_sw_header`, `492:get_deploy_secret`, `500:webhook_deploy`, `591:page_not_found`, `598:internal_error`
 
-## database.py (1951 linii)
+## database.py (2050 linii)
 
-`13:get_db`, `34:close_db`, `114:get_schema_version`, `127:set_schema_version`, `136:migrate_v1_to_v2`, `218:migrate_v2_to_v3`, `245:migrate_v3_to_v4`, `276:migrate_v4_to_v5`, `318:migrate_v5_to_v6`, `340:migrate_v6_to_v7`, `362:migrate_v7_to_v8`, `405:migrate_v8_to_v9`, `420:migrate_v9_to_v10`, `450:migrate_v10_to_v11`, `472:migrate_v11_to_v12`, `518:migrate_v12_to_v13`, `563:migrate_v13_to_v14`, `602:migrate_v14_to_v15`, `625:migrate_v15_to_v16`, `644:migrate_v16_to_v17`, `660:migrate_v17_to_v18`, `709:migrate_v18_to_v19`, `749:migrate_v19_to_v20`, `766:migrate_v20_to_v21`, `793:migrate_v21_to_v22`, `812:migrate_v22_to_v23`, `831:migrate_v23_to_v24`, `868:migrate_v24_to_v25`, `883:migrate_v25_to_v26`, `908:migrate_v26_to_v27`, `925:migrate_v27_to_v28`, `971:migrate_v28_to_v29`, `1027:migrate_v29_to_v30`, `1071:migrate_v30_to_v31`, `1104:migrate_v31_to_v32`, `1133:migrate_v32_to_v33`, `1188:migrate_v33_to_v34`, `1224:migrate_v34_to_v35`, `1256:migrate_v35_to_v36`, `1292:migrate_v36_to_v37`, `1330:migrate_v37_to_v38`, `1357:migrate_v38_to_v39`, `1395:migrate_v39_to_v40`, `1424:migrate_v40_to_v41`, `1461:migrate_v41_to_v42`, `1487:migrate_v42_to_v43`, `1525:run_migrations`, `1813:init_db`, `1944:row_to_dict`
+`13:get_db`, `34:close_db`, `148:get_schema_version`, `161:set_schema_version`, `170:migrate_v1_to_v2`, `252:migrate_v2_to_v3`, `279:migrate_v3_to_v4`, `310:migrate_v4_to_v5`, `352:migrate_v5_to_v6`, `374:migrate_v6_to_v7`, `396:migrate_v7_to_v8`, `439:migrate_v8_to_v9`, `454:migrate_v9_to_v10`, `484:migrate_v10_to_v11`, `506:migrate_v11_to_v12`, `552:migrate_v12_to_v13`, `597:migrate_v13_to_v14`, `636:migrate_v14_to_v15`, `659:migrate_v15_to_v16`, `678:migrate_v16_to_v17`, `694:migrate_v17_to_v18`, `743:migrate_v18_to_v19`, `783:migrate_v19_to_v20`, `800:migrate_v20_to_v21`, `827:migrate_v21_to_v22`, `846:migrate_v22_to_v23`, `865:migrate_v23_to_v24`, `902:migrate_v24_to_v25`, `917:migrate_v25_to_v26`, `942:migrate_v26_to_v27`, `959:migrate_v27_to_v28`, `1005:migrate_v28_to_v29`, `1061:migrate_v29_to_v30`, `1105:migrate_v30_to_v31`, `1138:migrate_v31_to_v32`, `1167:migrate_v32_to_v33`, `1222:migrate_v33_to_v34`, `1258:migrate_v34_to_v35`, `1290:migrate_v35_to_v36`, `1326:migrate_v36_to_v37`, `1364:migrate_v37_to_v38`, `1391:migrate_v38_to_v39`, `1429:migrate_v39_to_v40`, `1458:migrate_v40_to_v41`, `1495:migrate_v41_to_v42`, `1521:migrate_v42_to_v43`, `1559:migrate_v43_to_v44`, `1596:run_migrations`, `1902:init_db`, `2043:row_to_dict`
 
 ## utils.py (290 linii)
 
@@ -30,9 +30,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 _(fara definitii top-level)_
 
-## blueprints/admin.py (582 linii)
+## blueprints/admin.py (583 linii)
 
-`42:get_stats`, `76:backup_database`, `116:_reinsereaza`, `134:_termen_din_planificata`, `141:_ajusteaza_global`, `146:_ajusteaza_perioada`, `164:restore_database`, `224:admin_db_upload_page`, `276:admin_db_upload`, `353:admin_db_dump`, `395:calendar_view`
+`42:get_stats`, `77:backup_database`, `117:_reinsereaza`, `135:_termen_din_planificata`, `142:_ajusteaza_global`, `147:_ajusteaza_perioada`, `165:restore_database`, `225:admin_db_upload_page`, `277:admin_db_upload`, `354:admin_db_dump`, `396:calendar_view`
 
 ## blueprints/app_update.py (194 linii)
 
@@ -42,17 +42,17 @@ _(fara definitii top-level)_
 
 `37:_obsidian_vault`, `45:_obsidian_safe_path`, `59:_obsidian_walk`, `84:_obsidian_index`, `104:_obsidian_config_dict`, `129:_in_dosar_de_proiect`, `168:obsidian_note_get`, `209:_scrub_secrets`, `214:_git_env`, `225:_git`, `231:_default_vault_repo`, `236:_maybe_refresh_vault`, `274:_dashboard_git_credentials`, `290:obsidian_vault_key`, `316:_ref_git_valid`, `327:obsidian_vault_sync`, `393:_obsidian_safe_dir`, `409:project_wiki_notes`, `469:sync_project_frontmatter`
 
-## blueprints/projects.py (582 linii)
+## blueprints/projects.py (793 linii)
 
-`27:status_proiect`, `45:dosar_de_incarcari`, `64:get_proiecte`, `114:create_proiect`, `181:get_proiect`, `209:update_proiect`, `332:delete_proiect`, `383:get_project_snapshot`, `470:_impl_row`, `490:get_implementari`, `501:create_implementare`, `532:update_implementare`, `573:delete_implementare`
+`29:status_proiect`, `47:dosar_de_incarcari`, `75:get_proiecte`, `125:create_proiect`, `192:get_proiect`, `220:update_proiect`, `343:delete_proiect`, `394:get_project_snapshot`, `481:_impl_row`, `501:get_implementari`, `512:create_implementare`, `543:update_implementare`, `590:delete_implementare`, `616:get_stari`, `628:create_stare`, `670:delete_stare`, `686:_eroare_continut`, `713:_sablon`, `721:get_sabloane`, `732:create_sablon`, `758:update_sablon`, `784:delete_sablon`
 
-## blueprints/sync.py (74 linii)
+## blueprints/sync.py (75 linii)
 
-`32:sync_snapshot`
+`33:sync_snapshot`
 
-## blueprints/tasks.py (645 linii)
+## blueprints/tasks.py (774 linii)
 
-`16:_skip_weekend`, `26:_next_recurrence_date`, `51:_spawn_recurring_task`, `76:_spawn_recurring_global_task`, `114:get_tasks`, `161:create_task`, `210:update_task`, `272:delete_task`, `292:get_subtasks`, `303:create_subtask`, `337:update_subtask`, `352:delete_subtask`, `376:_sfera_or_none`, `388:norm_ora`, `415:get_global_tasks`, `495:create_global_task`, `542:get_global_task`, `557:update_global_task`, `631:delete_global_task`
+`16:_skip_weekend`, `26:_azi`, `32:_baza_recurenta`, `45:_eroare_recurenta`, `57:_zi`, `65:_ancora`, `89:muta_taskurile_ancorate`, `104:_next_recurrence_date`, `129:_spawn_recurring_task`, `157:_spawn_recurring_global_task`, `196:get_tasks`, `243:create_task`, `307:update_task`, `391:delete_task`, `411:get_subtasks`, `422:create_subtask`, `456:update_subtask`, `471:delete_subtask`, `495:_sfera_or_none`, `507:norm_ora`, `534:get_global_tasks`, `614:create_global_task`, `666:get_global_task`, `681:update_global_task`, `760:delete_global_task`
 
 ## blueprints/torqa_web.py (617 linii)
 

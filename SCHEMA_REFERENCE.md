@@ -23,8 +23,8 @@ socketului, iar `CF-Connecting-IP` (cloudflared) se crede doar de la un proxy de
 implicit loopback).
 
 **Sincronizarea Torqa:** `GET /api/sync/snapshot` da intr-o cerere proiectele, taskurile (si
-cele facute, cu `viu` dupa regula din Astazi), subtaskurile (si ale taskurilor globale) si
-taskurile globale din ambele sfere. Ce lipseste din imagine s-a sters pe server (stergerile
+cele facute, cu `viu` dupa regula din Astazi; cu `implementare_id`, `decalaj_zile` si `recurenta_baza`),
+subtaskurile (si ale taskurilor globale) si taskurile globale din ambele sfere (cu `recurenta_baza`). Ce lipseste din imagine s-a sters pe server (stergerile
 sunt definitive). Scrierile trec prin rutele obisnuite; bifarea unui task recurent naste
 aparitia urmatoare pe server. Crearea de task, task global, subtask, proiect si perioada
 (`implementari`) primeste `id` de la client; un `id` existent da **409** cu `{id}` (nu
@@ -50,6 +50,33 @@ dubleaza), un proiect sau un task parinte inexistent da 404.
    statusul proiectului cand confirmi o deplasare.
 8. **`sfera`** (`munca`|`personal`) pe `global_tasks` e opt-in la citire: implicit,
    listele intorc doar `munca`. O valoare necunoscuta da 400, nu se corecteaza tacit.
+9. **Task ancorat de o perioada** (v44): `tasks.implementare_id` + `decalaj_zile` (zile calendaristice
+   fata de `implementari.data_start`). Taskul are tot O SINGURA data, `data_scadenta`; ancora doar o
+   recalculeaza. Cu `implementare_id` nevid si `decalaj_zile` intreg (la `POST /api/proiecte/<id>/tasks`
+   sau `PUT /api/tasks/<id>`), serverul calculeaza termenul si ignora o data trimisa in paralel; perioada
+   trebuie sa existe si sa fie a aceluiasi proiect, cu data de start (altfel 400). `implementare_id`
+   null sau `''` desprinde taskul si lasa termenul. Un `PUT` care schimba `data_scadenta` fara cheia
+   `implementare_id` desface ancora (acelasi termen retrimis nu o desface). Cand `PUT
+   /api/implementari/<id>` schimba `data_start` (si noul start e o data valida), taskurile ancorate
+   NEFACUTE primesc `data_start` + `decalaj_zile`, fara ajustare de weekend, cu `updated_at` nou;
+   cele `done` nu se muta. Stergerea perioadei goleste ancorele. Copia unui task recurent nu mosteneste
+   ancora.
+10. **`recurenta`** e `''`, `zilnic`, `saptamanal` sau `lunar` (altfel 400, pe taskuri de proiect si
+    globale). **`recurenta_baza`** (`scadenta`|`finalizare`, implicit `scadenta`; altfel 400): cu
+    `finalizare`, aparitia urmatoare se numara de la ziua serverului la bifare, nu de la termenul vechi
+    (Torqa trimite doar `status: done`). Weekendul se muta luni in ambele cazuri; copia pastreaza baza.
+11. **Starea proiectului** (v44): jurnal de randuri in `stari_proiect`, doar adaugare si stergere (fara
+    `PUT`). `POST /api/proiecte/<id>/stari` cu `stare` (`in_grafic`|`risc`|`blocat`|`asteptare`; „finalizat"
+    e statusul proiectului, invariantul 2, nu o stare; altfel 400), `facut`, `blocaje`, `urmator`,
+    `data` (lipsa sau goala = azi; o data invalida da 400), `implementare_id` optional (perioada
+    proiectului, altfel 400); proiect inexistent da 404. `GET /api/proiecte/<id>/stari` (cele mai noi
+    primele), `DELETE /api/stari/<id>`. `GET /api/proiecte` si `/api/proiecte/<id>` intorc si
+    `stare_curenta` / `stare_data` (ultima stare; `null` fara).
+12. **Sabloane de lucrare** (v44): `GET/POST /api/sabloane`, `PUT/DELETE /api/sabloane/<id>`, cu `id`
+    dat de client (409 daca exista) sau generat. `nume` nevid; `continut` e un obiect
+    `{"sare_weekend": bool, "taskuri": [{"titlu": text nevid, "descriere": text (optional),
+    "decalaj_zile": intreg, "subtaskuri": [text]}]}`, altfel 400 cu mesajul campului. Serverul doar il
+    pastreaza si il intoarce ca obiect; taskurile se creeaza prin rutele de task cu ancora.
 
 ## Import de debrief — scos
 
@@ -88,8 +115,8 @@ cere `GET /api/proiecte/<id>/implementari`.
 ## Backup si restore — `GET /api/backup`, `POST /api/restore`
 
 Doar tokenul de masina sau sesiunea cu PIN (dispozitivul e refuzat). Backup-ul e un JSON cu cate o
-lista per tabela (`proiecte`, `tasks`, `task_subtasks`, `implementari`, `global_tasks`,
-`app_settings`), fiecare rand cu TOATE coloanele tabelei;
+lista per tabela (`proiecte`, `implementari`, `tasks`, `task_subtasks`, `global_tasks`, `sabloane`,
+`stari_proiect`, `app_settings`; `implementari` vine inaintea lui `tasks`, care o refera), fiecare rand cu TOATE coloanele tabelei;
 cheile `push_*` din `app_settings` nu pleaca niciodata de pe masina.
 
 Restore sterge tabelele si le reinsereaza dintr-o singura tranzactie (un fisier stricat anuleaza

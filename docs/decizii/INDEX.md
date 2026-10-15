@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-10-15
+
+- [2026-10-15 Etapa 3 din Torqa: taskuri ancorate de perioadă, șabloane, starea proiectului, recurență de la finalizare (v44)](2026-10-15-etapa3-ancore-sabloane-stari.md) — `tasks.implementare_id` + `decalaj_zile`: perioada mutată își mută taskurile nefăcute (zile calendaristice, `updated_at` nou), un termen schimbat de mână desface ancora, copia recurentă nu o moștenește; tabela `sabloane` (JSON validat) și jurnalul `stari_proiect` (`stare_curenta` în `/api/proiecte`); `recurenta_baza` `scadenta`|`finalizare`; `recurenta` din afara `''|zilnic|saptamanal|lunar` dă 400. Backup: `implementari` înaintea lui `tasks`.
+
 ## 2026-10-10
 
 - [2026-10-10 Limita de PIN comună, `.map` cu login, CSRF doar pentru Bearer valid, `PIF_UPLOAD_FOLDER`](2026-10-10-limita-de-pin-comuna-map-csrf-upload.md) — limita de 5 încercări / 5 min stă într-un fișier SQLite separat lângă bază (`<PIF_DB_PATH>.ratelimit`, `ratelimit.py`), comun celor 2 workeri și păstrat peste redeploy, fără schemă; `*.map` din `/torqa/` dau 401 fără sesiune; `csrf.py` sare doar pentru un Bearer valid; `PIF_UPLOAD_FOLDER` (implicit `uploads/`). Închide E-289 și E-004.

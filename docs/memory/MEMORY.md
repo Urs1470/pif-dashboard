@@ -19,11 +19,11 @@ ai nevoie.
 
 | domeniu | tabele |
 |---|---|
-| Proiecte | `proiecte`, `implementari` (perioadele) |
+| Proiecte | `proiecte`, `implementari` (perioadele), `stari_proiect` (jurnalul stării), `sabloane` (șabloane de lucrare) |
 | Taskuri | `tasks`, `task_subtasks`, `global_tasks` |
 | Sistem | `app_settings` (KV), `schema_version` |
 
-**Schema v43, 7 tabele.** Migrarile stau in `database.py` (`run_migrations()`), sunt
+**Schema v44, 9 tabele.** Migrarile stau in `database.py` (`run_migrations()`), sunt
 idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
 
 > **Ce s-a sters nu se reinvie.** v28 a scos `parametri_master`, `fault_codes`,
