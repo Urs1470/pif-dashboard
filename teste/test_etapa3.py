@@ -5,7 +5,6 @@ Zilele de mai jos sunt fixe si verificate in calendar: 2026-10-12 si 2026-10-19 
 2026-10-14 miercuri, 2026-10-16 vineri, 2026-10-17 sambata.
 """
 
-import re
 import sqlite3
 from datetime import date
 
