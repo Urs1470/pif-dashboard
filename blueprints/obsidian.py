@@ -47,8 +47,15 @@ def _obsidian_safe_path(vault, rel):
     Returns an absolute path only if it stays inside the vault AND is a .md file."""
     if not vault or not rel:
         return None
-    rel = str(rel).replace('\\', '/').lstrip('/')
-    candidate = os.path.realpath(os.path.join(vault, rel))
+    rel = str(rel).replace('\\', '/')
+    fara_slash = rel.lstrip('/')
+    # Un `/` in fata se ignora la o cale din vault (`/wiki/a.md`), dar o cale al carei prim
+    # segment exista in radacina sistemului (`/tmp/...`) e absoluta si se rezolva ca atare: pe
+    # POSIX `lstrip` ar fi mutat-o in `vault/tmp/...`, o nota pe care apelantul n-o ceruse.
+    if rel.startswith('/') and os.path.lexists('/' + fara_slash.split('/')[0]):
+        candidate = os.path.realpath(rel)
+    else:
+        candidate = os.path.realpath(os.path.join(vault, fara_slash))
     vault_real = os.path.realpath(vault)
     inside = candidate == vault_real or candidate.startswith(vault_real + os.sep)
     if not inside or not candidate.lower().endswith('.md'):

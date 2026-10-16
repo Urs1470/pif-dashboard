@@ -38,9 +38,9 @@ _(fara definitii top-level)_
 
 `60:_canal`, `67:_canal_cerut`, `77:_cai`, `84:_canal_necunoscut`, `89:_canal_lipsa`, `94:_meta`, `103:app_upload`, `163:app_version`, `177:app_apk`
 
-## blueprints/obsidian.py (545 linii)
+## blueprints/obsidian.py (552 linii)
 
-`37:_obsidian_vault`, `45:_obsidian_safe_path`, `59:_obsidian_walk`, `84:_obsidian_index`, `104:_obsidian_config_dict`, `129:_in_dosar_de_proiect`, `168:obsidian_note_get`, `209:_scrub_secrets`, `214:_git_env`, `225:_git`, `231:_default_vault_repo`, `236:_maybe_refresh_vault`, `274:_dashboard_git_credentials`, `290:obsidian_vault_key`, `316:_ref_git_valid`, `327:obsidian_vault_sync`, `393:_obsidian_safe_dir`, `409:project_wiki_notes`, `469:sync_project_frontmatter`
+`37:_obsidian_vault`, `45:_obsidian_safe_path`, `66:_obsidian_walk`, `91:_obsidian_index`, `111:_obsidian_config_dict`, `136:_in_dosar_de_proiect`, `175:obsidian_note_get`, `216:_scrub_secrets`, `221:_git_env`, `232:_git`, `238:_default_vault_repo`, `243:_maybe_refresh_vault`, `281:_dashboard_git_credentials`, `297:obsidian_vault_key`, `323:_ref_git_valid`, `334:obsidian_vault_sync`, `400:_obsidian_safe_dir`, `416:project_wiki_notes`, `476:sync_project_frontmatter`
 
 ## blueprints/projects.py (802 linii)
 

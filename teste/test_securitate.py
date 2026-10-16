@@ -44,6 +44,16 @@ class DrumulPrinVault(Test):
                     os.path.join(self.radacina, 'afara.md')]:
             self.assertIsNone(_obsidian_safe_path(self.vault, rau), rau)
 
+    def test_calea_absoluta_nu_se_muta_in_vault(self):
+        # O cale absoluta reala nu se citeste din vault: cu un `/` taiat din fata, `/tmp/x/afara.md`
+        # ar deschide nota-momeala `vault/tmp/x/afara.md`, un fisier pe care apelantul nu-l ceruse.
+        afara = os.path.join(self.radacina, 'afara.md')
+        momeala = os.path.join(self.vault, afara.lstrip('/'))
+        os.makedirs(os.path.dirname(momeala))
+        with open(momeala, 'w', encoding='utf-8') as f:
+            f.write('momeala')
+        self.assertIsNone(_obsidian_safe_path(self.vault, afara))
+
     def test_doar_note_markdown(self):
         self.assertIsNone(_obsidian_safe_path(self.vault, 'x.txt'))
         self.assertIsNone(_obsidian_safe_path(self.vault, ''))
