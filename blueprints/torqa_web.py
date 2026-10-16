@@ -42,6 +42,7 @@ import shutil
 import stat
 import time
 import zipfile
+import zlib
 from datetime import datetime, timedelta, timezone
 
 from flask import (
@@ -397,7 +398,9 @@ def valideaza_zip(zf):
 def _extrage(zf, intrari, tinta):
     """Scrie fisierele in `tinta`. Intoarce (numar de fisiere, octeti scrisi).
 
-    Dimensiunile din antet pot minti, asa ca octetii se numara pe masura ce se scriu."""
+    Dimensiunile din antet pot minti, asa ca octetii se numara pe masura ce se scriu.
+    Fiecare intrare se citeste pana la capat, iar `zipfile` verifica CRC-ul doar cand ajunge
+    acolo: un build cu date stricate pica aici, inainte de redenumire si de pointer."""
     os.makedirs(tinta)
     baza = os.path.realpath(tinta)
     scrisi = 0
@@ -461,7 +464,7 @@ def instaleaza(fisier):
                 intrari = valideaza_zip(zf)
                 fisiere, octeti = _extrage(zf, intrari, dir_tmp)
             avertismente = _verifica_baza(dir_tmp)
-        except (zipfile.BadZipFile, NotImplementedError, EOFError) as e:
+        except (zipfile.BadZipFile, NotImplementedError, EOFError, zlib.error) as e:
             raise EroareBuild('zip corupt sau cu o compresie nesuportata: %s' % e)
         except ValueError as e:
             raise EroareBuild(str(e))

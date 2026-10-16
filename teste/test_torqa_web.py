@@ -20,6 +20,7 @@ import stat
 import subprocess
 import time
 import zipfile
+import zlib
 
 from datetime import datetime, timedelta, timezone
 from unittest import mock
@@ -308,17 +309,37 @@ class UrcareaRespinsa(CuWeb):
             brut[i + deplasare] |= 0x1
         self.respinge(bytes(brut), contine='criptata')
 
-    def test_crc_gresit(self):
-        brut = bytearray(zip_cu(('index.html', 'continut care se comprima'),
-                                ('main-ABCDEFGH.js', 'altceva' * 40)))
-        i = bytes(brut).rfind(b'altceva')
-        if i < 0:                                   # comprimat: stricam un octet din mijloc
-            i = len(brut) // 2
+    def zip_stricat(self, compresie, unde):
+        """Un zip cu doua intrari, cu un octet schimbat in `main-ABCDEFGH.js`: in datele lui
+        (`date`) sau in CRC-ul din directorul central (`crc`). Pozitia se afla din zip, nu se
+        ghiceste: un octet din alta parte (antet, comentariu) nu strica nimic."""
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, 'w', compresie) as zf:
+            zf.writestr('index.html', 'continut care se comprima')
+            zf.writestr('main-ABCDEFGH.js', 'altceva' * 40)
+        brut = bytearray(buf.getvalue())
+        with zipfile.ZipFile(io.BytesIO(bytes(brut))) as zf:
+            info = zf.getinfo('main-ABCDEFGH.js')
+        if unde == 'date':
+            i = info.header_offset + 30 + len(info.filename) + len(info.extra)
+        else:
+            i = bytes(brut).find(b'PK\x01\x02', bytes(brut).find(b'PK\x01\x02') + 1) + 16
         brut[i] ^= 0xFF
-        # Fie CRC, fie date comprimate stricate: oricum se respinge, si nu cu 500.
-        r = self.urca(bytes(brut))
-        self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
-        self.assertEqual(os.listdir(self.dir_web), [])
+        return bytes(brut)
+
+    def test_crc_gresit(self):
+        # Pe 3.11 `zipfile` verifica CRC-ul doar cand o intrare e citita pana la capat.
+        for compresie in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
+            for unde in ('date', 'crc'):
+                with self.subTest(compresie=compresie, unde=unde):
+                    brut = self.zip_stricat(compresie, unde)
+                    with zipfile.ZipFile(io.BytesIO(brut)) as zf:       # proba ca zip-ul chiar e stricat
+                        with self.assertRaises((zipfile.BadZipFile, zlib.error)):
+                            zf.read('main-ABCDEFGH.js')
+                    # Fie CRC, fie date comprimate stricate: oricum se respinge, si nu cu 500.
+                    r = self.urca(brut)
+                    self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                    self.assertEqual(os.listdir(self.dir_web), [])
 
     def test_o_urcare_respinsa_nu_atinge_versiunea_live(self):
         bun = self.instaleaza()

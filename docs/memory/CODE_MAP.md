@@ -54,7 +54,7 @@ _(fara definitii top-level)_
 
 `16:_skip_weekend`, `26:_azi`, `32:_baza_recurenta`, `45:_eroare_recurenta`, `57:_zi`, `65:_ancora`, `89:muta_taskurile_ancorate`, `104:_next_recurrence_date`, `129:_spawn_recurring_task`, `157:_spawn_recurring_global_task`, `196:get_tasks`, `243:create_task`, `307:update_task`, `391:delete_task`, `411:get_subtasks`, `422:create_subtask`, `456:update_subtask`, `471:delete_subtask`, `495:_sfera_or_none`, `507:norm_ora`, `534:get_global_tasks`, `614:create_global_task`, `666:get_global_task`, `681:update_global_task`, `760:delete_global_task`
 
-## blueprints/torqa_web.py (617 linii)
+## blueprints/torqa_web.py (620 linii)
 
-`145:EroareBuild`, `155:arata_ca_fisier`, `167:e_harta`, `172:cerere_statica`, `181:SesiuneFaraStatice`, `207:_cale_pointer`, `211:versiune_live`, `228:_cu_reincercari`, `244:_scrie_pointer`, `259:versiuni`, `271:_taie_vechi`, `285:_id_nou`, `302:_curata_resturi`, `326:_segmente`, `346:valideaza_zip`, `397:_extrage`, `419:_verifica_baza`, `440:instaleaza`, `509:torqa_web_upload`, `537:_cale_in`, `556:_tip`, `560:_cache_control`, `570:_trimite`, `576:_neinstalat`, `588:torqa_fara_slash`, `593:torqa_start`, `598:torqa_cale`, `602:_serveste`
+`146:EroareBuild`, `156:arata_ca_fisier`, `168:e_harta`, `173:cerere_statica`, `182:SesiuneFaraStatice`, `208:_cale_pointer`, `212:versiune_live`, `229:_cu_reincercari`, `245:_scrie_pointer`, `260:versiuni`, `272:_taie_vechi`, `286:_id_nou`, `303:_curata_resturi`, `327:_segmente`, `347:valideaza_zip`, `398:_extrage`, `422:_verifica_baza`, `443:instaleaza`, `512:torqa_web_upload`, `540:_cale_in`, `559:_tip`, `563:_cache_control`, `573:_trimite`, `579:_neinstalat`, `591:torqa_fara_slash`, `596:torqa_start`, `601:torqa_cale`, `605:_serveste`
 
