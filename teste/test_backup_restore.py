@@ -16,8 +16,10 @@ pierduta pica testul.
 import os
 import shutil
 import sqlite3
+from unittest import mock
 
 from _aplicatia import CuAplicatia      # primul: `_baza` pune radacina si scripts/ in sys.path
+from blueprints import admin
 from blueprints.admin import TABELE_BACKUP
 from utils import DATE_FIELDS
 
@@ -165,7 +167,8 @@ class BackupSiRestore(CuAplicatia):
         backup = self.backup()
 
         # Backup-ul trebuie sa fie complet: fiecare tabela, fiecare rand, fiecare coloana.
-        self.assertEqual(set(backup), set(TABELE_BACKUP))
+        self.assertEqual(set(backup), set(TABELE_BACKUP) | {'schema_version'})
+        self.assertEqual(backup['schema_version'], self.database.SCHEMA_VERSION)
         for tabela, coloane in sch.items():
             self.assertEqual(len(backup[tabela]), RANDURI, tabela)
             self.assertEqual(set(backup[tabela][0]), {c[0] for c in coloane}, tabela)
@@ -332,6 +335,80 @@ class BackupSiRestore(CuAplicatia):
         for tabela in TABELE_BACKUP:
             if tabela != 'proiecte':
                 self.assertEqual(citeste(self.destinatie, tabela), [], tabela)
+
+    # ------------------------------------------- backup mai vechi decat schema, copia de siguranta
+
+    def copii(self, baza):
+        director = os.path.join(os.path.dirname(baza), 'backups')
+        return sorted(f for f in os.listdir(director) if f.startswith(admin.PREFIX_COPIE_RESTORE))
+
+    def test_un_backup_dinainte_de_v44_goleste_tabelele_noi_si_o_spune(self):
+        genereaza(self.sursa)
+        genereaza(self.destinatie)
+        vechi = self.backup()
+        for tabela in ('sabloane', 'stari_proiect'):
+            del vechi[tabela]
+        vechi['schema_version'] = 43
+
+        r = self.restaureaza(vechi, self.destinatie)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        corp = r.get_json()
+        self.assertEqual((corp['backup_schema_version'], corp['schema_version']), (43, self.database.SCHEMA_VERSION))
+        self.assertEqual(corp['absent_tables'], {'sabloane': RANDURI, 'stari_proiect': RANDURI})
+        self.assertEqual(len(corp['warnings']), 2)
+        self.assertIn('sabloane', corp['warnings'][0] + corp['warnings'][1])
+        self.assertIn('stari_proiect', corp['warnings'][0] + corp['warnings'][1])
+        self.assertEqual((citeste(self.destinatie, 'sabloane'), citeste(self.destinatie, 'stari_proiect')), ([], []))
+        self.assertEqual(len(citeste(self.destinatie, 'proiecte')), RANDURI, 'ce era in fisier se restaureaza')
+
+        # Ce s-a golit se gaseste in copia de dinainte.
+        self.assertEqual(self.copii(self.destinatie), [corp['safety_copy']])
+        copie = os.path.join(os.path.dirname(self.destinatie), 'backups', corp['safety_copy'])
+        self.assertEqual(len(citeste(copie, 'sabloane')), RANDURI)
+        self.assertEqual(len(citeste(copie, 'stari_proiect')), RANDURI)
+
+    def test_un_fisier_fara_versiune_de_schema_o_raporteaza_ca_necunoscuta(self):
+        vechi = {'proiecte': [{'id': 'p1', 'tip': 'PIF', 'nume': 'Vechi'}]}
+        corp = self.restaureaza(vechi, self.destinatie).get_json()
+        self.assertIsNone(corp['backup_schema_version'])
+
+    def test_un_backup_complet_nu_are_nimic_de_avertizat(self):
+        genereaza(self.sursa)
+        corp = self.restaureaza(self.backup(), self.destinatie).get_json()
+        self.assertEqual((corp['absent_tables'], corp['warnings']), ({}, []))
+        self.assertEqual(corp['backup_schema_version'], self.database.SCHEMA_VERSION)
+
+    def test_tabelele_lipsa_se_numara_cu_randurile_pierdute(self):
+        genereaza(self.destinatie)
+        scrie(self.destinatie, "INSERT INTO app_settings (key, value, updated_at) VALUES ('push_x', 'v', 'y')")
+        inainte = {t: len(citeste(self.destinatie, t)) for t in TABELE_BACKUP}     # fara push_*, care ramane
+        corp = self.restaureaza({'proiecte': [{'id': 'unic', 'tip': 'PIF', 'nume': 'Doar eu'}]},
+                                self.destinatie).get_json()
+        self.assertEqual(corp['absent_tables'], {t: inainte[t] for t in TABELE_BACKUP if t != 'proiecte'})
+
+    def test_o_tabela_goala_din_fisier_nu_e_o_tabela_lipsa(self):
+        genereaza(self.destinatie)
+        corp = self.restaureaza({'proiecte': [], 'sabloane': []}, self.destinatie).get_json()
+        self.assertNotIn('sabloane', corp['absent_tables'])
+        self.assertNotIn('proiecte', corp['absent_tables'])
+
+    def test_fiecare_restore_lasa_o_copie_si_raman_doar_ultimele(self):
+        genereaza(self.destinatie)
+        nume = [self.restaureaza({'proiecte': []}, self.destinatie).get_json()['safety_copy']
+                for _ in range(admin.COPII_RESTORE + 2)]
+        self.assertEqual(self.copii(self.destinatie), sorted(nume)[-admin.COPII_RESTORE:])
+        self.assertEqual(self.copii(self.destinatie), nume[-admin.COPII_RESTORE:], 'raman cele mai noi')
+
+    def test_fara_copie_de_siguranta_restore_nu_sterge_nimic(self):
+        genereaza(self.destinatie)
+        inainte = {t: citeste(self.destinatie, t) for t in TABELE_BACKUP}
+        self.catre(self.destinatie)
+        with mock.patch.object(admin, '_copie_inainte_de_restore', side_effect=OSError('disc plin')):
+            with self.assertLogs('blueprints.admin', level='ERROR'):
+                r = self.restaureaza({'proiecte': []})
+        self.assertEqual(r.status_code, 500)
+        for tabela in TABELE_BACKUP:
+            self.assertEqual(citeste(self.destinatie, tabela), inainte[tabela], '%s ramane neatins' % tabela)
 
     # ------------------------------------------------------------------------ tranzactia
 

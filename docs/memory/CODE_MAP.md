@@ -30,9 +30,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 _(fara definitii top-level)_
 
-## blueprints/admin.py (583 linii)
+## blueprints/admin.py (639 linii)
 
-`42:get_stats`, `77:backup_database`, `117:_reinsereaza`, `135:_termen_din_planificata`, `142:_ajusteaza_global`, `147:_ajusteaza_perioada`, `165:restore_database`, `225:admin_db_upload_page`, `277:admin_db_upload`, `354:admin_db_dump`, `396:calendar_view`
+`42:get_stats`, `77:backup_database`, `120:_reinsereaza`, `138:_termen_din_planificata`, `145:_ajusteaza_global`, `150:_ajusteaza_perioada`, `173:_copie_inainte_de_restore`, `194:restore_database`, `281:admin_db_upload_page`, `333:admin_db_upload`, `410:admin_db_dump`, `452:calendar_view`
 
 ## blueprints/app_update.py (194 linii)
 

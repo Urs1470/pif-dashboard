@@ -94,6 +94,8 @@ idempotente si ruleaza la prima cerere. Coloanele exacte: `DB_MAP.md`.
   (`utils.refuse_device_token_fields`, 403 pe proiecte si debrief): altfel si-ar muta singur dosarul citit.
 - **Restore:** coloanele vin din schema (`PRAGMA table_info`), nu dintr-o lista din cod; o coloana noua se
   restaureaza singura, iar `teste/test_backup_restore.py` compara toate coloanele dupa un dus-intors.
+  Un backup mai vechi decat schema goleste tabelele pe care nu le are (`sabloane`, `stari_proiect` inainte de v44);
+  raspunsul le numeste (`absent_tables`, `warnings`), iar baza de dinainte ramane in `backups/` (`safety_copy`, ultimele 5).
 - **Taskurile recurente** (zilnic/saptamanal/lunar) isi nasc urmatoarea instanta la bifare —
   orice atingere a logicii de bifare trebuie sa pastreze asta.
 - **Cache-busting** pentru pagina de login: `static/login.css?v=<SHA256>` prin context

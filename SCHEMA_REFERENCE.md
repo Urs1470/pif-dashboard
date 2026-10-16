@@ -117,16 +117,28 @@ cere `GET /api/proiecte/<id>/implementari`.
 
 Doar tokenul de masina sau sesiunea cu PIN (dispozitivul e refuzat). Backup-ul e un JSON cu cate o
 lista per tabela (`proiecte`, `implementari`, `tasks`, `task_subtasks`, `global_tasks`, `sabloane`,
-`stari_proiect`, `app_settings`; `implementari` vine inaintea lui `tasks`, care o refera), fiecare rand cu TOATE coloanele tabelei;
+`stari_proiect`, `app_settings`; `implementari` vine inaintea lui `tasks`, care o refera), fiecare rand cu TOATE coloanele tabelei,
+si `schema_version` (numarul schemei care a produs fisierul; fisierele facute inainte de el nu-l au);
 cheile `push_*` din `app_settings` nu pleaca niciodata de pe masina.
 
 Restore sterge tabelele si le reinsereaza dintr-o singura tranzactie (un fisier stricat anuleaza
 totul). **Coloanele vin din schema, nu dintr-o lista din cod:** ce are si tabela, si randul din fisier
 se scrie ca atare (inclusiv `NULL` si `''`). Backup-urile facute inainte de azi raman restaurabile,
-formatul nu s-a schimbat: o coloana care lipseste din rand (backup mai vechi decat coloana) ia valoarea
+fara `schema_version`: o coloana care lipseste din rand (backup mai vechi decat coloana) ia valoarea
 implicita a tabelei, o coloana pe care tabela nu o mai are se ignora, `data_planificata` (inainte de
 v33) devine termen acolo unde termenul lipseste, iar tabelele disparute (`jurnal`, `checklist_pif`, ...)
 nu se citesc. Starea `push_*` a masinii se pastreaza, iar un rand `push_*` din fisier nu intra.
+
+**Un backup mai vechi decat schema goleste tabelele pe care nu le are.** Restore-ul sterge toate
+tabelele din lista de mai sus; una care lipseste din fisier (ex. `sabloane` si `stari_proiect` intr-un
+backup de dinainte de v44) ramane goala, fara nicio incercare de a o amesteca cu ce era. Raspunsul o
+spune: `backup_schema_version` (`null` la un fisier fara `schema_version`), `schema_version` (a serverului),
+`absent_tables` (`{tabela: randuri sterse}`, doar tabelele care lipsesc din fisier; o tabela
+cu `[]` in fisier nu lipseste) si `warnings` (un text per tabela care a pierdut randuri). **Copia de siguranta:**
+inainte sa stearga ceva, restore-ul scrie baza curenta in `backups/pif_dashboard_pre_restore_<data>.db` (langa
+fisierul bazei; numele e in `safety_copy`) si pastreaza ultimele 5; daca copia nu se poate face, restore-ul
+se opreste cu 500 si nu atinge nimic. O copie se aduce inapoi cu `/admin/db-upload`.
+
 Pana pe 2026-10-03 restore-ul pierdea in tacere `proiecte.data_finalizare` / `vault_folder` /
 `notify_on_complete`, `global_tasks.ora` si `tasks.data_start` / `progres` / `is_milestone`;
 `teste/test_backup_restore.py` compara acum toate coloanele tuturor tabelelor dupa un dus-intors.

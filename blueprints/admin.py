@@ -17,7 +17,7 @@ from utils import (
     safe_table, login_required, get_json_or_400,
     TASK_PROIECT_VIU,
 )
-from database import get_db, row_to_dict, DATABASE_PATH
+from database import get_db, row_to_dict, get_schema_version, DATABASE_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +97,9 @@ def backup_database():
 
     conn.close()
 
+    # Versiunea schemei care a produs fisierul: restore-ul o raporteaza si spune ce tabele
+    # lipsesc dintr-un backup mai vechi (nu e tabela, deci nu intra in TABELE_BACKUP).
+    backup['schema_version'] = get_schema_version()
     return jsonify(backup)
 
 
@@ -160,15 +163,47 @@ AJUSTARI_RESTORE = {
 }
 
 
+# Restore-ul sterge tot si reinsereaza din fisier, deci fiecare restore lasa intai o copie a bazei
+# curente in `backups/` (langa fisierul bazei, ca `pre_upload` de la db-upload). Raman ultimele
+# COPII_RESTORE; o copie se aduce inapoi cu `/admin/db-upload`.
+COPII_RESTORE = 5
+PREFIX_COPIE_RESTORE = 'pif_dashboard_pre_restore_'
+
+
+def _copie_inainte_de_restore(conn):
+    """Copie consistenta (API-ul `backup` al SQLite, sigur cu WAL) a bazei deschise in `conn`.
+    Intoarce numele fisierului; orice eroare opreste restore-ul inainte sa stearga ceva."""
+    fisier = conn.execute('PRAGMA database_list').fetchone()[2]
+    director = os.path.join(os.path.dirname(fisier) or '.', 'backups')
+    os.makedirs(director, exist_ok=True)
+    nume = PREFIX_COPIE_RESTORE + datetime.now().strftime('%Y%m%d_%H%M%S_%f') + '.db'
+    destinatie = sqlite3.connect(os.path.join(director, nume))
+    try:
+        conn.backup(destinatie)
+    finally:
+        destinatie.close()
+    vechi = sorted(f for f in os.listdir(director)
+                   if f.startswith(PREFIX_COPIE_RESTORE) and f.endswith('.db'))[:-COPII_RESTORE]
+    for f in vechi:
+        os.remove(os.path.join(director, f))
+    return nume
+
+
 @admin_bp.route('/api/restore', methods=['POST'])
 @login_required
 def restore_database():
+    """Raspunsul spune ce versiune de schema avea fisierul (`backup_schema_version`, null la
+    fisiere facute inainte sa o poarte) si ce tabele lipseau din el (`absent_tables`: nume ->
+    randuri sterse): un backup mai vechi decat schema nu are tabelele noi, iar restore-ul le
+    goleste, fara sa le amestece cu ce era. `warnings` o spune in cuvinte; `safety_copy` e baza
+    de dinainte."""
     data = get_json_or_400()
 
     conn = get_db()
     cursor = conn.cursor()
 
     try:
+        copie = _copie_inainte_de_restore(conn)
         # Run the whole clear + restore inside ONE transaction, so a bad payload
         # rolls the deletes back instead of leaving the database wiped.
         conn.execute('BEGIN TRANSACTION')
@@ -181,6 +216,12 @@ def restore_database():
         # Clear existing data (skip tables absent on this deploy)
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         existing = {row[0] for row in cursor.fetchall()}
+        # Tabelele care lipsesc din fisier: randurile pe care le pierd. Se numara inainte de orice
+        # DELETE, fiindca stergerea din `proiecte` le sterge in cascada si pe ale copiilor.
+        sterse = {t: cursor.execute(f'SELECT COUNT(*) FROM {safe_table(t)}').fetchone()[0]
+                  for t in TABELE_BACKUP if t in existing and t not in data}
+        if 'app_settings' in sterse:
+            sterse['app_settings'] -= len(protejate_pastrate)
         for table in TABELE_BACKUP:
             if table in existing:
                 cursor.execute(f'DELETE FROM {safe_table(table)}')
@@ -208,8 +249,23 @@ def restore_database():
         conn.commit()
         conn.close()
 
-        logger.info("Database restored successfully")
-        return jsonify({'message': 'Database restored successfully'})
+        absente = {t: sterse.get(t, 0) for t in TABELE_BACKUP if t not in data}
+        avertismente = ['tabela %s lipseste din backup si a fost golita (%d randuri sterse)' % (t, n)
+                        for t, n in absente.items() if n]
+        versiune = data.get('schema_version')
+        versiune = versiune if isinstance(versiune, int) else None      # din fisier: nu intra in log asa cum vine
+        logger.info("Database restored successfully (backup schema %s, absent tables %s, copy %s)",
+                    versiune, absente, copie)
+        for a in avertismente:
+            logger.warning("Restore: %s", a)
+        return jsonify({
+            'message': 'Database restored successfully',
+            'backup_schema_version': versiune,
+            'schema_version': get_schema_version(),
+            'absent_tables': absente,
+            'warnings': avertismente,
+            'safety_copy': copie,
+        })
     except Exception as e:
         conn.rollback()
         conn.close()
