@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-10-19
+
+- [2026-10-19 Calendarul Outlook al lui Ion ajunge în Torqa printr-un snapshot-fișier](2026-10-19-calendarul-outlook.md) — un script de pe PC-ul de job citește Outlook prin COM (fără Graph, fără consimțământ de admin) și urcă la 15 min `PUT /api/outlook/calendar`; snapshot-ul stă în `uploads/outlook/calendar.json` (atomic, fără tabelă, fără migrare, în afara backup-ului), iar `GET /api/calendar` primește cheia aditivă `outlook` (`null` fără snapshot sau cu fișier corupt). Tokenul de dispozitiv nu scrie.
+
 ## 2026-10-15
 
 - [2026-10-15 Etapa 3 din Torqa: taskuri ancorate de perioadă, șabloane, starea proiectului, recurență de la finalizare (v44)](2026-10-15-etapa3-ancore-sabloane-stari.md) — `tasks.implementare_id` + `decalaj_zile`: perioada mutată își mută taskurile nefăcute (zile calendaristice, `updated_at` nou), un termen schimbat de mână desface ancora, copia recurentă nu o moștenește; tabela `sabloane` (JSON validat) și jurnalul `stari_proiect` (`stare_curenta` în `/api/proiecte`); `recurenta_baza` `scadenta`|`finalizare`; `recurenta` din afara `''|zilnic|saptamanal|lunar` dă 400. Backup: `implementari` înaintea lui `tasks`.

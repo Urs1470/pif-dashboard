@@ -48,6 +48,7 @@ blueprints/
   admin.py          # /api/calendar, /api/stats, backup/restore, db-upload / db-dump
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
   sync.py           # /api/sync/snapshot — imaginea completa pentru Torqa
+  outlook.py        # PUT /api/outlook/calendar: snapshot-ul Outlook (fisier, nu tabela); il citeste /api/calendar
   app_update.py     # versiunea si APK-ul aplicatiei Android (canale: pif, torqa)
   torqa_web.py      # Torqa web (build Angular) la /torqa/: urcare, versiuni, servire (fisierele publice, `.map` cu login)
 
@@ -137,7 +138,7 @@ Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`)
 | `SECRET_KEY` | nu | fisier `.secret_key` | semnarea sesiunii |
 | `SESSION_COOKIE_SECURE` | nu | `true` | `false` pentru dev pe HTTP |
 | `PIF_API_TOKEN` | nu | — | Bearer pentru masini (Cowork, `pif-sync.py`); un Bearer VALID scuteste de CSRF, unul gresit nu |
-| `PIF_DEVICE_TOKEN` | nu | — | Bearer pentru Torqa (telefon, desktop); fara restore, backup, admin, deploy, upload APK; din vault citeste doar notele din `vault_folder` de proiect, nu scrie nicio nota si nu scrie `vault_folder` |
+| `PIF_DEVICE_TOKEN` | nu | — | Bearer pentru Torqa (telefon, desktop); fara restore, backup, admin, deploy, upload APK, calendarul Outlook; din vault citeste doar notele din `vault_folder` de proiect, nu scrie nicio nota si nu scrie `vault_folder` |
 | `PIF_DB_PATH` | nu | `pif_dashboard.db` | baza alternativa; o folosesc probele |
 | `PIF_RATE_LIMIT` | nu | `60` | cereri/minut per IP pe `/api/*` |
 | `PIF_UPLOAD_FOLDER` | nu | `uploads/` langa cod | directorul fisierelor urcate (APK-uri, build Torqa web, anexe); relativ = fata de directorul de lucru; goala = implicitul |

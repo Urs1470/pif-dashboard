@@ -18,6 +18,7 @@ from utils import (
     TASK_PROIECT_VIU,
 )
 from database import get_db, row_to_dict, get_schema_version, DATABASE_PATH
+from blueprints.outlook import citeste_snapshot, evenimente_in_fereastra
 
 logger = logging.getLogger(__name__)
 
@@ -636,4 +637,7 @@ def calendar_view():
         'de_decis': de_decis,
         'neplanificate': neplanificate,
         'probleme': probleme,
+        # Aditiv: APK-ul instalat ignora cheia. Snapshot-ul Outlook, doar ce atinge fereastra
+        # (null fara snapshot sau cu fisierul corupt). Vezi blueprints/outlook.py.
+        'outlook': evenimente_in_fereastra(citeste_snapshot(), start, end_s),
     })
