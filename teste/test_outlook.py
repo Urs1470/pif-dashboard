@@ -107,6 +107,28 @@ class CalendarulOutlook(CuAplicatia):
         self.assertNotIn('altceva', scris)
         self.assertNotIn('extra', scris['events'][0])
 
+    def test_entryid_se_pastreaza_si_ajunge_in_calendar(self):
+        eid = '000000002EF00F88527AB540B4BCAD953BEDD3BD0700'
+        self.assertEqual(self.pune(corp(ev('cu', '2026-10-20', '2026-10-21', True, entryId=eid),
+                                        ev('fara', '2026-10-22', '2026-10-23', True))).status_code, 200)
+        evenimente = {e['id']: e for e in self.calendar()['outlook']['events']}
+        self.assertEqual(evenimente['cu']['entryId'], eid)
+        self.assertNotIn('entryId', evenimente['fara'])          # snapshot de la un script mai vechi
+
+    def test_entryid_gol_sau_null_e_ca_lipsa(self):
+        for gol in ('', None):
+            self.assertEqual(self.pune(corp(ev('x', '2026-10-20', '2026-10-21', True, entryId=gol))).status_code, 200)
+            self.assertNotIn('entryId', json.loads(self.octeti().decode('utf-8'))['events'][0])
+
+    def test_entryid_invalid_da_400_si_nu_atinge_snapshot_ul(self):
+        self.pune(corp(ev('bun', '2026-10-20', '2026-10-21', True)))
+        inainte = self.octeti()
+        for rau in ('outlook:0000000000000000000000', 'ABC', 'zz' * 20, 'A' * 1025, 123, ['00' * 20]):
+            r = self.pune(corp(ev('x', '2026-10-20', '2026-10-21', True, entryId=rau)))
+            self.assertEqual(r.status_code, 400, repr(rau))
+            self.assertIn('events[0].entryId', r.get_json()['error'])
+        self.assertEqual(self.octeti(), inainte)
+
     def test_formele_de_ora_acceptate(self):
         for start, end in (('2026-10-20T09:00:00Z', '2026-10-20T10:00:00Z'),
                            ('2026-10-20T09:00+03:00', '2026-10-20T09:00+03:00'),

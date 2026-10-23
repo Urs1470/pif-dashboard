@@ -37,6 +37,9 @@ MAX_TEXT = 500
 OCUPARE = ('free', 'tentative', 'busy', 'oof', 'elsewhere')
 
 _RE_ID = re.compile(r'[A-Za-z0-9_-]{1,64}')
+# EntryID-ul itemului din Outlook clasic (hex). Torqa web il deschide prin serviciul local de pe
+# PC-ul de job (Knowledge/tools/outlook-link-helper.py); serverul doar il pastreaza.
+_RE_ENTRY_ID = re.compile(r'[0-9A-Fa-f]{20,1024}')
 _RE_DATA = re.compile(r'(\d{4})-(\d{2})-(\d{2})')
 _RE_DATA_ORA = re.compile(
     r'(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?'
@@ -129,12 +132,19 @@ def _eveniment(ev, ix, ids):
         raise EroareCorp('events[%d].end: trebuie sa fie %s' % (ix, tip))
     if sfarsit < start:
         raise EroareCorp('events[%d].end: nu poate fi inainte de start' % ix)
+    # Optional: un script de dinainte de 2026-10-23 nu-l trimite, iar un snapshot fara el ramane valid.
+    entry_id = ev.get('entryId') or ''
+    if not isinstance(entry_id, str) or (entry_id and not _RE_ENTRY_ID.fullmatch(entry_id)):
+        raise EroareCorp('events[%d].entryId: EntryID-ul Outlook, 20-1024 de caractere hex, sau lipsa' % ix)
     # Se pastreaza stringurile primite (data locala din ele e cea pe care citeste GET-ul).
-    return {
+    eveniment = {
         'id': id_, 'title': titlu, 'allDay': toata_ziua,
         'start': ev['start'], 'end': ev['end'],
         'location': locatie, 'busy': ocupare, 'isPrivate': privat,
     }
+    if entry_id:
+        eveniment['entryId'] = entry_id
+    return eveniment
 
 
 def valideaza_snapshot(corp):

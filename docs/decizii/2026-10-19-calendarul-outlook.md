@@ -34,3 +34,14 @@ Torqa arată în Calendar și evenimentele din Outlook-ul de job, lângă perioa
   clientului. Titlurile nu se loghează.
 - **Cod:** `blueprints/outlook.py`, `blueprints/admin.py` (`calendar_view`), `utils.py`
   (`DEVICE_TOKEN_DENIED`), teste în `teste/test_outlook.py`.
+
+## Amendament 2026-10-23: `entryId`, pentru „Open in Outlook”
+
+Ion: „cu ocazia aceasta se pot face linkuri și pentru intrările calendar din outlook”. Un eveniment
+poate avea `entryId`, EntryID-ul itemului din Outlook clasic (20–1024 de caractere hex; la o
+ocurență dintr-o serie, al seriei). E opțional: un snapshot fără el rămâne valid, iar unul gol sau
+`null` e ca lipsa. Orice altă valoare dă 400, cu `events[i].entryId`. Serverul doar îl păstrează și
+îl dă înapoi în `outlook.events` din `/api/calendar`; Torqa web îl deschide prin serviciul local de pe
+PC-ul de job (`Knowledge/tools/outlook-link-helper.py`, decizia
+`Knowledge/references/decizii/2026-10-23-mail-taskuri-programat.md`). Teste: `test_entryid_*` în
+`teste/test_outlook.py`.

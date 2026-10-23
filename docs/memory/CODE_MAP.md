@@ -42,9 +42,9 @@ _(fara definitii top-level)_
 
 `37:_obsidian_vault`, `45:_obsidian_safe_path`, `66:_obsidian_walk`, `91:_obsidian_index`, `111:_obsidian_config_dict`, `136:_in_dosar_de_proiect`, `175:obsidian_note_get`, `216:_scrub_secrets`, `221:_git_env`, `232:_git`, `238:_default_vault_repo`, `243:_maybe_refresh_vault`, `281:_dashboard_git_credentials`, `297:obsidian_vault_key`, `323:_ref_git_valid`, `334:obsidian_vault_sync`, `400:_obsidian_safe_dir`, `416:project_wiki_notes`, `476:sync_project_frontmatter`
 
-## blueprints/outlook.py (267 linii)
+## blueprints/outlook.py (277 linii)
 
-`46:EroareCorp`, `50:_data`, `63:_data_ora`, `88:_text`, `97:_bool`, `104:_eveniment`, `140:valideaza_snapshot`, `171:_cale`, `175:_scrie_atomic`, `198:citeste_snapshot`, `217:evenimente_in_fereastra`, `243:put_calendar`
+`49:EroareCorp`, `53:_data`, `66:_data_ora`, `91:_text`, `100:_bool`, `107:_eveniment`, `150:valideaza_snapshot`, `181:_cale`, `185:_scrie_atomic`, `208:citeste_snapshot`, `227:evenimente_in_fereastra`, `253:put_calendar`
 
 ## blueprints/projects.py (802 linii)
 

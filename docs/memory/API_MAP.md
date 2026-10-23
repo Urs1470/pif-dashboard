@@ -39,7 +39,7 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| PUT | `/api/outlook/calendar` | `put_calendar` | 241 |
+| PUT | `/api/outlook/calendar` | `put_calendar` | 251 |
 
 ## blueprints/projects.py (17 rute)
 
