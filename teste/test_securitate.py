@@ -48,7 +48,9 @@ class DrumulPrinVault(Test):
         # O cale absoluta reala nu se citeste din vault: cu un `/` taiat din fata, `/tmp/x/afara.md`
         # ar deschide nota-momeala `vault/tmp/x/afara.md`, un fisier pe care apelantul nu-l ceruse.
         afara = os.path.join(self.radacina, 'afara.md')
-        momeala = os.path.join(self.vault, afara.lstrip('/'))
+        # Fara litera de unitate si fara separator in fata, ca join-ul sa nu arunce vault-ul: pe
+        # Windows `C:\...\afara.md` n-are ce taia cu `lstrip('/')`, iar `join` ar da chiar `afara`.
+        momeala = os.path.join(self.vault, os.path.splitdrive(afara)[1].lstrip('/\\'))
         os.makedirs(os.path.dirname(momeala))
         with open(momeala, 'w', encoding='utf-8') as f:
             f.write('momeala')
