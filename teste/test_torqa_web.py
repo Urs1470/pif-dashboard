@@ -29,6 +29,7 @@ from _aplicatia import BUILD, DEVICE, FULL, CuAplicatia, zip_build, zip_cu
 from blueprints import torqa_web
 
 IMUABIL = 'public, max-age=31536000, immutable'
+REVERIFICA = 'private, no-cache'
 
 
 class CuWeb(CuAplicatia):
@@ -647,7 +648,7 @@ class Servirea(CuWeb):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.get_data(), BUILD['index.html'].encode())
         self.assertEqual(r.mimetype, 'text/html')
-        self.assertEqual(r.headers['Cache-Control'], 'no-cache')
+        self.assertEqual(r.headers['Cache-Control'], REVERIFICA)
         self.assertEqual(self.get('/torqa/index.html').get_data(), BUILD['index.html'].encode())
 
     def test_caile_aplicatiei_dau_documentul(self):
@@ -765,8 +766,8 @@ class Servirea(CuWeb):
         self.login()
         for nume in ('index.html', 'ngsw.json', 'ngsw-worker.js', 'manifest.json'):
             with self.subTest(nume=nume):
-                self.assertEqual(self.get('/torqa/%s' % nume).headers['Cache-Control'], 'no-cache')
-        self.assertEqual(self.get('/torqa/').headers['Cache-Control'], 'no-cache')
+                self.assertEqual(self.get('/torqa/%s' % nume).headers['Cache-Control'], REVERIFICA)
+        self.assertEqual(self.get('/torqa/').headers['Cache-Control'], REVERIFICA)
 
     def test_bundle_urile_cu_hash_se_tin_un_an(self):
         self.instaleaza()
@@ -781,7 +782,31 @@ class Servirea(CuWeb):
                      'assets/logo-ABCDEFGH.png',          # `assets/` nu e hash-uit de Angular, oricum ar arata
                      'altceva-abc.js', 'fara-hash.js'):
             with self.subTest(nume=nume):
-                self.assertEqual(self.get('/torqa/%s' % nume).headers['Cache-Control'], 'no-cache')
+                self.assertEqual(self.get('/torqa/%s' % nume).headers['Cache-Control'], REVERIFICA)
+
+    def test_ce_se_reverifica_e_private_ca_sa_nu_l_rescrie_cloudflare(self):
+        # Pe productie (2026-10-24) `ngsw-worker.js`, `safety-worker.js`, `assets/themes/torqa.css`
+        # si `favicon.ico` au ajuns la browser cu `max-age=14400`, desi originea trimitea
+        # `no-cache`: Cloudflare inlocuieste un Cache-Control mai scurt decat „Browser Cache TTL"
+        # (4 ore) pe fisierele cacheabile dupa extensie. Un raspuns `private` nu se tine in cache
+        # la margine, deci nu are ce suprascrie. Fiecare fisier al build-ului are EXACT una din
+        # cele doua politici, niciodata un `max-age` scurt sau un `public` care ar reveni cu 4 ore.
+        extra = {'safety-worker.js': '// safety', 'assets/themes/torqa.css': 'a{}'}
+        self.instaleaza(zip_build(extra))
+        self.login()
+        for nume in list(BUILD) + list(extra):
+            baza = nume.rsplit('/', 1)[-1]
+            hash_uit = (not nume.startswith('assets/')) and torqa_web.HASH_IN_NUME.search(baza)
+            with self.subTest(nume=nume):
+                cc = self.get('/torqa/%s' % nume).headers['Cache-Control']
+                self.assertEqual(cc, IMUABIL if hash_uit else REVERIFICA)
+                if not hash_uit:
+                    self.assertNotIn('max-age', cc)
+                    self.assertNotIn('public', cc)
+        # si documentul, pe orice cale a aplicatiei
+        for cale in ('/torqa/', '/torqa/index.html', '/torqa/tasks'):
+            with self.subTest(cale=cale):
+                self.assertEqual(self.get(cale).headers['Cache-Control'], REVERIFICA)
 
     def test_cerere_conditionata_da_304(self):
         self.instaleaza()

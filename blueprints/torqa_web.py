@@ -138,6 +138,18 @@ FARA_CACHE = frozenset({
     'manifest.json', 'manifest.webmanifest',
 })
 CACHE_IMUABIL = 'public, max-age=31536000, immutable'
+# `private` si nu doar `no-cache`: dupa Cloudflare, pe un fisier pe care il socoteste cacheabil
+# dupa extensie (`.js`, `.css`, `.ico`) un `Cache-Control` mai scurt decat „Browser Cache TTL"
+# (4 ore, implicit) e INLOCUIT cu `max-age=14400`. Masurat pe productie, 2026-10-24: originea
+# trimite `no-cache` (vezi testele), iar `ngsw-worker.js`, `safety-worker.js`,
+# `assets/themes/torqa.css` si `favicon.ico` au ajuns la browser cu `max-age=14400`; `ngsw.json`
+# si `manifest.json` (extensii pe care Cloudflare nu le tine in cache, `cf-cache-status:
+# DYNAMIC`) si-au pastrat `no-cache`. Cu `private`, Cloudflare nu mai tine raspunsul in cache si
+# nu mai are ce suprascrie. Browserul tot il tine si il reverifica cu ETag, ca inainte.
+# Neverificat pana la deploy: dupa el, `curl -sI .../torqa/ngsw-worker.js` trebuie sa arate
+# `private, no-cache`; daca arata tot `max-age=14400`, singura cale ramasa e setarea Cloudflare
+# „Browser Cache TTL: Respect Existing Headers".
+CACHE_REVERIFICA = 'private, no-cache'
 # Hash-ul esbuild din numele fisierelor Angular: 8 caractere [A-Z0-9], inainte de extensie
 # (`main-D2W5MYI5.js`, `chunk-LDUBXBF5.js.map`, `media/open-sans-latin-400-normal-HCAVHEYW.woff2`).
 HASH_IN_NUME = re.compile(r'-[A-Z0-9]{8}\.[A-Za-z0-9.]+$')
@@ -563,16 +575,16 @@ def _tip(nume):
 def _cache_control(rest):
     baza = rest.rsplit('/', 1)[-1]
     if baza in FARA_CACHE:
-        return 'no-cache'
+        return CACHE_REVERIFICA
     # `assets/` e copiat de Angular fara hash, chiar daca un nume arata a hash.
     if not rest.startswith('assets/') and HASH_IN_NUME.search(baza):
         return CACHE_IMUABIL
-    return 'no-cache'
+    return CACHE_REVERIFICA
 
 
 def _trimite(cale, rest):
     r = send_file(cale, mimetype=_tip(rest), conditional=True)
-    r.headers['Cache-Control'] = 'private, no-cache' if e_harta(rest) else _cache_control(rest)
+    r.headers['Cache-Control'] = CACHE_REVERIFICA if e_harta(rest) else _cache_control(rest)
     return r
 
 

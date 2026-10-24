@@ -91,10 +91,10 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| POST | `/api/torqa/web/upload` | `torqa_web_upload` | 511 |
-| GET | `/torqa` | `torqa_fara_slash` | 590 |
-| GET | `/torqa/` | `torqa_start` | 595 |
-| GET | `/torqa/<path:rest>` | `torqa_cale` | 600 |
+| POST | `/api/torqa/web/upload` | `torqa_web_upload` | 523 |
+| GET | `/torqa` | `torqa_fara_slash` | 602 |
+| GET | `/torqa/` | `torqa_start` | 607 |
+| GET | `/torqa/<path:rest>` | `torqa_cale` | 612 |
 
 ## app.py (7 rute)
 
