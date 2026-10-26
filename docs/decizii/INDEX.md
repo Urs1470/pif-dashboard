@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-10-26
+
+- [2026-10-26 `proiecte.nr_oferta` (v45)](2026-10-26-nr-oferta.md) — oferta după care s-a dat comanda stă în coloana ei, separat de PO; completată o singură dată din primul `OF_..` din `nr_comanda`, care rămâne neschimbat.
+
 ## 2026-10-24
 
 - [2026-10-24 Torqa web: fișierele care se reverifică sunt `private, no-cache`, iar versiunea nouă o aduce service worker-ul](2026-10-24-torqa-web-private-no-cache.md) — la reîncărcare, service worker-ul Angular servește build-ul vechi și îl aduce pe cel nou abia pentru a doua reîncărcare (de aici Ctrl+Shift+F5); Cloudflare înlocuia `no-cache` cu `max-age=14400` pe `.js`/`.css`/`.ico` nehash-uite, așa că acestea primesc `private, no-cache`. Fără rută de versiune nouă: service worker-ul are deja `ngsw.json`.

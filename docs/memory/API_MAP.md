@@ -47,21 +47,21 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 |---|---|---|---|
 | GET | `/api/proiecte` | `get_proiecte` | 73 |
 | POST | `/api/proiecte` | `create_proiect` | 123 |
-| GET | `/api/proiecte/<project_id>` | `get_proiect` | 190 |
-| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 218 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 341 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 392 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 499 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 510 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 541 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 588 |
-| GET | `/api/proiecte/<project_id>/stari` | `get_stari` | 614 |
-| POST | `/api/proiecte/<project_id>/stari` | `create_stare` | 626 |
-| DELETE | `/api/stari/<stare_id>` | `delete_stare` | 668 |
-| GET | `/api/sabloane` | `get_sabloane` | 728 |
-| POST | `/api/sabloane` | `create_sablon` | 739 |
-| PUT | `/api/sabloane/<sablon_id>` | `update_sablon` | 765 |
-| DELETE | `/api/sabloane/<sablon_id>` | `delete_sablon` | 791 |
+| GET | `/api/proiecte/<project_id>` | `get_proiect` | 191 |
+| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 219 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 344 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 395 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 503 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 514 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 545 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 592 |
+| GET | `/api/proiecte/<project_id>/stari` | `get_stari` | 618 |
+| POST | `/api/proiecte/<project_id>/stari` | `create_stare` | 630 |
+| DELETE | `/api/stari/<stare_id>` | `delete_stare` | 672 |
+| GET | `/api/sabloane` | `get_sabloane` | 732 |
+| POST | `/api/sabloane` | `create_sablon` | 743 |
+| PUT | `/api/sabloane/<sablon_id>` | `update_sablon` | 769 |
+| DELETE | `/api/sabloane/<sablon_id>` | `delete_sablon` | 795 |
 
 ## blueprints/sync.py (1 rute)
 

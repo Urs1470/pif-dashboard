@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import logging
+import re
 
 logger = logging.getLogger('pif_dashboard')
 
@@ -113,7 +114,11 @@ def close_db(exc=None):
 #      `decalaj_zile`), `recurenta_baza` pe tasks si global_tasks, tabelele `sabloane`
 #      (sabloane de lucrare) si `stari_proiect` (jurnalul starii proiectului). Decizia:
 #      docs/decizii/2026-10-15-etapa3-ancore-sabloane-stari.md.
-SCHEMA_VERSION = 44
+# v45: `proiecte.nr_oferta` — oferta dupa care s-a dat comanda (`OF_26_03018`), separat de
+#      `nr_comanda` (PO). Completata o singura data, la migrare, din primul `OF_..` gasit in
+#      `nr_comanda`; `nr_comanda` ramane neschimbat. Decizia:
+#      docs/decizii/2026-10-26-nr-oferta.md.
+SCHEMA_VERSION = 45
 
 # DDL-ul celor doua tabele noi din v44 sta intr-un singur loc: il folosesc si `init_db()`, si
 # `migrate_v43_to_v44()`; scris de doua ori, cele doua s-ar putea abate si schema ar diferi intre
@@ -1593,6 +1598,39 @@ def migrate_v43_to_v44():
     logger.info("Migration v43->v44 completed (ancore, recurenta_baza, sabloane, stari_proiect)")
 
 
+# Numarul unei oferte Electroglobal in `nr_comanda`: `OF_26_03018`, `OF_26_07123_R1` (revizia).
+# „OF 250326E" (alt format) nu se potriveste: nu e sigur ca e o oferta, il completeaza Ion.
+_OFERTA_RE = re.compile(r'OF_\d{2}_\d{3,6}(?:_R\d+)?')
+
+
+def migrate_v44_to_v45():
+    """v44 -> v45: `proiecte.nr_oferta`, oferta dupa care s-a dat comanda, separat de PO.
+    Decizia: docs/decizii/2026-10-26-nr-oferta.md.
+
+    Completarea se face o singura data, in rularea care adauga coloana: primul `OF_..` din
+    `nr_comanda` (la Duplex, `OF_26_07123_R1`; suplimentul ramane doar in `nr_comanda`).
+    `nr_comanda` nu se schimba. Rulata din nou (self-heal) pe o baza care are coloana, nu face
+    nimic, deci nu suprascrie ce a scris Ion intre timp.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(proiecte)")
+    if 'nr_oferta' in {row[1] for row in cursor.fetchall()}:
+        conn.close()
+        return
+    cursor.execute('ALTER TABLE proiecte ADD COLUMN nr_oferta TEXT')
+    completate = 0
+    for pid, nr_comanda in cursor.execute(
+            "SELECT id, nr_comanda FROM proiecte WHERE nr_comanda IS NOT NULL").fetchall():
+        m = _OFERTA_RE.search(nr_comanda or '')
+        if m:
+            conn.execute('UPDATE proiecte SET nr_oferta = ? WHERE id = ?', (m.group(0), pid))
+            completate += 1
+    conn.commit()
+    conn.close()
+    logger.info(f"Migration v44->v45 completed (proiecte.nr_oferta, {completate} completate din nr_comanda)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1812,6 +1850,11 @@ def run_migrations():
         set_schema_version(44)
         current_version = 44
 
+    if current_version < 45:
+        migrate_v44_to_v45()
+        set_schema_version(45)
+        current_version = 45
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1893,6 +1936,15 @@ def run_migrations():
         logger.warning("Self-heal: re-running v43->v44 (ancore / recurenta_baza / sabloane / stari_proiect missing)")
         migrate_v43_to_v44()
 
+    # Aditiv-only, ca mai sus: un backup de dinainte de v45 restaurat peste o baza v45 lasa
+    # coloana lipsa, iar GET /api/proiecte n-ar mai avea `nr_oferta`.
+    conn_v45 = get_db()
+    cols_p = {row[1] for row in conn_v45.execute("PRAGMA table_info(proiecte)")}
+    conn_v45.close()
+    if 'nr_oferta' not in cols_p:
+        logger.warning("Self-heal: re-running v44->v45 (proiecte.nr_oferta missing)")
+        migrate_v44_to_v45()
+
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
     else:
@@ -1926,6 +1978,7 @@ def init_db():
             data_finalizare TEXT,
             observatii TEXT,
             nr_comanda TEXT,
+            nr_oferta TEXT,
             service_before TEXT,
             service_after TEXT,
             confirmat_client INTEGER DEFAULT 0,

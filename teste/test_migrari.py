@@ -82,6 +82,7 @@ class MigrareaV44(CuBazaNoua):
                     c.execute('ALTER TABLE %s DROP COLUMN %s' % (tabela, coloana))
             c.execute('DROP TABLE sabloane')
             c.execute('DROP TABLE stari_proiect')
+            c.execute('ALTER TABLE proiecte DROP COLUMN nr_oferta')  # v45
             c.execute('UPDATE schema_version SET version = 43')
             c.execute("INSERT INTO proiecte (id, tip, nume, status) VALUES ('p1', 'PIF', 'Vechi', 'pregatire')")
             c.execute("INSERT INTO implementari (id, proiect_id, data_start) VALUES ('i1', 'p1', '2026-10-12')")
@@ -103,12 +104,13 @@ class MigrareaV44(CuBazaNoua):
         finally:
             database.DATABASE_PATH = inainte
 
-    def test_baza_noua_e_la_v44_cu_tabelele_si_coloanele_noi(self):
+    def test_baza_noua_are_tabelele_si_coloanele_v44(self):
         import database
-        self.assertEqual(database.SCHEMA_VERSION, 44)
+        self.assertGreaterEqual(database.SCHEMA_VERSION, 44)
         c = sqlite3.connect(self.db)
         try:
-            self.assertEqual(c.execute('SELECT MAX(version) FROM schema_version').fetchone()[0], 44)
+            self.assertEqual(c.execute('SELECT MAX(version) FROM schema_version').fetchone()[0],
+                             database.SCHEMA_VERSION)
             tabele = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             indexuri = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='index'")}
         finally:
@@ -118,7 +120,7 @@ class MigrareaV44(CuBazaNoua):
         for tabela, coloane in self.NOI.items():
             self.assertTrue(set(coloane) <= {col[0] for col in _forma(self.db, tabela)[0]}, tabela)
 
-    def test_o_baza_v43_urca_la_v44_cu_datele_intacte(self):
+    def test_o_baza_v43_urca_la_zi_cu_datele_intacte(self):
         import database
         cale = self._baza_v43()
         self._ruleaza_pe(cale, database.run_migrations)
@@ -126,7 +128,8 @@ class MigrareaV44(CuBazaNoua):
         c = sqlite3.connect(cale)
         c.row_factory = sqlite3.Row
         try:
-            self.assertEqual(c.execute('SELECT MAX(version) FROM schema_version').fetchone()[0], 44)
+            self.assertEqual(c.execute('SELECT MAX(version) FROM schema_version').fetchone()[0],
+                             database.SCHEMA_VERSION)
             t = dict(c.execute("SELECT * FROM tasks WHERE id = 't1'").fetchone())
             g = dict(c.execute("SELECT * FROM global_tasks WHERE id = 'g1'").fetchone())
             self.assertEqual((t['titlu'], t['data_scadenta'], t['recurenta']), ('Vechi', '2026-10-14', 'zilnic'))
@@ -165,6 +168,82 @@ class MigrareaV44(CuBazaNoua):
         self._ruleaza_pe(cale, database.run_migrations)
         for tabela in ('tasks', 'global_tasks', 'sabloane', 'stari_proiect'):
             self.assertEqual(_forma(cale, tabela), _forma(self.db, tabela), tabela)
+
+
+class MigrareaV45(CuBazaNoua):
+    """v44 -> v45: `proiecte.nr_oferta`, completata o data din primul `OF_..` din `nr_comanda`."""
+
+    _ruleaza_pe = MigrareaV44._ruleaza_pe
+
+    # Formele reale din productie (citite pe 2026-10-26), plus doua fara oferta.
+    COMENZI = {
+        'romkuvert': ('OF_26_23125 (ofertă semnată de client, 14.10.2026)', 'OF_26_23125'),
+        'biochem': ('9RH1177 / OF_26_03018', 'OF_26_03018'),
+        'duplex': ('OF_26_07123_R1 / PO 4504976437 (+ OF_26_14613 supliment contrapanou A12)', 'OF_26_07123_R1'),
+        'tde': ('OF 250326E (ofertă)', None),
+        'po': ('PO 4504978671', None),
+        'gol': (None, None),
+    }
+
+    def _baza_v44(self, versiune=44):
+        import shutil
+        import tempfile
+        cale = os.path.join(tempfile.mkdtemp(prefix='pif-v44-'), 'v44.db')
+        self.addCleanup(shutil.rmtree, os.path.dirname(cale), ignore_errors=True)
+        shutil.copyfile(self.db, cale)
+        c = sqlite3.connect(cale)
+        try:
+            c.execute('ALTER TABLE proiecte DROP COLUMN nr_oferta')
+            c.execute('UPDATE schema_version SET version = ?', (versiune,))
+            for pid, (comanda, _) in self.COMENZI.items():
+                c.execute("INSERT INTO proiecte (id, tip, nume, status, nr_comanda) VALUES (?, 'PIF', ?, 'pregatire', ?)",
+                          (pid, pid, comanda))
+            c.commit()
+        finally:
+            c.close()
+        return cale
+
+    def _oferte(self, cale):
+        c = sqlite3.connect(cale)
+        try:
+            return {r[0]: (r[1], r[2]) for r in c.execute('SELECT id, nr_comanda, nr_oferta FROM proiecte')}
+        finally:
+            c.close()
+
+    def test_baza_noua_are_coloana(self):
+        self.assertIn('nr_oferta', {col[0] for col in _forma(self.db, 'proiecte')[0]})
+
+    def test_o_baza_v44_primeste_oferta_si_comanda_ramane(self):
+        import database
+        cale = self._baza_v44()
+        self._ruleaza_pe(cale, database.run_migrations)
+        self.assertEqual(self._oferte(cale), {pid: (comanda, oferta) for pid, (comanda, oferta) in self.COMENZI.items()})
+        self.assertEqual(_forma(cale, 'proiecte'), _forma(self.db, 'proiecte'))
+
+    def test_a_doua_rulare_nu_suprascrie_ce_a_scris_ion(self):
+        import database
+        cale = self._baza_v44()
+        self._ruleaza_pe(cale, database.run_migrations)
+        c = sqlite3.connect(cale)
+        try:
+            c.execute("UPDATE proiecte SET nr_oferta = 'OF_26_14613' WHERE id = 'duplex'")
+            c.execute("UPDATE proiecte SET nr_oferta = '' WHERE id = 'biochem'")
+            c.commit()
+        finally:
+            c.close()
+        self._ruleaza_pe(cale, database.migrate_v44_to_v45)
+        self._ruleaza_pe(cale, database.run_migrations)
+        oferte = self._oferte(cale)
+        self.assertEqual(oferte['duplex'][1], 'OF_26_14613')
+        self.assertEqual(oferte['biochem'][1], '')
+
+    def test_self_heal_cu_versiunea_45_si_coloana_lipsa(self):
+        # O restaurare de dinainte de v45 peste o baza la v45.
+        import database
+        cale = self._baza_v44(versiune=45)
+        self._ruleaza_pe(cale, database.run_migrations)
+        self.assertEqual(self._oferte(cale)['biochem'], ('9RH1177 / OF_26_03018', 'OF_26_03018'))
+        self.assertEqual(_forma(cale, 'proiecte'), _forma(self.db, 'proiecte'))
 
 
 class CheileFaraCodPleaca(CuBazaNoua):

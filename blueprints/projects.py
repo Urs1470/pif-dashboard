@@ -154,9 +154,9 @@ def create_proiect():
         INSERT INTO proiecte (
             id, tip, nume, client, locatie, echipament_principal, producator,
             cod_proiect, folder_server, data_crearii,
-            status, data_finalizare, observatii, nr_comanda, service_before, service_after,
+            status, data_finalizare, observatii, nr_comanda, nr_oferta, service_before, service_after,
             confirmat_client, client_nume_confirmare, created_at, updated_at, vault_folder
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         project_id,
         data.get('tip', 'PIF'),
@@ -172,6 +172,7 @@ def create_proiect():
         data_final,
         data.get('observatii', ''),
         data.get('nr_comanda', ''),
+        data.get('nr_oferta', ''),
         data.get('service_before', ''),
         data.get('service_after', ''),
         data.get('confirmat_client', 0),
@@ -248,6 +249,7 @@ def update_proiect(project_id):
             data_finalizare = COALESCE(?, data_finalizare),
             observatii = COALESCE(?, observatii),
             nr_comanda = COALESCE(?, nr_comanda),
+            nr_oferta = COALESCE(?, nr_oferta),
             service_before = COALESCE(?, service_before),
             service_after = COALESCE(?, service_after),
             confirmat_client = COALESCE(?, confirmat_client),
@@ -268,6 +270,7 @@ def update_proiect(project_id):
         data.get('data_finalizare'),
         data.get('observatii'),
         data.get('nr_comanda'),
+        data.get('nr_oferta'),
         data.get('service_before'),
         data.get('service_after'),
         data.get('confirmat_client'),
@@ -436,6 +439,7 @@ def get_project_snapshot(project_id):
             'echipament_principal': p.get('echipament_principal', ''),
             'cod_proiect': p.get('cod_proiect', ''),
             'nr_comanda': p.get('nr_comanda', ''),
+            'nr_oferta': p.get('nr_oferta') or '',
             'folder_server': p.get('folder_server', ''),
             'data_crearii': p.get('data_crearii', ''),
             'status': p.get('status', ''),
