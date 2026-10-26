@@ -16,6 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-10-26
 
+- [2026-10-26 Liste proprii (v46)](2026-10-26-liste.md) — tabela `liste` (Muncă și Personal fixe, plus cele create din Torqa); `global_tasks.sfera` se validează după tabelă, `/api/liste` e deschis tokenului de dispozitiv, `liste` intră în snapshot și backup; migrarea e aditivă, iar restore-ul pune la loc listele fixe.
 - [2026-10-26 `proiecte.nr_oferta` (v45)](2026-10-26-nr-oferta.md) — oferta după care s-a dat comanda stă în coloana ei, separat de PO; completată o singură dată din primul `OF_..` din `nr_comanda`, care rămâne neschimbat.
 
 ## 2026-10-24

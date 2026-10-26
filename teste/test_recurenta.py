@@ -1,4 +1,4 @@
-"""Recurenta, ora si sfera unui task — regulile scrise in `blueprints/tasks.py`.
+"""Recurenta si ora unui task — regulile scrise in `blueprints/tasks.py`.
 
 Recurenta e locul in care o greseala nu se vede azi, ci la urmatoarea aparitie:
 un task lunar pus pe 31 trebuie sa cada pe ultima zi a lunii scurte, iar nimic nu
@@ -10,7 +10,7 @@ import unittest
 from datetime import date, timedelta
 
 from _baza import Test
-from blueprints.tasks import _skip_weekend, _next_recurrence_date, norm_ora, _sfera_or_none
+from blueprints.tasks import _skip_weekend, _next_recurrence_date, norm_ora
 
 
 class Weekend(Test):
@@ -70,14 +70,8 @@ class Ora(Test):
                 norm_ora(rau)
 
 
-class Sfera(Test):
-
-    def test_doar_cele_doua_sfere(self):
-        self.assertEqual(_sfera_or_none('munca'), 'munca')
-        self.assertEqual(_sfera_or_none('personal'), 'personal')
-        # Invariantul 7: o valoare necunoscuta NU se corecteaza tacit.
-        for rau in ['Munca', 'xyz', '', None]:
-            self.assertIsNone(_sfera_or_none(rau), rau)
+# Sfera nu mai e o pereche fixa din cod (v46): valideaza dupa tabela `liste`, deci regula e probata pe
+# rute, in teste/test_liste.py (`SferaDupaTabela`).
 
 
 if __name__ == '__main__':

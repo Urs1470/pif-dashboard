@@ -17,7 +17,7 @@ from utils import (
     safe_table, login_required, get_json_or_400,
     TASK_PROIECT_VIU,
 )
-from database import get_db, row_to_dict, get_schema_version, DATABASE_PATH
+from database import get_db, row_to_dict, get_schema_version, DATABASE_PATH, LISTE_FIXE, asigura_listele_fixe
 from blueprints.outlook import citeste_snapshot, evenimente_in_fereastra
 
 logger = logging.getLogger(__name__)
@@ -69,7 +69,8 @@ def get_stats():
 # cu TOATE coloanele ei (`SELECT *`); restaurarea le pune inapoi pe toate. `task_dependencies`,
 # `calcule` si `clienti` au plecat in v43: un backup vechi care le are se restaureaza, iar ele
 # se ignora, ca orice tabela care nu mai exista.
-TABELE_BACKUP = ('proiecte', 'implementari', 'tasks', 'task_subtasks', 'global_tasks',
+# `liste` (v46) nu are chei straine: `global_tasks.sfera` arata spre ea doar ca valoare.
+TABELE_BACKUP = ('proiecte', 'implementari', 'tasks', 'task_subtasks', 'liste', 'global_tasks',
                  'sabloane', 'stari_proiect', 'app_settings')
 
 
@@ -223,6 +224,11 @@ def restore_database():
                   for t in TABELE_BACKUP if t in existing and t not in data}
         if 'app_settings' in sterse:
             sterse['app_settings'] -= len(protejate_pastrate)
+        if 'liste' in sterse:
+            # Listele fixe se pun la loc mai jos: se pierd doar cele create de Ion.
+            sterse['liste'] = cursor.execute(
+                'SELECT COUNT(*) FROM liste WHERE id NOT IN (%s)' % ', '.join('?' * len(LISTE_FIXE)),
+                [f[0] for f in LISTE_FIXE]).fetchone()[0]
         for table in TABELE_BACKUP:
             if table in existing:
                 cursor.execute(f'DELETE FROM {safe_table(table)}')
@@ -232,6 +238,8 @@ def restore_database():
         for table in TABELE_BACKUP:
             if table != 'app_settings':
                 _reinsereaza(cursor, table, data.get(table, []), AJUSTARI_RESTORE.get(table))
+        # Un backup de dinainte de v46 n-are `liste`, iar fara randurile fixe nicio sfera nu e valida.
+        asigura_listele_fixe(cursor)
 
         # Restore app_settings (vault Obsidian, cheile de idempotenta debrief).
         # Cheile protejate din FISIER se ignora si ele: backup-ul nu le contine

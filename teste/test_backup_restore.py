@@ -49,6 +49,10 @@ LEGATURI = {
     ('stari_proiect', 'proiect_id'): lambda n: 'proiecte-%d' % n,
     ('stari_proiect', 'implementare_id'): lambda n: 'implementari-%d' % n,
 }
+# `liste` pleaca din fabrica cu doua randuri fixe, iar restore-ul le pune la loc oricum (v46): cele
+# doua randuri de proba SUNT cele fixe, cu toate coloanele pe valori non-implicite, altfel
+# compararea dus-intors ar vedea patru randuri in loc de doua.
+ID_LISTE = {1: 'munca', 2: 'personal'}
 RANDURI = 2
 
 
@@ -57,7 +61,7 @@ def valoare(tabela, coloana, tip, dflt, pk, n):
     if (tabela, coloana) in LEGATURI:
         return LEGATURI[(tabela, coloana)](n)
     if pk:
-        return '%s-%d' % (tabela, n)
+        return ID_LISTE[n] if tabela == 'liste' else '%s-%d' % (tabela, n)
     if coloana in DATE_FIELDS:
         return '2026-09-%02d' % (10 + n)         # utils.norm_date lasa neatinse datele ISO
     if 'INT' in (tip or '').upper():
@@ -85,6 +89,8 @@ def genereaza(cale):
     try:
         for tabela in TABELE_BACKUP:
             coloane = sch[tabela]
+            if tabela == 'liste':
+                c.execute('DELETE FROM liste')
             for n in range(1, RANDURI + 1):
                 rand = {}
                 for nume, tip, dflt, pk in coloane:
@@ -333,8 +339,10 @@ class BackupSiRestore(CuAplicatia):
         self.assertEqual(r.status_code, 200)
         self.assertEqual([p['id'] for p in citeste(self.destinatie, 'proiecte')], ['unic'])
         for tabela in TABELE_BACKUP:
-            if tabela != 'proiecte':
+            if tabela not in ('proiecte', 'liste'):
                 self.assertEqual(citeste(self.destinatie, tabela), [], tabela)
+        # Singura exceptie: listele fixe se pun la loc, fiindca fara ele nicio sfera nu e valida.
+        self.assertEqual([l['id'] for l in citeste(self.destinatie, 'liste')], ['munca', 'personal'])
 
     # ------------------------------------------- backup mai vechi decat schema, copia de siguranta
 
@@ -367,6 +375,26 @@ class BackupSiRestore(CuAplicatia):
         self.assertEqual(len(citeste(copie, 'sabloane')), RANDURI)
         self.assertEqual(len(citeste(copie, 'stari_proiect')), RANDURI)
 
+    def test_un_backup_dinainte_de_v46_nu_pica_si_pastreaza_listele_fixe(self):
+        # Fisierul n-are `liste`: restore-ul goleste tabela (ca pe orice tabela lipsa), apoi pune la loc
+        # cele doua liste fixe. Listele create de Ion se pierd si se spun in `absent_tables`.
+        genereaza(self.destinatie)
+        scrie(self.destinatie, "DELETE FROM liste")
+        for i, nume in enumerate(('munca', 'personal', 'casa')):
+            scrie(self.destinatie, "INSERT INTO liste (id, nume, iconita, ordine, fixa) VALUES (?, ?, 'x', ?, ?)",
+                  nume, nume, i, 1 if i < 2 else 0)
+        self.catre(self.destinatie)
+        vechi = self.backup()
+        del vechi['liste']
+        vechi['schema_version'] = 45
+        r = self.restaureaza(vechi, self.destinatie)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        corp = r.get_json()
+        self.assertEqual(corp['absent_tables']['liste'], 1, 'se pierde doar `casa`')
+        self.assertIn('liste', ' '.join(corp['warnings']))
+        self.assertEqual([(l['id'], l['fixa']) for l in citeste(self.destinatie, 'liste')],
+                         [('munca', 1), ('personal', 1)])
+
     def test_un_fisier_fara_versiune_de_schema_o_raporteaza_ca_necunoscuta(self):
         vechi = {'proiecte': [{'id': 'p1', 'tip': 'PIF', 'nume': 'Vechi'}]}
         corp = self.restaureaza(vechi, self.destinatie).get_json()
@@ -384,7 +412,10 @@ class BackupSiRestore(CuAplicatia):
         inainte = {t: len(citeste(self.destinatie, t)) for t in TABELE_BACKUP}     # fara push_*, care ramane
         corp = self.restaureaza({'proiecte': [{'id': 'unic', 'tip': 'PIF', 'nume': 'Doar eu'}]},
                                 self.destinatie).get_json()
-        self.assertEqual(corp['absent_tables'], {t: inainte[t] for t in TABELE_BACKUP if t != 'proiecte'})
+        # `liste`: se pun la loc cele doua fixe, deci se pierd doar listele create de Ion (aici niciuna).
+        asteptat = {t: inainte[t] for t in TABELE_BACKUP if t != 'proiecte'}
+        asteptat['liste'] = 0
+        self.assertEqual(corp['absent_tables'], asteptat)
 
     def test_o_tabela_goala_din_fisier_nu_e_o_tabela_lipsa(self):
         genereaza(self.destinatie)

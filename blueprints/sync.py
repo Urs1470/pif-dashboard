@@ -15,6 +15,7 @@ from datetime import datetime
 from flask import Blueprint, jsonify
 
 from database import get_db, row_to_dict
+from blueprints.liste import citeste_liste
 from utils import login_required, TASK_PROIECT_VIU
 
 sync_bp = Blueprint('sync', __name__)
@@ -31,7 +32,7 @@ GLOBAL_COLOANE = ('id', 'titlu', 'descriere', 'status', 'categorie', 'sfera', 'd
 @sync_bp.route('/api/sync/snapshot', methods=['GET'])
 @login_required
 def sync_snapshot():
-    """{server_time, proiecte, tasks, subtasks, global_tasks}.
+    """{server_time, proiecte, tasks, subtasks, global_tasks, liste}.
 
     `tasks[].viu` = 1 daca taskul inca se lucreaza: proiectul e deschis, sau taskul e
     nascut dupa inchiderea proiectului (aceeasi regula ca „Astazi", TASK_PROIECT_VIU).
@@ -63,6 +64,9 @@ def sync_snapshot():
 
         cursor.execute(f"SELECT {', '.join(GLOBAL_COLOANE)} FROM global_tasks ORDER BY created_at")
         global_tasks = [row_to_dict(r) for r in cursor.fetchall()]
+
+        # Aceleasi campuri ca GET /api/liste (cu `deschise`).
+        liste = citeste_liste(cursor)
     finally:
         conn.close()
 
@@ -72,4 +76,5 @@ def sync_snapshot():
         'tasks': tasks,
         'subtasks': subtasks,
         'global_tasks': global_tasks,
+        'liste': liste,
     })

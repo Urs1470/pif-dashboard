@@ -246,6 +246,124 @@ class MigrareaV45(CuBazaNoua):
         self.assertEqual(_forma(cale, 'proiecte'), _forma(self.db, 'proiecte'))
 
 
+class MigrareaV46(CuBazaNoua):
+    """v45 -> v46: tabela `liste`, cu listele fixe `munca` si `personal`; nimic altceva nu se atinge."""
+
+    _ruleaza_pe = MigrareaV44._ruleaza_pe
+
+    FIXE = [('munca', 'Muncă', 'work', None, 0, 1), ('personal', 'Personal', 'person', None, 1, 1)]
+
+    def _baza_v45(self, versiune=45):
+        """Baza clasei coborata la v45 (fara `liste`), cu randuri in mai multe tabele, ca sa se vada ca
+        migrarea nu le atinge: un task personal, unul de munca, un proiect cu perioada si task."""
+        import shutil
+        import tempfile
+        cale = os.path.join(tempfile.mkdtemp(prefix='pif-v45-'), 'v45.db')
+        self.addCleanup(shutil.rmtree, os.path.dirname(cale), ignore_errors=True)
+        shutil.copyfile(self.db, cale)
+        c = sqlite3.connect(cale)
+        try:
+            c.execute('DROP TABLE liste')
+            c.execute('UPDATE schema_version SET version = ?', (versiune,))
+            c.execute("INSERT INTO proiecte (id, tip, nume, status, nr_oferta) VALUES ('p1', 'PIF', 'Vechi', 'pregatire', 'OF_26_1')")
+            c.execute("INSERT INTO implementari (id, proiect_id, data_start) VALUES ('i1', 'p1', '2026-10-12')")
+            c.execute("INSERT INTO tasks (id, proiect_id, titlu, status, created_at) VALUES ('t1', 'p1', 'T', 'to_do', 'x')")
+            c.execute("INSERT INTO global_tasks (id, titlu, sfera, ora) VALUES ('g1', 'Sala', 'personal', '07:30')")
+            c.execute("INSERT INTO global_tasks (id, titlu, sfera, status) VALUES ('g2', 'Raport', 'munca', 'done')")
+            c.execute("INSERT INTO sabloane (id, nume, continut) VALUES ('s1', 'S', '[]')")
+            c.execute("INSERT INTO app_settings (key, value) VALUES ('k', 'v')")
+            c.commit()
+        finally:
+            c.close()
+        return cale
+
+    @staticmethod
+    def _tot(cale, fara=()):
+        """{tabela: randurile ei sortate}, pentru toate tabelele in afara de `fara`."""
+        c = sqlite3.connect(cale)
+        try:
+            tabele = [r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table' "
+                                              "AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+            return {t: sorted(c.execute('SELECT * FROM "%s"' % t).fetchall(), key=repr)
+                    for t in tabele if t not in fara}
+        finally:
+            c.close()
+
+    @staticmethod
+    def _liste(cale):
+        c = sqlite3.connect(cale)
+        try:
+            return c.execute('SELECT id, nume, iconita, culoare, ordine, fixa FROM liste ORDER BY ordine').fetchall()
+        finally:
+            c.close()
+
+    def test_baza_noua_are_tabela_si_listele_fixe(self):
+        import database
+        self.assertGreaterEqual(database.SCHEMA_VERSION, 46)
+        self.assertEqual(self._liste(self.db), self.FIXE)
+        self.assertEqual({col[0] for col in _forma(self.db, 'liste')[0]},
+                         {'id', 'nume', 'iconita', 'culoare', 'ordine', 'fixa', 'created_at', 'updated_at'})
+
+    def test_o_baza_v45_urca_la_v46_cu_datele_intacte(self):
+        import database
+        cale = self._baza_v45()
+        inainte = self._tot(cale)
+        self.assertNotIn('liste', inainte)
+        self._ruleaza_pe(cale, database.run_migrations)
+
+        c = sqlite3.connect(cale)
+        try:
+            self.assertEqual(c.execute('SELECT MAX(version) FROM schema_version').fetchone()[0],
+                             database.SCHEMA_VERSION)
+        finally:
+            c.close()
+        self.assertEqual(self._liste(cale), self.FIXE)
+        dupa = self._tot(cale, fara=('liste', 'schema_version'))       # versiunea se verifica mai sus
+        self.assertEqual(dupa, {t: r for t, r in inainte.items() if t != 'schema_version'},
+                         'nicio alta tabela nu s-a schimbat')
+        self.assertEqual({t: len(r) for t, r in dupa.items()},
+                         {t: len(r) for t, r in inainte.items() if t != 'schema_version'})
+        self.assertEqual(_forma(cale, 'liste'), _forma(self.db, 'liste'))
+        self.assertEqual(_forma(cale, 'global_tasks'), _forma(self.db, 'global_tasks'))
+
+    def test_a_doua_rulare_nu_schimba_nimic(self):
+        import database
+        cale = self._baza_v45()
+        self._ruleaza_pe(cale, database.run_migrations)
+        dupa_prima = self._tot(cale)
+        self._ruleaza_pe(cale, database.run_migrations)
+        self._ruleaza_pe(cale, database.migrate_v45_to_v46)
+        self.assertEqual(self._tot(cale), dupa_prima)
+
+    def test_self_heal_cu_versiunea_46_si_tabela_lipsa(self):
+        # Un restore de dinainte de v46 peste o baza la v46 (db-upload cu o baza veche).
+        import database
+        cale = self._baza_v45(versiune=46)
+        inainte = self._tot(cale)
+        self._ruleaza_pe(cale, database.run_migrations)
+        self.assertEqual(self._liste(cale), self.FIXE)
+        self.assertEqual(self._tot(cale, fara=('liste',)), inainte)
+        self.assertEqual(_forma(cale, 'liste'), _forma(self.db, 'liste'))
+
+    def test_pornirea_pune_la_loc_o_lista_fixa_stearsa_si_nu_atinge_ce_a_schimbat_ion(self):
+        import database
+        cale = self._baza_v45()
+        self._ruleaza_pe(cale, database.run_migrations)
+        c = sqlite3.connect(cale)
+        try:
+            c.execute("UPDATE liste SET iconita = 'home', culoare = '#ff8800' WHERE id = 'munca'")
+            c.execute("DELETE FROM liste WHERE id = 'personal'")                # dupa un restore fara `liste`
+            c.execute("INSERT INTO liste (id, nume, iconita, ordine, fixa) VALUES ('casa', 'Casă', 'house', 2, 0)")
+            c.commit()
+        finally:
+            c.close()
+        self._ruleaza_pe(cale, database.run_migrations)
+        liste = {r[0]: r for r in self._liste(cale)}
+        self.assertEqual(liste['munca'][2:4], ('home', '#ff8800'))
+        self.assertEqual(liste['personal'][1:], ('Personal', 'person', None, 1, 1))
+        self.assertIn('casa', liste)
+
+
 class CheileFaraCodPleaca(CuBazaNoua):
     """v42 (Ion, 2026-10-03, „Fă cele 6 puncte"): din `app_settings` pleaca `push_*`,
     `plan_departament_url`, `ics_feed_key` si `fault_data_rev`; orice alta cheie ramane."""

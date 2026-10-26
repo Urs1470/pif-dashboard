@@ -2,6 +2,7 @@ import sqlite3
 import os
 import logging
 import re
+from datetime import datetime
 
 logger = logging.getLogger('pif_dashboard')
 
@@ -118,7 +119,11 @@ def close_db(exc=None):
 #      `nr_comanda` (PO). Completata o singura data, la migrare, din primul `OF_..` gasit in
 #      `nr_comanda`; `nr_comanda` ramane neschimbat. Decizia:
 #      docs/decizii/2026-10-26-nr-oferta.md.
-SCHEMA_VERSION = 45
+# v46: tabela `liste` — listele de taskuri globale ale lui Ion (Munca, Personal si cele create
+#      din Torqa, ex. „Casa"). `global_tasks.sfera` ramane coloana care leaga un task de lista
+#      lui: valoarea e acum `liste.id`, nu doar 'munca'|'personal'. Cele doua liste vechi sunt
+#      randuri fixe. Decizia: docs/decizii/2026-10-26-liste.md.
+SCHEMA_VERSION = 46
 
 # DDL-ul celor doua tabele noi din v44 sta intr-un singur loc: il folosesc si `init_db()`, si
 # `migrate_v43_to_v44()`; scris de doua ori, cele doua s-ar putea abate si schema ar diferi intre
@@ -149,6 +154,38 @@ SQL_STARI_PROIECT = '''
 '''
 SQL_STARI_PROIECT_INDEX = (
     'CREATE INDEX IF NOT EXISTS idx_stari_proiect_proiect_data ON stari_proiect(proiect_id, data)')
+
+# v46: DDL-ul `liste` sta intr-un singur loc (il folosesc `init_db()` si `migrate_v45_to_v46()`), ca
+# la SQL_SABLOANE. `culoare`: '#rrggbb' sau NULL = culoarea implicita a temei Torqa.
+SQL_LISTE = '''
+    CREATE TABLE IF NOT EXISTS liste (
+        id TEXT PRIMARY KEY,
+        nume TEXT NOT NULL,
+        iconita TEXT NOT NULL,
+        culoare TEXT,
+        ordine INTEGER NOT NULL DEFAULT 0,
+        fixa INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT,
+        updated_at TEXT
+    )
+'''
+# Listele fixe: (id, nume, iconita, ordine). Nu se sterg si nu-si schimba numele; iconita si
+# culoarea li se pot schimba. Id-urile sunt valorile `sfera` de dinainte de v46.
+LISTE_FIXE = (
+    ('munca', 'Muncă', 'work', 0),
+    ('personal', 'Personal', 'person', 1),
+)
+
+
+def asigura_listele_fixe(cursor):
+    """Pune la loc listele fixe care lipsesc; cele existente (cu iconita si culoarea schimbate de
+    Ion) nu se ating. Idempotent. Il folosesc migrarea, self-heal-ul si restore-ul: un backup de
+    dinainte de v46 goleste `liste`, iar fara cele doua randuri nicio sfera n-ar mai fi valida."""
+    acum = datetime.now().isoformat()
+    for id_, nume, iconita, ordine in LISTE_FIXE:
+        cursor.execute(
+            'INSERT OR IGNORE INTO liste (id, nume, iconita, culoare, ordine, fixa, created_at, updated_at) '
+            'VALUES (?, ?, ?, NULL, ?, 1, ?, ?)', (id_, nume, iconita, ordine, acum, acum))
 
 def get_schema_version():
     """Get current schema version from schema_version table"""
@@ -1631,6 +1668,23 @@ def migrate_v44_to_v45():
     logger.info(f"Migration v44->v45 completed (proiecte.nr_oferta, {completate} completate din nr_comanda)")
 
 
+def migrate_v45_to_v46():
+    """v45 -> v46: tabela `liste`, cu cele doua liste fixe (Munca, Personal).
+    Decizia: docs/decizii/2026-10-26-liste.md.
+
+    Aditiva si idempotenta: `CREATE TABLE IF NOT EXISTS` si `INSERT OR IGNORE`. Nu atinge niciun rand
+    din alta tabela: `global_tasks.sfera` are deja 'munca' sau 'personal', adica exact id-urile
+    listelor fixe.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute(SQL_LISTE)
+    asigura_listele_fixe(cursor)
+    conn.commit()
+    conn.close()
+    logger.info("Migration v45->v46 completed (tabela liste, listele fixe munca si personal)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1855,6 +1909,11 @@ def run_migrations():
         set_schema_version(45)
         current_version = 45
 
+    if current_version < 46:
+        migrate_v45_to_v46()
+        set_schema_version(46)
+        current_version = 46
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -1944,6 +2003,22 @@ def run_migrations():
     if 'nr_oferta' not in cols_p:
         logger.warning("Self-heal: re-running v44->v45 (proiecte.nr_oferta missing)")
         migrate_v44_to_v45()
+
+    # Aditiv-only, ca mai sus: un backup de dinainte de v46 restaurat peste o baza v46 lasa tabela
+    # lipsa. Listele fixe se verifica la FIECARE pornire, nu doar cand lipseste tabela: un restore
+    # le goleste (tabela e in TABELE_BACKUP), iar fara ele nicio sfera nu e valida. INSERT OR IGNORE
+    # nu atinge iconita si culoarea schimbate de Ion.
+    conn_v46 = get_db()
+    liste_exista = conn_v46.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='liste'").fetchone() is not None
+    conn_v46.close()
+    if not liste_exista:
+        logger.warning("Self-heal: re-running v45->v46 (tabela liste missing)")
+    conn_v46 = get_db()
+    conn_v46.execute(SQL_LISTE)
+    asigura_listele_fixe(conn_v46)
+    conn_v46.commit()
+    conn_v46.close()
 
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
@@ -2071,6 +2146,9 @@ def init_db():
     cursor.execute(SQL_SABLOANE)
     cursor.execute(SQL_STARI_PROIECT)
     cursor.execute(SQL_STARI_PROIECT_INDEX)
+
+    # v46: listele de taskuri globale. Randurile fixe le pun migrarea v45->v46 si self-heal-ul din run_migrations.
+    cursor.execute(SQL_LISTE)
 
     # Create indexes
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_proiecte_status ON proiecte(status)')

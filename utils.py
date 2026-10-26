@@ -117,7 +117,7 @@ TASK_PROIECT_VIU = """(p.status != 'finalizat' OR (
 
 VALID_TABLES = {
     'proiecte', 'tasks', 'task_subtasks',
-    'global_tasks', 'implementari', 'app_settings', 'sabloane', 'stari_proiect',
+    'global_tasks', 'implementari', 'app_settings', 'sabloane', 'stari_proiect', 'liste',
 }
 
 UPLOAD_IMPLICIT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')

@@ -485,16 +485,25 @@ def delete_subtask(subtask_id):
 # Global tasks CRUD
 # ---------------------------------------------------------------------------
 
-# Sferele taskurilor globale. Lipsa parametrului = 'munca' (fail-closed: un
+# Sferele taskurilor globale sunt listele din tabela `liste` (v46): 'munca' si 'personal' (fixe) si
+# cele create de Ion din Torqa. Lipsa parametrului = 'munca' (fail-closed: un
 # consumator neactualizat — Cowork, un client vechi — vede exact ce vedea inainte
-# de v38; personalul e opt-in explicit). Valoare necunoscuta = 400, nu coercitie:
+# de v38; restul listelor sunt opt-in explicit). Valoare necunoscuta = 400, nu coercitie:
 # aceeasi filosofie ca norm_date — nu accepta tacut ce nu poti citi.
-SFERE = ('munca', 'personal')
+def _sfera_valida(cursor, value):
+    """True daca `value` e id-ul unei liste. Un id care nu e text (null, numar, lista) nu e sfera."""
+    if not isinstance(value, str):
+        return False
+    return cursor.execute('SELECT 1 FROM liste WHERE id = ?', (value,)).fetchone() is not None
 
 
-def _sfera_or_none(value):
-    """Valideaza o sfera primita din request. Intoarce sfera sau None daca e invalida."""
-    return value if value in SFERE else None
+def _eroare_sfera(cursor, cu_toate=False):
+    """Corpul 400 pentru o sfera necunoscuta: spune ce sfere se accepta ACUM (ele se schimba)."""
+    acceptate = ["'%s'" % r[0] for r in cursor.execute('SELECT id FROM liste ORDER BY ordine, created_at')]
+    if cu_toate:
+        acceptate.append("'toate'")
+    lista = (', '.join(acceptate[:-1]) + ' sau ' + acceptate[-1]) if len(acceptate) > 1 else ''.join(acceptate)
+    return jsonify({'error': 'sfera invalidă (acceptat: %s)' % lista}), 400
 
 
 # ORA UNUI TASK (v41). Acceptata la intrare in formele pe care le scrie mana —
@@ -538,11 +547,12 @@ def get_global_tasks():
     # simtea ca „deficienta" pe telefon. Implicitul ramane 'munca', pentru
     # consumatorii vechi (Cowork, scripturi).
     sfera = request.args.get('sfera') or 'munca'
-    if sfera != 'toate' and _sfera_or_none(sfera) is None:
-        return jsonify({'error': "sfera invalidă (acceptat: 'munca', 'personal' sau 'toate')"}), 400
-
     conn = get_db()
     cursor = conn.cursor()
+    if sfera != 'toate' and not _sfera_valida(cursor, sfera):
+        raspuns = _eroare_sfera(cursor, cu_toate=True)
+        conn.close()
+        return raspuns
 
     status = request.args.get('status')
 
@@ -617,14 +627,16 @@ def create_global_task():
     if eroare:
         return jsonify({'error': eroare}), 400
     sfera = data.get('sfera') or 'munca'
-    if _sfera_or_none(sfera) is None:
-        return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
     try:
         ora = norm_ora(data.get('ora')) or ''
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     conn = get_db()
     cursor = conn.cursor()
+    if not _sfera_valida(cursor, sfera):
+        raspuns = _eroare_sfera(cursor)
+        conn.close()
+        return raspuns
 
     now = datetime.now().isoformat()
     task_id = data.get('id') or generate_uuid()
@@ -685,14 +697,16 @@ def update_global_task(task_id):
         return jsonify({'error': eroare}), 400
     # Patch de sfera permis (portita API pentru un task creat in sfera gresita);
     # fara UI de mutare deocamdata. None = neatins (COALESCE).
-    if data.get('sfera') is not None and _sfera_or_none(data.get('sfera')) is None:
-        return jsonify({'error': "sfera invalidă (acceptat: 'munca' sau 'personal')"}), 400
     try:
         ora = norm_ora(data.get('ora'))
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     conn = get_db()
     cursor = conn.cursor()
+    if data.get('sfera') is not None and not _sfera_valida(cursor, data.get('sfera')):
+        raspuns = _eroare_sfera(cursor)
+        conn.close()
+        return raspuns
 
     cursor.execute('SELECT * FROM global_tasks WHERE id = ?', (task_id,))
     existing = cursor.fetchone()
