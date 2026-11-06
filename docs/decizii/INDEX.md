@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-11-06
+
+- [2026-11-06 Centralizatorul de materiale: snapshot-fișier la `/api/materiale`](2026-11-06-materiale.md) — colectorul de pe PC-ul de job (BC prin SQL-ul E100, E100, Outlook) urcă zilnic `PUT /api/materiale`; două fișiere în `uploads/materiale/` (curent și ultima zi anterioară, rotite doar la zi nouă, fără tabelă, în afara backup-ului), 409 la un snapshot mai vechi; câmpurile în plus se păstrează; `GET` dă marcajele (nou, mutat, cantitate, stare, dispărute), `termen_neregulat` pentru 1900-01-01 și 2030-12-31, `vechi` după o zi lucrătoare și numele proiectului din bază; dispozitivul doar citește. Pagina e în Torqa, cu brief separat.
+
 ## 2026-10-26
 
 - [2026-10-26 Liste proprii (v46)](2026-10-26-liste.md) — tabela `liste` (Muncă și Personal fixe, plus cele create din Torqa); `global_tasks.sfera` se validează după tabelă, `/api/liste` e deschis tokenului de dispozitiv, `liste` intră în snapshot și backup; migrarea e aditivă, iar restore-ul pune la loc listele fixe.

@@ -195,7 +195,9 @@ DEVICE_TOKEN_DENIED = (
 # cheama niciodata (butonul Wiki doar citeste). `GET` ramane deschis, dar nu oricum:
 # nota trebuie sa stea intr-un `vault_folder` de proiect — conditia e in
 # `blueprints/obsidian.py`, fiindca depinde de baza si de vault, nu de cale.
-DEVICE_TOKEN_READ_ONLY = ('/api/obsidian/note',)
+# `/api/materiale`: Torqa citeste centralizatorul; snapshot-ul il scrie doar colectorul de pe
+# PC-ul de job (blueprints/materiale.py).
+DEVICE_TOKEN_READ_ONLY = ('/api/obsidian/note', '/api/materiale')
 _METODE_DE_CITIRE = frozenset(('GET', 'HEAD', 'OPTIONS'))
 
 
