@@ -37,6 +37,7 @@ from blueprints.sync import sync_bp
 from blueprints.liste import liste_bp
 from blueprints.outlook import outlook_bp
 from blueprints.materiale import materiale_bp
+from blueprints.sistem import sistem_bp
 from blueprints.torqa_web import torqa_web_bp, SesiuneFaraStatice, CSP_TORQA, PREFIX_URL
 
 app.register_blueprint(projects_bp)
@@ -48,6 +49,7 @@ app.register_blueprint(sync_bp)
 app.register_blueprint(liste_bp)
 app.register_blueprint(outlook_bp)
 app.register_blueprint(materiale_bp)
+app.register_blueprint(sistem_bp)
 app.register_blueprint(torqa_web_bp)
 
 # Fisierele statice ale Torqa web (/torqa/<fisier>) nu citesc si nu scriu sesiunea: altfel
