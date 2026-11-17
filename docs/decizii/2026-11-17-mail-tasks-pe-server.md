@@ -25,6 +25,12 @@ pornit și logat chiar și pentru o schimbare de regulă sau de prompt.
   `~/.local/state/mail-tasks/`. După rulare șterge exportul, promptul și răspunsul brut; rămân raportul, decizia și
   contextul (referințe, fără corpuri).
 
+## Granița, hotărâtă de Ion (17.11, seara)
+
+Ion: „da, mailurile pot sta pe server”. Rulările de pe laptop se păstrează de atunci complete, ca pe PC: exportul
+(lotul, ca `export.json`), promptul, răspunsul lui Claude și raportul, ultimele 30 (Knowledge `tools/mail-tasks.py`).
+Lotul din `uploads/mail-lot/` se șterge în continuare după rulare sau după 7 zile.
+
 ## Verificat (17.11)
 
 - `teste/test_mail_lot.py`: drumul întreg, fereastra care nu avansează cu erori, dispozitivul refuzat pe toate cele
