@@ -18,9 +18,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `15:get_db`, `36:close_db`, `180:asigura_listele_fixe`, `190:get_schema_version`, `203:set_schema_version`, `212:migrate_v1_to_v2`, `294:migrate_v2_to_v3`, `321:migrate_v3_to_v4`, `352:migrate_v4_to_v5`, `394:migrate_v5_to_v6`, `416:migrate_v6_to_v7`, `438:migrate_v7_to_v8`, `481:migrate_v8_to_v9`, `496:migrate_v9_to_v10`, `526:migrate_v10_to_v11`, `548:migrate_v11_to_v12`, `594:migrate_v12_to_v13`, `639:migrate_v13_to_v14`, `678:migrate_v14_to_v15`, `701:migrate_v15_to_v16`, `720:migrate_v16_to_v17`, `736:migrate_v17_to_v18`, `785:migrate_v18_to_v19`, `825:migrate_v19_to_v20`, `842:migrate_v20_to_v21`, `869:migrate_v21_to_v22`, `888:migrate_v22_to_v23`, `907:migrate_v23_to_v24`, `944:migrate_v24_to_v25`, `959:migrate_v25_to_v26`, `984:migrate_v26_to_v27`, `1001:migrate_v27_to_v28`, `1047:migrate_v28_to_v29`, `1103:migrate_v29_to_v30`, `1147:migrate_v30_to_v31`, `1180:migrate_v31_to_v32`, `1209:migrate_v32_to_v33`, `1264:migrate_v33_to_v34`, `1300:migrate_v34_to_v35`, `1332:migrate_v35_to_v36`, `1368:migrate_v36_to_v37`, `1406:migrate_v37_to_v38`, `1433:migrate_v38_to_v39`, `1471:migrate_v39_to_v40`, `1500:migrate_v40_to_v41`, `1537:migrate_v41_to_v42`, `1563:migrate_v42_to_v43`, `1601:migrate_v43_to_v44`, `1643:migrate_v44_to_v45`, `1671:migrate_v45_to_v46`, `1688:run_migrations`, `2029:init_db`, `2174:row_to_dict`
 
-## utils.py (298 linii)
+## utils.py (299 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `126:cale_uploads`, `138:safe_table`, `144:generate_uuid`, `148:id_ocupat`, `158:safe_next_url`, `208:device_token_denied`, `226:refuse_device_token_fields`, `242:_check_api_token`, `266:login_required`, `280:get_app_setting`, `289:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `126:cale_uploads`, `138:safe_table`, `144:generate_uuid`, `148:id_ocupat`, `158:safe_next_url`, `209:device_token_denied`, `227:refuse_device_token_fields`, `243:_check_api_token`, `267:login_required`, `281:get_app_setting`, `290:set_app_setting`
 
 ## csrf.py (83 linii)
 
@@ -58,9 +58,9 @@ _(fara definitii top-level)_
 
 `29:status_proiect`, `47:dosar_de_incarcari`, `75:get_proiecte`, `125:create_proiect`, `193:get_proiect`, `221:update_proiect`, `346:delete_proiect`, `397:get_project_snapshot`, `485:_impl_row`, `505:get_implementari`, `516:create_implementare`, `547:update_implementare`, `594:delete_implementare`, `620:get_stari`, `632:create_stare`, `674:delete_stare`, `690:_eroare_continut`, `718:_continut_json`, `726:_sablon`, `734:get_sabloane`, `745:create_sablon`, `771:update_sablon`, `797:delete_sablon`
 
-## blueprints/sistem.py (542 linii)
+## blueprints/sistem.py (771 linii)
 
-`76:EroareCorp`, `82:_obiect`, `91:_text`, `107:_stare`, `113:_lista`, `124:_generat`, `131:_optiune`, `144:_item`, `172:valideaza_snapshot`, `205:_cale`, `209:_acum`, `213:_z`, `217:_scrie_atomic`, `245:_blocat`, `267:_citeste_snapshot`, `281:_surse`, `297:_citeste_decizii`, `323:_scrie_decizii`, `339:_cheie_item`, `347:_vechime_ore`, `351:_masina`, `362:_decizii_in_asteptare`, `368:vedere`, `405:_corp_json`, `421:put_sursa`, `449:get_sistem`, `455:_de_la`, `463:post_decizie`, `503:get_decizii`, `513:post_consumat`
+`93:EroareCorp`, `99:_obiect`, `108:_text`, `124:_stare`, `130:_lista`, `141:_generat`, `148:_optiune`, `161:_item`, `189:valideaza_snapshot`, `222:_cale`, `226:_acum`, `230:_z`, `234:_scrie_atomic`, `262:_blocat`, `284:_citeste_snapshot`, `298:_surse`, `314:_citeste_decizii`, `340:_in_asteptare`, `345:_scrie_decizii`, `359:_citeste_amanari`, `385:_cheie_item`, `393:_vechime_ore`, `397:_masina`, `408:_masina_lipsa`, `415:_masini`, `424:_decizii_in_asteptare`, `430:_istoric`, `444:vedere`, `485:_corp_json`, `503:put_sursa`, `533:get_sistem`, `541:_de_la`, `549:post_decizie`, `595:get_decizii`, `613:post_consumat`, `651:_corp_gol`, `666:post_preluat`, `698:post_anulare`, `729:post_amanare`
 
 ## blueprints/sync.py (80 linii)
 

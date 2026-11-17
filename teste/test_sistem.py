@@ -9,9 +9,18 @@ Ce se pazeste, tacut daca se strica:
     deciziile in asteptare, fara surse -> liste goale;
   - o decizie se accepta doar pentru un item si o optiune pe care le-a pus sursa; ultima decizie pe
     acelasi id o inlocuieste pe cea neconsumata;
-  - consumul: 404 la uid necunoscut, 409 la a doua oara, taierea la 500 de randuri (doar consumate);
-  - tokenul de dispozitiv: citeste `GET /api/sistem` si trimite `POST /api/sistem/decizie`, dar nu
-    scrie surse, nu citeste coada de decizii si nu o consuma (prefixul `/api/sistem/decizii` nu prinde
+  - consumul: 404 la uid necunoscut, 409 la a doua oara, taierea la 500 de randuri (doar terminate:
+    consumate sau anulate; cele in asteptare nu se taie);
+  - contractul v1.1 (aditiv; rand vechi fara campurile noi ramane valid): `istoric` (ultimele 20
+    terminate, cea mai recenta intai, `titlu`/`sursa` implicite pe randuri vechi), `preluat`
+    (idempotent; 404/409 anulata/consumata), `anulare` (idempotenta; 409 preluata/consumata), o decizie
+    noua peste una PRELUATA da 409 si nu scrie (peste una nepreluata o inlocuieste), `?sursa=` (lipsa
+    = server, invalida 400), `stare` la consumat (ok|warn|fail, anulata 409), masinile asteptate
+    (`never reported` / `report unreadable`), `amanare` (31 de zile, expirate taiate, maxim 200,
+    item inexistent 409, `amanat_pana` in vedere);
+  - tokenul de dispozitiv: citeste `GET /api/sistem`, trimite `POST /api/sistem/decizie`, anuleaza
+    (`/api/sistem/decizie/<uid>/anulare`) si amana (`/api/sistem/amanare`), dar nu scrie surse, nu
+    citeste coada de decizii, nu o preia si nu o consuma (prefixul `/api/sistem/decizii` nu prinde
     singularul `/api/sistem/decizie`).
 Directorul datelor e unul temporar: un test nu scrie niciodata in `uploads/` din proiect.
 """
@@ -72,12 +81,32 @@ class Sistem(CuAplicatia):
         return self.client.post('/api/sistem/decizie', json={'id': id_, 'optiune': optiune, **camp},
                                 headers=self.bearer(token) if token else {})
 
-    def decizii(self, token=FULL):
-        return self.client.get('/api/sistem/decizii', headers=self.bearer(token))
+    def masina(self, sursa):
+        """Intrarea din `masini` a unei surse (celelalte doua asteptate apar si ele, ca `fail`)."""
+        return next(m for m in self.citeste()['masini'] if m['sursa'] == sursa)
+
+    def decizii(self, token=FULL, sursa=None):
+        return self.client.get('/api/sistem/decizii', headers=self.bearer(token),
+                               query_string={'sursa': sursa} if sursa is not None else None)
 
     def consuma(self, uid, rezultat='aprobat in ledger', token=FULL):
         return self.client.post('/api/sistem/decizii/%s/consumat' % uid, json={'rezultat': rezultat},
                                 headers=self.bearer(token) if token else {})
+
+    def preia(self, uid, token=FULL, corp=None):
+        return self.client.post('/api/sistem/decizii/%s/preluat' % uid, headers=self.bearer(token),
+                                **({'json': corp} if corp is not None else {}))
+
+    def anuleaza(self, uid, token=FULL, corp=None):
+        return self.client.post('/api/sistem/decizie/%s/anulare' % uid, headers=self.bearer(token),
+                                **({'json': corp} if corp is not None else {}))
+
+    def amana(self, id_, pana, token=FULL, **camp):
+        return self.client.post('/api/sistem/amanare', json={'id': id_, 'pana': pana, **camp},
+                                headers=self.bearer(token))
+
+    def randuri(self):
+        return [json.loads(l) for l in self.fisier('decizii.jsonl').decode('utf-8').splitlines()]
 
     def fisier(self, nume):
         with open(os.path.join(self.dir, nume), 'rb') as fh:
@@ -255,8 +284,12 @@ class Sistem(CuAplicatia):
 
     def test_fara_surse_vederea_e_goala(self):
         j = self.citeste()
-        self.assertEqual(j, {'generat': '2026-11-17T08:12:00Z', 'numar': 0, 'masini': [], 'itemi': [],
-                             'urmeaza': [], 'automat': []})
+        # nicio sursa n-a raportat: cele trei masini asteptate apar in `fail`, restul listelor e gol
+        self.assertEqual(j, {'generat': '2026-11-17T08:12:00Z', 'numar': 0, 'itemi': [], 'urmeaza': [],
+                             'automat': [], 'istoric': [],
+                             'masini': [{'sursa': s, 'masina': '', 'ultima': None, 'vechime_ore': None,
+                                         'stare': 'fail', 'detaliu': 'never reported'}
+                                        for s in ('ionpc', 'pc-job', 'server')]})
 
     def test_fisier_stricat_sau_in_plus_nu_strica_GET(self):
         self.pune_ok('pc-job', corp('pc-job', item()))
@@ -267,7 +300,11 @@ class Sistem(CuAplicatia):
         with open(os.path.join(self.dir, 'Gresit.json'), 'w') as fh:
             fh.write('{}')
         j = self.citeste()
-        self.assertEqual([m['sursa'] for m in j['masini']], ['pc-job'])
+        # pc-job e valid; server (JSON stricat) si ionpc (nu respecta contractul) sunt asteptate dar ilizibile;
+        # Gresit.json nu e nume de sursa si se ignora
+        self.assertEqual([(m['sursa'], m['stare'], m['detaliu']) for m in j['masini']],
+                         [('ionpc', 'fail', 'report unreadable'), ('pc-job', 'ok', 'ok · 08:00'),
+                          ('server', 'fail', 'report unreadable')])
 
     def test_doua_surse_masini_itemi_urmeaza_si_automat(self):
         self.pune_ok('server', corp('server', item('S1', 'do'), masina='ion-ursu-thinkpad-t450',
@@ -281,8 +318,8 @@ class Sistem(CuAplicatia):
                                     automat=[{'ce': 'Sweep mail', 'stare': 'warn', 'detaliu': 'intarziat'}]))
         j = self.citeste()
         self.assertEqual([(m['sursa'], m['masina']) for m in j['masini']],
-                         [('pc-job', 'ROPC427N'), ('server', 'ion-ursu-thinkpad-t450')])
-        pc, srv = j['masini']
+                         [('ionpc', ''), ('pc-job', 'ROPC427N'), ('server', 'ion-ursu-thinkpad-t450')])
+        _, pc, srv = j['masini']
         self.assertEqual((pc['ultima'], pc['vechime_ore'], pc['stare'], pc['detaliu']),
                          ('2026-11-17T08:05:00Z', 0.1, 'ok', 'ok · 08:00'))
         self.assertEqual(srv['vechime_ore'], 0.2)
@@ -342,16 +379,16 @@ class Sistem(CuAplicatia):
 
     def test_vechime_exact_48_ore_ramane_in_ore(self):
         self.pune_ok('pc-job', corp('pc-job', generat='2026-11-15T08:12:00Z'))
-        self.assertEqual(self.citeste()['masini'][0]['detaliu'], 'last seen 48 h')
+        self.assertEqual(self.masina('pc-job')['detaliu'], 'last seen 48 h')
 
     def test_warn_din_sanatate_ramane_warn_cand_snapshotul_e_proaspat(self):
         self.pune_ok('pc-job', corp('pc-job', sanatate={'stare': 'warn', 'detaliu': 'disc plin'}))
-        m = self.citeste()['masini'][0]
+        m = self.masina('pc-job')
         self.assertEqual((m['stare'], m['detaliu']), ('warn', 'disc plin'))
 
     def test_generat_din_viitor_nu_da_vechime_negativa(self):
         self.pune_ok('pc-job', corp('pc-job', generat='2026-11-17T09:00:00Z'))
-        self.assertEqual(self.citeste()['masini'][0]['vechime_ore'], 0.0)
+        self.assertEqual(self.masina('pc-job')['vechime_ore'], 0.0)
 
     def test_numar_nu_include_itemii_cu_decizie_in_asteptare(self):
         self.pune_ok('server', corp('server', item('A-009', 'decide', optiuni=OPTIUNI),
@@ -363,7 +400,7 @@ class Sistem(CuAplicatia):
         self.assertEqual(len(j['itemi']), 3, 'itemul ramane in lista pana il scoate snapshot-ul')
         a009 = next(i for i in j['itemi'] if i['id'] == 'A-009')
         self.assertEqual(a009['decizie'], {'uid': uid, 'optiune': 'aprob', 'label': 'Approve',
-                                           'ts': '2026-11-17T08:12:00Z'})
+                                           'ts': '2026-11-17T08:12:00Z', 'preluat': None})
         # dupa consum, decizia nu mai e „in asteptare": itemul se numara din nou
         self.assertEqual(self.consuma(uid).status_code, 200)
         j = self.citeste()
@@ -382,7 +419,9 @@ class Sistem(CuAplicatia):
         rand = json.loads(self.fisier('decizii.jsonl').decode('utf-8'))
         self.assertEqual(rand, {'uid': uid, 'ts': '2026-11-17T08:12:00Z', 'id': 'A-009', 'optiune': 'aprob',
                                 'label': 'Approve', 'text': 'de acord', 'de_la': 'masina',
-                                'consumat': None, 'rezultat': None})
+                                'consumat': None, 'rezultat': None,
+                                'titlu': 'Titlu A-009', 'sursa': 'server', 'preluat': None, 'anulat': None,
+                                'stare': None})
 
     def test_decizie_fara_text_pastreaza_text_gol(self):
         self.cu_cerere()
@@ -569,6 +608,483 @@ class Sistem(CuAplicatia):
         uid = self.decide('A-009', 'aprob').get_json()['uid']
         self.assertEqual([d['uid'] for d in self.decizii().get_json()['decizii']], [uid])
 
+    # ----------------------------------------------------------------------- v1.1: ciclul de viata al deciziei
+
+    def la(self, ts):
+        """Ceasul serverului la `ts` (ISO Z)."""
+        moment = datetime.strptime(ts, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        self.patch(sistem, '_acum', lambda: moment)
+
+    def scrie_randuri(self, randuri):
+        os.makedirs(self.dir, exist_ok=True)
+        with open(os.path.join(self.dir, 'decizii.jsonl'), 'w', encoding='utf-8') as fh:
+            for r in randuri:
+                fh.write(json.dumps(r) + '\n')
+
+    @staticmethod
+    def rand_vechi(n, **camp):
+        """Un rand ca cele scrise inainte de v1.1: fara titlu, sursa, preluat, anulat, stare."""
+        r = {'uid': '%012x' % n, 'ts': '2026-11-01T00:00:00Z', 'id': 'vechi-%d' % n, 'optiune': 'aprob',
+             'label': 'Approve', 'text': '', 'de_la': 'masina', 'consumat': None, 'rezultat': None}
+        r.update(camp)
+        return r
+
+    def test_randul_nou_tine_titlul_si_sursa_din_vedere(self):
+        self.pune_ok('pc-job', corp('pc-job', item('P-1', 'decide', titlu='Aproba P-1', optiuni=OPTIUNI)))
+        self.decide('P-1', 'aprob')
+        rand = self.randuri()[0]
+        self.assertEqual((rand['titlu'], rand['sursa'], rand['preluat'], rand['anulat'], rand['stare']),
+                         ('Aproba P-1', 'pc-job', None, None, None))
+
+    # --- istoric
+
+    def test_istoric_gol_fara_decizii_terminate_si_fara_cele_in_asteptare(self):
+        self.cu_cerere()
+        self.assertEqual(self.citeste()['istoric'], [])
+        self.decide('A-009', 'aprob')
+        self.assertEqual(self.citeste()['istoric'], [], 'o decizie in asteptare nu e in istoric')
+
+    def test_istoric_ultimele_20_cea_mai_recenta_intai_dupa_consumat_sau_anulat(self):
+        # 24 consumate la minutele 1..24, una anulata la minutul 30 (cea mai recenta), una in asteptare
+        randuri = [self.rand_vechi(n, consumat='2026-11-10T00:%02d:00Z' % n, rezultat='r%d' % n)
+                   for n in range(1, 25)]
+        randuri.append(self.rand_vechi(90, ts='2026-11-02T00:00:00Z', anulat='2026-11-10T00:30:00Z'))
+        randuri.append(self.rand_vechi(91))
+        self.scrie_randuri(randuri)
+        istoric = self.citeste()['istoric']
+        self.assertEqual(len(istoric), 20)
+        self.assertEqual(istoric[0]['uid'], '%012x' % 90)
+        self.assertEqual([r['uid'] for r in istoric[1:]], ['%012x' % n for n in range(24, 5, -1)])
+        self.assertNotIn('%012x' % 91, [r['uid'] for r in istoric])
+
+    def test_istoric_are_campurile_din_contract(self):
+        self.pune_ok('pc-job', corp('pc-job', item('P-1', 'decide', titlu='Aproba P-1', optiuni=OPTIUNI)))
+        uid = self.decide('P-1', 'aprob', text='de acord').get_json()['uid']
+        self.la('2026-11-17T08:20:00Z')
+        self.preia(uid)
+        r = self.client.post('/api/sistem/decizii/%s/consumat' % uid, json={'rezultat': 'aplicat', 'stare': 'warn'},
+                             headers=self.bearer(FULL))
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual(self.citeste()['istoric'], [{
+            'uid': uid, 'id': 'P-1', 'titlu': 'Aproba P-1', 'optiune': 'aprob', 'label': 'Approve',
+            'text': 'de acord', 'ts': '2026-11-17T08:12:00Z', 'sursa': 'pc-job', 'de_la': 'masina',
+            'rezultat': 'aplicat', 'stare': 'warn', 'consumat': '2026-11-17T08:20:00Z', 'anulat': None}])
+
+    def test_istoric_o_decizie_anulata_are_rezultat_null(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.la('2026-11-17T08:30:00Z')
+        self.anuleaza(uid)
+        (r,) = self.citeste()['istoric']
+        self.assertEqual((r['uid'], r['rezultat'], r['consumat'], r['anulat'], r['stare']),
+                         (uid, None, None, '2026-11-17T08:30:00Z', None))
+
+    def test_istoric_randuri_vechi_fara_campurile_noi(self):
+        self.scrie_randuri([self.rand_vechi(1, consumat='2026-11-10T00:00:01Z', rezultat='ok')])
+        (r,) = self.citeste()['istoric']
+        self.assertEqual((r['titlu'], r['sursa'], r['stare'], r['anulat']), ('vechi-1', 'server', None, None))
+        self.assertEqual((r['rezultat'], r['consumat']), ('ok', '2026-11-10T00:00:01Z'))
+
+    # --- preluat
+
+    def test_preluat_pune_momentul_si_se_vede_in_vedere_si_in_coada(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.la('2026-11-17T08:15:00Z')
+        r = self.preia(uid)
+        self.assertEqual((r.status_code, r.get_json()),
+                         (200, {'ok': True, 'uid': uid, 'preluat': '2026-11-17T08:15:00Z'}))
+        self.assertEqual(self.randuri()[0]['preluat'], '2026-11-17T08:15:00Z')
+        self.assertEqual(self.citeste()['itemi'][0]['decizie']['preluat'], '2026-11-17T08:15:00Z')
+        (d,) = self.decizii().get_json()['decizii']
+        self.assertEqual((d['uid'], d['preluat']), (uid, '2026-11-17T08:15:00Z'))
+
+    def test_preluat_e_idempotent_si_pastreaza_momentul_vechi(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.la('2026-11-17T08:15:00Z')
+        self.preia(uid)
+        inainte = self.fisier('decizii.jsonl')
+        self.la('2026-11-17T09:00:00Z')
+        r = self.preia(uid, corp={})
+        self.assertEqual((r.status_code, r.get_json()['preluat']), (200, '2026-11-17T08:15:00Z'))
+        self.assertEqual(self.fisier('decizii.jsonl'), inainte, 'o reincercare nu rescrie nimic')
+
+    def test_preluat_uid_necunoscut_404(self):
+        self.cu_cerere()
+        self.decide('A-009', 'aprob')
+        for uid in ('000000000000', 'nu-e-uid', 'A' * 12, '..%2F..'):
+            with self.subTest(uid=uid):
+                self.assertEqual(self.preia(uid).status_code, 404)
+
+    def test_preluat_pe_anulata_sau_consumata_409(self):
+        self.pune_ok('server', corp('server', item('A-009', 'decide', optiuni=OPTIUNI),
+                                    item('A-010', 'decide', optiuni=OPTIUNI)))
+        anulata = self.decide('A-009', 'aprob').get_json()['uid']
+        consumata = self.decide('A-010', 'aprob').get_json()['uid']
+        self.anuleaza(anulata)
+        self.consuma(consumata)
+        r = self.preia(anulata)
+        self.assertEqual((r.status_code, r.get_json()), (409, {'error': 'decizia a fost anulata'}))
+        r = self.preia(consumata)
+        self.assertEqual((r.status_code, r.get_json()), (409, {'error': 'decizia e deja consumata'}))
+        self.assertTrue(all(r['preluat'] is None for r in self.randuri()), 'niciuna nu a fost preluata')
+
+    def test_preluat_corp_cu_camp_in_plus_400(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        r = self.preia(uid, corp={'altceva': 1})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('corpul.altceva', r.get_json()['error'])
+        self.assertEqual(self.preia(uid, corp=[]).status_code, 400)
+        self.assertIsNone(self.randuri()[0]['preluat'])
+
+    def test_consumat_fara_preluat_merge_ca_inainte(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.assertEqual(self.consuma(uid).status_code, 200)
+        self.assertIsNone(self.randuri()[0]['preluat'])
+
+    # --- decizie peste una preluata
+
+    def test_decizie_peste_una_preluata_409_si_nu_scrie(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.preia(uid)
+        inainte = self.fisier('decizii.jsonl')
+        r = self.decide('A-009', 'resping')
+        self.assertEqual((r.status_code, r.get_json()), (409, {'error': 'decizia anterioara se aplica deja'}))
+        self.assertEqual(self.fisier('decizii.jsonl'), inainte)
+        self.assertFalse([n for n in os.listdir(self.dir) if n.endswith('.tmp')])
+
+    def test_decizie_peste_una_nepreluata_o_inlocuieste_ca_inainte(self):
+        self.cu_cerere()
+        u1 = self.decide('A-009', 'aprob').get_json()['uid']
+        r = self.decide('A-009', 'resping')
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual([(x['uid'], x['optiune']) for x in self.randuri()], [(r.get_json()['uid'], 'resping')])
+        self.assertNotEqual(u1, r.get_json()['uid'])
+
+    def test_decizie_noua_dupa_una_anulata_sau_consumata_se_adauga(self):
+        self.cu_cerere()
+        u1 = self.decide('A-009', 'aprob').get_json()['uid']
+        self.anuleaza(u1)
+        u2 = self.decide('A-009', 'resping').get_json()['uid']
+        self.preia(u2)
+        self.consuma(u2)
+        u3 = self.decide('A-009', 'aprob').get_json()['uid']
+        self.assertEqual([(r['uid'], r['anulat'] is not None, r['consumat'] is not None) for r in self.randuri()],
+                         [(u1, True, False), (u2, False, True), (u3, False, False)])
+
+    # --- anulare
+
+    def test_anulare_pune_momentul_si_decizia_iese_din_asteptare(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.assertEqual(self.citeste()['numar'], 0)
+        self.la('2026-11-17T08:40:00Z')
+        r = self.anuleaza(uid)
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'uid': uid}))
+        self.assertEqual(self.randuri()[0]['anulat'], '2026-11-17T08:40:00Z')
+        j = self.citeste()
+        self.assertIsNone(j['itemi'][0]['decizie'])
+        self.assertEqual(j['numar'], 1, 'itemul se numara din nou')
+        self.assertEqual(self.decizii().get_json(), {'decizii': []})
+
+    def test_anulare_e_idempotenta_si_nu_muta_momentul(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.la('2026-11-17T08:40:00Z')
+        self.anuleaza(uid)
+        inainte = self.fisier('decizii.jsonl')
+        self.la('2026-11-17T09:00:00Z')
+        r = self.anuleaza(uid, corp={})
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'uid': uid}))
+        self.assertEqual(self.fisier('decizii.jsonl'), inainte)
+
+    def test_anulare_pe_preluata_409_si_nu_scrie(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.preia(uid)
+        inainte = self.fisier('decizii.jsonl')
+        r = self.anuleaza(uid)
+        self.assertEqual((r.status_code, r.get_json()), (409, {'error': 'se aplica deja'}))
+        self.assertEqual(self.fisier('decizii.jsonl'), inainte)
+
+    def test_anulare_pe_consumata_409(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.consuma(uid)
+        r = self.anuleaza(uid)
+        self.assertEqual((r.status_code, r.get_json()), (409, {'error': 'decizia e deja consumata'}))
+        self.assertIsNone(self.randuri()[0]['anulat'])
+
+    def test_anulare_uid_necunoscut_404(self):
+        self.cu_cerere()
+        self.decide('A-009', 'aprob')
+        for uid in ('000000000000', 'nu-e-uid', 'A' * 12, '..%2F..'):
+            with self.subTest(uid=uid):
+                self.assertEqual(self.anuleaza(uid).status_code, 404)
+
+    def test_anulare_corp_cu_camp_in_plus_400(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        r = self.anuleaza(uid, corp={'motiv': 'x'})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('corpul.motiv', r.get_json()['error'])
+        self.assertIsNone(self.randuri()[0]['anulat'])
+
+    def test_consumat_pe_anulata_409(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.anuleaza(uid)
+        r = self.consuma(uid)
+        self.assertEqual((r.status_code, r.get_json()), (409, {'error': 'decizia a fost anulata'}))
+        self.assertIsNone(self.randuri()[0]['consumat'])
+
+    # --- ?sursa
+
+    def test_decizii_filtrate_dupa_sursa_lipsa_inseamna_server(self):
+        self.pune_ok('server', corp('server', item('A-009', 'decide', optiuni=OPTIUNI)))
+        self.pune_ok('pc-job', corp('pc-job', item('P-1', 'decide', optiuni=OPTIUNI)))
+        u_srv = self.decide('A-009', 'aprob').get_json()['uid']
+        u_pc = self.decide('P-1', 'aprob').get_json()['uid']
+        self.scrie_randuri(self.randuri() + [self.rand_vechi(7)])     # un rand vechi, fara `sursa`
+
+        def uids(sursa):
+            return sorted(d['uid'] for d in self.decizii(sursa=sursa).get_json()['decizii'])
+
+        self.assertEqual(uids('pc-job'), [u_pc])
+        self.assertEqual(uids('server'), sorted([u_srv, '%012x' % 7]))
+        self.assertEqual(uids('ionpc'), [])
+        self.assertEqual(len(self.decizii().get_json()['decizii']), 3, 'fara filtru: toate')
+
+    def test_decizii_sursa_invalida_400(self):
+        for sursa in ('', 'A', 'x', '-job', 'Pc-Job', 'pc_job', 'a' * 21):
+            with self.subTest(sursa=sursa):
+                r = self.decizii(sursa=sursa)
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn('sursa', r.get_json()['error'])
+
+    def test_decizii_filtrul_nu_arata_anulatele(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.anuleaza(uid)
+        self.assertEqual(self.decizii(sursa='server').get_json(), {'decizii': []})
+
+    # --- consumat cu stare
+
+    def test_consumat_cu_stare_valida_se_pastreaza(self):
+        self.pune_ok('server', corp('server', *[item('A-0%d' % n, 'decide', optiuni=OPTIUNI) for n in range(3)]))
+        for n, stare in enumerate(('ok', 'warn', 'fail')):
+            uid = self.decide('A-0%d' % n, 'aprob').get_json()['uid']
+            r = self.client.post('/api/sistem/decizii/%s/consumat' % uid, json={'rezultat': 'r', 'stare': stare},
+                                 headers=self.bearer(FULL))
+            self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual([r['stare'] for r in self.randuri()], ['ok', 'warn', 'fail'])
+
+    def test_consumat_fara_stare_o_lasa_null(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        self.consuma(uid)
+        self.assertIsNone(self.randuri()[0]['stare'])
+
+    def test_consumat_cu_stare_invalida_400_si_decizia_ramane_in_asteptare(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        for stare in ('bine', 'OK', '', None, 5, ['ok']):
+            with self.subTest(stare=stare):
+                r = self.client.post('/api/sistem/decizii/%s/consumat' % uid, json={'rezultat': 'r', 'stare': stare},
+                                     headers=self.bearer(FULL))
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn('corpul.stare', r.get_json()['error'])
+        self.assertEqual(len(self.decizii().get_json()['decizii']), 1)
+
+    # --- masini asteptate
+
+    def test_masinile_asteptate_fara_snapshot_apar_ca_fail(self):
+        self.pune_ok('server', corp('server', masina='ion-ursu-thinkpad-t450'))
+        masini = self.citeste()['masini']
+        self.assertEqual([m['sursa'] for m in masini], ['ionpc', 'pc-job', 'server'])
+        self.assertEqual(masini[0], {'sursa': 'ionpc', 'masina': '', 'ultima': None, 'vechime_ore': None,
+                                     'stare': 'fail', 'detaliu': 'never reported'})
+        self.assertEqual(masini[1]['detaliu'], 'never reported')
+        self.assertEqual((masini[2]['stare'], masini[2]['masina']), ('ok', 'ion-ursu-thinkpad-t450'))
+
+    def test_masina_asteptata_cu_fisier_stricat_e_report_unreadable(self):
+        self.pune_ok('server', corp('server'))
+        with open(os.path.join(self.dir, 'pc-job.json'), 'w') as fh:
+            fh.write('{nu e json')
+        self.assertEqual(self.masina('pc-job')['detaliu'], 'report unreadable')
+        self.assertEqual(self.masina('ionpc')['detaliu'], 'never reported')
+        self.pune_ok('pc-job', corp('pc-job'))                              # un PUT valid o repara
+        self.assertEqual(self.masina('pc-job')['stare'], 'ok')
+
+    def test_sursa_in_plus_ramane_in_masini_in_ordinea_numelui(self):
+        self.pune_ok('banc', corp('banc'))
+        self.assertEqual([m['sursa'] for m in self.citeste()['masini']], ['banc', 'ionpc', 'pc-job', 'server'])
+
+    # --- amanare
+
+    def cu_doi_itemi(self):
+        self.pune_ok('server', corp('server', item('A-009', 'decide', optiuni=OPTIUNI), item('s:x', 'do')))
+
+    def test_amanare_pune_data_si_o_arata_pe_item(self):
+        self.cu_doi_itemi()
+        r = self.amana('A-009', '2026-11-20T08:00:00Z')
+        self.assertEqual((r.status_code, r.get_json()),
+                         (200, {'ok': True, 'id': 'A-009', 'pana': '2026-11-20T08:00:00Z'}))
+        self.assertEqual(json.loads(self.fisier('amanari.json')), {'A-009': '2026-11-20T08:00:00Z'})
+        itemi = {i['id']: i for i in self.citeste()['itemi']}
+        self.assertEqual((itemi['A-009']['amanat_pana'], itemi['s:x']['amanat_pana']),
+                         ('2026-11-20T08:00:00Z', None))
+        self.assertEqual(self.citeste()['numar'], 2, '`numar` nu se schimba')
+
+    def test_amanare_null_o_scoate_si_merge_si_pentru_id_necunoscut(self):
+        self.cu_doi_itemi()
+        self.amana('A-009', '2026-11-20T08:00:00Z')
+        r = self.amana('A-009', None)
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'id': 'A-009', 'pana': None}))
+        self.assertEqual(json.loads(self.fisier('amanari.json')), {})
+        self.assertIsNone(self.citeste()['itemi'][0]['amanat_pana'])
+        self.assertEqual(self.amana('nu-mai-exista', None).status_code, 200)
+
+    def test_amanare_null_fara_fisier_nu_creeaza_nimic(self):
+        self.assertEqual(self.amana('A-009', None).status_code, 200)
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'amanari.json')))
+
+    def test_amanare_e_idempotenta(self):
+        self.cu_doi_itemi()
+        self.amana('A-009', '2026-11-20T08:00:00Z')
+        prima = self.fisier('amanari.json')
+        self.assertEqual(self.amana('A-009', '2026-11-20T08:00:00Z').status_code, 200)
+        self.assertEqual(self.fisier('amanari.json'), prima)
+        self.assertFalse([n for n in os.listdir(self.dir) if n.endswith('.tmp')])
+
+    def test_amanare_o_data_noua_o_inlocuieste(self):
+        self.cu_doi_itemi()
+        self.amana('A-009', '2026-11-20T08:00:00Z')
+        self.amana('A-009', '2026-11-25T08:00:00Z')
+        self.assertEqual(json.loads(self.fisier('amanari.json')), {'A-009': '2026-11-25T08:00:00Z'})
+
+    def test_amanare_cu_data_gresita_400(self):
+        self.cu_doi_itemi()
+        cazuri = [
+            '2026-11-17T08:12:00Z',                # exact acum: nu e in viitor
+            '2026-11-17T08:11:59Z',                # trecut
+            '2026-12-18T08:12:01Z',                # cu o secunda peste 31 de zile
+            '2026-11-20T08:00:00',                 # fara Z
+            '2026-11-20T08:00:00+00:00',
+            '2026-11-20',
+            'maine',
+            5,
+            '',
+        ]
+        for pana in cazuri:
+            with self.subTest(pana=pana):
+                r = self.amana('A-009', pana)
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn('corpul.pana', r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'amanari.json')))
+
+    def test_amanare_exact_31_de_zile_trece(self):
+        self.cu_doi_itemi()
+        self.assertEqual(self.amana('A-009', '2026-12-18T08:12:00Z').status_code, 200)
+
+    def test_amanare_cu_corp_gresit_400(self):
+        self.cu_doi_itemi()
+        h = self.bearer(FULL)
+        cazuri = [
+            ({}, 'corpul.id'),
+            ({'id': 'A-009'}, 'corpul.pana'),                                          # pana lipseste (null e explicit)
+            ({'pana': '2026-11-20T08:00:00Z'}, 'corpul.id'),
+            ({'id': '', 'pana': '2026-11-20T08:00:00Z'}, 'corpul.id'),
+            ({'id': 'x' * 81, 'pana': '2026-11-20T08:00:00Z'}, 'corpul.id'),
+            ({'id': 5, 'pana': '2026-11-20T08:00:00Z'}, 'corpul.id'),
+            ({'id': 'A-009', 'pana': '2026-11-20T08:00:00Z', 'altceva': 1}, 'corpul.altceva'),
+            ([], 'corpul'),
+        ]
+        for corpul, in_mesaj in cazuri:
+            with self.subTest(corpul=corpul):
+                r = self.client.post('/api/sistem/amanare', json=corpul, headers=h)
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn(in_mesaj, r.get_json()['error'])
+        r = self.client.post('/api/sistem/amanare', data=b'{nu e json',
+                             headers=dict(h, **{'Content-Type': 'application/json'}))
+        self.assertEqual(r.status_code, 400)
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'amanari.json')))
+
+    def test_amanare_pentru_item_care_nu_mai_exista_409(self):
+        self.cu_doi_itemi()
+        r = self.amana('A-999', '2026-11-20T08:00:00Z')
+        self.assertEqual((r.status_code, r.get_json()), (409, {'error': 'itemul nu mai exista'}))
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'amanari.json')))
+
+    def test_amanarile_expirate_se_taie_la_scriere_si_nu_se_arata(self):
+        self.cu_doi_itemi()
+        os.makedirs(self.dir, exist_ok=True)
+        with open(os.path.join(self.dir, 'amanari.json'), 'w') as fh:
+            json.dump({'s:x': '2026-11-17T08:11:59Z', 'vechi': '2026-11-01T00:00:00Z',
+                       'viitor': '2026-11-19T00:00:00Z'}, fh)
+        self.assertIsNone(next(i for i in self.citeste()['itemi'] if i['id'] == 's:x')['amanat_pana'],
+                          'o amanare expirata nu se arata')
+        self.assertEqual(self.amana('A-009', '2026-11-20T08:00:00Z').status_code, 200)
+        self.assertEqual(json.loads(self.fisier('amanari.json')),
+                         {'viitor': '2026-11-19T00:00:00Z', 'A-009': '2026-11-20T08:00:00Z'})
+
+    def test_amanari_maxim_200_peste_da_409_dar_o_amanare_existenta_se_poate_schimba(self):
+        self.cu_doi_itemi()
+        os.makedirs(self.dir, exist_ok=True)
+        plin = {'x%d' % n: '2026-11-19T00:00:00Z' for n in range(200)}
+        with open(os.path.join(self.dir, 'amanari.json'), 'w') as fh:
+            json.dump(plin, fh)
+        inainte = self.fisier('amanari.json')
+        r = self.amana('A-009', '2026-11-20T08:00:00Z')
+        self.assertEqual(r.status_code, 409, r.get_data(as_text=True))
+        self.assertEqual(self.fisier('amanari.json'), inainte)
+        # cu 199 de intrari si A-009 printre ele (200 in total), schimbarea trece
+        plin.popitem()
+        plin['A-009'] = '2026-11-19T00:00:00Z'
+        with open(os.path.join(self.dir, 'amanari.json'), 'w') as fh:
+            json.dump(plin, fh)
+        self.assertEqual(self.amana('A-009', '2026-11-25T08:00:00Z').status_code, 200)
+        self.assertEqual(len(json.loads(self.fisier('amanari.json'))), 200)
+        # scoaterea merge oricand
+        self.assertEqual(self.amana('x0', None).status_code, 200)
+        self.assertEqual(len(json.loads(self.fisier('amanari.json'))), 199)
+
+    def test_amanari_stricat_nu_strica_GET_si_nu_e_snapshot_de_sursa(self):
+        self.cu_doi_itemi()
+        os.makedirs(self.dir, exist_ok=True)
+        with open(os.path.join(self.dir, 'amanari.json'), 'w') as fh:
+            fh.write('{nu e json')
+        j = self.citeste()
+        self.assertEqual([i['amanat_pana'] for i in j['itemi']], [None, None])
+        self.assertNotIn('amanari', [m['sursa'] for m in j['masini']])
+        self.assertEqual(self.amana('A-009', '2026-11-20T08:00:00Z').status_code, 200, 'un fisier stricat se rescrie')
+
+    def test_amanari_nu_se_poate_scrie_ca_sursa(self):
+        self.cu_doi_itemi()
+        self.amana('A-009', '2026-11-20T08:00:00Z')
+        inainte = self.fisier('amanari.json')
+        r = self.pune('amanari', corp('amanari', item('x')))
+        self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+        self.assertEqual(self.fisier('amanari.json'), inainte)
+
+    # --- taierea la 500 cu anulate
+
+    def test_taierea_la_500_trateaza_anulatele_ca_terminate(self):
+        self.cu_cerere()
+        # un rand in asteptare, cel mai vechi, si 499 anulate; cu cel nou sunt 501: iese prima anulata
+        randuri = [self.rand_vechi(0)] + [self.rand_vechi(n, anulat='2026-11-01T00:00:01Z') for n in range(1, 500)]
+        self.scrie_randuri(randuri)
+        uid = self.decide('A-009', 'aprob').get_json()['uid']
+        dupa = self.randuri()
+        self.assertEqual(len(dupa), 500)
+        self.assertEqual(dupa[0]['uid'], '%012x' % 0, 'cel in asteptare nu se taie, oricat de vechi')
+        self.assertEqual(dupa[1]['uid'], '%012x' % 2, 'prima anulata a iesit')
+        self.assertEqual(dupa[-1]['uid'], uid)
+
     # ----------------------------------------------------------------------- autentificare
 
     def test_fara_token_sau_cu_token_gresit_401(self):
@@ -605,6 +1121,24 @@ class Sistem(CuAplicatia):
         self.assertEqual(self.consuma(uid, token=DEVICE).status_code, 401)
         self.assertEqual(len(self.decizii().get_json()['decizii']), 1, 'decizia a ramas neconsumata')
 
+    def test_dispozitivul_nu_preia_decizii(self):
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob', token=DEVICE).get_json()['uid']
+        self.assertEqual(self.preia(uid, token=DEVICE).status_code, 401)
+        self.assertIsNone(self.randuri()[0]['preluat'], 'decizia a ramas nepreluata')
+        self.assertEqual(self.preia(uid).status_code, 200, 'masina o poate prelua')
+
+    def test_dispozitivul_anuleaza_si_amana(self):
+        """Ion anuleaza si amana din Torqa pe telefon: ambele raman deschise tokenului de dispozitiv."""
+        self.cu_cerere()
+        uid = self.decide('A-009', 'aprob', token=DEVICE).get_json()['uid']
+        r = self.anuleaza(uid, token=DEVICE)
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'uid': uid}), r.get_data(as_text=True))
+        self.assertIsNotNone(self.randuri()[0]['anulat'])
+        r = self.amana('A-009', '2026-11-20T08:00:00Z', token=DEVICE)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual(self.citeste(token=DEVICE)['itemi'][0]['amanat_pana'], '2026-11-20T08:00:00Z')
+
     def test_sesiunea_cu_pin_are_acces_la_tot(self):
         self.cu_cerere()
         self.client.post('/login', json={'pin': '135790'})
@@ -620,14 +1154,18 @@ class Sistem(CuAplicatia):
         for metoda, cale in (('PUT', '/api/sistem/sursa/pc-job'), ('GET', '/api/sistem/decizii'),
                              ('POST', '/api/sistem/decizii/0123456789ab/consumat')):
             self.assertTrue(device_token_denied(metoda, cale), (metoda, cale))
+        for metoda, cale in (('POST', '/api/sistem/decizii/0123456789ab/preluat'),):
+            self.assertTrue(device_token_denied(metoda, cale), (metoda, cale))
         # permis dispozitivului
-        for metoda, cale in (('GET', '/api/sistem'), ('POST', '/api/sistem/decizie')):
+        for metoda, cale in (('GET', '/api/sistem'), ('POST', '/api/sistem/decizie'),
+                             ('POST', '/api/sistem/decizie/0123456789ab/anulare'),
+                             ('POST', '/api/sistem/amanare')):
             self.assertFalse(device_token_denied(metoda, cale), (metoda, cale))
 
     def test_fiecare_ruta_sistem_are_login(self):
-        """Nicio ruta noua fara autentificare: toate cele cinci dau 401 fara sesiune si fara token."""
+        """Nicio ruta noua fara autentificare: toate cele opt dau 401 fara sesiune si fara token."""
         reguli = [r for r in self.app_module.app.url_map.iter_rules() if r.rule.startswith('/api/sistem')]
-        self.assertEqual(len(reguli), 5)
+        self.assertEqual(len(reguli), 8)
         for r in reguli:
             cale = r.rule.replace('<sursa>', 'pc-job').replace('<uid>', '0123456789ab')
             for metoda in r.methods - {'HEAD', 'OPTIONS'}:

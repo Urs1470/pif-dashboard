@@ -183,11 +183,12 @@ def safe_next_url(value, default='/'):
 # administrare adaugata acolo nu trebuie sa pice pe deschis), cheia vault-ului ori calendarul
 # Outlook (`/api/outlook/`: snapshot-ul il scrie scriptul de pe PC-ul de job, nu un telefon), sursele
 # paginii System maintenance (`/api/sistem/sursa/`: le scriu masinile) si coada de decizii
-# (`/api/sistem/decizii`, ca prefix: GET-ul si `/<uid>/consumat`; dispozitivul nu citeste comenzile
-# si nu le marcheaza consumate). Prefixul `/api/sistem/decizii` nu prinde `/api/sistem/decizie`
-# (singular: butonul din Torqa) si nici `/api/sistem` (vederea combinata): ambele raman deschise
-# dispozitivului. Un dispozitiv pierdut nu trebuie sa poata mai mult decat sa citeasca si sa editeze
-# proiecte si taskuri. Ele raman pe PIF_API_TOKEN.
+# (`/api/sistem/decizii`, ca prefix: GET-ul, `/<uid>/preluat` si `/<uid>/consumat`; dispozitivul nu
+# citeste comenzile si nu le marcheaza preluate sau consumate). Prefixul `/api/sistem/decizii` nu
+# prinde singularul `/api/sistem/decizie` (butonul din Torqa) si nici `/api/sistem/decizie/<uid>/anulare`
+# (Ion anuleaza din telefon), nici `/api/sistem/amanare`, nici `/api/sistem` (vederea combinata):
+# toate raman deschise dispozitivului. Un dispozitiv pierdut nu trebuie sa poata mai mult decat sa
+# citeasca si sa editeze proiecte si taskuri. Ele raman pe PIF_API_TOKEN.
 DEVICE_TOKEN_DENIED = (
     '/api/restore', '/api/backup', '/api/admin/', '/admin/',
     '/api/app/upload', '/api/torqa/web/', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',

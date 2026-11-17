@@ -150,6 +150,9 @@ class PrevizualizarileAnonimeDeImport(CuAplicatia):
 
     def test_nicio_alta_ruta_de_api_nu_raspunde_anonim(self):
         import re
+        # O cerere pe (ruta, metoda), toate de la acelasi IP: la 61 de perechi limita de 60/minut
+        # raspundea 429 in locul lui 401 (garda nu masoara limita).
+        self.patch(self.app_module, 'RATE_LIMIT', 100000)
         verificate = 0
         for regula in self.app_module.app.url_map.iter_rules():
             if not regula.rule.startswith('/api/') or regula.rule in self.PUBLICE:

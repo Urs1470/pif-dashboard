@@ -10,7 +10,12 @@
 # Pe disc, sub `<uploads>/sistem/`:
 #   <sursa>.json      ultimul snapshot al sursei, scris atomic
 #   decizii.jsonl     deciziile din Torqa, un rand pe decizie, rescris atomic (max 500 de randuri)
+#   amanari.json      {id item: pana cand e amanat}, scris atomic, cu amanarile expirate taiate
 #   decizii.lock      doar pentru blocare: doi workeri nu rescriu deciziile deodata
+#
+# Contractul v1.1 (aditiv peste v1; Torqa 1171 citeste fara erori): o decizie are un ciclu de viata
+# in asteptare -> preluata (de consumator) -> consumata, sau anulata de Ion cat nu e preluata;
+# `istoric` in vedere, amanarea unui item si masinile asteptate care nu au raportat.
 #
 # Validarea e STRICTA (contractul v1): orice camp in plus sau lipsa, orice tip gresit da 400 cu
 # calea campului, iar snapshot-ul existent ramane neatins.
@@ -26,7 +31,7 @@ import re
 import secrets
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 try:
     import fcntl
@@ -46,14 +51,23 @@ sistem_bp = Blueprint('sistem', __name__)
 DIR_SISTEM = os.path.join(UPLOAD_FOLDER, 'sistem')
 FISIER_DECIZII = 'decizii.jsonl'
 FISIER_BLOCARE = 'decizii.lock'
+FISIER_AMANARI = 'amanari.json'
 
 MAX_CORP = 1024 * 1024
 MAX_ITEMI = 200
 MAX_URMEAZA = 50
 MAX_AUTOMAT = 50
 MAX_RANDURI_DECIZII = 500
+MAX_ISTORIC = 20
+MAX_AMANARI = 200
+MAX_AMANARE_ZILE = 31
 VECHIME_WARN_ORE = 26
 VECHIME_ZILE_ORE = 48
+
+# Masinile care trebuie sa raporteze: una fara snapshot valid apare in vedere cu starea `fail`.
+SURSE_ASTEPTATE = ('server', 'pc-job', 'ionpc')
+# Numele de fisier `<nume>.json` din director care nu sunt snapshot-uri de sursa.
+NUME_REZERVATE = frozenset(('amanari',))
 
 STARI = ('ok', 'warn', 'fail')
 GRUPURI = ('decide', 'review', 'do')
@@ -71,6 +85,9 @@ CAMPURI_OPTIUNE = frozenset(('id', 'label', 'stil'))
 CAMPURI_URMEAZA = frozenset(('titlu', 'data'))
 CAMPURI_AUTOMAT = frozenset(('ce', 'stare', 'detaliu'))
 CAMPURI_DECIZIE = frozenset(('id', 'optiune', 'text'))
+CAMPURI_CONSUMAT = frozenset(('rezultat', 'stare'))
+CAMPURI_AMANARE = frozenset(('id', 'pana'))
+CAMPURI_GOL = frozenset()                         # anulare si preluat: corp gol sau {}
 
 
 class EroareCorp(ValueError):
@@ -286,7 +303,7 @@ def _surse():
         return []
     iesire = []
     for n in nume:
-        if not n.endswith('.json') or not _RE_SURSA.fullmatch(n[:-5]):
+        if not n.endswith('.json') or not _RE_SURSA.fullmatch(n[:-5]) or n[:-5] in NUME_REZERVATE:
             continue
         snapshot = _citeste_snapshot(n[:-5])
         if snapshot is not None:
@@ -320,18 +337,47 @@ def _citeste_decizii():
     return randuri
 
 
+def _in_asteptare(r):
+    """Decizia nu e nici consumata, nici anulata (inainte de v1.1: doar nu e consumata)."""
+    return r.get('consumat') is None and r.get('anulat') is None
+
+
 def _scrie_decizii(randuri):
-    """Rescrie atomic decizii.jsonl, taind cele mai vechi randuri CONSUMATE peste 500. Cele in
-    asteptare nu se taie niciodata. Se cheama doar sub `_blocat()`."""
+    """Rescrie atomic decizii.jsonl, taind cele mai vechi randuri TERMINATE (consumate sau
+    anulate) peste 500. Cele in asteptare nu se taie niciodata. Se cheama doar sub `_blocat()`."""
     exces = len(randuri) - MAX_RANDURI_DECIZII
     pastrate = []
     for r in randuri:
-        if exces > 0 and r.get('consumat') is not None:
+        if exces > 0 and not _in_asteptare(r):
             exces -= 1
             continue
         pastrate.append(r)
     continut = ''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in pastrate)
     _scrie_atomic(FISIER_DECIZII, continut.encode('utf-8'))
+
+
+def _citeste_amanari(acum):
+    """{id item: pana} doar pentru amanarile din viitor. Fisierul lipsa sau stricat da {} (stricat:
+    se logheaza); o intrare cu alta forma sau expirata se sare."""
+    try:
+        with open(_cale(FISIER_AMANARI), 'rb') as fh:
+            brut = json.loads(fh.read().decode('utf-8'))
+    except FileNotFoundError:
+        return {}
+    except (OSError, ValueError, RecursionError):
+        logger.warning('Sistem: %s nu se poate citi; se ignora', FISIER_AMANARI, exc_info=True)
+        return {}
+    if not isinstance(brut, dict):
+        logger.warning('Sistem: %s are alta forma; se ignora', FISIER_AMANARI)
+        return {}
+    iesire = {}
+    for id_, pana in brut.items():
+        if not isinstance(pana, str) or not _RE_GENERAT.fullmatch(pana):
+            continue
+        moment = _data_ora(pana)
+        if moment is not None and moment > acum:
+            iesire[id_] = pana
+    return iesire
 
 
 # --------------------------------------------------------------------------- vederea combinata
@@ -359,16 +405,48 @@ def _masina(sursa, snap, acum):
             'vechime_ore': round(ore, 1), 'stare': stare, 'detaliu': detaliu}
 
 
+def _masina_lipsa(sursa):
+    """O sursa asteptata fara snapshot valid: `fail`, cu motivul in `detaliu`."""
+    existent = os.path.exists(_cale(sursa + '.json'))
+    return {'sursa': sursa, 'masina': '', 'ultima': None, 'vechime_ore': None, 'stare': 'fail',
+            'detaliu': 'report unreadable' if existent else 'never reported'}
+
+
+def _masini(surse, acum):
+    """Cate o intrare pe sursa, dupa numele sursei; sursele asteptate fara snapshot valid incluse."""
+    masini = [_masina(sursa, snap, acum) for sursa, snap in surse]
+    prezente = {sursa for sursa, _ in surse}
+    masini.extend(_masina_lipsa(s) for s in SURSE_ASTEPTATE if s not in prezente)
+    masini.sort(key=lambda m: m['sursa'])
+    return masini
+
+
 def _decizii_in_asteptare():
-    """{id item: decizia neconsumata}. Cu doua pe acelasi id (fisier editat de mana) conteaza
+    """{id item: decizia in asteptare}. Cu doua pe acelasi id (fisier editat de mana) conteaza
     ultima din fisier."""
-    return {r['id']: r for r in _citeste_decizii() if r.get('consumat') is None}
+    return {r['id']: r for r in _citeste_decizii() if _in_asteptare(r)}
+
+
+def _istoric(randuri):
+    """Ultimele `MAX_ISTORIC` decizii terminate, cea mai recenta intai (dupa `consumat` sau
+    `anulat`; la egal, cea scrisa mai tarziu in fisier). Randurile vechi n-au campurile noi:
+    `titlu` lipsa -> id, `sursa` lipsa -> server, restul -> null."""
+    terminate = [(str(r.get('consumat') or r.get('anulat')), ix, r)
+                 for ix, r in enumerate(randuri) if not _in_asteptare(r)]
+    terminate.sort(key=lambda t: (t[0], t[1]), reverse=True)
+    return [{'uid': r['uid'], 'id': r['id'], 'titlu': r.get('titlu') or r['id'], 'optiune': r['optiune'],
+             'label': r.get('label'), 'text': r.get('text'), 'ts': r.get('ts'),
+             'sursa': r.get('sursa') or 'server', 'de_la': r.get('de_la'), 'rezultat': r.get('rezultat'),
+             'stare': r.get('stare'), 'consumat': r.get('consumat'), 'anulat': r.get('anulat')}
+            for _, _, r in terminate[:MAX_ISTORIC]]
 
 
 def vedere(acum=None):
     acum = acum or _acum()
     surse = _surse()
-    in_asteptare = _decizii_in_asteptare()
+    randuri = _citeste_decizii()
+    in_asteptare = {r['id']: r for r in randuri if _in_asteptare(r)}
+    amanari = _citeste_amanari(acum)
     # Cel mai nou snapshot intai: la acelasi id (sau titlu) ramane intrarea lui.
     pe_noutate = sorted(surse, key=lambda s: (_data_ora(s[1]['generat']), s[0]), reverse=True)
     itemi, vazute = [], set()
@@ -379,8 +457,9 @@ def vedere(acum=None):
             vazute.add(it['id'])
             d = in_asteptare.get(it['id'])
             decizie = None if d is None else {'uid': d['uid'], 'optiune': d['optiune'],
-                                              'label': d.get('label'), 'ts': d.get('ts')}
-            itemi.append(dict(it, sursa=sursa, decizie=decizie))
+                                              'label': d.get('label'), 'ts': d.get('ts'),
+                                              'preluat': d.get('preluat')}
+            itemi.append(dict(it, sursa=sursa, decizie=decizie, amanat_pana=amanari.get(it['id'])))
     itemi.sort(key=_cheie_item)
     urmeaza, titluri = [], set()
     for _, snap in pe_noutate:
@@ -393,23 +472,26 @@ def vedere(acum=None):
     return {
         'generat': _z(acum),
         'numar': sum(1 for it in itemi if it['decizie'] is None),
-        'masini': [_masina(sursa, snap, acum) for sursa, snap in surse],
+        'masini': _masini(surse, acum),
         'itemi': itemi,
         'urmeaza': urmeaza,
         'automat': automat,
+        'istoric': _istoric(randuri),
     }
 
 
 # --------------------------------------------------------------------------- rutele
 
-def _corp_json(maxim):
+def _corp_json(maxim, gol_ok=False):
     """(corp, None) sau (None, raspuns de eroare). Citeste cel mult `maxim` octeti, si fara
-    Content-Length (chunked)."""
+    Content-Length (chunked). `gol_ok`: un corp absent da `{}` (rutele fara parametri in corp)."""
     if request.content_length is not None and request.content_length > maxim:
         return None, (jsonify({'error': 'corp prea mare (maxim %d KB)' % (maxim // 1024)}), 413)
     brut = request.stream.read(maxim + 1)
     if len(brut) > maxim:
         return None, (jsonify({'error': 'corp prea mare (maxim %d KB)' % (maxim // 1024)}), 413)
+    if gol_ok and not brut.strip():
+        return {}, None
     try:
         return json.loads(brut.decode('utf-8')), None
     except (UnicodeDecodeError, ValueError, RecursionError):
@@ -425,6 +507,8 @@ def put_sursa(sursa):
     Raspuns: {ok, itemi}."""
     if not _RE_SURSA.fullmatch(sursa):
         return jsonify({'error': 'sursa: 2-20 de caractere din a-z 0-9 - (fara - la inceput)'}), 400
+    if sursa in NUME_REZERVATE:                  # `amanari.json` nu e un snapshot: nu se acopera
+        return jsonify({'error': 'sursa: numele %s e rezervat' % sursa}), 400
     corp, eroare = _corp_json(MAX_CORP)
     if eroare:
         return eroare
@@ -447,8 +531,10 @@ def put_sursa(sursa):
 @sistem_bp.route('/api/sistem', methods=['GET'])
 @login_required
 def get_sistem():
-    """Vederea combinata a surselor, cu deciziile in asteptare. Sesiune sau oricare Bearer valid
-    (Torqa pe telefon foloseste tokenul de dispozitiv). Fara surse: liste goale, tot 200."""
+    """Vederea combinata a surselor, cu deciziile in asteptare, `istoric` (ultimele 20 terminate),
+    `amanat_pana` pe item si masinile asteptate care n-au raportat. Sesiune sau oricare Bearer valid
+    (Torqa pe telefon foloseste tokenul de dispozitiv). Fara surse: tot 200, cu cele trei masini
+    asteptate in starea `fail`."""
     return jsonify(vedere())
 
 
@@ -463,8 +549,10 @@ def _de_la():
 def post_decizie():
     """Inregistreaza decizia lui Ion pentru un item. Sesiune, Bearer `PIF_API_TOKEN` sau tokenul
     de dispozitiv (butonul din Torqa). `id` trebuie sa existe acum in vedere, cu `optiune` printre
-    optiunile puse de sursa; altfel 409. O decizie neconsumata pe acelasi `id` se inlocuieste
-    (ultima castiga), deci o cerere retrimisa nu dubleaza nimic, doar schimba `uid`/`ts`.
+    optiunile puse de sursa; altfel 409. O decizie in asteptare (neconsumata si neanulata) pe
+    acelasi `id` se inlocuieste (ultima castiga), deci o cerere retrimisa nu dubleaza nimic, doar
+    schimba `uid`/`ts`; daca cea veche e deja preluata de consumator, 409 si nu se scrie nimic.
+    Randul nou tine `titlu` si `sursa` ale itemului din vedere.
     Raspuns 201: {ok, uid}."""
     corp, eroare = _corp_json(16 * 1024)
     if eroare:
@@ -486,10 +574,14 @@ def post_decizie():
     acum = _acum()
     rand = {'uid': secrets.token_hex(6), 'ts': _z(acum), 'id': id_, 'optiune': optiune,
             'label': optiuni[optiune]['label'], 'text': text, 'de_la': _de_la(),
-            'consumat': None, 'rezultat': None}
+            'consumat': None, 'rezultat': None,
+            'titlu': item['titlu'], 'sursa': item['sursa'], 'preluat': None, 'anulat': None, 'stare': None}
     try:
         with _blocat():
-            randuri = [r for r in _citeste_decizii() if not (r['id'] == id_ and r.get('consumat') is None)]
+            existente = _citeste_decizii()
+            if any(r['id'] == id_ and _in_asteptare(r) and r.get('preluat') is not None for r in existente):
+                return jsonify({'error': 'decizia anterioara se aplica deja'}), 409
+            randuri = [r for r in existente if not (r['id'] == id_ and _in_asteptare(r))]
             randuri.append(rand)
             _scrie_decizii(randuri)
     except OSError:
@@ -501,9 +593,17 @@ def post_decizie():
 @sistem_bp.route('/api/sistem/decizii', methods=['GET'])
 @login_required
 def get_decizii():
-    """Deciziile neconsumate, cele mai vechi intai. Sesiune sau `PIF_API_TOKEN`; tokenul de
-    dispozitiv e refuzat (`DEVICE_TOKEN_DENIED`): comenzile nu se citesc de pe telefon."""
-    in_asteptare = [r for r in _citeste_decizii() if r.get('consumat') is None]
+    """Deciziile in asteptare (neconsumate si neanulate), cele mai vechi intai, cu toate campurile
+    randului (inclusiv `preluat`, `sursa`; randurile vechi nu le au). `?sursa=<s>` pastreaza doar
+    randurile acelei surse (`sursa` lipsa = `server`); o sursa invalida da 400. Sesiune sau
+    `PIF_API_TOKEN`; tokenul de dispozitiv e refuzat (`DEVICE_TOKEN_DENIED`): comenzile nu se
+    citesc de pe telefon."""
+    sursa = request.args.get('sursa')
+    if sursa is not None and not _RE_SURSA.fullmatch(sursa):
+        return jsonify({'error': 'sursa: 2-20 de caractere din a-z 0-9 - (fara - la inceput)'}), 400
+    in_asteptare = [r for r in _citeste_decizii() if _in_asteptare(r)]
+    if sursa is not None:
+        in_asteptare = [r for r in in_asteptare if (r.get('sursa') or 'server') == sursa]
     in_asteptare.sort(key=lambda r: r.get('ts') or '')      # sortarea e stabila: la egal, ordinea din fisier
     return jsonify({'decizii': in_asteptare})
 
@@ -511,15 +611,18 @@ def get_decizii():
 @sistem_bp.route('/api/sistem/decizii/<uid>/consumat', methods=['POST'])
 @login_required
 def post_consumat(uid):
-    """Marcheaza decizia consumata, cu rezultatul. Aceeasi autentificare ca `GET /api/sistem/decizii`.
-    404 pentru un `uid` necunoscut, 409 pentru una deja consumata (o retrimitere nu rescrie
-    rezultatul). Raspuns: {ok, uid}."""
+    """Marcheaza decizia consumata, cu rezultatul si, optional, `stare` (ok|warn|fail). Aceeasi
+    autentificare ca `GET /api/sistem/decizii`. 404 pentru un `uid` necunoscut, 409 pentru una deja
+    consumata (o retrimitere nu rescrie rezultatul) sau anulata. Nu cere `preluat` inainte
+    (consumatorul vechi nu-l trimite). Raspuns: {ok, uid}."""
     corp, eroare = _corp_json(16 * 1024)
     if eroare:
         return eroare
     try:
-        _obiect(corp, 'corpul', frozenset(('rezultat',)))
+        _obiect(corp, 'corpul', CAMPURI_CONSUMAT)
         rezultat = _text(corp, 'rezultat', 'corpul', 300, nevid=True)
+        if 'stare' in corp:
+            _stare(corp, 'stare', 'corpul')
     except EroareCorp as e:
         logger.warning('Sistem: consum respins: %s', e)
         return jsonify({'error': str(e)}), 400
@@ -531,12 +634,138 @@ def post_consumat(uid):
             rand = next((r for r in randuri if r['uid'] == uid), None)
             if rand is None:
                 return jsonify({'error': 'decizie necunoscuta'}), 404
+            if rand.get('anulat') is not None:
+                return jsonify({'error': 'decizia a fost anulata'}), 409
             if rand.get('consumat') is not None:
                 return jsonify({'error': 'decizia e deja consumata'}), 409
             rand['consumat'] = _z(_acum())
             rand['rezultat'] = rezultat
+            rand['stare'] = corp.get('stare')
             _scrie_decizii(randuri)
     except OSError:
         logger.exception('Sistem: scrierea deciziilor a esuat pe disc')
         return jsonify({'error': 'Eroare pe disc la salvarea deciziei.'}), 500
     return jsonify({'ok': True, 'uid': uid})
+
+
+def _corp_gol():
+    """None daca corpul e absent sau `{}`; altfel raspunsul de eroare (400/413)."""
+    corp, eroare = _corp_json(16 * 1024, gol_ok=True)
+    if eroare:
+        return eroare
+    try:
+        _obiect(corp, 'corpul', CAMPURI_GOL)
+    except EroareCorp as e:
+        logger.warning('Sistem: corp respins: %s', e)
+        return jsonify({'error': str(e)}), 400
+    return None
+
+
+@sistem_bp.route('/api/sistem/decizii/<uid>/preluat', methods=['POST'])
+@login_required
+def post_preluat(uid):
+    """Consumatorul anunta ca a luat decizia, INAINTE s-o aplice. Aceeasi autentificare ca
+    `GET /api/sistem/decizii` (dispozitivul e refuzat de prefix). Corp gol sau `{}`. 404 uid
+    necunoscut; 409 daca decizia e anulata sau consumata. Idempotent: deja preluata -> 200 cu
+    momentul existent, fara rescriere (o reincercare a aceleiasi masini). Raspuns: {ok, uid, preluat}."""
+    eroare = _corp_gol()
+    if eroare:
+        return eroare
+    if not _RE_UID.fullmatch(uid):
+        return jsonify({'error': 'decizie necunoscuta'}), 404
+    try:
+        with _blocat():
+            randuri = _citeste_decizii()
+            rand = next((r for r in randuri if r['uid'] == uid), None)
+            if rand is None:
+                return jsonify({'error': 'decizie necunoscuta'}), 404
+            if rand.get('anulat') is not None:
+                return jsonify({'error': 'decizia a fost anulata'}), 409
+            if rand.get('consumat') is not None:
+                return jsonify({'error': 'decizia e deja consumata'}), 409
+            if rand.get('preluat') is None:
+                rand['preluat'] = _z(_acum())
+                _scrie_decizii(randuri)
+            preluat = rand['preluat']
+    except OSError:
+        logger.exception('Sistem: scrierea deciziilor a esuat pe disc')
+        return jsonify({'error': 'Eroare pe disc la salvarea deciziei.'}), 500
+    return jsonify({'ok': True, 'uid': uid, 'preluat': preluat})
+
+
+@sistem_bp.route('/api/sistem/decizie/<uid>/anulare', methods=['POST'])
+@login_required
+def post_anulare(uid):
+    """Ion anuleaza o decizie cat n-a fost preluata. Sesiune, `PIF_API_TOKEN` sau tokenul de
+    dispozitiv (prefixul `/api/sistem/decizii` nu prinde singularul `/api/sistem/decizie/`). Fara
+    corp (sau `{}`). 404 uid necunoscut; 409 daca e preluata (se aplica deja) sau consumata. Deja
+    anulata -> 200, fara rescriere (idempotent). Raspuns: {ok, uid}."""
+    eroare = _corp_gol()
+    if eroare:
+        return eroare
+    if not _RE_UID.fullmatch(uid):
+        return jsonify({'error': 'decizie necunoscuta'}), 404
+    try:
+        with _blocat():
+            randuri = _citeste_decizii()
+            rand = next((r for r in randuri if r['uid'] == uid), None)
+            if rand is None:
+                return jsonify({'error': 'decizie necunoscuta'}), 404
+            if rand.get('anulat') is None:
+                if rand.get('consumat') is not None:
+                    return jsonify({'error': 'decizia e deja consumata'}), 409
+                if rand.get('preluat') is not None:
+                    return jsonify({'error': 'se aplica deja'}), 409
+                rand['anulat'] = _z(_acum())
+                _scrie_decizii(randuri)
+    except OSError:
+        logger.exception('Sistem: scrierea deciziilor a esuat pe disc')
+        return jsonify({'error': 'Eroare pe disc la salvarea deciziei.'}), 500
+    return jsonify({'ok': True, 'uid': uid})
+
+
+@sistem_bp.route('/api/sistem/amanare', methods=['POST'])
+@login_required
+def post_amanare():
+    """Amana un item pana la `pana` (ISO Z, in viitor, cel mult 31 de zile) sau scoate amanarea
+    (`pana: null`). Sesiune, `PIF_API_TOKEN` sau tokenul de dispozitiv. Cu `pana` nenul, itemul
+    trebuie sa fie acum in vedere (409 altfel); maxim 200 de amanari (409 peste). `pana` in trecut sau
+    peste 31 de zile: 400. Idempotent: aceeasi cerere de doua ori lasa acelasi fisier. Amanarile
+    expirate se taie la fiecare scriere. Raspuns: {ok, id, pana}."""
+    corp, eroare = _corp_json(16 * 1024)
+    if eroare:
+        return eroare
+    acum = _acum()
+    try:
+        _obiect(corp, 'corpul', CAMPURI_AMANARE)
+        id_ = _text(corp, 'id', 'corpul', 80, nevid=True)
+        if 'pana' not in corp:
+            raise EroareCorp('corpul.pana: lipseste')
+        pana = corp['pana']
+        if pana is not None:
+            moment = _generat(pana, 'corpul.pana')
+            if moment <= acum:
+                raise EroareCorp('corpul.pana: trebuie sa fie in viitor')
+            if moment > acum + timedelta(days=MAX_AMANARE_ZILE):
+                raise EroareCorp('corpul.pana: cel mult %d de zile de acum' % MAX_AMANARE_ZILE)
+    except EroareCorp as e:
+        logger.warning('Sistem: amanare respinsa: %s', e)
+        return jsonify({'error': str(e)}), 400
+    if pana is not None and not any(it['id'] == id_ for it in vedere(acum)['itemi']):
+        return jsonify({'error': 'itemul nu mai exista'}), 409
+    try:
+        with _blocat():
+            vechi = _citeste_amanari(acum)                     # fara cele expirate
+            noi = dict(vechi)
+            if pana is None:
+                noi.pop(id_, None)
+            elif id_ in noi or len(noi) < MAX_AMANARI:
+                noi[id_] = pana
+            else:
+                return jsonify({'error': 'prea multe amanari (maxim %d)' % MAX_AMANARI}), 409
+            if noi != vechi or os.path.exists(_cale(FISIER_AMANARI)):
+                _scrie_atomic(FISIER_AMANARI, json.dumps(noi, ensure_ascii=False).encode('utf-8'))
+    except OSError:
+        logger.exception('Sistem: scrierea amanarilor a esuat pe disc')
+        return jsonify({'error': 'Eroare pe disc la salvarea amanarii.'}), 500
+    return jsonify({'ok': True, 'id': id_, 'pana': pana})
