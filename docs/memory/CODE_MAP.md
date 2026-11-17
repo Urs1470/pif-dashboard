@@ -66,9 +66,9 @@ _(fara definitii top-level)_
 
 `29:status_proiect`, `47:dosar_de_incarcari`, `75:get_proiecte`, `125:create_proiect`, `193:get_proiect`, `221:update_proiect`, `346:delete_proiect`, `397:get_project_snapshot`, `485:_impl_row`, `505:get_implementari`, `516:create_implementare`, `547:update_implementare`, `594:delete_implementare`, `620:get_stari`, `632:create_stare`, `674:delete_stare`, `690:_eroare_continut`, `718:_continut_json`, `726:_sablon`, `734:get_sabloane`, `745:create_sablon`, `771:update_sablon`, `797:delete_sablon`
 
-## blueprints/sistem.py (771 linii)
+## blueprints/sistem.py (792 linii)
 
-`93:EroareCorp`, `99:_obiect`, `108:_text`, `124:_stare`, `130:_lista`, `141:_generat`, `148:_optiune`, `161:_item`, `189:valideaza_snapshot`, `222:_cale`, `226:_acum`, `230:_z`, `234:_scrie_atomic`, `262:_blocat`, `284:_citeste_snapshot`, `298:_surse`, `314:_citeste_decizii`, `340:_in_asteptare`, `345:_scrie_decizii`, `359:_citeste_amanari`, `385:_cheie_item`, `393:_vechime_ore`, `397:_masina`, `408:_masina_lipsa`, `415:_masini`, `424:_decizii_in_asteptare`, `430:_istoric`, `444:vedere`, `485:_corp_json`, `503:put_sursa`, `533:get_sistem`, `541:_de_la`, `549:post_decizie`, `595:get_decizii`, `613:post_consumat`, `651:_corp_gol`, `666:post_preluat`, `698:post_anulare`, `729:post_amanare`
+`97:EroareCorp`, `103:_obiect`, `112:_text`, `128:_stare`, `134:_lista`, `145:_generat`, `152:_optiune`, `165:_item`, `193:valideaza_snapshot`, `243:_cale`, `247:_acum`, `251:_z`, `255:_scrie_atomic`, `283:_blocat`, `305:_citeste_snapshot`, `319:_surse`, `335:_citeste_decizii`, `361:_in_asteptare`, `366:_scrie_decizii`, `380:_citeste_amanari`, `406:_cheie_item`, `414:_vechime_ore`, `418:_masina`, `429:_masina_lipsa`, `436:_masini`, `445:_decizii_in_asteptare`, `451:_istoric`, `465:vedere`, `506:_corp_json`, `524:put_sursa`, `554:get_sistem`, `562:_de_la`, `570:post_decizie`, `616:get_decizii`, `634:post_consumat`, `672:_corp_gol`, `687:post_preluat`, `719:post_anulare`, `750:post_amanare`
 
 ## blueprints/sync.py (80 linii)
 

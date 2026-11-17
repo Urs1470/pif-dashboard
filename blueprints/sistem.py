@@ -57,6 +57,7 @@ MAX_CORP = 1024 * 1024
 MAX_ITEMI = 200
 MAX_URMEAZA = 50
 MAX_AUTOMAT = 50
+MAX_JOBURI = 50
 MAX_RANDURI_DECIZII = 500
 MAX_ISTORIC = 20
 MAX_AMANARI = 200
@@ -78,7 +79,10 @@ _RE_OPTIUNE = re.compile(r'[a-z0-9-]{1,20}')
 _RE_UID = re.compile(r'[0-9a-f]{12}')
 _RE_GENERAT = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
 
-CAMPURI_SNAPSHOT = frozenset(('v', 'sursa', 'masina', 'generat', 'sanatate', 'itemi', 'urmeaza', 'automat'))
+CAMPURI_SNAPSHOT = frozenset(('v', 'sursa', 'masina', 'generat', 'sanatate', 'itemi', 'urmeaza', 'automat', 'joburi'))
+# v1.2 (2026-11-17, aditiv): joburile programate ale masinii (runner-ul de pe PC-uri, timerele de utilizator de pe
+# laptop), ca Torqa sa arate ce ruleaza unde. `ultima` si `urmatoarea` lipsesc cand nu se stiu (null nu se accepta).
+CAMPURI_JOB = frozenset(('id', 'nume', 'stare', 'ultima', 'urmatoarea', 'detaliu'))
 CAMPURI_SANATATE = frozenset(('stare', 'detaliu'))
 CAMPURI_ITEM = frozenset(('id', 'grup', 'titlu', 'motiv', 'etichete', 'restant_zile', 'comanda', 'creat', 'optiuni'))
 CAMPURI_OPTIUNE = frozenset(('id', 'label', 'stil'))
@@ -214,7 +218,24 @@ def valideaza_snapshot(corp, sursa_din_cale):
         _text(a, 'ce', cale, 200, nevid=True)
         _stare(a, 'stare', cale)
         _text(a, 'detaliu', cale, 200)
-    return {k: corp[k] for k in ('v', 'sursa', 'masina', 'generat', 'sanatate', 'itemi', 'urmeaza', 'automat')}
+    snap = {k: corp[k] for k in ('v', 'sursa', 'masina', 'generat', 'sanatate', 'itemi', 'urmeaza', 'automat')}
+    if 'joburi' in corp:
+        ids = set()
+        for ix, j in enumerate(_lista(corp, 'joburi', 'corpul', MAX_JOBURI)):
+            cale = 'joburi[%d]' % ix
+            _obiect(j, cale, CAMPURI_JOB)
+            id_ = _text(j, 'id', cale, 60, nevid=True)
+            if id_ in ids:
+                raise EroareCorp('%s.id: duplicat (%s)' % (cale, id_))
+            ids.add(id_)
+            _text(j, 'nume', cale, 80, nevid=True)
+            _stare(j, 'stare', cale)
+            for camp in ('ultima', 'urmatoarea'):
+                if camp in j:
+                    _generat(j[camp], '%s.%s' % (cale, camp))
+            _text(j, 'detaliu', cale, 200)
+        snap['joburi'] = corp['joburi']
+    return snap
 
 
 # --------------------------------------------------------------------------- discul
@@ -402,14 +423,14 @@ def _masina(sursa, snap, acum):
             stare = 'warn'
         detaliu = 'last seen %d d' % (ore // 24) if ore > VECHIME_ZILE_ORE else 'last seen %d h' % int(ore)
     return {'sursa': sursa, 'masina': snap['masina'], 'ultima': snap['generat'],
-            'vechime_ore': round(ore, 1), 'stare': stare, 'detaliu': detaliu}
+            'vechime_ore': round(ore, 1), 'stare': stare, 'detaliu': detaliu, 'joburi': snap.get('joburi', [])}
 
 
 def _masina_lipsa(sursa):
     """O sursa asteptata fara snapshot valid: `fail`, cu motivul in `detaliu`."""
     existent = os.path.exists(_cale(sursa + '.json'))
     return {'sursa': sursa, 'masina': '', 'ultima': None, 'vechime_ore': None, 'stare': 'fail',
-            'detaliu': 'report unreadable' if existent else 'never reported'}
+            'detaliu': 'report unreadable' if existent else 'never reported', 'joburi': []}
 
 
 def _masini(surse, acum):

@@ -288,7 +288,7 @@ class Sistem(CuAplicatia):
         self.assertEqual(j, {'generat': '2026-11-17T08:12:00Z', 'numar': 0, 'itemi': [], 'urmeaza': [],
                              'automat': [], 'istoric': [],
                              'masini': [{'sursa': s, 'masina': '', 'ultima': None, 'vechime_ore': None,
-                                         'stare': 'fail', 'detaliu': 'never reported'}
+                                         'stare': 'fail', 'detaliu': 'never reported', 'joburi': []}
                                         for s in ('ionpc', 'pc-job', 'server')]})
 
     def test_fisier_stricat_sau_in_plus_nu_strica_GET(self):
@@ -902,12 +902,33 @@ class Sistem(CuAplicatia):
 
     # --- masini asteptate
 
+    def test_joburile_masinii_trec_in_vedere(self):
+        joburi = [{'id': 'mail-tasks', 'nume': 'Mail Tasks', 'stare': 'fail', 'ultima': '2026-11-17T06:00:40Z',
+                   'urmatoarea': '2026-11-17T12:00:00Z', 'detaliu': 'cod 1'},
+                  {'id': 'knowledge-sync', 'nume': 'Knowledge Sync', 'stare': 'ok', 'detaliu': 'n-a rulat încă'}]
+        self.pune_ok('pc-job', corp('pc-job', joburi=joburi))
+        m = {x['sursa']: x for x in self.citeste()['masini']}
+        self.assertEqual(m['pc-job']['joburi'], joburi)
+        self.assertEqual(m['server']['joburi'], [], 'masina fara snapshot: lista goala')
+
+    def test_snapshot_fara_joburi_ramane_valid(self):
+        self.pune_ok('pc-job', corp('pc-job'))
+        m = {x['sursa']: x for x in self.citeste()['masini']}
+        self.assertEqual(m['pc-job']['joburi'], [])
+
+    def test_joburi_in_afara_contractului_400(self):
+        bun = {'id': 'a', 'nume': 'A', 'stare': 'ok', 'detaliu': ''}
+        for rau in ([dict(bun, x=1)], [dict(bun, stare='rau')], [dict(bun, ultima=None)], [dict(bun, ultima='azi')],
+                    [bun, dict(bun)], [dict(bun, nume='')], 'nu-i lista'):
+            r = self.client.put('/api/sistem/sursa/pc-job', json=corp('pc-job', joburi=rau), headers=self.bearer(FULL))
+            self.assertEqual(r.status_code, 400, (rau, r.get_data(as_text=True)))
+
     def test_masinile_asteptate_fara_snapshot_apar_ca_fail(self):
         self.pune_ok('server', corp('server', masina='ion-ursu-thinkpad-t450'))
         masini = self.citeste()['masini']
         self.assertEqual([m['sursa'] for m in masini], ['ionpc', 'pc-job', 'server'])
         self.assertEqual(masini[0], {'sursa': 'ionpc', 'masina': '', 'ultima': None, 'vechime_ore': None,
-                                     'stare': 'fail', 'detaliu': 'never reported'})
+                                     'stare': 'fail', 'detaliu': 'never reported', 'joburi': []})
         self.assertEqual(masini[1]['detaliu'], 'never reported')
         self.assertEqual((masini[2]['stare'], masini[2]['masina']), ('ok', 'ion-ursu-thinkpad-t450'))
 

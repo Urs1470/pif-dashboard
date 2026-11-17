@@ -16,6 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-11-17
 
+- 2026-11-17 Contractul `/api/sistem` v1.2 (aditiv, etapa 4 a centralizării) — snapshot-ul unei surse poate avea `joburi` (`id`, `nume`, `stare`, `ultima`, `urmatoarea`, `detaliu`; cel mult 50), iar `GET /api/sistem` le dă pe fiecare mașină (`masini[].joburi`, `[]` fără ele); le trimit runner-ul de pe PC-uri și timerele de utilizator de pe laptop (Knowledge `tools/sistem-snapshot.py`), ca Torqa să arate ce rulează unde. Codul: `blueprints/sistem.py`.
 - [2026-11-17 Mail Tasks judecă pe server](2026-11-17-mail-tasks-pe-server.md) — PC-ul urcă exportul Outlook la `PUT /api/mail/lot`; `mail-tasks.py server` (timer la 5 min pe laptop) rulează filtrul, Claude și taskurile, cu registrul pe server, și închide lotul cu `POST .../gata` (`ultima_rulare` doar la cod 0); lotul se șterge după rulare sau după 7 zile, dispozitivul n-are acces la `/api/mail/`.
 - [2026-11-17 Alertele materialelor se calculează pe server](2026-11-17-materiale-alerte-pe-server.md) — la `PUT /api/materiale` cu `sursa.alerte = "server"`, `blueprints/materiale_alerte.py` calculează alertele, marcajele `fata_de_start` și rezumatul și creează taskurile direct în bază, cu id-urile colectorului (SHA-1, deci fără dubluri); fără flag, alertele trimise rămân ca înainte. Colectorul trimite `contract_data`, `linii_contract` și `sursa.utilizator`; pe PC rămân doar interogările.
 

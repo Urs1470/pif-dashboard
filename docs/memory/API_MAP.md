@@ -93,14 +93,14 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| PUT | `/api/sistem/sursa/<sursa>` | `put_sursa` | 501 |
-| GET | `/api/sistem` | `get_sistem` | 531 |
-| POST | `/api/sistem/decizie` | `post_decizie` | 547 |
-| GET | `/api/sistem/decizii` | `get_decizii` | 593 |
-| POST | `/api/sistem/decizii/<uid>/consumat` | `post_consumat` | 611 |
-| POST | `/api/sistem/decizii/<uid>/preluat` | `post_preluat` | 664 |
-| POST | `/api/sistem/decizie/<uid>/anulare` | `post_anulare` | 696 |
-| POST | `/api/sistem/amanare` | `post_amanare` | 727 |
+| PUT | `/api/sistem/sursa/<sursa>` | `put_sursa` | 522 |
+| GET | `/api/sistem` | `get_sistem` | 552 |
+| POST | `/api/sistem/decizie` | `post_decizie` | 568 |
+| GET | `/api/sistem/decizii` | `get_decizii` | 614 |
+| POST | `/api/sistem/decizii/<uid>/consumat` | `post_consumat` | 632 |
+| POST | `/api/sistem/decizii/<uid>/preluat` | `post_preluat` | 685 |
+| POST | `/api/sistem/decizie/<uid>/anulare` | `post_anulare` | 717 |
+| POST | `/api/sistem/amanare` | `post_amanare` | 748 |
 
 ## blueprints/sync.py (1 rute)
 
