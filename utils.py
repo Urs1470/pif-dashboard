@@ -184,7 +184,8 @@ def safe_next_url(value, default='/'):
 # Outlook (`/api/outlook/`: snapshot-ul il scrie scriptul de pe PC-ul de job, nu un telefon), sursele
 # paginii System maintenance (`/api/sistem/sursa/`: le scriu masinile) si coada de decizii
 # (`/api/sistem/decizii`, ca prefix: GET-ul, `/<uid>/preluat` si `/<uid>/consumat`; dispozitivul nu
-# citeste comenzile si nu le marcheaza preluate sau consumate). Prefixul `/api/sistem/decizii` nu
+# citeste comenzile si nu le marcheaza preluate sau consumate) si loturile de mail (`/api/mail/`: exportul Outlook
+# al PC-ului, cu corpul mailurilor, pe care il judeca Mail Tasks pe server). Prefixul `/api/sistem/decizii` nu
 # prinde singularul `/api/sistem/decizie` (butonul din Torqa) si nici `/api/sistem/decizie/<uid>/anulare`
 # (Ion anuleaza din telefon), nici `/api/sistem/amanare`, nici `/api/sistem` (vederea combinata):
 # toate raman deschise dispozitivului. Un dispozitiv pierdut nu trebuie sa poata mai mult decat sa
@@ -192,7 +193,7 @@ def safe_next_url(value, default='/'):
 DEVICE_TOKEN_DENIED = (
     '/api/restore', '/api/backup', '/api/admin/', '/admin/',
     '/api/app/upload', '/api/torqa/web/', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
-    '/api/outlook/', '/api/sistem/sursa/', '/api/sistem/decizii',
+    '/api/outlook/', '/api/sistem/sursa/', '/api/sistem/decizii', '/api/mail/',
 )
 
 # Rutele pe care dispozitivul doar CITESTE. `PUT /api/obsidian/note` rescrie o nota din
