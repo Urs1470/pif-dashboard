@@ -1,8 +1,9 @@
 # Materiale Blueprint
 # Centralizatorul de materiale al proiectelor deschise: ce e comandat (CT-uri, cu termenele
 # confirmate din BC), ce e inca necomandat, listele de materiale (LM) din E100, firul de mailuri
-# si alertele. Datele le aduna colectorul de pe PC-ul de job (Knowledge `tools/`, Task Scheduler,
-# L-V la 08:00) si le urca la `PUT /api/materiale`; Torqa le citeste la `GET /api/materiale`.
+# si alertele. Datele le aduna colectorul de pe PC-ul de job (Knowledge `tools/`, L-V la 08:00 si 13:00)
+# si le urca la `PUT /api/materiale`; Torqa le citeste la `GET /api/materiale`. Alertele si taskurile lor
+# le calculeaza serverul la PUT cand colectorul trimite `sursa.alerte = "server"` (blueprints/materiale_alerte.py).
 #
 # DE CE UN FISIER SI NU O TABELA (tiparul `blueprints/outlook.py`, decizia 2026-10-19): fiecare
 # rulare trimite snapshot-ul complet, care se reface singur a doua zi; fara schema, fara migrare,
@@ -28,6 +29,7 @@ from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, jsonify, request
 
+from blueprints import materiale_alerte
 from blueprints.outlook import _data, _data_ora
 from database import get_db
 from utils import login_required, UPLOAD_FOLDER
@@ -433,7 +435,7 @@ def put_materiale():
     """Inlocuieste snapshot-ul materialelor. Sesiune sau Bearer `PIF_API_TOKEN`; tokenul de
     dispozitiv doar citeste (`DEVICE_TOKEN_READ_ONLY`). Idempotent: aceeasi cerere de doua ori
     lasa aceleasi fisiere. Un snapshot mai vechi decat cel curent da 409 si nu se scrie.
-    Raspuns: {ok, proiecte, rotit}."""
+    Raspuns: {ok, proiecte, rotit}; cu `sursa.alerte = "server"` si {alerte, taskuri: {noi, existente, sarite}}."""
     if request.content_length is not None and request.content_length > MAX_CORP:
         return jsonify({'error': 'corp prea mare (maxim 2 MB)'}), 413
     brut = request.stream.read(MAX_CORP + 1)      # si fara Content-Length (chunked) plafonul ramane
@@ -458,14 +460,42 @@ def put_materiale():
             return jsonify({'error': 'snapshot mai vechi decat cel curent (%s)' % curent['generat']}), 409
         # Ziua locala din string (primele 10 caractere), ca la calendarul Outlook.
         rotit = snapshot['generat'][:10] != curent['generat'][:10]
+
+    # Alertele pe server (din 2026-11-17): doar cand colectorul o cere, ca un colector vechi sa nu piarda nimic.
+    pe_server = snapshot['sursa'].get('alerte') == 'server'
+    taskuri, conn = [], None
+    if pe_server:
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            taskuri = materiale_alerte.calculeaza(
+                snapshot, lambda pid, azi: materiale_alerte.perioada_urmatoare(cur, pid, azi))
+        except Exception:
+            logger.exception('Materiale: calculul alertelor a picat')
+            if conn is not None:
+                conn.close()
+            return jsonify({'error': 'Alertele nu s-au putut calcula; snapshot-ul nu s-a scris.'}), 500
     try:
         if rotit:
             _scrie_atomic(ANTERIOR, octeti_curent)
         _scrie_atomic(CURENT, json.dumps(snapshot, ensure_ascii=False).encode('utf-8'))
     except OSError:
         logger.exception('Materiale: scrierea snapshot-ului a esuat pe disc')
+        if conn is not None:
+            conn.close()
         return jsonify({'error': 'Eroare pe disc la salvarea snapshot-ului.'}), 500
-    return jsonify({'ok': True, 'proiecte': len(snapshot['proiecte']), 'rotit': rotit})
+    raspuns = {'ok': True, 'proiecte': len(snapshot['proiecte']), 'rotit': rotit}
+    if pe_server:
+        raspuns['alerte'] = sum(len(p['alerte']) for p in snapshot['proiecte'])
+        try:
+            noi, existente, sarite = materiale_alerte.creeaza_taskuri(conn, taskuri)
+            raspuns['taskuri'] = {'noi': noi, 'existente': existente, 'sarite': sarite}
+        except Exception:
+            logger.exception('Materiale: taskurile alertelor nu s-au putut scrie')
+            raspuns['taskuri'] = {'eroare': 'taskurile alertelor nu s-au scris; reiau la urmatoarea colectare'}
+        finally:
+            conn.close()
+    return jsonify(raspuns)
 
 
 @materiale_bp.route('/api/materiale', methods=['GET'])

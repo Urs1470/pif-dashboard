@@ -42,9 +42,13 @@ _(fara definitii top-level)_
 
 `34:citeste_liste`, `44:_eroare`, `48:_nume`, `57:_iconita`, `65:_culoare`, `76:get_liste`, `86:create_lista`, `132:reordoneaza_liste`, `165:update_lista`, `208:delete_lista`
 
-## blueprints/materiale.py (478 linii)
+## blueprints/materiale.py (508 linii)
 
-`64:EroareCorp`, `70:_text`, `82:_numar`, `90:_intreg_sau_null`, `96:_data_sau_null`, `102:_lista`, `117:_lm`, `125:_termen`, `136:_necomandat`, `147:_mail`, `164:_alerta`, `176:valideaza_snapshot`, `217:_cale`, `221:_scrie_atomic`, `244:_citeste`, `265:_cheie_termen`, `269:_cheie_necomandat`, `273:_pe_chei`, `286:_ordine_termen`, `290:_ordine_necomandat`, `294:_marcheaza`, `308:_compara_termen`, `316:_compara_necomandat`, `322:_compara_lm`, `328:_cheie_mail`, `333:_proiect_cu_marcaje`, `366:_adauga_zi_lucratoare`, `373:_acum`, `377:e_vechi`, `386:_date_proiecte`, `404:vedere`, `432:put_materiale`, `473:get_materiale`
+`66:EroareCorp`, `72:_text`, `84:_numar`, `92:_intreg_sau_null`, `98:_data_sau_null`, `104:_lista`, `119:_lm`, `127:_termen`, `138:_necomandat`, `149:_mail`, `166:_alerta`, `178:valideaza_snapshot`, `219:_cale`, `223:_scrie_atomic`, `246:_citeste`, `267:_cheie_termen`, `271:_cheie_necomandat`, `275:_pe_chei`, `288:_ordine_termen`, `292:_ordine_necomandat`, `296:_marcheaza`, `310:_compara_termen`, `318:_compara_necomandat`, `324:_compara_lm`, `330:_cheie_mail`, `335:_proiect_cu_marcaje`, `368:_adauga_zi_lucratoare`, `375:_acum`, `379:e_vechi`, `388:_date_proiecte`, `406:vedere`, `434:put_materiale`, `503:get_materiale`
+
+## blueprints/materiale_alerte.py (294 linii)
+
+`37:_zi`, `47:zile_lucratoare_dupa`, `57:id_stabil`, `66:_dm`, `70:_dmy`, `74:_unice`, `84:alerte_start`, `125:alerte_proiect`, `206:task_pentru`, `240:perioada_urmatoare`, `254:creeaza_taskuri`, `283:calculeaza`
 
 ## blueprints/obsidian.py (552 linii)
 

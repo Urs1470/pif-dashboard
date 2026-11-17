@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-11-17
+
+- [2026-11-17 Alertele materialelor se calculează pe server](2026-11-17-materiale-alerte-pe-server.md) — la `PUT /api/materiale` cu `sursa.alerte = "server"`, `blueprints/materiale_alerte.py` calculează alertele, marcajele `fata_de_start` și rezumatul și creează taskurile direct în bază, cu id-urile colectorului (SHA-1, deci fără dubluri); fără flag, alertele trimise rămân ca înainte. Colectorul trimite `contract_data`, `linii_contract` și `sursa.utilizator`; pe PC rămân doar interogările.
+
 ## 2026-11-06
 
 - [2026-11-06 Centralizatorul de materiale: snapshot-fișier la `/api/materiale`](2026-11-06-materiale.md) — colectorul de pe PC-ul de job (BC prin SQL-ul E100, E100, Outlook) urcă zilnic `PUT /api/materiale`; două fișiere în `uploads/materiale/` (curent și ultima zi anterioară, rotite doar la zi nouă, fără tabelă, în afara backup-ului), 409 la un snapshot mai vechi; câmpurile în plus se păstrează; `GET` dă marcajele (nou, mutat, cantitate, stare, dispărute), `termen_neregulat` pentru 1900-01-01 și 2030-12-31, `vechi` după o zi lucrătoare și numele proiectului din bază; dispozitivul doar citește. Pagina e în Torqa, cu brief separat.
