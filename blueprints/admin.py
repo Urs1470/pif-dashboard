@@ -19,6 +19,7 @@ from utils import (
 )
 from database import get_db, row_to_dict, get_schema_version, DATABASE_PATH, LISTE_FIXE, asigura_listele_fixe
 from blueprints.outlook import citeste_snapshot, evenimente_in_fereastra
+from blueprints.echipa import echipa_in_fereastra
 
 logger = logging.getLogger(__name__)
 
@@ -648,4 +649,6 @@ def calendar_view():
         # Aditiv: APK-ul instalat ignora cheia. Snapshot-ul Outlook, doar ce atinge fereastra
         # (null fara snapshot sau cu fisierul corupt). Vezi blueprints/outlook.py.
         'outlook': evenimente_in_fereastra(citeste_snapshot(), start, end_s),
+        # Aditiv, ca `outlook`: planul echipei din Gantt (null fara sursa si fara snapshot). Vezi blueprints/echipa.py.
+        'echipa': echipa_in_fereastra(start, end_s),
     })

@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-11-18
+
+- [2026-11-18 Planul echipei din Gantt (SRP), doar citit](2026-11-18-gantt-srp.md) — serverul citește Gantt-ul „Project Plan” fără login (planId + secret în `uploads/echipa/sursa.json`, prin `PUT /api/echipa/sursa`, interzis tokenului de dispozitiv) și ține un snapshot normalizat la cel mult 15 minute, fără tabelă și în afara backup-ului; `GET /api/echipa` și cheia aditivă `echipa` din `/api/calendar` dau activitățile (capăt inclusiv) și avertizările `perioada_diferita`, `lipseste_in_dashboard`, `lipseste_in_srp`; secretul nu iese în răspuns, log sau erori; `implementari` doar se citește.
+
 ## 2026-11-17
 
 - 2026-11-17 Contractul `/api/sistem` v1.2 (aditiv, etapa 4 a centralizării) — snapshot-ul unei surse poate avea `joburi` (`id`, `nume`, `stare`, `ultima`, `urmatoarea`, `detaliu`; cel mult 50), iar `GET /api/sistem` le dă pe fiecare mașină (`masini[].joburi`, `[]` fără ele); le trimit runner-ul de pe PC-uri și timerele de utilizator de pe laptop (Knowledge `tools/sistem-snapshot.py`), ca Torqa să arate ce rulează unde. Codul: `blueprints/sistem.py`.

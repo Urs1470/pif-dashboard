@@ -10,17 +10,17 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `36:esteCacheVechi`, `40:esteTorqa`, `59:retrage`
 
-## app.py (618 linii)
+## app.py (620 linii)
 
-`89:_retele_de_incredere`, `103:_ip_valid`, `114:_proxy_de_incredere`, `126:_adresa_socket`, `132:_client_ip`, `153:get_or_create_secret_key`, `171:file_hash`, `198:inject_version`, `222:make_session_permanent`, `232:setup_logging`, `264:check_rate_limit`, `306:check_login_rate_limit`, `317:before_request_func`, `349:_default_csp`, `377:after_request_func`, `401:get_hashed_pin`, `410:_git_commit`, `424:healthz`, `430:login_page`, `440:login`, `454:logout`, `463:index`, `476:service_worker`, `481:add_sw_header`, `502:get_deploy_secret`, `510:webhook_deploy`, `601:page_not_found`, `608:internal_error`
+`91:_retele_de_incredere`, `105:_ip_valid`, `116:_proxy_de_incredere`, `128:_adresa_socket`, `134:_client_ip`, `155:get_or_create_secret_key`, `173:file_hash`, `200:inject_version`, `224:make_session_permanent`, `234:setup_logging`, `266:check_rate_limit`, `308:check_login_rate_limit`, `319:before_request_func`, `351:_default_csp`, `379:after_request_func`, `403:get_hashed_pin`, `412:_git_commit`, `426:healthz`, `432:login_page`, `442:login`, `456:logout`, `465:index`, `478:service_worker`, `483:add_sw_header`, `504:get_deploy_secret`, `512:webhook_deploy`, `603:page_not_found`, `610:internal_error`
 
 ## database.py (2181 linii)
 
 `15:get_db`, `36:close_db`, `180:asigura_listele_fixe`, `190:get_schema_version`, `203:set_schema_version`, `212:migrate_v1_to_v2`, `294:migrate_v2_to_v3`, `321:migrate_v3_to_v4`, `352:migrate_v4_to_v5`, `394:migrate_v5_to_v6`, `416:migrate_v6_to_v7`, `438:migrate_v7_to_v8`, `481:migrate_v8_to_v9`, `496:migrate_v9_to_v10`, `526:migrate_v10_to_v11`, `548:migrate_v11_to_v12`, `594:migrate_v12_to_v13`, `639:migrate_v13_to_v14`, `678:migrate_v14_to_v15`, `701:migrate_v15_to_v16`, `720:migrate_v16_to_v17`, `736:migrate_v17_to_v18`, `785:migrate_v18_to_v19`, `825:migrate_v19_to_v20`, `842:migrate_v20_to_v21`, `869:migrate_v21_to_v22`, `888:migrate_v22_to_v23`, `907:migrate_v23_to_v24`, `944:migrate_v24_to_v25`, `959:migrate_v25_to_v26`, `984:migrate_v26_to_v27`, `1001:migrate_v27_to_v28`, `1047:migrate_v28_to_v29`, `1103:migrate_v29_to_v30`, `1147:migrate_v30_to_v31`, `1180:migrate_v31_to_v32`, `1209:migrate_v32_to_v33`, `1264:migrate_v33_to_v34`, `1300:migrate_v34_to_v35`, `1332:migrate_v35_to_v36`, `1368:migrate_v36_to_v37`, `1406:migrate_v37_to_v38`, `1433:migrate_v38_to_v39`, `1471:migrate_v39_to_v40`, `1500:migrate_v40_to_v41`, `1537:migrate_v41_to_v42`, `1563:migrate_v42_to_v43`, `1601:migrate_v43_to_v44`, `1643:migrate_v44_to_v45`, `1671:migrate_v45_to_v46`, `1688:run_migrations`, `2029:init_db`, `2174:row_to_dict`
 
-## utils.py (300 linii)
+## utils.py (301 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `126:cale_uploads`, `138:safe_table`, `144:generate_uuid`, `148:id_ocupat`, `158:safe_next_url`, `210:device_token_denied`, `228:refuse_device_token_fields`, `244:_check_api_token`, `268:login_required`, `282:get_app_setting`, `291:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `126:cale_uploads`, `138:safe_table`, `144:generate_uuid`, `148:id_ocupat`, `158:safe_next_url`, `211:device_token_denied`, `229:refuse_device_token_fields`, `245:_check_api_token`, `269:login_required`, `283:get_app_setting`, `292:set_app_setting`
 
 ## csrf.py (83 linii)
 
@@ -30,13 +30,17 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 _(fara definitii top-level)_
 
-## blueprints/admin.py (651 linii)
+## blueprints/admin.py (654 linii)
 
-`43:get_stats`, `79:backup_database`, `122:_reinsereaza`, `140:_termen_din_planificata`, `147:_ajusteaza_global`, `152:_ajusteaza_perioada`, `175:_copie_inainte_de_restore`, `196:restore_database`, `290:admin_db_upload_page`, `342:admin_db_upload`, `419:admin_db_dump`, `461:calendar_view`
+`44:get_stats`, `80:backup_database`, `123:_reinsereaza`, `141:_termen_din_planificata`, `148:_ajusteaza_global`, `153:_ajusteaza_perioada`, `176:_copie_inainte_de_restore`, `197:restore_database`, `291:admin_db_upload_page`, `343:admin_db_upload`, `420:admin_db_dump`, `462:calendar_view`
 
 ## blueprints/app_update.py (194 linii)
 
 `60:_canal`, `67:_canal_cerut`, `77:_cai`, `84:_canal_necunoscut`, `89:_canal_lipsa`, `94:_meta`, `103:app_upload`, `163:app_version`, `177:app_apk`
+
+## blueprints/echipa.py (675 linii)
+
+`60:EroareGantt`, `67:_cale`, `71:_scrie_atomic`, `96:_citeste_json`, `107:citeste_sursa`, `116:citeste_snapshot`, `130:_acum`, `134:_azi`, `139:_descarca`, `166:_json_in_json`, `176:_text`, `180:_data_gantt`, `194:_id_parinte`, `202:_resurse_activitate`, `210:analiza_cod`, `225:cod_text`, `234:coduri_potrivite`, `244:normalizeaza`, `321:_ia_incercarea`, `346:_elibereaza`, `353:_vechime`, `358:snapshot_proaspat`, `383:_incarca_dashboard`, `397:_activ`, `401:_alege_proiect`, `414:_intervale_dashboard`, `426:_zile`, `430:_perechi`, `454:_srp`, `458:_dash`, `462:calculeaza_avertizari`, `561:_continut`, `576:echipa_completa`, `586:echipa_in_fereastra`, `601:_mascat`, `605:_numele_meu`, `616:get_echipa`, `624:get_sursa`, `634:put_sursa`
 
 ## blueprints/liste.py (230 linii)
 

@@ -36,6 +36,7 @@ from blueprints.app_update import app_update_bp
 from blueprints.sync import sync_bp
 from blueprints.liste import liste_bp
 from blueprints.outlook import outlook_bp
+from blueprints.echipa import echipa_bp
 from blueprints.materiale import materiale_bp
 from blueprints.mail_lot import mail_lot_bp
 from blueprints.sistem import sistem_bp
@@ -49,6 +50,7 @@ app.register_blueprint(app_update_bp)
 app.register_blueprint(sync_bp)
 app.register_blueprint(liste_bp)
 app.register_blueprint(outlook_bp)
+app.register_blueprint(echipa_bp)
 app.register_blueprint(materiale_bp)
 app.register_blueprint(mail_lot_bp)
 app.register_blueprint(sistem_bp)

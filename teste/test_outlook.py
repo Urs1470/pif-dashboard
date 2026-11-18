@@ -152,7 +152,7 @@ class CalendarulOutlook(CuAplicatia):
         fara = self.calendar()
         self.pune(corp(*IN_FEREASTRA))
         cu = self.calendar()
-        self.assertEqual(set(cu) - {'outlook'}, CHEI_VECHI)
+        self.assertEqual(set(cu) - {'outlook', 'echipa'}, CHEI_VECHI)
         self.assertEqual({k: v for k, v in cu.items() if k != 'outlook'},
                          {k: v for k, v in fara.items() if k != 'outlook'})
 
