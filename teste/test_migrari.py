@@ -342,7 +342,9 @@ class MigrareaV46(CuBazaNoua):
         inainte = self._tot(cale)
         self._ruleaza_pe(cale, database.run_migrations)
         self.assertEqual(self._liste(cale), self.FIXE)
-        self.assertEqual(self._tot(cale, fara=('liste',)), inainte)
+        # `schema_version` urca la versiunea curenta (migrarile de dupa v46 ruleaza si ele).
+        self.assertEqual(self._tot(cale, fara=('liste', 'schema_version')),
+                         {t: r for t, r in inainte.items() if t != 'schema_version'})
         self.assertEqual(_forma(cale, 'liste'), _forma(self.db, 'liste'))
 
     def test_pornirea_pune_la_loc_o_lista_fixa_stearsa_si_nu_atinge_ce_a_schimbat_ion(self):
@@ -362,6 +364,94 @@ class MigrareaV46(CuBazaNoua):
         self.assertEqual(liste['munca'][2:4], ('home', '#ff8800'))
         self.assertEqual(liste['personal'][1:], ('Personal', 'person', None, 1, 1))
         self.assertIn('casa', liste)
+
+
+class MigrareaV47(CuBazaNoua):
+    """v46 -> v47: `implementari.srp_activitate_id` (TEXT, nullable, fara implicit); nimic altceva nu se
+    atinge, iar randurile existente raman cu NULL."""
+
+    _ruleaza_pe = MigrareaV44._ruleaza_pe
+
+    def _baza_v46(self, versiune=46):
+        """Baza clasei coborata la v46 (fara coloana), cu randuri in mai multe tabele."""
+        import shutil
+        import tempfile
+        cale = os.path.join(tempfile.mkdtemp(prefix='pif-v46-'), 'v46.db')
+        self.addCleanup(shutil.rmtree, os.path.dirname(cale), ignore_errors=True)
+        shutil.copyfile(self.db, cale)
+        c = sqlite3.connect(cale)
+        try:
+            c.execute('ALTER TABLE implementari DROP COLUMN srp_activitate_id')
+            c.execute('UPDATE schema_version SET version = ?', (versiune,))
+            c.execute("INSERT INTO proiecte (id, tip, nume, status) VALUES ('p1', 'PIF', 'Vechi', 'pregatire')")
+            c.execute("INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit, confirmata) "
+                      "VALUES ('i1', 'p1', '2026-10-12', '2026-10-13', 1)")
+            c.execute("INSERT INTO implementari (id, proiect_id, data_start) VALUES ('i2', 'p1', '2026-11-02')")
+            c.execute("INSERT INTO tasks (id, proiect_id, titlu, status, created_at) VALUES ('t1', 'p1', 'T', 'to_do', 'x')")
+            c.commit()
+        finally:
+            c.close()
+        return cale
+
+    @staticmethod
+    def _coloane(cale):
+        return [(r[1], r[2], r[3], r[4]) for r in sqlite3.connect(cale).execute('PRAGMA table_info(implementari)')]
+
+    def test_baza_noua_are_coloana_si_versiunea_47(self):
+        import database
+        self.assertGreaterEqual(database.SCHEMA_VERSION, 47)
+        self.assertIn(('srp_activitate_id', 'TEXT', 0, None), self._coloane(self.db))
+
+    def test_o_baza_v46_urca_la_v47_cu_randurile_neatinse(self):
+        import database
+        cale = self._baza_v46()
+        self.assertNotIn('srp_activitate_id', {c[0] for c in self._coloane(cale)})
+        inainte = {t: r for t, r in MigrareaV46._tot(cale).items() if t != 'schema_version'}
+        self._ruleaza_pe(cale, database.run_migrations)
+        c = sqlite3.connect(cale)
+        try:
+            self.assertEqual(c.execute('SELECT MAX(version) FROM schema_version').fetchone()[0], database.SCHEMA_VERSION)
+            self.assertEqual(c.execute('SELECT id, data_start, data_sfarsit, confirmata, srp_activitate_id '
+                                       'FROM implementari ORDER BY id').fetchall(),
+                             [('i1', '2026-10-12', '2026-10-13', 1, None), ('i2', '2026-11-02', None, 0, None)])
+        finally:
+            c.close()
+        dupa = {t: r for t, r in MigrareaV46._tot(cale).items() if t != 'schema_version'}
+        for tabela in inainte:
+            if tabela != 'implementari':
+                self.assertEqual(dupa[tabela], inainte[tabela], tabela)
+        self.assertEqual(_forma(cale, 'implementari'), _forma(self.db, 'implementari'))
+
+    def test_a_doua_rulare_nu_schimba_nimic(self):
+        import database
+        cale = self._baza_v46()
+        self._ruleaza_pe(cale, database.run_migrations)
+        dupa_prima = MigrareaV46._tot(cale)
+        self._ruleaza_pe(cale, database.run_migrations)
+        self._ruleaza_pe(cale, database.migrate_v46_to_v47)
+        self.assertEqual(MigrareaV46._tot(cale), dupa_prima)
+
+    def test_migrarea_nu_suprascrie_o_legatura_deja_scrisa(self):
+        import database
+        cale = self._baza_v46()
+        self._ruleaza_pe(cale, database.run_migrations)
+        c = sqlite3.connect(cale)
+        try:
+            c.execute("UPDATE implementari SET srp_activitate_id = '1768390299999' WHERE id = 'i1'")
+            c.commit()
+        finally:
+            c.close()
+        self._ruleaza_pe(cale, database.migrate_v46_to_v47)
+        self.assertEqual(sqlite3.connect(cale).execute(
+            "SELECT srp_activitate_id FROM implementari WHERE id = 'i1'").fetchone()[0], '1768390299999')
+
+    def test_self_heal_cu_versiunea_47_si_coloana_lipsa(self):
+        # O restaurare de dinainte de v47 (db-upload cu o baza veche) peste o baza la v47.
+        import database
+        cale = self._baza_v46(versiune=47)
+        self._ruleaza_pe(cale, database.run_migrations)
+        self.assertEqual(_forma(cale, 'implementari'), _forma(self.db, 'implementari'))
+        self.assertEqual(sqlite3.connect(cale).execute('SELECT COUNT(*) FROM implementari').fetchone()[0], 2)
 
 
 class CheileFaraCodPleaca(CuBazaNoua):

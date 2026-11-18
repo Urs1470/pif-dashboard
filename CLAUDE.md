@@ -37,7 +37,7 @@ o data per clona: `git config core.hooksPath .githooks`.
 ```
 app.py              # intrare Flask, auth PIN, CSP (nonce, fara surse externe), rate limit pe IP-ul din
                     #   socket (CF-Connecting-IP doar de la proxy de incredere), webhook deploy; / duce la /torqa/
-database.py         # schema v46, migrari v1-v46 idempotente, WAL
+database.py         # schema v47, migrari v1-v47 idempotente, WAL
 utils.py            # login_required, UUID, app_settings, norm_date, tokenurile de masina/dispozitiv
 csrf.py labels.py   # CSRF double-submit; etichetele de status
 ratelimit.py        # limita de PIN pe fisier SQLite separat (comuna workerilor, peste redeploy)
@@ -49,6 +49,7 @@ blueprints/
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
   sync.py           # /api/sync/snapshot — imaginea completa pentru Torqa
   outlook.py        # PUT /api/outlook/calendar: snapshot-ul Outlook (fisier, nu tabela); il citeste /api/calendar
+  echipa.py         # planul echipei din Gantt-ul SRP (snapshot-fisier, /api/echipa, cheia `echipa` din /api/calendar); scrie in Gantt doar etapele lui Ion dupa o perioada salvata
   app_update.py     # versiunea si APK-ul aplicatiei Android (canale: pif, torqa)
   torqa_web.py      # Torqa web (build Angular) la /torqa/: urcare, versiuni, servire (fisierele publice, `.map` cu login)
 

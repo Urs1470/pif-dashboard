@@ -16,7 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-11-18
 
-- [2026-11-18 Planul echipei din Gantt (SRP), doar citit](2026-11-18-gantt-srp.md) — serverul citește Gantt-ul „Project Plan” fără login (planId + secret în `uploads/echipa/sursa.json`, prin `PUT /api/echipa/sursa`, interzis tokenului de dispozitiv) și ține un snapshot normalizat la cel mult 15 minute, fără tabelă și în afara backup-ului; `GET /api/echipa` și cheia aditivă `echipa` din `/api/calendar` dau activitățile (capăt inclusiv) și avertizările `perioada_diferita`, `lipseste_in_dashboard`, `lipseste_in_srp`; secretul nu iese în răspuns, log sau erori; `implementari` doar se citește.
+- [2026-11-18 Planul echipei din Gantt (SRP), doar citit](2026-11-18-gantt-srp.md) — serverul citește Gantt-ul „Project Plan” fără login (planId + secret în `uploads/echipa/sursa.json`, prin `PUT /api/echipa/sursa`, interzis tokenului de dispozitiv) și ține un snapshot normalizat la cel mult 15 minute, fără tabelă și în afara backup-ului; `GET /api/echipa` și cheia aditivă `echipa` din `/api/calendar` dau activitățile (capăt inclusiv) și avertizările `perioada_diferita`, `lipseste_in_dashboard`, `lipseste_in_srp`; secretul nu iese în răspuns, log sau erori. Amendament (brief 3, schema v47): după o perioadă salvată, serverul scrie în Gantt doar etapele lui Ion (`implementari.srp_activitate_id`, cheia aditivă `srp` în răspunsul rutelor de perioade, `POST /api/echipa/trimite`), cu protecție și conflict.
 
 ## 2026-11-17
 

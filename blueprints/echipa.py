@@ -7,8 +7,9 @@
 # tine un snapshot NORMALIZAT in `uploads/echipa/plan.json` (rescris intreg si atomic, ca
 # `outlook/calendar.json`). Fara tabela, fara migrare, nu intra in backup. Raspunsul brut al
 # Gantt-ului nu se pastreaza: are email-uri, entraId si hash-ul parolei de scriere, iar Torqa
-# n-are nevoie de ele. Planul se CITESTE doar: nicio cerere nu scrie in Gantt, nimic nu scrie
-# in `implementari`. Decizia: docs/decizii/2026-11-18-gantt-srp.md.
+# n-are nevoie de ele. Citirea nu scrie nimic in Gantt. Scrierea (amendament 2026-11-18, mai jos la
+# „dashboard -> Gantt") atinge doar etapele in care Ion e resursa, dupa o perioada salvata in
+# dashboard sau la cererea lui. Decizia: docs/decizii/2026-11-18-gantt-srp.md.
 #
 # SECRETUL NU IESE NICIODATA: nici in raspuns, nici in log, nici in mesajele de eroare. De
 # aceea URL-ul cererii nu se logheaza si mesajele de eroare ale `urllib` (care pot purta
@@ -596,6 +597,314 @@ def echipa_in_fereastra(start, sfarsit):
             'avertizari': avertizari}
 
 
+# ------------------------------------------------------------------------------ dashboard -> Gantt
+
+# Scrierea perioadelor in Gantt (amendament 2026-11-18, docs/decizii/2026-11-18-gantt-srp.md).
+# Un singur rand de retea scrie: `_trimite_activitate` (POST); testele o inlocuiesc.
+URL_ACTIVITATE = 'https://api.projectplan-powerpoint.com/OnlinePlan/entities/task'
+FISIER_LACAT_SCRIERE = 'scriere.lock'
+EXPIRARE_LACAT_SCRIERE = 60       # secunde: un lacat mai vechi e al unui worker cazut
+
+
+def _trimite_activitate(plan_id, secret, activitate):
+    """Inlocuieste in Gantt activitatea cu `activitate['id']`: corpul e obiectul INTREG, ca in
+    `plan.data`; serverul Gantt-ului suprascrie activitatea cu acelasi id. Fara retry. Ridica
+    `EroareGantt` cu un motiv sigur (fara URL, fara secret)."""
+    url = URL_ACTIVITATE + '?' + urllib.parse.urlencode(
+        {'planId': plan_id, 'secret': secret, 'writePassHash': '', 'taskId': str(activitate['id'])})
+    corp = json.dumps(activitate, ensure_ascii=False).encode('utf-8')
+    cerere = urllib.request.Request(url, data=corp, method='POST', headers={
+        'Content-Type': 'application/json; charset=utf-8', 'Accept': 'application/json',
+        'User-Agent': 'pif-dashboard'})
+    try:
+        with urllib.request.urlopen(cerere, timeout=TIMEOUT_GANTT) as r:
+            if r.status != 200:
+                raise EroareGantt('Gantt-ul a raspuns cu codul %d la scriere' % r.status)
+    except EroareGantt:
+        raise
+    except urllib.error.HTTPError as e:
+        raise EroareGantt('Gantt-ul a raspuns cu codul %d la scriere' % e.code) from None
+    except Exception:
+        raise EroareGantt('Gantt-ul nu raspunde la scriere') from None
+
+
+def _ia_scrierea():
+    """Un singur worker scrie in Gantt odata (doua salvari rapide nu se calca pe plan)."""
+    os.makedirs(DIR_ECHIPA, exist_ok=True)
+    cale = _cale(FISIER_LACAT_SCRIERE)
+    for _ in range(2):
+        try:
+            os.close(os.open(cale, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            return True
+        except FileExistsError:
+            try:
+                varsta = time.time() - os.path.getmtime(cale)
+            except OSError:
+                continue
+            if varsta < EXPIRARE_LACAT_SCRIERE:
+                return False
+            try:
+                os.remove(cale)
+            except OSError:
+                pass
+    return False
+
+
+def _elibereaza_scrierea():
+    try:
+        os.remove(_cale(FISIER_LACAT_SCRIERE))
+    except OSError:
+        pass
+
+
+def _rez(status, motiv, activitate_id=None):
+    """Cheia `srp` din raspunsul rutelor: status ok|ignorat|protejat|conflict|eroare, un motiv
+    stabil (cod, nu text de eroare) si id-ul etapei din Gantt (sau None)."""
+    return {'status': status, 'motiv': motiv, 'activitate_id': activitate_id}
+
+
+def interval_perioada(start, sfarsit):
+    """(start, end) inclusiv, `YYYY-MM-DD`; perioada fara sfarsit e o zi. None fara start valid."""
+    s = str(start or '').strip()[:10]
+    e = str(sfarsit or '').strip()[:10] or s
+    if _data(s) is None or _data(e) is None:
+        return None
+    return (s, max(e, s))
+
+
+def _interval_brut(a):
+    """Intervalul unei activitati brute din Gantt, cu capatul inclusiv ca in snapshot, sau None."""
+    s, e = _data_gantt(a.get('start_date')), _data_gantt(a.get('end_date'))
+    if s is None or e is None:
+        return None
+    return (s.date().isoformat(), max((e - timedelta(minutes=1)).date(), s.date()).isoformat())
+
+
+def _radacina_brut(brut, aid):
+    curent = aid
+    for _ in range(20):                           # garda de ciclu
+        p = _id_parinte(brut[curent].get('parent'))
+        if p is None or p not in brut or p == curent:
+            return curent
+        curent = p
+    return curent
+
+
+def _plan_brut(raspuns, email):
+    """(activitati brute pe id, id-ul resursei lui Ion sau None). Ridica `EroareGantt`."""
+    plan = _json_in_json(raspuns.get('plan'), 'plan')
+    resurse = _json_in_json(raspuns.get('resources'), 'resources')
+    if not isinstance(plan, dict) or not isinstance(plan.get('data'), list) or not isinstance(resurse, list):
+        raise EroareGantt('planul din raspunsul Gantt-ului are alta forma decat cea asteptata')
+    email_l = (email or '').strip().lower()
+    eu = None
+    for r in resurse:
+        if (isinstance(r, dict) and r.get('id') not in (None, '') and email_l
+                and isinstance(r.get('email'), str) and r['email'].strip().lower() == email_l):
+            eu = str(r['id'])
+    brut = {str(a['id']): a for a in plan['data'] if isinstance(a, dict) and a.get('id') not in (None, '')}
+    return brut, eu
+
+
+def _zile_inclusiv(interval):
+    return (_data(interval[1]) - _data(interval[0])).days + 1
+
+
+def _cu_date(activitate, interval, start_vechi):
+    """Copia activitatii brute cu DOAR datele schimbate: start_date, end_date (capatul inclusiv ca
+    `23:59`), duration (zile calendaristice, inclusiv) si constraint_date, dar numai daca era egala cu
+    vechiul start. Restul obiectului ramane identic."""
+    nou = dict(activitate)
+    nou['start_date'] = interval[0] + ' 00:00'
+    nou['end_date'] = interval[1] + ' 23:59'
+    nou['duration'] = _zile_inclusiv(interval)
+    cd = activitate.get('constraint_date')
+    if isinstance(cd, str) and cd[:10] == start_vechi:
+        nou['constraint_date'] = interval[0] + cd[10:]
+    return nou
+
+
+def _scor(srp, dash):
+    """Cat de aproape sunt doua intervale: suprapunerea (mai mare = mai bine), apoi distanta."""
+    suprapunere = _zile(max(srp[0], dash[0]), min(srp[1], dash[1])) + 1
+    if suprapunere > 0:
+        return (0, -suprapunere, abs(_zile(srp[0], dash[0])))
+    return (1, -suprapunere, abs(_zile(srp[0], dash[0])))
+
+
+def _etapa_noua(brut, radacina_id, eu, interval, eticheta, acum):
+    """O etapa noua sub `radacina_id`: campurile unei etape existente (a lui Ion, altfel orice etapa,
+    altfel un set minim), cu id numeric nou (ms, ca ale aplicatiei) care nu exista in plan."""
+    copii = [a for a in brut.values() if _id_parinte(a.get('parent')) == radacina_id]
+    sablon = next((a for a in copii if eu in _resurse_activitate(a.get('resource'))), None)
+    sablon = sablon or (copii[0] if copii else next((a for a in brut.values() if _id_parinte(a.get('parent'))), {}))
+    nou = dict(sablon)
+    nou.pop('state', None)
+    n = int(acum.timestamp() * 1000)
+    while str(n) in brut:
+        n += 1
+    nou.update({
+        'id': n, 'parent': radacina_id, 'text': _text(eticheta) or 'PIF',
+        'start_date': interval[0] + ' 00:00', 'end_date': interval[1] + ' 23:59',
+        'duration': _zile_inclusiv(interval), 'progress': 0, 'resource': [eu], 'type': 'task',
+        'open': True, 'constraint_type': 'asap', 'constraint_date': interval[0] + ' 00:00',
+        'description': '',
+    })
+    return nou
+
+
+def _citeste_perioada(impl_id):
+    """(perioada, proiect, ocupate, alte_intervale) din baza, sau None daca perioada nu exista.
+    `ocupate`: etapele deja legate de ALTE perioade; `alte_intervale`: intervalele celorlalte
+    perioade ale proiectului."""
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id, proiect_id, data_start, data_sfarsit, eticheta, srp_activitate_id "
+                    "FROM implementari WHERE id = ?", (impl_id,))
+        perioada = cur.fetchone()
+        if perioada is None:
+            return None
+        perioada = dict(perioada)
+        cur.execute("SELECT id, nume, cod_proiect, status FROM proiecte WHERE id = ?", (perioada['proiect_id'],))
+        proiect = cur.fetchone()
+        cur.execute("SELECT id, data_start, data_sfarsit, srp_activitate_id FROM implementari "
+                    "WHERE proiect_id = ? AND id != ?", (perioada['proiect_id'], impl_id))
+        alte = [dict(r) for r in cur.fetchall()]
+        cur.execute("SELECT srp_activitate_id FROM implementari WHERE id != ? AND srp_activitate_id IS NOT NULL",
+                    (impl_id,))
+        ocupate = {r[0] for r in cur.fetchall()}
+    finally:
+        conn.close()
+    intervale = [i for i in (interval_perioada(a['data_start'], a['data_sfarsit']) for a in alte) if i]
+    return perioada, (dict(proiect) if proiect else None), ocupate, intervale
+
+
+def _salveaza_legatura(impl_id, activitate_id):
+    conn = get_db()
+    try:
+        conn.execute('UPDATE implementari SET srp_activitate_id = ? WHERE id = ?', (activitate_id, impl_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _sincronizeaza(impl_id, vechi, trimite, activitate_ales):
+    sursa = citeste_sursa()
+    if sursa is None:
+        return _rez('ignorat', 'fara_sursa')
+    citit = _citeste_perioada(impl_id)
+    if citit is None:
+        return _rez('ignorat', 'perioada_inexistenta')
+    perioada, proiect, ocupate, alte_intervale = citit
+    nou = interval_perioada(perioada['data_start'], perioada['data_sfarsit'])
+    if nou is None:
+        return _rez('ignorat', 'fara_data')
+    if not trimite and vechi is not None and vechi == nou:
+        return _rez('ignorat', 'date_neschimbate')
+    cod_p = analiza_cod((proiect or {}).get('cod_proiect'))
+    if cod_p is None:
+        return _rez('ignorat', 'fara_cod')
+
+    if not _ia_scrierea():
+        return _rez('eroare', 'sincronizare_in_curs')
+    try:
+        raspuns = _descarca(sursa['planId'], sursa['secret'])
+        brut, eu = _plan_brut(raspuns, sursa['email'])
+        _scrie_atomic(FISIER_PLAN, normalizeaza(raspuns, sursa['email']))
+        radacini = sorted(aid for aid, a in brut.items()
+                          if _id_parinte(a.get('parent')) is None
+                          and coduri_potrivite(analiza_cod(_text(a.get('text'))), cod_p))
+        if not radacini:
+            return _rez('ignorat', 'fara_radacina')
+        if eu is None:
+            return _rez('protejat', 'email_necunoscut')
+
+        def ale_lui(aid):
+            return eu in _resurse_activitate(brut[aid].get('resource'))
+        parinti = {_id_parinte(a.get('parent')) for a in brut.values()}
+        frunze = [aid for aid in sorted(brut)
+                  if aid not in parinti and _radacina_brut(brut, aid) in radacini and ale_lui(aid)
+                  and aid not in ocupate and _interval_brut(brut[aid]) is not None]
+
+        # Tinta: etapa aleasa de Ion, legatura salvata, frunza cu intervalul VECHI, frunza cu intervalul
+        # NOU (deja sincron: ex. dupa „Use SRP dates"), la „trimite" fara nimic dintre acestea cea mai
+        # apropiata frunza libera; altfel etapa noua.
+        tinta = perioada['srp_activitate_id']
+        if tinta is not None and (tinta not in brut or _radacina_brut(brut, tinta) not in radacini):
+            tinta = None
+        if activitate_ales is not None:                              # alegerea lui Ion bate legatura salvata
+            if activitate_ales not in brut or _radacina_brut(brut, activitate_ales) not in radacini:
+                return _rez('protejat', 'etapa_necunoscuta')
+            tinta = activitate_ales
+        if tinta is None and vechi is not None:
+            tinta = next((a for a in frunze if _interval_brut(brut[a]) == vechi), None)
+        if tinta is None:
+            tinta = next((a for a in frunze if _interval_brut(brut[a]) == nou), None)
+        if tinta is None and trimite and activitate_ales is None:
+            libere = [a for a in frunze if _interval_brut(brut[a]) not in alte_intervale]
+            if libere:
+                tinta = min(libere, key=lambda a: (_scor(_interval_brut(brut[a]), nou), a))
+
+        if tinta is not None:
+            if not ale_lui(tinta):                                   # protectia: doar etapele lui Ion
+                return _rez('protejat', 'ion_nu_e_pe_etapa', tinta)
+            curent = _interval_brut(brut[tinta])
+            if curent == nou:
+                _salveaza_legatura(impl_id, tinta)
+                return _rez('ok', 'deja_sincron', tinta)
+            if not trimite and vechi is not None and curent != vechi:
+                return _rez('conflict', 'etapa_mutata_in_gantt', tinta)
+            obiect = _cu_date(brut[tinta], nou, curent[0] if curent else None)
+            radacina_id = _radacina_brut(brut, tinta)
+            motiv = 'sincronizat'
+        else:
+            radacina_id = next((r for r in radacini if ale_lui(r)), None)
+            if radacina_id is None:
+                return _rez('protejat', 'ion_nu_e_pe_radacina')
+            obiect = _etapa_noua(brut, radacina_id, eu, nou, perioada['eticheta'], _acum())
+            motiv = 'etapa_noua'
+
+        scrieri = []
+        radacina = brut[radacina_id]
+        r_int = _interval_brut(radacina)
+        if r_int is not None and ale_lui(radacina_id) and (nou[0] < r_int[0] or nou[1] > r_int[1]):
+            scrieri.append(_cu_date(radacina, (min(r_int[0], nou[0]), max(r_int[1], nou[1])), r_int[0]))
+        scrieri.append(obiect)                                       # radacina intai, apoi etapa
+        for activitate in scrieri:
+            _trimite_activitate(sursa['planId'], sursa['secret'], activitate)
+
+        raspuns = _descarca(sursa['planId'], sursa['secret'])
+        brut2, _ = _plan_brut(raspuns, sursa['email'])
+        _scrie_atomic(FISIER_PLAN, normalizeaza(raspuns, sursa['email']))
+        aid = str(obiect['id'])
+        if aid not in brut2 or _interval_brut(brut2[aid]) != nou:
+            return _rez('eroare', 'verificare_esuata', aid)
+        _salveaza_legatura(impl_id, aid)
+        return _rez('ok', motiv, aid)
+    finally:
+        _elibereaza_scrierea()
+
+
+def sincronizeaza(impl_id, vechi=None, trimite=False, activitate_ales=None):
+    """Aduce in Gantt perioada `impl_id` (datele ei de acum din baza). Nu ridica niciodata: scrierea
+    din dashboard e deja facuta si ramane valabila oricum. `vechi`: intervalul perioadei dinaintea
+    modificarii (start, end) sau None (perioada noua). `trimite`: decizia explicita a lui Ion
+    („Send Torqa dates to SRP"): nu se verifica conflictul, iar fara tinta sigura se alege cea mai
+    apropiata etapa libera. Intoarce cheia `srp`: {status, motiv, activitate_id}."""
+    try:
+        rez = _sincronizeaza(impl_id, vechi, trimite, activitate_ales)
+    except EroareGantt as e:
+        logger.warning('Echipa: sincronizarea cu Gantt-ul a esuat [cod=gantt_indisponibil]: %s', e)
+        return _rez('eroare', 'gantt_indisponibil')
+    except Exception as e:
+        logger.warning('Echipa: sincronizarea cu Gantt-ul a esuat [cod=eroare_interna]: %s', type(e).__name__)
+        return _rez('eroare', 'eroare_interna')
+    if rez['status'] in ('protejat', 'conflict', 'eroare'):
+        logger.warning('Echipa: sincronizare nefacuta [cod=%s] status=%s', rez['motiv'], rez['status'])
+    return rez
+
+
 # ------------------------------------------------------------------------------ rute
 
 def _mascat(plan_id):
@@ -617,6 +926,32 @@ def get_echipa():
     """Planul echipei din Gantt (sesiune, `PIF_API_TOKEN` sau `PIF_DEVICE_TOKEN`). Corpul e
     `null` fara sursa si fara snapshot."""
     return jsonify(echipa_completa())
+
+
+@echipa_bp.route('/api/echipa/trimite', methods=['POST'])
+@login_required
+def post_trimite():
+    """„Send Torqa dates to SRP": trimite in Gantt datele perioadei `implementare_id`, fara sa
+    verifice conflictul (e decizia explicita a lui Ion); protectia (doar etapele lui Ion) ramane.
+    Deschisa si tokenului de dispozitiv. `activitate_id` (optional) alege etapa cand Torqa stie
+    perechea din avertizare. Raspuns: {srp: {status, motiv, activitate_id}}; 404 la o perioada
+    necunoscuta, 502 cand Gantt-ul nu a putut fi scris. Aceeasi cerere de doua ori: a doua da
+    `ok` / `deja_sincron`."""
+    corp = request.get_json(silent=True)
+    if not isinstance(corp, dict):
+        return jsonify({'error': 'Body JSON invalid sau lipsa'}), 400
+    impl_id, activitate = corp.get('implementare_id'), corp.get('activitate_id')
+    if not isinstance(impl_id, str) or not 0 < len(impl_id) <= 100:
+        return jsonify({'error': 'implementare_id: trebuie sa fie text de 1-100 de caractere'}), 400
+    if activitate is not None and (not isinstance(activitate, str) or not 0 < len(activitate) <= 64):
+        return jsonify({'error': 'activitate_id: trebuie sa fie text de 1-64 de caractere sau lipsa'}), 400
+    if _citeste_perioada(impl_id) is None:
+        return jsonify({'error': 'Perioada inexistenta'}), 404
+    rez = sincronizeaza(impl_id, trimite=True, activitate_ales=activitate)
+    cod = 200
+    if rez['status'] == 'eroare':
+        cod = 409 if rez['motiv'] == 'sincronizare_in_curs' else 502
+    return jsonify({'srp': rez}), cod
 
 
 @echipa_bp.route('/api/echipa/sursa', methods=['GET'])

@@ -159,6 +159,25 @@ class CuEchipa(CuAplicatia):
     def avertizari(self):
         return self.echipa()['avertizari']
 
+    @contextlib.contextmanager
+    def capteaza_logul(self):
+        """Tot ce scrie `pif_dashboard` (si pe nivel DEBUG), ca lista de linii; spre deosebire de
+        `assertLogs`, nu pica cand nu s-a scris nimic."""
+        linii = []
+
+        class Colector(logging.Handler):
+            def emit(self, record):
+                linii.append(self.format(record))
+        h, logger = Colector(), logging.getLogger('pif_dashboard')
+        nivel = logger.level
+        logger.addHandler(h)
+        logger.setLevel(logging.DEBUG)
+        try:
+            yield linii
+        finally:
+            logger.removeHandler(h)
+            logger.setLevel(nivel)
+
 
 # =============================================================================== normalizare
 
@@ -651,25 +670,6 @@ class Sursa(CuEchipa):
 # =============================================================================== secretul nu iese
 
 class SecretulNuIese(CuEchipa):
-
-    @contextlib.contextmanager
-    def capteaza_logul(self):
-        """Tot ce scrie `pif_dashboard` (si pe nivel DEBUG), ca lista de linii; spre deosebire de
-        `assertLogs`, nu pica cand nu s-a scris nimic."""
-        linii = []
-
-        class Colector(logging.Handler):
-            def emit(self, record):
-                linii.append(self.format(record))
-        h, logger = Colector(), logging.getLogger('pif_dashboard')
-        nivel = logger.level
-        logger.addHandler(h)
-        logger.setLevel(logging.DEBUG)
-        try:
-            yield linii
-        finally:
-            logger.removeHandler(h)
-            logger.setLevel(nivel)
 
     def verifica_fara_secret(self, text, unde):
         self.assertNotIn(SECRET, text, unde)

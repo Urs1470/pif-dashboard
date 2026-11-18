@@ -123,7 +123,10 @@ def close_db(exc=None):
 #      din Torqa, ex. „Casa"). `global_tasks.sfera` ramane coloana care leaga un task de lista
 #      lui: valoarea e acum `liste.id`, nu doar 'munca'|'personal'. Cele doua liste vechi sunt
 #      randuri fixe. Decizia: docs/decizii/2026-10-26-liste.md.
-SCHEMA_VERSION = 46
+# v47: `implementari.srp_activitate_id` — id-ul etapei din Gantt-ul SRP la care se sincronizeaza
+#      perioada (blueprints/echipa.py). Nullable, fara valoare implicita; migrarea doar adauga
+#      coloana, nu completeaza nimic. Decizia: docs/decizii/2026-11-18-gantt-srp.md (amendament).
+SCHEMA_VERSION = 47
 
 # DDL-ul celor doua tabele noi din v44 sta intr-un singur loc: il folosesc si `init_db()`, si
 # `migrate_v43_to_v44()`; scris de doua ori, cele doua s-ar putea abate si schema ar diferi intre
@@ -1685,6 +1688,24 @@ def migrate_v45_to_v46():
     logger.info("Migration v45->v46 completed (tabela liste, listele fixe munca si personal)")
 
 
+def migrate_v46_to_v47():
+    """v46 -> v47: `implementari.srp_activitate_id`, etapa din Gantt-ul SRP careia ii e sincronizata
+    perioada. Decizia: docs/decizii/2026-11-18-gantt-srp.md (amendament).
+
+    Aditiva si idempotenta: coloana TEXT nullable, fara valoare implicita, deci niciun rand existent
+    nu se schimba (toate raman NULL pana la prima sincronizare reusita). Rulata pe o baza care are
+    deja coloana, nu face nimic.
+    """
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA table_info(implementari)")
+    if 'srp_activitate_id' not in {row[1] for row in cursor.fetchall()}:
+        cursor.execute('ALTER TABLE implementari ADD COLUMN srp_activitate_id TEXT')
+    conn.commit()
+    conn.close()
+    logger.info("Migration v46->v47 completed (implementari.srp_activitate_id)")
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1914,6 +1935,11 @@ def run_migrations():
         set_schema_version(46)
         current_version = 46
 
+    if current_version < 47:
+        migrate_v46_to_v47()
+        set_schema_version(47)
+        current_version = 47
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -2020,6 +2046,16 @@ def run_migrations():
     conn_v46.commit()
     conn_v46.close()
 
+    # Aditiv-only, ca mai sus: un backup de dinainte de v47 restaurat peste o baza v47 (sau o baza
+    # veche urcata cu db-upload) lasa coloana lipsa, iar sincronizarea cu Gantt-ul ar cadea la prima
+    # perioada salvata.
+    conn_v47 = get_db()
+    cols_i = {row[1] for row in conn_v47.execute("PRAGMA table_info(implementari)")}
+    conn_v47.close()
+    if 'srp_activitate_id' not in cols_i:
+        logger.warning("Self-heal: re-running v46->v47 (implementari.srp_activitate_id missing)")
+        migrate_v46_to_v47()
+
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")
     else:
@@ -2100,6 +2136,8 @@ def init_db():
             -- „S-a facut?" e despre PERIOADA, nu despre proiect (v39).
             confirmata INTEGER DEFAULT 0,
             created_at TEXT,
+            -- v47: etapa din Gantt-ul SRP la care se sincronizeaza perioada (blueprints/echipa.py).
+            srp_activitate_id TEXT,
             FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
         )
     ''')

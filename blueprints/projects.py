@@ -11,6 +11,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify
 
 from blueprints.tasks import muta_taskurile_ancorate
+from blueprints.echipa import sincronizeaza, interval_perioada
 from database import get_db, row_to_dict
 from labels import PROJECT_STATUS_LABELS
 from utils import (
@@ -539,7 +540,8 @@ def create_implementare(project_id):
                     loc, faza, (data.get('eticheta') or ''), data.get('ordine', 0), datetime.now().isoformat()))
     conn.commit()
     conn.close()
-    return jsonify({'id': impl_id}), 201
+    # Perioada e salvata si ramane valabila oricum; sincronizarea cu Gantt-ul SRP nu ridica niciodata.
+    return jsonify({'id': impl_id, 'srp': sincronizeaza(impl_id)}), 201
 
 
 @projects_bp.route('/api/implementari/<impl_id>', methods=['PUT'])
@@ -564,7 +566,7 @@ def update_implementare(impl_id):
         confirmata = 1 if confirmata in (1, True, '1', 'true') else 0
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT data_start FROM implementari WHERE id = ?', (impl_id,))
+    cursor.execute('SELECT data_start, data_sfarsit FROM implementari WHERE id = ?', (impl_id,))
     vechi = cursor.fetchone()
     cursor.execute('''UPDATE implementari SET
                         data_start = COALESCE(?, data_start),
@@ -586,7 +588,10 @@ def update_implementare(impl_id):
     conn.close()
     if updated == 0:
         return jsonify({'error': 'Perioada inexistenta'}), 404
-    return jsonify({'message': 'ok'})
+    # Intervalul de dinaintea UPDATE-ului: tinta din Gantt se gaseste dupa el, iar conflictul e
+    # „etapa din Gantt nu mai are intervalul vechi". Nu ridica niciodata.
+    srp = sincronizeaza(impl_id, vechi=interval_perioada(vechi['data_start'], vechi['data_sfarsit']))
+    return jsonify({'message': 'ok', 'srp': srp})
 
 
 @projects_bp.route('/api/implementari/<impl_id>', methods=['DELETE'])
