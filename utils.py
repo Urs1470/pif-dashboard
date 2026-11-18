@@ -185,8 +185,8 @@ def safe_next_url(value, default='/'):
 # paginii System maintenance (`/api/sistem/sursa/`: le scriu masinile) si coada de decizii
 # (`/api/sistem/decizii`, ca prefix: GET-ul, `/<uid>/preluat` si `/<uid>/consumat`; dispozitivul nu
 # citeste comenzile si nu le marcheaza preluate sau consumate) si loturile de mail (`/api/mail/`: exportul Outlook
-# al PC-ului, cu corpul mailurilor, pe care il judeca Mail Tasks pe server) si sursa Gantt-ului echipei (`/api/echipa/sursa`: tine secretul planului; `GET /api/echipa` ramane
-# deschis dispozitivului, doar il citeste). Prefixul `/api/sistem/decizii` nu
+# al PC-ului, cu corpul mailurilor, pe care il judeca Mail Tasks pe server) si Gantt-ul echipei (`/api/echipa/sursa`: tine secretul planului; `/api/echipa/sincronizeaza`: jobul zilnic al
+# serverului; `GET /api/echipa` si `POST /api/echipa/trimite` raman deschise dispozitivului). Prefixul `/api/sistem/decizii` nu
 # prinde singularul `/api/sistem/decizie` (butonul din Torqa) si nici `/api/sistem/decizie/<uid>/anulare`
 # (Ion anuleaza din telefon), nici `/api/sistem/amanare`, nici `/api/sistem` (vederea combinata):
 # toate raman deschise dispozitivului. Un dispozitiv pierdut nu trebuie sa poata mai mult decat sa
@@ -195,6 +195,7 @@ DEVICE_TOKEN_DENIED = (
     '/api/restore', '/api/backup', '/api/admin/', '/admin/',
     '/api/app/upload', '/api/torqa/web/', '/api/obsidian/vault-key', '/api/obsidian/vault-sync',
     '/api/outlook/', '/api/sistem/sursa/', '/api/sistem/decizii', '/api/mail/', '/api/echipa/sursa',
+    '/api/echipa/sincronizeaza',
 )
 
 # Rutele pe care dispozitivul doar CITESTE. `PUT /api/obsidian/note` rescrie o nota din

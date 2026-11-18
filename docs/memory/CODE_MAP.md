@@ -14,13 +14,13 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `91:_retele_de_incredere`, `105:_ip_valid`, `116:_proxy_de_incredere`, `128:_adresa_socket`, `134:_client_ip`, `155:get_or_create_secret_key`, `173:file_hash`, `200:inject_version`, `224:make_session_permanent`, `234:setup_logging`, `266:check_rate_limit`, `308:check_login_rate_limit`, `319:before_request_func`, `351:_default_csp`, `379:after_request_func`, `403:get_hashed_pin`, `412:_git_commit`, `426:healthz`, `432:login_page`, `442:login`, `456:logout`, `465:index`, `478:service_worker`, `483:add_sw_header`, `504:get_deploy_secret`, `512:webhook_deploy`, `603:page_not_found`, `610:internal_error`
 
-## database.py (2219 linii)
+## database.py (2229 linii)
 
-`15:get_db`, `36:close_db`, `183:asigura_listele_fixe`, `193:get_schema_version`, `206:set_schema_version`, `215:migrate_v1_to_v2`, `297:migrate_v2_to_v3`, `324:migrate_v3_to_v4`, `355:migrate_v4_to_v5`, `397:migrate_v5_to_v6`, `419:migrate_v6_to_v7`, `441:migrate_v7_to_v8`, `484:migrate_v8_to_v9`, `499:migrate_v9_to_v10`, `529:migrate_v10_to_v11`, `551:migrate_v11_to_v12`, `597:migrate_v12_to_v13`, `642:migrate_v13_to_v14`, `681:migrate_v14_to_v15`, `704:migrate_v15_to_v16`, `723:migrate_v16_to_v17`, `739:migrate_v17_to_v18`, `788:migrate_v18_to_v19`, `828:migrate_v19_to_v20`, `845:migrate_v20_to_v21`, `872:migrate_v21_to_v22`, `891:migrate_v22_to_v23`, `910:migrate_v23_to_v24`, `947:migrate_v24_to_v25`, `962:migrate_v25_to_v26`, `987:migrate_v26_to_v27`, `1004:migrate_v27_to_v28`, `1050:migrate_v28_to_v29`, `1106:migrate_v29_to_v30`, `1150:migrate_v30_to_v31`, `1183:migrate_v31_to_v32`, `1212:migrate_v32_to_v33`, `1267:migrate_v33_to_v34`, `1303:migrate_v34_to_v35`, `1335:migrate_v35_to_v36`, `1371:migrate_v36_to_v37`, `1409:migrate_v37_to_v38`, `1436:migrate_v38_to_v39`, `1474:migrate_v39_to_v40`, `1503:migrate_v40_to_v41`, `1540:migrate_v41_to_v42`, `1566:migrate_v42_to_v43`, `1604:migrate_v43_to_v44`, `1646:migrate_v44_to_v45`, `1674:migrate_v45_to_v46`, `1691:migrate_v46_to_v47`, `1709:run_migrations`, `2065:init_db`, `2212:row_to_dict`
+`15:get_db`, `36:close_db`, `188:asigura_listele_fixe`, `198:get_schema_version`, `211:set_schema_version`, `220:migrate_v1_to_v2`, `302:migrate_v2_to_v3`, `329:migrate_v3_to_v4`, `360:migrate_v4_to_v5`, `402:migrate_v5_to_v6`, `424:migrate_v6_to_v7`, `446:migrate_v7_to_v8`, `489:migrate_v8_to_v9`, `504:migrate_v9_to_v10`, `534:migrate_v10_to_v11`, `556:migrate_v11_to_v12`, `602:migrate_v12_to_v13`, `647:migrate_v13_to_v14`, `686:migrate_v14_to_v15`, `709:migrate_v15_to_v16`, `728:migrate_v16_to_v17`, `744:migrate_v17_to_v18`, `793:migrate_v18_to_v19`, `833:migrate_v19_to_v20`, `850:migrate_v20_to_v21`, `877:migrate_v21_to_v22`, `896:migrate_v22_to_v23`, `915:migrate_v23_to_v24`, `952:migrate_v24_to_v25`, `967:migrate_v25_to_v26`, `992:migrate_v26_to_v27`, `1009:migrate_v27_to_v28`, `1055:migrate_v28_to_v29`, `1111:migrate_v29_to_v30`, `1155:migrate_v30_to_v31`, `1188:migrate_v31_to_v32`, `1217:migrate_v32_to_v33`, `1272:migrate_v33_to_v34`, `1308:migrate_v34_to_v35`, `1340:migrate_v35_to_v36`, `1376:migrate_v36_to_v37`, `1414:migrate_v37_to_v38`, `1441:migrate_v38_to_v39`, `1479:migrate_v39_to_v40`, `1508:migrate_v40_to_v41`, `1545:migrate_v41_to_v42`, `1571:migrate_v42_to_v43`, `1609:migrate_v43_to_v44`, `1651:migrate_v44_to_v45`, `1679:migrate_v45_to_v46`, `1696:migrate_v46_to_v47`, `1717:run_migrations`, `2073:init_db`, `2222:row_to_dict`
 
-## utils.py (301 linii)
+## utils.py (302 linii)
 
-`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `126:cale_uploads`, `138:safe_table`, `144:generate_uuid`, `148:id_ocupat`, `158:safe_next_url`, `211:device_token_denied`, `229:refuse_device_token_fields`, `245:_check_api_token`, `269:login_required`, `283:get_app_setting`, `292:set_app_setting`
+`27:norm_date`, `61:_norm_dates`, `78:get_json_or_400`, `126:cale_uploads`, `138:safe_table`, `144:generate_uuid`, `148:id_ocupat`, `158:safe_next_url`, `212:device_token_denied`, `230:refuse_device_token_fields`, `246:_check_api_token`, `270:login_required`, `284:get_app_setting`, `293:set_app_setting`
 
 ## csrf.py (83 linii)
 
@@ -38,9 +38,9 @@ _(fara definitii top-level)_
 
 `60:_canal`, `67:_canal_cerut`, `77:_cai`, `84:_canal_necunoscut`, `89:_canal_lipsa`, `94:_meta`, `103:app_upload`, `163:app_version`, `177:app_apk`
 
-## blueprints/echipa.py (1010 linii)
+## blueprints/echipa.py (1231 linii)
 
-`61:EroareGantt`, `68:_cale`, `72:_scrie_atomic`, `97:_citeste_json`, `108:citeste_sursa`, `117:citeste_snapshot`, `131:_acum`, `135:_azi`, `140:_descarca`, `167:_json_in_json`, `177:_text`, `181:_data_gantt`, `195:_id_parinte`, `203:_resurse_activitate`, `211:analiza_cod`, `226:cod_text`, `235:coduri_potrivite`, `245:normalizeaza`, `322:_ia_incercarea`, `347:_elibereaza`, `354:_vechime`, `359:snapshot_proaspat`, `384:_incarca_dashboard`, `398:_activ`, `402:_alege_proiect`, `415:_intervale_dashboard`, `427:_zile`, `431:_perechi`, `455:_srp`, `459:_dash`, `463:calculeaza_avertizari`, `562:_continut`, `577:echipa_completa`, `587:echipa_in_fereastra`, `609:_trimite_activitate`, `631:_ia_scrierea`, `653:_elibereaza_scrierea`, `660:_rez`, `666:interval_perioada`, `675:_interval_brut`, `683:_radacina_brut`, `693:_plan_brut`, `709:_zile_inclusiv`, `713:_cu_date`, `727:_scor`, `735:_etapa_noua`, `756:_citeste_perioada`, `783:_salveaza_legatura`, `792:_sincronizeaza`, `889:sincronizeaza`, `910:_mascat`, `914:_numele_meu`, `925:get_echipa`, `933:post_trimite`, `959:get_sursa`, `969:put_sursa`
+`61:EroareGantt`, `68:_cale`, `72:_scrie_atomic`, `97:_citeste_json`, `108:citeste_sursa`, `117:citeste_snapshot`, `131:_acum`, `135:_azi`, `140:_descarca`, `168:_json_in_json`, `178:_text`, `182:_data_gantt`, `196:_id_parinte`, `204:_resurse_activitate`, `212:analiza_cod`, `227:cod_text`, `236:coduri_potrivite`, `246:normalizeaza`, `323:_incarca_dashboard`, `338:_activ`, `342:_alege_proiect`, `355:_intervale_dashboard`, `367:_zile`, `371:_perechi`, `395:_srp`, `399:_dash`, `403:_ion_pe`, `407:calculeaza`, `593:_acum_local`, `598:_local`, `603:_zi_lucratoare`, `607:urmatoarea_rulare`, `617:ultima_programata`, `627:citeste_stare`, `635:info_sincronizare`, `649:_continut`, `666:_corp`, `672:echipa_completa`, `681:echipa_in_fereastra`, `701:_trimite_activitate`, `724:_ia_scrierea`, `746:_elibereaza_scrierea`, `753:_rez`, `759:interval_perioada`, `768:_interval_brut`, `776:_radacina_brut`, `786:_plan_brut`, `802:_zile_inclusiv`, `806:_cu_date`, `820:_scor`, `828:_etapa_noua`, `849:_citeste_perioada`, `876:_salveaza_legatura`, `887:_trimite_acum`, `977:trimite_acum`, `997:_inregistreaza`, `1008:_rula`, `1082:ruleaza_sincronizarea`, `1103:_uita_legaturile`, `1118:_mascat`, `1122:_numele_meu`, `1133:get_echipa`, `1141:post_trimite`, `1167:post_sincronizeaza`, `1178:get_sursa`, `1188:put_sursa`
 
 ## blueprints/liste.py (230 linii)
 
@@ -66,9 +66,9 @@ _(fara definitii top-level)_
 
 `49:EroareCorp`, `53:_data`, `66:_data_ora`, `91:_text`, `100:_bool`, `107:_eveniment`, `150:valideaza_snapshot`, `181:_cale`, `185:_scrie_atomic`, `208:citeste_snapshot`, `227:evenimente_in_fereastra`, `253:put_calendar`
 
-## blueprints/projects.py (811 linii)
+## blueprints/projects.py (806 linii)
 
-`30:status_proiect`, `48:dosar_de_incarcari`, `76:get_proiecte`, `126:create_proiect`, `194:get_proiect`, `222:update_proiect`, `347:delete_proiect`, `398:get_project_snapshot`, `486:_impl_row`, `506:get_implementari`, `517:create_implementare`, `549:update_implementare`, `599:delete_implementare`, `625:get_stari`, `637:create_stare`, `679:delete_stare`, `695:_eroare_continut`, `723:_continut_json`, `731:_sablon`, `739:get_sabloane`, `750:create_sablon`, `776:update_sablon`, `802:delete_sablon`
+`29:status_proiect`, `47:dosar_de_incarcari`, `75:get_proiecte`, `125:create_proiect`, `193:get_proiect`, `221:update_proiect`, `346:delete_proiect`, `397:get_project_snapshot`, `485:_impl_row`, `505:get_implementari`, `516:create_implementare`, `547:update_implementare`, `594:delete_implementare`, `620:get_stari`, `632:create_stare`, `674:delete_stare`, `690:_eroare_continut`, `718:_continut_json`, `726:_sablon`, `734:get_sabloane`, `745:create_sablon`, `771:update_sablon`, `797:delete_sablon`
 
 ## blueprints/sistem.py (792 linii)
 

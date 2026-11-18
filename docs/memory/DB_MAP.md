@@ -32,7 +32,7 @@ o instalare noua — nu ce zice o sectiune scrisa de mana.
 | `sfera` | TEXT | default 'munca' |
 | `ora` | TEXT |  |
 
-## implementari (11 coloane)
+## implementari (13 coloane)
 
 | coloana | tip | note |
 |---|---|---|
@@ -47,6 +47,8 @@ o instalare noua — nu ce zice o sectiune scrisa de mana.
 | `confirmata` | INTEGER | default 0 |
 | `created_at` | TEXT |  |
 | `srp_activitate_id` | TEXT |  |
+| `srp_sincron_start` | TEXT |  |
+| `srp_sincron_end` | TEXT |  |
 
 ## liste (8 coloane)
 

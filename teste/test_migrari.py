@@ -367,8 +367,10 @@ class MigrareaV46(CuBazaNoua):
 
 
 class MigrareaV47(CuBazaNoua):
-    """v46 -> v47: `implementari.srp_activitate_id` (TEXT, nullable, fara implicit); nimic altceva nu se
-    atinge, iar randurile existente raman cu NULL."""
+    """v46 -> v47: `implementari.srp_activitate_id`, `srp_sincron_start`, `srp_sincron_end` (TEXT, nullable,
+    fara implicit); nimic altceva nu se atinge, iar randurile existente raman cu NULL."""
+
+    COLOANE = ('srp_activitate_id', 'srp_sincron_start', 'srp_sincron_end')
 
     _ruleaza_pe = MigrareaV44._ruleaza_pe
 
@@ -381,7 +383,8 @@ class MigrareaV47(CuBazaNoua):
         shutil.copyfile(self.db, cale)
         c = sqlite3.connect(cale)
         try:
-            c.execute('ALTER TABLE implementari DROP COLUMN srp_activitate_id')
+            for coloana in self.COLOANE:
+                c.execute('ALTER TABLE implementari DROP COLUMN %s' % coloana)
             c.execute('UPDATE schema_version SET version = ?', (versiune,))
             c.execute("INSERT INTO proiecte (id, tip, nume, status) VALUES ('p1', 'PIF', 'Vechi', 'pregatire')")
             c.execute("INSERT INTO implementari (id, proiect_id, data_start, data_sfarsit, confirmata) "
@@ -400,20 +403,22 @@ class MigrareaV47(CuBazaNoua):
     def test_baza_noua_are_coloana_si_versiunea_47(self):
         import database
         self.assertGreaterEqual(database.SCHEMA_VERSION, 47)
-        self.assertIn(('srp_activitate_id', 'TEXT', 0, None), self._coloane(self.db))
+        for coloana in self.COLOANE:
+            self.assertIn((coloana, 'TEXT', 0, None), self._coloane(self.db))
 
     def test_o_baza_v46_urca_la_v47_cu_randurile_neatinse(self):
         import database
         cale = self._baza_v46()
-        self.assertNotIn('srp_activitate_id', {c[0] for c in self._coloane(cale)})
+        self.assertFalse(set(self.COLOANE) & {c[0] for c in self._coloane(cale)})
         inainte = {t: r for t, r in MigrareaV46._tot(cale).items() if t != 'schema_version'}
         self._ruleaza_pe(cale, database.run_migrations)
         c = sqlite3.connect(cale)
         try:
             self.assertEqual(c.execute('SELECT MAX(version) FROM schema_version').fetchone()[0], database.SCHEMA_VERSION)
-            self.assertEqual(c.execute('SELECT id, data_start, data_sfarsit, confirmata, srp_activitate_id '
-                                       'FROM implementari ORDER BY id').fetchall(),
-                             [('i1', '2026-10-12', '2026-10-13', 1, None), ('i2', '2026-11-02', None, 0, None)])
+            self.assertEqual(c.execute('SELECT id, data_start, data_sfarsit, confirmata, srp_activitate_id, '
+                                       'srp_sincron_start, srp_sincron_end FROM implementari ORDER BY id').fetchall(),
+                             [('i1', '2026-10-12', '2026-10-13', 1, None, None, None),
+                              ('i2', '2026-11-02', None, 0, None, None, None)])
         finally:
             c.close()
         dupa = {t: r for t, r in MigrareaV46._tot(cale).items() if t != 'schema_version'}
@@ -444,6 +449,22 @@ class MigrareaV47(CuBazaNoua):
         self._ruleaza_pe(cale, database.migrate_v46_to_v47)
         self.assertEqual(sqlite3.connect(cale).execute(
             "SELECT srp_activitate_id FROM implementari WHERE id = 'i1'").fetchone()[0], '1768390299999')
+
+    def test_o_baza_cu_doar_prima_coloana_primeste_si_celelalte_doua(self):
+        # Starea unei baze care a rulat varianta veche a migrarii v47 (o singura coloana).
+        import database
+        cale = self._baza_v46()
+        c = sqlite3.connect(cale)
+        try:
+            c.execute('ALTER TABLE implementari ADD COLUMN srp_activitate_id TEXT')
+            c.execute("UPDATE implementari SET srp_activitate_id = 'x1' WHERE id = 'i1'")
+            c.commit()
+        finally:
+            c.close()
+        self._ruleaza_pe(cale, database.run_migrations)
+        self.assertEqual(_forma(cale, 'implementari'), _forma(self.db, 'implementari'))
+        self.assertEqual(sqlite3.connect(cale).execute(
+            "SELECT srp_activitate_id, srp_sincron_start FROM implementari WHERE id = 'i1'").fetchone(), ('x1', None))
 
     def test_self_heal_cu_versiunea_47_si_coloana_lipsa(self):
         # O restaurare de dinainte de v47 (db-upload cu o baza veche) peste o baza la v47.

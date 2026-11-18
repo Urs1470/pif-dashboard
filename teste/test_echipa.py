@@ -19,7 +19,6 @@ import json
 import logging
 import os
 import sqlite3
-import time
 import urllib.error
 from datetime import datetime, timedelta, timezone
 from unittest import mock
@@ -107,6 +106,10 @@ class CuEchipa(CuAplicatia):
         self.ceas = [T0]
         self.patch(echipa, '_acum', lambda: self.ceas[0])
         self.patch(echipa, '_azi', lambda: AZI)
+        # Ora serverului (naiva), separata de `_acum`: miercuri 18.11.2026, 09:00 = o ora dupa rularea de 08:00.
+        self.ceas_local = [datetime(2026, 11, 18, 9, 0)]
+        self.patch(echipa, '_acum_local', lambda: self.ceas_local[0])
+        self.patch(echipa, '_local', lambda dt: dt.astimezone(timezone.utc).replace(tzinfo=None))
         self.gantt = Gantt(gantt(plan_echipa()))
         self.patch(echipa, '_descarca', self.gantt)
         self._goleste_dashboard()
@@ -381,13 +384,26 @@ class Avertizari(CuEchipa):
         self.assertEqual(sorted(cuplu, key=str), sorted([('B suprapus', '2026-11-26'), ('C aproape', '2026-12-20'),
                                                          ('D singur', None)], key=str))
 
-    def test_interval_doar_in_dashboard_are_srp_null(self):
+    def test_perioada_doar_in_dashboard_e_de_trimis_nu_avertizare_cand_ion_e_pe_radacina(self):
         self.gantt.raspuns = gantt([act(1, '26_100_x', 0, zi('11-20'), zi('11-21', True), resource=['r1'])])
         self.dashboard(('p1', '26_100', 'pregatire', [('2026-11-20', '2026-11-21'), ('2026-12-01', '2026-12-02')]))
         self.configureaza()
-        av = self.avertizari()
-        self.assertEqual(len(av), 1)
-        self.assertEqual((av[0]['tip'], av[0]['srp'], av[0]['dashboard']['start']), ('perioada_diferita', None, '2026-12-01'))
+        j = self.echipa()
+        self.assertEqual(j['avertizari'], [])
+        self.assertEqual(j['de_trimis'], [{'proiect_id': 'p1', 'implementare_id': 'p1-i1', 'start': '2026-12-01',
+                                           'end': '2026-12-02', 'tip': 'noua'}])
+
+    def test_perioada_doar_in_dashboard_fara_ion_pe_radacina_e_protejata(self):
+        self.gantt.raspuns = gantt([act(1, '26_100_x', 0, zi('11-20'), zi('11-30', True), resource=['r2']),
+                                    act(2, 'E1', 1, zi('11-20'), zi('11-21', True), resource=['r1'])])
+        self.dashboard(('p1', '26_100', 'pregatire', [('2026-11-20', '2026-11-21'), ('2026-12-01', '2026-12-02')]))
+        self.configureaza()
+        j = self.echipa()
+        self.assertEqual(j['de_trimis'], [])
+        self.assertEqual(j['avertizari'], [{
+            'tip': 'protejat', 'proiect_id': 'p1', 'cod': '26_100', 'proiect_nume': 'Proiect p1', 'srp': None,
+            'dashboard': {'implementare_id': 'p1-i1', 'start': '2026-12-01', 'end': '2026-12-02'},
+            'motiv': 'ion_nu_e_pe_radacina'}])
 
     def test_pentru_activitatile_lui_ion_se_folosesc_frunzele(self):
         # Radacina e a lui Ion si acopera 18-30.11, dar ce conteaza sunt etapele (frunzele).
@@ -433,8 +449,11 @@ class Citire(CuEchipa):
         self.dashboard(('p1', '26_287', 'pregatire', [('2026-11-18', '2026-11-19')]))
         self.configureaza()
         j = self.echipa()
-        self.assertEqual(set(j), {'generatedAt', 'stale', 'eu', 'resurse', 'activitati', 'avertizari'})
+        self.assertEqual(set(j), {'generatedAt', 'stale', 'eu', 'resurse', 'activitati', 'avertizari', 'sincronizare',
+                                  'de_trimis'})
         self.assertEqual((j['generatedAt'], j['stale'], j['eu']), ('2026-11-18T10:00:00Z', False, 'r1'))
+        self.assertEqual(j['sincronizare'], {'ultima_rulare': None, 'rezultat': None, 'urmatoarea': '2026-11-19T08:00:00'})
+        self.assertEqual(j['de_trimis'], [])
         self.assertEqual(len(j['activitati']), 8)
         etapa = [a for a in j['activitati'] if a['id'] == '1002'][0]
         self.assertEqual(etapa, {'id': '1002', 'parinte_id': '1001', 'text': 'E1_PIF',
@@ -458,7 +477,8 @@ class Citire(CuEchipa):
         self.assertIn('echipa', cu)
         self.assertEqual({k: v for k, v in cu.items() if k not in ('echipa', 'outlook')},
                          {k: v for k, v in fara.items() if k not in ('echipa', 'outlook')})
-        self.assertEqual(set(cu['echipa']), {'generatedAt', 'stale', 'eu', 'resurse', 'activitati', 'avertizari'})
+        self.assertEqual(set(cu['echipa']), {'generatedAt', 'stale', 'eu', 'resurse', 'activitati', 'avertizari',
+                                             'sincronizare', 'de_trimis'})
 
     def test_calendar_da_doar_activitatile_care_ating_fereastra(self):
         self.configureaza()
@@ -492,80 +512,101 @@ class Citire(CuEchipa):
         self.assertEqual((r.status_code, r.get_json()), (200, None))
 
 
-# =============================================================================== cache
+# =============================================================================== citire fara retea, stale
 
-class Cache(CuEchipa):
+class CitireFaraRetea(CuEchipa):
+    """Din 2026-11-18 (revizie): citirea si scrierea in Gantt se fac o data pe zi, din job. Citirile nu
+    fac retea; `stale` si `sincronizare` vin din starea ultimei rulari (`sincronizare.json`)."""
 
-    def test_nu_reciteste_in_15_minute_si_reciteste_dupa(self):
+    def stare(self, ultima_rulare, rezultat='ok'):
+        os.makedirs(self.dir, exist_ok=True)
+        with open(os.path.join(self.dir, 'sincronizare.json'), 'w', encoding='utf-8') as fh:
+            json.dump({'ultima_rulare': ultima_rulare, 'rezultat': rezultat, 'trimise': 0, 'create': 0,
+                       'avertizari': 0, 'eroare': None}, fh)
+
+    def test_citirile_nu_fac_retea_nici_dupa_zile(self):
         self.configureaza()
-        self.assertEqual(len(self.gantt.apeluri), 1)                       # citirea de proba din PUT
-        self.ceas[0] = T0 + timedelta(minutes=14, seconds=59)
-        self.assertFalse(self.echipa()['stale'])
-        self.assertEqual(len(self.gantt.apeluri), 1)
-        self.ceas[0] = T0 + timedelta(minutes=15, seconds=1)
-        j = self.echipa()
-        self.assertEqual(len(self.gantt.apeluri), 2)
-        self.assertEqual((j['stale'], j['generatedAt']), (False, '2026-11-18T10:15:01Z'))
-        self.assertEqual(self.gantt.apeluri[-1], (PLAN_ID, SECRET))
-        self.echipa()
-        self.assertEqual(len(self.gantt.apeluri), 2)                       # proaspat din nou
-        self.assertEqual(os.listdir(self.dir).count('reimprospatare.lock'), 0)
+        apeluri = len(self.gantt.apeluri)
+        for zile in (0, 1, 30):
+            self.ceas[0] = T0 + timedelta(days=zile)
+            self.ceas_local[0] = datetime(2026, 11, 18, 9, 0) + timedelta(days=zile)
+            self.echipa()
+            self.echipa(DEVICE)
+            self.calendar()
+        self.assertEqual(len(self.gantt.apeluri), apeluri)
 
-    def test_gantt_cazut_pastreaza_snapshot_ul_vechi_cu_stale(self):
+    def test_snapshot_vechi_ramane_si_nu_se_reimprospateaza_la_citire(self):
         self.configureaza()
         inainte = self.fisier('plan.json')
-        self.ceas[0] = T0 + timedelta(minutes=20)
-        self.gantt.raspuns = echipa.EroareGantt('Gantt-ul nu raspunde')
-        with self.assertLogs('pif_dashboard', 'WARNING') as log:
-            j = self.echipa()
-        self.assertTrue(j['stale'])
-        self.assertEqual(j['generatedAt'], '2026-11-18T10:00:00Z')
-        self.assertEqual(len(j['activitati']), 8)
+        self.ceas[0] = T0 + timedelta(hours=5)
+        self.gantt.raspuns = gantt([])
+        self.assertEqual(len(self.echipa()['activitati']), 8)
         self.assertEqual(self.fisier('plan.json'), inainte)
-        self.assertIn('gantt_indisponibil', '\n'.join(log.output))
-        self.assertTrue(self.calendar()['echipa']['stale'])
 
-    def test_dupa_un_esec_nu_se_incearca_din_nou_in_fiecare_cerere(self):
+    def test_nu_creeaza_lacate_la_citire(self):
         self.configureaza()
-        self.ceas[0] = T0 + timedelta(minutes=20)
-        self.gantt.raspuns = echipa.EroareGantt('Gantt-ul nu raspunde')
-        with self.assertLogs('pif_dashboard', 'WARNING'):
-            self.echipa()
-        self.assertEqual(len(self.gantt.apeluri), 2)
         self.echipa()
         self.calendar()
-        self.assertEqual(len(self.gantt.apeluri), 2, 'pauza dupa esec')
-        lacat = os.path.join(self.dir, 'reimprospatare.lock')
-        vechi = time.time() - echipa.PAUZA_DUPA_INCERCARE - 5
-        os.utime(lacat, (vechi, vechi))
-        self.gantt.raspuns = gantt(plan_echipa())
+        self.assertEqual(sorted(os.listdir(self.dir)), ['plan.json', 'sursa.json'])
+
+    def test_stale_dupa_cele_doua_ore_de_gratie_fara_nicio_rulare(self):
+        self.configureaza()
+        self.ceas_local[0] = datetime(2026, 11, 18, 9, 59)
+        self.assertFalse(self.echipa()['stale'])
+        self.ceas_local[0] = datetime(2026, 11, 18, 10, 1)
+        self.assertTrue(self.echipa()['stale'])
+        self.assertTrue(self.calendar()['echipa']['stale'])
+
+    def test_rularea_de_la_ultima_ora_programata_nu_e_stale(self):
+        self.configureaza()
+        self.ceas_local[0] = datetime(2026, 11, 18, 15, 0)
+        self.stare('2026-11-18T08:00:20Z')                            # `_local` trateaza UTC ca ora serverului
         j = self.echipa()
-        self.assertEqual(len(self.gantt.apeluri), 3)
         self.assertFalse(j['stale'])
+        self.assertEqual(j['sincronizare'], {'ultima_rulare': '2026-11-18T08:00:20Z', 'rezultat': 'ok',
+                                             'urmatoarea': '2026-11-19T08:00:00'})
 
-    def test_un_lacat_proaspat_al_celuilalt_worker_opreste_citirea_dubla(self):
+    def test_rularea_de_ieri_e_stale_dupa_08_00_plus_2_ore(self):
         self.configureaza()
-        self.ceas[0] = T0 + timedelta(minutes=30)
-        with open(os.path.join(self.dir, 'reimprospatare.lock'), 'w'):
-            pass
-        j = self.echipa()
-        self.assertEqual(len(self.gantt.apeluri), 1)
-        self.assertTrue(j['stale'])
+        self.stare('2026-11-17T08:00:20Z')
+        self.ceas_local[0] = datetime(2026, 11, 18, 9, 0)
+        self.assertFalse(self.echipa()['stale'])                      # inca in gratia de 2 ore
+        self.ceas_local[0] = datetime(2026, 11, 18, 10, 30)
+        self.assertTrue(self.echipa()['stale'])
 
-    def test_primul_acces_fara_snapshot_dar_cu_sursa_citeste_o_data(self):
+    def test_ultima_rulare_esuata_e_stale_imediat(self):
         self.configureaza()
-        os.remove(os.path.join(self.dir, 'plan.json'))
-        j = self.echipa()
-        self.assertEqual(len(self.gantt.apeluri), 2)
-        self.assertEqual(len(j['activitati']), 8)
+        self.stare('2026-11-18T08:00:20Z', rezultat='eroare')
+        self.assertTrue(self.echipa()['stale'])
 
-    def test_gantt_cazut_fara_snapshot_da_null(self):
+    def test_partial_nu_e_stale(self):
         self.configureaza()
-        os.remove(os.path.join(self.dir, 'plan.json'))
-        self.gantt.raspuns = echipa.EroareGantt('Gantt-ul nu raspunde')
-        with self.assertLogs('pif_dashboard', 'WARNING'):
-            r = self.client.get('/api/echipa', headers=self.bearer())
-        self.assertEqual((r.status_code, r.get_json()), (200, None))
+        self.stare('2026-11-18T08:00:20Z', rezultat='partial')
+        self.assertFalse(self.echipa()['stale'])
+
+    def test_in_weekend_ultima_ora_programata_e_vineri(self):
+        self.configureaza()
+        self.stare('2026-11-20T08:00:20Z')                            # vineri
+        for local in (datetime(2026, 11, 21, 12, 0), datetime(2026, 11, 22, 23, 0), datetime(2026, 11, 23, 7, 0)):
+            self.ceas_local[0] = local
+            self.assertFalse(self.echipa()['stale'], local)
+        self.ceas_local[0] = datetime(2026, 11, 23, 10, 30)           # luni, rularea de luni a lipsit
+        self.assertTrue(self.echipa()['stale'])
+
+    def test_urmatoarea_rulare_luni_pana_vineri_la_08_00(self):
+        urm = lambda *ora: echipa.urmatoarea_rulare(datetime(*ora)).isoformat()
+        self.assertEqual(urm(2026, 11, 18, 7, 59), '2026-11-18T08:00:00')     # miercuri, inainte de 08:00
+        self.assertEqual(urm(2026, 11, 18, 8, 0), '2026-11-19T08:00:00')      # fix la 08:00: urmatoarea e maine
+        self.assertEqual(urm(2026, 11, 19, 12, 0), '2026-11-20T08:00:00')
+        self.assertEqual(urm(2026, 11, 20, 8, 0, 1), '2026-11-23T08:00:00')   # vineri dupa 08:00 -> luni
+        self.assertEqual(urm(2026, 11, 21, 3, 0), '2026-11-23T08:00:00')      # sambata
+        self.assertEqual(urm(2026, 11, 22, 23, 0), '2026-11-23T08:00:00')     # duminica
+        self.assertEqual(urm(2026, 11, 23, 6, 0), '2026-11-23T08:00:00')      # luni dimineata
+        ult = lambda *ora: echipa.ultima_programata(datetime(*ora)).isoformat()
+        self.assertEqual(ult(2026, 11, 18, 8, 0), '2026-11-18T08:00:00')
+        self.assertEqual(ult(2026, 11, 18, 7, 59), '2026-11-17T08:00:00')
+        self.assertEqual(ult(2026, 11, 22, 12, 0), '2026-11-20T08:00:00')     # duminica -> vineri
+        self.assertEqual(ult(2026, 11, 23, 7, 0), '2026-11-20T08:00:00')      # luni inainte de 08:00 -> vineri
 
 
 # =============================================================================== sursa
@@ -696,22 +737,6 @@ class SecretulNuIese(CuEchipa):
         self.verifica_fara_secret(r.get_data(as_text=True), 'raspuns')
         self.verifica_fara_secret('\n'.join(log.output), 'log')
         self.assertIn('Gantt-ul nu raspunde', r.get_json()['error'])
-
-    def test_erori_si_log_la_reimprospatare_cu_http_error(self):
-        self.configureaza()
-        self.ceas[0] = T0 + timedelta(minutes=30)
-
-        def cade(cerere, timeout=None):
-            raise urllib.error.HTTPError(cerere.full_url, 503, 'Service Unavailable ' + cerere.full_url, {}, None)
-        self.patch(echipa, '_descarca', _REALA)
-        with mock.patch('urllib.request.urlopen', side_effect=cade):
-            with self.assertLogs('pif_dashboard', 'DEBUG') as log:
-                r = self.client.get('/api/echipa', headers=self.bearer())
-        self.assertTrue(r.get_json()['stale'])
-        self.verifica_fara_secret(r.get_data(as_text=True), 'raspuns')
-        text = '\n'.join(log.output)
-        self.verifica_fara_secret(text, 'log')
-        self.assertIn('codul 503', text)
 
     def test_citirea_reala_cere_url_ul_cu_parametrii_si_nu_il_logheaza(self):
         class Raspuns:

@@ -7,9 +7,12 @@
 # tine un snapshot NORMALIZAT in `uploads/echipa/plan.json` (rescris intreg si atomic, ca
 # `outlook/calendar.json`). Fara tabela, fara migrare, nu intra in backup. Raspunsul brut al
 # Gantt-ului nu se pastreaza: are email-uri, entraId si hash-ul parolei de scriere, iar Torqa
-# n-are nevoie de ele. Citirea nu scrie nimic in Gantt. Scrierea (amendament 2026-11-18, mai jos la
-# „dashboard -> Gantt") atinge doar etapele in care Ion e resursa, dupa o perioada salvata in
-# dashboard sau la cererea lui. Decizia: docs/decizii/2026-11-18-gantt-srp.md.
+# n-are nevoie de ele. Rutele de citire (`GET /api/echipa`, cheia `echipa` din `/api/calendar`) NU
+# fac retea: citesc snapshot-ul de pe disc. Gantt-ul se citeste si se scrie O DATA PE ZI, L-V la 08:00,
+# din jobul `POST /api/echipa/sincronizeaza` (timer de server), cu o sincronizare in trei cai fata de
+# o BAZA (intervalul convenit la ultima rulare, tinut in `implementari`); scrierea atinge doar etapele
+# in care Ion e resursa. `POST /api/echipa/trimite` scrie imediat, la cererea lui Ion. Decizia (cu
+# amendamentele): docs/decizii/2026-11-18-gantt-srp.md.
 #
 # SECRETUL NU IESE NICIODATA: nici in raspuns, nici in log, nici in mesajele de eroare. De
 # aceea URL-ul cererii nu se logheaza si mesajele de eroare ale `urllib` (care pot purta
@@ -39,13 +42,10 @@ echipa_bp = Blueprint('echipa', __name__)
 DIR_ECHIPA = os.path.join(UPLOAD_FOLDER, 'echipa')
 FISIER_SURSA = 'sursa.json'
 FISIER_PLAN = 'plan.json'
-FISIER_LOCK = 'reimprospatare.lock'
 
 URL_GANTT = 'https://api.projectplan-powerpoint.com/OnlinePlan/get'
 TIMEOUT_GANTT = 5                 # secunde, cat asteapta o citire
 MAX_RASPUNS_GANTT = 8 * 1024 * 1024
-VALABILITATE = timedelta(minutes=15)
-PAUZA_DUPA_INCERCARE = 60         # secunde: dupa un esec (sau cat dureaza o citire) nu se mai incearca
 MAX_CORP = 4096
 MAX_TEXT = 300
 
@@ -150,6 +150,7 @@ def _descarca(plan_id, secret):
     except EroareGantt:
         raise
     except urllib.error.HTTPError as e:
+        e.close()
         raise EroareGantt('Gantt-ul a raspuns cu codul %d' % e.code) from None
     except Exception:                            # URLError, timeout, SSL, conexiune: mesajul lor poate purta adrese
         raise EroareGantt('Gantt-ul nu raspunde') from None
@@ -317,68 +318,6 @@ def normalizeaza(raspuns, email, acum=None):
     }
 
 
-# ------------------------------------------------------------------------------ reimprospatare
-
-def _ia_incercarea():
-    """True daca ACEST worker face citirea acum. Fisierul `reimprospatare.lock` (creat cu
-    O_EXCL) tine locul de lacat intre cei doi workeri si de pauza dupa un esec: cat e mai nou
-    de `PAUZA_DUPA_INCERCARE` secunde nu mai incearca nimeni. Dupa succes se sterge. Un worker
-    cazut in mijlocul citirii lasa lacatul, care expira singur."""
-    os.makedirs(DIR_ECHIPA, exist_ok=True)
-    cale = _cale(FISIER_LOCK)
-    for _ in range(2):
-        try:
-            os.close(os.open(cale, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
-            return True
-        except FileExistsError:
-            try:
-                varsta = time.time() - os.path.getmtime(cale)
-            except OSError:
-                continue
-            if varsta < PAUZA_DUPA_INCERCARE:
-                return False
-            try:
-                os.remove(cale)
-            except OSError:
-                pass
-    return False
-
-
-def _elibereaza():
-    try:
-        os.remove(_cale(FISIER_LOCK))
-    except OSError:
-        pass
-
-
-def _vechime(snapshot):
-    g = _data_ora(snapshot.get('generatedAt')) if snapshot else None
-    return None if g is None else _acum() - g
-
-
-def snapshot_proaspat():
-    """(snapshot, stale). Reimprospateaza daca snapshot-ul lipseste sau are peste 15 minute si
-    sursa e configurata. La esec pastreaza snapshot-ul vechi si da `stale=True`. Fara sursa si
-    fara snapshot: (None, False). Nu ridica niciodata."""
-    snapshot = citeste_snapshot()
-    sursa = citeste_sursa()
-    varsta = _vechime(snapshot)
-    expirat = snapshot is None or varsta is None or varsta >= VALABILITATE
-    if expirat and sursa is not None and _ia_incercarea():
-        try:
-            nou = normalizeaza(_descarca(sursa['planId'], sursa['secret']), sursa['email'])
-            _scrie_atomic(FISIER_PLAN, nou)
-            snapshot, expirat = nou, False
-            _elibereaza()
-            if nou['eu'] is None:
-                logger.warning('Echipa: email-ul sursei nu mai e printre resursele planului')
-        except EroareGantt as e:
-            logger.warning('Echipa: reimprospatarea a esuat [cod=gantt_indisponibil]: %s', e)
-        except Exception:
-            logger.warning('Echipa: reimprospatarea a esuat [cod=eroare_interna]', exc_info=False)
-    return snapshot, bool(snapshot is not None and expirat)
-
-
 # ------------------------------------------------------------------------------ dashboard + avertizari
 
 def _incarca_dashboard():
@@ -388,7 +327,8 @@ def _incarca_dashboard():
         cur = conn.cursor()
         cur.execute("SELECT id, nume, cod_proiect, status FROM proiecte")
         proiecte = [dict(r) for r in cur.fetchall()]
-        cur.execute("SELECT id, proiect_id, data_start, data_sfarsit FROM implementari")
+        cur.execute("SELECT id, proiect_id, data_start, data_sfarsit, eticheta, srp_activitate_id, "
+                    "srp_sincron_start, srp_sincron_end FROM implementari")
         implementari = [dict(r) for r in cur.fetchall()]
     finally:
         conn.close()
@@ -460,10 +400,25 @@ def _dash(start, end, impl_id):
     return {'implementare_id': impl_id, 'start': start, 'end': end}
 
 
-def calculeaza_avertizari(snapshot, proiecte, implementari, azi):
-    """Cele trei avertizari (perioada_diferita, lipseste_in_dashboard, lipseste_in_srp) si
-    `proiect_id` pe fiecare activitate (pe loc). Doar intervalele cu end >= `azi`; pentru
-    activitatile lui Ion se folosesc FRUNZELE. Nu scrie nimic."""
+def _ion_pe(activitate):
+    return bool(activitate and activitate['ale_mele'])
+
+
+def calculeaza(snapshot, proiecte, implementari, azi):
+    """Starea sincronizarii dashboard <-> Gantt, doar din snapshot si din baza (fara retea, nu scrie
+    nimic). Pune pe loc `proiect_id` pe fiecare activitate. Intoarce:
+      avertizari: perioada_diferita, lipseste_in_dashboard, lipseste_in_srp, schimbat_in_srp, conflict,
+                  protejat (doar intervale cu end >= `azi`; pentru Ion se folosesc FRUNZELE);
+      de_trimis:  ce pleaca in SRP la urmatoarea rulare ({proiect_id, implementare_id, start, end,
+                  tip: modificata|noua});
+      scrieri:    aceleasi, cu ce-i trebuie jobului (etapa tinta, radacina, eticheta);
+      legaturi:   perioade de legat sau de re-baza fara nicio scriere ((implementare_id, activitate_id, interval)).
+
+    O perioada LEGATA (`srp_activitate_id`) se compara in trei cai cu BAZA, intervalul convenit la
+    ultima sincronizare: Torqa == SRP: sincron; doar Torqa s-a mutat: se scrie in SRP; doar SRP s-a
+    mutat: `schimbat_in_srp` (dashboard-ul nu se atinge); amandoua: `conflict`. Una nelegata: egala cu
+    o etapa libera a lui Ion se leaga; cu o pereche diferita e `perioada_diferita` (decide Ion); fara
+    pereche e perioada noua (etapa noua daca Ion e resursa pe radacina, altfel `protejat`)."""
     activitati = snapshot['activitati']
     by_id = {a['id']: a for a in activitati}
     parinti = {a['parinte_id'] for a in activitati if a['parinte_id'] is not None}
@@ -498,14 +453,24 @@ def calculeaza_avertizari(snapshot, proiecte, implementari, azi):
             if a['id'] not in parinti:
                 info['frunze_ion'].append(a)
 
-    avertizari = []
-    primite = {}                                   # id proiect dashboard -> frunzele lui Ion (end >= azi)
+    legate = {i['id']: i for i in implementari if i.get('srp_activitate_id')}
+    ocupate = {i['srp_activitate_id'] for i in legate.values()}
+    impl_pe_proiect = {}
+    for i in implementari:
+        impl_pe_proiect.setdefault(i['proiect_id'], []).append(i)
+
+    avertizari, de_trimis, scrieri, legaturi = [], [], [], []
+    primite = {}                                   # id proiect dashboard -> frunzele libere ale lui Ion (end >= azi)
+    radacini_proiect = {}                          # id proiect dashboard -> radacinile potrivite
     cu_ion = set()                                 # id-urile proiectelor cu cel putin o activitate a lui Ion
     for info in radacini.values():
+        p = info['proiect']
+        if p is not None:
+            radacini_proiect.setdefault(p['id'], []).append(info['radacina'])
         if not info['ion']:
             continue
-        viitoare = sorted((a for a in info['frunze_ion'] if a['end'] >= azi), key=lambda a: (a['start'], a['end'], a['id']))
-        p = info['proiect']
+        viitoare = sorted((a for a in info['frunze_ion'] if a['end'] >= azi and a['id'] not in ocupate),
+                          key=lambda a: (a['start'], a['end'], a['id']))
         if p is None:
             if viitoare:
                 avertizari.append({'tip': 'lipseste_in_dashboard', 'proiect_id': None, 'cod': cod_text(info['cod']),
@@ -515,34 +480,93 @@ def calculeaza_avertizari(snapshot, proiecte, implementari, azi):
         primite.setdefault(p['id'], []).extend(viitoare)
 
     proiecte_dupa_id = {p['id']: p for p in cu_cod}
-    impl_pe_proiect = {}
-    for i in implementari:
-        impl_pe_proiect.setdefault(i['proiect_id'], []).append(i)
+
+    def avertizare(tip, p, srp, dash, **extra):
+        return {'tip': tip, 'proiect_id': p['id'], 'cod': cod_text(p['_cod']), 'proiect_nume': p.get('nume') or '',
+                'srp': _srp(srp) if srp else None, 'dashboard': dash, **extra}
 
     for pid in sorted(primite, key=str):
         p = proiecte_dupa_id[pid]
-        frunze = {}
-        for a in primite[pid]:                     # mulțimea intervalelor: o frunza per interval
-            frunze.setdefault((a['start'], a['end']), a)
-        dash = {}
-        if _activ(p):
-            for s, e, iid in _intervale_dashboard(impl_pe_proiect.get(pid, [])):
-                if e >= azi:
-                    dash.setdefault((s, e), iid)
-        exacte = set(frunze) & set(dash)
-        srp_l = sorted(set(frunze) - exacte)
-        dash_l = sorted(set(dash) - exacte)
-        perechi, srp_singur, dash_singur = _perechi(srp_l, dash_l)
-        baza = {'proiect_id': pid, 'cod': cod_text(p['_cod']), 'proiect_nume': p.get('nume') or ''}
-        randuri = [(srp_l[i], dash_l[j]) for i, j in perechi]
-        randuri += [(srp_l[i], None) for i in srp_singur] + [(None, dash_l[j]) for j in dash_singur]
-        randuri.sort(key=lambda r: (r[0] or r[1], r[1] or r[0]))
-        for s, d in randuri:
-            avertizari.append({
-                'tip': 'perioada_diferita', **baza,
-                'srp': _srp(frunze[s]) if s else None,
-                'dashboard': _dash(d[0], d[1], dash[d]) if d else None,
-            })
+        activ = _activ(p)
+        periode = sorted(impl_pe_proiect.get(pid, []), key=lambda i: (str(i.get('data_start') or ''), str(i['id'])))
+
+        # 1) Perioadele legate: trei cai fata de baza.
+        for i in periode:
+            if not activ or i['id'] not in legate:
+                continue
+            t = interval_perioada(i['data_start'], i['data_sfarsit'])
+            if t is None:
+                continue
+            dash = _dash(t[0], t[1], i['id'])
+            s_act = by_id.get(i['srp_activitate_id'])
+            if s_act is None:                                      # etapa a disparut din plan
+                avertizari.append(avertizare('schimbat_in_srp', p, None, dash, motiv='etapa_disparuta'))
+                continue
+            s = (s_act['start'], s_act['end'])
+            if t == s:
+                if (i.get('srp_sincron_start'), i.get('srp_sincron_end')) != t:
+                    legaturi.append((i['id'], s_act['id'], t))
+                continue
+            baza = ((i.get('srp_sincron_start'), i.get('srp_sincron_end'))
+                    if i.get('srp_sincron_start') and i.get('srp_sincron_end') else None)
+            vizibila = max(t[1], s[1]) >= azi
+            if baza is None:
+                if vizibila:
+                    avertizari.append(avertizare('perioada_diferita', p, s_act, dash))
+            elif s == baza:                                        # s-a mutat in Torqa
+                if not s_act['ale_mele']:
+                    if vizibila:
+                        avertizari.append(avertizare('protejat', p, s_act, dash, motiv='ion_nu_e_pe_etapa'))
+                else:
+                    de_trimis.append({'proiect_id': pid, 'implementare_id': i['id'], 'start': t[0], 'end': t[1],
+                                      'tip': 'modificata'})
+                    scrieri.append({'tip': 'modificata', 'implementare_id': i['id'], 'proiect_id': pid,
+                                    'activitate_id': s_act['id'], 'interval': t})
+            elif t == baza:                                        # s-a mutat in SRP, de altcineva
+                if vizibila:
+                    avertizari.append(avertizare('schimbat_in_srp', p, s_act, dash,
+                                                 baza={'start': baza[0], 'end': baza[1]}))
+            elif vizibila:
+                avertizari.append(avertizare('conflict', p, s_act, dash, baza={'start': baza[0], 'end': baza[1]}))
+
+        # 2) Perioadele nelegate (end >= azi) fata de frunzele libere ale lui Ion.
+        libere = [(a, (a['start'], a['end'])) for a in primite[pid]]
+        nelegate = []
+        if activ:
+            for i in periode:
+                if i['id'] in legate:
+                    continue
+                t = interval_perioada(i['data_start'], i['data_sfarsit'])
+                if t is not None and t[1] >= azi:
+                    nelegate.append((i, t))
+        ramase_p = []
+        for i, t in nelegate:                                       # egale: se leaga, fara scriere
+            gasit = next((ix for ix, (_, s) in enumerate(libere) if s == t), None)
+            if gasit is None:
+                ramase_p.append((i, t))
+            else:
+                legaturi.append((i['id'], libere.pop(gasit)[0]['id'], t))
+        perechi, srp_singur, dash_singur = _perechi([s for _, s in libere], [t for _, t in ramase_p])
+        randuri = [(libere[a][0], ramase_p[b]) for a, b in perechi]
+        randuri += [(libere[a][0], None) for a in srp_singur] + [(None, ramase_p[b]) for b in dash_singur]
+        randuri.sort(key=lambda r: ((r[0]['start'], r[0]['end']) if r[0] else r[1][1],
+                                    (r[1][1] if r[1] else (r[0]['start'], r[0]['end']))))
+        for leaf, per in randuri:
+            if leaf is not None:
+                avertizari.append(avertizare('perioada_diferita', p, leaf,
+                                             _dash(per[1][0], per[1][1], per[0]['id']) if per else None))
+                continue
+            i, t = per                                              # perioada noua, fara pereche
+            rad_ion = next((r for r in sorted(radacini_proiect.get(pid, []), key=lambda r: r['id'])
+                            if _ion_pe(r)), None)
+            if rad_ion is None:
+                avertizari.append(avertizare('protejat', p, None, _dash(t[0], t[1], i['id']),
+                                             motiv='ion_nu_e_pe_radacina'))
+            else:
+                de_trimis.append({'proiect_id': pid, 'implementare_id': i['id'], 'start': t[0], 'end': t[1],
+                                  'tip': 'noua'})
+                scrieri.append({'tip': 'noua', 'implementare_id': i['id'], 'proiect_id': pid, 'activitate_id': None,
+                                'radacina_id': rad_ion['id'], 'eticheta': i.get('eticheta') or '', 'interval': t})
 
     # In dashboard, nu si in SRP: proiect activ, cu cod, cu o perioada de azi incolo, fara nicio activitate a lui Ion cu acelasi cod.
     activitati_ion = [(analiza_cod(radacina(a)['text']), a) for a in activitati if a['ale_mele']]
@@ -556,32 +580,102 @@ def calculeaza_avertizari(snapshot, proiecte, implementari, azi):
             s, e, iid = viitoare[0]
             avertizari.append({'tip': 'lipseste_in_srp', 'proiect_id': p['id'], 'cod': cod_text(p['_cod']),
                                'proiect_nume': p.get('nume') or '', 'srp': None, 'dashboard': _dash(s, e, iid)})
-    return avertizari
+    return {'avertizari': avertizari, 'de_trimis': de_trimis, 'scrieri': scrieri, 'legaturi': legaturi}
+
+
+# ------------------------------------------------------------------------------ starea rularii + citire
+
+FISIER_STARE = 'sincronizare.json'
+ORA_SINCRONIZARE = 8                   # L-V la 08:00, ora serverului (timerul de server)
+TOLERANTA_STALE = timedelta(hours=2)
+
+
+def _acum_local():
+    """Ora locala a serverului (naiva): cea la care ruleaza timerul."""
+    return datetime.now()
+
+
+def _local(dt):
+    """Un moment cu fus (ex. `ultima_rulare`, UTC) -> ora locala a serverului, naiva."""
+    return dt.astimezone().replace(tzinfo=None)
+
+
+def _zi_lucratoare(d):
+    return d.weekday() < 5
+
+
+def urmatoarea_rulare(acum):
+    """Prima zi L-V la 08:00 strict dupa `acum` (naiv, ora serverului)."""
+    d = acum.date()
+    while True:
+        cand = datetime(d.year, d.month, d.day, ORA_SINCRONIZARE)
+        if _zi_lucratoare(d) and cand > acum:
+            return cand
+        d += timedelta(days=1)
+
+
+def ultima_programata(acum):
+    """Ultima zi L-V la 08:00 care a trecut (<= `acum`)."""
+    d = acum.date()
+    while True:
+        cand = datetime(d.year, d.month, d.day, ORA_SINCRONIZARE)
+        if _zi_lucratoare(d) and cand <= acum:
+            return cand
+        d -= timedelta(days=1)
+
+
+def citeste_stare():
+    """{ultima_rulare, rezultat, trimise, create, avertizari, eroare} al ultimei rulari, sau None."""
+    stare = _citeste_json(FISIER_STARE)
+    if not isinstance(stare, dict) or not isinstance(stare.get('ultima_rulare'), str):
+        return None
+    return stare
+
+
+def info_sincronizare():
+    """(cheia `sincronizare`, stale). `stale`: ultima rulare a esuat, sau nu s-a facut rularea de la
+    ultima ora programata si au trecut 2 ore de la ea (timerul a ratat-o). Fara retea."""
+    stare = citeste_stare()
+    acum = _acum_local()
+    ultima = _data_ora(stare['ultima_rulare']) if stare else None
+    programata = ultima_programata(acum)
+    rezultat = stare.get('rezultat') if stare else None
+    stale = (rezultat == 'eroare'
+             or (acum - programata > TOLERANTA_STALE and (ultima is None or _local(ultima) < programata)))
+    return ({'ultima_rulare': stare['ultima_rulare'] if stare else None, 'rezultat': rezultat,
+             'urmatoarea': urmatoarea_rulare(acum).isoformat(timespec='seconds')}, stale)
 
 
 def _continut():
-    """(snapshot cu proiect_id puse, avertizari, stale), sau None fara snapshot. Nu ridica: o
-    problema aici nu trebuie sa strice `/api/calendar`."""
+    """(snapshot cu proiect_id puse, calcul, sincronizare, stale), sau None fara snapshot. NU face
+    retea: citeste snapshot-ul de pe disc (il rescrie jobul zilnic). Nu ridica: o problema aici nu
+    trebuie sa strice `/api/calendar`."""
     try:
-        snapshot, stale = snapshot_proaspat()
+        snapshot = citeste_snapshot()
         if snapshot is None:
             return None
         proiecte, implementari = _incarca_dashboard()
-        avertizari = calculeaza_avertizari(snapshot, proiecte, implementari, _azi())
-        return snapshot, avertizari, stale
+        calcul = calculeaza(snapshot, proiecte, implementari, _azi())
+        sincronizare, stale = info_sincronizare()
+        return snapshot, calcul, sincronizare, stale
     except Exception:
         logger.exception('Echipa: citirea planului a esuat [cod=eroare_interna]')
         return None
 
 
+def _corp(snapshot, calcul, sincronizare, stale, activitati):
+    return {'generatedAt': snapshot['generatedAt'], 'stale': stale, 'eu': snapshot['eu'],
+            'resurse': snapshot['resurse'], 'activitati': activitati, 'avertizari': calcul['avertizari'],
+            'sincronizare': sincronizare, 'de_trimis': calcul['de_trimis']}
+
+
 def echipa_completa():
-    """Corpul lui `GET /api/echipa`: snapshot + avertizari + stale, sau None."""
+    """Corpul lui `GET /api/echipa`: snapshot + avertizari + stale + sincronizare + de_trimis, sau None."""
     c = _continut()
     if c is None:
         return None
-    snapshot, avertizari, stale = c
-    return {'generatedAt': snapshot['generatedAt'], 'stale': stale, 'eu': snapshot['eu'],
-            'resurse': snapshot['resurse'], 'activitati': snapshot['activitati'], 'avertizari': avertizari}
+    snapshot, calcul, sincronizare, stale = c
+    return _corp(snapshot, calcul, sincronizare, stale, snapshot['activitati'])
 
 
 def echipa_in_fereastra(start, sfarsit):
@@ -590,11 +684,9 @@ def echipa_in_fereastra(start, sfarsit):
     c = _continut()
     if c is None:
         return None
-    snapshot, avertizari, stale = c
-    return {'generatedAt': snapshot['generatedAt'], 'stale': stale, 'eu': snapshot['eu'],
-            'resurse': snapshot['resurse'],
-            'activitati': [a for a in snapshot['activitati'] if a['start'] < sfarsit and a['end'] >= start],
-            'avertizari': avertizari}
+    snapshot, calcul, sincronizare, stale = c
+    return _corp(snapshot, calcul, sincronizare, stale,
+                 [a for a in snapshot['activitati'] if a['start'] < sfarsit and a['end'] >= start])
 
 
 # ------------------------------------------------------------------------------ dashboard -> Gantt
@@ -623,6 +715,7 @@ def _trimite_activitate(plan_id, secret, activitate):
     except EroareGantt:
         raise
     except urllib.error.HTTPError as e:
+        e.close()
         raise EroareGantt('Gantt-ul a raspuns cu codul %d la scriere' % e.code) from None
     except Exception:
         raise EroareGantt('Gantt-ul nu raspunde la scriere') from None
@@ -780,16 +873,18 @@ def _citeste_perioada(impl_id):
     return perioada, (dict(proiect) if proiect else None), ocupate, intervale
 
 
-def _salveaza_legatura(impl_id, activitate_id):
+def _salveaza_legatura(impl_id, activitate_id, interval):
+    """Legatura perioadei cu etapa din Gantt si BAZA: intervalul convenit la aceasta sincronizare."""
     conn = get_db()
     try:
-        conn.execute('UPDATE implementari SET srp_activitate_id = ? WHERE id = ?', (activitate_id, impl_id))
+        conn.execute('UPDATE implementari SET srp_activitate_id = ?, srp_sincron_start = ?, srp_sincron_end = ? '
+                     'WHERE id = ?', (activitate_id, interval[0], interval[1], impl_id))
         conn.commit()
     finally:
         conn.close()
 
 
-def _sincronizeaza(impl_id, vechi, trimite, activitate_ales):
+def _trimite_acum(impl_id, activitate_ales):
     sursa = citeste_sursa()
     if sursa is None:
         return _rez('ignorat', 'fara_sursa')
@@ -800,8 +895,6 @@ def _sincronizeaza(impl_id, vechi, trimite, activitate_ales):
     nou = interval_perioada(perioada['data_start'], perioada['data_sfarsit'])
     if nou is None:
         return _rez('ignorat', 'fara_data')
-    if not trimite and vechi is not None and vechi == nou:
-        return _rez('ignorat', 'date_neschimbate')
     cod_p = analiza_cod((proiect or {}).get('cod_proiect'))
     if cod_p is None:
         return _rez('ignorat', 'fara_cod')
@@ -827,9 +920,8 @@ def _sincronizeaza(impl_id, vechi, trimite, activitate_ales):
                   if aid not in parinti and _radacina_brut(brut, aid) in radacini and ale_lui(aid)
                   and aid not in ocupate and _interval_brut(brut[aid]) is not None]
 
-        # Tinta: etapa aleasa de Ion, legatura salvata, frunza cu intervalul VECHI, frunza cu intervalul
-        # NOU (deja sincron: ex. dupa „Use SRP dates"), la „trimite" fara nimic dintre acestea cea mai
-        # apropiata frunza libera; altfel etapa noua.
+        # Tinta: etapa aleasa de Ion, legatura salvata, frunza cu intervalul NOU (deja sincron), apoi cea
+        # mai apropiata frunza libera; altfel etapa noua.
         tinta = perioada['srp_activitate_id']
         if tinta is not None and (tinta not in brut or _radacina_brut(brut, tinta) not in radacini):
             tinta = None
@@ -837,11 +929,9 @@ def _sincronizeaza(impl_id, vechi, trimite, activitate_ales):
             if activitate_ales not in brut or _radacina_brut(brut, activitate_ales) not in radacini:
                 return _rez('protejat', 'etapa_necunoscuta')
             tinta = activitate_ales
-        if tinta is None and vechi is not None:
-            tinta = next((a for a in frunze if _interval_brut(brut[a]) == vechi), None)
         if tinta is None:
             tinta = next((a for a in frunze if _interval_brut(brut[a]) == nou), None)
-        if tinta is None and trimite and activitate_ales is None:
+        if tinta is None and activitate_ales is None:
             libere = [a for a in frunze if _interval_brut(brut[a]) not in alte_intervale]
             if libere:
                 tinta = min(libere, key=lambda a: (_scor(_interval_brut(brut[a]), nou), a))
@@ -851,10 +941,8 @@ def _sincronizeaza(impl_id, vechi, trimite, activitate_ales):
                 return _rez('protejat', 'ion_nu_e_pe_etapa', tinta)
             curent = _interval_brut(brut[tinta])
             if curent == nou:
-                _salveaza_legatura(impl_id, tinta)
+                _salveaza_legatura(impl_id, tinta, nou)
                 return _rez('ok', 'deja_sincron', tinta)
-            if not trimite and vechi is not None and curent != vechi:
-                return _rez('conflict', 'etapa_mutata_in_gantt', tinta)
             obiect = _cu_date(brut[tinta], nou, curent[0] if curent else None)
             radacina_id = _radacina_brut(brut, tinta)
             motiv = 'sincronizat'
@@ -880,32 +968,152 @@ def _sincronizeaza(impl_id, vechi, trimite, activitate_ales):
         aid = str(obiect['id'])
         if aid not in brut2 or _interval_brut(brut2[aid]) != nou:
             return _rez('eroare', 'verificare_esuata', aid)
-        _salveaza_legatura(impl_id, aid)
+        _salveaza_legatura(impl_id, aid, nou)
         return _rez('ok', motiv, aid)
     finally:
         _elibereaza_scrierea()
 
 
-def sincronizeaza(impl_id, vechi=None, trimite=False, activitate_ales=None):
-    """Aduce in Gantt perioada `impl_id` (datele ei de acum din baza). Nu ridica niciodata: scrierea
-    din dashboard e deja facuta si ramane valabila oricum. `vechi`: intervalul perioadei dinaintea
-    modificarii (start, end) sau None (perioada noua). `trimite`: decizia explicita a lui Ion
-    („Send Torqa dates to SRP"): nu se verifica conflictul, iar fara tinta sigura se alege cea mai
-    apropiata etapa libera. Intoarce cheia `srp`: {status, motiv, activitate_id}."""
+def trimite_acum(impl_id, activitate_ales=None):
+    """„Send Torqa dates to SRP": scrie imediat in Gantt datele de acum ale perioadei `impl_id`, fara
+    verificarea de conflict (decizia explicita a lui Ion), cu protectia (doar etapele lui Ion), si
+    pune baza si snapshot-ul la zi. Fara tinta sigura: cea mai apropiata etapa libera, altfel etapa
+    noua. Nu ridica niciodata. Intoarce {status, motiv, activitate_id}."""
     try:
-        rez = _sincronizeaza(impl_id, vechi, trimite, activitate_ales)
+        rez = _trimite_acum(impl_id, activitate_ales)
     except EroareGantt as e:
-        logger.warning('Echipa: sincronizarea cu Gantt-ul a esuat [cod=gantt_indisponibil]: %s', e)
+        logger.warning('Echipa: trimiterea in Gantt a esuat [cod=gantt_indisponibil]: %s', e)
         return _rez('eroare', 'gantt_indisponibil')
     except Exception as e:
-        logger.warning('Echipa: sincronizarea cu Gantt-ul a esuat [cod=eroare_interna]: %s', type(e).__name__)
+        logger.warning('Echipa: trimiterea in Gantt a esuat [cod=eroare_interna]: %s', type(e).__name__)
         return _rez('eroare', 'eroare_interna')
-    if rez['status'] in ('protejat', 'conflict', 'eroare'):
-        logger.warning('Echipa: sincronizare nefacuta [cod=%s] status=%s', rez['motiv'], rez['status'])
+    if rez['status'] in ('protejat', 'eroare'):
+        logger.warning('Echipa: trimitere nefacuta [cod=%s] status=%s', rez['motiv'], rez['status'])
     return rez
 
 
+# ------------------------------------------------------------------------------ jobul zilnic
+
+def _inregistreaza(acum, rezultat, trimise=0, create=0, avertizari=0, eroare=None):
+    """Starea ultimei rulari, in `sincronizare.json`. Fara secret."""
+    stare = {'ultima_rulare': acum.strftime('%Y-%m-%dT%H:%M:%SZ'), 'rezultat': rezultat, 'trimise': trimise,
+             'create': create, 'avertizari': avertizari, 'eroare': eroare}
+    try:
+        _scrie_atomic(FISIER_STARE, stare)
+    except OSError:
+        logger.exception('Echipa: starea rularii nu s-a putut scrie [cod=disc]')
+    return stare
+
+
+def _rula(sursa):
+    acum = _acum()
+    try:
+        raspuns = _descarca(sursa['planId'], sursa['secret'])
+        brut, eu = _plan_brut(raspuns, sursa['email'])
+        snapshot = normalizeaza(raspuns, sursa['email'])
+    except EroareGantt as e:
+        logger.warning('Echipa: sincronizarea zilnica a esuat la citire [cod=gantt_indisponibil]: %s', e)
+        return 502, {**_inregistreaza(acum, 'eroare', eroare='gantt_indisponibil'),
+                     'error': 'Gantt-ul nu a putut fi citit'}
+    _scrie_atomic(FISIER_PLAN, snapshot)
+    proiecte, implementari = _incarca_dashboard()
+    plan = calculeaza(snapshot, proiecte, implementari, _azi())
+    for impl_id, aid, interval in plan['legaturi']:                  # egale: se leaga, fara scriere
+        _salveaza_legatura(impl_id, aid, interval)
+
+    trimise = create = esecuri = 0
+    scrieri = plan['scrieri']
+    if scrieri:
+        # Obiectele brute, din planul PROASPAT; radacinile se lungesc o singura data, la uniunea intervalelor.
+        local = dict(brut)
+        activitati, radacini_noi = [], {}
+        for s in scrieri:
+            t = s['interval']
+            if s['tip'] == 'modificata':
+                aid = s['activitate_id']
+                curent = _interval_brut(brut[aid])
+                obiect = _cu_date(brut[aid], t, curent[0] if curent else None)
+                rid = _radacina_brut(brut, aid)
+            else:
+                rid = s['radacina_id']
+                obiect = _etapa_noua(local, rid, eu, t, s['eticheta'], acum)
+                local[str(obiect['id'])] = obiect
+            activitati.append((s, obiect))
+            r_int = radacini_noi.get(rid) or _interval_brut(brut[rid])
+            if r_int is not None and eu in _resurse_activitate(brut[rid].get('resource')):
+                radacini_noi[rid] = (min(r_int[0], t[0]), max(r_int[1], t[1]))
+        de_scris = []
+        for rid, interval in radacini_noi.items():
+            originalul = _interval_brut(brut[rid])
+            if interval != originalul:
+                de_scris.append(_cu_date(brut[rid], interval, originalul[0]))
+        de_scris += [o for _, o in activitati]                       # radacinile intai, apoi etapele
+        try:
+            for obiect in de_scris:
+                _trimite_activitate(sursa['planId'], sursa['secret'], obiect)
+        except EroareGantt as e:                                     # se opreste, dar ce s-a scris pana aici se verifica
+            logger.warning('Echipa: sincronizarea zilnica a esuat la scriere [cod=gantt_indisponibil]: %s', e)
+        try:
+            raspuns = _descarca(sursa['planId'], sursa['secret'])
+            brut2, _ = _plan_brut(raspuns, sursa['email'])
+            snapshot = normalizeaza(raspuns, sursa['email'])
+            _scrie_atomic(FISIER_PLAN, snapshot)
+            for s, obiect in activitati:                             # verificarea: tinta are noile date
+                aid = str(obiect['id'])
+                if aid in brut2 and _interval_brut(brut2[aid]) == s['interval']:
+                    _salveaza_legatura(s['implementare_id'], aid, s['interval'])
+                    if s['tip'] == 'noua':
+                        create += 1
+                    else:
+                        trimise += 1
+                else:
+                    esecuri += 1
+        except EroareGantt as e:
+            logger.warning('Echipa: sincronizarea zilnica a esuat la verificare [cod=gantt_indisponibil]: %s', e)
+            esecuri = len(activitati)
+    rezultat = 'ok' if esecuri == 0 else ('partial' if trimise + create else 'eroare')
+    proiecte, implementari = _incarca_dashboard()
+    n_avertizari = len(calculeaza(snapshot, proiecte, implementari, _azi())['avertizari'])
+    stare = _inregistreaza(acum, rezultat, trimise, create, n_avertizari,
+                           None if esecuri == 0 else 'scriere_esuata')
+    return (502 if rezultat == 'eroare' else 200), stare
+
+
+def ruleaza_sincronizarea():
+    """Jobul zilei (L-V 08:00, din timerul de server): citeste Gantt-ul, pune snapshot-ul la zi si
+    scrie in el DOAR ce s-a schimbat in Torqa fata de baza, doar pe etapele lui Ion. Idempotent: a doua
+    rulare imediata nu mai are ce trimite. Intoarce (cod HTTP, corp); corpul e rezumatul rularii,
+    fara secret. 502 cand Gantt-ul nu poate fi citit sau scris; 409 fara sursa sau cu alta rulare in curs."""
+    sursa = citeste_sursa()
+    if sursa is None:
+        return 409, {'error': 'Sursa Gantt nu e configurata'}
+    if not _ia_scrierea():
+        return 409, {'error': 'O sincronizare e deja in curs'}
+    try:
+        return _rula(sursa)
+    except Exception as e:
+        logger.warning('Echipa: sincronizarea zilnica a esuat [cod=eroare_interna]: %s', type(e).__name__)
+        return 500, {**_inregistreaza(_acum(), 'eroare', eroare='eroare_interna'), 'error': 'Eroare interna'}
+    finally:
+        _elibereaza_scrierea()
+
+
 # ------------------------------------------------------------------------------ rute
+
+def _uita_legaturile():
+    """Alt plan: legaturile si bazele perioadelor arata spre etape care nu exista in el."""
+    conn = get_db()
+    try:
+        conn.execute('UPDATE implementari SET srp_activitate_id = NULL, srp_sincron_start = NULL, '
+                     'srp_sincron_end = NULL WHERE srp_activitate_id IS NOT NULL')
+        conn.commit()
+    finally:
+        conn.close()
+    try:
+        os.remove(_cale(FISIER_STARE))
+    except OSError:
+        pass
+
 
 def _mascat(plan_id):
     return '****' + plan_id[-4:]
@@ -947,11 +1155,22 @@ def post_trimite():
         return jsonify({'error': 'activitate_id: trebuie sa fie text de 1-64 de caractere sau lipsa'}), 400
     if _citeste_perioada(impl_id) is None:
         return jsonify({'error': 'Perioada inexistenta'}), 404
-    rez = sincronizeaza(impl_id, trimite=True, activitate_ales=activitate)
+    rez = trimite_acum(impl_id, activitate)
     cod = 200
     if rez['status'] == 'eroare':
         cod = 409 if rez['motiv'] == 'sincronizare_in_curs' else 502
     return jsonify({'srp': rez}), cod
+
+
+@echipa_bp.route('/api/echipa/sincronizeaza', methods=['POST'])
+@login_required
+def post_sincronizeaza():
+    """Jobul zilei (timerul de server, L-V 08:00): citeste si scrie Gantt-ul, vezi `ruleaza_sincronizarea`.
+    Doar sesiune sau `PIF_API_TOKEN` (`/api/echipa/sincronizeaza` e in `DEVICE_TOKEN_DENIED`).
+    Raspuns: {ultima_rulare, rezultat: ok|partial|eroare, trimise, create, avertizari, eroare};
+    502 cand Gantt-ul nu poate fi citit sau scris, 409 fara sursa sau cu o rulare in curs."""
+    cod, corp = ruleaza_sincronizarea()
+    return jsonify(corp), cod
 
 
 @echipa_bp.route('/api/echipa/sursa', methods=['GET'])
@@ -999,12 +1218,14 @@ def put_sursa():
     if snapshot['eu'] is None:
         logger.warning('Echipa: sursa respinsa [cod=email_necunoscut]')
         return jsonify({'error': 'email-ul nu e printre resursele planului'}), 400
+    veche = citeste_sursa()
     try:
         _scrie_atomic(FISIER_SURSA, {'planId': plan_id, 'secret': secret, 'email': email}, privat=True)
         _scrie_atomic(FISIER_PLAN, snapshot)
     except OSError:
         logger.exception('Echipa: scrierea pe disc a esuat [cod=disc]')
         return jsonify({'error': 'Eroare pe disc la salvarea sursei.'}), 500
-    _elibereaza()
+    if veche is not None and veche['planId'] != plan_id:
+        _uita_legaturile()              # etapele din alt plan nu mai exista aici
     return jsonify({'ok': True, 'configurat': True, 'planId': _mascat(plan_id),
                     'eu': _numele_meu(snapshot), 'activitati': len(snapshot['activitati'])})

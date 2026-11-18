@@ -123,10 +123,15 @@ def close_db(exc=None):
 #      din Torqa, ex. „Casa"). `global_tasks.sfera` ramane coloana care leaga un task de lista
 #      lui: valoarea e acum `liste.id`, nu doar 'munca'|'personal'. Cele doua liste vechi sunt
 #      randuri fixe. Decizia: docs/decizii/2026-10-26-liste.md.
-# v47: `implementari.srp_activitate_id` — id-ul etapei din Gantt-ul SRP la care se sincronizeaza
-#      perioada (blueprints/echipa.py). Nullable, fara valoare implicita; migrarea doar adauga
-#      coloana, nu completeaza nimic. Decizia: docs/decizii/2026-11-18-gantt-srp.md (amendament).
+# v47: `implementari.srp_activitate_id`, `srp_sincron_start`, `srp_sincron_end` — etapa din Gantt-ul
+#      SRP la care se sincronizeaza perioada si BAZA ei (intervalul convenit la ultima sincronizare),
+#      pentru sincronizarea in trei cai (blueprints/echipa.py). Nullable, fara valoare implicita;
+#      migrarea doar adauga coloanele, nu completeaza nimic. Decizia: docs/decizii/2026-11-18-gantt-srp.md
+#      (amendamente).
 SCHEMA_VERSION = 47
+
+# Coloanele v47 ale `implementari` (sincronizarea cu Gantt-ul SRP); migrarea si self-heal-ul le citesc de aici.
+COLOANE_SRP = ('srp_activitate_id', 'srp_sincron_start', 'srp_sincron_end')
 
 # DDL-ul celor doua tabele noi din v44 sta intr-un singur loc: il folosesc si `init_db()`, si
 # `migrate_v43_to_v44()`; scris de doua ori, cele doua s-ar putea abate si schema ar diferi intre
@@ -1689,21 +1694,24 @@ def migrate_v45_to_v46():
 
 
 def migrate_v46_to_v47():
-    """v46 -> v47: `implementari.srp_activitate_id`, etapa din Gantt-ul SRP careia ii e sincronizata
-    perioada. Decizia: docs/decizii/2026-11-18-gantt-srp.md (amendament).
+    """v46 -> v47: `implementari.srp_activitate_id` (etapa din Gantt-ul SRP careia ii e sincronizata
+    perioada) si `srp_sincron_start` / `srp_sincron_end` (BAZA: intervalul convenit la ultima
+    sincronizare). Decizia: docs/decizii/2026-11-18-gantt-srp.md (amendamente).
 
-    Aditiva si idempotenta: coloana TEXT nullable, fara valoare implicita, deci niciun rand existent
-    nu se schimba (toate raman NULL pana la prima sincronizare reusita). Rulata pe o baza care are
-    deja coloana, nu face nimic.
+    Aditiva si idempotenta: trei coloane TEXT nullable, fara valoare implicita, deci niciun rand
+    existent nu se schimba (toate raman NULL pana la prima sincronizare reusita). Fiecare coloana se
+    adauga doar daca lipseste; rulata pe o baza care le are, nu face nimic.
     """
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute("PRAGMA table_info(implementari)")
-    if 'srp_activitate_id' not in {row[1] for row in cursor.fetchall()}:
-        cursor.execute('ALTER TABLE implementari ADD COLUMN srp_activitate_id TEXT')
+    existente = {row[1] for row in cursor.fetchall()}
+    for coloana in COLOANE_SRP:
+        if coloana not in existente:
+            cursor.execute('ALTER TABLE implementari ADD COLUMN %s TEXT' % coloana)
     conn.commit()
     conn.close()
-    logger.info("Migration v46->v47 completed (implementari.srp_activitate_id)")
+    logger.info("Migration v46->v47 completed (implementari.srp_activitate_id, srp_sincron_start, srp_sincron_end)")
 
 
 def run_migrations():
@@ -2052,8 +2060,8 @@ def run_migrations():
     conn_v47 = get_db()
     cols_i = {row[1] for row in conn_v47.execute("PRAGMA table_info(implementari)")}
     conn_v47.close()
-    if 'srp_activitate_id' not in cols_i:
-        logger.warning("Self-heal: re-running v46->v47 (implementari.srp_activitate_id missing)")
+    if not set(COLOANE_SRP) <= cols_i:
+        logger.warning("Self-heal: re-running v46->v47 (implementari.srp_* missing)")
         migrate_v46_to_v47()
 
     if current_version == SCHEMA_VERSION:
@@ -2136,8 +2144,10 @@ def init_db():
             -- „S-a facut?" e despre PERIOADA, nu despre proiect (v39).
             confirmata INTEGER DEFAULT 0,
             created_at TEXT,
-            -- v47: etapa din Gantt-ul SRP la care se sincronizeaza perioada (blueprints/echipa.py).
+            -- v47: etapa din Gantt-ul SRP si baza sincronizarii (blueprints/echipa.py).
             srp_activitate_id TEXT,
+            srp_sincron_start TEXT,
+            srp_sincron_end TEXT,
             FOREIGN KEY (proiect_id) REFERENCES proiecte(id) ON DELETE CASCADE
         )
     ''')

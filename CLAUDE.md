@@ -49,7 +49,7 @@ blueprints/
   obsidian.py       # citeste vault-ul si scrie frontmatter inapoi in el
   sync.py           # /api/sync/snapshot — imaginea completa pentru Torqa
   outlook.py        # PUT /api/outlook/calendar: snapshot-ul Outlook (fisier, nu tabela); il citeste /api/calendar
-  echipa.py         # planul echipei din Gantt-ul SRP (snapshot-fisier, /api/echipa, cheia `echipa` din /api/calendar); scrie in Gantt doar etapele lui Ion dupa o perioada salvata
+  echipa.py         # planul echipei din Gantt-ul SRP (snapshot-fisier, /api/echipa, cheia `echipa` din /api/calendar); o data pe zi (L-V 08:00, POST /api/echipa/sincronizeaza) citeste si scrie Gantt-ul, doar pe etapele lui Ion
   app_update.py     # versiunea si APK-ul aplicatiei Android (canale: pif, torqa)
   torqa_web.py      # Torqa web (build Angular) la /torqa/: urcare, versiuni, servire (fisierele publice, `.map` cu login)
 
