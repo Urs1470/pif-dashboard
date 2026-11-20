@@ -172,10 +172,10 @@ inventarul functiilor) `/api/import/debrief`, `PUT /api/obsidian/note`, `/api/de
 
 ## Mai multe sesiuni pe acelasi arbore
 
-Indexul git e comun, deci coordoneaza-te inainte sa pui in stage sau sa comiti. **Niciodata
-`git add -A`** si niciodata force-push — ambele blocate acum si mecanic de hook-ul
-`guard_git` (PreToolUse). Verifica ce e al tau cu `git status`. Sablonul de pornire:
-`AGENT_BRIEFING.md`.
+Indexul git e comun, deci coordoneaza-te inainte sa pui in stage sau sa comiti: fara `git add -A`, ca sa nu iei
+munca altei sesiuni. Verifica ce e al tau cu `git status`. Sablonul de pornire: `AGENT_BRIEFING.md`. Garzile
+(`guard_git`, `guard_read`) nu mai sunt inregistrate din 2026-11-20 (Ion: fara blocaje; decizia in Knowledge,
+`references/decizii/2026-11-20-fara-blocaje.md`).
 
 ## Agentii de dezvoltare
 
