@@ -60,13 +60,18 @@ class LimitaPeFisier(Test):
         self.assertFalse(nou.permite('198.51.100.1'))
 
     def test_incercarile_expira_dupa_fereastra(self):
-        lim = self.limita(fereastra=0.2)
-        for _ in range(5):
-            lim.permite('198.51.100.1')
-        self.assertFalse(lim.permite('198.51.100.1'))
-        import time
-        time.sleep(0.3)
-        self.assertTrue(lim.permite('198.51.100.1'))
+        # Ceas fals: pe laptop-server cele 5 scrieri SQLite durau 1,7 s, deci o fereastra reala de 0,2 s
+        # expira chiar in timpul buclei si testul pica (E-489). Fereastra se masoara pe ceasul lui ratelimit.
+        import ratelimit
+        from unittest import mock
+        ceas = [1_000_000.0]
+        with mock.patch.object(ratelimit.time, 'time', lambda: ceas[0]):
+            lim = self.limita(fereastra=0.2)
+            for _ in range(5):
+                lim.permite('198.51.100.1')
+            self.assertFalse(lim.permite('198.51.100.1'))
+            ceas[0] += 0.3
+            self.assertTrue(lim.permite('198.51.100.1'))
 
     def test_o_incercare_refuzata_nu_prelungeste_blocarea(self):
         lim = self.limita()
