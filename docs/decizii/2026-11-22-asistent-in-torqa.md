@@ -222,8 +222,9 @@ Ion: când deschide un rezultat în Torqa vrea să vadă și răspunsul lui Clau
 
 - **`POST /api/asistent/fir`** (mesajul asistentului) primește `detalii`, opțional, `null` = lipsă: text Markdown, **1–65 536 de caractere după strip**
   (se stochează fără spațiile de la capete), fără surogate singure (400 `corpul.detalii`, ca la orice câmp). La mesajul lui Ion câmpul nu există
-  (400 „câmp necunoscut”). Corpul acestei rute are plafon de 1 MiB când vine cu token de mașină (65 536 de caractere pot ajunge la ~786 KB scăpate în JSON);
-  mesajul lui Ion (sesiune sau dispozitiv) rămâne la 32 KB.
+  (400 „câmp necunoscut”). Corpul acestei rute are plafon de 1 MiB doar când vine cu token de mașină **și** e mesaj al asistentului (65 536 de caractere pot ajunge la ~786 KB scăpate în JSON);
+  orice altceva (mesajul lui Ion cu sesiune, dispozitiv sau token de mașină cu `cine=ion`, un corp fără `cine`) rămâne la 32 KB, 413 (la tokenul de mașină `cine` se
+  află după parsare, deci corpul se citește o dată, cu plafon de 1 MiB, și se măsoară în octeți, și fără `Content-Length`).
 - **`PUT /api/asistent/fir/<id>/detalii`** `{"detalii": "…" | null}` → 200 `{"ok", "id", "are_detalii"}`. Token de mașină sau sesiune; dispozitivul 403; fără
   autentificare 401. Mesaj inexistent (și unul scos din fir la plafon) → 404; mesajul lui Ion → 409; corp invalid (cheia lipsește, câmp în plus, tip greșit,
   gol după strip, peste limită, surogat) → 400 cu calea; corp peste 1 MiB → 413. `null` șterge fișierul (200 și când nu exista, dar mesajul trebuie să existe).
@@ -239,7 +240,10 @@ Ion: când deschide un rezultat în Torqa vrea să vadă și răspunsul lui Clau
   e în fir. Deci: PUT înainte de scrierea care scoate mesajul → fișierul e șters de ea; PUT după → 404, nimic scris. Nu poate rămâne fișier orfan nici dacă
   procesul se oprește între fișier și fir (la `POST` cu `detalii` fișierul se scrie întâi; dacă scrierea firului pică, fișierul se scoate și răspunsul e 500 fără urme),
   fiindcă următoarea scriere a firului mătură orice fișier fără mesaj. O ștergere care pică (permisiuni) nu strică scrierea firului: se loghează și se reia la următoarea.
-  Fișierele care nu se potrivesc cu `m_<hex>.md` (de exemplu un `.tmp` rămas) nu se ating.
+  **Linii ilizibile:** o scriere a cărei citire a mutat linii stricate în `fir.jsonl.corupt` nu mătură deloc (se loghează), iar mătura nu șterge niciodată un fișier al
+  cărui id apare în `fir.jsonl.corupt` (mesajul lui a fost mutat acolo ca ilizibil: cine repară linia își găsește detaliile; un `.corupt` ilizibil oprește ștergerea orfanilor).
+  Prețul: un astfel de fișier rămâne până îl șterge cineva de mână. **`.tmp` rămase** de la un proces mort (`m_<hex>.md.<6 hex>.tmp`) mai vechi de 5 minute se șterg la
+  aceeași trecere; restul numelor din `detalii/` nu se ating.
 - **Backup:** `uploads/asistent/` nu intră în backup azi (nici `fir.jsonl`, `registru.json`, `push.json`): `/api/backup` e doar tabele din baza SQLite, iar
   `backup_db.py` copiază doar `pif_dashboard.db`. Nu l-am schimbat: detaliile se pot reface (asistentul le completează din livrabilele din vault cu
   `atentie.py detalii --completeaza`), deci pierderea lor costă o rulare, nu date. Ce face copia de pe disc a serverului, dincolo de scripturile din repo, e neverificat.

@@ -113,6 +113,8 @@ TRANZITII = {'nou': ('preluat', 'gata', 'eroare'), 'preluat': ('gata', 'eroare')
 _RE_UID = re.compile(r'[0-9a-f]{12}')
 _RE_MSG = re.compile(r'm_[0-9a-f]{6,16}')
 _RE_FISIER_DETALII = re.compile(r'(m_[0-9a-f]{6,16})\.md')
+_RE_TMP_DETALII = re.compile(r'm_[0-9a-f]{6,16}\.md\.[0-9a-f]{6}\.tmp')   # ce lasa `_scrie_atomic` cand procesul moare la mijloc
+TMP_VECHI_S = 300                                  # un .tmp mai vechi de 5 minute nu mai e al nimanui
 _RE_SURSA_REG = re.compile(r'[a-z0-9][a-z0-9_-]{0,39}')
 _RE_APLICATIE = re.compile(r'[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+')
 _RE_DATA = re.compile(r'(\d{4})-(\d{2})-(\d{2})')
@@ -298,6 +300,11 @@ def _salveaza_corupte(nume, bucati):
         logger.warning('Asistent: %d bucati ilizibile din %s au fost puse in %s.corupt', len(noi), nume, nume)
 
 
+class _Randuri(list):
+    """Lista de randuri citita strict, cu `corupte` = cate linii ilizibile a mutat citirea in `<nume>.corupt`."""
+    corupte = 0
+
+
 def _citeste_jsonl(nume, cheie_text, strict=False):
     """Randurile unui .jsonl: obiecte cu `cheie_text` string. Liniile se despart DOAR la `\\n` (`splitlines`
     ar rupe un rand care contine U+2028 sau U+0085, pe care `json.dumps` nu le scapa).
@@ -329,6 +336,8 @@ def _citeste_jsonl(nume, cheie_text, strict=False):
         randuri.append(r)
     if strict:
         _salveaza_corupte(nume, rele)
+        randuri = _Randuri(randuri)
+        randuri.corupte = len(rele)
     return randuri
 
 
@@ -628,6 +637,7 @@ def _scrie_fir(randuri, pastreaza=()):
     in scrierea asta (intrebarea la care tocmai s-a raspuns: Torqa trebuie sa-i vada butonul ales).
     Dupa scriere, fisierele de detalii ale mesajelor care nu mai sunt in fir se sterg (v1.2): se apeleaza doar sub
     `_blocat()`, ca PUT-ul de detalii (tot sub blocare) sa nu poata lasa un fisier fara mesaj."""
+    corupte = getattr(randuri, 'corupte', 0)                   # linii mutate in fir.jsonl.corupt de citirea acestei scrieri
     exces = len(randuri) - MAX_RANDURI_FIR
     if exces > 0:
         ultimul = len(randuri) - 1                             # mesajul abia adaugat nu cade niciodata
@@ -643,7 +653,11 @@ def _scrie_fir(randuri, pastreaza=()):
             pastrate = pastrate[exces:]
         randuri = pastrate
     _scrie_atomic(F_FIR, _jsonl_bytes(randuri))
-    _matura_detalii({r['id'] for r in randuri})                # mesajul scos din fir isi pierde si fisierul de detalii
+    if corupte:
+        logger.warning('Asistent: %d linii ilizibile mutate in %s.corupt; fisierele de detalii nu se matura in aceasta scriere',
+                       corupte, F_FIR)
+    else:
+        _matura_detalii({r['id'] for r in randuri})            # mesajul scos din fir isi pierde si fisierul de detalii
 
 
 def _id_mesaj(existente):
@@ -692,13 +706,19 @@ def _nume_detalii(id_):
     return os.path.join(D_DETALII, id_ + '.md')
 
 
+def _nume_din_detalii():
+    """Numele din `detalii/`; lipsa directorului = nimic. OSError se ridica."""
+    try:
+        return os.listdir(_cale(D_DETALII))
+    except FileNotFoundError:
+        return []
+
+
 def _ids_detalii():
     """Id-urile mesajelor care au fisier de detalii (o singura listare de director pe cerere). Un director care
     nu se poate citi se logheaza si da multimea goala: GET-ul principal nu cade pentru o functie auxiliara."""
     try:
-        nume = os.listdir(_cale(D_DETALII))
-    except FileNotFoundError:
-        return set()
+        nume = _nume_din_detalii()
     except OSError:
         logger.warning('Asistent: %s/ nu se poate citi', D_DETALII, exc_info=True)
         return set()
@@ -725,16 +745,45 @@ def _sterge_detalii(id_):
         os.remove(_cale(_nume_detalii(id_)))
 
 
+def _sterge_tmp(nume):
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(_cale(os.path.join(D_DETALII, nume)))
+
+
 def _matura_detalii(ramase):
-    """Sterge fisierele de detalii al caror mesaj nu e in `ramase` (multimea id-urilor din firul tocmai scris). Acopera
+    """Sterge din `detalii/` (1) fisierele al caror mesaj nu e in `ramase` (multimea id-urilor din firul tocmai scris) si
+    (2) `m_<hex>.md.<hex>.tmp` mai vechi de TMP_VECHI_S, ramase de la un proces mort in mijlocul unei scrieri. Acopera
     mesajul scos la plafon si orice orfan lasat de o oprire intre scrierea fisierului si cea a firului. Doar sub
-    `_blocat()`. Fara efect asupra raspunsului: firul e deja scris, deci o eroare de disc se logheaza, iar
-    urmatoarea scriere a firului reia stergerea."""
-    for id_ in _ids_detalii() - set(ramase):
+    `_blocat()` (deci niciun .tmp nu e al unei scrieri in curs). Un id care apare in `fir.jsonl.corupt` NU se sterge:
+    mesajul lui a fost mutat acolo ca ilizibil, iar cine il repara trebuie sa-si gaseasca detaliile. Fara efect asupra
+    raspunsului: firul e deja scris, deci o eroare de disc se logheaza, iar urmatoarea scriere reia stergerea."""
+    try:
+        nume = _nume_din_detalii()
+    except OSError:
+        logger.warning('Asistent: %s/ nu se poate citi; nu se matura', D_DETALII, exc_info=True)
+        return
+    orfane = {m.group(1) for m in map(_RE_FISIER_DETALII.fullmatch, nume) if m} - set(ramase)
+    if orfane:
         try:
-            _sterge_detalii(id_)
+            with open(_cale(F_FIR + '.corupt'), 'rb') as fh:
+                corupt = fh.read()
+        except FileNotFoundError:
+            corupt = b''
         except OSError:
-            logger.warning('Asistent: fisierul de detalii al lui %s nu s-a putut sterge', id_, exc_info=True)
+            logger.warning('Asistent: %s.corupt nu se poate citi; fisierele fara mesaj raman', F_FIR, exc_info=True)
+            orfane = set()
+        orfane = {i for i in orfane if i.encode('ascii') not in corupt}
+    vechi = []
+    for n in nume:
+        if _RE_TMP_DETALII.fullmatch(n):
+            with contextlib.suppress(OSError):
+                if time.time() - os.stat(_cale(os.path.join(D_DETALII, n))).st_mtime > TMP_VECHI_S:
+                    vechi.append(n)
+    for sterge, ce in [(_sterge_detalii, i) for i in sorted(orfane)] + [(_sterge_tmp, n) for n in vechi]:
+        try:
+            sterge(ce)
+        except OSError:
+            logger.warning('Asistent: %s/%s nu s-a putut sterge', D_DETALII, ce, exc_info=True)
 
 
 # --------------------------------------------------------------------------- prezenta masinilor
@@ -1307,6 +1356,28 @@ def _fir_asistent(corp):
     return jsonify({'id': rand['id'], 'push': push}), 201
 
 
+def _corp_json_masina():
+    """Corpul unui POST /fir cu token de masina: pana la 1 MiB (mesajul asistentului poarta `detalii`), dar un mesaj care nu e
+    al asistentului (`cine` altceva decat `asistent`) are tot plafonul de 32 KB al mesajului lui Ion: 413 ca pe calea
+    dispozitivului. `cine` se afla dupa parsare, deci corpul se citeste o singura data, cu plafon, si se masoara in octeti."""
+    mare = 'corp prea mare (maxim %d KB)'
+    if request.content_length is not None and request.content_length > MAX_CORP_DETALII:
+        return None, _eroare(413, mare % (MAX_CORP_DETALII // 1024))
+    brut = request.stream.read(MAX_CORP_DETALII + 1)
+    if len(brut) > MAX_CORP_DETALII:
+        return None, _eroare(413, mare % (MAX_CORP_DETALII // 1024))
+    try:
+        corp = json.loads(brut.decode('utf-8'))
+        _fara_surogate(corp, 'corpul')
+    except EroareCorp as e:
+        return None, _eroare(400, str(e))
+    except (UnicodeDecodeError, ValueError, RecursionError):
+        return None, _eroare(400, 'Body JSON invalid sau lipsa')
+    if len(brut) > MAX_CORP and not (isinstance(corp, dict) and corp.get('cine') == 'asistent'):
+        return None, _eroare(413, mare % (MAX_CORP // 1024))
+    return corp, None
+
+
 @asistent_bp.route('/api/asistent/fir', methods=['POST'])
 @login_required
 def post_fir():
@@ -1315,7 +1386,7 @@ def post_fir():
     Cu token de masina: `cine` obligatoriu; `asistent` -> {tip, text, ...push?} -> 201 {id, push};
     `ion` -> ca mai sus. Retrimiterea aceluiasi mesaj il dubleaza (contractul n-are cheie de idempotenta)."""
     ca_ion = 'authenticated' in session or _este_dispozitiv()
-    corp, eroare = _corp_json(MAX_CORP if ca_ion else MAX_CORP_DETALII)     # doar mesajul asistentului poarta `detalii`
+    corp, eroare = _corp_json(MAX_CORP) if ca_ion else _corp_json_masina()
     if eroare:
         return eroare
     if not isinstance(corp, dict):

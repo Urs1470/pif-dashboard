@@ -39,6 +39,7 @@ import shutil
 import stat
 import subprocess
 import tempfile
+import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest import mock
@@ -2325,3 +2326,103 @@ class Detalii(Baza):
         ramase = {r['id'] for r in self.randuri('fir.jsonl')}
         self.assertEqual([f for f in self.pe_disc() if f[:-3] not in ramase], [], 'fisier fara mesaj in fir')
         self.assertEqual(self.pe_disc(), [], 'toate cele 30 au fost scoase de cele 40 de mesaje noi')
+
+    # ----- corectii dupa recenzie
+
+    def test_linia_stricata_a_unui_mesaj_nu_ia_cu_ea_detaliile(self):
+        """O linie ilizibila din fir.jsonl merge in .corupt la urmatoarea scriere: detaliile mesajului ei raman, in scrierea
+        aceea si in cele de dupa ea, ca sa le gaseasca cine repara linia. Un fisier fara nicio urma in .corupt tot se matura."""
+        self.umple(3)
+        self.pune_detalii('m_000064', 'ale mesajului cu linia stricata')
+        self.pune_detalii('m_000065', 'ale unui mesaj sanatos')
+        os.makedirs(os.path.join(self.dir, 'detalii'), exist_ok=True)
+        with open(os.path.join(self.dir, 'detalii', 'm_ffffff.md'), 'w') as fh:
+            fh.write('orfan adevarat')
+        randuri = self.randuri('fir.jsonl')
+        with open(os.path.join(self.dir, 'fir.jsonl'), 'w', encoding='utf-8') as fh:
+            fh.write('{"id": "m_000064", "ts": "2026-11-21T07:00\n')              # linie taiata la mijloc
+            for r in randuri[1:]:
+                fh.write(json.dumps(r) + '\n')
+        with self.assertLogs('pif_dashboard', 'WARNING') as jurnal:
+            self.assertEqual(self.scrie_asistent(text='unu').status_code, 201)
+        self.assertTrue(any('nu se matura' in l for l in jurnal.output), jurnal.output)
+        self.assertIn(b'm_000064', self.fisier('fir.jsonl.corupt'))
+        self.assertEqual(self.pe_disc(), ['m_000064.md', 'm_000065.md', 'm_ffffff.md'], 'scrierea cu linii stricate nu matura')
+        self.assertEqual(self.scrie_asistent(text='doi').status_code, 201)                # fara linii stricate acum
+        self.assertEqual(self.pe_disc(), ['m_000064.md', 'm_000065.md'], 'protejat de .corupt; orfanul fara urma a plecat')
+        self.assertEqual(self.fisier('detalii/m_000064.md'), b'ale mesajului cu linia stricata')
+
+    def test_corupt_ilizibil_lasa_fisierele_fara_mesaj_pe_loc(self):
+        self.umple(2)
+        os.makedirs(os.path.join(self.dir, 'detalii'))
+        with open(os.path.join(self.dir, 'detalii', 'm_ffffff.md'), 'w') as fh:
+            fh.write('x')
+        os.mkdir(os.path.join(self.dir, 'fir.jsonl.corupt'))                               # open() da IsADirectoryError
+        self.assertEqual(self.scrie_asistent(text='unu').status_code, 201)
+        self.assertEqual(self.pe_disc(), ['m_ffffff.md'])
+
+    def test_masina_cu_mesaj_al_lui_ion_peste_32_kb_da_413(self):
+        corp = lambda **c: json.dumps(dict({'text': 'a' * 2000}, **c))                      # noqa: E731
+        post = lambda data, **kw: self.client.post('/api/asistent/fir', data=data, content_type='application/json',  # noqa: E731
+                                                   headers=self.h(FULL), **kw)
+        gunoi = {'gunoi': 'x' * 40000}
+        for nume, data in (('cine=ion', corp(cine='ion', **gunoi)), ('fara cine', corp(**gunoi)), ('cine ciudat', corp(cine='x', **gunoi)),
+                           ('lista', json.dumps(['x' * 40000]))):
+            with self.subTest(nume):
+                r = post(data)
+                self.assertEqual(r.status_code, 413, r.get_data(as_text=True))
+                self.assertIn('32 KB', r.get_json()['error'])
+        r = post(corp(cine='ion'))
+        self.assertEqual(r.status_code, 201, 'sub 32 KB mesajul lui Ion trece si cu token de masina')
+        self.assertEqual(self.noi()[0]['via'], 'masina')
+        self.assertEqual(self.scrie_asistent(tip='rezultat', text='x', detalii='d' * 40000).status_code, 201,
+                         'mesajul asistentului are 1 MiB')
+        self.assertEqual(self.scrie_ion('x' * 40000).status_code, 413, 'dispozitivul: neschimbat')
+        self.assertEqual(len(self.randuri('fir.jsonl')), 2)
+
+    def test_masina_cu_corp_fara_content_length_aceleasi_plafoane(self):
+        import io
+        corp = lambda **c: json.dumps(dict({'text': 'a' * 2000, 'gunoi': 'x' * 40000}, **c)).encode()   # noqa: E731
+        for cine, status in (('ion', 413), ('asistent', 400)):                             # asistentul: trece de 413, cade la campul `gunoi`
+            with self.subTest(cine=cine):
+                r = self.client.post('/api/asistent/fir', input_stream=io.BytesIO(corp(cine=cine, tip='info')),
+                                     content_type='application/json', headers=self.h(FULL))
+                self.assertEqual(r.status_code, status, r.get_data(as_text=True))
+        r = self.client.post('/api/asistent/fir', input_stream=io.BytesIO(b'{"cine":"asistent","x":"' + b'a' * (1024 * 1024) + b'"}'),
+                             content_type='application/json', headers=self.h(FULL))
+        self.assertEqual(r.status_code, 413)
+
+    def test_masina_corp_invalid_sau_cu_surogat_ramane_400(self):
+        for data in ('nu e json', '{"cine": "asistent", "text": "a\\ud83db"}'):
+            with self.subTest(data=data):
+                r = self.client.post('/api/asistent/fir', data=data, content_type='application/json', headers=self.h(FULL))
+                self.assertEqual(r.status_code, 400)
+
+    def test_tmp_vechi_de_la_o_oprire_se_matura_cele_proaspete_si_straine_raman(self):
+        id_ = self.mesaj_asistent(detalii='x')
+        d = os.path.join(self.dir, 'detalii')
+        vechi = ['m_ffffff.md.a1b2c3.tmp', id_ + '.md.0f0f0f.tmp', 'm_0123456789abcdef.md.abcdef.tmp']
+        proaspete = ['m_eeeeee.md.a1b2c3.tmp']
+        straine = ['m_ffffff.md.xyz.tmp', 'x.md.a1b2c3.tmp', 'm_ffffff.tmp', 'm_ffffff.md.a1b2c3.tmp.bak', id_ + '.txt']
+        vechime = time.time() - 3600
+        for nume in vechi + proaspete + straine:
+            with open(os.path.join(d, nume), 'w') as fh:
+                fh.write('x')
+            if nume in vechi + straine:
+                os.utime(os.path.join(d, nume), (vechime, vechime))
+        self.assertEqual(self.pe_disc(), sorted([id_ + '.md'] + vechi + proaspete + straine), 'fara scriere nu se sterge nimic')
+        self.assertEqual(self.scrie_ion().status_code, 201)
+        self.assertEqual(self.pe_disc(), sorted([id_ + '.md'] + proaspete + straine))
+        self.assertEqual(self.citeste(id_).get_json()['detalii'], 'x')
+
+    def test_un_tmp_care_nu_se_poate_sterge_nu_strica_scrierea_firului(self):
+        self.mesaj_asistent(detalii='x')
+        nume = os.path.join(self.dir, 'detalii', 'm_ffffff.md.a1b2c3.tmp')
+        with open(nume, 'w') as fh:
+            fh.write('x')
+        os.utime(nume, (time.time() - 3600,) * 2)
+        with mock.patch.object(asistent, '_sterge_tmp', side_effect=PermissionError('x')):
+            self.assertEqual(self.scrie_ion().status_code, 201)
+        self.assertTrue(os.path.exists(nume))
+        self.assertEqual(self.scrie_ion().status_code, 201)
+        self.assertFalse(os.path.exists(nume))
