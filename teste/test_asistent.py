@@ -1992,6 +1992,68 @@ class Prezenta(Baza):
             self.assertEqual(set(m), {'id', 'nume', 'stare', 'ultima', 'idle_min'})
 
 
+class PrezentaClaude(Baza):
+    """v1.3: `claude` optional in prezenta = loginul Claude CLI al masinii (`claude auth status`). Compatibil in ambele sensuri: un client care
+    nu-l trimite nu schimba nimic (cheia lipseste din GET), iar cel care il trimite e validat strict."""
+
+    def raporteaza(self, masina='pc-job', token=FULL, **corp):
+        corp = dict({'activ': True, 'idle_s': 30}, **corp)
+        return self.client.put('/api/asistent/prezenta/%s' % masina, json=corp, headers=self.h(token))
+
+    def masini(self):
+        return {m['id']: m for m in self.vedere()['masini']}
+
+    CL = {'logat': False, 'expira': None, 'verificat': '2026-11-22T08:00:00Z'}
+
+    def test_claude_se_stocheaza_si_apare_in_get_doar_la_masina_care_l_a_raportat(self):
+        r = self.raporteaza('ionpc', claude=dict(self.CL, expira='2026-12-01T00:00:00Z', logat=True))
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.raporteaza('server')
+        rand = json.loads(self.fisier('prezenta.json'))['masini']
+        self.assertEqual(rand['ionpc']['claude'], {'logat': True, 'expira': '2026-12-01T00:00:00Z', 'verificat': '2026-11-22T08:00:00Z'})
+        self.assertNotIn('claude', rand['server'], 'un client vechi: fisierul ramane cum era')
+        m = self.masini()
+        self.assertEqual(m['ionpc']['claude'], {'logat': True, 'expira': '2026-12-01T00:00:00Z', 'verificat': '2026-11-22T08:00:00Z'})
+        self.assertNotIn('claude', m['server'])
+        self.assertNotIn('claude', m['pc-job'], 'nereportata niciodata: nici cheia')
+        self.assertEqual(set(m['server']), {'id', 'nume', 'stare', 'ultima', 'idle_min'}, 'forma veche, neschimbata')
+
+    def test_claude_delogat_si_campurile_optionale_lipsa_se_intorc_ca_null(self):
+        self.assertEqual(self.raporteaza('ionpc', claude={'logat': False}).status_code, 200)
+        self.assertEqual(self.masini()['ionpc']['claude'], {'logat': False, 'expira': None, 'verificat': None})
+        self.assertEqual(self.raporteaza('ionpc', claude=None).status_code, 200, 'null = lipsa')
+        self.assertNotIn('claude', self.masini()['ionpc'])
+
+    def test_claude_idempotent_si_ultima_raportare_inlocuieste_pe_cea_veche(self):
+        self.raporteaza('pc-job', claude=self.CL)
+        prima = self.fisier('prezenta.json')
+        self.assertEqual(self.raporteaza('pc-job', claude=self.CL).status_code, 200)
+        self.assertEqual(self.fisier('prezenta.json'), prima)
+        self.raporteaza('pc-job', claude=dict(self.CL, logat=True))
+        self.assertTrue(self.masini()['pc-job']['claude']['logat'], 'raportarea de acum a inlocuit-o pe cea de dinainte')
+
+    def test_claude_invalid_da_400_cu_calea_si_nu_atinge_fisierul(self):
+        for claude, cale in (({}, 'corpul.claude.logat'), ({'logat': 'da'}, 'corpul.claude.logat'), ({'logat': 1}, 'corpul.claude.logat'),
+                             ({'logat': True, 'x': 1}, 'corpul.claude.x'), ({'logat': True, 'expira': 'maine'}, 'corpul.claude.expira'),
+                             ({'logat': True, 'verificat': 5}, 'corpul.claude.verificat'), ('logat', 'corpul.claude'), ([True], 'corpul.claude'),
+                             ({'logat': True, 'expira': '2026-12-01'}, 'corpul.claude.expira')):
+            with self.subTest(claude=claude):
+                r = self.raporteaza('ionpc', claude=claude)
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn(cale, r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'prezenta.json')))
+
+    def test_un_rand_stocat_cu_claude_stricat_nu_strica_get(self):
+        os.makedirs(self.dir, exist_ok=True)
+        with open(os.path.join(self.dir, 'prezenta.json'), 'w', encoding='utf-8') as fh:
+            json.dump({'masini': {'ionpc': {'ultima': '2026-11-22T08:00:00Z', 'activ': True, 'idle_s': 1, 'versiune': None, 'claude': 'x'},
+                                  'server': {'ultima': '2026-11-22T08:00:00Z', 'activ': True, 'idle_s': 1, 'versiune': None,
+                                             'claude': {'logat': 'da'}}}}, fh)
+        m = self.masini()
+        self.assertNotIn('claude', m['ionpc'])
+        self.assertNotIn('claude', m['server'])
+
+
 # --------------------------------------------------------------------------- v1.2: detaliile unui mesaj
 
 class Detalii(Baza):

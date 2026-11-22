@@ -138,7 +138,8 @@ CAMPURI_FIR_ASISTENT = frozenset(('cine', 'tip', 'text', 'titlu', 'item_id', 'ta
 CAMPURI_FIR_ION = frozenset(('cine', 'text', 'sursa', 'raspuns_la', 'ref', 'tinta', 'alegere'))
 CAMPURI_REF = frozenset(('tip', 'id', 'titlu', 'sursa', 'masina', 'mod'))
 CAMPURI_OPTIUNE = frozenset(('id', 'eticheta'))
-CAMPURI_PREZENTA = frozenset(('activ', 'idle_s', 'versiune'))
+CAMPURI_PREZENTA = frozenset(('activ', 'idle_s', 'versiune', 'claude'))
+CAMPURI_CLAUDE = frozenset(('logat', 'expira', 'verificat'))
 CAMPURI_PUSH = frozenset(('prioritate',))
 CAMPURI_DETALII = frozenset(('detalii',))
 CAMPURI_STARE = frozenset(('stare', 'task_id', 'mesaj'))
@@ -801,7 +802,7 @@ def _matura_detalii(ramase):
 # --------------------------------------------------------------------------- prezenta masinilor
 
 def _citeste_prezenta(strict=False):
-    """{id_masina: {ultima, activ, idle_s, versiune}} din `prezenta.json`. Lipsa sau continut care nu se
+    """{id_masina: {ultima, activ, idle_s, versiune[, claude]}} din `prezenta.json`. Lipsa sau continut care nu se
     poate citi = nicio masina n-a raportat (fiecare retrimite la un minut, deci nu are rost o copie `.corupt`).
     `strict` (sub blocare): o eroare de citire a fisierului (permisiuni, disc) se ridica, ca sa nu se rescrie
     fisierul cu o singura masina."""
@@ -825,11 +826,35 @@ def _citeste_prezenta(strict=False):
     return {k: v for k, v in masini.items() if k in IDS_MASINI and isinstance(v, dict)}
 
 
+def _claude_prezenta(corp):
+    """Campul optional `claude` al prezentei: loginul Claude CLI al masinii, {logat: bool, expira?: moment | null, verificat?: moment | null}
+    (`claude auth status`, citit de masina, cel mult odata la 15 minute). -> dict normalizat sau None cand campul lipseste (client vechi)."""
+    if corp.get('claude') is None:
+        return None
+    v = _obiect(corp['claude'], 'corpul.claude', CAMPURI_CLAUDE)
+    if not isinstance(v.get('logat'), bool):
+        raise EroareCorp('corpul.claude.logat: trebuie sa fie true sau false')
+    for camp in ('expira', 'verificat'):
+        if v.get(camp) is not None:
+            _moment(v[camp], 'corpul.claude.%s' % camp)
+    return {'logat': v['logat'], 'expira': v.get('expira'), 'verificat': v.get('verificat')}
+
+
+def _claude_din_prezenta(r):
+    """`claude` stocat -> forma din GET, sau None daca masina nu l-a raportat sau randul stocat nu are forma buna."""
+    c = r.get('claude')
+    if not isinstance(c, dict) or not isinstance(c.get('logat'), bool):
+        return None
+    return {'logat': c['logat'], 'expira': c.get('expira') if isinstance(c.get('expira'), str) else None,
+            'verificat': c.get('verificat') if isinstance(c.get('verificat'), str) else None}
+
+
 def _masini(acum):
     """Lista `masini` din GET, mereu in ordinea server, pc-job, ionpc. online = ultima raportare in ultimele
     ONLINE_S secunde; activ = online, `activ: true` si `idle_s` <= ACTIV_IDLE_S; altfel offline. O masina care n-a
     raportat niciodata e offline cu `ultima: null`. `idle_min` (minute intregi, rotunjite in jos) doar cand e online:
-    la o masina offline valoarea raportata e veche, deci null."""
+    la o masina offline valoarea raportata e veche, deci null. `claude` ({logat, expira, verificat}: loginul CLI al masinii, v1.3)
+    apare doar la masinile care l-au raportat; cheia lipseste altfel, deci un client vechi nu vede nicio schimbare."""
     prezenta = _citeste_prezenta()
     iesire = []
     for id_, nume in MASINI:
@@ -843,7 +868,11 @@ def _masini(acum):
                 idle_ok = isinstance(idle_s, int) and not isinstance(idle_s, bool) and idle_s >= 0
                 stare = 'activ' if r.get('activ') is True and idle_ok and idle_s <= ACTIV_IDLE_S else 'online'
                 idle_min = idle_s // 60 if idle_ok else None
-        iesire.append({'id': id_, 'nume': nume, 'stare': stare, 'ultima': ultima, 'idle_min': idle_min})
+        masina = {'id': id_, 'nume': nume, 'stare': stare, 'ultima': ultima, 'idle_min': idle_min}
+        claude = _claude_din_prezenta(r)
+        if claude is not None:
+            masina['claude'] = claude
+        iesire.append(masina)
     return iesire
 
 
@@ -1118,7 +1147,8 @@ def _idle_s(corp):
 @login_required
 @_doar_masina
 def put_prezenta(masina):
-    """O masina spune ca e pornita: {activ: bool, idle_s: int >= 0, versiune?: <=40}. Token de masina sau sesiune;
+    """O masina spune ca e pornita: {activ: bool, idle_s: int >= 0, versiune?: <=40, claude?: {logat: bool, expira?, verificat?}}
+    (`claude` = loginul Claude CLI al masinii, optional: un client care nu-l trimite nu schimba nimic). Token de masina sau sesiune;
     dispozitivul primeste 403; masina trebuie sa fie server, pc-job sau ionpc (404). `ultima` o pune serverul.
     Idempotent: aceeasi cerere de doua ori lasa aceeasi stare (doar `ultima` avanseaza). Raspuns: {ok, masina}."""
     if masina not in IDS_MASINI:
@@ -1132,9 +1162,12 @@ def put_prezenta(masina):
             raise EroareCorp('corpul.activ: trebuie sa fie true sau false')
         idle_s = _idle_s(corp)
         versiune = _text(corp, 'versiune', 'corpul', 40, nevid=True) if corp.get('versiune') is not None else None
+        claude = _claude_prezenta(corp)
     except EroareCorp as e:
         return _eroare(400, str(e))
     rand = {'ultima': _z(_acum()), 'activ': corp['activ'], 'idle_s': idle_s, 'versiune': versiune}
+    if claude is not None:
+        rand['claude'] = claude
     try:
         with _blocat():
             prezenta = _citeste_prezenta(True)

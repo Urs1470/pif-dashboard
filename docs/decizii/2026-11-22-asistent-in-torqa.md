@@ -214,6 +214,16 @@ rescrie la următoarea raportare (se reface în cel mult un minut); o eroare de 
 raportare). Mașina care n-a raportat niciodată: `offline`, `ultima: null`. `idle_min` = `idle_s // 60` cât e online, `null` când e offline
 (valoarea veche ar induce în eroare). Ceasul serverului dat înapoi (`ultima` în viitor) nu scoate mașina din `online`.
 
+**v1.3, `claude` în prezență (opțional, aditiv):** PC-ul poate adăuga în PUT `"claude": {"logat": bool, "expira": "ISO cu fus"|null, "verificat":
+"ISO cu fus"|null}` = loginul Claude CLI de pe el (`claude auth status`, citit de `tools/asistent/prezenta.py` cel mult o dată la 15 minute).
+Motivul (2026-11-22): un login expirat pe IONPC a picat două taskuri fără ca nimic să avertizeze. Validare strictă (`logat` boolean obligatoriu,
+câmp necunoscut sau moment fără fus 400, cu calea câmpului); `claude: null` = lipsă. Se stochează în `prezenta.json` doar când e trimis, iar
+raportarea următoare înlocuiește rândul întreg. `GET /api/asistent` → `masini[]` primește `claude: {logat, expira, verificat}` **doar** la mașinile
+care l-au raportat; cheia lipsește altfel (nimic nu se schimbă pentru un client vechi), iar un rând stocat cu `claude` stricat se ignoră, nu dă 500.
+Compatibil și în sens invers: un dashboard fără v1.3 respinge câmpul cu 400 („camp necunoscut”), iar `prezenta.py` repetă PUT-ul o dată fără el.
+Serverul nu hotărăște nimic din el: asistentul (Knowledge, `atentie.masini_stare`) nu oferă o mașină delogată ca activă și spune în fir „Claude pe
+<PC> e delogat”. Loginul serverului rămâne la `veghe.py`, nu aici.
+
 Ce nu face serverul (neschimbat): nu execută text liber și nu primește opțiuni inventate la `/api/sistem/decizie`; rutarea pe mașini,
 coada și închiderea deciziei în ledger sunt ale asistentului. Push-ul FCM al unui mesaj `intrebare`/`asteapta` poartă `tip` nou în `data`;
 serviciul nativ Android trebuie să-l cunoască înainte ca asistentul să ceară `push` pe ele.
