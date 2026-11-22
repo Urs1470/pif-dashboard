@@ -1383,8 +1383,8 @@ def _corp_json_masina():
 def post_fir():
     """Un mesaj in fir. Cu sesiune sau token de dispozitiv e mesajul lui Ion (`cine` e forțat `ion`;
     `cine=asistent` da 403): {text, sursa?, raspuns_la?} -> 201 {id}, stare `nou`, 30 pe ora (429).
-    Cu token de masina: `cine` obligatoriu; `asistent` -> {tip, text, ...push?} -> 201 {id, push};
-    `ion` -> ca mai sus. Retrimiterea aceluiasi mesaj il dubleaza (contractul n-are cheie de idempotenta)."""
+    Cu token de masina: `asistent` -> {tip, text, ...push?} -> 201 {id, push}; `ion` sau `cine` lipsa (Torqa cu
+    tokenul de masina) -> ca mai sus. Retrimiterea aceluiasi mesaj il dubleaza (contractul n-are cheie de idempotenta)."""
     ca_ion = 'authenticated' in session or _este_dispozitiv()
     corp, eroare = _corp_json(MAX_CORP) if ca_ion else _corp_json_masina()
     if eroare:
@@ -1396,6 +1396,10 @@ def post_fir():
         if cine == 'asistent':
             return _eroare(403, 'doar tokenul de masina scrie ca asistent')
         return _fir_ion(corp, 'sesiune' if 'authenticated' in session else 'dispozitiv')
+    # Torqa poate purta tokenul de masina (setarea PIF a lui Ion) si nu trimite `cine`: fara camp e mesajul lui Ion.
+    # Asistentul trimite mereu `cine=asistent`, deci lipsa lui nu poate deveni un mesaj al asistentului.
+    if cine is None:
+        cine = 'ion'
     if cine not in ('asistent', 'ion'):
         return _eroare(400, 'corpul.cine: asistent sau ion')
     return _fir_asistent(corp) if cine == 'asistent' else _fir_ion(corp, 'masina')

@@ -670,10 +670,23 @@ class Fir(Baza):
         self.assertEqual(r.status_code, 201)
         self.assertEqual(self.noi()[0]['text'], 'prin masina')
 
-    def test_masina_fara_cine_400(self):
+    def test_masina_fara_cine_e_mesajul_lui_ion(self):
+        # Torqa cu tokenul de masina nu trimite `cine` (2026-11-22: „Fa” respins cu 400 de pe telefon).
+        ref = {'tip': 'decizie', 'id': 'executor:A-021', 'titlu': 'Actualizeaza Sure', 'sursa': 'Do', 'masina': 'server',
+               'mod': 'raspuns'}
+        r = self.client.post('/api/asistent/fir', json={'text': 'Fa', 'ref': ref}, headers=self.h(FULL))
+        self.assertEqual(r.status_code, 201)
+        m = self.noi()[0]
+        self.assertEqual((m['cine'], m['text'], m['ref']['id']), ('ion', 'Fa', 'executor:A-021'))
+
+    def test_masina_fara_cine_nu_devine_mesaj_al_asistentului(self):
         r = self.client.post('/api/asistent/fir', json={'text': 'x', 'tip': 'info'}, headers=self.h(FULL))
         self.assertEqual(r.status_code, 400)
+        self.assertIn('corpul.tip', r.get_json()['error'])
+        r = self.client.post('/api/asistent/fir', json={'text': 'x', 'cine': 'altcineva'}, headers=self.h(FULL))
+        self.assertEqual(r.status_code, 400)
         self.assertIn('corpul.cine', r.get_json()['error'])
+        self.assertEqual(self.noi(), [])
 
     def test_validarea_mesajului_asistentului(self):
         ok = {'cine': 'asistent', 'tip': 'alerta', 'text': 'x'}

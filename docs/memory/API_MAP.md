@@ -41,8 +41,8 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | GET | `/api/asistent/fir/<id_>/detalii` | `get_detalii` | 1168 |
 | POST | `/api/asistent/actiune` | `post_actiune` | 1185 |
 | POST | `/api/asistent/fir` | `post_fir` | 1381 |
-| POST | `/api/asistent/push/token` | `post_token` | 1420 |
-| DELETE | `/api/asistent/push/token` | `sterge_token` | 1456 |
+| POST | `/api/asistent/push/token` | `post_token` | 1424 |
+| DELETE | `/api/asistent/push/token` | `sterge_token` | 1460 |
 
 ## blueprints/echipa.py (5 rute)
 
