@@ -304,6 +304,29 @@ class SistemBacklog(CuAplicatia):
                              headers=self.bearer(FULL))
         self.assertEqual(r.status_code, 400)
 
+    # ----------------------------------------------------------------------- nota: caractere de control
+
+    def test_nota_unui_item_din_backlog_fara_nicio_caracter_de_control(self):
+        self.pune_ok(server())
+        for rau in ('a\x00b', 'a\nb', 'a\tb', 'a\rb', 'a\x1fb', 'a\x7fb', '\x00'):
+            with self.subTest(rau=rau):
+                r = self.decide('backlog:E-264', 'inchide-implementat', text=rau)
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn('corpul.text', r.get_json()['error'])
+        self.assertEqual(self.client.get('/api/sistem/decizii', headers=self.bearer(FULL)).get_json()['decizii'], [])
+        self.assertEqual(self.ids(), ['E-264', 'E-328'], 'nicio decizie scrisa, deci nimic ascuns')
+        self.assertEqual(self.decide('backlog:E-264', 'inchide-implementat', text='ăîșț € ok').status_code, 201)
+
+    def test_textul_liber_al_celorlalte_decizii_refuza_NUL_si_DEL_dar_pastreaza_liniile(self):
+        self.pune_ok(corp('pc-job', {'id': 'A-009', 'grup': 'decide', 'titlu': 't', 'motiv': '', 'etichete': [],
+                                     'optiuni': [{'id': 'aprob', 'label': 'Approve', 'stil': 'filled'}]}), 'pc-job')
+        for rau in ('a\x00b', 'a\x1bb', 'a\x7fb'):
+            with self.subTest(rau=rau):
+                self.assertEqual(self.decide('A-009', 'aprob', text=rau).status_code, 400)
+        self.assertEqual(self.client.get('/api/sistem/decizii', headers=self.bearer(FULL)).get_json()['decizii'], [])
+        r = self.decide('A-009', 'aprob', text='doua\nlinii\tcu tab\r\n')
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+
 
 class RefulBacklogInFirul(CuAplicatia):
     """`Discuss` si `Give to Claude` trimit un mesaj normal la `POST /api/asistent/fir` cu `ref: {tip: item, id: backlog:E-NNN}`:
@@ -323,3 +346,4 @@ class RefulBacklogInFirul(CuAplicatia):
         for camp, rau in (('titlu', 't' * 141), ('sursa', 's' * 41), ('masina', 'vm'), ('id', 'i' * 161)):
             with self.assertRaises(EroareCorp, msg=camp):
                 _ref(dict(bun, **{camp: rau}), 'corpul.ref')
+

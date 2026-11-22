@@ -52,7 +52,7 @@ următorul PUT al serverului. Anulată sau consumată cu `stare: fail`, reapare.
 | `inchide-duplicat` | Close as duplicate | `fara-obiect`, `--motiv "duplicat: <nota>"` |
 
 - 201 `{ok, uid}`; rândul are `titlu` = `E-264 · <titlul>`, `sursa` = `server`.
-- 400: id care nu e `backlog:E-NNN`, optiune în afara celor trei, `text` peste 400 de caractere, câmp necunoscut. 409: itemul nu e (sau nu mai
+- 400: id care nu e `backlog:E-NNN`, optiune în afara celor trei, `text` peste 400 de caractere sau cu orice caracter de control (C0, DEL: nota e pe o linie; un NUL oprea consumatorul), câmp necunoscut. Același refuz (fără `\t \n \r`) pe textul liber al celorlalte decizii. 409: itemul nu e (sau nu mai
   e) în backlog-ul stocat; același 409 ca la un item obișnuit dispărut. 401 fără token.
 - Retrimiterea: decizia în așteptare pe același id se înlocuiește (ultima câștigă), deci o cerere repetată nu dublează; una deja preluată dă 409.
 - Consumatorul rulează `evolve.py close`; un item deja închis (ledger sau inbox) se consumă `ok`, fără efect. Itemul iese din backlog la

@@ -89,6 +89,8 @@ _RE_OPTIUNE = re.compile(r'[a-z0-9-]{1,20}')
 _RE_UID = re.compile(r'[0-9a-f]{12}')
 _RE_GENERAT = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
 _RE_ID_BACKLOG = re.compile(r'E-\d{1,5}')
+_RE_CONTROL = re.compile(r'[\x00-\x1f\x7f]')                  # C0 si DEL
+_RE_CONTROL_FARA_LINII = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')   # la fel, dar \t \n \r raman (textul liber din textarea)
 
 CAMPURI_SNAPSHOT = frozenset(('v', 'sursa', 'masina', 'generat', 'sanatate', 'itemi', 'urmeaza', 'automat', 'joburi', 'backlog'))
 # v1.2 (2026-11-17, aditiv): joburile programate ale masinii (runner-ul de pe PC-uri, timerele de utilizator de pe
@@ -700,7 +702,7 @@ def post_decizie():
     schimba `uid`/`ts`; daca cea veche e deja preluata de consumator, 409 si nu se scrie nimic.
     Randul nou tine `titlu` si `sursa` ale itemului din vedere.
     `backlog:E-NNN` (contractul v1.3): optiunile sunt fixe (OPTIUNI_BACKLOG), itemul trebuie sa fie in backlog-ul stocat al serverului;
-    `text` (nota lui Ion) cel mult 400 de caractere; forma id-ului, optiunea sau nota gresite dau 400, itemul absent 409.
+    `text` (nota lui Ion) cel mult 400 de caractere si fara caractere de control; forma id-ului, optiunea sau nota gresite dau 400, itemul absent 409.
     Raspuns 201: {ok, uid}."""
     corp, eroare = _corp_json(16 * 1024)
     if eroare:
@@ -712,6 +714,11 @@ def post_decizie():
         if not _RE_OPTIUNE.fullmatch(optiune):
             raise EroareCorp('corpul.optiune: 1-20 de caractere din a-z 0-9 -')
         text = _text(corp, 'text', 'corpul', 500, optional=True) or ''
+        # Consumatorul pune textul pe linia de comanda a unui subproces: un octet NUL il face sa pice. Nota unui item din
+        # backlog e un camp pe o linie (nicio caracter de control); textul liber de la restul deciziilor poate avea \t \n \r.
+        interzise = _RE_CONTROL if id_.startswith(PREFIX_BACKLOG) else _RE_CONTROL_FARA_LINII
+        if interzise.search(text):
+            raise EroareCorp('corpul.text: fara caractere de control')
     except EroareCorp as e:
         logger.warning('Sistem: decizie respinsa: %s', e)
         return jsonify({'error': str(e)}), 400

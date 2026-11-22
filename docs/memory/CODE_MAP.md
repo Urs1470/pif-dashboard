@@ -78,9 +78,9 @@ _(fara definitii top-level)_
 
 `29:status_proiect`, `47:dosar_de_incarcari`, `75:get_proiecte`, `125:create_proiect`, `193:get_proiect`, `221:update_proiect`, `346:delete_proiect`, `397:get_project_snapshot`, `485:_impl_row`, `505:get_implementari`, `516:create_implementare`, `547:update_implementare`, `594:delete_implementare`, `620:get_stari`, `632:create_stare`, `674:delete_stare`, `690:_eroare_continut`, `718:_continut_json`, `726:_sablon`, `734:get_sabloane`, `745:create_sablon`, `771:update_sablon`, `797:delete_sablon`
 
-## blueprints/sistem.py (924 linii)
+## blueprints/sistem.py (931 linii)
 
-`119:EroareCorp`, `125:_obiect`, `134:_text`, `150:_stare`, `156:_lista`, `167:_generat`, `174:_optiune`, `187:_item`, `215:_intreg`, `227:_item_backlog`, `255:_backlog`, `273:valideaza_snapshot`, `328:_cale`, `332:_acum`, `336:_z`, `340:_scrie_atomic`, `368:_blocat`, `390:_citeste_snapshot`, `404:_surse`, `420:_citeste_decizii`, `446:_in_asteptare`, `451:_scrie_decizii`, `465:_citeste_amanari`, `491:_cheie_item`, `499:_vechime_ore`, `503:_masina`, `514:_masina_lipsa`, `521:_masini`, `530:_decizii_in_asteptare`, `536:_istoric`, `550:_backlog_vedere`, `569:vedere`, `611:_corp_json`, `629:put_sursa`, `659:get_sistem`, `668:_de_la`, `674:_item_backlog_decizie`, `695:post_decizie`, `748:get_decizii`, `766:post_consumat`, `804:_corp_gol`, `819:post_preluat`, `851:post_anulare`, `882:post_amanare`
+`121:EroareCorp`, `127:_obiect`, `136:_text`, `152:_stare`, `158:_lista`, `169:_generat`, `176:_optiune`, `189:_item`, `217:_intreg`, `229:_item_backlog`, `257:_backlog`, `275:valideaza_snapshot`, `330:_cale`, `334:_acum`, `338:_z`, `342:_scrie_atomic`, `370:_blocat`, `392:_citeste_snapshot`, `406:_surse`, `422:_citeste_decizii`, `448:_in_asteptare`, `453:_scrie_decizii`, `467:_citeste_amanari`, `493:_cheie_item`, `501:_vechime_ore`, `505:_masina`, `516:_masina_lipsa`, `523:_masini`, `532:_decizii_in_asteptare`, `538:_istoric`, `552:_backlog_vedere`, `571:vedere`, `613:_corp_json`, `631:put_sursa`, `661:get_sistem`, `670:_de_la`, `676:_item_backlog_decizie`, `697:post_decizie`, `755:get_decizii`, `773:post_consumat`, `811:_corp_gol`, `826:post_preluat`, `858:post_anulare`, `889:post_amanare`
 
 ## blueprints/sync.py (84 linii)
 
