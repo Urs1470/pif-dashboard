@@ -58,11 +58,11 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/liste` | `get_liste` | 74 |
-| POST | `/api/liste` | `create_lista` | 84 |
-| PUT | `/api/liste/ordine` | `reordoneaza_liste` | 130 |
-| PUT | `/api/liste/<lista_id>` | `update_lista` | 163 |
-| DELETE | `/api/liste/<lista_id>` | `delete_lista` | 206 |
+| GET | `/api/liste` | `get_liste` | 78 |
+| POST | `/api/liste` | `create_lista` | 88 |
+| PUT | `/api/liste/ordine` | `reordoneaza_liste` | 134 |
+| PUT | `/api/liste/<lista_id>` | `update_lista` | 170 |
+| DELETE | `/api/liste/<lista_id>` | `delete_lista` | 215 |
 
 ## blueprints/mail_lot.py (4 rute)
 
@@ -148,11 +148,11 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 420 |
 | PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 454 |
 | DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 469 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 541 |
-| POST | `/api/global-tasks` | `create_global_task` | 622 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 676 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 691 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 772 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 544 |
+| POST | `/api/global-tasks` | `create_global_task` | 625 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 679 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 694 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 781 |
 
 ## blueprints/torqa_web.py (4 rute)
 
