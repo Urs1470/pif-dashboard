@@ -4,7 +4,8 @@ Pagina System din Torqa devine un hub: ce cere atenția lui Ion (registrul asist
 laptop-server), un fir de chat cu asistentul (mesajele lui Ion devin taskuri în coada Claude, răspunsurile
 vin înapoi în fir) și notificări push native prin FCM. pif-dashboard e doar **depozitul și poșta**: stochează
 registrul, acțiunile, firul și tokenurile și trimite push-ul. Nu rulează LLM și nu creează taskuri.
-Codul: `blueprints/asistent.py` (rutele), `blueprints/fcm.py` (transportul FCM, doar bibliotecă standard).
+Codul: `blueprints/asistent.py` (rutele), `blueprints/fcm.py` (transportul FCM, doar bibliotecă standard). v1.1 (aditiv: `ref`, `tinta`,
+`alegere`, întrebări cu opțiuni, prezența mașinilor): secțiunea „v1.1” mai jos.
 
 Trei părți vorbesc prin pif-dashboard (fișiere ca `blueprints/sistem.py`, fără tabele, fără migrare):
 - **asistentul** de pe laptop-server (`tools/asistent/atentie.py` în Knowledge), cu tokenul de MAȘINĂ;
@@ -21,6 +22,7 @@ pif-dashboard rulează pe același laptop-server ca asistentul (gunicorn, 127.0.
 | `actiuni.jsonl` | acțiunile lui Ion pe itemi, cu starea (`asteapta` → `consumat`) | atomic, max 500 de rânduri (cad cele consumate) |
 | `fir.jsonl` | mesajele firului (Ion și asistentul) | atomic, max 500 (cad întâi cele terminate) |
 | `push.json` | tokenurile FCM ale dispozitivelor, drepturi 600 | atomic, max 20 |
+| `prezenta.json` | ultima raportare a fiecărei mașini (v1.1) | atomic |
 | `asistent.lock` | doar blocarea (fcntl): doi workeri nu rescriu deodată | — |
 
 Ca la `/api/sistem`: fișierele nu intră în backup, nu au schemă; registrul se reface la fiecare rulare a
@@ -158,6 +160,52 @@ Erorile au forma depozitului, `{"error": "<text>"}`, iar fiecare cerere eșuată
   `deschide` → „Open” (deschide `deschide` în aplicație). Butonul face `POST /api/asistent/actiune` cu `din: notificare`
   din receiver-ul nativ, cu tokenul de dispozitiv, apoi schimbă notificarea în „Sent to Claude ✓” / „Tomorrow ✓” sau o
   închide; la eroare de rețea: „Couldn't send, open Torqa”.
+
+## v1.1 (2026-11-22, aditiv): ce a cerut hub-ul System
+
+Cerințele lui Ion și designul: Knowledge, `references/decizii/2026-11-22-system-hub.md`. Nicio rută din v1 nu se schimbă; un Torqa
+vechi ignoră câmpurile noi. O rută nouă (`PUT /api/asistent/prezenta/<masina>`, a unsprezecea), fără schemă și fără migrare.
+Mașinile au id-uri fixe: `server` (Server), `pc-job` (PC job), `ionpc` (IONPC).
+
+**Mesajul lui Ion** (`POST /api/asistent/fir`), câmpuri noi opționale:
+- `ref`: `{"tip": "item|decizie|verificare|job|istoric", "id": "≤160", "titlu": "≤140", "sursa": "≤40", "masina": "server|pc-job|ionpc",
+  "mod": "discuta|raspuns"}`. `tip`, `id`, `titlu` obligatorii; `sursa` și `masina` pot lipsi (nu `null`); `mod` lipsă = `discuta`.
+  `mod: raspuns` doar la `tip: decizie` (400 `corpul.ref.mod`). Se stochează cu toate cheile și se întoarce în `GET` și în `fir/noi`.
+- `tinta`: `auto|server|pc-job|ionpc` (implicit `auto`; mesajele de dinainte de v1.1 se întorc tot cu `auto`).
+- `alegere` (≤40): doar cu `raspuns_la` (400 `corpul.alegere`); răspunsul lui Ion la o întrebare, vezi mai jos.
+
+**Mesajul asistentului**, câmpuri și tipuri noi:
+- `tip` primește `intrebare` (unde să ruleze) și `asteapta` (taskul așteaptă o mașină oprită). Acestea două **cer** `optiuni`: 1–4 de
+  `{"id": "≤40", "eticheta": "≤60"}`, id-uri unice; alte tipuri nu primesc `optiuni` (400 `corpul.optiuni`). Serverul nu fixează
+  vocabularul id-urilor (mașini la `intrebare`; `server` și `anuleaza` la `asteapta`): îl fixează asistentul.
+- `masina` (`server|pc-job|ionpc`, pe orice tip; contractul o folosește la `lucreaza`, `rezultat`, `asteapta`) și `ref` (aceeași schemă),
+  opționale; `null` = lipsă, ca la celelalte câmpuri ale asistentului.
+- Mesajul din `GET`/`fir/noi` are mereu cheile `ref`, `tinta`, `alegere`, `optiuni` (`[]` când nu sunt), `masina`, `raspuns`.
+
+**Răspunsul lui Ion la o întrebare:** un mesaj obișnuit cu `raspuns_la: <id întrebare>` și `alegere: <id opțiune>` (`text` = eticheta).
+Verificări, sub blocarea firului: întrebarea nu există → **404**; nu e un mesaj al asistentului de tip `intrebare`/`asteapta` → **409**;
+a primit deja răspuns → **409**; `alegere` nu e între `optiuni` → **400** (`corpul.alegere`, întrebarea rămâne deschisă); 30 pe oră → 429.
+Dacă trece: întrebarea primește `raspuns: {"optiune", "ts"}` și mesajul lui Ion (`stare: "nou"`, același `ts`) se adaugă în
+**aceeași** scriere atomică a `fir.jsonl` (un singur `_scrie_fir`, sub aceeași blocare): nu există o stare cu răspunsul fără mesaj sau
+mesajul fără răspuns, iar două cereri simultane (două workere, dublu-tap) dau exact un 201 și un 409. Un `raspuns_la` fără `alegere` rămâne
+un reply obișnuit, ca în v1. **Retrimitere:** a doua cerere pentru aceeași întrebare dă 409 (clientul îl tratează ca „deja trimis”).
+
+**Prezența:** `PUT /api/asistent/prezenta/<masina>` `{"activ": bool, "idle_s": int 0..10^9, "versiune": "≤40 opțional"}` → 200 `{"ok", "masina"}`.
+Token de mașină sau sesiune; tokenul de dispozitiv 403; mașină necunoscută 404; câmp necunoscut sau tip greșit 400. Starea stă în
+`prezenta.json` (`{"masini": {id: {ultima, activ, idle_s, versiune}}}`), scris atomic sub aceeași blocare; `ultima` o pune serverul. Idempotent:
+cererea repetată lasă aceeași stare, doar `ultima` avansează. Un fișier ilizibil ca JSON se tratează ca „nicio mașină n-a raportat” și se
+rescrie la următoarea raportare (se reface în cel mult un minut); o eroare de citire a discului dă 500 la scriere, fără rescriere.
+`GET /api/asistent` primește `masini`, mereu trei, în ordinea `server`, `pc-job`, `ionpc`:
+`{"id", "nume", "stare": "activ|online|offline", "ultima": "ISO|null", "idle_min": int|null}`. `online` = ultima raportare în ultimele
+**180 s** (inclusiv 180); `activ` = online, `activ: true` și `idle_s` ≤ **900** (inclusiv 900); altfel `offline` (și `ultima` rămâne ultima
+raportare). Mașina care n-a raportat niciodată: `offline`, `ultima: null`. `idle_min` = `idle_s // 60` cât e online, `null` când e offline
+(valoarea veche ar induce în eroare). Ceasul serverului dat înapoi (`ultima` în viitor) nu scoate mașina din `online`.
+
+Ce nu face serverul (neschimbat): nu execută text liber și nu primește opțiuni inventate la `/api/sistem/decizie`; rutarea pe mașini,
+coada și închiderea deciziei în ledger sunt ale asistentului. Push-ul FCM al unui mesaj `intrebare`/`asteapta` poartă `tip` nou în `data`;
+serviciul nativ Android trebuie să-l cunoască înainte ca asistentul să ceară `push` pe ele.
+
+Rollback: `git revert` al commitului v1.1; `prezenta.json` se poate șterge. Câmpurile deja scrise în `fir.jsonl` rămân inofensive (v1 le ignoră).
 
 ## Ce nu intră
 
