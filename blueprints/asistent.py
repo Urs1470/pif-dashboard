@@ -30,6 +30,7 @@ import contextlib
 import functools
 import json
 import logging
+import math
 import os
 import re
 import secrets
@@ -376,16 +377,17 @@ def _fara_control(v, cale):
 
 def _ref(v, cale):
     """Randul despre care e mesajul (tras in chat sau „Discuss”): {tip, id, titlu, sursa?, masina?, mod?}.
-    `mod` lipsa = `discuta`; `raspuns` (raspunsul liber la o decizie) doar la `tip: decizie`. Se stocheaza cu toate
-    cheile (sursa si masina pot fi null). Campurile optionale lipsesc, nu sunt null."""
+    `mod` lipsa sau null = `discuta`; `raspuns` (raspunsul liber la o decizie) doar la `tip: decizie`. Se stocheaza
+    cu toate cheile (sursa si masina pot fi null). `sursa`, `masina` si `mod` pot lipsi SAU fi null: serverul
+    intoarce ref-ul cu null pe ele, iar clientul si asistentul il retrimit asa cum l-au primit."""
     _obiect(v, cale, CAMPURI_REF)
     tip = _enum(v, 'tip', cale, TIPURI_REF)
     id_ = _text(v, 'id', cale, 160, nevid=True)
     _fara_control(id_, '%s.id' % cale)
     titlu = _text(v, 'titlu', cale, 140, nevid=True)
-    sursa = _text(v, 'sursa', cale, 40, nevid=True, optional=True)
-    masina = _enum(v, 'masina', cale, IDS_MASINI) if 'masina' in v else None
-    mod = _enum(v, 'mod', cale, MODURI_REF) if 'mod' in v else 'discuta'
+    sursa = _text(v, 'sursa', cale, 40, nevid=True) if v.get('sursa') is not None else None
+    masina = _enum(v, 'masina', cale, IDS_MASINI) if v.get('masina') is not None else None
+    mod = _enum(v, 'mod', cale, MODURI_REF) if v.get('mod') is not None else 'discuta'
     if mod == 'raspuns' and tip != 'decizie':
         raise EroareCorp('%s.mod: raspuns doar la tip decizie' % cale)
     return {'tip': tip, 'id': id_, 'titlu': titlu, 'sursa': sursa, 'masina': masina, 'mod': mod}
@@ -600,16 +602,23 @@ def _citeste_fir(strict=False):
     return _citeste_jsonl(F_FIR, 'id', strict)
 
 
-def _scrie_fir(randuri):
+def _intrebare_deschisa(r):
+    return r.get('cine') == 'asistent' and r.get('tip') in TIPURI_CU_OPTIUNI and not r.get('raspuns')
+
+
+def _scrie_fir(randuri, pastreaza=()):
     """Rescrie atomic fir.jsonl, max 500: intai cad cele mai vechi mesaje TERMINATE (ale asistentului
     si ale lui Ion deja gata/eroare), apoi, daca e nevoie, cele mai vechi oricare ar fi (doar cu 500 de
-    mesaje ale lui Ion neprocesate, adica un asistent mort de zeci de ore)."""
+    mesaje deschise, adica un asistent mort de zeci de ore). Munca deschisa nu cade intai: mesajele lui Ion
+    `nou`/`preluat` si intrebarile fara raspuns (`intrebare`/`asteapta`); `pastreaza` = id-uri care nu cad
+    in scrierea asta (intrebarea la care tocmai s-a raspuns: Torqa trebuie sa-i vada butonul ales)."""
     exces = len(randuri) - MAX_RANDURI_FIR
     if exces > 0:
         ultimul = len(randuri) - 1                             # mesajul abia adaugat nu cade niciodata
         pastrate = []
         for ix, r in enumerate(randuri):
-            if exces > 0 and ix < ultimul and r.get('stare') not in ('nou', 'preluat'):
+            if (exces > 0 and ix < ultimul and r.get('stare') not in ('nou', 'preluat')
+                    and not _intrebare_deschisa(r) and r['id'] not in pastreaza):
                 exces -= 1
                 continue
             pastrate.append(r)
@@ -911,6 +920,16 @@ def post_stare(id_):
     return jsonify({'ok': True, 'id': id_, 'stare': stare})
 
 
+def _idle_s(corp):
+    """`idle_s`: intreg sau numar finit >= 0 (scripturile il citesc ca float din gdbus / xprintidle); se rotunjeste
+    in jos la intreg. Negativ, NaN, inf, bool, text sau peste MAX_IDLE_S: 400."""
+    v = corp.get('idle_s')
+    if (isinstance(v, bool) or not isinstance(v, (int, float)) or (isinstance(v, float) and not math.isfinite(v))
+            or not 0 <= v <= MAX_IDLE_S):
+        raise EroareCorp('corpul.idle_s: numar finit intre 0 si %d (fractiile se rotunjesc in jos)' % MAX_IDLE_S)
+    return int(v)
+
+
 @asistent_bp.route('/api/asistent/prezenta/<masina>', methods=['PUT'])
 @login_required
 @_doar_masina
@@ -927,8 +946,8 @@ def put_prezenta(masina):
         _obiect(corp, 'corpul', CAMPURI_PREZENTA)
         if not isinstance(corp.get('activ'), bool):
             raise EroareCorp('corpul.activ: trebuie sa fie true sau false')
-        idle_s = _intreg(corp, 'idle_s', 'corpul', 0, MAX_IDLE_S)
-        versiune = _text(corp, 'versiune', 'corpul', 40, nevid=True, optional=True)
+        idle_s = _idle_s(corp)
+        versiune = _text(corp, 'versiune', 'corpul', 40, nevid=True) if corp.get('versiune') is not None else None
     except EroareCorp as e:
         return _eroare(400, str(e))
     rand = {'ultima': _z(_acum()), 'activ': corp['activ'], 'idle_s': idle_s, 'versiune': versiune}
@@ -1035,9 +1054,9 @@ def _fir_ion(corp, via):
         raspuns_la = _text(corp, 'raspuns_la', 'corpul', 20, nevid=True, optional=True)
         if raspuns_la is not None and not _RE_MSG.fullmatch(raspuns_la):
             raise EroareCorp('corpul.raspuns_la: id de mesaj (m_...)')
-        ref = _ref(corp['ref'], 'corpul.ref') if 'ref' in corp else None
-        tinta = _enum(corp, 'tinta', 'corpul', TINTE) if 'tinta' in corp else 'auto'
-        alegere = _text(corp, 'alegere', 'corpul', 40, nevid=True, optional=True)
+        ref = _ref(corp['ref'], 'corpul.ref') if corp.get('ref') is not None else None
+        tinta = _enum(corp, 'tinta', 'corpul', TINTE) if corp.get('tinta') is not None else 'auto'
+        alegere = _text(corp, 'alegere', 'corpul', 40, nevid=True) if corp.get('alegere') is not None else None
         if alegere is not None and raspuns_la is None:
             raise EroareCorp('corpul.alegere: doar impreuna cu raspuns_la')
     except EroareCorp as e:
@@ -1073,7 +1092,7 @@ def _fir_ion(corp, via):
             if intrebare is not None:
                 intrebare['raspuns'] = {'optiune': alegere, 'ts': rand['ts']}
             randuri.append(rand)
-            _scrie_fir(randuri)
+            _scrie_fir(randuri, (intrebare['id'],) if intrebare is not None else ())
     except OSError:
         logger.exception('Asistent: scrierea firului a esuat pe disc')
         return _eroare(500, 'Eroare pe disc la salvarea mesajului.')

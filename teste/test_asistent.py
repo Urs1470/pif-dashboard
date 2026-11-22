@@ -1304,7 +1304,7 @@ class RefTintaAlegere(Baza):
     def test_validarea_ref_si_tinta_cu_calea_campului(self):
         ok = {'tip': 'item', 'id': 'a', 'titlu': 'b'}
         for corp, cale in (
-                ({'ref': 'x'}, 'corpul.ref'), ({'ref': None}, 'corpul.ref'), ({'ref': []}, 'corpul.ref'),
+                ({'ref': 'x'}, 'corpul.ref'), ({'ref': []}, 'corpul.ref'),
                 ({'ref': dict(ok, x=1)}, 'corpul.ref.x'),
                 ({'ref': {k: v for k, v in ok.items() if k != 'tip'}}, 'corpul.ref.tip'),
                 ({'ref': {k: v for k, v in ok.items() if k != 'id'}}, 'corpul.ref.id'),
@@ -1313,10 +1313,12 @@ class RefTintaAlegere(Baza):
                 ({'ref': dict(ok, id='')}, 'corpul.ref.id'), ({'ref': dict(ok, id=7)}, 'corpul.ref.id'),
                 ({'ref': dict(ok, id='i' * 161)}, 'corpul.ref.id'), ({'ref': dict(ok, id='a\nb')}, 'corpul.ref.id'),
                 ({'ref': dict(ok, titlu='')}, 'corpul.ref.titlu'), ({'ref': dict(ok, titlu='t' * 141)}, 'corpul.ref.titlu'),
-                ({'ref': dict(ok, sursa='s' * 41)}, 'corpul.ref.sursa'), ({'ref': dict(ok, sursa=None)}, 'corpul.ref.sursa'),
+                ({'ref': dict(ok, sursa='s' * 41)}, 'corpul.ref.sursa'), ({'ref': dict(ok, sursa=3)}, 'corpul.ref.sursa'),
+                ({'ref': dict(ok, sursa='')}, 'corpul.ref.sursa'), ({'ref': dict(ok, masina=3)}, 'corpul.ref.masina'),
+                ({'ref': dict(ok, mod=3)}, 'corpul.ref.mod'), ({'ref': dict(ok, tip=None)}, 'corpul.ref.tip'),
                 ({'ref': dict(ok, masina='laptop')}, 'corpul.ref.masina'), ({'ref': dict(ok, masina='auto')}, 'corpul.ref.masina'),
                 ({'ref': dict(ok, mod='altul')}, 'corpul.ref.mod'),
-                ({'tinta': 'laptop'}, 'corpul.tinta'), ({'tinta': None}, 'corpul.tinta'), ({'tinta': 5}, 'corpul.tinta'),
+                ({'tinta': 'laptop'}, 'corpul.tinta'), ({'tinta': 5}, 'corpul.tinta'),
                 ({'alegere': 'pc-job'}, 'corpul.alegere'),
                 ({'alegere': 'pc-job', 'raspuns_la': None}, 'corpul.raspuns_la')):
             with self.subTest(corp=corp):
@@ -1339,6 +1341,54 @@ class RefTintaAlegere(Baza):
                              headers=self.h(FULL))
         self.assertEqual(r.status_code, 201)
         self.assertEqual((self.noi()[0]['ref'], self.noi()[0]['tinta']), (REF, 'ionpc'))
+
+    def test_ref_intors_de_server_se_poate_retrimite_neschimbat(self):
+        """Serverul intoarce `ref` cu sursa/masina null si `mod` pus; asistentul il repeta pe raspuns (fir/noi ->
+        POST), iar Torqa il retrimite din GET: ambele trebuie sa treaca."""
+        self.assertEqual(self.scrie_ion('x', ref={'tip': 'item', 'id': 'torqa:t-1', 'titlu': 'Task'}).status_code, 201)
+        ref = self.noi()[0]['ref']
+        self.assertEqual(ref, {'tip': 'item', 'id': 'torqa:t-1', 'titlu': 'Task', 'sursa': None, 'masina': None,
+                               'mod': 'discuta'})
+        r = self.scrie_asistent(tip='rezultat', ref=ref)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        r = self.scrie_ion('din GET', ref=self.vedere()['fir'][0]['ref'])
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        fir = self.vedere()['fir']
+        self.assertEqual([m['ref'] for m in fir], [ref] * 3, 'acelasi ref, nealterat, dupa doua tururi')
+
+    def test_ref_plin_se_retrimite_si_el(self):
+        self.scrie_ion('x', ref=REF)
+        ref = self.noi()[0]['ref']
+        self.assertEqual(ref, REF)
+        self.assertEqual(self.scrie_asistent(tip='rezultat', ref=ref).status_code, 201)
+        self.assertEqual(self.scrie_ion('din GET', ref=ref).status_code, 201)
+
+    def test_null_in_ref_ca_lipsa(self):
+        ok = {'tip': 'decizie', 'id': 'a', 'titlu': 'b'}
+        for extra in ({'sursa': None}, {'masina': None}, {'mod': None}, {'sursa': None, 'masina': None, 'mod': None}):
+            with self.subTest(extra=extra):
+                self.assertEqual(self.scrie_ion('x', ref=dict(ok, **extra)).status_code, 201)
+                self.acum += timedelta(minutes=2)
+        for m in self.noi():
+            self.assertEqual(m['ref'], {'tip': 'decizie', 'id': 'a', 'titlu': 'b', 'sursa': None, 'masina': None, 'mod': 'discuta'})
+
+    def test_mod_null_nu_ocoleste_regula_raspuns_doar_la_decizie(self):
+        r = self.scrie_ion('x', ref={'tip': 'item', 'id': 'a', 'titlu': 'b', 'mod': 'raspuns', 'sursa': None})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('corpul.ref.mod', r.get_json()['error'])
+
+    def test_null_pe_campurile_optionale_ale_lui_ion_ca_lipsa(self):
+        r = self.scrie_ion('x', ref=None, tinta=None, alegere=None)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        m = self.noi()[0]
+        self.assertEqual((m['ref'], m['tinta'], m['alegere']), (None, 'auto', None))
+        r = self.scrie_ion('x', alegere=None, raspuns_la='m_abcdef')
+        self.assertEqual(r.status_code, 201, 'alegere null = reply obisnuit, fara verificarea intrebarii')
+
+    def test_alegere_nenula_fara_raspuns_la_ramane_400_si_cu_null_pe_raspuns_la_la_fel(self):
+        for corp in ({'alegere': 'pc-job'}, {'alegere': 'pc-job', 'raspuns_la': None}):
+            with self.subTest(corp=corp):
+                self.assertEqual(self.scrie_ion('x', **corp).status_code, 400)
 
     def test_mesajele_vechi_fara_campurile_noi_se_citesc(self):
         self.scrie_randuri('fir.jsonl', [{'id': 'm_000001', 'ts': '2026-11-22T07:00:00Z', 'cine': 'ion', 'tip': 'mesaj',
@@ -1552,6 +1602,50 @@ class RaspunsLaIntrebare(Baza):
             self.assertEqual(self.raspunde(q).status_code, 201)
         self.assertEqual([c[0][0] for c in scrie.call_args_list], ['fir.jsonl'])
 
+    def umple(self, n, deschise=()):
+        """Fir cu `n` mesaje ale asistentului, terminate; primele sunt `deschise` (randuri deja facute)."""
+        randuri = list(deschise)
+        randuri += [{'id': 'm_%06x' % (i + 100), 'ts': '2026-11-21T07:00:00Z', 'cine': 'asistent', 'tip': 'info',
+                     'text': 'x', 'stare': None} for i in range(n - len(randuri))]
+        self.scrie_randuri('fir.jsonl', randuri)
+
+    def intrebare_veche(self, id_='m_000001', **camp):
+        return dict({'id': id_, 'ts': '2026-11-21T06:00:00Z', 'cine': 'asistent', 'tip': 'intrebare', 'text': 'Unde?',
+                     'optiuni': OPTIUNI, 'stare': None}, **camp)
+
+    def test_la_plafon_intrebarea_fara_raspuns_nu_cade(self):
+        for tip in ('intrebare', 'asteapta'):
+            with self.subTest(tip=tip):
+                self.umple(500, [self.intrebare_veche(tip=tip)])
+                self.assertEqual(self.scrie_asistent(text='nou').status_code, 201)
+                randuri = self.randuri('fir.jsonl')
+                self.assertEqual(len(randuri), 500)
+                self.assertEqual(randuri[0]['id'], 'm_000001', 'intrebarea deschisa a ramas prima')
+                self.assertNotIn('m_000064', [r['id'] for r in randuri], 'a cazut cel mai vechi mesaj terminat')
+
+    def test_la_plafon_intrebarea_cu_raspuns_cade_ca_orice_mesaj_terminat(self):
+        self.umple(500, [self.intrebare_veche(raspuns={'optiune': 'pc-job', 'ts': '2026-11-21T06:01:00Z'})])
+        self.assertEqual(self.scrie_asistent(text='nou').status_code, 201)
+        self.assertNotIn('m_000001', [r['id'] for r in self.randuri('fir.jsonl')])
+
+    def test_la_plafon_raspunsul_gaseste_intrebarea_si_o_pastreaza(self):
+        """Raspunsul la o intrebare veche, cu firul plin, nu da 404 si nu scoate intrebarea din fir in aceeasi scriere."""
+        self.umple(500, [self.intrebare_veche()])
+        r = self.raspunde('m_000001')
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        randuri = self.randuri('fir.jsonl')
+        self.assertEqual(len(randuri), 500)
+        self.assertEqual(randuri[0]['id'], 'm_000001')
+        self.assertEqual(randuri[0]['raspuns']['optiune'], 'pc-job')
+        self.assertEqual(randuri[-1]['alegere'], 'pc-job')
+        self.assertEqual(self.raspunde('m_000001').status_code, 409, 'a doua oara 409, nu 404')
+
+    def test_la_plafon_doar_cu_intrebari_deschise_cade_cea_mai_veche(self):
+        self.umple(500, [self.intrebare_veche('m_%06x' % i) for i in range(1, 501)])
+        self.assertEqual(self.scrie_asistent(text='nou').status_code, 201)
+        randuri = self.randuri('fir.jsonl')
+        self.assertEqual((len(randuri), randuri[0]['id'], randuri[-1]['text']), (500, 'm_000002', 'nou'))
+
     def test_doua_raspunsuri_deodata_unul_castiga(self):
         """Doua cereri simultane (doi workeri sau un dublu-tap): exact una trece, cealalta 409."""
         import threading
@@ -1631,12 +1725,14 @@ class Prezenta(Baza):
                 ({}, 'corpul.activ'), ({'idle_s': 1}, 'corpul.activ'), ({'activ': 'da', 'idle_s': 1}, 'corpul.activ'),
                 ({'activ': 1, 'idle_s': 1}, 'corpul.activ'), ({'activ': None, 'idle_s': 1}, 'corpul.activ'),
                 ({'activ': True}, 'corpul.idle_s'), ({'activ': True, 'idle_s': -1}, 'corpul.idle_s'),
-                ({'activ': True, 'idle_s': 1.5}, 'corpul.idle_s'), ({'activ': True, 'idle_s': '5'}, 'corpul.idle_s'),
+                ({'activ': True, 'idle_s': -0.5}, 'corpul.idle_s'), ({'activ': True, 'idle_s': '5'}, 'corpul.idle_s'),
+                ({'activ': True, 'idle_s': 1e30}, 'corpul.idle_s'), ({'activ': True, 'idle_s': [1]}, 'corpul.idle_s'),
                 ({'activ': True, 'idle_s': True}, 'corpul.idle_s'), ({'activ': True, 'idle_s': None}, 'corpul.idle_s'),
                 ({'activ': True, 'idle_s': 10 ** 9 + 1}, 'corpul.idle_s'),
                 ({'activ': True, 'idle_s': 1, 'versiune': 'v' * 41}, 'corpul.versiune'),
                 ({'activ': True, 'idle_s': 1, 'versiune': ''}, 'corpul.versiune'),
                 ({'activ': True, 'idle_s': 1, 'versiune': 3}, 'corpul.versiune'),
+                ({'activ': True, 'idle_s': 1, 'versiune': '  '}, 'corpul.versiune'),
                 ({'activ': True, 'idle_s': 1, 'x': 1}, 'corpul.x'), ({'activ': True, 'idle_s': 1, 'ultima': 'x'}, 'corpul.ultima')):
             with self.subTest(corp=corp):
                 r = self.client.put('/api/asistent/prezenta/server', json=corp, headers=self.h())
@@ -1648,6 +1744,32 @@ class Prezenta(Baza):
         r = self.client.put('/api/asistent/prezenta/server', data='nu e json', headers=self.h())
         self.assertEqual(r.status_code, 400)
         self.assertFalse(os.path.exists(os.path.join(self.dir, 'prezenta.json')))
+
+    def test_idle_s_float_se_rotunjeste_in_jos(self):
+        for trimis, stocat, idle_min in ((0.0, 0, 0), (0.9, 0, 0), (59.999, 59, 0), (119.5, 119, 1), (900.0, 900, 15),
+                                         (900.4, 900, 15), (901.0, 901, 15), (1e9, 10 ** 9, 16666666)):
+            with self.subTest(idle_s=trimis):
+                r = self.raporteaza('ionpc', idle_s=trimis)
+                self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+                rand = json.loads(self.fisier('prezenta.json'))['masini']['ionpc']
+                self.assertEqual((rand['idle_s'], type(rand['idle_s'])), (stocat, int))
+                self.assertEqual(self.masini()['ionpc']['idle_min'], idle_min)
+        self.raporteaza('ionpc', idle_s=900.9)
+        self.assertEqual(self.masini()['ionpc']['stare'], 'activ', '900.9 -> 900, inca activ')
+        self.raporteaza('ionpc', idle_s=901.0)
+        self.assertEqual(self.masini()['ionpc']['stare'], 'online')
+
+    def test_idle_s_nan_si_infinit_dau_400(self):
+        for literal in ('NaN', 'Infinity', '-Infinity', '-0.5', '-1', '1e400'):
+            with self.subTest(literal=literal):
+                r = self.client.put('/api/asistent/prezenta/server', data='{"activ": true, "idle_s": %s}' % literal,
+                                    headers=dict(self.h(), **{'Content-Type': 'application/json'}))
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'prezenta.json')))
+
+    def test_versiune_null_ca_lipsa(self):
+        self.assertEqual(self.raporteaza('server', versiune=None).status_code, 200)
+        self.assertIsNone(json.loads(self.fisier('prezenta.json'))['masini']['server']['versiune'])
 
     def test_valorile_la_limita_trec(self):
         self.assertEqual(self.raporteaza(idle_s=0, versiune='v' * 40).status_code, 200)
