@@ -225,6 +225,7 @@ Serverul nu hotărăște nimic din el: asistentul (Knowledge, `atentie.masini_st
 <PC> e delogat”. Loginul serverului rămâne la `veghe.py`, nu aici.
 
 Ce nu face serverul (neschimbat): nu execută text liber și nu primește opțiuni inventate la `/api/sistem/decizie`; rutarea pe mașini,
+Ce nu face serverul (neschimbat; din 2026-11-22 `/api/sistem/decizie` primește și `backlog:E-NNN` cu trei opțiuni fixe, vezi `2026-11-22-backlog-in-system.md`): nu execută text liber și nu primește opțiuni inventate la `/api/sistem/decizie`; rutarea pe mașini,
 coada și închiderea deciziei în ledger sunt ale asistentului. Push-ul FCM al unui mesaj `intrebare`/`asteapta` poartă `tip` nou în `data`;
 serviciul nativ Android trebuie să-l cunoască înainte ca asistentul să ceară `push` pe ele.
 

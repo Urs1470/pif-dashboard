@@ -17,6 +17,13 @@
 # in asteptare -> preluata (de consumator) -> consumata, sau anulata de Ion cat nu e preluata;
 # `istoric` in vedere, amanarea unui item si masinile asteptate care nu au raportat.
 #
+# Contractul v1.3 (2026-11-22, aditiv): sursa `server` poate avea in snapshot blocul `backlog` (itemii E-NNN deschisi ai
+# ledger-ului evolve, pentru tab-ul Backlog din Torqa); `GET /api/sistem` il da la nivelul de sus (`backlog`, `null` fara el).
+# Inchiderea unui item merge prin `POST /api/sistem/decizie` cu id `backlog:E-NNN` si optiunea `inchide-implementat|
+# inchide-respins|inchide-duplicat` (nota libera in `text`, cel mult 400 de caractere): backlog-ul nu are optiuni puse de sursa,
+# deci optiunile sunt fixe aici, iar consumatorul de pe server ruleaza `evolve.py close`. Un item cu decizie in asteptare nu mai
+# apare in `GET /api/sistem`. Vezi docs/decizii/2026-11-22-backlog-in-system.md.
+#
 # Validarea e STRICTA (contractul v1): orice camp in plus sau lipsa, orice tip gresit da 400 cu
 # calea campului, iar snapshot-ul existent ramane neatins.
 #
@@ -53,8 +60,11 @@ FISIER_DECIZII = 'decizii.jsonl'
 FISIER_BLOCARE = 'decizii.lock'
 FISIER_AMANARI = 'amanari.json'
 
-MAX_CORP = 1024 * 1024
+MAX_CORP = 2 * 1024 * 1024                 # 1 MiB pana pe 2026-11-22; blocul `backlog` (300 de itemi) poate trece de 1 MiB in cazul cel mai rau
 MAX_ITEMI = 200
+MAX_BACKLOG = 300
+MAX_ETICHETE_BACKLOG = 8
+MAX_NOTA_BACKLOG = 400
 MAX_URMEAZA = 50
 MAX_AUTOMAT = 50
 MAX_JOBURI = 50
@@ -78,8 +88,9 @@ _RE_SURSA = re.compile(r'[a-z0-9][a-z0-9-]{1,19}')
 _RE_OPTIUNE = re.compile(r'[a-z0-9-]{1,20}')
 _RE_UID = re.compile(r'[0-9a-f]{12}')
 _RE_GENERAT = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z')
+_RE_ID_BACKLOG = re.compile(r'E-\d{1,5}')
 
-CAMPURI_SNAPSHOT = frozenset(('v', 'sursa', 'masina', 'generat', 'sanatate', 'itemi', 'urmeaza', 'automat', 'joburi'))
+CAMPURI_SNAPSHOT = frozenset(('v', 'sursa', 'masina', 'generat', 'sanatate', 'itemi', 'urmeaza', 'automat', 'joburi', 'backlog'))
 # v1.2 (2026-11-17, aditiv): joburile programate ale masinii (runner-ul de pe PC-uri, timerele de utilizator de pe
 # laptop), ca Torqa sa arate ce ruleaza unde. `ultima` si `urmatoarea` lipsesc cand nu se stiu (null nu se accepta).
 CAMPURI_JOB = frozenset(('id', 'nume', 'stare', 'ultima', 'urmatoarea', 'detaliu'))
@@ -91,6 +102,17 @@ CAMPURI_AUTOMAT = frozenset(('ce', 'stare', 'detaliu'))
 CAMPURI_DECIZIE = frozenset(('id', 'optiune', 'text'))
 CAMPURI_CONSUMAT = frozenset(('rezultat', 'stare'))
 CAMPURI_AMANARE = frozenset(('id', 'pana'))
+# v1.3 (2026-11-22, aditiv): backlog-ul evolve, doar in snapshot-ul sursei `server`. Toate campurile sunt obligatorii; `creat`,
+# `varsta_zile`, `masina` si `repo` pot fi null.
+PREFIX_BACKLOG = 'backlog:'
+CAMPURI_BACKLOG = frozenset(('generat', 'total', 'asteapta_ion', 'cel_mai_vechi_zile', 'itemi'))
+CAMPURI_ITEM_BACKLOG = frozenset(('id', 'zona', 'titlu', 'descriere', 'creat', 'varsta_zile', 'etichete', 'asteapta_ion',
+                                  'masina', 'repo'))
+MASINI_BACKLOG = ('server', 'ionpc', 'pc-job')
+REPO_BACKLOG = ('torqa-sp',)
+# Optiunile fixe ale unui item din backlog (id -> eticheta din istoric); verdictul il alege consumatorul din Knowledge.
+OPTIUNI_BACKLOG = {'inchide-implementat': 'Close as done', 'inchide-respins': 'Close as not needed',
+                   'inchide-duplicat': 'Close as duplicate'}
 CAMPURI_GOL = frozenset()                         # anulare si preluat: corp gol sau {}
 
 
@@ -190,6 +212,64 @@ def _item(it, cale, ids):
         _optiune(o, '%s.optiuni[%d]' % (cale, ix), vazute)
 
 
+def _intreg(obj, camp, cale, maxim=10 ** 6, nullabil=False):
+    """Intreg >= 0 (bool nu); `nullabil`: poate fi null, dar nu lipsi."""
+    if camp not in obj:
+        raise EroareCorp('%s.%s: lipseste' % (cale, camp))
+    v = obj[camp]
+    if v is None and nullabil:
+        return None
+    if isinstance(v, bool) or not isinstance(v, int) or not 0 <= v <= maxim:
+        raise EroareCorp('%s.%s: intreg intre 0 si %d%s' % (cale, camp, maxim, ', sau null' if nullabil else ''))
+    return v
+
+
+def _item_backlog(it, cale, ids):
+    _obiect(it, cale, CAMPURI_ITEM_BACKLOG)
+    id_ = _text(it, 'id', cale, 8, nevid=True)
+    if not _RE_ID_BACKLOG.fullmatch(id_):
+        raise EroareCorp('%s.id: forma E-NNN (1-5 cifre)' % cale)
+    if id_ in ids:
+        raise EroareCorp('%s.id: duplicat in backlog' % cale)
+    ids.add(id_)
+    _text(it, 'zona', cale, 40, nevid=True)
+    _text(it, 'titlu', cale, 200, nevid=True)
+    _text(it, 'descriere', cale, 400)
+    if 'creat' not in it:
+        raise EroareCorp('%s.creat: lipseste' % cale)
+    if it['creat'] is not None and (not isinstance(it['creat'], str) or _data(it['creat']) is None):
+        raise EroareCorp('%s.creat: AAAA-LL-ZZ sau null' % cale)
+    _intreg(it, 'varsta_zile', cale, nullabil=True)
+    etichete = _lista(it, 'etichete', cale, MAX_ETICHETE_BACKLOG)
+    for ix, e in enumerate(etichete):
+        if not isinstance(e, str) or not e.strip() or len(e) > 40:
+            raise EroareCorp('%s.etichete[%d]: text nevid, maximum 40 de caractere' % (cale, ix))
+    if not isinstance(it.get('asteapta_ion'), bool):
+        raise EroareCorp('%s.asteapta_ion: trebuie sa fie true sau false' % cale)
+    if 'masina' not in it or (it['masina'] is not None and it['masina'] not in MASINI_BACKLOG):
+        raise EroareCorp('%s.masina: una din %s sau null' % (cale, '|'.join(MASINI_BACKLOG)))
+    if 'repo' not in it or (it['repo'] is not None and it['repo'] not in REPO_BACKLOG):
+        raise EroareCorp('%s.repo: %s sau null' % (cale, '|'.join(REPO_BACKLOG)))
+
+
+def _backlog(b, cale):
+    """Blocul `backlog` (contractul v1.3): campurile exacte, cel mult MAX_BACKLOG de itemi cu id-uri unice, `total` cel putin cat
+    lista (e numarul real, lista poate fi taiata), `asteapta_ion` cel mult `total`."""
+    _obiect(b, cale, CAMPURI_BACKLOG)
+    _generat(b.get('generat'), '%s.generat' % cale)
+    total = _intreg(b, 'total', cale)
+    asteapta = _intreg(b, 'asteapta_ion', cale)
+    _intreg(b, 'cel_mai_vechi_zile', cale)
+    ids = set()
+    itemi = _lista(b, 'itemi', cale, MAX_BACKLOG)
+    for ix, it in enumerate(itemi):
+        _item_backlog(it, '%s.itemi[%d]' % (cale, ix), ids)
+    if total < len(itemi):
+        raise EroareCorp('%s.total: cel putin cat itemi (%d)' % (cale, len(itemi)))
+    if asteapta > total:
+        raise EroareCorp('%s.asteapta_ion: cel mult total (%d)' % (cale, total))
+
+
 def valideaza_snapshot(corp, sursa_din_cale):
     """Corpul JSON -> snapshot de scris (exact campurile din contract), sau EroareCorp cu calea
     campului. Nu scrie nimic."""
@@ -235,6 +315,11 @@ def valideaza_snapshot(corp, sursa_din_cale):
                     _generat(j[camp], '%s.%s' % (cale, camp))
             _text(j, 'detaliu', cale, 200)
         snap['joburi'] = corp['joburi']
+    if 'backlog' in corp:
+        if sursa_din_cale != 'server':
+            raise EroareCorp('backlog: doar in snapshot-ul sursei server')
+        _backlog(corp['backlog'], 'backlog')
+        snap['backlog'] = corp['backlog']
     return snap
 
 
@@ -462,6 +547,25 @@ def _istoric(randuri):
             for _, _, r in terminate[:MAX_ISTORIC]]
 
 
+def _backlog_vedere(surse, in_asteptare):
+    """Blocul `backlog` al sursei `server`, sau None. Un item cu decizie de inchidere in asteptare (neconsumata, neanulata) nu se mai
+    arata, ca sa nu reapara pana la urmatorul PUT al serverului; `total` si `asteapta_ion` scad cu el, iar `cel_mai_vechi_zile` se
+    reface din ce ramane cand lista e completa. O decizie esuata (consumata cu `fail`) sau anulata nu mai ascunde nimic."""
+    snap = next((s for sursa, s in surse if sursa == 'server'), None)
+    if snap is None or 'backlog' not in snap:
+        return None
+    b = snap['backlog']
+    ascunse = [it for it in b['itemi'] if PREFIX_BACKLOG + it['id'] in in_asteptare]
+    if not ascunse:
+        return b
+    ramase = [it for it in b['itemi'] if PREFIX_BACKLOG + it['id'] not in in_asteptare]
+    iesire = dict(b, itemi=ramase, total=max(len(ramase), b['total'] - len(ascunse)),
+                  asteapta_ion=max(0, b['asteapta_ion'] - sum(1 for it in ascunse if it['asteapta_ion'])))
+    if b['total'] <= len(b['itemi']):
+        iesire['cel_mai_vechi_zile'] = max([it['varsta_zile'] for it in ramase if it['varsta_zile'] is not None] or [0])
+    return iesire
+
+
 def vedere(acum=None):
     acum = acum or _acum()
     surse = _surse()
@@ -498,6 +602,7 @@ def vedere(acum=None):
         'urmeaza': urmeaza,
         'automat': automat,
         'istoric': _istoric(randuri),
+        'backlog': _backlog_vedere(surse, in_asteptare),
     }
 
 
@@ -555,7 +660,8 @@ def get_sistem():
     """Vederea combinata a surselor, cu deciziile in asteptare, `istoric` (ultimele 20 terminate),
     `amanat_pana` pe item si masinile asteptate care n-au raportat. Sesiune sau oricare Bearer valid
     (Torqa pe telefon foloseste tokenul de dispozitiv). Fara surse: tot 200, cu cele trei masini
-    asteptate in starea `fail`."""
+    asteptate in starea `fail`. `backlog` (v1.3): blocul sursei `server` fara itemii cu decizie de
+    inchidere in asteptare, sau `null` cand serverul n-a trimis niciunul."""
     return jsonify(vedere())
 
 
@@ -563,6 +669,25 @@ def _de_la():
     if 'authenticated' in session:
         return 'sesiune'
     return 'dispozitiv' if getattr(g, 'api_token_scope', None) == 'device' else 'masina'
+
+
+def _item_backlog_decizie(id_, optiune, text):
+    """(item, optiuni, None) pentru o decizie pe `backlog:E-NNN`, sau (None, None, raspuns de eroare). Optiunile sunt fixe
+    (OPTIUNI_BACKLOG), nu vin de la sursa. 400: forma id-ului, optiunea, nota peste MAX_NOTA_BACKLOG. 409: itemul nu e (sau nu mai e) in
+    backlog-ul stocat al serverului. `item` are `titlu` si `sursa` ca un item din vedere (titlul poarta id-ul pentru istoric)."""
+    e_id = id_[len(PREFIX_BACKLOG):]
+    if not _RE_ID_BACKLOG.fullmatch(e_id):
+        return None, None, (jsonify({'error': 'corpul.id: backlog:E-NNN'}), 400)
+    if optiune not in OPTIUNI_BACKLOG:
+        return None, None, (jsonify({'error': 'corpul.optiune: una din %s' % '|'.join(OPTIUNI_BACKLOG)}), 400)
+    if len(text) > MAX_NOTA_BACKLOG:
+        return None, None, (jsonify({'error': 'corpul.text: maximum %d de caractere' % MAX_NOTA_BACKLOG}), 400)
+    snap = next((s for sursa, s in _surse() if sursa == 'server'), None)
+    it = next((i for i in (snap or {}).get('backlog', {}).get('itemi', []) if i['id'] == e_id), None)
+    if it is None:
+        return None, None, (jsonify({'error': 'itemul nu mai e in backlog'}), 409)
+    item = {'titlu': ('%s · %s' % (e_id, it['titlu']))[:200], 'sursa': 'server'}
+    return item, {o: {'label': eticheta} for o, eticheta in OPTIUNI_BACKLOG.items()}, None
 
 
 @sistem_bp.route('/api/sistem/decizie', methods=['POST'])
@@ -574,6 +699,8 @@ def post_decizie():
     acelasi `id` se inlocuieste (ultima castiga), deci o cerere retrimisa nu dubleaza nimic, doar
     schimba `uid`/`ts`; daca cea veche e deja preluata de consumator, 409 si nu se scrie nimic.
     Randul nou tine `titlu` si `sursa` ale itemului din vedere.
+    `backlog:E-NNN` (contractul v1.3): optiunile sunt fixe (OPTIUNI_BACKLOG), itemul trebuie sa fie in backlog-ul stocat al serverului;
+    `text` (nota lui Ion) cel mult 400 de caractere; forma id-ului, optiunea sau nota gresite dau 400, itemul absent 409.
     Raspuns 201: {ok, uid}."""
     corp, eroare = _corp_json(16 * 1024)
     if eroare:
@@ -588,10 +715,15 @@ def post_decizie():
     except EroareCorp as e:
         logger.warning('Sistem: decizie respinsa: %s', e)
         return jsonify({'error': str(e)}), 400
-    item = next((it for it in vedere()['itemi'] if it['id'] == id_), None)
-    optiuni = {o['id']: o for o in item['optiuni']} if item else {}
-    if optiune not in optiuni:
-        return jsonify({'error': 'itemul sau opțiunea nu mai există'}), 409
+    if id_.startswith(PREFIX_BACKLOG):
+        item, optiuni, eroare = _item_backlog_decizie(id_, optiune, text)
+        if eroare:
+            return eroare
+    else:
+        item = next((it for it in vedere()['itemi'] if it['id'] == id_), None)
+        optiuni = {o['id']: o for o in item['optiuni']} if item else {}
+        if optiune not in optiuni:
+            return jsonify({'error': 'itemul sau opțiunea nu mai există'}), 409
     acum = _acum()
     rand = {'uid': secrets.token_hex(6), 'ts': _z(acum), 'id': id_, 'optiune': optiune,
             'label': optiuni[optiune]['label'], 'text': text, 'de_la': _de_la(),

@@ -286,7 +286,7 @@ class Sistem(CuAplicatia):
         j = self.citeste()
         # nicio sursa n-a raportat: cele trei masini asteptate apar in `fail`, restul listelor e gol
         self.assertEqual(j, {'generat': '2026-11-17T08:12:00Z', 'numar': 0, 'itemi': [], 'urmeaza': [],
-                             'automat': [], 'istoric': [],
+                             'automat': [], 'istoric': [], 'backlog': None,
                              'masini': [{'sursa': s, 'masina': '', 'ultima': None, 'vechime_ore': None,
                                          'stare': 'fail', 'detaliu': 'never reported', 'joburi': []}
                                         for s in ('ionpc', 'pc-job', 'server')]})
