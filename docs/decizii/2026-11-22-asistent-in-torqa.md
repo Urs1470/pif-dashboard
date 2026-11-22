@@ -5,7 +5,7 @@ laptop-server), un fir de chat cu asistentul (mesajele lui Ion devin taskuri în
 vin înapoi în fir) și notificări push native prin FCM. pif-dashboard e doar **depozitul și poșta**: stochează
 registrul, acțiunile, firul și tokenurile și trimite push-ul. Nu rulează LLM și nu creează taskuri.
 Codul: `blueprints/asistent.py` (rutele), `blueprints/fcm.py` (transportul FCM, doar bibliotecă standard). v1.1 (aditiv: `ref`, `tinta`,
-`alegere`, întrebări cu opțiuni, prezența mașinilor): secțiunea „v1.1” mai jos.
+`alegere`, întrebări cu opțiuni, prezența mașinilor): secțiunea „v1.1” mai jos. v1.2 (aditiv: detaliile unui mesaj al asistentului, `are_detalii`): secțiunea „v1.2”.
 
 Trei părți vorbesc prin pif-dashboard (fișiere ca `blueprints/sistem.py`, fără tabele, fără migrare):
 - **asistentul** de pe laptop-server (`tools/asistent/atentie.py` în Knowledge), cu tokenul de MAȘINĂ;
@@ -23,6 +23,7 @@ pif-dashboard rulează pe același laptop-server ca asistentul (gunicorn, 127.0.
 | `fir.jsonl` | mesajele firului (Ion și asistentul) | atomic, max 500 (cad întâi cele terminate) |
 | `push.json` | tokenurile FCM ale dispozitivelor, drepturi 600 | atomic, max 20 |
 | `prezenta.json` | ultima raportare a fiecărei mașini (v1.1) | atomic |
+| `detalii/<id>.md` | detaliile (Markdown) unui mesaj al asistentului, un fișier per mesaj (v1.2) | atomic, drepturi 600; cade cu mesajul |
 | `asistent.lock` | doar blocarea (fcntl): doi workeri nu rescriu deodată | — |
 
 Ca la `/api/sistem`: fișierele nu intră în backup, nu au schemă; registrul se reface la fiecare rulare a
@@ -212,6 +213,39 @@ coada și închiderea deciziei în ledger sunt ale asistentului. Push-ul FCM al 
 serviciul nativ Android trebuie să-l cunoască înainte ca asistentul să ceară `push` pe ele.
 
 Rollback: `git revert` al commitului v1.1; `prezenta.json` se poate șterge. Câmpurile deja scrise în `fir.jsonl` rămân inofensive (v1 le ignoră).
+
+## v1.2 (2026-11-22, aditiv): detaliile unui mesaj al asistentului
+
+Ion: când deschide un rezultat în Torqa vrea să vadă și răspunsul lui Claude, nu doar rezumatul din mesaj și calea livrabilului din vault
+(pe care Torqa nu o poate citi). Contractul și ce pune asistentul în detalii: Knowledge, `tools/asistent/atentie.py`. Două rute noi (a douăsprezecea
+și a treisprezecea), fără schemă și fără migrare; un Torqa vechi ignoră `are_detalii`.
+
+- **`POST /api/asistent/fir`** (mesajul asistentului) primește `detalii`, opțional, `null` = lipsă: text Markdown, **1–65 536 de caractere după strip**
+  (se stochează fără spațiile de la capete), fără surogate singure (400 `corpul.detalii`, ca la orice câmp). La mesajul lui Ion câmpul nu există
+  (400 „câmp necunoscut”). Corpul acestei rute are plafon de 1 MiB când vine cu token de mașină (65 536 de caractere pot ajunge la ~786 KB scăpate în JSON);
+  mesajul lui Ion (sesiune sau dispozitiv) rămâne la 32 KB.
+- **`PUT /api/asistent/fir/<id>/detalii`** `{"detalii": "…" | null}` → 200 `{"ok", "id", "are_detalii"}`. Token de mașină sau sesiune; dispozitivul 403; fără
+  autentificare 401. Mesaj inexistent (și unul scos din fir la plafon) → 404; mesajul lui Ion → 409; corp invalid (cheia lipsește, câmp în plus, tip greșit,
+  gol după strip, peste limită, surogat) → 400 cu calea; corp peste 1 MiB → 413. `null` șterge fișierul (200 și când nu exista, dar mesajul trebuie să existe).
+  **Idempotent:** aceeași cerere de două ori lasă același fișier (doar `ts` avansează).
+- **`GET /api/asistent/fir/<id>/detalii`** (sesiune, token de dispozitiv sau de mașină) → 200 `{"id", "detalii", "ts"}`; `ts` = momentul scrierii, după ceasul
+  aplicației (e data modificării fișierului, pusă la scriere). 404 când mesajul nu e în fir sau n-are detalii; 500 la un fișier care nu se poate citi.
+- **`GET /api/asistent` și `fir/noi`:** fiecare mesaj are `are_detalii: true|false` (o singură listare a directorului `detalii/` pe cerere). Mesajele
+  scrise înainte de v1.2 și cele ale lui Ion dau `false`. Detaliile nu intră în `fir.jsonl`, deci `GET`-ul rămâne mic.
+- **Fișierul:** `detalii/<id>.md`, UTF-8, scris atomic (aceeași cale ca firul: tmp, fsync, rename; drepturi 600). Id-ul trebuie să fie `m_<6–16 cifre hex>`
+  (altfel 404 în rută și `ValueError` în funcțiile de disc), deci numele nu poate ieși din `detalii/`.
+- **Plafonul de 500 și cursa:** fișierul unui mesaj se scrie și se șterge **doar sub aceeași blocare ca firul** (`_blocat()`), iar PUT-ul își caută mesajul în
+  fir sub acea blocare. După fiecare scriere a firului (`_scrie_fir`, singurul loc unde un mesaj iese din fir: plafonul), se șterg fișierele al căror mesaj nu mai
+  e în fir. Deci: PUT înainte de scrierea care scoate mesajul → fișierul e șters de ea; PUT după → 404, nimic scris. Nu poate rămâne fișier orfan nici dacă
+  procesul se oprește între fișier și fir (la `POST` cu `detalii` fișierul se scrie întâi; dacă scrierea firului pică, fișierul se scoate și răspunsul e 500 fără urme),
+  fiindcă următoarea scriere a firului mătură orice fișier fără mesaj. O ștergere care pică (permisiuni) nu strică scrierea firului: se loghează și se reia la următoarea.
+  Fișierele care nu se potrivesc cu `m_<hex>.md` (de exemplu un `.tmp` rămas) nu se ating.
+- **Backup:** `uploads/asistent/` nu intră în backup azi (nici `fir.jsonl`, `registru.json`, `push.json`): `/api/backup` e doar tabele din baza SQLite, iar
+  `backup_db.py` copiază doar `pif_dashboard.db`. Nu l-am schimbat: detaliile se pot reface (asistentul le completează din livrabilele din vault cu
+  `atentie.py detalii --completeaza`), deci pierderea lor costă o rulare, nu date. Ce face copia de pe disc a serverului, dincolo de scripturile din repo, e neverificat.
+
+Rollback: `git revert` al commitului v1.2; fișierele din `detalii/` se pot șterge (`rm -r uploads/asistent/detalii`), iar `are_detalii` dispare din răspuns.
+Mesajele cu `detalii` deja scrise rămân valide pentru v1.1 (câmpul nu stă în `fir.jsonl`).
 
 ## Ce nu intră
 
