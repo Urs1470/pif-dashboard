@@ -40,6 +40,7 @@ from blueprints.echipa import echipa_bp
 from blueprints.materiale import materiale_bp
 from blueprints.mail_lot import mail_lot_bp
 from blueprints.sistem import sistem_bp
+from blueprints.asistent import asistent_bp
 from blueprints.torqa_web import torqa_web_bp, SesiuneFaraStatice, CSP_TORQA, PREFIX_URL
 
 app.register_blueprint(projects_bp)
@@ -54,6 +55,7 @@ app.register_blueprint(echipa_bp)
 app.register_blueprint(materiale_bp)
 app.register_blueprint(mail_lot_bp)
 app.register_blueprint(sistem_bp)
+app.register_blueprint(asistent_bp)
 app.register_blueprint(torqa_web_bp)
 
 # Fisierele statice ale Torqa web (/torqa/<fisier>) nu citesc si nu scriu sesiunea: altfel
