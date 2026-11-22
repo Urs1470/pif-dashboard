@@ -105,6 +105,8 @@ TINTE = ('auto',) + IDS_MASINI
 TIPURI_REF = ('item', 'decizie', 'verificare', 'job', 'istoric')
 MODURI_REF = ('discuta', 'raspuns')
 BUTOANE = ('claude', 'gata', 'amana', 'ignora', 'deschide')
+BUTOANE_ACTIUNE = ACTIUNI_ITEM                    # butoanele care sunt actiuni (`deschide` doar deschide)
+REPETARE_TERMINALA = {'gata': 'gata', 'ignorat': 'ignora'}   # stare de registru -> actiunea care o repeta fara efect nou
 PRIORITATI = ('urgent', 'normal', 'silent')
 SURSE_MESAJ = ('scris', 'dictat')
 STARI_MESAJ = ('preluat', 'gata', 'eroare')
@@ -623,6 +625,16 @@ def _in_asteptare(r):
 
 def _citeste_fir(strict=False):
     return _citeste_jsonl(F_FIR, 'id', strict)
+
+
+def _butoane_in_fir(item_id):
+    """Butoanele cu care mesajele asistentului din fir poarta `item_id` (reuniunea, in ordinea `BUTOANE`), sau None daca
+    niciun mesaj nu-l poarta. Un fir ilizibil (`_citeste_fir` ignora liniile stricate) se comporta ca un fir fara itemul."""
+    gasite = [r for r in _citeste_fir() if r.get('cine') == 'asistent' and r.get('item_id') == item_id]
+    if not gasite:
+        return None
+    toate = {b for r in gasite for b in (r.get('butoane') if isinstance(r.get('butoane'), list) else [])}
+    return [b for b in BUTOANE if b in toate]
 
 
 def _intrebare_deschisa(r):
@@ -1185,10 +1197,14 @@ def get_detalii(id_):
 @asistent_bp.route('/api/asistent/actiune', methods=['POST'])
 @login_required
 def post_actiune():
-    """Ion alege o actiune pe un item (din pagina sau din notificare). Itemul trebuie sa existe in
-    registru (404 altfel), iar actiunea sa fie in `item.actiuni` (`nu_util` e mereu permis; altfel 400).
-    `zile` (1-31, implicit 1) doar la `amana`. O a doua actiune pe acelasi item cat prima asteapta: 409,
-    deci o cerere retrimisa nu dubleaza nimic. Raspuns 201: {uid}."""
+    """Ion alege o actiune pe un item (din pagina, din notificare sau din butoanele unui mesaj din fir). Itemul trebuie
+    sa existe in registru SAU sa fie referit (`item_id`) de un mesaj al asistentului din fir (404 altfel): un rezultat
+    Claude ramane in fir, cu butoanele lui, si dupa ce taskul Torqa s-a inchis si itemul a iesit din registru. Actiunea
+    trebuie sa fie in `item.actiuni` (registru) sau in `butoane` ale mesajelor din fir (`nu_util` e mereu permis;
+    altfel 400). `zile` (1-31, implicit 1) doar la `amana`. O a doua actiune pe acelasi item cat prima asteapta: 409,
+    deci o cerere retrimisa nu dubleaza nimic; dupa consum, aceeasi actiune terminala pe un item deja `gata`/`ignorat`
+    si referit din fir se accepta din nou (asistentul o aplica idempotent), ca un dublu-tap pe Done sa nu dea eroare.
+    Raspuns 201: {uid}."""
     corp, eroare = _corp_json(MAX_CORP)
     if eroare:
         return eroare
@@ -1208,14 +1224,20 @@ def post_actiune():
         return _eroare(400, str(e))
     registru = _citeste_registru()
     item = next((it for it in registru['items'] if it['id'] == item_id), None) if registru else None
+    din_fir = _butoane_in_fir(item_id)                  # None = niciun mesaj al asistentului nu-l poarta
     if item is None:
-        return _eroare(404, 'itemul nu exista in registru')
-    if not _activ(item, _acum()):
-        # Gata, ignorat, la_claude sau amanat in viitor: o a doua apasare pe butonul din notificare
-        # (dupa ce asistentul a preluat prima actiune) nu trebuie sa creeze un al doilea task.
-        return _eroare(409, 'itemul nu e activ (stare: %s)' % item['stare'])
-    if actiune != 'nu_util' and actiune not in item['actiuni']:
-        return _eroare(400, 'corpul.actiune: itemul nu permite %s (permise: %s)' % (actiune, ', '.join(item['actiuni']) or 'niciuna'))
+        if din_fir is None:
+            return _eroare(404, 'itemul nu exista in registru si nu e referit de niciun mesaj din fir')
+        permise = [b for b in BUTOANE_ACTIUNE if b in din_fir]
+    else:
+        permise = item['actiuni']
+        repetare = din_fir is not None and REPETARE_TERMINALA.get(item['stare']) == actiune
+        if not repetare and not _activ(item, _acum()):
+            # Gata, ignorat, la_claude sau amanat in viitor: o a doua apasare pe butonul din notificare
+            # (dupa ce asistentul a preluat prima actiune) nu trebuie sa creeze un al doilea task.
+            return _eroare(409, 'itemul nu e activ (stare: %s)' % item['stare'])
+    if actiune != 'nu_util' and actiune not in permise:
+        return _eroare(400, 'corpul.actiune: itemul nu permite %s (permise: %s)' % (actiune, ', '.join(permise) or 'niciuna'))
     rand = {'uid': secrets.token_hex(6), 'ts': _z(_acum()), 'item_id': item_id, 'actiune': actiune,
             'zile': zile, 'din': din, 'stare': 'asteapta', 'consumat': None, 'rezultat': None, 'mesaj': None}
     try:

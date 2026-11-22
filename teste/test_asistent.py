@@ -9,6 +9,7 @@ Ce se pazeste, tacut daca se strica:
     `POST /fir`) si trece pe rutele Torqa; fara autentificare: 401;
   - actiunea: itemul trebuie sa existe (404), actiunea sa fie a lui (400), `nu_util` mereu permis, a doua
     actiune cat prima asteapta da 409, consumul: 404 necunoscut, 409 a doua oara; asteapta -> consumat;
+    un item referit de un mesaj al asistentului din fir e actionabil si fara registru (clasa `ActiuniDinFir`);
   - firul: mesajul lui Ion intra `nou` (`cine` forțat `ion`), a 31-a pe ora da 429, ciclul nou ->
     preluat -> gata|eroare si tranzitiile interzise (409), 404 necunoscut, aceeasi stare = 200 fara rescriere;
   - push: fara cheie `fcm_neconfigurat`, fara tokenuri `fara_tokenuri`, o eroare FCM (si o exceptie) nu da 5xx,
@@ -1192,6 +1193,98 @@ class ItemiAscunsi(Baza):
     def test_itemul_necunoscut_ramane_404(self):
         self.pune_ok(item('a:1', stare='gata'))
         self.assertEqual(self.actiune('nu:exista').status_code, 404)
+
+
+class ActiuniDinFir(Baza):
+    """Un rezultat Claude ramane in fir cu butoanele lui dupa ce taskul Torqa s-a inchis si itemul a iesit din registru:
+    Done, Tomorrow si Ignore nu mai dau 404 (jurnalul din 2026-11-22: 10 x 404 pe `claude:<task>`). Un item necunoscut
+    si in registru, si in fir ramane 404."""
+
+    ID = 'claude:09ce6bf2-1be3-4bd9-9d57-3c9b2024667d'
+
+    def setUp(self):
+        super().setUp()
+        self.pune_ok(item('torqa:t1'))
+        self.mesaj = self.scrie_asistent(tip='rezultat', item_id=self.ID, butoane=['gata', 'amana', 'ignora', 'deschide']).get_json()['id']
+
+    def test_item_din_fir_fara_registru_primeste_actiunile_din_butoane(self):
+        for actiune, extra in (('gata', {}), ('amana', {'zile': 2}), ('ignora', {}), ('nu_util', {})):
+            with self.subTest(actiune=actiune):
+                r = self.actiune(self.ID, actiune, din='pagina', **extra)
+                self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+                self.consuma(r.get_json()['uid'])
+        self.assertEqual([a['actiune'] for a in self.randuri('actiuni.jsonl')], ['gata', 'amana', 'ignora', 'nu_util'])
+
+    def test_actiunea_trebuie_sa_fie_printre_butoanele_mesajului(self):
+        self.scrie_asistent(tip='rezultat', item_id='claude:esuat', butoane=['gata', 'amana', 'deschide'])
+        self.assertEqual(self.actiune('claude:esuat', 'amana').status_code, 201)
+        r = self.actiune('claude:esuat', 'ignora')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('permise: gata, amana', r.get_json()['error'])
+        r = self.actiune('claude:esuat', 'claude')
+        self.assertEqual(r.status_code, 400, '`claude` nu e printre butoanele rezultatului')
+        self.assertEqual(self.actiune('claude:esuat', 'deschide').status_code, 400, '`deschide` nu e actiune')
+
+    def test_mesaj_fara_butoane_actiune_primeste_doar_nu_util(self):
+        self.scrie_asistent(tip='info', item_id='x:fara', butoane=['deschide'])
+        self.assertEqual(self.actiune('x:fara', 'gata').status_code, 400)
+        self.assertEqual(self.actiune('x:fara', 'nu_util').status_code, 201)
+
+    def test_item_necunoscut_nici_in_registru_nici_in_fir_ramane_404(self):
+        r = self.actiune('claude:nu-exista', 'gata')
+        self.assertEqual(r.status_code, 404)
+        self.assertIn('fir', r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'actiuni.jsonl')))
+        # un mesaj al lui Ion cu acelasi text nu face itemul cunoscut: doar mesajele asistentului il poarta
+        self.scrie_ion('claude:nu-exista')
+        self.assertEqual(self.actiune('claude:nu-exista', 'gata').status_code, 404)
+
+    def test_aceeasi_cerere_de_doua_ori_cat_prima_asteapta_da_409_apoi_se_accepta_din_nou(self):
+        uid = self.actiune(self.ID, 'gata').get_json()['uid']
+        self.assertEqual(self.actiune(self.ID, 'gata').status_code, 409)
+        self.assertEqual(len(self.randuri('actiuni.jsonl')), 1)
+        self.consuma(uid)
+        self.assertEqual(self.actiune(self.ID, 'gata').status_code, 201, 'dublu-tap dupa consum: asistentul o aplica idempotent')
+
+    def test_item_in_registru_are_prioritate_si_isi_pastreaza_regulile(self):
+        # acelasi id si in registru (cu `gata` doar), si in fir (cu `amana`): registrul decide
+        self.pune_ok(item('torqa:t1'), item(self.ID, sursa='claude', actiuni=['gata']))
+        self.assertEqual(self.actiune(self.ID, 'amana').status_code, 400)
+        self.assertEqual(self.actiune(self.ID, 'gata').status_code, 201)
+
+    def test_repetarea_unei_actiuni_terminale_pe_item_din_fir_nu_da_409(self):
+        self.pune_ok(item('torqa:t1'), item(self.ID, sursa='claude', actiuni=['gata', 'amana', 'ignora'], stare='gata'))
+        self.assertEqual(self.actiune(self.ID, 'gata').status_code, 201, 'Done apasat a doua oara')
+        self.pune_ok(item('torqa:t1'), item(self.ID, sursa='claude', actiuni=['gata', 'amana', 'ignora'], stare='ignorat'),
+                     generat='2026-11-22T07:40:00Z')
+        uid = self.randuri('actiuni.jsonl')[0]['uid']
+        self.consuma(uid)
+        self.assertEqual(self.actiune(self.ID, 'ignora').status_code, 201)
+        # alta actiune pe un item inchis ramane 409, ca pana acum
+        self.consuma(self.randuri('actiuni.jsonl')[1]['uid'])
+        self.assertEqual(self.actiune(self.ID, 'amana').status_code, 409)
+
+    def test_itemul_inchis_fara_mesaj_in_fir_ramane_409_si_nu_se_accepta_repetarea(self):
+        self.pune_ok(item('a:gata', stare='gata'))
+        self.assertEqual(self.actiune('a:gata', 'gata').status_code, 409)
+
+    def test_fara_registru_deloc_itemul_din_fir_merge(self):
+        os.remove(os.path.join(self.dir, 'registru.json'))
+        self.assertEqual(self.actiune(self.ID, 'gata').status_code, 201)
+
+    def test_fara_token_401_si_dispozitivul_cu_token_bun_trece(self):
+        self.assertEqual(self.client.post('/api/asistent/actiune', json={'item_id': self.ID, 'actiune': 'gata'}).status_code, 401)
+        self.assertEqual(self.actiune(self.ID, 'gata', token=DEVICE).status_code, 201)
+
+    def test_corpul_se_valideaza_la_fel_pe_calea_din_fir(self):
+        for corp, camp in (({'item_id': self.ID}, 'corpul.actiune'),
+                           ({'item_id': self.ID, 'actiune': 'gata', 'zile': 2}, 'corpul.zile'),
+                           ({'item_id': self.ID, 'actiune': 'amana', 'zile': 32}, 'corpul.zile'),
+                           ({'item_id': self.ID, 'actiune': 'gata', 'extra': 1}, 'corpul.extra')):
+            with self.subTest(corp=corp):
+                r = self.client.post('/api/asistent/actiune', json=corp, headers=self.h(DEVICE))
+                self.assertEqual(r.status_code, 400)
+                self.assertIn(camp, r.get_json()['error'])
 
 
 class Via(Baza):

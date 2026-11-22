@@ -93,6 +93,12 @@ sunt obligatorii; `termen`, `prima_data`, `amanat_pana`, `link` pot lipsi sau fi
    altfel 400). Itemul trebuie să fie **activ** (aceleași reguli ca în `GET`: `nou`, `vazut` sau `amanat` expirat), altfel 409: a doua apăsare
    pe butonul din notificare, după ce asistentul a trecut itemul la `la_claude`, nu face al doilea task. `zile` doar la `amana` (implicit 1; altfel 400). `din` implicit `pagina`. O a doua acțiune pe același item cât
    prima așteaptă → 409 (deci o cerere retrimisă nu dublează nimic).
+   **Itemii din fir (2026-11-22, aditiv):** un `item_id` purtat de un mesaj al asistentului din fir (`rezultat`, `alerta`) e acționabil și când
+   nu mai e în registru (taskul Torqa închis scoate itemul din registru, dar mesajul rămâne cu butoanele lui; 10 × 404 pe `claude:<task>` în
+   jurnalul din 22.11). Acțiunile permise sunt reuniunea `butoane` a mesajelor care îl poartă, fără `deschide` (`nu_util` mereu); itemul nu mai
+   are stare de verificat. 404 rămâne doar când nici registrul, nici firul nu-l știu. Un item din registru își păstrează regulile, cu o
+   excepție: dacă e și în fir și e deja `gata` (sau `ignorat`), aceeași acțiune (`gata`, respectiv `ignora`) se acceptă din nou, ca un
+   dublu-tap pe Done să nu dea 409; asistentul o aplică idempotent. Retrimitere: cât prima așteaptă → 409; după consum → 201 nou.
 9. `POST /api/asistent/fir` (mesaj al lui Ion; cu sesiune sau token de dispozitiv, `cine` e forțat `ion`)
    `{"text": "≤2000, nevid", "sursa": "scris|dictat (implicit scris)", "raspuns_la": "opțional"}` → 201 `{"id"}`. Mesajul primește
    `stare: "nou"`. Limită: 30 de mesaje pe oră → 429 cu `Retry-After`. Cu `cine: "asistent"` sesiunea și dispozitivul primesc 403;
