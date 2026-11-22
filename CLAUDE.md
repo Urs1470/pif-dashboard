@@ -52,6 +52,8 @@ blueprints/
   echipa.py         # planul echipei din Gantt-ul SRP (snapshot-fisier, /api/echipa, cheia `echipa` din /api/calendar); o data pe zi (L-V 08:00, POST /api/echipa/sincronizeaza) citeste si scrie Gantt-ul, doar pe etapele lui Ion
   app_update.py     # versiunea si APK-ul aplicatiei Android (canale: pif, torqa)
   torqa_web.py      # Torqa web (build Angular) la /torqa/: urcare, versiuni, servire (fisierele publice, `.map` cu login)
+  asistent.py       # /api/asistent/*: registrul asistentului, actiunile, firul de chat si tokenurile FCM (fisiere sub uploads/asistent/)
+  fcm.py            # transportul FCM HTTP v1 (JWT RS256 cu biblioteca standard), folosit de asistent.py; nu are rute
 
 templates/login.html  static/login.css   # singura pagina randata de server (PIN)
 static/service-worker.js                 # worker care se retrage singur: scapa browserele
@@ -144,6 +146,7 @@ Cerinte, o singura data, doar pe masina de dezvoltare (NU in `requirements.txt`)
 | `PIF_DB_PATH` | nu | `pif_dashboard.db` | baza alternativa; o folosesc probele |
 | `PIF_RATE_LIMIT` | nu | `60` | cereri/minut per IP pe `/api/*` |
 | `PIF_UPLOAD_FOLDER` | nu | `uploads/` langa cod | directorul fisierelor urcate (APK-uri, build Torqa web, anexe); relativ = fata de directorul de lucru; goala = implicitul |
+| `FCM_SERVICE_ACCOUNT_FILE` | nu | — | JSON-ul contului de serviciu Firebase (drepturi 600, in afara repo-ului) pentru push-ul din `/api/asistent`; fara el totul merge, cu `push.motiv = fcm_neconfigurat` (`docs/decizii/2026-11-22-asistent-in-torqa.md`) |
 | `PIF_RATE_DB` | nu | `<PIF_DB_PATH>.ratelimit` | fisierul SQLite al limitei de PIN (5 incercari / 5 min / IP), comun worker-ilor si pastrat peste redeploy; separat de baza aplicatiei, deci fara schema si fara migrare (`ratelimit.py`) |
 | `PIF_TRUSTED_PROXIES` | nu | `127.0.0.1,::1` | adrese sau retele CIDR de la care se crede `CF-Connecting-IP` (cloudflared); de la oricine altcineva, IP-ul clientului e adresa socketului. Daca cloudflared nu ajunge la gunicorn pe loopback, adresa lui se adauga aici; altfel toti clientii prin tunel primesc aceeasi adresa, deci aceeasi limita |
 

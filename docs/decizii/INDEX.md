@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-11-22
+
+- [2026-11-22 Asistentul în Torqa: `/api/asistent` v1](2026-11-22-asistent-in-torqa.md) — registrul asistentului proactiv, acțiunile lui Ion pe itemi, firul de chat și tokenurile FCM stau în fișiere sub `uploads/asistent/` (fără tabelă, fără migrare); zece rute (șase ale asistentului, cu 403 pentru tokenul de dispozitiv; patru ale Torqa), mesajele lui Ion devin `nou` → `preluat` → `gata|eroare` (30 pe oră), push FCM HTTP v1 doar cu biblioteca standard (JWT RS256 semnat cu `pow`, fără dependență nouă), cu plafon de 10 s și erori în `push.erori`, nu 5xx; `FCM_SERVICE_ACCOUNT_FILE` lipsă = `motiv: fcm_neconfigurat`. Codul: `blueprints/asistent.py`, `blueprints/fcm.py`.
+
 ## 2026-11-18
 
 - [2026-11-18 Planul echipei din Gantt (SRP), doar citit](2026-11-18-gantt-srp.md) — serverul citește Gantt-ul „Project Plan” fără login (planId + secret în `uploads/echipa/sursa.json`, prin `PUT /api/echipa/sursa`, interzis tokenului de dispozitiv) și ține un snapshot normalizat la cel mult 15 minute, fără tabelă și în afara backup-ului; `GET /api/echipa` și cheia aditivă `echipa` din `/api/calendar` dau activitățile (capăt inclusiv) și avertizările `perioada_diferita`, `lipseste_in_dashboard`, `lipseste_in_srp`; secretul nu iese în răspuns, log sau erori. Amendament (brief 3, schema v47): citirea și scrierea cu Gantt-ul se fac o dată pe zi, L–V la 08:00, din jobul `POST /api/echipa/sincronizeaza` (sincronizare în trei căi față de o bază ținută în `implementari`: `srp_activitate_id`, `srp_sincron_start`, `srp_sincron_end`; scrie doar etapele lui Ion, cu protecție și conflict); citirile nu mai fac rețea; `echipa` primește `sincronizare` și `de_trimis`; `POST /api/echipa/trimite` rămâne imediat.
