@@ -16,7 +16,12 @@
 #   actiuni.jsonl    actiunile lui Ion (asteapta -> consumat), atomic, max 500 de randuri
 #   fir.jsonl        mesajele firului, atomic, cu blocare, max 500
 #   push.json        tokenurile FCM, atomic, drepturi 600
+#   prezenta.json    ultima raportare a fiecarei masini (v1.1), atomic
 #   asistent.lock    doar blocarea (fcntl): doi workeri nu rescriu deodata
+#
+# v1.1 (decizia 2026-11-22-asistent-in-torqa.md, sectiunea v1.1): `ref`, `tinta`, `alegere` pe mesajul lui Ion;
+# `intrebare`/`asteapta` cu `optiuni`, `masina` si `ref` pe mesajul asistentului; raspunsul lui Ion la o intrebare
+# (pus pe intrebare in ACEEASI scriere cu mesajul lui Ion); prezenta masinilor (`prezenta.json`, `masini` in GET).
 #
 # Validarea e STRICTA: camp necunoscut, lipsa sau tip gresit da 400 cu calea campului, iar starea
 # veche ramane. Trimiterea FCM nu schimba niciodata statusul raspunsului: o eroare intra in `push.erori`.
@@ -54,6 +59,7 @@ F_REGISTRU = 'registru.json'
 F_ACTIUNI = 'actiuni.jsonl'
 F_FIR = 'fir.jsonl'
 F_PUSH = 'push.json'
+F_PREZENTA = 'prezenta.json'
 F_BLOCARE = 'asistent.lock'
 
 MAX_CORP_REGISTRU = 1024 * 1024
@@ -67,6 +73,9 @@ MAX_TOKENURI = 20
 FIR_IN_VEDERE = 100
 MESAJE_PE_ORA = 30
 MAX_ZILE = 31
+MAX_IDLE_S = 10 ** 9                              # ~31 de ani: o garda de tip, nu o regula de produs
+ONLINE_S = 180                                    # o masina e online daca a raportat in ultimele 180 s
+ACTIV_IDLE_S = 900                                # activ = online, `activ: true` si ultima intrare acum cel mult 900 s
 DATE_PUSH_OCTETI = 4000                           # `data` din mesajul FCM are 4096 de octeti pe tot; textul se taie sub asta
 
 SURSE_ITEM = ('torqa', 'mail', 'sistem', 'server', 'netdata', 'vault', 'backlog', 'finante', 'ci', 'claude', 'pagina')
@@ -78,7 +87,13 @@ ACTIUNI_ITEM = ('gata', 'amana', 'ignora', 'claude')
 ACTIUNI_POST = ACTIUNI_ITEM + ('nu_util',)
 DIN = ('pagina', 'notificare')
 VIA = ('sesiune', 'dispozitiv', 'masina')
-TIPURI_ASISTENT = ('brief', 'alerta', 'raspuns', 'lucreaza', 'rezultat', 'info')
+TIPURI_ASISTENT = ('brief', 'alerta', 'raspuns', 'lucreaza', 'rezultat', 'info', 'intrebare', 'asteapta')
+TIPURI_CU_OPTIUNI = ('intrebare', 'asteapta')
+MASINI = (('server', 'Server'), ('pc-job', 'PC job'), ('ionpc', 'IONPC'))   # ordinea din `masini`
+IDS_MASINI = tuple(m for m, _ in MASINI)
+TINTE = ('auto',) + IDS_MASINI
+TIPURI_REF = ('item', 'decizie', 'verificare', 'job', 'istoric')
+MODURI_REF = ('discuta', 'raspuns')
 BUTOANE = ('claude', 'gata', 'amana', 'ignora', 'deschide')
 PRIORITATI = ('urgent', 'normal', 'silent')
 SURSE_MESAJ = ('scris', 'dictat')
@@ -104,8 +119,11 @@ CAMPURI_PICAT = frozenset(('nume', 'detaliu'))
 CAMPURI_ACTIUNE = frozenset(('item_id', 'actiune', 'zile', 'din'))
 CAMPURI_CONSUMAT = frozenset(('rezultat', 'mesaj'))
 CAMPURI_FIR_ASISTENT = frozenset(('cine', 'tip', 'text', 'titlu', 'item_id', 'task_id', 'link', 'butoane',
-                                  'raspuns_la', 'push'))
-CAMPURI_FIR_ION = frozenset(('cine', 'text', 'sursa', 'raspuns_la'))
+                                  'raspuns_la', 'push', 'optiuni', 'masina', 'ref'))
+CAMPURI_FIR_ION = frozenset(('cine', 'text', 'sursa', 'raspuns_la', 'ref', 'tinta', 'alegere'))
+CAMPURI_REF = frozenset(('tip', 'id', 'titlu', 'sursa', 'masina', 'mod'))
+CAMPURI_OPTIUNE = frozenset(('id', 'eticheta'))
+CAMPURI_PREZENTA = frozenset(('activ', 'idle_s', 'versiune'))
 CAMPURI_PUSH = frozenset(('prioritate',))
 CAMPURI_STARE = frozenset(('stare', 'task_id', 'mesaj'))
 CAMPURI_TOKEN = frozenset(('token', 'platforma', 'aplicatie', 'versiune'))
@@ -356,6 +374,43 @@ def _fara_control(v, cale):
         raise EroareCorp('%s: fara caractere de control' % cale)
 
 
+def _ref(v, cale):
+    """Randul despre care e mesajul (tras in chat sau „Discuss”): {tip, id, titlu, sursa?, masina?, mod?}.
+    `mod` lipsa = `discuta`; `raspuns` (raspunsul liber la o decizie) doar la `tip: decizie`. Se stocheaza cu toate
+    cheile (sursa si masina pot fi null). Campurile optionale lipsesc, nu sunt null."""
+    _obiect(v, cale, CAMPURI_REF)
+    tip = _enum(v, 'tip', cale, TIPURI_REF)
+    id_ = _text(v, 'id', cale, 160, nevid=True)
+    _fara_control(id_, '%s.id' % cale)
+    titlu = _text(v, 'titlu', cale, 140, nevid=True)
+    sursa = _text(v, 'sursa', cale, 40, nevid=True, optional=True)
+    masina = _enum(v, 'masina', cale, IDS_MASINI) if 'masina' in v else None
+    mod = _enum(v, 'mod', cale, MODURI_REF) if 'mod' in v else 'discuta'
+    if mod == 'raspuns' and tip != 'decizie':
+        raise EroareCorp('%s.mod: raspuns doar la tip decizie' % cale)
+    return {'tip': tip, 'id': id_, 'titlu': titlu, 'sursa': sursa, 'masina': masina, 'mod': mod}
+
+
+def _optiuni(corp, cale):
+    """1-4 optiuni {id <=40, eticheta <=60}, cu id-uri unice (`alegere` se potriveste exact pe id)."""
+    lista = _lista(corp, 'optiuni', cale, 4)
+    if not lista:
+        raise EroareCorp('%s.optiuni: minimum 1 optiune' % cale)
+    optiuni, vazute = [], set()
+    for ix, o in enumerate(lista):
+        c = '%s.optiuni[%d]' % (cale, ix)
+        _obiect(o, c, CAMPURI_OPTIUNE)
+        id_ = _text(o, 'id', c, 40, nevid=True)
+        _fara_control(id_, '%s.id' % c)
+        eticheta = _text(o, 'eticheta', c, 60, nevid=True)
+        _fara_control(eticheta, '%s.eticheta' % c)
+        if id_ in vazute:
+            raise EroareCorp('%s.id: duplicat' % c)
+        vazute.add(id_)
+        optiuni.append({'id': id_, 'eticheta': eticheta})
+    return optiuni
+
+
 # Caractere care nu au ce cauta intr-un link: de control (C0, DEL, C1), separatoare de linie si de paragraf,
 # marcajele de directie (bidi) cu care un nume de fisier sau un host se poate rasturna la afisare.
 _LINK_INTERZISE = frozenset(chr(c) for c in (*range(0, 32), *range(127, 160), 0x061C, 0x200E, 0x200F,
@@ -580,7 +635,62 @@ def _mesaj(r):
             'item_id': r.get('item_id'), 'task_id': r.get('task_id'), 'link': r.get('link'),
             'butoane': r.get('butoane') if isinstance(r.get('butoane'), list) else [],
             'raspuns_la': r.get('raspuns_la'), 'stare': r.get('stare'),
-            'stare_detaliu': r.get('stare_detaliu'), 'via': r.get('via')}
+            'stare_detaliu': r.get('stare_detaliu'), 'via': r.get('via'),
+            'ref': r.get('ref') if isinstance(r.get('ref'), dict) else None,
+            'tinta': r.get('tinta') or ('auto' if r.get('cine') == 'ion' else None),
+            'alegere': r.get('alegere'),
+            'optiuni': r.get('optiuni') if isinstance(r.get('optiuni'), list) else [],
+            'masina': r.get('masina'),
+            'raspuns': r.get('raspuns') if isinstance(r.get('raspuns'), dict) else None}
+
+
+# --------------------------------------------------------------------------- prezenta masinilor
+
+def _citeste_prezenta(strict=False):
+    """{id_masina: {ultima, activ, idle_s, versiune}} din `prezenta.json`. Lipsa sau continut care nu se
+    poate citi = nicio masina n-a raportat (fiecare retrimite la un minut, deci nu are rost o copie `.corupt`).
+    `strict` (sub blocare): o eroare de citire a fisierului (permisiuni, disc) se ridica, ca sa nu se rescrie
+    fisierul cu o singura masina."""
+    try:
+        with open(_cale(F_PREZENTA), 'rb') as fh:
+            octeti = fh.read()
+    except FileNotFoundError:
+        return {}
+    except OSError:
+        if strict:
+            raise
+        logger.warning('Asistent: %s nu se poate citi', F_PREZENTA, exc_info=True)
+        return {}
+    try:
+        masini = json.loads(octeti.decode('utf-8')).get('masini')
+        if not isinstance(masini, dict):
+            raise ValueError('forma neasteptata')
+    except (ValueError, AttributeError, RecursionError):
+        logger.warning('Asistent: %s nu se poate citi; se ignora', F_PREZENTA)
+        return {}
+    return {k: v for k, v in masini.items() if k in IDS_MASINI and isinstance(v, dict)}
+
+
+def _masini(acum):
+    """Lista `masini` din GET, mereu in ordinea server, pc-job, ionpc. online = ultima raportare in ultimele
+    ONLINE_S secunde; activ = online, `activ: true` si `idle_s` <= ACTIV_IDLE_S; altfel offline. O masina care n-a
+    raportat niciodata e offline cu `ultima: null`. `idle_min` (minute intregi, rotunjite in jos) doar cand e online:
+    la o masina offline valoarea raportata e veche, deci null."""
+    prezenta = _citeste_prezenta()
+    iesire = []
+    for id_, nume in MASINI:
+        r = prezenta.get(id_) or {}
+        moment = _moment_sau_none(r.get('ultima'))
+        stare, ultima, idle_min = 'offline', None, None
+        if moment is not None:
+            ultima = r['ultima']
+            if (acum - moment).total_seconds() <= ONLINE_S:
+                idle_s = r.get('idle_s')
+                idle_ok = isinstance(idle_s, int) and not isinstance(idle_s, bool) and idle_s >= 0
+                stare = 'activ' if r.get('activ') is True and idle_ok and idle_s <= ACTIV_IDLE_S else 'online'
+                idle_min = idle_s // 60 if idle_ok else None
+        iesire.append({'id': id_, 'nume': nume, 'stare': stare, 'ultima': ultima, 'idle_min': idle_min})
+    return iesire
 
 
 # --------------------------------------------------------------------------- push
@@ -801,14 +911,46 @@ def post_stare(id_):
     return jsonify({'ok': True, 'id': id_, 'stare': stare})
 
 
+@asistent_bp.route('/api/asistent/prezenta/<masina>', methods=['PUT'])
+@login_required
+@_doar_masina
+def put_prezenta(masina):
+    """O masina spune ca e pornita: {activ: bool, idle_s: int >= 0, versiune?: <=40}. Token de masina sau sesiune;
+    dispozitivul primeste 403; masina trebuie sa fie server, pc-job sau ionpc (404). `ultima` o pune serverul.
+    Idempotent: aceeasi cerere de doua ori lasa aceeasi stare (doar `ultima` avanseaza). Raspuns: {ok, masina}."""
+    if masina not in IDS_MASINI:
+        return _eroare(404, 'masina necunoscuta (%s)' % '|'.join(IDS_MASINI))
+    corp, eroare = _corp_json(MAX_CORP)
+    if eroare:
+        return eroare
+    try:
+        _obiect(corp, 'corpul', CAMPURI_PREZENTA)
+        if not isinstance(corp.get('activ'), bool):
+            raise EroareCorp('corpul.activ: trebuie sa fie true sau false')
+        idle_s = _intreg(corp, 'idle_s', 'corpul', 0, MAX_IDLE_S)
+        versiune = _text(corp, 'versiune', 'corpul', 40, nevid=True, optional=True)
+    except EroareCorp as e:
+        return _eroare(400, str(e))
+    rand = {'ultima': _z(_acum()), 'activ': corp['activ'], 'idle_s': idle_s, 'versiune': versiune}
+    try:
+        with _blocat():
+            prezenta = _citeste_prezenta(True)
+            prezenta[masina] = rand
+            _scrie_atomic(F_PREZENTA, _json_bytes({'masini': prezenta}))
+    except OSError:
+        logger.exception('Asistent: scrierea prezentei a esuat pe disc')
+        return _eroare(500, 'Eroare pe disc la salvarea prezentei.')
+    return jsonify({'ok': True, 'masina': masina})
+
+
 # --------------------------------------------------------------------------- rute: Torqa -> backend
 
 @asistent_bp.route('/api/asistent', methods=['GET'])
 @login_required
 def get_asistent():
     """Vederea pentru pagina System: registrul (doar itemii activi), veghea, ultimele 100 de mesaje,
-    actiunile in asteptare si starea push-ului. Sesiune sau orice Bearer valid (inclusiv dispozitivul).
-    Fara registru urcat: `registru.generat = null`, `items = []`, `veghe = null`."""
+    actiunile in asteptare, starea push-ului si `masini` (prezenta, v1.1). Sesiune sau orice Bearer valid
+    (inclusiv dispozitivul). Fara registru urcat: `registru.generat = null`, `items = []`, `veghe = null`."""
     acum = _acum()
     registru = _citeste_registru()
     if registru is None:
@@ -827,6 +969,7 @@ def get_asistent():
         'actiuni_in_asteptare': [{'uid': r['uid'], 'item_id': r.get('item_id'), 'actiune': r.get('actiune')}
                                  for r in _citeste_actiuni() if _in_asteptare(r)],
         'push': {'configurat': fcm.configurat()},
+        'masini': _masini(acum),
     })
 
 
@@ -892,12 +1035,31 @@ def _fir_ion(corp, via):
         raspuns_la = _text(corp, 'raspuns_la', 'corpul', 20, nevid=True, optional=True)
         if raspuns_la is not None and not _RE_MSG.fullmatch(raspuns_la):
             raise EroareCorp('corpul.raspuns_la: id de mesaj (m_...)')
+        ref = _ref(corp['ref'], 'corpul.ref') if 'ref' in corp else None
+        tinta = _enum(corp, 'tinta', 'corpul', TINTE) if 'tinta' in corp else 'auto'
+        alegere = _text(corp, 'alegere', 'corpul', 40, nevid=True, optional=True)
+        if alegere is not None and raspuns_la is None:
+            raise EroareCorp('corpul.alegere: doar impreuna cu raspuns_la')
     except EroareCorp as e:
         return _eroare(400, str(e))
     acum = _acum()
     try:
         with _blocat():
             randuri = _citeste_fir(True)
+            intrebare = None
+            if alegere is not None:
+                # Raspunsul la o intrebare: intrebarea si mesajul lui Ion se scriu impreuna, intr-un singur
+                # `_scrie_fir`, sub aceeasi blocare; nu exista o stare in care una e scrisa fara cealalta.
+                intrebare = next((r for r in randuri if r['id'] == raspuns_la), None)
+                if intrebare is None:
+                    return _eroare(404, 'intrebarea din raspuns_la nu exista')
+                if intrebare.get('cine') != 'asistent' or intrebare.get('tip') not in TIPURI_CU_OPTIUNI:
+                    return _eroare(409, 'mesajul din raspuns_la nu e o intrebare (intrebare sau asteapta)')
+                if intrebare.get('raspuns'):
+                    return _eroare(409, 'intrebarea a primit deja raspuns')
+                ids = [o.get('id') for o in intrebare.get('optiuni') or [] if isinstance(o, dict)]
+                if alegere not in ids:
+                    return _eroare(400, 'corpul.alegere: una din %s' % '|'.join(map(str, ids)))
             recente = sorted(m for m in (_moment_sau_none(r.get('ts')) for r in randuri if r.get('cine') == 'ion')
                              if m is not None and m > acum - timedelta(hours=1))
             if len(recente) >= MESAJE_PE_ORA:
@@ -906,7 +1068,10 @@ def _fir_ion(corp, via):
                 return _eroare(429, 'prea multe mesaje (maxim %d pe ora)' % MESAJE_PE_ORA, **{'Retry-After': max(1, asteapta)})
             rand = {'id': _id_mesaj(randuri), 'ts': _z(acum), 'cine': 'ion', 'tip': 'mesaj', 'titlu': None,
                     'text': text, 'sursa': sursa, 'item_id': None, 'task_id': None, 'link': None,
-                    'butoane': [], 'raspuns_la': raspuns_la, 'stare': 'nou', 'stare_detaliu': None, 'via': via}
+                    'butoane': [], 'raspuns_la': raspuns_la, 'stare': 'nou', 'stare_detaliu': None, 'via': via,
+                    'ref': ref, 'tinta': tinta, 'alegere': alegere}
+            if intrebare is not None:
+                intrebare['raspuns'] = {'optiune': alegere, 'ts': rand['ts']}
             randuri.append(rand)
             _scrie_fir(randuri)
     except OSError:
@@ -936,6 +1101,15 @@ def _fir_asistent(corp):
         raspuns_la = _nul_text(corp, 'raspuns_la', 'corpul', 20)
         if raspuns_la is not None and not _RE_MSG.fullmatch(raspuns_la):
             raise EroareCorp('corpul.raspuns_la: id de mesaj (m_...)')
+        optiuni = []
+        if tip in TIPURI_CU_OPTIUNI:
+            if corp.get('optiuni') is None:
+                raise EroareCorp('corpul.optiuni: obligatoriu la %s' % '|'.join(TIPURI_CU_OPTIUNI))
+            optiuni = _optiuni(corp, 'corpul')
+        elif corp.get('optiuni') is not None:
+            raise EroareCorp('corpul.optiuni: doar la %s' % '|'.join(TIPURI_CU_OPTIUNI))
+        masina = _enum(corp, 'masina', 'corpul', IDS_MASINI) if corp.get('masina') is not None else None
+        ref = _ref(corp['ref'], 'corpul.ref') if corp.get('ref') is not None else None
         prioritate = None
         if corp.get('push') is not None:
             push = _obiect(corp['push'], 'corpul.push', CAMPURI_PUSH)
@@ -947,7 +1121,8 @@ def _fir_asistent(corp):
             randuri = _citeste_fir(True)
             rand = {'id': _id_mesaj(randuri), 'ts': _z(_acum()), 'cine': 'asistent', 'tip': tip, 'titlu': titlu,
                     'text': text, 'sursa': None, 'item_id': item_id, 'task_id': task_id, 'link': link,
-                    'butoane': butoane, 'raspuns_la': raspuns_la, 'stare': None, 'stare_detaliu': None, 'via': None}
+                    'butoane': butoane, 'raspuns_la': raspuns_la, 'stare': None, 'stare_detaliu': None, 'via': None,
+                    'optiuni': optiuni, 'masina': masina, 'ref': ref, 'raspuns': None}
             randuri.append(rand)
             _scrie_fir(randuri)
     except OSError:

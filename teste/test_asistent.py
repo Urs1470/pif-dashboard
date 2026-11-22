@@ -15,6 +15,15 @@ Ce se pazeste, tacut daca se strica:
     ci `erori`; `UNREGISTERED` scoate tokenul din `push.json`; fara `push` in cerere nu se trimite nimic;
   - plafoane: 500 de randuri in fir si in actiuni (cad intai cele terminate; actiunile in asteptare nu cad),
     20 de tokenuri.
+v1.1 (clasele `RefTintaAlegere`, `MesajAsistentV11`, `RaspunsLaIntrebare`, `Prezenta`):
+  - `ref`, `tinta`, `alegere` pe mesajul lui Ion: validare strict, `mod: raspuns` doar la `decizie`, `alegere` doar
+    cu `raspuns_la`, se intorc in `fir/noi` si in GET;
+  - `intrebare`/`asteapta` cer 1-4 `optiuni` (id <= 40, eticheta <= 60, id-uri unice), alte tipuri nu le primesc;
+    `masina` si `ref` pe mesajul asistentului;
+  - raspunsul la o intrebare: 404 / 409 (nu e intrebare, deja raspuns) / 400 (optiune straina); `raspuns` pe
+    intrebare si mesajul lui Ion apar impreuna (un singur `fir.jsonl`), niciodata una fara cealalta;
+  - prezenta: PUT cu token de masina (dispozitiv 403, masina necunoscuta 404, corp strict), `masini` in GET cu
+    pragurile de 180 s si 900 s la limita (ceas inlocuit), ordine fixa, nicio raportare = offline cu `ultima: null`.
 Directorul datelor e unul temporar: un test nu scrie niciodata in `uploads/` din proiect. Nicio proba nu atinge
 reteaua: `fcm.trimite_date` sau `fcm._http_post` sunt inlocuite.
 """
@@ -278,7 +287,9 @@ class Vedere(Baza):
         v = self.vedere()
         self.assertEqual(v, {'v': 1, 'acum': '2026-11-22T08:00:00Z',
                              'registru': {'generat': None, 'vechime_min': None, 'items': [], 'surse': {}},
-                             'veghe': None, 'fir': [], 'actiuni_in_asteptare': [], 'push': {'configurat': False}})
+                             'veghe': None, 'fir': [], 'actiuni_in_asteptare': [], 'push': {'configurat': False},
+                             'masini': [{'id': i, 'nume': n, 'stare': 'offline', 'ultima': None, 'idle_min': None}
+                                        for i, n in (('server', 'Server'), ('pc-job', 'PC job'), ('ionpc', 'IONPC'))]})
 
     def test_registru_vechime_surse_si_veghe(self):
         self.pune_ok(item())
@@ -320,7 +331,8 @@ class Vedere(Baza):
         fir = self.vedere()['fir']
         self.assertEqual((len(fir), fir[0]['text'], fir[-1]['text']), (100, 'mesaj 30', 'mesaj 129'))
         self.assertEqual(set(fir[0]), {'id', 'ts', 'cine', 'tip', 'titlu', 'text', 'sursa', 'item_id', 'task_id',
-                                        'link', 'butoane', 'raspuns_la', 'stare', 'stare_detaliu', 'via'})
+                                        'link', 'butoane', 'raspuns_la', 'stare', 'stare_detaliu', 'via',
+                                        'ref', 'tinta', 'alegere', 'optiuni', 'masina', 'raspuns'})
         self.assertEqual(fir[0]['butoane'], [])
 
     def test_sesiunea_si_tokenul_de_masina_citesc_la_fel(self):
@@ -536,7 +548,8 @@ class Fir(Baza):
         self.assertEqual(m, {'id': id_, 'ts': '2026-11-22T08:00:00Z', 'cine': 'ion', 'tip': 'mesaj', 'titlu': None,
                              'text': 'Ce am azi?', 'sursa': 'dictat', 'item_id': None, 'task_id': None, 'link': None,
                              'butoane': [], 'raspuns_la': None, 'stare': 'nou', 'stare_detaliu': None,
-                             'via': 'dispozitiv'})
+                             'via': 'dispozitiv', 'ref': None, 'tinta': 'auto', 'alegere': None, 'optiuni': [],
+                             'masina': None, 'raspuns': None})
 
     def test_sursa_implicita_scris_si_cine_ion_acceptat(self):
         self.scrie_ion(cine='ion')
@@ -1235,3 +1248,510 @@ class Linkuri(Baza):
                 self.assertIn('items[0].link', r.get_json()['error'])
         self.assertFalse(os.path.exists(os.path.join(self.dir, 'fir.jsonl')))
         self.assertFalse(os.path.exists(os.path.join(self.dir, 'registru.json')))
+
+
+# --------------------------------------------------------------------------- v1.1: ref, tinta, alegere
+
+REF = {'tip': 'decizie', 'id': 'pc-job:dec-7', 'titlu': 'Reinstalare Windows?', 'sursa': 'pc-job',
+       'masina': 'pc-job', 'mod': 'raspuns'}
+OPTIUNI = [{'id': 'pc-job', 'eticheta': 'PC job'}, {'id': 'ionpc', 'eticheta': 'IONPC'}]
+
+
+class RefTintaAlegere(Baza):
+
+    def test_ref_si_tinta_se_stocheaza_si_se_intorc(self):
+        r = self.scrie_ion('Amana pe diseara', ref=REF, tinta='pc-job')
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        m = self.noi()[0]
+        self.assertEqual((m['ref'], m['tinta'], m['alegere']), (REF, 'pc-job', None))
+        self.assertEqual(self.vedere()['fir'][0]['ref'], REF)
+        self.assertEqual(self.randuri('fir.jsonl')[0]['ref'], REF)
+
+    def test_fara_ref_si_tinta_ref_e_null_si_tinta_auto(self):
+        self.scrie_ion('simplu')
+        m = self.noi()[0]
+        self.assertEqual((m['ref'], m['tinta'], m['alegere']), (None, 'auto', None))
+
+    def test_ref_minim_primeste_valorile_implicite(self):
+        self.scrie_ion('x', ref={'tip': 'item', 'id': 'torqa:task-9', 'titlu': 'Task'})
+        self.assertEqual(self.noi()[0]['ref'], {'tip': 'item', 'id': 'torqa:task-9', 'titlu': 'Task', 'sursa': None,
+                                                'masina': None, 'mod': 'discuta'})
+
+    def test_toate_tipurile_de_ref_si_toate_tintele(self):
+        for tip in ('item', 'decizie', 'verificare', 'job', 'istoric'):
+            with self.subTest(tip=tip):
+                r = self.scrie_ion('x', ref={'tip': tip, 'id': 'a', 'titlu': 'b', 'mod': 'discuta'})
+                self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+                self.acum += timedelta(minutes=2)
+        for tinta in ('auto', 'server', 'pc-job', 'ionpc'):
+            with self.subTest(tinta=tinta):
+                self.assertEqual(self.scrie_ion('x', tinta=tinta).status_code, 201)
+                self.acum += timedelta(minutes=2)
+
+    def test_limitele_de_lungime_trec(self):
+        ref = {'tip': 'istoric', 'id': 'i' * 160, 'titlu': 't' * 140, 'sursa': 's' * 40}
+        self.assertEqual(self.scrie_ion('x', ref=ref).status_code, 201)
+
+    def test_mod_raspuns_doar_la_decizie(self):
+        for tip in ('item', 'verificare', 'job', 'istoric'):
+            with self.subTest(tip=tip):
+                r = self.scrie_ion('x', ref=dict(REF, tip=tip))
+                self.assertEqual(r.status_code, 400)
+                self.assertIn('corpul.ref.mod', r.get_json()['error'])
+        self.assertEqual(self.scrie_ion('x', ref=dict(REF, tip='item', mod='discuta')).status_code, 201)
+        self.assertEqual(self.scrie_ion('x', ref=REF).status_code, 201)
+
+    def test_validarea_ref_si_tinta_cu_calea_campului(self):
+        ok = {'tip': 'item', 'id': 'a', 'titlu': 'b'}
+        for corp, cale in (
+                ({'ref': 'x'}, 'corpul.ref'), ({'ref': None}, 'corpul.ref'), ({'ref': []}, 'corpul.ref'),
+                ({'ref': dict(ok, x=1)}, 'corpul.ref.x'),
+                ({'ref': {k: v for k, v in ok.items() if k != 'tip'}}, 'corpul.ref.tip'),
+                ({'ref': {k: v for k, v in ok.items() if k != 'id'}}, 'corpul.ref.id'),
+                ({'ref': {k: v for k, v in ok.items() if k != 'titlu'}}, 'corpul.ref.titlu'),
+                ({'ref': dict(ok, tip='altceva')}, 'corpul.ref.tip'), ({'ref': dict(ok, tip=3)}, 'corpul.ref.tip'),
+                ({'ref': dict(ok, id='')}, 'corpul.ref.id'), ({'ref': dict(ok, id=7)}, 'corpul.ref.id'),
+                ({'ref': dict(ok, id='i' * 161)}, 'corpul.ref.id'), ({'ref': dict(ok, id='a\nb')}, 'corpul.ref.id'),
+                ({'ref': dict(ok, titlu='')}, 'corpul.ref.titlu'), ({'ref': dict(ok, titlu='t' * 141)}, 'corpul.ref.titlu'),
+                ({'ref': dict(ok, sursa='s' * 41)}, 'corpul.ref.sursa'), ({'ref': dict(ok, sursa=None)}, 'corpul.ref.sursa'),
+                ({'ref': dict(ok, masina='laptop')}, 'corpul.ref.masina'), ({'ref': dict(ok, masina='auto')}, 'corpul.ref.masina'),
+                ({'ref': dict(ok, mod='altul')}, 'corpul.ref.mod'),
+                ({'tinta': 'laptop'}, 'corpul.tinta'), ({'tinta': None}, 'corpul.tinta'), ({'tinta': 5}, 'corpul.tinta'),
+                ({'alegere': 'pc-job'}, 'corpul.alegere'),
+                ({'alegere': 'pc-job', 'raspuns_la': None}, 'corpul.raspuns_la')):
+            with self.subTest(corp=corp):
+                r = self.client.post('/api/asistent/fir', json=dict({'text': 'x'}, **corp), headers=self.h(DEVICE))
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn(cale, r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'fir.jsonl')))
+
+    def test_alegere_cu_tip_gresit_si_prea_lunga_da_400(self):
+        for alegere in (5, '', 'a' * 41):
+            with self.subTest(alegere=alegere):
+                r = self.scrie_ion('x', alegere=alegere, raspuns_la='m_abcdef')
+                self.assertEqual(r.status_code, 400)
+                self.assertIn('corpul.alegere', r.get_json()['error'])
+
+    def test_fara_token_401_si_masina_cu_cine_ion_poate_trimite_ref(self):
+        r = self.client.post('/api/asistent/fir', json={'text': 'x', 'ref': REF, 'tinta': 'ionpc'})
+        self.assertEqual(r.status_code, 401)
+        r = self.client.post('/api/asistent/fir', json={'cine': 'ion', 'text': 'x', 'ref': REF, 'tinta': 'ionpc'},
+                             headers=self.h(FULL))
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual((self.noi()[0]['ref'], self.noi()[0]['tinta']), (REF, 'ionpc'))
+
+    def test_mesajele_vechi_fara_campurile_noi_se_citesc(self):
+        self.scrie_randuri('fir.jsonl', [{'id': 'm_000001', 'ts': '2026-11-22T07:00:00Z', 'cine': 'ion', 'tip': 'mesaj',
+                                          'text': 'vechi', 'sursa': 'scris', 'stare': 'nou'},
+                                         {'id': 'm_000002', 'ts': '2026-11-22T07:00:00Z', 'cine': 'asistent', 'tip': 'info',
+                                          'text': 'vechi'}])
+        ion, asistent = self.vedere()['fir']
+        self.assertEqual((ion['ref'], ion['tinta'], ion['optiuni'], ion['raspuns']), (None, 'auto', [], None))
+        self.assertEqual((asistent['ref'], asistent['tinta'], asistent['masina']), (None, None, None))
+
+
+# --------------------------------------------------------------------------- v1.1: mesajul asistentului
+
+class MesajAsistentV11(Baza):
+
+    def test_intrebare_cu_optiuni_masina_si_ref_se_intorc(self):
+        r = self.scrie_asistent(tip='intrebare', text='Unde sa rulez?', optiuni=OPTIUNI, ref=REF)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        m = self.vedere()['fir'][0]
+        self.assertEqual((m['tip'], m['optiuni'], m['ref'], m['raspuns'], m['masina'], m['tinta']),
+                         ('intrebare', OPTIUNI, REF, None, None, None))
+
+    def test_asteapta_cu_server_si_anuleaza(self):
+        optiuni = [{'id': 'server', 'eticheta': 'Run on Server instead'}, {'id': 'anuleaza', 'eticheta': 'Cancel'}]
+        r = self.scrie_asistent(tip='asteapta', text='PC job e oprit', optiuni=optiuni, masina='pc-job')
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        m = self.vedere()['fir'][0]
+        self.assertEqual((m['tip'], m['optiuni'], m['masina']), ('asteapta', optiuni, 'pc-job'))
+
+    def test_masina_si_ref_pe_lucreaza_si_rezultat(self):
+        for tip in ('lucreaza', 'rezultat'):
+            with self.subTest(tip=tip):
+                r = self.scrie_asistent(tip=tip, masina='ionpc', ref=dict(REF, mod='discuta'))
+                self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        fir = self.vedere()['fir']
+        self.assertEqual([(m['masina'], m['ref']['mod']) for m in fir], [('ionpc', 'discuta')] * 2)
+
+    def test_campurile_noi_null_sunt_ca_lipsa(self):
+        r = self.scrie_asistent(tip='info', optiuni=None, masina=None, ref=None)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        m = self.vedere()['fir'][0]
+        self.assertEqual((m['optiuni'], m['masina'], m['ref']), ([], None, None))
+
+    def test_optiuni_la_limite_trec(self):
+        patru = [{'id': 'o%d' % i, 'eticheta': 'e'} for i in range(4)]
+        self.assertEqual(self.scrie_asistent(tip='intrebare', optiuni=patru).status_code, 201)
+        limite = [{'id': 'i' * 40, 'eticheta': 'e' * 60}]
+        self.assertEqual(self.scrie_asistent(tip='asteapta', optiuni=limite).status_code, 201)
+
+    def test_validarea_optiunilor_masinii_si_ref(self):
+        o = {'id': 'pc-job', 'eticheta': 'PC job'}
+        for modifica, cale in (
+                ({}, 'corpul.optiuni'), ({'optiuni': None}, 'corpul.optiuni'), ({'optiuni': []}, 'corpul.optiuni'),
+                ({'optiuni': 'pc-job'}, 'corpul.optiuni'), ({'optiuni': [o] * 2}, 'corpul.optiuni[1].id'),
+                ({'optiuni': [dict(o, id='x%d' % i) for i in range(5)]}, 'corpul.optiuni'),
+                ({'optiuni': ['pc-job']}, 'corpul.optiuni[0]'), ({'optiuni': [dict(o, x=1)]}, 'corpul.optiuni[0].x'),
+                ({'optiuni': [{'eticheta': 'e'}]}, 'corpul.optiuni[0].id'),
+                ({'optiuni': [{'id': 'a'}]}, 'corpul.optiuni[0].eticheta'),
+                ({'optiuni': [dict(o, id='')]}, 'corpul.optiuni[0].id'), ({'optiuni': [dict(o, id=3)]}, 'corpul.optiuni[0].id'),
+                ({'optiuni': [dict(o, id='i' * 41)]}, 'corpul.optiuni[0].id'),
+                ({'optiuni': [dict(o, eticheta='')]}, 'corpul.optiuni[0].eticheta'),
+                ({'optiuni': [dict(o, eticheta='e' * 61)]}, 'corpul.optiuni[0].eticheta'),
+                ({'optiuni': [dict(o, eticheta='a\nb')]}, 'corpul.optiuni[0].eticheta'),
+                ({'optiuni': [o], 'masina': 'laptop'}, 'corpul.masina'), ({'optiuni': [o], 'masina': 3}, 'corpul.masina'),
+                ({'optiuni': [o], 'ref': 'x'}, 'corpul.ref'), ({'optiuni': [o], 'ref': dict(REF, tip='item')}, 'corpul.ref.mod'),
+                ({'optiuni': [o], 'ref': dict(REF, x=1)}, 'corpul.ref.x')):
+            with self.subTest(modifica=modifica):
+                r = self.client.post('/api/asistent/fir', json=dict({'cine': 'asistent', 'tip': 'intrebare', 'text': 'x'},
+                                                                    **modifica), headers=self.h(FULL))
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn(cale, r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'fir.jsonl')))
+
+    def test_optiuni_nu_trec_la_alte_tipuri(self):
+        for tip in ('brief', 'alerta', 'raspuns', 'lucreaza', 'rezultat', 'info'):
+            with self.subTest(tip=tip):
+                r = self.scrie_asistent(tip=tip, optiuni=OPTIUNI)
+                self.assertEqual(r.status_code, 400)
+                self.assertIn('corpul.optiuni', r.get_json()['error'])
+
+    def test_dispozitivul_nu_scrie_intrebari(self):
+        r = self.client.post('/api/asistent/fir', json={'cine': 'asistent', 'tip': 'intrebare', 'text': 'x',
+                                                         'optiuni': OPTIUNI}, headers=self.h(DEVICE))
+        self.assertEqual(r.status_code, 403)
+
+    def test_push_la_intrebare_pleaca_cu_tipul_nou(self):
+        os.environ['FCM_SERVICE_ACCOUNT_FILE'] = 'x'
+        self.token_push()
+        with mock.patch.object(fcm, 'configurat', return_value=True), \
+                mock.patch.object(fcm, 'trimite_date', return_value={'trimise': 1, 'erori': [], 'nregistrate': []}) as t:
+            r = self.scrie_asistent(tip='intrebare', optiuni=OPTIUNI, push={'prioritate': 'urgent'})
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        self.assertEqual(t.call_args[0][1]['tip'], 'intrebare')
+
+
+# --------------------------------------------------------------------------- v1.1: raspunsul la intrebare
+
+class RaspunsLaIntrebare(Baza):
+
+    def intreaba(self, tip='intrebare', optiuni=OPTIUNI, **camp):
+        r = self.scrie_asistent(tip=tip, text='Unde sa rulez?', optiuni=optiuni, **camp)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        return r.get_json()['id']
+
+    def raspunde(self, q, alegere='pc-job', text='PC job', token=DEVICE, **camp):
+        return self.client.post('/api/asistent/fir', json=dict({'text': text, 'raspuns_la': q, 'alegere': alegere}, **camp),
+                                headers=self.h(token))
+
+    def mesaj(self, id_):
+        return next(m for m in self.vedere()['fir'] if m['id'] == id_)
+
+    def test_raspunsul_se_pune_pe_intrebare_si_mesajul_intra_in_coada(self):
+        q = self.intreaba()
+        self.acum += timedelta(seconds=30)
+        r = self.raspunde(q)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        self.assertEqual(list(r.get_json()), ['id'])
+        self.assertEqual(self.mesaj(q)['raspuns'], {'optiune': 'pc-job', 'ts': '2026-11-22T08:00:30Z'})
+        ion = self.noi()
+        self.assertEqual(len(ion), 1)
+        self.assertEqual((ion[0]['id'], ion[0]['text'], ion[0]['stare'], ion[0]['raspuns_la'], ion[0]['alegere']),
+                         (r.get_json()['id'], 'PC job', 'nou', q, 'pc-job'))
+        self.assertEqual(ion[0]['ts'], self.mesaj(q)['raspuns']['ts'], 'aceeasi scriere, acelasi moment')
+
+    def test_a_doua_alegere_da_409_si_nu_schimba_nimic(self):
+        q = self.intreaba()
+        self.assertEqual(self.raspunde(q).status_code, 201)
+        inainte = self.fisier('fir.jsonl')
+        for alegere in ('pc-job', 'ionpc'):
+            with self.subTest(alegere=alegere):
+                r = self.raspunde(q, alegere)
+                self.assertEqual(r.status_code, 409, r.get_data(as_text=True))
+        self.assertEqual(self.fisier('fir.jsonl'), inainte, 'nici raspunsul, nici mesajul al doilea nu s-au scris')
+        self.assertEqual(len(self.noi()), 1)
+
+    def test_asteapta_se_raspunde_la_fel(self):
+        q = self.intreaba('asteapta', [{'id': 'server', 'eticheta': 'Run on Server instead'},
+                                       {'id': 'anuleaza', 'eticheta': 'Cancel'}])
+        self.assertEqual(self.raspunde(q, 'anuleaza', 'Cancel').status_code, 201)
+        self.assertEqual(self.mesaj(q)['raspuns']['optiune'], 'anuleaza')
+
+    def test_alegere_straina_de_optiuni_da_400_si_intrebarea_ramane_deschisa(self):
+        q = self.intreaba()
+        inainte = self.fisier('fir.jsonl')
+        r = self.raspunde(q, 'server')
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('corpul.alegere', r.get_json()['error'])
+        self.assertEqual(self.fisier('fir.jsonl'), inainte)
+        self.assertEqual(self.raspunde(q).status_code, 201, 'dupa o alegere gresita se poate raspunde bine')
+
+    def test_intrebare_necunoscuta_404(self):
+        self.assertEqual(self.raspunde('m_ffffff').status_code, 404)
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'fir.jsonl')))
+
+    def test_mesaj_care_nu_e_intrebare_da_409(self):
+        info = self.scrie_asistent(tip='info').get_json()['id']
+        ion = self.scrie_ion('un mesaj').get_json()['id']
+        for tinta in (info, ion):
+            with self.subTest(tinta=tinta):
+                self.assertEqual(self.raspunde(tinta).status_code, 409)
+        self.assertEqual(len(self.randuri('fir.jsonl')), 2)
+
+    def test_un_mesaj_al_lui_ion_cu_optiuni_stocate_nu_devine_intrebare(self):
+        self.scrie_randuri('fir.jsonl', [{'id': 'm_000001', 'ts': '2026-11-22T07:00:00Z', 'cine': 'ion', 'tip': 'intrebare',
+                                          'text': 'x', 'optiuni': OPTIUNI, 'stare': 'nou'}])
+        self.assertEqual(self.raspunde('m_000001').status_code, 409)
+
+    def test_raspuns_la_fara_alegere_ramane_un_reply_obisnuit(self):
+        q = self.intreaba()
+        r = self.scrie_ion('Altceva', raspuns_la=q)
+        self.assertEqual(r.status_code, 201)
+        self.assertIsNone(self.mesaj(q)['raspuns'], 'fara `alegere` intrebarea ramane deschisa')
+
+    def test_aceleasi_campuri_ref_si_tinta_merg_si_la_raspuns(self):
+        q = self.intreaba()
+        self.assertEqual(self.raspunde(q, ref=REF, tinta='pc-job').status_code, 201)
+        m = self.noi()[0]
+        self.assertEqual((m['ref'], m['tinta'], m['alegere']), (REF, 'pc-job', 'pc-job'))
+
+    def test_limita_de_30_pe_ora_nu_scrie_nici_raspunsul_pe_intrebare(self):
+        q = self.intreaba()
+        for i in range(30):
+            self.acum = ACUM + timedelta(seconds=i)
+            self.assertEqual(self.scrie_ion('mesaj %d' % i).status_code, 201)
+        self.acum = ACUM + timedelta(seconds=30)
+        r = self.raspunde(q)
+        self.assertEqual(r.status_code, 429)
+        self.assertIsNone(self.mesaj(q)['raspuns'], 'un 429 nu lasa raspunsul pe jumatate scris')
+        self.acum = ACUM + timedelta(hours=1, seconds=1)
+        self.assertEqual(self.raspunde(q).status_code, 201)
+
+    def test_o_scriere_esuata_nu_lasa_raspunsul_pe_jumatate(self):
+        """Mesajul lui Ion si `raspuns` sunt in acelasi fisier si intr-o singura `_scrie_fir`: daca scrierea pica,
+        niciuna nu exista; daca reuseste, exista amandoua."""
+        q = self.intreaba()
+        inainte = self.fisier('fir.jsonl')
+        with mock.patch.object(asistent, '_scrie_atomic', side_effect=OSError('disc plin')) as scrie:
+            r = self.raspunde(q)
+        self.assertEqual(r.status_code, 500)
+        self.assertEqual(scrie.call_count, 1)
+        self.assertEqual(self.fisier('fir.jsonl'), inainte)
+        self.assertEqual(self.noi(), [])
+        self.assertEqual(self.raspunde(q).status_code, 201)
+        randuri = self.randuri('fir.jsonl')
+        self.assertEqual(sum(1 for r in randuri if r.get('raspuns')), 1)
+        self.assertEqual(sum(1 for r in randuri if r.get('alegere') == 'pc-job'), 1)
+
+    def test_o_singura_scriere_pe_raspuns(self):
+        q = self.intreaba()
+        with mock.patch.object(asistent, '_scrie_atomic', wraps=asistent._scrie_atomic) as scrie:
+            self.assertEqual(self.raspunde(q).status_code, 201)
+        self.assertEqual([c[0][0] for c in scrie.call_args_list], ['fir.jsonl'])
+
+    def test_doua_raspunsuri_deodata_unul_castiga(self):
+        """Doua cereri simultane (doi workeri sau un dublu-tap): exact una trece, cealalta 409."""
+        import threading
+        q = self.intreaba()
+        coduri = []
+
+        def trimite(alegere):
+            with self.app_module.app.test_client() as c:
+                r = c.post('/api/asistent/fir', json={'text': alegere, 'raspuns_la': q, 'alegere': alegere},
+                           headers=self.h(DEVICE))
+                coduri.append(r.status_code)
+        fire = [threading.Thread(target=trimite, args=(a,)) for a in ('pc-job', 'ionpc')]
+        for f in fire:
+            f.start()
+        for f in fire:
+            f.join()
+        self.assertEqual(sorted(coduri), [201, 409])
+        self.assertEqual(len(self.noi()), 1)
+        self.assertEqual(self.noi()[0]['alegere'], self.mesaj(q)['raspuns']['optiune'])
+
+
+# --------------------------------------------------------------------------- v1.1: prezenta
+
+class Prezenta(Baza):
+
+    def raporteaza(self, masina='pc-job', token=FULL, **corp):
+        corp = dict({'activ': True, 'idle_s': 30}, **corp)
+        return self.client.put('/api/asistent/prezenta/%s' % masina, json=corp, headers=self.h(token))
+
+    def masini(self):
+        return {m['id']: m for m in self.vedere()['masini']}
+
+    def test_raportarea_se_scrie_atomic_cu_ultima_pusa_de_server(self):
+        r = self.raporteaza('pc-job', versiune='1.2.3')
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'masina': 'pc-job'}))
+        self.assertEqual(json.loads(self.fisier('prezenta.json')),
+                         {'masini': {'pc-job': {'ultima': '2026-11-22T08:00:00Z', 'activ': True, 'idle_s': 30,
+                                                'versiune': '1.2.3'}}})
+        self.assertEqual(sorted(os.listdir(self.dir)), ['asistent.lock', 'prezenta.json'], 'niciun .tmp ramas')
+
+    def test_o_raportare_nu_o_sterge_pe_a_celorlalte(self):
+        self.raporteaza('server')
+        self.raporteaza('ionpc')
+        self.assertEqual(sorted(json.loads(self.fisier('prezenta.json'))['masini']), ['ionpc', 'server'])
+
+    def test_aceeasi_cerere_de_doua_ori_lasa_aceeasi_stare(self):
+        self.raporteaza()
+        prima = self.fisier('prezenta.json')
+        self.assertEqual(self.raporteaza().status_code, 200)
+        self.assertEqual(self.fisier('prezenta.json'), prima)
+        self.acum += timedelta(seconds=60)
+        self.raporteaza()
+        self.assertEqual(json.loads(self.fisier('prezenta.json'))['masini']['pc-job']['ultima'], '2026-11-22T08:01:00Z')
+
+    def test_dispozitivul_403_masina_necunoscuta_404_fara_token_401(self):
+        r = self.raporteaza(token=DEVICE)
+        self.assertEqual(r.status_code, 403)
+        self.assertIn('dispozitiv', r.get_json()['error'])
+        r = self.client.put('/api/asistent/prezenta/pc-job', json={'activ': True, 'idle_s': 0})
+        self.assertEqual(r.status_code, 401)
+        r = self.client.put('/api/asistent/prezenta/pc-job', json={'activ': True, 'idle_s': 0}, headers=self.h('gresit'))
+        self.assertEqual(r.status_code, 401)
+        for masina in ('laptop', 'PC-JOB', 'auto', 'intreaba', '0'):
+            with self.subTest(masina=masina):
+                self.assertEqual(self.raporteaza(masina).status_code, 404)
+        self.assertEqual(self.raporteaza('laptop', token=DEVICE).status_code, 403, 'tokenul de dispozitiv e refuzat inainte')
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'prezenta.json')))
+
+    def test_sesiunea_poate_raporta(self):
+        self.login()
+        csrf = {'X-CSRF-Token': self.client.get_cookie('csrf_token').value}
+        r = self.client.put('/api/asistent/prezenta/ionpc', json={'activ': False, 'idle_s': 5}, headers=csrf)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+
+    def test_validarea_corpului_cu_calea_campului(self):
+        for corp, cale in (
+                ({}, 'corpul.activ'), ({'idle_s': 1}, 'corpul.activ'), ({'activ': 'da', 'idle_s': 1}, 'corpul.activ'),
+                ({'activ': 1, 'idle_s': 1}, 'corpul.activ'), ({'activ': None, 'idle_s': 1}, 'corpul.activ'),
+                ({'activ': True}, 'corpul.idle_s'), ({'activ': True, 'idle_s': -1}, 'corpul.idle_s'),
+                ({'activ': True, 'idle_s': 1.5}, 'corpul.idle_s'), ({'activ': True, 'idle_s': '5'}, 'corpul.idle_s'),
+                ({'activ': True, 'idle_s': True}, 'corpul.idle_s'), ({'activ': True, 'idle_s': None}, 'corpul.idle_s'),
+                ({'activ': True, 'idle_s': 10 ** 9 + 1}, 'corpul.idle_s'),
+                ({'activ': True, 'idle_s': 1, 'versiune': 'v' * 41}, 'corpul.versiune'),
+                ({'activ': True, 'idle_s': 1, 'versiune': ''}, 'corpul.versiune'),
+                ({'activ': True, 'idle_s': 1, 'versiune': 3}, 'corpul.versiune'),
+                ({'activ': True, 'idle_s': 1, 'x': 1}, 'corpul.x'), ({'activ': True, 'idle_s': 1, 'ultima': 'x'}, 'corpul.ultima')):
+            with self.subTest(corp=corp):
+                r = self.client.put('/api/asistent/prezenta/server', json=corp, headers=self.h())
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn(cale, r.get_json()['error'])
+        for corp in ([], 'x', None, 5):
+            with self.subTest(corp=corp):
+                self.assertEqual(self.client.put('/api/asistent/prezenta/server', json=corp, headers=self.h()).status_code, 400)
+        r = self.client.put('/api/asistent/prezenta/server', data='nu e json', headers=self.h())
+        self.assertEqual(r.status_code, 400)
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'prezenta.json')))
+
+    def test_valorile_la_limita_trec(self):
+        self.assertEqual(self.raporteaza(idle_s=0, versiune='v' * 40).status_code, 200)
+        self.assertEqual(self.raporteaza(idle_s=10 ** 9, activ=False).status_code, 200)
+
+    def test_corp_prea_mare_413(self):
+        r = self.client.put('/api/asistent/prezenta/server', data=b'{"activ": true, "idle_s": 1, "versiune": "' + b'a' * 40000 + b'"}',
+                            headers=dict(self.h(), **{'Content-Type': 'application/json'}))
+        self.assertEqual(r.status_code, 413)
+
+    def test_fara_nicio_raportare_toate_trei_sunt_offline_in_ordine_fixa(self):
+        m = self.vedere()['masini']
+        self.assertEqual([(x['id'], x['nume'], x['stare'], x['ultima'], x['idle_min']) for x in m],
+                         [('server', 'Server', 'offline', None, None), ('pc-job', 'PC job', 'offline', None, None),
+                          ('ionpc', 'IONPC', 'offline', None, None)])
+
+    def test_ordinea_nu_depinde_de_ordinea_raportarilor(self):
+        for masina in ('ionpc', 'server', 'pc-job'):
+            self.raporteaza(masina)
+        self.assertEqual([m['id'] for m in self.vedere()['masini']], ['server', 'pc-job', 'ionpc'])
+
+    def test_activ_cand_a_raportat_acum_cu_activ_true_si_idle_mic(self):
+        self.raporteaza('pc-job', activ=True, idle_s=119)
+        self.assertEqual(self.masini()['pc-job'], {'id': 'pc-job', 'nume': 'PC job', 'stare': 'activ',
+                                                   'ultima': '2026-11-22T08:00:00Z', 'idle_min': 1})
+        self.assertEqual(self.masini()['server']['stare'], 'offline', 'celelalte nu se schimba')
+
+    def test_pragul_de_180_s_online_pana_la_180_inclusiv(self):
+        self.raporteaza('server', activ=False, idle_s=10)
+        for secunde, stare in ((0, 'online'), (179, 'online'), (180, 'online'), (181, 'offline'), (3600, 'offline')):
+            with self.subTest(secunde=secunde):
+                self.acum = ACUM + timedelta(seconds=secunde)
+                m = self.masini()['server']
+                self.assertEqual(m['stare'], stare)
+                self.assertEqual(m['ultima'], '2026-11-22T08:00:00Z', 'ultima ramane si cand e offline')
+
+    def test_pragul_de_180_s_se_aplica_si_cand_e_activ(self):
+        self.raporteaza('server', activ=True, idle_s=0)
+        self.acum = ACUM + timedelta(seconds=180)
+        self.assertEqual(self.masini()['server']['stare'], 'activ')
+        self.acum = ACUM + timedelta(seconds=181)
+        self.assertEqual(self.masini()['server']['stare'], 'offline')
+
+    def test_pragul_de_900_s_de_inactivitate(self):
+        for idle_s, stare in ((899, 'activ'), (900, 'activ'), (901, 'online'), (5000, 'online')):
+            with self.subTest(idle_s=idle_s):
+                self.raporteaza('ionpc', activ=True, idle_s=idle_s)
+                self.assertEqual(self.masini()['ionpc']['stare'], stare)
+
+    def test_activ_fals_e_online_oricat_de_mic_ar_fi_idle(self):
+        self.raporteaza('ionpc', activ=False, idle_s=0)
+        self.assertEqual(self.masini()['ionpc']['stare'], 'online')
+
+    def test_idle_min_se_rotunjeste_in_jos_si_e_null_cand_e_offline(self):
+        self.raporteaza('pc-job', activ=True, idle_s=3599)
+        self.assertEqual(self.masini()['pc-job']['idle_min'], 59)
+        self.raporteaza('pc-job', activ=True, idle_s=59)
+        self.assertEqual(self.masini()['pc-job']['idle_min'], 0)
+        self.acum = ACUM + timedelta(seconds=181)
+        self.assertIsNone(self.masini()['pc-job']['idle_min'])
+
+    def test_masina_revine_dupa_ce_a_fost_offline(self):
+        self.raporteaza('pc-job')
+        self.acum = ACUM + timedelta(hours=2)
+        self.assertEqual(self.masini()['pc-job']['stare'], 'offline')
+        self.raporteaza('pc-job')
+        self.assertEqual(self.masini()['pc-job']['stare'], 'activ')
+
+    def test_ceasul_serverului_in_urma_nu_da_offline(self):
+        """O raportare cu `ultima` in viitor fata de `acum` (ceas dat inapoi) nu o scoate din online."""
+        self.raporteaza('server')
+        self.acum = ACUM - timedelta(seconds=30)
+        self.assertEqual(self.masini()['server']['stare'], 'activ')
+
+    def test_fisierul_de_prezenta_stricat_nu_da_500_si_se_reia(self):
+        os.makedirs(self.dir, exist_ok=True)
+        for continut in (b'nu e json', b'[]', b'{"masini": []}', b'\xff\xfe'):
+            with self.subTest(continut=continut):
+                with open(os.path.join(self.dir, 'prezenta.json'), 'wb') as fh:
+                    fh.write(continut)
+                self.assertEqual([m['stare'] for m in self.vedere()['masini']], ['offline'] * 3)
+                self.assertEqual(self.raporteaza('server').status_code, 200)
+                self.assertEqual(self.masini()['server']['stare'], 'activ')
+
+    def test_intrari_cu_alta_forma_se_ignora(self):
+        os.makedirs(self.dir, exist_ok=True)
+        with open(os.path.join(self.dir, 'prezenta.json'), 'w', encoding='utf-8') as fh:
+            json.dump({'masini': {'server': 'x', 'pc-job': {'ultima': 'ieri', 'activ': True, 'idle_s': 1},
+                                  'ionpc': {'ultima': '2026-11-22T08:00:00Z', 'activ': True, 'idle_s': 'mult'},
+                                  'altceva': {'ultima': '2026-11-22T08:00:00Z', 'activ': True, 'idle_s': 1}}}, fh)
+        m = self.masini()
+        self.assertEqual((m['server']['stare'], m['pc-job']['stare']), ('offline', 'offline'))
+        self.assertEqual((m['ionpc']['stare'], m['ionpc']['idle_min']), ('online', None))
+        self.assertEqual(len(self.vedere()['masini']), 3)
+
+    def test_fisier_ilizibil_la_scriere_da_500_si_nu_rescrie(self):
+        self.raporteaza('server')
+        inainte = self.fisier('prezenta.json')
+        with mock.patch.object(asistent, '_citeste_prezenta', side_effect=OSError('permisiuni')):
+            self.assertEqual(self.raporteaza('ionpc').status_code, 500)
+        self.assertEqual(self.fisier('prezenta.json'), inainte)
+
+    def test_get_nu_arata_versiunea_si_toti_cititorii_vad_masinile(self):
+        self.raporteaza('server', versiune='9.9')
+        for token in (FULL, DEVICE):
+            m = self.vedere(token)['masini'][0]
+            self.assertEqual(set(m), {'id', 'nume', 'stare', 'ultima', 'idle_min'})
