@@ -216,6 +216,15 @@ class Registru(Baza):
         ('veghe total negativ', lambda r: r['veghe'].update(total=-1), 'veghe.total'),
         ('veghe picat fara nume', lambda r: r['veghe']['picate'][0].pop('nume'), 'veghe.picate[0].nume'),
         ('veghe detaliu lung', lambda r: r['veghe']['picate'][0].update(detaliu='d' * 201), 'veghe.picate[0].detaliu'),
+        ('veghe categorii nu e obiect', lambda r: r['veghe'].update(categorii=[]), 'veghe.categorii'),
+        ('veghe categorie necunoscuta', lambda r: r['veghe'].update(categorii={'ftp': {'total': 1, 'ok': 1}}),
+         'veghe.categorii.ftp'),
+        ('veghe categorie ok peste total', lambda r: r['veghe'].update(categorii={'http': {'total': 1, 'ok': 2}}),
+         'veghe.categorii.http.ok'),
+        ('veghe categorie camp necunoscut',
+         lambda r: r['veghe'].update(categorii={'disc': {'total': 1, 'ok': 1, 'x': 0}}), 'veghe.categorii.disc.x'),
+        ('veghe categorie fara total', lambda r: r['veghe'].update(categorii={'timer': {'ok': 1}}),
+         'veghe.categorii.timer.total'),
     )
 
     def test_corp_invalid_da_400_cu_calea_campului_si_pastreaza_registrul(self):
@@ -279,6 +288,15 @@ class Vedere(Baza):
         self.assertEqual(v['registru']['surse']['mail'], {'ok': False, 'eroare': 'Outlook nu raspunde'})
         self.assertEqual(v['veghe']['total'], 46)
         self.assertEqual(v['veghe']['picate'][0]['nume'], 'backup-vault')
+        self.assertNotIn('categorii', v['veghe'])
+
+    def test_veghe_categorii_optionale_trec_in_vedere(self):
+        cat = {'http': {'total': 9, 'ok': 9}, 'timer': {'total': 23, 'ok': 22}, 'docker': {'total': 10, 'ok': 10},
+               'putere': {'total': 2, 'ok': 2}, 'disc': {'total': 1, 'ok': 1}, 'netdata': {'total': 1, 'ok': 1}}
+        r = registru(item())
+        r['veghe']['categorii'] = cat
+        self.assertEqual(self.pune(r).status_code, 200)
+        self.assertEqual(self.vedere()['veghe']['categorii'], cat)
 
     def test_filtrarea_itemilor_active(self):
         trecut, viitor = '2026-11-22T07:59:59Z', '2026-11-22T08:00:01Z'

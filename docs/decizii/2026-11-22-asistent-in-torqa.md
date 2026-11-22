@@ -48,7 +48,8 @@ sunt obligatorii; `termen`, `prima_data`, `amanat_pana`, `link` pot lipsi sau fi
     "surse": {"torqa": {"ok": true}, "mail": {"ok": false, "eroare": "≤200"}},
     "veghe": {"generat": "ISO", "total": 46, "ok": 45, "picate": [{"nume": "≤120", "detaliu": "≤200"}]}}
    ```
-   `veghe` e opțional. Validare strictă (câmp necunoscut sau tip greșit → 400 cu calea câmpului; registrul vechi
+   `veghe` e opțional. Tot opțional, `veghe.categorii` = `{http|timer|docker|putere|disc|netdata: {"total", "ok"}}`
+   (adăugat 2026-11-22, pentru rândurile pe categorie din tabul Server; `ok` ≤ `total`). Validare strictă (câmp necunoscut sau tip greșit → 400 cu calea câmpului; registrul vechi
    rămâne). `generat` mai vechi decât cel stocat → 409 (egal trece: cererea retrimisă e idempotentă). 200 `{"ok": true, "items": N}`.
 2. `GET /api/asistent/actiuni?stare=asteapta` (implicit; `consumat` pentru istoric; altceva 400) →
    `[{"uid","ts","item_id","actiune","zile","din"}]` (`din`: `pagina|notificare`), cele mai vechi întâi.

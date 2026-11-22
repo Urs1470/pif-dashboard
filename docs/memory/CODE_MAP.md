@@ -38,9 +38,9 @@ _(fara definitii top-level)_
 
 `60:_canal`, `67:_canal_cerut`, `77:_cai`, `84:_canal_necunoscut`, `89:_canal_lipsa`, `94:_meta`, `103:app_upload`, `163:app_version`, `177:app_apk`
 
-## blueprints/asistent.py (1040 linii)
+## blueprints/asistent.py (1056 linii)
 
-`114:_fara_surogate`, `129:_corp_json`, `145:_eroare`, `156:_este_dispozitiv`, `160:_doar_masina`, `173:_cale`, `177:_acum`, `181:_z`, `185:_scrie_atomic`, `210:_json_bytes`, `214:_jsonl_bytes`, `222:_blocat`, `244:_salveaza_corupte`, `265:_citeste_jsonl`, `301:_moment`, `317:_moment_sau_none`, `324:_nul_moment`, `331:_nul_text`, `337:_enum`, `344:_intreg`, `351:_fara_control`, `363:_link`, `390:_item`, `429:_veghe`, `444:valideaza_registru`, `476:_citeste_registru`, `495:_activ`, `505:_scrie_actiuni`, `518:_citeste_actiuni`, `522:_in_asteptare`, `528:_citeste_fir`, `532:_scrie_fir`, `552:_id_mesaj`, `560:_mesaj`, `572:_citeste_tokenuri`, `602:_scrie_tokenuri`, `606:_octeti_date`, `610:_date_push`, `631:_trimite_push`, `665:put_registru`, `691:get_actiuni`, `706:post_consumat`, `739:get_fir_noi`, `748:post_stare`, `792:get_asistent`, `819:post_actiune`, `866:_fir_ion`, `902:_fir_asistent`, `949:post_fir`, `971:_citeste_corp_token`, `987:post_token`, `1023:sterge_token`
+`117:_fara_surogate`, `132:_corp_json`, `148:_eroare`, `159:_este_dispozitiv`, `163:_doar_masina`, `176:_cale`, `180:_acum`, `184:_z`, `188:_scrie_atomic`, `213:_json_bytes`, `217:_jsonl_bytes`, `225:_blocat`, `247:_salveaza_corupte`, `268:_citeste_jsonl`, `304:_moment`, `320:_moment_sau_none`, `327:_nul_moment`, `334:_nul_text`, `340:_enum`, `347:_intreg`, `354:_fara_control`, `366:_link`, `393:_item`, `432:_veghe`, `460:valideaza_registru`, `492:_citeste_registru`, `511:_activ`, `521:_scrie_actiuni`, `534:_citeste_actiuni`, `538:_in_asteptare`, `544:_citeste_fir`, `548:_scrie_fir`, `568:_id_mesaj`, `576:_mesaj`, `588:_citeste_tokenuri`, `618:_scrie_tokenuri`, `622:_octeti_date`, `626:_date_push`, `647:_trimite_push`, `681:put_registru`, `707:get_actiuni`, `722:post_consumat`, `755:get_fir_noi`, `764:post_stare`, `808:get_asistent`, `835:post_actiune`, `882:_fir_ion`, `918:_fir_asistent`, `965:post_fir`, `987:_citeste_corp_token`, `1003:post_token`, `1039:sterge_token`
 
 ## blueprints/echipa.py (1231 linii)
 

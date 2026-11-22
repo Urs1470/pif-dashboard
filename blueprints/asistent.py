@@ -96,7 +96,10 @@ CAMPURI_REGISTRU = frozenset(('v', 'generat', 'items', 'surse', 'veghe'))
 CAMPURI_ITEM = frozenset(('id', 'sursa', 'titlu', 'de_ce', 'gravitate', 'termen', 'prima_data', 'stare',
                           'amanat_pana', 'incredere', 'actiuni', 'link'))
 CAMPURI_SURSA = frozenset(('ok', 'eroare'))
-CAMPURI_VEGHE = frozenset(('generat', 'total', 'ok', 'picate'))
+CAMPURI_VEGHE = frozenset(('generat', 'total', 'ok', 'picate', 'categorii'))
+# Tipurile de verificari din veghe.py; `categorii` e optional (pagina Server arata un rand pe categorie).
+CATEGORII_VEGHE = frozenset(('http', 'timer', 'docker', 'putere', 'disc', 'netdata'))
+CAMPURI_CATEGORIE = frozenset(('total', 'ok'))
 CAMPURI_PICAT = frozenset(('nume', 'detaliu'))
 CAMPURI_ACTIUNE = frozenset(('item_id', 'actiune', 'zile', 'din'))
 CAMPURI_CONSUMAT = frozenset(('rezultat', 'mesaj'))
@@ -438,7 +441,20 @@ def _veghe(v, cale):
         c = '%s.picate[%d]' % (cale, ix)
         _obiect(p, c, CAMPURI_PICAT)
         picate.append({'nume': _text(p, 'nume', c, 120, nevid=True), 'detaliu': _text(p, 'detaliu', c, 200)})
-    return {'generat': v['generat'], 'total': total, 'ok': ok, 'picate': picate}
+    rez = {'generat': v['generat'], 'total': total, 'ok': ok, 'picate': picate}
+    if 'categorii' in v:
+        cc = '%s.categorii' % cale
+        _obiect(v['categorii'], cc, CATEGORII_VEGHE)
+        categorii = {}
+        for tip in sorted(v['categorii']):
+            c = '%s.%s' % (cc, tip)
+            _obiect(v['categorii'][tip], c, CAMPURI_CATEGORIE)
+            t, k = _intreg(v['categorii'][tip], 'total', c, 0, 10000), _intreg(v['categorii'][tip], 'ok', c, 0, 10000)
+            if k > t:
+                raise EroareCorp('%s.ok: nu poate depasi total' % c)
+            categorii[tip] = {'total': t, 'ok': k}
+        rez['categorii'] = categorii
+    return rez
 
 
 def valideaza_registru(corp):
