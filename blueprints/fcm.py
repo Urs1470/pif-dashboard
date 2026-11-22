@@ -18,14 +18,14 @@
 
 import base64
 import hashlib
+import http.client
 import json
 import logging
 import os
+import socket
 import threading
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 
 logger = logging.getLogger('pif_dashboard')
 
@@ -173,18 +173,54 @@ def configurat():
 
 # --------------------------------------------------------------------------- HTTP
 
-def _http_post(url, date, antete, timeout):
-    """(cod HTTP, corp bytes). Ridica OSError (inclusiv URLError, timeout) cand nu ajunge la server.
-    Singurul loc care atinge reteaua: testele il inlocuiesc."""
-    cerere = urllib.request.Request(url, data=date, headers=antete, method='POST')
-    try:
-        with urllib.request.urlopen(cerere, timeout=timeout) as r:
-            return r.status, r.read(1024 * 1024)
-    except urllib.error.HTTPError as e:
+def _taie(conn):
+    """Intrerupe o cerere blocata: `shutdown` pe socket, deci `recv`/`send` din firul cererii se termina
+    imediat. Socketul nu se inchide aici (ar lasa `http.client` cu campuri `None` in mijlocul unei citiri):
+    il inchide firul cererii, in `finally`."""
+    sock = conn.sock
+    if sock is not None:
         try:
-            return e.code, e.read(64 * 1024)
-        finally:
-            e.close()
+            sock.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+
+
+def _http_post(url, date, antete, timeout):
+    """(cod HTTP, corp bytes). `timeout` e plafonul pe TOATA cererea (conectare, trimitere, antete, corp), nu
+    pe fiecare operatie de socket: un server care trimite un octet la cateva secunde ar tine un `urlopen`
+    minute in sir (masurat: 117 s). Un cronometru inchide socketul la expirare. Ridica OSError (TimeoutError
+    la expirare) cand nu ajunge la server sau raspunsul nu vine intreg. Fara redirectionari.
+    Singurul loc care atinge reteaua: testele il inlocuiesc (sau il probeaza pe un server local)."""
+    parti = urllib.parse.urlsplit(url)
+    clasa = http.client.HTTPSConnection if parti.scheme == 'https' else http.client.HTTPConnection
+    conn = clasa(parti.netloc, timeout=timeout)
+    expirat = threading.Event()
+
+    def la_expirare():
+        expirat.set()
+        _taie(conn)
+    cronometru = threading.Timer(timeout, la_expirare)
+    cronometru.daemon = True
+    cronometru.start()
+    try:
+        conn.request('POST', parti.path + ('?' + parti.query if parti.query else ''), body=date,
+                     headers=dict(antete, Connection='close'))
+        raspuns = conn.getresponse()
+        lungime = raspuns.getheader('Content-Length') or ''
+        if lungime.isdigit() and int(lungime) > 1024 * 1024:
+            raise OSError('raspuns prea mare')
+        return raspuns.status, raspuns.read()                   # fara `amt`: un corp taiat ridica IncompleteRead
+    except Exception as ex:
+        if expirat.is_set():                                   # orice a iesit dupa expirare e din cauza taierii
+            raise TimeoutError('timp depasit')
+        if isinstance(ex, OSError):
+            raise
+        if isinstance(ex, (http.client.HTTPException, ValueError)):
+            raise OSError(type(ex).__name__)                   # raspuns taiat, antet gresit etc.
+        raise
+    finally:
+        cronometru.cancel()
+        conn.close()
 
 
 def _cere(url, date, antete, limita):
@@ -229,16 +265,28 @@ def _token_acces(cont, limita, acum=None):
     return token
 
 
-def _cod_eroare(raspuns):
-    """Codul FCM din raspunsul de eroare (`UNREGISTERED`, `INVALID_ARGUMENT`...), sau ''."""
+def _detalii(raspuns):
+    """(cod FCM, tokenul e campul gresit) din raspunsul de eroare. Citit defensiv: orice abatere de la forma
+    asteptata (`details` care nu e lista, elemente care nu sunt obiecte) da ('', False), nu o exceptie.
+    Cod: `errorCode` din `details` (`UNREGISTERED`...), altfel `status` (`INVALID_ARGUMENT`...). Al doilea:
+    un `fieldViolations` cu campul `message.token`, adica FCM spune ca tokenul nu e valid."""
     eroare = raspuns.get('error')
     if not isinstance(eroare, dict):
-        return ''
-    for det in eroare.get('details') or []:
-        if isinstance(det, dict) and isinstance(det.get('errorCode'), str):
-            return det['errorCode'][:40]
-    stare = eroare.get('status')
-    return stare[:40] if isinstance(stare, str) else ''
+        return '', False
+    cod, token_gresit = '', False
+    detalii = eroare.get('details')
+    for det in detalii if isinstance(detalii, list) else ():
+        if not isinstance(det, dict):
+            continue
+        if not cod and isinstance(det.get('errorCode'), str):
+            cod = det['errorCode'][:40]
+        incalcari = det.get('fieldViolations')
+        for inc in incalcari if isinstance(incalcari, list) else ():
+            if isinstance(inc, dict) and inc.get('field') == 'message.token':
+                token_gresit = True
+    if not cod and isinstance(eroare.get('status'), str):
+        cod = eroare['status'][:40]
+    return cod, token_gresit
 
 
 def _scurt(token):
@@ -290,10 +338,14 @@ def trimite_date(tokeni, date, prioritate_android, timp_maxim=TIMP_MAXIM):
         if 200 <= cod < 300:
             iesire['trimise'] += 1
             continue
-        cod_fcm = _cod_eroare(_json(brut))
+        cod_fcm, token_gresit = _detalii(_json(brut))
         if cod == 404 or cod_fcm == 'UNREGISTERED':
             iesire['nregistrate'].append(token)
             eroare('%s: UNREGISTERED' % _scurt(token))
+            continue
+        if cod == 400 and cod_fcm == 'INVALID_ARGUMENT' and token_gresit:      # tokenul in sine e invalid: nu se va repara
+            iesire['nregistrate'].append(token)
+            eroare('%s: INVALID_ARGUMENT (token)' % _scurt(token))
             continue
         if cod == 401:                                         # tokenul de acces a fost respins: la urmatoarea cerere se reia
             with _BLOC:

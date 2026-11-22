@@ -17,8 +17,11 @@ import base64
 import json
 import os
 import shutil
+import socket
 import subprocess
 import tempfile
+import threading
+import time
 import unittest
 from unittest import mock
 
@@ -285,6 +288,190 @@ class Trimitere(Test):
         self.cu_http(self.acces(), *[(503, b'{}')] * 30)
         r = fcm.trimite_date(['t%02d' % i + TOKEN for i in range(30)], self.DATE, 'NORMAL')
         self.assertEqual(len(r['erori']), fcm.MAX_ERORI)
+
+
+    # ------------------------------------------------------------------ recenzia 2026-11-22
+
+    def test_details_cu_alta_forma_nu_ridica(self):
+        """`details` care nu e lista (sau cu elemente care nu sunt obiecte) dadea TypeError din `trimite_date`."""
+        for details in (5, 'x', {'a': 1}, [5, None, 'x'], [{'errorCode': 7, 'fieldViolations': 'nu'}], None):
+            with self.subTest(details=details):
+                fcm._TOKEN.update(valoare=None, expira=0.0)
+                self.cu_http(self.acces(), (400, json.dumps({'error': {'status': 'INVALID_ARGUMENT', 'details': details}}).encode()))
+                r = fcm.trimite_date([TOKEN], self.DATE, 'NORMAL')
+                self.assertEqual((r['trimise'], r['nregistrate']), (0, []))
+                self.assertIn('HTTP 400 INVALID_ARGUMENT', r['erori'][0])
+
+    def test_corpuri_de_eroare_ciudate_nu_ridica(self):
+        for corp in (b'', b'[]', b'null', b'{"error": 5}', b'{"error": {"details": [[]]}}', b'\xff\xfe', b'{"error": {"status": 7}}'):
+            with self.subTest(corp=corp):
+                fcm._TOKEN.update(valoare=None, expira=0.0)
+                self.cu_http(self.acces(), (500, corp))
+                r = fcm.trimite_date([TOKEN], self.DATE, 'NORMAL')
+                self.assertEqual((r['trimise'], r['nregistrate'], len(r['erori'])), (0, [], 1))
+
+    def test_invalid_argument_pe_campul_token_scoate_tokenul(self):
+        corp = json.dumps({'error': {'code': 400, 'status': 'INVALID_ARGUMENT', 'message': 'x', 'details': [
+            {'@type': 'type.googleapis.com/google.rpc.BadRequest',
+             'fieldViolations': [{'field': 'message.token', 'description': 'The registration token is not a valid FCM registration token'}]}]}}).encode()
+        self.cu_http(self.acces(), (400, corp))
+        r = fcm.trimite_date([TOKEN], self.DATE, 'NORMAL')
+        self.assertEqual((r['trimise'], r['nregistrate']), (0, [TOKEN]))
+        self.assertIn('INVALID_ARGUMENT (token)', r['erori'][0])
+
+    def test_invalid_argument_pe_alt_camp_nu_scoate_tokenul(self):
+        corp = json.dumps({'error': {'status': 'INVALID_ARGUMENT', 'details': [
+            {'fieldViolations': [{'field': 'message.data', 'description': 'prea mare'}]}]}}).encode()
+        self.cu_http(self.acces(), (400, corp))
+        r = fcm.trimite_date([TOKEN], self.DATE, 'NORMAL')
+        self.assertEqual((r['trimise'], r['nregistrate']), (0, []), 'un mesaj prost nu e un token prost')
+
+    def test_campul_token_fara_invalid_argument_sau_cu_alt_cod_nu_scoate_tokenul(self):
+        for cod, stare in ((500, 'INVALID_ARGUMENT'), (400, 'FAILED_PRECONDITION')):
+            fcm._TOKEN.update(valoare=None, expira=0.0)
+            corp = json.dumps({'error': {'status': stare, 'details': [{'fieldViolations': [{'field': 'message.token'}]}]}}).encode()
+            self.cu_http(self.acces(), (cod, corp))
+            self.assertEqual(fcm.trimite_date([TOKEN], self.DATE, 'NORMAL')['nregistrate'], [], (cod, stare))
+
+
+class ServerLocal:
+    """Un server TCP de proba pe 127.0.0.1: `scenariu(conexiune)` ruleaza intr-un fir pe fiecare conexiune."""
+
+    def __init__(self, scenariu):
+        self.srv = socket.socket()
+        self.srv.bind(('127.0.0.1', 0))
+        self.srv.listen(8)
+        self.port = self.srv.getsockname()[1]
+        self.scenariu = scenariu
+        self.inchis = False
+        threading.Thread(target=self._serveste, daemon=True).start()
+
+    def _serveste(self):
+        while not self.inchis:
+            try:
+                c, _ = self.srv.accept()
+            except OSError:
+                return
+            threading.Thread(target=self._una, args=(c,), daemon=True).start()
+
+    def _una(self, c):
+        try:
+            c.settimeout(30)
+            citit = b''
+            while b'\r\n\r\n' not in citit:
+                bucata = c.recv(65536)
+                if not bucata:
+                    return
+                citit += bucata
+            self.scenariu(c)
+        except OSError:
+            pass
+        finally:
+            c.close()
+
+    @property
+    def url(self):
+        return 'http://127.0.0.1:%d/v1/projects/%%s/messages:send' % self.port
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        self.inchis = True
+        self.srv.close()
+
+
+def _picatura(c, octeti, pauza, cati):
+    for _ in range(cati):
+        c.sendall(octeti)
+        time.sleep(pauza)
+
+
+class HttpPost(Test):
+    """`_http_post` pe un server local: raspunsul real si, mai ales, plafonul de timp pe TOATA cererea."""
+
+    def test_raspuns_normal_si_cod_de_eroare(self):
+        def raspunde(c):
+            c.sendall(b'HTTP/1.1 404 Not Found\r\nContent-Length: 13\r\nConnection: close\r\n\r\n{"a": "bine"}')
+        with ServerLocal(raspunde) as srv:
+            cod, corp = fcm._http_post(srv.url % 'p', b'{}', {'Content-Type': 'application/json'}, 5)
+        self.assertEqual((cod, corp), (404, b'{"a": "bine"}'))
+
+    def test_corpul_trimis_ajunge_intreg(self):
+        def raspunde(c):
+            c.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}')
+        with ServerLocal(raspunde) as srv:
+            self.assertEqual(fcm._http_post(srv.url % 'p', b'x' * 100000, {}, 5), (200, b'{}'))
+
+    def test_conexiune_refuzata_e_oserror(self):
+        s = socket.socket()
+        s.bind(('127.0.0.1', 0))
+        port = s.getsockname()[1]
+        s.close()
+        with self.assertRaises(OSError):
+            fcm._http_post('http://127.0.0.1:%d/x' % port, b'{}', {}, 5)
+
+    def test_raspuns_taiat_la_jumatate_e_oserror_nu_httpexception(self):
+        def taie(c):
+            c.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 40\r\n\r\nabc')
+        with ServerLocal(taie) as srv:
+            with self.assertRaises(OSError):
+                fcm._http_post(srv.url % 'p', b'{}', {}, 5)
+
+    def test_corpul_trimis_picatura_cu_picatura_se_opreste_la_plafon(self):
+        """Fiecare octet vine inainte de timeout-ul unei operatii de socket: cu `urlopen(timeout=)` cererea
+        dura 117 s. Plafonul e pe toata cererea."""
+        with ServerLocal(lambda c: (c.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 40\r\n\r\n'), _picatura(c, b'x', 0.2, 40))) as srv:
+            t0 = time.monotonic()
+            with self.assertRaises(TimeoutError):
+                fcm._http_post(srv.url % 'p', b'{}', {}, 1.0)
+            self.assertLess(time.monotonic() - t0, 2.0)
+
+    def test_antetele_trimise_picatura_cu_picatura_se_opreste_la_plafon(self):
+        with ServerLocal(lambda c: _picatura(c, b'H', 0.2, 40)) as srv:
+            t0 = time.monotonic()
+            with self.assertRaises(TimeoutError):
+                fcm._http_post(srv.url % 'p', b'{}', {}, 1.0)
+            self.assertLess(time.monotonic() - t0, 2.0)
+
+    def test_server_care_tace_se_opreste_la_plafon(self):
+        with ServerLocal(lambda c: time.sleep(5)) as srv:
+            t0 = time.monotonic()
+            with self.assertRaises(TimeoutError):
+                fcm._http_post(srv.url % 'p', b'{}', {}, 0.5)
+            self.assertLess(time.monotonic() - t0, 1.5)
+
+    def test_cronometrul_nu_ramane_pornit(self):
+        inainte = threading.active_count()
+        with ServerLocal(lambda c: c.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n{}')) as srv:
+            for _ in range(5):
+                fcm._http_post(srv.url % 'p', b'{}', {}, 30)
+            time.sleep(0.2)
+        self.assertLessEqual(threading.active_count(), inainte + 1, 'niciun Timer de 30 s ramas')
+
+    @unittest.skipUnless(OPENSSL, 'openssl lipseste')
+    def test_tot_apelul_trimite_date_respecta_plafonul_cu_un_server_picatura(self):
+        Chei.pregateste()
+        dir_cont = tempfile.mkdtemp(prefix='pif-fcm-pic-')
+        self.addCleanup(shutil.rmtree, dir_cont, ignore_errors=True)
+        cont = os.path.join(dir_cont, 'cont.json')
+        with open(cont, 'w') as fh:
+            json.dump({'project_id': 'p', 'client_email': 'c@p.iam', 'private_key': Chei.pkcs8}, fh)
+        env = mock.patch.dict(os.environ, {'FCM_SERVICE_ACCOUNT_FILE': cont})
+        env.start()
+        self.addCleanup(env.stop)
+        fcm._CONT.update(cale=None, mtime=None, val=None)
+        self.assertTrue(fcm.configurat())                         # incarca contul (si reseteaza tokenul de acces)
+        fcm._TOKEN.update(valoare='acces', expira=time.time() + 3000)
+        with ServerLocal(lambda c: (c.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 40\r\n\r\n'), _picatura(c, b'x', 0.3, 40))) as srv:
+            with mock.patch.object(fcm, 'URL_SEND', srv.url):
+                t0 = time.monotonic()
+                r = fcm.trimite_date([TOKEN, TOKEN + 'x', TOKEN + 'y'], {'a': 'b'}, 'NORMAL', timp_maxim=1.5)
+                durata = time.monotonic() - t0
+        self.assertLess(durata, 3.0, 'plafon 1.5 s pe tot apelul, cu trei tokeni')
+        self.assertEqual(r['trimise'], 0)
+        self.assertIn('retea (TimeoutError)', r['erori'][0])
+        self.assertIn('timp depasit', r['erori'][-1])
 
 
 class FaraCont(Test):
