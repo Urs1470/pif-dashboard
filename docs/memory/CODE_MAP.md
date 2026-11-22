@@ -10,9 +10,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `36:esteCacheVechi`, `40:esteTorqa`, `59:retrage`
 
-## app.py (620 linii)
+## app.py (622 linii)
 
-`91:_retele_de_incredere`, `105:_ip_valid`, `116:_proxy_de_incredere`, `128:_adresa_socket`, `134:_client_ip`, `155:get_or_create_secret_key`, `173:file_hash`, `200:inject_version`, `224:make_session_permanent`, `234:setup_logging`, `266:check_rate_limit`, `308:check_login_rate_limit`, `319:before_request_func`, `351:_default_csp`, `379:after_request_func`, `403:get_hashed_pin`, `412:_git_commit`, `426:healthz`, `432:login_page`, `442:login`, `456:logout`, `465:index`, `478:service_worker`, `483:add_sw_header`, `504:get_deploy_secret`, `512:webhook_deploy`, `603:page_not_found`, `610:internal_error`
+`93:_retele_de_incredere`, `107:_ip_valid`, `118:_proxy_de_incredere`, `130:_adresa_socket`, `136:_client_ip`, `157:get_or_create_secret_key`, `175:file_hash`, `202:inject_version`, `226:make_session_permanent`, `236:setup_logging`, `268:check_rate_limit`, `310:check_login_rate_limit`, `321:before_request_func`, `353:_default_csp`, `381:after_request_func`, `405:get_hashed_pin`, `414:_git_commit`, `428:healthz`, `434:login_page`, `444:login`, `458:logout`, `467:index`, `480:service_worker`, `485:add_sw_header`, `506:get_deploy_secret`, `514:webhook_deploy`, `605:page_not_found`, `612:internal_error`
 
 ## database.py (2229 linii)
 
@@ -38,9 +38,17 @@ _(fara definitii top-level)_
 
 `60:_canal`, `67:_canal_cerut`, `77:_cai`, `84:_canal_necunoscut`, `89:_canal_lipsa`, `94:_meta`, `103:app_upload`, `163:app_version`, `177:app_apk`
 
+## blueprints/asistent.py (916 linii)
+
+`112:_eroare`, `123:_este_dispozitiv`, `127:_doar_masina`, `140:_cale`, `144:_acum`, `148:_z`, `152:_scrie_atomic`, `177:_json_bytes`, `181:_jsonl_bytes`, `189:_blocat`, `211:_citeste_jsonl`, `238:_moment`, `254:_moment_sau_none`, `261:_nul_moment`, `268:_nul_text`, `274:_enum`, `281:_intreg`, `288:_fara_control`, `293:_link`, `306:_item`, `345:_veghe`, `360:valideaza_registru`, `392:_citeste_registru`, `404:_activ`, `414:_scrie_actiuni`, `427:_citeste_actiuni`, `431:_in_asteptare`, `437:_citeste_fir`, `441:_scrie_fir`, `461:_id_mesaj`, `469:_mesaj`, `481:_citeste_tokenuri`, `497:_scrie_tokenuri`, `501:_date_push`, `512:_trimite_push`, `546:put_registru`, `572:get_actiuni`, `587:post_consumat`, `620:get_fir_noi`, `629:post_stare`, `673:get_asistent`, `700:post_actiune`, `743:_fir_ion`, `778:_fir_asistent`, `825:post_fir`, `847:_citeste_corp_token`, `863:post_token`, `899:sterge_token`
+
 ## blueprints/echipa.py (1231 linii)
 
 `61:EroareGantt`, `68:_cale`, `72:_scrie_atomic`, `97:_citeste_json`, `108:citeste_sursa`, `117:citeste_snapshot`, `131:_acum`, `135:_azi`, `140:_descarca`, `168:_json_in_json`, `178:_text`, `182:_data_gantt`, `196:_id_parinte`, `204:_resurse_activitate`, `212:analiza_cod`, `227:cod_text`, `236:coduri_potrivite`, `246:normalizeaza`, `323:_incarca_dashboard`, `338:_activ`, `342:_alege_proiect`, `355:_intervale_dashboard`, `367:_zile`, `371:_perechi`, `395:_srp`, `399:_dash`, `403:_ion_pe`, `407:calculeaza`, `593:_acum_local`, `598:_local`, `603:_zi_lucratoare`, `607:urmatoarea_rulare`, `617:ultima_programata`, `627:citeste_stare`, `635:info_sincronizare`, `649:_continut`, `666:_corp`, `672:echipa_completa`, `681:echipa_in_fereastra`, `701:_trimite_activitate`, `724:_ia_scrierea`, `746:_elibereaza_scrierea`, `753:_rez`, `759:interval_perioada`, `768:_interval_brut`, `776:_radacina_brut`, `786:_plan_brut`, `802:_zile_inclusiv`, `806:_cu_date`, `820:_scor`, `828:_etapa_noua`, `849:_citeste_perioada`, `876:_salveaza_legatura`, `887:_trimite_acum`, `977:trimite_acum`, `997:_inregistreaza`, `1008:_rula`, `1082:ruleaza_sincronizarea`, `1103:_uita_legaturile`, `1118:_mascat`, `1122:_numele_meu`, `1133:get_echipa`, `1141:post_trimite`, `1167:post_sincronizeaza`, `1178:get_sursa`, `1188:put_sursa`
+
+## blueprints/fcm.py (302 linii)
+
+`42:EroareFcm`, `48:_b64u`, `52:_der`, `68:_intregi`, `80:cheie_rsa`, `112:semneaza_rs256`, `124:jwt_rs256`, `138:_cont`, `170:configurat`, `176:_http_post`, `190:_cere`, `201:_json`, `209:_token_acces`, `232:_cod_eroare`, `244:_scurt`, `248:trimite_date`
 
 ## blueprints/liste.py (230 linii)
 
