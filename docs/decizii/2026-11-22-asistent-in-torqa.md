@@ -169,10 +169,13 @@ Mașinile au id-uri fixe: `server` (Server), `pc-job` (PC job), `ionpc` (IONPC).
 
 **Mesajul lui Ion** (`POST /api/asistent/fir`), câmpuri noi opționale:
 - `ref`: `{"tip": "item|decizie|verificare|job|istoric", "id": "≤160", "titlu": "≤140", "sursa": "≤40", "masina": "server|pc-job|ionpc",
-  "mod": "discuta|raspuns"}`. `tip`, `id`, `titlu` obligatorii; `sursa` și `masina` pot lipsi (nu `null`); `mod` lipsă = `discuta`.
+  "mod": "discuta|raspuns"}`. `tip`, `id`, `titlu` obligatorii; `sursa`, `masina` și `mod` pot lipsi **sau fi `null`** (`mod` lipsă/`null` = `discuta`): serverul
+  întoarce ref-ul cu `sursa: null`, `masina: null` și `mod` pus, iar asistentul (pe răspuns, din `fir/noi`) și Torqa (din `GET`) îl retrimit
+  neschimbat.
   `mod: raspuns` doar la `tip: decizie` (400 `corpul.ref.mod`). Se stochează cu toate cheile și se întoarce în `GET` și în `fir/noi`.
 - `tinta`: `auto|server|pc-job|ionpc` (implicit `auto`; mesajele de dinainte de v1.1 se întorc tot cu `auto`).
 - `alegere` (≤40): doar cu `raspuns_la` (400 `corpul.alegere`); răspunsul lui Ion la o întrebare, vezi mai jos.
+- `ref`, `tinta` și `alegere` pot fi `null` = lipsă (`raspuns_la: null` rămâne 400, ca în v1).
 
 **Mesajul asistentului**, câmpuri și tipuri noi:
 - `tip` primește `intrebare` (unde să ruleze) și `asteapta` (taskul așteaptă o mașină oprită). Acestea două **cer** `optiuni`: 1–4 de
@@ -185,13 +188,16 @@ Mașinile au id-uri fixe: `server` (Server), `pc-job` (PC job), `ionpc` (IONPC).
 **Răspunsul lui Ion la o întrebare:** un mesaj obișnuit cu `raspuns_la: <id întrebare>` și `alegere: <id opțiune>` (`text` = eticheta).
 Verificări, sub blocarea firului: întrebarea nu există → **404**; nu e un mesaj al asistentului de tip `intrebare`/`asteapta` → **409**;
 a primit deja răspuns → **409**; `alegere` nu e între `optiuni` → **400** (`corpul.alegere`, întrebarea rămâne deschisă); 30 pe oră → 429.
-Dacă trece: întrebarea primește `raspuns: {"optiune", "ts"}` și mesajul lui Ion (`stare: "nou"`, același `ts`) se adaugă în
+Plafonul de 500 de mesaje: o `intrebare`/`asteapta` fără răspuns se tratează ca muncă deschisă (ca mesajele lui Ion `nou`/`preluat`) și
+nu cade înaintea mesajelor terminate; întrebarea la care se răspunde în scrierea curentă nu cade în ea, ca răspunsul să nu dea 404 și ca Torqa să-i
+vadă butonul ales. Cu 500 de mesaje toate deschise cade cel mai vechi, ca în v1. Dacă trece: întrebarea primește `raspuns: {"optiune", "ts"}` și mesajul lui Ion (`stare: "nou"`, același `ts`) se adaugă în
 **aceeași** scriere atomică a `fir.jsonl` (un singur `_scrie_fir`, sub aceeași blocare): nu există o stare cu răspunsul fără mesaj sau
 mesajul fără răspuns, iar două cereri simultane (două workere, dublu-tap) dau exact un 201 și un 409. Un `raspuns_la` fără `alegere` rămâne
 un reply obișnuit, ca în v1. **Retrimitere:** a doua cerere pentru aceeași întrebare dă 409 (clientul îl tratează ca „deja trimis”).
 
-**Prezența:** `PUT /api/asistent/prezenta/<masina>` `{"activ": bool, "idle_s": int 0..10^9, "versiune": "≤40 opțional"}` → 200 `{"ok", "masina"}`.
-Token de mașină sau sesiune; tokenul de dispozitiv 403; mașină necunoscută 404; câmp necunoscut sau tip greșit 400. Starea stă în
+**Prezența:** `PUT /api/asistent/prezenta/<masina>` `{"activ": bool, "idle_s": număr finit 0..10^9, "versiune": "≤40 opțional, null = lipsă"}` → 200 `{"ok", "masina"}`.
+`idle_s` poate fi float (scripturile îl citesc din `gdbus` / `xprintidle` așa) și se rotunjește **în jos** la întreg înainte de comparații și
+de stocare (900,9 → 900, încă activ); negativ, `NaN`, `Infinity`, bool, text sau peste 10^9 dau 400. Token de mașină sau sesiune; tokenul de dispozitiv 403; mașină necunoscută 404; câmp necunoscut sau tip greșit 400. Starea stă în
 `prezenta.json` (`{"masini": {id: {ultima, activ, idle_s, versiune}}}`), scris atomic sub aceeași blocare; `ultima` o pune serverul. Idempotent:
 cererea repetată lasă aceeași stare, doar `ultima` avansează. Un fișier ilizibil ca JSON se tratează ca „nicio mașină n-a raportat” și se
 rescrie la următoarea raportare (se reface în cel mult un minut); o eroare de citire a discului dă 500 la scriere, fără rescriere.
