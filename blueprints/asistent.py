@@ -18,10 +18,16 @@
 #   push.json        tokenurile FCM, atomic, drepturi 600
 #   prezenta.json    ultima raportare a fiecarei masini (v1.1), atomic
 #   asistent.lock    doar blocarea (fcntl): doi workeri nu rescriu deodata
+#   detalii/<id>.md  detaliile (Markdown) unui mesaj al asistentului, un fisier per mesaj (v1.2), atomic
 #
 # v1.1 (decizia 2026-11-22-asistent-in-torqa.md, sectiunea v1.1): `ref`, `tinta`, `alegere` pe mesajul lui Ion;
 # `intrebare`/`asteapta` cu `optiuni`, `masina` si `ref` pe mesajul asistentului; raspunsul lui Ion la o intrebare
 # (pus pe intrebare in ACEEASI scriere cu mesajul lui Ion); prezenta masinilor (`prezenta.json`, `masini` in GET).
+#
+# v1.2 (aceeasi decizie, sectiunea v1.2): `detalii` pe mesajul asistentului (la POST sau cu `PUT .../fir/<id>/detalii`),
+# `are_detalii` pe fiecare mesaj din GET si fir/noi, `GET .../fir/<id>/detalii`. Fisierul unui mesaj se scrie si se sterge
+# DOAR sub aceeasi blocare ca firul, iar fiecare scriere a firului matura fisierele fara mesaj: un mesaj scos la plafon nu
+# lasa fisier orfan, oricum ar fi curse PUT-ul si scrierea firului.
 #
 # Validarea e STRICTA: camp necunoscut, lipsa sau tip gresit da 400 cu calea campului, iar starea
 # veche ramane. Trimiterea FCM nu schimba niciodata statusul raspunsului: o eroare intra in `push.erori`.
@@ -62,9 +68,12 @@ F_FIR = 'fir.jsonl'
 F_PUSH = 'push.json'
 F_PREZENTA = 'prezenta.json'
 F_BLOCARE = 'asistent.lock'
+D_DETALII = 'detalii'
 
 MAX_CORP_REGISTRU = 1024 * 1024
 MAX_CORP = 32 * 1024
+MAX_DETALII = 65536                                # caractere, dupa strip (v1.2)
+MAX_CORP_DETALII = 1024 * 1024                     # 65 536 de caractere pot fi 786 KB in JSON (un emoji scapat = 12 octeti)
 MAX_ITEMI = 300
 MAX_SURSE = 30
 MAX_PICATE = 100
@@ -103,6 +112,7 @@ TRANZITII = {'nou': ('preluat', 'gata', 'eroare'), 'preluat': ('gata', 'eroare')
 
 _RE_UID = re.compile(r'[0-9a-f]{12}')
 _RE_MSG = re.compile(r'm_[0-9a-f]{6,16}')
+_RE_FISIER_DETALII = re.compile(r'(m_[0-9a-f]{6,16})\.md')
 _RE_SURSA_REG = re.compile(r'[a-z0-9][a-z0-9_-]{0,39}')
 _RE_APLICATIE = re.compile(r'[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+')
 _RE_DATA = re.compile(r'(\d{4})-(\d{2})-(\d{2})')
@@ -120,12 +130,13 @@ CAMPURI_PICAT = frozenset(('nume', 'detaliu'))
 CAMPURI_ACTIUNE = frozenset(('item_id', 'actiune', 'zile', 'din'))
 CAMPURI_CONSUMAT = frozenset(('rezultat', 'mesaj'))
 CAMPURI_FIR_ASISTENT = frozenset(('cine', 'tip', 'text', 'titlu', 'item_id', 'task_id', 'link', 'butoane',
-                                  'raspuns_la', 'push', 'optiuni', 'masina', 'ref'))
+                                  'raspuns_la', 'push', 'optiuni', 'masina', 'ref', 'detalii'))
 CAMPURI_FIR_ION = frozenset(('cine', 'text', 'sursa', 'raspuns_la', 'ref', 'tinta', 'alegere'))
 CAMPURI_REF = frozenset(('tip', 'id', 'titlu', 'sursa', 'masina', 'mod'))
 CAMPURI_OPTIUNE = frozenset(('id', 'eticheta'))
 CAMPURI_PREZENTA = frozenset(('activ', 'idle_s', 'versiune'))
 CAMPURI_PUSH = frozenset(('prioritate',))
+CAMPURI_DETALII = frozenset(('detalii',))
 CAMPURI_STARE = frozenset(('stare', 'task_id', 'mesaj'))
 CAMPURI_TOKEN = frozenset(('token', 'platforma', 'aplicatie', 'versiune'))
 CAMPURI_TOKEN_STERS = frozenset(('token',))
@@ -204,11 +215,12 @@ def _z(moment):
     return moment.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
-def _scrie_atomic(nume, octeti):
+def _scrie_atomic(nume, octeti, moment=None):
     """Fisier alaturat (drepturi 600), fsync, apoi `os.replace`: un cititor vede ori fisierul vechi,
-    ori pe cel nou."""
-    os.makedirs(DIR_ASISTENT, exist_ok=True)
+    ori pe cel nou. `nume` poate avea un subdirector (`detalii/<id>.md`), creat la nevoie. `moment` (datetime):
+    se pune ca data modificarii, ca `ts` din detalii sa fie momentul scrierii dupa ceasul aplicatiei."""
     cale = _cale(nume)
+    os.makedirs(os.path.dirname(cale), exist_ok=True)
     tmp = '%s.%s.tmp' % (cale, secrets.token_hex(3))
     try:
         fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -216,6 +228,8 @@ def _scrie_atomic(nume, octeti):
             fh.write(octeti)
             fh.flush()
             os.fsync(fh.fileno())
+        if moment is not None:
+            os.utime(tmp, (int(moment.timestamp()),) * 2)
         for incercare in range(5):               # Windows: un cititor deschis da PermissionError
             try:
                 os.replace(tmp, cale)
@@ -611,7 +625,9 @@ def _scrie_fir(randuri, pastreaza=()):
     si ale lui Ion deja gata/eroare), apoi, daca e nevoie, cele mai vechi oricare ar fi (doar cu 500 de
     mesaje deschise, adica un asistent mort de zeci de ore). Munca deschisa nu cade intai: mesajele lui Ion
     `nou`/`preluat` si intrebarile fara raspuns (`intrebare`/`asteapta`); `pastreaza` = id-uri care nu cad
-    in scrierea asta (intrebarea la care tocmai s-a raspuns: Torqa trebuie sa-i vada butonul ales)."""
+    in scrierea asta (intrebarea la care tocmai s-a raspuns: Torqa trebuie sa-i vada butonul ales).
+    Dupa scriere, fisierele de detalii ale mesajelor care nu mai sunt in fir se sterg (v1.2): se apeleaza doar sub
+    `_blocat()`, ca PUT-ul de detalii (tot sub blocare) sa nu poata lasa un fisier fara mesaj."""
     exces = len(randuri) - MAX_RANDURI_FIR
     if exces > 0:
         ultimul = len(randuri) - 1                             # mesajul abia adaugat nu cade niciodata
@@ -627,6 +643,7 @@ def _scrie_fir(randuri, pastreaza=()):
             pastrate = pastrate[exces:]
         randuri = pastrate
     _scrie_atomic(F_FIR, _jsonl_bytes(randuri))
+    _matura_detalii({r['id'] for r in randuri})                # mesajul scos din fir isi pierde si fisierul de detalii
 
 
 def _id_mesaj(existente):
@@ -637,8 +654,9 @@ def _id_mesaj(existente):
             return id_
 
 
-def _mesaj(r):
-    """Randul din fisier -> forma din contract (campurile lipsa devin null)."""
+def _mesaj(r, cu_detalii):
+    """Randul din fisier -> forma din contract (campurile lipsa devin null). `cu_detalii`: id-urile care au fisier
+    de detalii (`_ids_detalii()`, citit o data pe cerere); detaliile nu intra in fir, doar `are_detalii`."""
     return {'id': r['id'], 'ts': r.get('ts'), 'cine': r.get('cine'), 'tip': r.get('tip'),
             'titlu': r.get('titlu'), 'text': r.get('text', ''), 'sursa': r.get('sursa'),
             'item_id': r.get('item_id'), 'task_id': r.get('task_id'), 'link': r.get('link'),
@@ -650,7 +668,73 @@ def _mesaj(r):
             'alegere': r.get('alegere'),
             'optiuni': r.get('optiuni') if isinstance(r.get('optiuni'), list) else [],
             'masina': r.get('masina'),
-            'raspuns': r.get('raspuns') if isinstance(r.get('raspuns'), dict) else None}
+            'raspuns': r.get('raspuns') if isinstance(r.get('raspuns'), dict) else None,
+            'are_detalii': r['id'] in cu_detalii}
+
+
+# --------------------------------------------------------------------------- detalii (v1.2)
+
+def _detalii_text(corp, cale):
+    """`detalii`: text Markdown, 1-65 536 de caractere DUPA strip. Surogatele singure le respinge deja `_corp_json`,
+    pe tot corpul, cu calea campului. Intoarce textul fara spatiile de la capete (asa se si stocheaza)."""
+    v = _text(corp, 'detalii', cale, MAX_CORP_DETALII, nevid=True).strip()
+    if len(v) > MAX_DETALII:
+        raise EroareCorp('%s.detalii: maximum %d de caractere (dupa strip)' % (cale, MAX_DETALII))
+    return v
+
+
+def _nume_detalii(id_):
+    """Numele (relativ la DIR_ASISTENT) fisierului de detalii al unui mesaj. Id-ul se potriveste STRICT cu
+    `m_<6-16 cifre hex>`: nu poate contine `/`, `\\`, `..` sau NUL, deci numele nu iese din `detalii/`. A doua garda,
+    dupa cea din rute: o functie de disc nu se bazeaza pe faptul ca apelantul a verificat."""
+    if not isinstance(id_, str) or not _RE_MSG.fullmatch(id_):
+        raise ValueError('id de mesaj invalid')
+    return os.path.join(D_DETALII, id_ + '.md')
+
+
+def _ids_detalii():
+    """Id-urile mesajelor care au fisier de detalii (o singura listare de director pe cerere). Un director care
+    nu se poate citi se logheaza si da multimea goala: GET-ul principal nu cade pentru o functie auxiliara."""
+    try:
+        nume = os.listdir(_cale(D_DETALII))
+    except FileNotFoundError:
+        return set()
+    except OSError:
+        logger.warning('Asistent: %s/ nu se poate citi', D_DETALII, exc_info=True)
+        return set()
+    return {m.group(1) for m in map(_RE_FISIER_DETALII.fullmatch, nume) if m}
+
+
+def _citeste_detalii(id_):
+    """(text, ts) sau None cand fisierul lipseste; `ts` = data modificarii (o pune `_scrie_atomic` din ceasul
+    aplicatiei). OSError sau UnicodeDecodeError se ridica."""
+    with contextlib.suppress(FileNotFoundError):
+        with open(_cale(_nume_detalii(id_)), 'rb') as fh:
+            octeti = fh.read()
+            modificat = os.fstat(fh.fileno()).st_mtime
+        return octeti.decode('utf-8'), _z(datetime.fromtimestamp(modificat, timezone.utc))
+    return None
+
+
+def _scrie_detalii(id_, text):
+    _scrie_atomic(_nume_detalii(id_), text.encode('utf-8'), _acum())
+
+
+def _sterge_detalii(id_):
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(_cale(_nume_detalii(id_)))
+
+
+def _matura_detalii(ramase):
+    """Sterge fisierele de detalii al caror mesaj nu e in `ramase` (multimea id-urilor din firul tocmai scris). Acopera
+    mesajul scos la plafon si orice orfan lasat de o oprire intre scrierea fisierului si cea a firului. Doar sub
+    `_blocat()`. Fara efect asupra raspunsului: firul e deja scris, deci o eroare de disc se logheaza, iar
+    urmatoarea scriere a firului reia stergerea."""
+    for id_ in _ids_detalii() - set(ramase):
+        try:
+            _sterge_detalii(id_)
+        except OSError:
+            logger.warning('Asistent: fisierul de detalii al lui %s nu s-a putut sterge', id_, exc_info=True)
 
 
 # --------------------------------------------------------------------------- prezenta masinilor
@@ -874,7 +958,8 @@ def post_consumat(uid):
 def get_fir_noi():
     """Mesajele lui Ion cu stare `nou`, cele mai vechi intai (lista). Asistentul le preia cu
     `POST /api/asistent/fir/<id>/stare`."""
-    return jsonify([_mesaj(r) for r in _citeste_fir() if r.get('cine') == 'ion' and r.get('stare') == 'nou'])
+    cu_detalii = _ids_detalii()
+    return jsonify([_mesaj(r, cu_detalii) for r in _citeste_fir() if r.get('cine') == 'ion' and r.get('stare') == 'nou'])
 
 
 @asistent_bp.route('/api/asistent/fir/<id_>/stare', methods=['POST'])
@@ -918,6 +1003,44 @@ def post_stare(id_):
         logger.exception('Asistent: scrierea firului a esuat pe disc')
         return _eroare(500, 'Eroare pe disc la salvarea firului.')
     return jsonify({'ok': True, 'id': id_, 'stare': stare})
+
+
+@asistent_bp.route('/api/asistent/fir/<id_>/detalii', methods=['PUT'])
+@login_required
+@_doar_masina
+def put_detalii(id_):
+    """Pune sau inlocuieste detaliile unui mesaj al asistentului: {detalii: text 1-65 536 de caractere dupa strip | null}.
+    `null` le sterge (200 si cand nu existau). Token de masina sau sesiune; dispozitivul 403. 404 mesaj necunoscut
+    (inclusiv scos din fir la plafon), 409 mesajul e al lui Ion, 400 corp invalid. Mesajul se cauta si fisierul se scrie
+    sub aceeasi blocare ca firul. Idempotent: aceeasi cerere de doua ori lasa acelasi fisier (doar `ts` avanseaza).
+    Raspuns: {ok, id, are_detalii}."""
+    corp, eroare = _corp_json(MAX_CORP_DETALII)
+    if eroare:
+        return eroare
+    try:
+        _obiect(corp, 'corpul', CAMPURI_DETALII)
+        if 'detalii' not in corp:
+            raise EroareCorp('corpul.detalii: lipseste (text sau null)')
+        detalii = _detalii_text(corp, 'corpul') if corp['detalii'] is not None else None
+    except EroareCorp as e:
+        return _eroare(400, str(e))
+    if not _RE_MSG.fullmatch(id_):
+        return _eroare(404, 'mesaj necunoscut')
+    try:
+        with _blocat():
+            rand = next((r for r in _citeste_fir(True) if r['id'] == id_), None)
+            if rand is None:
+                return _eroare(404, 'mesaj necunoscut')
+            if rand.get('cine') != 'asistent':
+                return _eroare(409, 'mesajul nu e al asistentului: nu are detalii')
+            if detalii is None:
+                _sterge_detalii(id_)
+            else:
+                _scrie_detalii(id_, detalii)
+    except OSError:
+        logger.exception('Asistent: scrierea detaliilor a esuat pe disc')
+        return _eroare(500, 'Eroare pe disc la salvarea detaliilor.')
+    return jsonify({'ok': True, 'id': id_, 'are_detalii': detalii is not None})
 
 
 def _idle_s(corp):
@@ -971,6 +1094,7 @@ def get_asistent():
     actiunile in asteptare, starea push-ului si `masini` (prezenta, v1.1). Sesiune sau orice Bearer valid
     (inclusiv dispozitivul). Fara registru urcat: `registru.generat = null`, `items = []`, `veghe = null`."""
     acum = _acum()
+    cu_detalii = _ids_detalii()
     registru = _citeste_registru()
     if registru is None:
         vedere_registru, veghe = {'generat': None, 'vechime_min': None, 'items': [], 'surse': {}}, None
@@ -984,12 +1108,29 @@ def get_asistent():
         'v': 1, 'acum': _z(acum),
         'registru': vedere_registru,
         'veghe': veghe,
-        'fir': [_mesaj(r) for r in _citeste_fir()[-FIR_IN_VEDERE:]],
+        'fir': [_mesaj(r, cu_detalii) for r in _citeste_fir()[-FIR_IN_VEDERE:]],
         'actiuni_in_asteptare': [{'uid': r['uid'], 'item_id': r.get('item_id'), 'actiune': r.get('actiune')}
                                  for r in _citeste_actiuni() if _in_asteptare(r)],
         'push': {'configurat': fcm.configurat()},
         'masini': _masini(acum),
     })
+
+
+@asistent_bp.route('/api/asistent/fir/<id_>/detalii', methods=['GET'])
+@login_required
+def get_detalii(id_):
+    """Detaliile unui mesaj, pentru cititorul din Torqa: {id, detalii, ts} (`ts` = momentul scrierii). Sesiune sau orice
+    Bearer valid (inclusiv dispozitivul). 404 cand mesajul nu e in fir sau n-are detalii."""
+    if not _RE_MSG.fullmatch(id_) or not any(r['id'] == id_ for r in _citeste_fir()):
+        return _eroare(404, 'mesaj necunoscut')
+    try:
+        gasit = _citeste_detalii(id_)
+    except (OSError, UnicodeDecodeError):
+        logger.exception('Asistent: detaliile lui %s nu se pot citi', id_)
+        return _eroare(500, 'Eroare pe disc la citirea detaliilor.')
+    if gasit is None:
+        return _eroare(404, 'mesajul nu are detalii')
+    return jsonify({'id': id_, 'detalii': gasit[0], 'ts': gasit[1]})
 
 
 @asistent_bp.route('/api/asistent/actiune', methods=['POST'])
@@ -1129,6 +1270,7 @@ def _fir_asistent(corp):
             raise EroareCorp('corpul.optiuni: doar la %s' % '|'.join(TIPURI_CU_OPTIUNI))
         masina = _enum(corp, 'masina', 'corpul', IDS_MASINI) if corp.get('masina') is not None else None
         ref = _ref(corp['ref'], 'corpul.ref') if corp.get('ref') is not None else None
+        detalii = _detalii_text(corp, 'corpul') if corp.get('detalii') is not None else None
         prioritate = None
         if corp.get('push') is not None:
             push = _obiect(corp['push'], 'corpul.push', CAMPURI_PUSH)
@@ -1143,7 +1285,18 @@ def _fir_asistent(corp):
                     'butoane': butoane, 'raspuns_la': raspuns_la, 'stare': None, 'stare_detaliu': None, 'via': None,
                     'optiuni': optiuni, 'masina': masina, 'ref': ref, 'raspuns': None}
             randuri.append(rand)
-            _scrie_fir(randuri)
+            if detalii is not None:
+                # Intai fisierul, apoi firul: daca scrierea firului pica, fisierul se scoate si cererea da 500 fara
+                # urme (asistentul reincearca); un fir fara fisier ar fi un mesaj fara detaliile cerute.
+                _scrie_detalii(rand['id'], detalii)
+                try:
+                    _scrie_fir(randuri)
+                except OSError:
+                    with contextlib.suppress(OSError):
+                        _sterge_detalii(rand['id'])
+                    raise
+            else:
+                _scrie_fir(randuri)
     except OSError:
         logger.exception('Asistent: scrierea firului a esuat pe disc')
         return _eroare(500, 'Eroare pe disc la salvarea mesajului.')
@@ -1161,13 +1314,14 @@ def post_fir():
     `cine=asistent` da 403): {text, sursa?, raspuns_la?} -> 201 {id}, stare `nou`, 30 pe ora (429).
     Cu token de masina: `cine` obligatoriu; `asistent` -> {tip, text, ...push?} -> 201 {id, push};
     `ion` -> ca mai sus. Retrimiterea aceluiasi mesaj il dubleaza (contractul n-are cheie de idempotenta)."""
-    corp, eroare = _corp_json(MAX_CORP)
+    ca_ion = 'authenticated' in session or _este_dispozitiv()
+    corp, eroare = _corp_json(MAX_CORP if ca_ion else MAX_CORP_DETALII)     # doar mesajul asistentului poarta `detalii`
     if eroare:
         return eroare
     if not isinstance(corp, dict):
         return _eroare(400, 'corpul: trebuie sa fie obiect')
     cine = corp.get('cine')
-    if 'authenticated' in session or _este_dispozitiv():
+    if ca_ion:
         if cine == 'asistent':
             return _eroare(403, 'doar tokenul de masina scrie ca asistent')
         return _fir_ion(corp, 'sesiune' if 'authenticated' in session else 'dispozitiv')
