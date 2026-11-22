@@ -69,6 +69,7 @@ class Baza(CuAplicatia):
         self.env.start()
         self.addCleanup(self.env.stop)
         os.environ.pop('FCM_SERVICE_ACCOUNT_FILE', None)
+        self.patch(self.app_module, 'RATE_LIMIT', 100000)           # limita de 60/min per IP nu e subiectul acestor teste
         fcm._CONT.update(cale=None, mtime=None, val=None)
 
     def h(self, token=FULL):
@@ -92,7 +93,7 @@ class Baza(CuAplicatia):
             return fh.read()
 
     def randuri(self, nume):
-        return [json.loads(l) for l in self.fisier(nume).decode('utf-8').splitlines()]
+        return [json.loads(l) for l in self.fisier(nume).decode('utf-8').split('\n') if l.strip()]
 
     def scrie_randuri(self, nume, randuri):
         os.makedirs(self.dir, exist_ok=True)
@@ -301,7 +302,7 @@ class Vedere(Baza):
         fir = self.vedere()['fir']
         self.assertEqual((len(fir), fir[0]['text'], fir[-1]['text']), (100, 'mesaj 30', 'mesaj 129'))
         self.assertEqual(set(fir[0]), {'id', 'ts', 'cine', 'tip', 'titlu', 'text', 'sursa', 'item_id', 'task_id',
-                                        'link', 'butoane', 'raspuns_la', 'stare', 'stare_detaliu'})
+                                        'link', 'butoane', 'raspuns_la', 'stare', 'stare_detaliu', 'via'})
         self.assertEqual(fir[0]['butoane'], [])
 
     def test_sesiunea_si_tokenul_de_masina_citesc_la_fel(self):
@@ -516,7 +517,8 @@ class Fir(Baza):
         m = self.noi()[0]
         self.assertEqual(m, {'id': id_, 'ts': '2026-11-22T08:00:00Z', 'cine': 'ion', 'tip': 'mesaj', 'titlu': None,
                              'text': 'Ce am azi?', 'sursa': 'dictat', 'item_id': None, 'task_id': None, 'link': None,
-                             'butoane': [], 'raspuns_la': None, 'stare': 'nou', 'stare_detaliu': None})
+                             'butoane': [], 'raspuns_la': None, 'stare': 'nou', 'stare_detaliu': None,
+                             'via': 'dispozitiv'})
 
     def test_sursa_implicita_scris_si_cine_ion_acceptat(self):
         self.scrie_ion(cine='ion')
@@ -769,13 +771,29 @@ class Push(Baza):
         d = self.date[0][1]
         self.assertEqual((d['titlu'], d['item_id'], d['butoane']), ('', '', ''))
 
-    def test_textul_lung_se_taie_in_push_dar_ramane_intreg_in_fir(self):
+    def test_textul_lung_se_taie_in_octeti_nu_in_caractere(self):
+        """`data` din FCM are 4096 de octeti: se taie la cel mai lung prefix care incape sub 4000, fara sa rupa
+        un caracter, indiferent de cati octeti are fiecare (ASCII 1, ț 2, emoji 4)."""
         self.token_push()
-        self.cu_push(text='ț' * 2000)
-        self.assertEqual(len(self.date[0][1]['text']), 1000)
-        self.assertTrue(self.date[0][1]['text'].endswith('…'))
-        self.assertLess(len(json.dumps(self.date[0][1], ensure_ascii=False).encode('utf-8')), 4096)
-        self.assertEqual(len(self.vedere()['fir'][0]['text']), 2000)
+        titlu, item_id = 'ă' * 140, 'i' * 120
+        for text in ('ț' * 2000, '😀' * 1000, 'ab😀😀ț ' * 285):
+            with self.subTest(text=text[:6]):
+                self.date.clear()
+                self.cu_push(text=text, titlu=titlu, item_id=item_id)
+                date = self.date[0][1]
+                octeti = len(json.dumps(date, ensure_ascii=False).encode('utf-8'))
+                self.assertLessEqual(octeti, 4000)
+                self.assertTrue(date['text'].endswith('…'))
+                prefix = date['text'][:-1]
+                self.assertTrue(text.startswith(prefix.rstrip()), 'e un prefix al textului')
+                self.assertGreater(octeti, 4000 - 8, 'cel mai lung prefix: nu mai incape nici un caracter (max 4 octeti + spatiu)')
+                date['text'].encode('utf-8')                                    # niciun surogat, niciun caracter rupt
+        self.assertEqual(self.vedere()['fir'][-1]['text'], text, 'in fir ramane intreg')
+
+    def test_text_scurt_nu_se_atinge(self):
+        self.token_push()
+        self.cu_push(text='ț' * 500)
+        self.assertEqual(self.date[0][1]['text'], 'ț' * 500)
 
     def test_eroare_fcm_nu_da_5xx_ci_intra_in_erori(self):
         self.token_push()
@@ -930,3 +948,272 @@ class TokenuriPush(Baza):
         self.token_push()
         mod = stat.S_IMODE(os.stat(os.path.join(self.dir, 'push.json')).st_mode)
         self.assertEqual(mod, 0o600)
+
+
+# --------------------------------------------------------------------------- recenzia (2026-11-22)
+
+class Surogate(Baza):
+    """Un surogat izolat (`\\ud83d`) trece de `json.loads` si strica scrierea UTF-8 (500): se respinge cu 400."""
+
+    def brut(self, metoda, cale, corp, token):
+        return self.client.open(cale, method=metoda, data=corp, content_type='application/json', headers=self.h(token))
+
+    def test_surogat_in_mesajul_lui_ion(self):
+        r = self.brut('POST', '/api/asistent/fir', '{"text": "salut \\ud83d"}', DEVICE)
+        self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+        self.assertIn('corpul.text', r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'fir.jsonl')))
+
+    def test_surogat_in_registru_cu_calea_campului(self):
+        r = self.brut('PUT', '/api/asistent/registru',
+                      json.dumps(registru(item(titlu='x \ud83d'))), FULL)
+        self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+        self.assertIn('items[0].titlu', r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'registru.json')))
+
+    def test_surogat_in_mesajul_asistentului_si_in_restul_corpurilor(self):
+        for metoda, cale, corp, token in (
+                ('POST', '/api/asistent/fir', '{"cine": "asistent", "tip": "info", "text": "a\\udc00"}', FULL),
+                ('POST', '/api/asistent/fir', '{"cine": "asistent", "tip": "info", "text": "x", "butoane": ["\\ud800"]}', FULL),
+                ('POST', '/api/asistent/actiune', '{"item_id": "\\ud83d", "actiune": "gata"}', DEVICE),
+                ('POST', '/api/asistent/push/token', '{"token": "\\ud83d", "platforma": "android", "aplicatie": "a.b"}', DEVICE),
+                ('POST', '/api/asistent/fir', '{"text": "x", "\\ud83d": 1}', DEVICE)):
+            with self.subTest(corp=corp):
+                r = self.brut(metoda, cale, corp, token)
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn('corpul', r.get_json()['error'])
+        self.assertEqual(os.listdir(self.dir) if os.path.exists(self.dir) else [], [])
+
+    def test_perechea_valida_de_surogate_e_emoji_si_trece(self):
+        r = self.brut('POST', '/api/asistent/fir', '{"text": "salut \\ud83d\\ude00"}', DEVICE)
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(self.noi()[0]['text'], 'salut 😀')
+
+
+@unittest.skipIf(not hasattr(os, 'geteuid') or os.geteuid() == 0, 'chmod 0 nu opreste citirea pentru root / pe Windows')
+class EroriDeCitire(Baza):
+    """O eroare de citire (permisiuni) nu trebuie sa duca la rescrierea fisierului pornind de la nimic."""
+
+    def fara_acces(self, nume):
+        cale = os.path.join(self.dir, nume)
+        os.chmod(cale, 0)
+        self.addCleanup(os.chmod, cale, 0o600)
+        return cale
+
+    def test_fir_ilizibil_da_500_si_nu_pierde_mesajele(self):
+        for t in ('unu', 'doi', 'trei'):
+            self.assertEqual(self.scrie_ion(t).status_code, 201)
+        prima = self.fisier('fir.jsonl')
+        cale = self.fara_acces('fir.jsonl')
+        for r in (self.scrie_ion('patru'), self.scrie_asistent(), self.stare('m_ffffff', 'preluat')):
+            self.assertEqual(r.status_code, 500)
+        os.chmod(cale, 0o600)
+        self.assertEqual(self.fisier('fir.jsonl'), prima)
+        self.assertEqual(len(self.randuri('fir.jsonl')), 3)
+
+    def test_citirea_simpla_cu_fisier_ilizibil_nu_da_500(self):
+        self.scrie_ion('unu')
+        self.fara_acces('fir.jsonl')
+        v = self.vedere()
+        self.assertEqual(v['fir'], [])
+        self.assertEqual(self.client.get('/api/asistent/fir/noi', headers=self.h(FULL)).get_json(), [])
+
+    def test_actiuni_ilizibile_dau_500_fara_scriere(self):
+        self.pune_ok(item())
+        uid = self.actiune('torqa:task-9').get_json()['uid']
+        prima = self.fisier('actiuni.jsonl')
+        cale = self.fara_acces('actiuni.jsonl')
+        self.assertEqual(self.actiune('torqa:task-9', 'claude').status_code, 500)
+        self.assertEqual(self.consuma(uid).status_code, 500)
+        os.chmod(cale, 0o600)
+        self.assertEqual(self.fisier('actiuni.jsonl'), prima)
+
+    def test_tokenuri_ilizibile_dau_500_si_raman(self):
+        self.token_push('A' * 40)
+        self.token_push('B' * 40)
+        prima = self.fisier('push.json')
+        cale = self.fara_acces('push.json')
+        self.assertEqual(self.token_push('C' * 40).status_code, 500)
+        r = self.client.delete('/api/asistent/push/token', json={'token': 'A' * 40}, headers=self.h(DEVICE))
+        self.assertEqual(r.status_code, 500)
+        os.chmod(cale, 0o600)
+        self.assertEqual(self.fisier('push.json'), prima)
+        self.assertEqual([t['token'][0] for t in self.tokenuri()], ['A', 'B'])
+
+    def test_registru_ilizibil_da_500_la_put(self):
+        self.pune_ok(item('vechi:1'))
+        prima = self.fisier('registru.json')
+        cale = self.fara_acces('registru.json')
+        self.assertEqual(self.pune(registru(item('nou:1'), generat='2026-11-22T07:40:00Z')).status_code, 500)
+        os.chmod(cale, 0o600)
+        self.assertEqual(self.fisier('registru.json'), prima)
+
+
+class DateStricate(Baza):
+    """Ce nu se poate citi nu se arunca tacut la rescriere: merge in `<fisier>.corupt`, o singura data."""
+
+    def corupt(self, nume):
+        with open(os.path.join(self.dir, nume + '.corupt'), 'rb') as fh:
+            return fh.read()
+
+    def test_liniile_stricate_din_fir_se_pastreaza_in_corupt(self):
+        self.scrie_ion('unu')
+        with open(os.path.join(self.dir, 'fir.jsonl'), 'ab') as fh:
+            fh.write(b'{"id": "m_zzzz\n\xff\xfe garbage\n[1]\n')
+        self.assertEqual(self.scrie_ion('doi').status_code, 201)
+        self.assertEqual([r['text'] for r in self.randuri('fir.jsonl')], ['unu', 'doi'])
+        corupt = self.corupt('fir.jsonl')
+        self.assertEqual(corupt.split(b'\n')[:-1], [b'{"id": "m_zzzz', b'\xff\xfe garbage', b'[1]'])
+        self.assertEqual(stat.S_IMODE(os.stat(os.path.join(self.dir, 'fir.jsonl.corupt')).st_mode), 0o600)
+        self.scrie_ion('trei')
+        self.assertEqual(self.corupt('fir.jsonl'), corupt, 'a doua scriere nu dubleaza copia')
+
+    def test_actiuni_stricate_se_pastreaza_in_corupt(self):
+        self.pune_ok(item())
+        os.makedirs(self.dir, exist_ok=True)
+        with open(os.path.join(self.dir, 'actiuni.jsonl'), 'w') as fh:
+            fh.write('nu e json\n')
+        self.assertEqual(self.actiune().status_code, 201)
+        self.assertEqual(self.corupt('actiuni.jsonl'), b'nu e json\n')
+
+    def test_push_json_stricat_se_pastreaza_si_se_reia_de_la_zero(self):
+        self.token_push('A' * 40)
+        with open(os.path.join(self.dir, 'push.json'), 'wb') as fh:
+            fh.write(b'\x00\x00 nu e json')
+        self.assertEqual(self.token_push('B' * 40).status_code, 200)
+        self.assertEqual([t['token'][0] for t in self.tokenuri()], ['B'])
+        self.assertEqual(self.corupt('push.json'), b'\x00\x00 nu e json\n')
+
+    def test_intrari_de_token_cu_alta_forma_se_pastreaza(self):
+        with open(os.path.join(self.dir if os.path.isdir(self.dir) else (os.makedirs(self.dir) or self.dir), 'push.json'), 'w') as fh:
+            json.dump({'tokeni': [{'token': 'bun-' + 'a' * 20}, {'fara': 'token'}, 7]}, fh)
+        self.token_push('B' * 40)
+        self.assertEqual(sorted(t['token'][0] for t in self.tokenuri()), ['B', 'b'])
+        self.assertEqual(self.corupt('push.json').split(b'\n')[:-1], [b'{"fara": "token"}', b'7'])
+
+    def test_registru_stricat_e_inlocuit_la_put(self):
+        os.makedirs(self.dir)
+        with open(os.path.join(self.dir, 'registru.json'), 'w') as fh:
+            fh.write('{broken')
+        self.assertEqual(self.pune(registru(item())).status_code, 200)
+
+    def test_u2028_si_u0085_in_text_nu_rup_randul(self):
+        """`splitlines` ar fi rupt randul la U+2028 / U+0085 (json.dumps nu le scapa): mesajul ar fi disparut."""
+        text = 'a\u2028b\u0085c\u2029d'
+        self.assertEqual(self.scrie_ion(text).status_code, 201)
+        self.assertEqual(self.scrie_asistent(text='x\u2028y').status_code, 201)
+        self.assertEqual(len(self.randuri('fir.jsonl')), 2)
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'fir.jsonl.corupt')))
+        fir = self.vedere()['fir']
+        self.assertEqual([m['text'] for m in fir], [text, 'x\u2028y'])
+
+
+class ItemiAscunsi(Baza):
+    """Actiunea se accepta doar pe itemi activi: a doua apasare pe butonul din notificare, dupa ce asistentul a
+    preluat-o pe prima, nu face al doilea task."""
+
+    def test_stari_neactive_dau_409_pentru_orice_actiune(self):
+        self.pune_ok(item('a:claude', stare='la_claude'), item('a:gata', stare='gata'), item('a:ign', stare='ignorat'),
+                     item('a:viitor', stare='amanat', amanat_pana='2026-11-22T08:00:01Z'))
+        for id_ in ('a:claude', 'a:gata', 'a:ign', 'a:viitor'):
+            for actiune in ('claude', 'gata', 'nu_util'):
+                with self.subTest(item=id_, actiune=actiune):
+                    r = self.actiune(id_, actiune)
+                    self.assertEqual(r.status_code, 409, r.get_data(as_text=True))
+                    self.assertIn('nu e activ', r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'actiuni.jsonl')))
+
+    def test_stari_active_trec(self):
+        self.pune_ok(item('a:nou', stare='nou'), item('a:vazut', stare='vazut'),
+                     item('a:expirat', stare='amanat', amanat_pana='2026-11-22T07:59:59Z'))
+        for id_ in ('a:nou', 'a:vazut', 'a:expirat'):
+            self.assertEqual(self.actiune(id_, 'claude').status_code, 201, id_)
+
+    def test_a_doua_apasare_dupa_ce_asistentul_a_preluat_prima(self):
+        self.pune_ok(item('a:1'))
+        uid = self.actiune('a:1', 'claude', din='notificare').get_json()['uid']
+        self.assertEqual(self.actiune('a:1', 'claude', din='notificare').status_code, 409, 'cat asteapta')
+        self.consuma(uid)
+        self.pune(registru(item('a:1', stare='la_claude'), generat='2026-11-22T07:40:00Z'))
+        self.assertEqual(self.actiune('a:1', 'claude', din='notificare').status_code, 409, 'dupa ce itemul a trecut la_claude')
+        self.assertEqual(len(self.randuri('actiuni.jsonl')), 1)
+
+    def test_itemul_necunoscut_ramane_404(self):
+        self.pune_ok(item('a:1', stare='gata'))
+        self.assertEqual(self.actiune('nu:exista').status_code, 404)
+
+
+class Via(Baza):
+    """`via` il pune serverul pe mesajul lui Ion: asistentul afla de unde vine."""
+
+    def mesaj_nou(self):
+        return self.noi()[-1]
+
+    def test_dispozitiv(self):
+        self.scrie_ion(token=DEVICE)
+        self.assertEqual(self.mesaj_nou()['via'], 'dispozitiv')
+
+    def test_masina(self):
+        r = self.client.post('/api/asistent/fir', json={'cine': 'ion', 'text': 'prin masina'}, headers=self.h(FULL))
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(self.mesaj_nou()['via'], 'masina')
+
+    def test_sesiune(self):
+        self.login()
+        self.client.get('/api/asistent')
+        csrf = {'X-CSRF-Token': self.client.get_cookie('csrf_token').value}
+        self.assertEqual(self.client.post('/api/asistent/fir', json={'text': 'din browser'}, headers=csrf).status_code, 201)
+        self.assertEqual(self.mesaj_nou()['via'], 'sesiune')
+
+    def test_mesajul_asistentului_nu_are_via(self):
+        self.scrie_asistent()
+        self.assertIsNone(self.vedere()['fir'][-1]['via'])
+
+    def test_clientul_nu_poate_pune_via(self):
+        for token in (DEVICE, FULL):
+            r = self.client.post('/api/asistent/fir', json={'cine': 'ion', 'text': 'x', 'via': 'masina'}, headers=self.h(token))
+            self.assertEqual(r.status_code, 400)
+            self.assertIn('corpul.via', r.get_json()['error'])
+
+    def test_via_apare_si_in_get_asistent(self):
+        self.scrie_ion(token=DEVICE)
+        self.assertEqual(self.vedere()['fir'][0]['via'], 'dispozitiv')
+
+
+class Linkuri(Baza):
+    """`link` ajunge in notificari si in aplicatie: fara cai care ies din vault, fara https care ascunde host-ul."""
+
+    OK = ('wiki/job/Foo bar.md', 'wiki/a%20b.md', 'x.md', './x', 'wiki/job/a..b.md', 'https://pif.iupif.org/torqa/?a=1&b=%2F',
+          'https://exemplu.ro:8443/x#y')
+    REFUZATE = (
+        ('https:// fara host', 'https://'), ('https:/// fara host', 'https:///x'), ('https cu cale doar', 'https:///etc/passwd'),
+        ('https port gol', 'https://:443/x'), ('userinfo', 'https://u:p@evil.example/x'), ('userinfo simplu', 'https://ion@evil.example/'),
+        ('https cu spatiu', 'https://exemplu.ro/a b'), ('https cu backslash', 'https://exemplu.ro\\@evil.example/'),
+        ('https port gresit', 'https://exemplu.ro:99999/x'),
+        ('%2e%2e', '%2e%2e/x'), ('%2E%2E majuscule', 'wiki/%2E%2E/x'), ('%2f', 'wiki%2f..%2fx'), ('%5c', 'wiki%5cx'), ('%00', 'x%00.md'),
+        ('..', 'a/../b'), ('doar ..', '..'), ('absolut', '/etc/passwd'), ('backslash', 'a\\b'), ('schema', 'javascript:alert(1)'),
+        ('schema data', 'data:text/html,x'), ('cu doua puncte', 'wiki/a:b.md'), ('//host', '//evil.example/x'),
+        ('RLO', 'wiki/\u202emd.xe'), ('LRI', 'wiki/\u2066x'), ('PDI', 'wiki/x\u2069'), ('LRE', 'a\u202ab'), ('PDF', 'a\u202cb'),
+        ('LRM', 'a\u200eb'), ('ALM', 'a\u061cb'), ('bidi in https', 'https://exemplu.ro/\u202ex'),
+        ('control', 'a\x01b'), ('tab', 'a\tb'), ('newline', 'a\nb'), ('DEL', 'a\x7fb'), ('C1', 'a\x85b'), ('NUL', 'a\x00b'),
+        ('U+2028', 'a\u2028b'),
+    )
+
+    def test_acceptate(self):
+        for link in self.OK:
+            with self.subTest(link=link):
+                r = self.scrie_asistent(link=link)
+                self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+                self.assertEqual(self.vedere()['fir'][-1]['link'], link)
+
+    def test_refuzate_in_fir_si_in_registru(self):
+        for nume, link in self.REFUZATE:
+            with self.subTest(nume):
+                r = self.scrie_asistent(link=link)
+                self.assertEqual(r.status_code, 400, (link, r.get_data(as_text=True)))
+                self.assertIn('corpul.link', r.get_json()['error'])
+                r = self.pune(registru(item(link=link)))
+                self.assertEqual(r.status_code, 400, (link, r.get_data(as_text=True)))
+                self.assertIn('items[0].link', r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'fir.jsonl')))
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'registru.json')))

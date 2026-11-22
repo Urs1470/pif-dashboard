@@ -30,6 +30,7 @@ import re
 import secrets
 import threading
 import time
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 try:
@@ -41,7 +42,7 @@ except ImportError:                               # Windows
 from flask import Blueprint, g, jsonify, request, session
 
 from blueprints import fcm
-from blueprints.sistem import EroareCorp, _corp_json, _lista, _obiect, _text
+from blueprints.sistem import EroareCorp, _corp_json as _corp_json_brut, _lista, _obiect, _text
 from utils import login_required, UPLOAD_FOLDER
 
 logger = logging.getLogger('pif_dashboard')
@@ -66,7 +67,7 @@ MAX_TOKENURI = 20
 FIR_IN_VEDERE = 100
 MESAJE_PE_ORA = 30
 MAX_ZILE = 31
-TEXT_PUSH = 1000                                  # caractere din text in push; mesajul intreg ramane in fir
+DATE_PUSH_OCTETI = 4000                           # `data` din mesajul FCM are 4096 de octeti pe tot; textul se taie sub asta
 
 SURSE_ITEM = ('torqa', 'mail', 'sistem', 'server', 'netdata', 'vault', 'backlog', 'finante', 'ci', 'claude', 'pagina')
 GRAVITATI = ('critic', 'urgent', 'azi', 'info')
@@ -76,6 +77,7 @@ INCREDERI = ('proprie', 'straina')
 ACTIUNI_ITEM = ('gata', 'amana', 'ignora', 'claude')
 ACTIUNI_POST = ACTIUNI_ITEM + ('nu_util',)
 DIN = ('pagina', 'notificare')
+VIA = ('sesiune', 'dispozitiv', 'masina')
 TIPURI_ASISTENT = ('brief', 'alerta', 'raspuns', 'lucreaza', 'rezultat', 'info')
 BUTOANE = ('claude', 'gata', 'amana', 'ignora', 'deschide')
 PRIORITATI = ('urgent', 'normal', 'silent')
@@ -105,6 +107,37 @@ CAMPURI_PUSH = frozenset(('prioritate',))
 CAMPURI_STARE = frozenset(('stare', 'task_id', 'mesaj'))
 CAMPURI_TOKEN = frozenset(('token', 'platforma', 'aplicatie', 'versiune'))
 CAMPURI_TOKEN_STERS = frozenset(('token',))
+
+
+# --------------------------------------------------------------------------- corpul cererii
+
+def _fara_surogate(v, cale):
+    """Un surogat izolat (`\\ud83d`) trece de `json.loads`, dar nu se poate scrie ca UTF-8: ar da 500 la
+    scriere. Se respinge aici, cu calea campului (si in chei)."""
+    if isinstance(v, str):
+        if any('\ud800' <= c <= '\udfff' for c in v):
+            raise EroareCorp('%s: caractere Unicode invalide (surogat izolat)' % cale)
+    elif isinstance(v, dict):
+        for k, x in v.items():
+            _fara_surogate(k, '%s.%s' % (cale, k.encode('ascii', 'backslashreplace').decode()))
+            _fara_surogate(x, '%s.%s' % (cale, k) if cale else k)
+    elif isinstance(v, list):
+        for ix, x in enumerate(v):
+            _fara_surogate(x, '%s[%d]' % (cale, ix))
+
+
+def _corp_json(maxim, gol_ok=False):
+    """Ca `sistem._corp_json`, plus 400 cu calea campului la surogate izolate."""
+    corp, eroare = _corp_json_brut(maxim, gol_ok=gol_ok)
+    if eroare:
+        return corp, eroare
+    try:
+        _fara_surogate(corp, 'corpul')
+    except EroareCorp as e:
+        return None, _eroare(400, str(e))
+    except RecursionError:
+        return None, _eroare(400, 'Body JSON invalid sau lipsa')
+    return corp, None
 
 
 # --------------------------------------------------------------------------- erori si acces
@@ -208,28 +241,58 @@ def _blocat():
                     msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
 
 
-def _citeste_jsonl(nume, cheie_text):
-    """Randurile unui .jsonl: obiecte cu `cheie_text` string. Un rand stricat se logheaza si se sare."""
+def _salveaza_corupte(nume, bucati):
+    """Ce nu se poate citi dintr-un fisier de date NU se pierde la rescriere: se adauga (o singura data
+    fiecare bucata) in `<nume>.corupt`, cu drepturi 600, si se logheaza. OSError se ridica: fara copie, fara scriere."""
+    if not bucati:
+        return
+    cale = _cale(nume + '.corupt')
+    try:
+        with open(cale, 'rb') as fh:
+            deja = set(fh.read().split(b'\n'))
+    except FileNotFoundError:
+        deja = set()
+    noi = [b for b in bucati if b not in deja]
+    if noi:
+        os.makedirs(DIR_ASISTENT, exist_ok=True)
+        fd = os.open(cale, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+        with os.fdopen(fd, 'ab') as fh:
+            for b in noi:
+                fh.write(b.replace(b'\n', b' ') + b'\n')
+        logger.warning('Asistent: %d bucati ilizibile din %s au fost puse in %s.corupt', len(noi), nume, nume)
+
+
+def _citeste_jsonl(nume, cheie_text, strict=False):
+    """Randurile unui .jsonl: obiecte cu `cheie_text` string. Liniile se despart DOAR la `\\n` (`splitlines`
+    ar rupe un rand care contine U+2028 sau U+0085, pe care `json.dumps` nu le scapa).
+    `strict=True` (citirea dinaintea unei scrieri, sub blocare): o eroare de citire (alta decat fisier lipsa)
+    se ridica, ca sa nu se rescrie fisierul pornind de la nimic, iar liniile stricate merg in `<nume>.corupt`.
+    `strict=False` (doar citire): eroarea se logheaza si dau []; liniile stricate se sar."""
     try:
         with open(_cale(nume), 'rb') as fh:
             brut = fh.read()
     except FileNotFoundError:
         return []
     except OSError:
+        if strict:
+            raise
         logger.warning('Asistent: %s nu se poate citi', nume, exc_info=True)
         return []
-    randuri = []
-    for nr, linie in enumerate(brut.decode('utf-8', errors='replace').splitlines(), 1):
+    randuri, rele = [], []
+    for nr, linie in enumerate(brut.split(b'\n'), 1):
         if not linie.strip():
             continue
         try:
-            r = json.loads(linie)
-        except ValueError:
+            r = json.loads(linie.decode('utf-8'))
+        except (ValueError, RecursionError):                 # JSONDecodeError, UnicodeDecodeError
             r = None
         if not isinstance(r, dict) or not isinstance(r.get(cheie_text), str):
             logger.warning('Asistent: %s, linia %d are alta forma; se ignora', nume, nr)
+            rele.append(linie)
             continue
         randuri.append(r)
+    if strict:
+        _salveaza_corupte(nume, rele)
     return randuri
 
 
@@ -290,16 +353,37 @@ def _fara_control(v, cale):
         raise EroareCorp('%s: fara caractere de control' % cale)
 
 
+# Caractere care nu au ce cauta intr-un link: de control (C0, DEL, C1), separatoare de linie si de paragraf,
+# marcajele de directie (bidi) cu care un nume de fisier sau un host se poate rasturna la afisare.
+_LINK_INTERZISE = frozenset(chr(c) for c in (*range(0, 32), *range(127, 160), 0x061C, 0x200E, 0x200F,
+                                             *range(0x2028, 0x202F), *range(0x2066, 0x206A), 0xFEFF))
+_RE_PROCENT_PERICULOS = re.compile(r'%(2e|2f|5c|00)', re.IGNORECASE)
+
+
 def _link(obj, camp, cale):
-    """Cale relativa din vault (fara radacina, fara `..`, fara schema) sau `https://`. None cand lipseste."""
+    """Cale relativa din vault sau `https://host/...`. None cand lipseste.
+    Relativa: fara `/` sau `\\` la inceput, fara `:` (nicio schema), fara segment `..`, fara `%2e`/`%2f`/`%5c`/`%00`
+    (un `%2e%2e` decodat mai tarziu de un client ar iesi din vault). https: cu host, fara user:parola@,
+    fara spatii. Oricare: fara caractere de control sau de directie."""
     if obj.get(camp) is None:
         return None
     v = _text(obj, camp, cale, 500, nevid=True)
-    _fara_control(v, '%s.%s' % (cale, camp))
+    c = '%s.%s' % (cale, camp)
+    if any(ch in _LINK_INTERZISE for ch in v):
+        raise EroareCorp('%s: fara caractere de control sau de directie' % c)
     if v.startswith('https://'):
+        try:
+            parti = urllib.parse.urlsplit(v)
+            host = parti.hostname
+            parti.port                                         # ridica ValueError la un port invalid
+        except ValueError:
+            raise EroareCorp('%s: https:// cu host valid' % c)
+        if not host or '@' in parti.netloc or any(ch.isspace() or ch == '\\' for ch in v):
+            raise EroareCorp('%s: https:// cu host, fara user:parola@, fara spatii' % c)
         return v
-    if v.startswith(('/', '\\')) or ':' in v or '\\' in v or '..' in v.split('/'):
-        raise EroareCorp('%s.%s: cale relativa din vault sau https://' % (cale, camp))
+    if (v.startswith(('/', '\\')) or ':' in v or '\\' in v or '..' in v.split('/')
+            or _RE_PROCENT_PERICULOS.search(v)):
+        raise EroareCorp('%s: cale relativa din vault sau https://' % c)
     return v
 
 
@@ -389,14 +473,21 @@ def valideaza_registru(corp):
     return registru
 
 
-def _citeste_registru():
-    """Registrul stocat, sau None cand lipseste ori nu mai respecta contractul (se logheaza)."""
+def _citeste_registru(strict=False):
+    """Registrul stocat, sau None cand lipseste ori nu mai respecta contractul (se logheaza; un registru
+    stricat e inlocuit la urmatorul PUT, fiindca asistentul retrimite starea completa). `strict`: o eroare
+    de citire a fisierului (permisiuni, disc) se ridica in loc sa treaca drept „lipsa”."""
     try:
         with open(_cale(F_REGISTRU), 'rb') as fh:
             return valideaza_registru(json.loads(fh.read().decode('utf-8')))
     except FileNotFoundError:
         return None
-    except (OSError, ValueError, RecursionError) as e:   # EroareCorp, JSONDecodeError, UnicodeDecodeError
+    except OSError as e:
+        if strict:
+            raise
+        logger.warning('Asistent: %s nu se poate citi (%s); se ignora', F_REGISTRU, e)
+        return None
+    except (ValueError, RecursionError) as e:            # EroareCorp, JSONDecodeError, UnicodeDecodeError
         logger.warning('Asistent: %s nu se poate citi (%s); se ignora', F_REGISTRU, e)
         return None
 
@@ -424,8 +515,8 @@ def _scrie_actiuni(randuri):
     _scrie_atomic(F_ACTIUNI, _jsonl_bytes(pastrate))
 
 
-def _citeste_actiuni():
-    return _citeste_jsonl(F_ACTIUNI, 'uid')
+def _citeste_actiuni(strict=False):
+    return _citeste_jsonl(F_ACTIUNI, 'uid', strict)
 
 
 def _in_asteptare(r):
@@ -434,8 +525,8 @@ def _in_asteptare(r):
 
 # --------------------------------------------------------------------------- fir
 
-def _citeste_fir():
-    return _citeste_jsonl(F_FIR, 'id')
+def _citeste_fir(strict=False):
+    return _citeste_jsonl(F_FIR, 'id', strict)
 
 
 def _scrie_fir(randuri):
@@ -473,40 +564,68 @@ def _mesaj(r):
             'item_id': r.get('item_id'), 'task_id': r.get('task_id'), 'link': r.get('link'),
             'butoane': r.get('butoane') if isinstance(r.get('butoane'), list) else [],
             'raspuns_la': r.get('raspuns_la'), 'stare': r.get('stare'),
-            'stare_detaliu': r.get('stare_detaliu')}
+            'stare_detaliu': r.get('stare_detaliu'), 'via': r.get('via')}
 
 
 # --------------------------------------------------------------------------- push
 
-def _citeste_tokenuri():
-    """Lista de tokenuri stocata ([{token, platforma, aplicatie, versiune, inregistrat, ultima_vedere}])."""
+def _citeste_tokenuri(strict=False):
+    """Lista de tokenuri stocata ([{token, platforma, aplicatie, versiune, inregistrat, ultima_vedere}]).
+    `strict` (citirea dinaintea unei scrieri, sub blocare): eroarea de citire se ridica (nu se rescrie de la
+    zero), iar continutul care nu se poate citi merge in `push.json.corupt`."""
     try:
         with open(_cale(F_PUSH), 'rb') as fh:
-            brut = json.loads(fh.read().decode('utf-8'))
+            octeti = fh.read()
     except FileNotFoundError:
         return []
-    except (OSError, ValueError, RecursionError):
+    except OSError:
+        if strict:
+            raise
         logger.warning('Asistent: %s nu se poate citi; se ignora', F_PUSH)
         return []
-    lista = brut.get('tokeni') if isinstance(brut, dict) else None
-    if not isinstance(lista, list):
+    try:
+        brut = json.loads(octeti.decode('utf-8'))
+        lista = brut.get('tokeni') if isinstance(brut, dict) else None
+        if not isinstance(lista, list):
+            raise ValueError('forma neasteptata')
+    except (ValueError, RecursionError):
+        logger.warning('Asistent: %s nu se poate citi; se ignora', F_PUSH)
+        if strict:
+            _salveaza_corupte(F_PUSH, [octeti])
         return []
-    return [t for t in lista if isinstance(t, dict) and isinstance(t.get('token'), str) and t['token']]
+    bune = [t for t in lista if isinstance(t, dict) and isinstance(t.get('token'), str) and t['token']]
+    if strict and len(bune) != len(lista):
+        _salveaza_corupte(F_PUSH, [json.dumps(t, ensure_ascii=True).encode('ascii') for t in lista if t not in bune])
+    return bune
 
 
 def _scrie_tokenuri(tokenuri):
     _scrie_atomic(F_PUSH, _json_bytes({'tokeni': tokenuri}))
 
 
+def _octeti_date(date):
+    return len(json.dumps(date, ensure_ascii=False).encode('utf-8'))
+
+
 def _date_push(mesaj, prioritate):
-    """Mesajul FCM DOAR de date: toate valorile string. `text` se taie (FCM are 4 KB pe tot), restul e in fir."""
+    """Mesajul FCM DOAR de date: toate valorile string. `data` are 4096 de octeti pe tot (chei si valori):
+    `text` se taie la cel mai lung prefix (pe caractere, deci niciun caracter UTF-8 rupt) cu care `data`,
+    serializat JSON, ramane sub DATE_PUSH_OCTETI; mesajul intreg ramane in fir."""
     text = mesaj.get('text') or ''
-    if len(text) > TEXT_PUSH:
-        text = text[:TEXT_PUSH - 1] + '…'
-    return {'v': '1', 'tip': mesaj.get('tip') or 'info', 'msg_id': mesaj['id'],
+    date = {'v': '1', 'tip': mesaj.get('tip') or 'info', 'msg_id': mesaj['id'],
             'titlu': mesaj.get('titlu') or '', 'text': text, 'item_id': mesaj.get('item_id') or '',
             'butoane': ','.join(mesaj.get('butoane') or []), 'prioritate': prioritate,
             'deschide': '/system?tab=asistent&msg=%s' % mesaj['id']}
+    if _octeti_date(date) > DATE_PUSH_OCTETI:
+        jos, sus = 0, len(text)                              # cel mai lung prefix care incape (cautare binara)
+        while jos < sus:
+            mijloc = (jos + sus + 1) // 2
+            if _octeti_date(dict(date, text=text[:mijloc].rstrip() + '…')) <= DATE_PUSH_OCTETI:
+                jos = mijloc
+            else:
+                sus = mijloc - 1
+        date['text'] = text[:jos].rstrip() + '…'
+    return date
 
 
 def _trimite_push(mesaj, prioritate):
@@ -529,7 +648,7 @@ def _trimite_push(mesaj, prioritate):
         if iesire['nregistrate']:
             scoase = set(iesire['nregistrate'])
             with _blocat():
-                _scrie_tokenuri([t for t in _citeste_tokenuri() if t['token'] not in scoase])
+                _scrie_tokenuri([t for t in _citeste_tokenuri(True) if t['token'] not in scoase])
     except Exception:                                          # niciodata 5xx din cauza push-ului
         logger.exception('Asistent: trimiterea push a esuat neasteptat')
         rezultat['erori'].append('eroare interna la trimitere')
@@ -556,7 +675,7 @@ def put_registru():
         return _eroare(400, str(e))
     try:
         with _blocat():
-            curent = _citeste_registru()
+            curent = _citeste_registru(True)
             if curent is not None and _moment(registru['generat'], 'generat') < _moment(curent['generat'], 'generat'):
                 return _eroare(409, 'registru mai vechi decat cel curent (%s)' % curent['generat'])
             _scrie_atomic(F_REGISTRU, _json_bytes(registru))
@@ -600,7 +719,7 @@ def post_consumat(uid):
         return _eroare(404, 'actiune necunoscuta')
     try:
         with _blocat():
-            randuri = _citeste_actiuni()
+            randuri = _citeste_actiuni(True)
             rand = next((r for r in randuri if r['uid'] == uid), None)
             if rand is None:
                 return _eroare(404, 'actiune necunoscuta')
@@ -644,7 +763,7 @@ def post_stare(id_):
         return _eroare(404, 'mesaj necunoscut')
     try:
         with _blocat():
-            randuri = _citeste_fir()
+            randuri = _citeste_fir(True)
             rand = next((r for r in randuri if r['id'] == id_), None)
             if rand is None:
                 return _eroare(404, 'mesaj necunoscut')
@@ -723,13 +842,17 @@ def post_actiune():
     item = next((it for it in registru['items'] if it['id'] == item_id), None) if registru else None
     if item is None:
         return _eroare(404, 'itemul nu exista in registru')
+    if not _activ(item, _acum()):
+        # Gata, ignorat, la_claude sau amanat in viitor: o a doua apasare pe butonul din notificare
+        # (dupa ce asistentul a preluat prima actiune) nu trebuie sa creeze un al doilea task.
+        return _eroare(409, 'itemul nu e activ (stare: %s)' % item['stare'])
     if actiune != 'nu_util' and actiune not in item['actiuni']:
         return _eroare(400, 'corpul.actiune: itemul nu permite %s (permise: %s)' % (actiune, ', '.join(item['actiuni']) or 'niciuna'))
     rand = {'uid': secrets.token_hex(6), 'ts': _z(_acum()), 'item_id': item_id, 'actiune': actiune,
             'zile': zile, 'din': din, 'stare': 'asteapta', 'consumat': None, 'rezultat': None, 'mesaj': None}
     try:
         with _blocat():
-            randuri = _citeste_actiuni()
+            randuri = _citeste_actiuni(True)
             if any(r.get('item_id') == item_id and _in_asteptare(r) for r in randuri):
                 return _eroare(409, 'itemul are deja o actiune in asteptare')
             randuri.append(rand)
@@ -740,8 +863,9 @@ def post_actiune():
     return jsonify({'uid': rand['uid']}), 201
 
 
-def _fir_ion(corp):
-    """Mesajul lui Ion (sesiune, dispozitiv sau masina cu cine=ion). 201 {id} / 400 / 429."""
+def _fir_ion(corp, via):
+    """Mesajul lui Ion (sesiune, dispozitiv sau masina cu cine=ion). `via` il pune serverul, nu clientul:
+    asistentul afla de unde vine mesajul. 201 {id} / 400 / 429."""
     try:
         _obiect(corp, 'corpul', CAMPURI_FIR_ION)
         if 'cine' in corp and corp['cine'] != 'ion':
@@ -757,7 +881,7 @@ def _fir_ion(corp):
     acum = _acum()
     try:
         with _blocat():
-            randuri = _citeste_fir()
+            randuri = _citeste_fir(True)
             recente = sorted(m for m in (_moment_sau_none(r.get('ts')) for r in randuri if r.get('cine') == 'ion')
                              if m is not None and m > acum - timedelta(hours=1))
             if len(recente) >= MESAJE_PE_ORA:
@@ -766,7 +890,7 @@ def _fir_ion(corp):
                 return _eroare(429, 'prea multe mesaje (maxim %d pe ora)' % MESAJE_PE_ORA, **{'Retry-After': max(1, asteapta)})
             rand = {'id': _id_mesaj(randuri), 'ts': _z(acum), 'cine': 'ion', 'tip': 'mesaj', 'titlu': None,
                     'text': text, 'sursa': sursa, 'item_id': None, 'task_id': None, 'link': None,
-                    'butoane': [], 'raspuns_la': raspuns_la, 'stare': 'nou', 'stare_detaliu': None}
+                    'butoane': [], 'raspuns_la': raspuns_la, 'stare': 'nou', 'stare_detaliu': None, 'via': via}
             randuri.append(rand)
             _scrie_fir(randuri)
     except OSError:
@@ -804,10 +928,10 @@ def _fir_asistent(corp):
         return _eroare(400, str(e))
     try:
         with _blocat():
-            randuri = _citeste_fir()
+            randuri = _citeste_fir(True)
             rand = {'id': _id_mesaj(randuri), 'ts': _z(_acum()), 'cine': 'asistent', 'tip': tip, 'titlu': titlu,
                     'text': text, 'sursa': None, 'item_id': item_id, 'task_id': task_id, 'link': link,
-                    'butoane': butoane, 'raspuns_la': raspuns_la, 'stare': None, 'stare_detaliu': None}
+                    'butoane': butoane, 'raspuns_la': raspuns_la, 'stare': None, 'stare_detaliu': None, 'via': None}
             randuri.append(rand)
             _scrie_fir(randuri)
     except OSError:
@@ -836,10 +960,10 @@ def post_fir():
     if 'authenticated' in session or _este_dispozitiv():
         if cine == 'asistent':
             return _eroare(403, 'doar tokenul de masina scrie ca asistent')
-        return _fir_ion(corp)
+        return _fir_ion(corp, 'sesiune' if 'authenticated' in session else 'dispozitiv')
     if cine not in ('asistent', 'ion'):
         return _eroare(400, 'corpul.cine: asistent sau ion')
-    return _fir_asistent(corp) if cine == 'asistent' else _fir_ion(corp)
+    return _fir_asistent(corp) if cine == 'asistent' else _fir_ion(corp, 'masina')
 
 
 # --------------------------------------------------------------------------- rute: tokenurile push
@@ -878,7 +1002,7 @@ def post_token():
     acum = _z(_acum())
     try:
         with _blocat():
-            tokenuri = _citeste_tokenuri()
+            tokenuri = _citeste_tokenuri(True)
             existent = next((t for t in tokenuri if t['token'] == token), None)
             if existent is None:
                 existent = {'token': token, 'inregistrat': acum}
@@ -905,7 +1029,7 @@ def sterge_token():
     _, token = rezultat
     try:
         with _blocat():
-            tokenuri = _citeste_tokenuri()
+            tokenuri = _citeste_tokenuri(True)
             ramase = [t for t in tokenuri if t['token'] != token]
             scos = len(ramase) != len(tokenuri)
             if scos:

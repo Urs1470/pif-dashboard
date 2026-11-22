@@ -37,7 +37,7 @@ asistentului, iar firul și tokenurile se pierd doar dacă dispare directorul `u
 
 Momentele ISO au secunde și fus (`Z` sau `+HH:MM`). `de_ce`, `incredere`, `actiuni`, `sursa`, `gravitate`, `stare`
 sunt obligatorii; `termen`, `prima_data`, `amanat_pana`, `link` pot lipsi sau fi `null` (se stochează cu `null`).
-`link`: cale relativă din vault (fără `/` la început, fără `..`, fără `:`) sau `https://`.
+`link`: cale relativă din vault (fără `/` sau `\` la început, fără `..`, fără `:`, fără `%2e` / `%2f` / `%5c` / `%00`) sau `https://host/...` (cu host, fără `user:parola@`, fără spații). În ambele, fără caractere de control (C0, DEL, C1), separatoare U+2028/2029 și marcaje de direcție (U+061C, U+200E/F, U+202A–202E, U+2066–2069).
 `stare = amanat` cere `amanat_pana` (altfel itemul ar fi ascuns pe veci).
 
 ## Asistent → backend (token de mașină sau sesiune; tokenul de dispozitiv primește 403)
@@ -86,7 +86,8 @@ sunt obligatorii; `termen`, `prima_data`, `amanat_pana`, `link` pot lipsi sau fi
    (pagina arată „Assistant hasn't reported yet”). Tokenurile FCM nu ies niciodată prin GET.
 8. `POST /api/asistent/actiune` `{"item_id": "…", "actiune": "gata|amana|ignora|claude|nu_util", "zile": 1-31 opțional, "din": "pagina|notificare"}`
    → 201 `{"uid"}`. Itemul trebuie să existe în registru (404), iar `actiune` să fie în `item.actiuni` (`nu_util` e mereu permis;
-   altfel 400). `zile` doar la `amana` (implicit 1; altfel 400). `din` implicit `pagina`. O a doua acțiune pe același item cât
+   altfel 400). Itemul trebuie să fie **activ** (aceleași reguli ca în `GET`: `nou`, `vazut` sau `amanat` expirat), altfel 409: a doua apăsare
+   pe butonul din notificare, după ce asistentul a trecut itemul la `la_claude`, nu face al doilea task. `zile` doar la `amana` (implicit 1; altfel 400). `din` implicit `pagina`. O a doua acțiune pe același item cât
    prima așteaptă → 409 (deci o cerere retrimisă nu dublează nimic).
 9. `POST /api/asistent/fir` (mesaj al lui Ion; cu sesiune sau token de dispozitiv, `cine` e forțat `ion`)
    `{"text": "≤2000, nevid", "sursa": "scris|dictat (implicit scris)", "raspuns_la": "opțional"}` → 201 `{"id"}`. Mesajul primește
@@ -101,10 +102,12 @@ sunt obligatorii; `termen`, `prima_data`, `amanat_pana`, `link` pot lipsi sau fi
 ```json
 {"id": "m_ab12cd", "ts": "ISO", "cine": "ion|asistent", "tip": "mesaj|brief|alerta|raspuns|lucreaza|rezultat|info",
  "titlu": null, "text": "…", "sursa": "scris|dictat|null", "item_id": null, "task_id": null, "link": null,
- "butoane": [], "raspuns_la": null, "stare": "nou|preluat|gata|eroare|null", "stare_detaliu": null}
+ "butoane": [], "raspuns_la": null, "stare": "nou|preluat|gata|eroare|null", "stare_detaliu": null,
+ "via": "sesiune|dispozitiv|masina|null"}
 ```
 
-`stare_detaliu` (aditiv): `mesaj`-ul de la `POST .../stare`.
+`stare_detaliu` (aditiv): `mesaj`-ul de la `POST .../stare`. `via` (aditiv): de unde vine mesajul lui Ion, pus de server după felul
+autentificării (sesiune cu PIN, token de dispozitiv, token de mașină); `null` la mesajele asistentului. Clientul nu-l poate trimite (400).
 
 ## Push FCM (în backend)
 
@@ -115,7 +118,9 @@ sunt obligatorii; `termen`, `prima_data`, `amanat_pana`, `link` pot lipsi sau fi
 - **Fără dependențe noi.** Semnătura RS256 e `pow(mesaj, d, n)` peste blocul PKCS#1 v1.5, în `blueprints/fcm.py`, cu biblioteca standard;
   se verifică imediat cu cheia publică și, în teste, e identică bit cu bit cu cea din `openssl dgst -sha256 -sign`. Nici `cryptography`
   (rămasă de la web push, interzisă de `teste/test_cerinte.py`), nici PyJWT n-au intrat în `requirements.txt`.
-- Timp: tot apelul (token OAuth + toate trimiterile) are plafon de 10 s, fiecare cerere cel mult 8 s și cât a rămas din buget.
+- Timp: tot apelul (token OAuth + toate trimiterile) are plafon de 10 s, fiecare cerere cel mult 8 s și cât a rămas din buget. Plafonul e pe TOATĂ cererea
+  (conectare, antete, corp), nu pe operația de socket: `http.client` cu un cronometru care taie socketul (cu `urlopen(timeout=)`, un răspuns trimis
+  un octet la 3 s ținea 117 s).
   O eroare (rețea, 4xx/5xx, timeout) nu ridică nimic: intră în `push.erori` (cel mult 10, fiecare ≤200 de caractere, cu doar ultimele 6
   caractere ale tokenului; textul erorilor `urllib` nu se copiază). Trimiterea rulează cu blocarea fișierelor eliberată.
 - Mesaj DOAR de date (ca serviciul nativ să-l primească și cu aplicația închisă), toate valorile string:
@@ -125,8 +130,19 @@ sunt obligatorii; `termen`, `prima_data`, `amanat_pana`, `link` pot lipsi sau fi
             "butoane": "claude,amana,deschide", "prioritate": "urgent|normal|silent",
             "deschide": "/system?tab=asistent&msg=m_ab12cd"}}}
   ```
-  `titlu` și `item_id` lipsă devin `""`. `text` se taie la 1000 de caractere în push (FCM are 4 KB pe tot mesajul); în fir rămâne întreg.
-- Tokenul pe care FCM îl respinge cu `UNREGISTERED` / 404 se scoate din `push.json`.
+  `titlu` și `item_id` lipsă devin `""`. `data` are 4096 de octeți pe tot (chei și valori): `text` se taie la cel mai lung prefix (pe caractere, fără să rupă
+  un caracter UTF-8, cu `…` la capăt) cu care `data` serializat rămâne sub 4000 de octeți; în fir rămâne întreg.
+- Tokenul pe care FCM îl respinge cu `UNREGISTERED` / 404, sau cu 400 `INVALID_ARGUMENT` pe câmpul `message.token` (`fieldViolations`), se scoate din
+  `push.json`; un `INVALID_ARGUMENT` pe alt câmp nu (mesajul e prost, nu tokenul). Răspunsurile de eroare cu altă formă decât cea așteptată se citesc defensiv.
+
+## Date și erori de disc
+
+- Un corp cu surogat Unicode izolat (`\ud83d`) dă 400 cu calea câmpului (altfel scrierea UTF-8 ar fi dat 500).
+- Rândurile din `.jsonl` se despart doar la `\n` (`splitlines` rupea un mesaj care conține U+2028 / U+0085).
+- Citirea dinaintea unei scrieri se face sub blocare și e **strictă**: o eroare de citire a fișierului (permisiuni, disc) dă 500 fără nicio scriere,
+  ca firul sau tokenurile să nu fie rescrise de la zero. Ce nu se poate citi (rânduri JSON stricate, `push.json` ilizibil ca JSON, intrări de token cu
+  altă formă) se păstrează, o singură dată fiecare, în `<fișier>.corupt` (drepturi 600, cu rând în log), apoi se rescrie fișierul cu ce a rămas valid.
+  Citirile simple (`GET`) cu un fișier ilizibil dau listă goală, nu 500. Un `registru.json` stricat se înlocuiește la următorul `PUT`.
 
 ## Acces
 
