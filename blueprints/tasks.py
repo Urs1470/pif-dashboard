@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 
-from database import get_db, row_to_dict
+from database import get_db, row_to_dict, LISTA_SISTEM
 from utils import generate_uuid, login_required, get_json_or_400, id_ocupat as _id_ocupat
 
 tasks_bp = Blueprint('tasks', __name__)
@@ -491,15 +491,18 @@ def delete_subtask(subtask_id):
 # de v38; restul listelor sunt opt-in explicit). Valoare necunoscuta = 400, nu coercitie:
 # aceeasi filosofie ca norm_date — nu accepta tacut ce nu poti citi.
 def _sfera_valida(cursor, value):
-    """True daca `value` e id-ul unei liste. Un id care nu e text (null, numar, lista) nu e sfera."""
+    """True daca `value` e id-ul unei liste sau lista ascunsa `sistem`. Un id care nu e text (null, numar, lista) nu e sfera."""
     if not isinstance(value, str):
         return False
+    if value == LISTA_SISTEM:
+        return True
     return cursor.execute('SELECT 1 FROM liste WHERE id = ?', (value,)).fetchone() is not None
 
 
 def _eroare_sfera(cursor, cu_toate=False):
     """Corpul 400 pentru o sfera necunoscuta: spune ce sfere se accepta ACUM (ele se schimba)."""
     acceptate = ["'%s'" % r[0] for r in cursor.execute('SELECT id FROM liste ORDER BY ordine, created_at')]
+    acceptate.append("'%s'" % LISTA_SISTEM)
     if cu_toate:
         acceptate.append("'toate'")
     lista = (', '.join(acceptate[:-1]) + ' sau ' + acceptate[-1]) if len(acceptate) > 1 else ''.join(acceptate)
@@ -713,6 +716,12 @@ def update_global_task(task_id):
     if existing is None:
         conn.close()
         return jsonify({'error': 'Task not found'}), 404
+    # Un task de sistem nu mai iese din lista `sistem`, cu niciun token: Torqa nu are cum sa-l mai trimita (nu e in snapshot),
+    # dar o copie veche de pe telefon, mutata de Ion inainte sa dispara, l-ar aduce inapoi in Astazi. Nimeni nu are nevoie sa-l
+    # scoata (`revino`, memento-ul lui Ion, nu trece prin `sistem`). Aceeasi valoare trimisa din nou nu e o mutare.
+    if existing['sfera'] == LISTA_SISTEM and data.get('sfera') not in (None, LISTA_SISTEM):
+        conn.close()
+        return jsonify({'error': 'Un task de sistem nu iese din lista sistem', 'sfera': LISTA_SISTEM}), 409
     old_status = existing['status']
     now = datetime.now().isoformat()
 

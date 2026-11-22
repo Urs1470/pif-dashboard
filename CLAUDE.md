@@ -85,7 +85,7 @@ Regulile datelor, care nu se deduc din cod uitandu-te la el, si care se strica t
    Baza ramane neatinsa.
 7. **`sfera`** (id-ul unei liste din tabela `liste`: `munca`, `personal` si listele lui Ion, din
    v46) e opt-in la citire: implicit se intorc doar cele de munca, iar o valoare necunoscuta da
-   400, nu se corecteaza tacit. `munca` si `personal` sunt fixe: nu se sterg si nu se redenumesc.
+   400, nu se corecteaza tacit. `munca` si `personal` sunt fixe: nu se sterg si nu se redenumesc. O valoare in plus, `sistem` (constanta `database.LISTA_SISTEM`, nu un rand din `liste`), tine taskurile sistemului (coada lui Claude, rezultatele, amanarile): nu apar in snapshot-ul Torqa, in `/api/liste` sau in calendar, se citesc cu `?sfera=sistem` sau `?sfera=toate`, iar un task intra in ea si nu mai iese (`docs/decizii/2026-11-22-lista-sistem.md`).
 
 *Regulile de proprietate a suprafetelor (ce se editeaza in Calendar, in Taskuri, pe „Astazi") si
 planificatorul scos pe 2026-08-26 descriau interfata veche; sunt istorie, in

@@ -10,7 +10,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify
 
-from database import get_db, row_to_dict, LISTE_FIXE
+from database import get_db, row_to_dict, LISTE_FIXE, LISTA_SISTEM
 from utils import generate_uuid, login_required, get_json_or_400, id_ocupat
 
 liste_bp = Blueprint('liste', __name__)
@@ -18,9 +18,10 @@ liste_bp = Blueprint('liste', __name__)
 # Id-ul dat de client (Torqa creeaza offline si retrimite cu acelasi id). `ordine` este rezervat:
 # `PUT /api/liste/ordine` ar prinde o lista cu acest id inaintea rutei `<lista_id>`.
 RE_ID = re.compile(r'[a-z0-9_-]{1,40}')
-ID_REZERVATE = frozenset(f[0] for f in LISTE_FIXE) | {'ordine'}
+ID_REZERVATE = frozenset(f[0] for f in LISTE_FIXE) | {'ordine', LISTA_SISTEM}
 RE_CULOARE = re.compile(r'#[0-9a-fA-F]{6}')
 NUME_MAX = 60
+MESAJ_SISTEM = 'Lista sistem e rezervata sistemului: nu se modifica si nu se sterge'
 ICONITA_MAX = 40
 
 _SELECT = '''
@@ -28,6 +29,9 @@ _SELECT = '''
            (SELECT COUNT(*) FROM global_tasks g WHERE g.sfera = l.id AND g.status != 'done') AS deschise
     FROM liste l
 '''
+# `sistem` nu e o lista a lui Ion (database.LISTA_SISTEM): chiar daca un rand cu acest id a ajuns in tabela (restore de mana),
+# nu se arata si nu se poate modifica.
+_FARA_SISTEM = ' l.id != ?'
 _ORDINE = ' ORDER BY l.ordine, l.created_at'
 
 
@@ -35,9 +39,9 @@ def citeste_liste(cursor, lista_id=None):
     """Listele, ordonate, fiecare cu `deschise` (taskurile globale nefacute din ea). Una singura
     daca `lista_id` e dat (intoarce un dict sau None). Le foloseste si /api/sync/snapshot."""
     if lista_id is not None:
-        cursor.execute(_SELECT + ' WHERE l.id = ?', (lista_id,))
+        cursor.execute(_SELECT + ' WHERE l.id = ? AND' + _FARA_SISTEM, (lista_id, LISTA_SISTEM))
         return row_to_dict(cursor.fetchone())
-    cursor.execute(_SELECT + _ORDINE)
+    cursor.execute(_SELECT + ' WHERE' + _FARA_SISTEM + _ORDINE, (LISTA_SISTEM,))
     return [row_to_dict(r) for r in cursor.fetchall()]
 
 
@@ -99,7 +103,7 @@ def create_lista():
         lista_id = generate_uuid()
     elif (not isinstance(lista_id, str) or not RE_ID.fullmatch(lista_id) or lista_id in ID_REZERVATE):
         return _eroare("id trebuie sa aiba 1-40 de caractere din [a-z0-9_-] si sa nu fie unul rezervat "
-                       "(munca, personal, ordine)", 400)
+                       "(munca, personal, ordine, sistem)", 400)
 
     conn = get_db()
     try:
@@ -136,6 +140,8 @@ def reordoneaza_liste():
         return _eroare('ids trebuie sa fie o lista de id-uri de liste', 400)
     if len(set(ids)) != len(ids):
         return _eroare('ids contine un id de doua ori', 400)
+    if LISTA_SISTEM in ids:
+        return _eroare('Lista sistem e rezervata sistemului: nu se ordoneaza', 400)
 
     conn = get_db()
     try:
@@ -143,7 +149,8 @@ def reordoneaza_liste():
         # Verificarea si scrierea in aceeasi tranzactie: o lista creata intre ele nu ramane cu pozitia
         # nepusa.
         cursor.execute('BEGIN IMMEDIATE')
-        existente = {r['id']: r['ordine'] for r in cursor.execute('SELECT id, ordine FROM liste')}
+        existente = {r['id']: r['ordine'] for r in cursor.execute('SELECT id, ordine FROM liste WHERE id != ?',
+                                                                  (LISTA_SISTEM,))}
         if set(ids) != set(existente):
             conn.rollback()
             return _eroare('ids trebuie sa fie exact listele existente (lipsesc: %s; necunoscute: %s)' % (
@@ -164,6 +171,8 @@ def reordoneaza_liste():
 @login_required
 def update_lista(lista_id):
     data = get_json_or_400()
+    if lista_id == LISTA_SISTEM:
+        return _eroare(MESAJ_SISTEM, 403)
     conn = get_db()
     try:
         cursor = conn.cursor()
@@ -206,6 +215,8 @@ def update_lista(lista_id):
 @liste_bp.route('/api/liste/<lista_id>', methods=['DELETE'])
 @login_required
 def delete_lista(lista_id):
+    if lista_id == LISTA_SISTEM:
+        return _eroare(MESAJ_SISTEM, 403)
     conn = get_db()
     try:
         cursor = conn.cursor()

@@ -185,6 +185,15 @@ LISTE_FIXE = (
 )
 
 
+# Lista ascunsa de sistem (fara schema noua): taskurile pe care le face sistemul, nu Ion (coada „Claude: ...", rezultatele ei,
+# amanarile „Revin: rezultatul lui Claude", „Claude: executa A-NNN"). E o constanta, nu un rand din `liste`: `global_tasks.sfera`
+# nu e cheie straina, deci niciun rand nu e de pus la loc dupa restore si `liste` ramane exact ce vede Ion. O accepta sfera
+# taskurilor globale (`?sfera=sistem`; `?sfera=toate` le intoarce si pe ele), dar nu o intorc `GET /api/liste`, snapshot-ul pentru
+# Torqa, calendarul (doar `sfera = 'munca'`) si numaratoarea `deschise`. Un task intra in ea si nu mai iese (blueprints/tasks.py).
+# Decizia: docs/decizii/2026-11-22-lista-sistem.md.
+LISTA_SISTEM = 'sistem'
+
+
 def asigura_listele_fixe(cursor):
     """Pune la loc listele fixe care lipsesc; cele existente (cu iconita si culoarea schimbate de
     Ion) nu se ating. Idempotent. Il folosesc migrarea, self-heal-ul si restore-ul: un backup de

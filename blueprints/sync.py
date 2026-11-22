@@ -14,7 +14,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify
 
-from database import get_db, row_to_dict
+from database import get_db, row_to_dict, LISTA_SISTEM
 from blueprints.liste import citeste_liste
 from utils import login_required, TASK_PROIECT_VIU
 
@@ -53,16 +53,20 @@ def sync_snapshot():
         tasks = [row_to_dict(r) for r in cursor.fetchall()]
 
         # Parintele e un task de proiect SAU unul global (task_subtasks n-are cheie straina,
-        # tocmai ca sa le primeasca pe amandoua). Orfanii raman afara.
+        # tocmai ca sa le primeasca pe amandoua). Orfanii raman afara, la fel subtaskurile unui task de sistem.
         cursor.execute(f'''
             SELECT {', '.join('s.' + c for c in SUBTASK_COLOANE)}
             FROM task_subtasks s
-            WHERE s.task_id IN (SELECT id FROM tasks) OR s.task_id IN (SELECT id FROM global_tasks)
+            WHERE s.task_id IN (SELECT id FROM tasks)
+               OR s.task_id IN (SELECT id FROM global_tasks WHERE sfera IS NOT ?)
             ORDER BY s.task_id, s.ordine
-        ''')
+        ''', (LISTA_SISTEM,))
         subtasks = [row_to_dict(r) for r in cursor.fetchall()]
 
-        cursor.execute(f"SELECT {', '.join(GLOBAL_COLOANE)} FROM global_tasks ORDER BY created_at")
+        # Taskurile de sistem (coada lui Claude, rezultatele, amanarile) nu intra: Torqa le-ar pune in Astazi, iar ce lipseste din
+        # imagine e sters local. Se vad in pagina System, prin /api/sistem si /api/asistent.
+        cursor.execute(f"SELECT {', '.join(GLOBAL_COLOANE)} FROM global_tasks WHERE sfera IS NOT ? ORDER BY created_at",
+                       (LISTA_SISTEM,))
         global_tasks = [row_to_dict(r) for r in cursor.fetchall()]
 
         # Aceleasi campuri ca GET /api/liste (cu `deschise`).
