@@ -30,19 +30,19 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| PUT | `/api/asistent/registru` | `put_registru` | 942 |
-| GET | `/api/asistent/actiuni` | `get_actiuni` | 968 |
-| POST | `/api/asistent/actiuni/<uid>/consumat` | `post_consumat` | 983 |
-| GET | `/api/asistent/fir/noi` | `get_fir_noi` | 1016 |
-| POST | `/api/asistent/fir/<id_>/stare` | `post_stare` | 1026 |
-| PUT | `/api/asistent/fir/<id_>/detalii` | `put_detalii` | 1069 |
-| PUT | `/api/asistent/prezenta/<masina>` | `put_prezenta` | 1117 |
-| GET | `/api/asistent` | `get_asistent` | 1151 |
-| GET | `/api/asistent/fir/<id_>/detalii` | `get_detalii` | 1180 |
-| POST | `/api/asistent/actiune` | `post_actiune` | 1197 |
-| POST | `/api/asistent/fir` | `post_fir` | 1403 |
-| POST | `/api/asistent/push/token` | `post_token` | 1446 |
-| DELETE | `/api/asistent/push/token` | `sterge_token` | 1482 |
+| PUT | `/api/asistent/registru` | `put_registru` | 971 |
+| GET | `/api/asistent/actiuni` | `get_actiuni` | 997 |
+| POST | `/api/asistent/actiuni/<uid>/consumat` | `post_consumat` | 1012 |
+| GET | `/api/asistent/fir/noi` | `get_fir_noi` | 1045 |
+| POST | `/api/asistent/fir/<id_>/stare` | `post_stare` | 1055 |
+| PUT | `/api/asistent/fir/<id_>/detalii` | `put_detalii` | 1098 |
+| PUT | `/api/asistent/prezenta/<masina>` | `put_prezenta` | 1146 |
+| GET | `/api/asistent` | `get_asistent` | 1184 |
+| GET | `/api/asistent/fir/<id_>/detalii` | `get_detalii` | 1213 |
+| POST | `/api/asistent/actiune` | `post_actiune` | 1230 |
+| POST | `/api/asistent/fir` | `post_fir` | 1436 |
+| POST | `/api/asistent/push/token` | `post_token` | 1479 |
+| DELETE | `/api/asistent/push/token` | `sterge_token` | 1515 |
 
 ## blueprints/echipa.py (5 rute)
 
