@@ -58,13 +58,13 @@ _(fara definitii top-level)_
 
 `41:EroareCorp`, `45:_cale`, `49:_scrie_atomic`, `71:_citeste_json`, `79:_loturi`, `87:_primit`, `91:_curata`, `104:valideaza_export`, `124:_stare_publica`, `131:put_lot`, `156:lista_loturi`, `170:get_lot`, `181:lot_gata`
 
-## blueprints/materiale.py (508 linii)
+## blueprints/materiale.py (711 linii)
 
-`66:EroareCorp`, `72:_text`, `84:_numar`, `92:_intreg_sau_null`, `98:_data_sau_null`, `104:_lista`, `119:_lm`, `127:_termen`, `138:_necomandat`, `149:_mail`, `166:_alerta`, `178:valideaza_snapshot`, `219:_cale`, `223:_scrie_atomic`, `246:_citeste`, `267:_cheie_termen`, `271:_cheie_necomandat`, `275:_pe_chei`, `288:_ordine_termen`, `292:_ordine_necomandat`, `296:_marcheaza`, `310:_compara_termen`, `318:_compara_necomandat`, `324:_compara_lm`, `330:_cheie_mail`, `335:_proiect_cu_marcaje`, `368:_adauga_zi_lucratoare`, `375:_acum`, `379:e_vechi`, `388:_date_proiecte`, `406:vedere`, `434:put_materiale`, `503:get_materiale`
+`81:EroareCorp`, `87:_text`, `99:_numar`, `107:_intreg_sau_null`, `113:_data_sau_null`, `119:_lista`, `134:_lm`, `142:_termen`, `153:_necomandat`, `164:_mail`, `181:_alerta`, `193:valideaza_snapshot`, `234:_cale`, `238:_scrie_atomic`, `261:_citeste`, `282:_cheie_termen`, `286:_cheie_necomandat`, `290:_pe_chei`, `303:_ordine_termen`, `307:_ordine_necomandat`, `311:_marcheaza`, `325:_compara_termen`, `333:_compara_necomandat`, `339:_compara_lm`, `345:_cheie_mail`, `350:_proiect_cu_marcaje`, `383:_adauga_zi_lucratoare`, `390:_acum`, `394:e_vechi`, `403:_date_proiecte`, `423:_parseaza_bife`, `436:citeste_bife`, `449:_bifa_valida`, `458:_nivel`, `462:_scade`, `474:aplica_bife`, `531:vedere`, `561:put_materiale`, `630:get_materiale`, `638:_eroare_bifa`, `645:put_bifa`
 
-## blueprints/materiale_alerte.py (294 linii)
+## blueprints/materiale_alerte.py (313 linii)
 
-`37:_zi`, `47:zile_lucratoare_dupa`, `57:id_stabil`, `66:_dm`, `70:_dmy`, `74:_unice`, `84:alerte_start`, `125:alerte_proiect`, `206:task_pentru`, `240:perioada_urmatoare`, `254:creeaza_taskuri`, `283:calculeaza`
+`41:_zi`, `51:zile_lucratoare_dupa`, `61:id_stabil`, `70:_dm`, `74:_dmy`, `78:_unice`, `88:_bifat`, `97:alerte_start`, `141:alerte_proiect`, `223:task_pentru`, `257:perioada_urmatoare`, `271:creeaza_taskuri`, `300:calculeaza`
 
 ## blueprints/obsidian.py (552 linii)
 

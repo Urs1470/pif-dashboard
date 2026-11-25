@@ -31,6 +31,10 @@ logger = logging.getLogger('pif_dashboard')
 LQ, RQ = '„', '”'
 STARI_CU_TERMEN = ('confirmat', 'planificat')
 
+# Bifele manuale ale lui Ion pe materiale (`PUT /api/materiale/bifa`, decizia 2026-11-25): nivelul fiecareia fata de
+# starile colectorului (livrat > la_destinatie > orice altceva). Aici, ca sa le vada si `materiale.py`, si regulile de mai jos.
+NIVEL_BIFA = {'la_destinatie': 1, 'livrat': 2}
+
 
 # --------------------------------------------------------------------------- ajutoare
 
@@ -81,9 +85,19 @@ def _unice(xs):
 
 # --------------------------------------------------------------------------- regulile
 
-def alerte_start(materiale, perioada):
+def _bifat(bife, m):
+    """True cand materialul `m` are o bifa manuala valida in `bife` ({cod_bc: {stare, la}} al proiectului). Orice bifa
+    valida (la_destinatie sau livrat) il scoate din alertele de livrare: nivelurile peste ea ale colectorului
+    (`livrat`, cu `termen_tip` „livrat") nu dau alerta oricum."""
+    cod = m.get('cod_bc')
+    b = bife.get(cod) if isinstance(bife, dict) and isinstance(cod, str) else None
+    return isinstance(b, dict) and isinstance(b.get('stare'), str) and b['stare'] in NIVEL_BIFA
+
+
+def alerte_start(materiale, perioada, bife=None):
     """Marcheaza fiecare material cu `fata_de_start` (dupa | aproape | None) si intoarce alertele de livrare
-    fata de startul perioadei (cel mult una pe tip). Fara perioada: marcajele raman neatinse, nicio alerta."""
+    fata de startul perioadei (cel mult una pe tip). Fara perioada: marcajele raman neatinse, nicio alerta.
+    Un material bifat de Ion (`bife`) ramane cu `fata_de_start` None si nu intra in alerta."""
     if not perioada or not _zi(perioada.get('data_start')):
         return []
     s = str(perioada['data_start'])[:10]
@@ -94,6 +108,8 @@ def alerte_start(materiale, perioada):
         if not isinstance(m, dict):
             continue
         m['fata_de_start'] = None
+        if _bifat(bife, m):
+            continue
         if m.get('termen_tip') not in STARI_CU_TERMEN or not m.get('termen'):
             continue
         t = str(m['termen'])
@@ -122,10 +138,11 @@ def alerte_start(materiale, perioada):
     return out
 
 
-def alerte_proiect(p, azi, utilizator, perioada):
+def alerte_proiect(p, azi, utilizator, perioada, bife=None):
     """Alertele unui proiect din snapshot, in ordinea colectorului: comenzi pe mail, CT-uri, liniile de pontaj,
     apoi livrarile fata de start. Scrie si marcajele `fata_de_start` si campurile `perioada`, `dupa_start`,
-    `aproape_start` din `rezumat` (pe obiectul primit)."""
+    `aproape_start` din `rezumat` (pe obiectul primit). `bife`: bifele manuale ale proiectului (doar citite;
+    snapshot-ul se scrie cu starile colectorului, bifele se aplica la GET)."""
     cod = p.get('cod_proiect') or ''
     mailuri = [m for m in (p.get('mailuri') or []) if isinstance(m, dict)]
     lm = [x for x in (p.get('lm') or []) if isinstance(x, dict)]
@@ -189,7 +206,7 @@ def alerte_proiect(p, azi, utilizator, perioada):
         alerte.append({'tip': 'fara_linii_pontaj', 'din': dc.isoformat(), 'ref': cod,
                        'text': 'Proiectul %s are contract în E100 din %s, dar nicio linie de pontaj deschisă' % (cod, _dmy(dc))})
 
-    start = alerte_start(materiale, perioada)
+    start = alerte_start(materiale, perioada, bife)
     rez = p.get('rezumat')
     if isinstance(rez, dict):
         rez['perioada'] = ({'id': perioada.get('id'), 'data_start': perioada.get('data_start'),
@@ -280,15 +297,17 @@ def creeaza_taskuri(conn, taskuri):
     return noi, existente, sarite
 
 
-def calculeaza(snapshot, perioada_pentru):
+def calculeaza(snapshot, perioada_pentru, bife=None):
     """Pe un snapshot validat, cu `sursa.alerte == "server"`: alertele fiecarui proiect, marcajele si rezumatul (pe
-    loc), plus lista taskurilor de creat. `perioada_pentru(proiect_id, azi)` da perioada (sau None).
+    loc), plus lista taskurilor de creat. `perioada_pentru(proiect_id, azi)` da perioada (sau None); `bife` e
+    {proiect_id: {cod_bc: {stare, la}}} (bifele lui Ion: un material bifat nu mai da alerta de livrare).
     Intoarce [(proiect_id, task)]."""
     azi = _zi(snapshot['generat'])
     utilizator = (snapshot.get('sursa') or {}).get('utilizator') or ''
+    bife = bife if isinstance(bife, dict) else {}
     taskuri = []
     for p in snapshot['proiecte']:
-        alerte = alerte_proiect(p, azi, utilizator, perioada_pentru(p['proiect_id'], azi))
+        alerte = alerte_proiect(p, azi, utilizator, perioada_pentru(p['proiect_id'], azi), bife.get(p['proiect_id']))
         p['alerte'] = alerte
         taskuri += [(p['proiect_id'], task_pentru(p, a, azi)) for a in alerte]
     return taskuri

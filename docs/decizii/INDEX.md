@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-11-25
+
+- [2026-11-25 Bifa manuală pe materiale: `PUT /api/materiale/bifa`](2026-11-25-materiale-bifa.md) — Ion bifează în Torqa un articol `la_destinatie` sau `livrat` (sau `null` = scoate bifa) peste starea colectorului; bifa stă în `app_settings`, cheia `materiale_bife` (intră în backup, fără schemă), nu în snapshot, deci supraviețuiește colectărilor; `GET /api/materiale` pune `bifa` pe rând și, când bifa e peste colector, `stare`, `stare_colector`, `intarziat` false și ajustează `rezumat` (`pe_stare`, `intarziate`, `urmatoarea`); alertele de livrare calculate pe server la PUT nu mai includ articolele bifate; scrie și tokenul de dispozitiv (409 fără snapshot sau articol necunoscut). Codul: `blueprints/materiale.py`, `blueprints/materiale_alerte.py`.
+
 ## 2026-11-22
 
 - [2026-11-22 Lista ascunsa `sistem`: taskurile sistemului nu ajung in Torqa](2026-11-22-lista-sistem.md) — coada lui Claude, rezultatele ei si amanarile „Revin: rezultatul lui Claude” stau in `global_tasks.sfera = 'sistem'`, o constanta (`database.LISTA_SISTEM`), nu un rand din `liste` si nu o migrare (schema ramane v47); `/api/sync/snapshot` le scoate cu subtaskurile lor, `/api/liste` si calendarul nu le arata, `?sfera=sistem` si `?sfera=toate` le dau scripturilor, lista nu se creeaza/modifica/sterge/ordoneaza, iar un task de sistem nu mai iese din ea (`PUT` cu alta sfera = 409, cu orice token). Codul: `blueprints/tasks.py`, `blueprints/sync.py`, `blueprints/liste.py`.
