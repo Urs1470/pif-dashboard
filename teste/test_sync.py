@@ -230,6 +230,41 @@ class CreareaCuIdDeLaDispozitiv(CuBazaNoua):
     def test_subtask_cu_parinte_inexistent_404(self):
         self.assertEqual(self.post('/api/tasks/nimeni/subtasks', {'id': 'so', 'titlu': 'Orfan'}).status_code, 404)
 
+    # Ordinea schimbata in Torqa trece pe celelalte dispozitive prin `ordine` (2026-11-25).
+    def put(self, path, body):
+        return self.client.put(path, json=body, headers={'Authorization': f'Bearer {DEVICE}'})
+
+    def ordinea(self, parinte):
+        subs = [s for s in self.imagine()['subtasks'] if s['task_id'] == parinte]
+        return [s['id'] for s in sorted(subs, key=lambda s: s['ordine'])]
+
+    def test_subtask_ordine_din_put(self):
+        self.assertEqual(self.post('/api/global-tasks', {'id': 'go', 'titlu': 'Ordonat'}).status_code, 201)
+        for sid in ('oa', 'ob', 'oc'):
+            self.assertEqual(self.post('/api/tasks/go/subtasks', {'id': sid, 'titlu': sid}).status_code, 201)
+        self.assertEqual(self.ordinea('go'), ['oa', 'ob', 'oc'])
+        for sid, ordine in (('oc', 0), ('oa', 1), ('ob', 2)):
+            self.assertEqual(self.put('/api/subtasks/' + sid, {'ordine': ordine}).status_code, 200)
+        self.assertEqual(self.ordinea('go'), ['oc', 'oa', 'ob'])
+        subs = {s['id']: s for s in self.imagine()['subtasks']}
+        self.assertEqual((subs['oc']['titlu'], subs['oc']['done']), ('oc', 0), 'ordinea nu atinge titlul si bifa')
+
+    def test_subtask_put_fara_ordine_o_pastreaza(self):
+        self.assertEqual(self.post('/api/global-tasks', {'id': 'gk', 'titlu': 'Pastrat'}).status_code, 201)
+        self.assertEqual(self.post('/api/tasks/gk/subtasks', {'id': 'ka', 'titlu': 'a'}).status_code, 201)
+        self.assertEqual(self.put('/api/subtasks/ka', {'ordine': 7}).status_code, 200)
+        self.assertEqual(self.put('/api/subtasks/ka', {'titlu': 'A', 'done': 1}).status_code, 200)
+        s = [s for s in self.imagine()['subtasks'] if s['id'] == 'ka'][0]
+        self.assertEqual((s['titlu'], s['done'], s['ordine']), ('A', 1, 7))
+
+    def test_subtask_ordine_invalida_400(self):
+        self.assertEqual(self.post('/api/global-tasks', {'id': 'gi', 'titlu': 'Invalid'}).status_code, 201)
+        self.assertEqual(self.post('/api/tasks/gi/subtasks', {'id': 'ia', 'titlu': 'a'}).status_code, 201)
+        for rau in (-1, 1.5, '2', True, [1]):
+            self.assertEqual(self.put('/api/subtasks/ia', {'ordine': rau}).status_code, 400, repr(rau))
+        s = [s for s in self.imagine()['subtasks'] if s['id'] == 'ia'][0]
+        self.assertEqual(s['ordine'], 0, 'o ordine refuzata nu scrie nimic')
+
     # Torqa creeaza si proiecte si perioade (2026-10-02): aceeasi regula, acelasi raspuns.
     def test_proiect_a_doua_oara_409(self):
         r = self.post('/api/proiecte', {'id': 'px', 'nume': 'Primul', 'tip': 'PIF'})

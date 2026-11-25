@@ -147,12 +147,12 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 | GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 409 |
 | POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 420 |
 | PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 454 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 469 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 544 |
-| POST | `/api/global-tasks` | `create_global_task` | 625 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 679 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 694 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 781 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 475 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 550 |
+| POST | `/api/global-tasks` | `create_global_task` | 631 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 685 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 700 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 787 |
 
 ## blueprints/torqa_web.py (4 rute)
 

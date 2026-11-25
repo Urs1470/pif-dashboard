@@ -29,6 +29,8 @@ sunt definitive). Scrierile trec prin rutele obisnuite; bifarea unui task recure
 aparitia urmatoare pe server. Crearea de task, task global, subtask, proiect si perioada
 (`implementari`) primeste `id` de la client; un `id` existent da **409** cu `{id}` (nu
 dubleaza), un proiect sau un task parinte inexistent da 404.
+`PUT /api/subtasks/<id>` primeste, pe langa `titlu` si `done`, `ordine` (intreg >= 0, altfel 400): locul
+subtaskului sub parinte, pe care Torqa il trimite dupa o mutare, ca ordinea sa treaca pe celelalte dispozitive.
 
 ## Reguli de scriere
 

@@ -86,9 +86,9 @@ _(fara definitii top-level)_
 
 `34:sync_snapshot`
 
-## blueprints/tasks.py (797 linii)
+## blueprints/tasks.py (803 linii)
 
-`16:_skip_weekend`, `26:_azi`, `32:_baza_recurenta`, `45:_eroare_recurenta`, `57:_zi`, `65:_ancora`, `89:muta_taskurile_ancorate`, `104:_next_recurrence_date`, `129:_spawn_recurring_task`, `157:_spawn_recurring_global_task`, `196:get_tasks`, `243:create_task`, `307:update_task`, `391:delete_task`, `411:get_subtasks`, `422:create_subtask`, `456:update_subtask`, `471:delete_subtask`, `493:_sfera_valida`, `502:_eroare_sfera`, `519:norm_ora`, `546:get_global_tasks`, `627:create_global_task`, `681:get_global_task`, `696:update_global_task`, `783:delete_global_task`
+`16:_skip_weekend`, `26:_azi`, `32:_baza_recurenta`, `45:_eroare_recurenta`, `57:_zi`, `65:_ancora`, `89:muta_taskurile_ancorate`, `104:_next_recurrence_date`, `129:_spawn_recurring_task`, `157:_spawn_recurring_global_task`, `196:get_tasks`, `243:create_task`, `307:update_task`, `391:delete_task`, `411:get_subtasks`, `422:create_subtask`, `456:update_subtask`, `477:delete_subtask`, `499:_sfera_valida`, `508:_eroare_sfera`, `525:norm_ora`, `552:get_global_tasks`, `633:create_global_task`, `687:get_global_task`, `702:update_global_task`, `789:delete_global_task`
 
 ## blueprints/torqa_web.py (632 linii)
 

@@ -455,11 +455,17 @@ def create_subtask(task_id):
 @login_required
 def update_subtask(subtask_id):
     data = get_json_or_400()
+    # `ordine` (optional): locul subtaskului sub parinte, cum il are Torqa dupa o mutare. Un intreg
+    # >= 0; altceva da 400, nu se corecteaza tacit. Lipsa ei pastreaza ordinea de acum.
+    ordine = data.get('ordine')
+    if ordine is not None and (isinstance(ordine, bool) or not isinstance(ordine, int) or ordine < 0):
+        return jsonify({'error': 'ordine: intreg >= 0'}), 400
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        'UPDATE task_subtasks SET titlu = COALESCE(?, titlu), done = COALESCE(?, done) WHERE id = ?',
-        (data.get('titlu'), data.get('done'), subtask_id)
+        'UPDATE task_subtasks SET titlu = COALESCE(?, titlu), done = COALESCE(?, done), '
+        'ordine = COALESCE(?, ordine) WHERE id = ?',
+        (data.get('titlu'), data.get('done'), ordine, subtask_id)
     )
     conn.commit()
     conn.close()
