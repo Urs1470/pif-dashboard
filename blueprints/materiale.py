@@ -18,10 +18,14 @@
 #
 # Bifele manuale (2026-11-25): Ion bifeaza in Torqa ca un articol „a ajuns la destinatie" sau e „livrat", peste
 # ce spune colectorul (`PUT /api/materiale/bifa`). Ele NU stau in snapshot (care se inlocuieste la fiecare colectare),
-# ci in `app_settings`, cheia `materiale_bife` ({proiect_id: {cod_bc: {stare, la}}}), ca sa intre in backup si sa
-# supravietuiasca colectarii urmatoare. `GET /api/materiale` le aplica pe randurile din `proiecte[].materiale`
-# (`stare`, `stare_colector`, `intarziat`, `rezumat`); alertele de livrare calculate la PUT le respecta
-# (blueprints/materiale_alerte.py). Decizia: docs/decizii/2026-11-25-materiale-bifa.md.
+# ci in `app_settings`, cheia `materiale_bife` ({proiect_id: {cod_bc: {stare, la, colector: {stare, termen}}}}), ca
+# sa intre in backup si sa supravietuiasca colectarii urmatoare. `GET /api/materiale` le aplica pe randurile din
+# `proiecte[].materiale` (`stare`, `stare_colector`, `intarziat`, `rezumat`); alertele de livrare calculate la PUT le
+# respecta (blueprints/materiale_alerte.py). `colector` e memoria bifei: starea si termenul pe care le trimitea
+# colectorul cand Ion a bifat; nu iese niciodata in raspuns. O colectare care schimba starea sau termenul articolului
+# (alta comanda pe acelasi cod) fara sa ajunga la starea bifei o expira: bifa se sterge, ca sa nu ascunda comanda
+# noua (`mentine_bife`). Aceeasi colectare scoate bifele articolelor si proiectelor iesite din snapshot.
+# Decizia: docs/decizii/2026-11-25-materiale-bifa.md.
 #
 # Colectorul inca evolueaza (LM-urile din E100 abia urmeaza), deci validarea e toleranta: campurile
 # din contract au tipul verificat, cele in plus se pastreaza cum vin.
@@ -446,13 +450,117 @@ def citeste_bife(conn=None):
         return {}
 
 
-def _bifa_valida(bife_proiect, cod_bc):
-    """{stare, la} pentru `cod_bc`, sau None cand lipseste ori n-are forma scrisa de PUT-ul bifei."""
+def _forma_bifa(b):
+    """True cand `b` are forma scrisa de PUT-ul bifei: {stare din NIVEL_BIFA, la text, ...}."""
+    return (isinstance(b, dict) and isinstance(b.get('stare'), str) and b['stare'] in NIVEL_BIFA
+            and isinstance(b.get('la'), str))
+
+
+def _stare_colector(rand):
+    """Ce spune colectorul pe un rand din `materiale`: perechea (stare, termen) pe care o memoreaza bifa."""
+    return {'stare': rand.get('stare'), 'termen': rand.get('termen')}
+
+
+def _memorie(b):
+    """Memoria bifei (`colector`), sau None la o bifa veche, fara ea (scrisa inainte de memorie)."""
+    m = b.get('colector')
+    return {'stare': m.get('stare'), 'termen': m.get('termen')} if isinstance(m, dict) else None
+
+
+def _expirata(b, rand):
+    """True cand bifa `b` (forma buna) nu mai are rost pe randul `rand`: colectorul a schimbat starea sau termenul fata
+    de memorie (alta comanda pe acelasi cod) si nu e starea bifei. Fara memorie sau fara rand nu expira."""
+    mem = _memorie(b)
+    return (mem is not None and isinstance(rand, dict) and rand.get('stare') != b['stare']
+            and mem != _stare_colector(rand))
+
+
+def _bifa_valida(bife_proiect, cod_bc, rand=None):
+    """{stare, la} pentru `cod_bc` (memoria nu se arata), sau None cand lipseste, n-are forma scrisa de PUT-ul bifei
+    ori, cu `rand` dat, a expirat fata de ce spune colectorul acum (curatarea din baza poate intarzia)."""
     b = bife_proiect.get(cod_bc) if isinstance(bife_proiect, dict) and isinstance(cod_bc, str) else None
-    if (isinstance(b, dict) and isinstance(b.get('stare'), str) and b['stare'] in NIVEL_BIFA
-            and isinstance(b.get('la'), str)):
-        return {'stare': b['stare'], 'la': b['la']}
-    return None
+    if not _forma_bifa(b) or _expirata(b, rand):
+        return None
+    return {'stare': b['stare'], 'la': b['la']}
+
+
+def _rand_din(materiale, cod_bc):
+    """Primul rand din `materiale` cu `cod_bc`, sau None (lista lipsa sau fara el)."""
+    if not isinstance(materiale, list):
+        return None
+    return next((m for m in materiale if isinstance(m, dict) and m.get('cod_bc') == cod_bc), None)
+
+
+def mentine_bife(bife, snapshot):
+    """(bife_noi, schimbat): bifele {proiect_id: {cod_bc: bifa}} puse la zi cu un snapshot nou, fara sa se scrie ceva.
+    Un articol sau un proiect iesit din snapshot isi pierde bifa. Cand starea sau termenul colectorului difera de
+    memorie: bifa expira (se sterge) daca colectorul nu e la starea ei, altfel memoria se actualizeaza; o bifa fara
+    memorie o primeste acum. Ce n-are forma scrisa de PUT-ul bifei, si proiectele din snapshot fara lista
+    `materiale`, nu se ating (nu se poate spune ca sunt orfane). Idempotent; nu modifica `bife`."""
+    proiecte = {p['proiect_id']: p for p in snapshot.get('proiecte', [])
+                if isinstance(p, dict) and isinstance(p.get('proiect_id'), str)}
+    noi, schimbat = {}, False
+    for pid, pe_proiect in bife.items():
+        p = proiecte.get(pid)
+        if not isinstance(pe_proiect, dict) or (p is not None and not isinstance(p.get('materiale'), list)):
+            noi[pid] = pe_proiect
+            continue
+        if p is None:                                     # proiect iesit din snapshot
+            schimbat = True
+            continue
+        pastrate = {}
+        for cod, b in pe_proiect.items():
+            if not _forma_bifa(b):
+                pastrate[cod] = b
+                continue
+            rand = _rand_din(p['materiale'], cod)
+            if rand is None:                              # articol iesit din snapshot
+                schimbat = True
+                continue
+            if _memorie(b) != _stare_colector(rand):
+                if _expirata(b, rand):                    # alta comanda pe acelasi cod
+                    schimbat = True
+                    continue
+                b = dict(b, colector=_stare_colector(rand))
+                schimbat = True
+            pastrate[cod] = b
+        if pastrate:
+            noi[pid] = pastrate
+        else:
+            schimbat = True
+    return noi, schimbat
+
+
+def _scrie_bife(conn, bife):
+    conn.execute(
+        'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?) '
+        'ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at',
+        (CHEIE_BIFE, json.dumps(bife, ensure_ascii=False), datetime.now().isoformat()))
+
+
+def _mentine_bife_in_baza(snapshot):
+    """Scrie in `app_settings` ce da `mentine_bife` pentru snapshot-ul tocmai scris. Citirea si scrierea sunt intr-o
+    tranzactie (BEGIN IMMEDIATE), ca o bifa pusa chiar acum sa nu se piarda. Fara cheie, cu o valoare stricata sau fara
+    schimbare nu scrie nimic. O eroare de baza se logheaza si nu strica colectarea: la citire o bifa expirata se
+    ignora oricum, iar curatarea se reia la colectarea urmatoare."""
+    conn = get_db()
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        rand = conn.execute('SELECT value FROM app_settings WHERE key = ?', (CHEIE_BIFE,)).fetchone()
+        try:
+            bife = json.loads(rand['value']) if rand and rand['value'] else None
+        except ValueError:
+            bife = None
+        if isinstance(bife, dict):
+            noi, schimbat = mentine_bife(bife, snapshot)
+            if schimbat:
+                _scrie_bife(conn, noi)
+        conn.commit()
+    except sqlite3.Error:
+        conn.rollback()
+        logger.exception('Materiale: bifele nu s-au putut pune la zi dupa colectare')
+    finally:
+        conn.close()
 
 
 def _nivel(stare):
@@ -476,8 +584,10 @@ def aplica_bife(p, bife_proiect):
     {stare, la}`. Cand nivelul bifei e peste starea colectorului (livrat > la_destinatie > orice altceva), randul
     primeste `stare` = bifa, `stare_colector` = starea trimisa de colector si `intarziat` = false, iar `rezumat`
     se ajusteaza (pe_stare, intarziate, dupa_start/aproape_start, urmatoarea, ultima_asteptata). Colectorul a
-    ajuns deja la nivelul bifei sau peste: `stare` ramane a lui, `bifa` apare tot. Bifele pe randuri care nu mai
-    sunt in snapshot nu se ating (raman stocate, nu se arata)."""
+    ajuns deja la nivelul bifei sau peste: `stare` ramane a lui, `bifa` apare tot. Orice rand cu bifa iese din
+    marcajul fata de start (`fata_de_start` null, `dupa_start` / `aproape_start` scad): snapshot-ul il pastreaza pe
+    cel real, ca scoaterea bifei sa-l gaseasca la loc. O bifa expirata (alta comanda pe acelasi cod, vezi
+    `mentine_bife`) nu se aplica. Bifele pe randuri care nu mai sunt in snapshot nu se ating (le curata colectorul)."""
     materiale = p.get('materiale')
     if not bife_proiect or not isinstance(materiale, list):
         return
@@ -486,19 +596,21 @@ def aplica_bife(p, bife_proiect):
     for m in materiale:
         if not isinstance(m, dict):
             continue
-        bifa = _bifa_valida(bife_proiect, m.get('cod_bc'))
+        bifa = _bifa_valida(bife_proiect, m.get('cod_bc'), m)
         if bifa is None:
             continue
         m['bifa'] = bifa
         veche = m.get('stare')
+        era_intarziat, era_start = bool(m.get('intarziat')), m.get('fata_de_start')
+        if era_start in ('dupa', 'aproape'):
+            m['fata_de_start'] = None
+            if rez is not None:
+                _scade(rez, 'dupa_start' if era_start == 'dupa' else 'aproape_start')
         if _nivel(bifa['stare']) <= _nivel(veche):
             continue
         m['stare_colector'] = veche
         m['stare'] = bifa['stare']
-        era_intarziat, era_start = bool(m.get('intarziat')), m.get('fata_de_start')
         m['intarziat'] = False
-        if 'fata_de_start' in m:
-            m['fata_de_start'] = None
         schimbate.add(m['cod_bc'])
         if rez is None:
             continue
@@ -510,10 +622,6 @@ def aplica_bife(p, bife_proiect):
             pe[bifa['stare']] = (n if isinstance(n, int) else 0) + 1
         if era_intarziat:
             _scade(rez, 'intarziate')
-        if era_start == 'dupa':
-            _scade(rez, 'dupa_start')
-        elif era_start == 'aproape':
-            _scade(rez, 'aproape_start')
     if not schimbate or rez is None:
         return
     # Ca `$viitoare` din colector: stare care inca asteapta, cu termen, nu intarziata; cea mai apropiata e „urmatoarea".
@@ -562,6 +670,8 @@ def put_materiale():
     """Inlocuieste snapshot-ul materialelor. Sesiune sau Bearer `PIF_API_TOKEN`; tokenul de
     dispozitiv doar citeste (`DEVICE_TOKEN_READ_ONLY`). Idempotent: aceeasi cerere de doua ori
     lasa aceleasi fisiere. Un snapshot mai vechi decat cel curent da 409 si nu se scrie.
+    Dupa scrierea snapshot-ului se pun la zi bifele manuale din `app_settings` (`mentine_bife`): expira cele pe care
+    colectarea le contrazice si se scot cele ale articolelor sau proiectelor iesite.
     Raspuns: {ok, proiecte, rotit}; cu `sursa.alerte = "server"` si {alerte, taskuri: {noi, existente, sarite}}."""
     if request.content_length is not None and request.content_length > MAX_CORP:
         return jsonify({'error': 'corp prea mare (maxim 2 MB)'}), 413
@@ -595,8 +705,10 @@ def put_materiale():
         try:
             conn = get_db()
             cur = conn.cursor()
+            # Alertele se calculeaza cu bifele ramase dupa aceasta colectare (cele expirate sau orfane nu mai conteaza).
             taskuri = materiale_alerte.calculeaza(
-                snapshot, lambda pid, azi: materiale_alerte.perioada_urmatoare(cur, pid, azi), citeste_bife(conn))
+                snapshot, lambda pid, azi: materiale_alerte.perioada_urmatoare(cur, pid, azi),
+                mentine_bife(citeste_bife(conn), snapshot)[0])
         except Exception:
             logger.exception('Materiale: calculul alertelor a picat')
             if conn is not None:
@@ -611,6 +723,7 @@ def put_materiale():
         if conn is not None:
             conn.close()
         return jsonify({'error': 'Eroare pe disc la salvarea snapshot-ului.'}), 500
+    _mentine_bife_in_baza(snapshot)                # bifele expirate si orfane, dupa ce snapshot-ul nou e pe disc
     raspuns = {'ok': True, 'proiecte': len(snapshot['proiecte']), 'rotit': rotit}
     if pe_server:
         raspuns['alerte'] = sum(len(p['alerte']) for p in snapshot['proiecte'])
@@ -640,15 +753,32 @@ def _eroare_bifa(mesaj, status):
     return jsonify({'error': mesaj}), status
 
 
+def _rand_din_snapshot(pid, cod):
+    """(None, rand) cand articolul `cod` e in `proiecte[].materiale` din snapshot-ul curent; altfel (mesaj 409, None)."""
+    curent, _ = _citeste(CURENT)
+    if curent is None:
+        return 'nu exista snapshot curent al materialelor', None
+    proiect = next((p for p in curent['proiecte'] if isinstance(p, dict) and p.get('proiect_id') == pid), None)
+    if proiect is None:
+        return 'proiect_id: proiectul nu e in snapshot-ul curent', None
+    rand = _rand_din(proiect.get('materiale'), cod)
+    if rand is None:
+        return 'cod_bc: articolul nu e in materialele proiectului din snapshot-ul curent', None
+    return None, rand
+
+
 @materiale_bp.route('/api/materiale/bifa', methods=['PUT'])
 @login_required
 def put_bifa():
     """Bifa manuala a lui Ion pe un articol: `{proiect_id, cod_bc, stare}`, `stare` din `la_destinatie|livrat` sau
     null (scoate bifa). Sesiune, `PIF_API_TOKEN` sau tokenul de dispozitiv (Torqa; ruta nu e in
     `DEVICE_TOKEN_READ_ONLY`, care e exact-match pe `/api/materiale`). 400 cu mesaj pe camp la corp invalid; 409 fara
-    snapshot curent sau cand proiectul / `cod_bc` nu sunt in `proiecte[].materiale` din el. Idempotent: aceeasi
-    stare de doua ori lasa bifa (si `la`) neatinse; null pe un articol fara bifa e tot 200. Citirea si scrierea
-    din `app_settings` sunt intr-o tranzactie (BEGIN IMMEDIATE), ca doua bife simultane sa nu se strice intre ele.
+    snapshot curent sau cand proiectul / `cod_bc` nu sunt in `proiecte[].materiale` din el; exceptie, scoaterea
+    (`stare: null`) a unei bife care exista stocata e 200 chiar si fara articol sau snapshot (bifa unui articol iesit
+    se poate scoate). Bifa memoreaza `colector: {stare, termen}` din snapshot (vezi `mentine_bife`), fara sa-l arate.
+    Idempotent: aceeasi stare de doua ori lasa bifa (si `la`) neatinse; null pe un articol fara bifa, dar in snapshot,
+    e tot 200; o bifa expirata nu conteaza ca existenta. Citirea si scrierea din `app_settings` sunt intr-o tranzactie
+    (BEGIN IMMEDIATE), ca doua bife simultane sa nu se strice intre ele.
     Raspuns: {ok: true, bifa: {stare, la} | null}."""
     if request.content_length is not None and request.content_length > MAX_CORP_BIFA:
         return jsonify({'error': 'corp prea mare'}), 413
@@ -665,15 +795,9 @@ def put_bifa():
     if stare is not None and (not isinstance(stare, str) or stare not in NIVEL_BIFA):
         return _eroare_bifa('stare: una din %s sau null' % '|'.join(NIVEL_BIFA), 400)
 
-    curent, _ = _citeste(CURENT)
-    if curent is None:
-        return _eroare_bifa('nu exista snapshot curent al materialelor', 409)
-    proiect = next((p for p in curent['proiecte'] if isinstance(p, dict) and p.get('proiect_id') == pid), None)
-    if proiect is None:
-        return _eroare_bifa('proiect_id: proiectul nu e in snapshot-ul curent', 409)
-    materiale = proiect.get('materiale')
-    if not isinstance(materiale, list) or not any(isinstance(m, dict) and m.get('cod_bc') == cod for m in materiale):
-        return _eroare_bifa('cod_bc: articolul nu e in materialele proiectului din snapshot-ul curent', 409)
+    eroare, rand_snapshot = _rand_din_snapshot(pid, cod)
+    if eroare and stare is not None:
+        return _eroare_bifa(eroare, 409)
 
     conn = get_db()
     try:
@@ -681,26 +805,27 @@ def put_bifa():
         rand = conn.execute('SELECT value FROM app_settings WHERE key = ?', (CHEIE_BIFE,)).fetchone()
         bife = _parseaza_bife(rand['value'] if rand else None)
         pe_proiect = bife.get(pid) if isinstance(bife.get(pid), dict) else {}
-        existenta = _bifa_valida(pe_proiect, cod)
         if stare is None:
+            if eroare and cod not in pe_proiect:      # scoaterea merge si pentru un articol iesit, daca bifa exista
+                conn.rollback()
+                return _eroare_bifa(eroare, 409)
             rezultat = None
             schimbat = cod in pe_proiect
             pe_proiect.pop(cod, None)
-        elif existenta is not None and existenta['stare'] == stare:
-            rezultat, schimbat = existenta, False
         else:
-            rezultat = {'stare': stare, 'la': _acum().astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}
-            pe_proiect[cod] = rezultat
-            schimbat = True
+            existenta = _bifa_valida(pe_proiect, cod, rand_snapshot)    # una expirata nu e „aceeasi bifa"
+            if existenta is not None and existenta['stare'] == stare:
+                rezultat, schimbat = existenta, False
+            else:
+                rezultat = {'stare': stare, 'la': _acum().astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}
+                pe_proiect[cod] = dict(rezultat, colector=_stare_colector(rand_snapshot))
+                schimbat = True
         if schimbat:
             if pe_proiect:
                 bife[pid] = pe_proiect
             else:
                 bife.pop(pid, None)
-            conn.execute(
-                'INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?) '
-                'ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at',
-                (CHEIE_BIFE, json.dumps(bife, ensure_ascii=False), datetime.now().isoformat()))
+            _scrie_bife(conn, bife)
         conn.commit()
     except sqlite3.OperationalError:
         conn.rollback()

@@ -97,7 +97,9 @@ def _bifat(bife, m):
 def alerte_start(materiale, perioada, bife=None):
     """Marcheaza fiecare material cu `fata_de_start` (dupa | aproape | None) si intoarce alertele de livrare
     fata de startul perioadei (cel mult una pe tip). Fara perioada: marcajele raman neatinse, nicio alerta.
-    Un material bifat de Ion (`bife`) ramane cu `fata_de_start` None si nu intra in alerta."""
+    Un material bifat de Ion (`bife`) nu intra in alerta, dar marcajul de pe rand ramane cel real (din termen): bifa
+    nu se scrie in snapshot, deci scoaterea ei trebuie sa gaseasca marcajul la loc; `GET /api/materiale` il scoate
+    de pe randul bifat (`materiale.aplica_bife`)."""
     if not perioada or not _zi(perioada.get('data_start')):
         return []
     s = str(perioada['data_start'])[:10]
@@ -108,17 +110,18 @@ def alerte_start(materiale, perioada, bife=None):
         if not isinstance(m, dict):
             continue
         m['fata_de_start'] = None
-        if _bifat(bife, m):
-            continue
         if m.get('termen_tip') not in STARI_CU_TERMEN or not m.get('termen'):
             continue
         t = str(m['termen'])
+        bifat = _bifat(bife, m)
         if t > s:
             m['fata_de_start'] = 'dupa'
-            dupa.append(m)
+            if not bifat:
+                dupa.append(m)
         elif t >= limita:
             m['fata_de_start'] = 'aproape'
-            aproape.append(m)
+            if not bifat:
+                aproape.append(m)
 
     def lista(xs):
         ordonate = sorted(xs, key=lambda m: str(m.get('termen')))

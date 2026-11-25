@@ -58,13 +58,13 @@ _(fara definitii top-level)_
 
 `41:EroareCorp`, `45:_cale`, `49:_scrie_atomic`, `71:_citeste_json`, `79:_loturi`, `87:_primit`, `91:_curata`, `104:valideaza_export`, `124:_stare_publica`, `131:put_lot`, `156:lista_loturi`, `170:get_lot`, `181:lot_gata`
 
-## blueprints/materiale.py (711 linii)
+## blueprints/materiale.py (836 linii)
 
-`81:EroareCorp`, `87:_text`, `99:_numar`, `107:_intreg_sau_null`, `113:_data_sau_null`, `119:_lista`, `134:_lm`, `142:_termen`, `153:_necomandat`, `164:_mail`, `181:_alerta`, `193:valideaza_snapshot`, `234:_cale`, `238:_scrie_atomic`, `261:_citeste`, `282:_cheie_termen`, `286:_cheie_necomandat`, `290:_pe_chei`, `303:_ordine_termen`, `307:_ordine_necomandat`, `311:_marcheaza`, `325:_compara_termen`, `333:_compara_necomandat`, `339:_compara_lm`, `345:_cheie_mail`, `350:_proiect_cu_marcaje`, `383:_adauga_zi_lucratoare`, `390:_acum`, `394:e_vechi`, `403:_date_proiecte`, `423:_parseaza_bife`, `436:citeste_bife`, `449:_bifa_valida`, `458:_nivel`, `462:_scade`, `474:aplica_bife`, `531:vedere`, `561:put_materiale`, `630:get_materiale`, `638:_eroare_bifa`, `645:put_bifa`
+`85:EroareCorp`, `91:_text`, `103:_numar`, `111:_intreg_sau_null`, `117:_data_sau_null`, `123:_lista`, `138:_lm`, `146:_termen`, `157:_necomandat`, `168:_mail`, `185:_alerta`, `197:valideaza_snapshot`, `238:_cale`, `242:_scrie_atomic`, `265:_citeste`, `286:_cheie_termen`, `290:_cheie_necomandat`, `294:_pe_chei`, `307:_ordine_termen`, `311:_ordine_necomandat`, `315:_marcheaza`, `329:_compara_termen`, `337:_compara_necomandat`, `343:_compara_lm`, `349:_cheie_mail`, `354:_proiect_cu_marcaje`, `387:_adauga_zi_lucratoare`, `394:_acum`, `398:e_vechi`, `407:_date_proiecte`, `427:_parseaza_bife`, `440:citeste_bife`, `453:_forma_bifa`, `459:_stare_colector`, `464:_memorie`, `470:_expirata`, `478:_bifa_valida`, `487:_rand_din`, `494:mentine_bife`, `534:_scrie_bife`, `541:_mentine_bife_in_baza`, `566:_nivel`, `570:_scade`, `582:aplica_bife`, `639:vedere`, `669:put_materiale`, `743:get_materiale`, `751:_eroare_bifa`, `756:_rand_din_snapshot`, `772:put_bifa`
 
-## blueprints/materiale_alerte.py (313 linii)
+## blueprints/materiale_alerte.py (316 linii)
 
-`41:_zi`, `51:zile_lucratoare_dupa`, `61:id_stabil`, `70:_dm`, `74:_dmy`, `78:_unice`, `88:_bifat`, `97:alerte_start`, `141:alerte_proiect`, `223:task_pentru`, `257:perioada_urmatoare`, `271:creeaza_taskuri`, `300:calculeaza`
+`41:_zi`, `51:zile_lucratoare_dupa`, `61:id_stabil`, `70:_dm`, `74:_dmy`, `78:_unice`, `88:_bifat`, `97:alerte_start`, `144:alerte_proiect`, `226:task_pentru`, `260:perioada_urmatoare`, `274:creeaza_taskuri`, `303:calculeaza`
 
 ## blueprints/obsidian.py (552 linii)
 

@@ -109,7 +109,7 @@ class PutBifa(Baza):
         r = self.bifeaza('A', 'la_destinatie')
         self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
         self.assertEqual(r.get_json(), {'ok': True, 'bifa': {'stare': 'la_destinatie', 'la': LA}})
-        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'la_destinatie', 'la': LA}}})
+        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'la_destinatie', 'la': LA, 'colector': MEM_A}}})
 
     def test_null_scoate_bifa_si_o_a_doua_scoatere_e_tot_200(self):
         self.snapshot()
@@ -142,8 +142,9 @@ class PutBifa(Baza):
         self.bifeaza('A', 'livrat')
         self.bifeaza('B', 'la_destinatie')
         self.bifeaza('A', 'la_destinatie', pid=PID2)
-        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA}, 'B': {'stare': 'la_destinatie', 'la': LA}},
-                                         PID2: {'A': {'stare': 'la_destinatie', 'la': LA}}})
+        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A},
+                                               'B': {'stare': 'la_destinatie', 'la': LA, 'colector': MEM_B}},
+                                         PID2: {'A': {'stare': 'la_destinatie', 'la': LA, 'colector': MEM_A}}})
 
     def test_corp_gresit_da_400_cu_numele_campului_si_nu_scrie(self):
         self.snapshot()
@@ -240,7 +241,7 @@ class PutBifa(Baza):
         self.sql("INSERT INTO app_settings (key, value, updated_at) VALUES ('materiale_bife', 'nu e json {', 'x')")
         self.assertNotIn('bifa', self.rand_in(self.citeste(), 'A'))
         self.assertEqual(self.bifeaza('A', 'livrat').status_code, 200)
-        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA}}})
+        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
 
 
 class GetCuBife(Baza):
@@ -363,12 +364,13 @@ class GetCuBife(Baza):
     def test_bifa_supravietuieste_unui_put_nou_al_colectorului(self):
         self.snapshot()
         self.bifeaza('A', 'la_destinatie')
-        # Colectarea de dupa-amiaza: acelasi articol, cu alt termen; A tot „confirmat" la colector.
-        mat = materiale_standard()
-        mat[0]['termen'] = '2026-12-01'
+        # Colectarea de dupa-amiaza: acelasi articol, cu alta descriere; starea si termenul lui A nu s-au schimbat. (Alt
+        # termen sau alta stare ar fi o comanda noua si ar expira bifa: BifaExpira.)
+        mat = cu(materiale_standard(), 'A', descriere='Articol A, redenumit in BC')
         self.snapshot(proiect(mat=mat), generat='2026-11-25T13:02:11+02:00')
         a = self.rand_in(self.citeste(), 'A')
-        self.assertEqual((a['stare'], a['stare_colector'], a['termen']), ('la_destinatie', 'confirmat', '2026-12-01'))
+        self.assertEqual((a['stare'], a['stare_colector'], a['termen']), ('la_destinatie', 'confirmat', '2026-11-30'))
+        self.assertEqual(a['descriere'], 'Articol A, redenumit in BC')
         self.assertEqual(a['bifa']['la'], LA)
 
     def test_snapshot_ul_de_pe_disc_ramane_cu_starile_colectorului(self):
@@ -382,7 +384,9 @@ class GetCuBife(Baza):
         self.assertNotIn('bifa', a)
         self.assertEqual(scris['proiecte'][0]['rezumat'], rezumat_standard())
 
-    def test_randul_iesit_din_snapshot_nu_se_arata_dar_bifa_ramane_stocata_si_revine_cu_el(self):
+    def test_randul_iesit_din_snapshot_nu_se_arata_iar_colectarea_ii_scoate_bifa(self):
+        # Bifa unui articol iesit din snapshot nu mai are rost: colectarea care l-a scos o curata (BifeOrfane), deci
+        # nu mai „revine" daca articolul reapare mai tarziu.
         self.snapshot()
         self.bifeaza('B', 'livrat')
         fara_b = [m for m in materiale_standard() if m['cod_bc'] != 'B']
@@ -390,9 +394,11 @@ class GetCuBife(Baza):
         j = self.citeste()
         self.assertEqual([m['cod_bc'] for m in self.proiect_in(j)['materiale']], ['A', 'C', 'D', 'E'])
         self.assertTrue(all('bifa' not in m for m in self.proiect_in(j)['materiale']))
-        self.assertEqual(self.stocat(), {PID: {'B': {'stare': 'livrat', 'la': LA}}})
+        self.assertEqual(self.stocat(), {})
         self.snapshot(generat='2026-11-25T16:02:11+02:00')
-        self.assertEqual(self.rand_in(self.citeste(), 'B')['stare'], 'livrat')
+        b = self.rand_in(self.citeste(), 'B')
+        self.assertEqual(b['stare'], 'confirmat')
+        self.assertNotIn('bifa', b)
 
     def test_bifa_pentru_un_proiect_care_nu_mai_e_in_snapshot_nu_strica_nimic(self):
         self.snapshot(proiect(), proiect(PID2))
@@ -411,14 +417,15 @@ class GetCuBife(Baza):
         self.assertEqual(r.status_code, 200)
         backup = r.get_json()
         randuri = [s for s in backup['app_settings'] if s['key'] == 'materiale_bife']
-        self.assertEqual([json.loads(s['value']) for s in randuri], [{PID: {'A': {'stare': 'livrat', 'la': LA}}}])
+        self.assertEqual([json.loads(s['value']) for s in randuri],
+                         [{PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}}])
         self.bifeaza('A', None)                                    # bifa dispare, ca dupa un dezastru
         self.sql("DELETE FROM app_settings WHERE key = 'materiale_bife'")
         self.assertEqual(self.rand_in(self.citeste(), 'A')['stare'], 'confirmat')
         r = self.client.post('/api/restore', json=backup, headers=self.bearer())
         self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
         self.assertEqual(self.rand_in(self.citeste(), 'A')['stare'], 'livrat')
-        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA}}})
+        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
 
 
 class AlerteDeLivrare(Baza):
@@ -491,3 +498,206 @@ class AlerteDeLivrare(Baza):
         j = self.citeste()
         self.assertIsNone(self.rand_in(j, 'A')['fata_de_start'])
         self.assertEqual(self.proiect_in(j)['rezumat']['dupa_start'], 1)
+
+    def test_comanda_noua_pe_un_articol_bifat_da_din_nou_alerta_de_livrare(self):
+        self.pune()
+        self.bifeaza('A', 'livrat')
+        c = self.corp_server()
+        c['generat'] = '2026-11-18T08:02:11+02:00'
+        a = next(m for m in c['proiecte'][0]['materiale'] if m['cod_bc'] == 'A')
+        a['termen'] = '2026-11-27'                                   # BC: acelasi cod, termen nou -> comanda noua
+        r = self.client.put('/api/materiale', json=c, headers=self.bearer())
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual(self.alerte_livrare()[0]['n'], 2)
+        j = self.citeste()
+        self.assertEqual(self.rand_in(j, 'A')['fata_de_start'], 'dupa')
+        self.assertNotIn('bifa', self.rand_in(j, 'A'))
+        self.assertEqual(self.proiect_in(j)['rezumat']['dupa_start'], 2)
+
+    def test_dupa_scoaterea_bifei_marcajul_de_start_revine_imediat_la_citire(self):
+        self.pune()
+        self.bifeaza('A', 'livrat')
+        self.pune()                                                  # colectarea scrie snapshot-ul cu A bifat
+        self.assertEqual(self.bifeaza('A', None).status_code, 200)
+        j = self.citeste()
+        self.assertEqual(self.rand_in(j, 'A')['fata_de_start'], 'dupa')
+        self.assertEqual(self.proiect_in(j)['rezumat']['dupa_start'], 2)
+
+
+MEM_A = {'stare': 'confirmat', 'termen': '2026-11-30'}
+MEM_B = {'stare': 'confirmat', 'termen': '2026-12-05'}
+
+
+def cu(mat, cod, **camp):
+    """Lista standard cu randul `cod` suprascris (starea si termenul pe care le trimite colectorul)."""
+    return [{**m, **camp} if m['cod_bc'] == cod else m for m in mat]
+
+
+class BifaExpira(Baza):
+    """Bifa memoreaza ce spunea colectorul cand a fost pusa. O comanda noua pe acelasi articol (alta stare sau alt
+    termen, dar nu starea bifei) nu mai e ascunsa de o bifa veche: bifa expira si se sterge la colectarea care a adus-o."""
+
+    def colecteaza(self, generat, mat):
+        return self.snapshot(proiect(mat=mat), generat=generat)
+
+    def test_comanda_noua_cu_termen_nou_pe_articolul_bifat_livrat_nu_mai_e_ascunsa(self):
+        self.colecteaza('2026-11-25T08:02:11+02:00', cu(materiale_standard(), 'A', stare='in_tranzit', termen='2026-11-27'))
+        self.assertEqual(self.bifeaza('A', 'livrat').status_code, 200)
+        self.assertEqual(self.rand_in(self.citeste(), 'A')['stare'], 'livrat')
+        self.colecteaza('2026-11-26T08:02:11+02:00', cu(materiale_standard(), 'A', stare='in_tranzit', termen='2026-12-10'))
+        a = self.rand_in(self.citeste(), 'A')
+        self.assertEqual((a['stare'], a['termen']), ('in_tranzit', '2026-12-10'))
+        self.assertNotIn('bifa', a)
+        self.assertNotIn('stare_colector', a)
+        self.assertEqual(self.stocat(), {}, 'bifa expirata se sterge din stocare la colectarea care a adus comanda noua')
+
+    def test_stare_noua_la_colector_expira_bifa_chiar_cu_acelasi_termen(self):
+        self.snapshot()                                            # A: confirmat, 2026-11-30
+        self.bifeaza('A', 'livrat')
+        self.colecteaza('2026-11-26T08:02:11+02:00', cu(materiale_standard(), 'A', stare='in_tranzit'))
+        a = self.rand_in(self.citeste(), 'A')
+        self.assertEqual(a['stare'], 'in_tranzit')
+        self.assertNotIn('bifa', a)
+
+    def test_expirarea_nu_atinge_celelalte_bife(self):
+        self.snapshot()
+        self.bifeaza('A', 'livrat')
+        self.bifeaza('B', 'livrat')
+        self.colecteaza('2026-11-26T08:02:11+02:00', cu(materiale_standard(), 'A', termen='2026-12-20'))
+        j = self.citeste()
+        self.assertEqual(self.rand_in(j, 'A')['stare'], 'confirmat')
+        self.assertEqual(self.rand_in(j, 'B')['stare'], 'livrat')
+        self.assertEqual(self.stocat(), {PID: {'B': {'stare': 'livrat', 'la': LA, 'colector': MEM_B}}})
+
+    def test_colectorul_ajuns_la_starea_bifei_pastreaza_bifa_si_stare_ramane_a_lui(self):
+        self.snapshot()
+        self.bifeaza('A', 'livrat')
+        self.colecteaza('2026-11-26T08:02:11+02:00', cu(materiale_standard(), 'A', stare='livrat', termen='2026-11-26',
+                                                       termen_tip='livrat'))
+        a = self.rand_in(self.citeste(), 'A')
+        self.assertEqual((a['stare'], a['bifa']['stare']), ('livrat', 'livrat'))
+        self.assertNotIn('stare_colector', a)
+        self.assertEqual(self.stocat()[PID]['A']['colector'], {'stare': 'livrat', 'termen': '2026-11-26'})
+
+    def test_dupa_ce_colectorul_a_confirmat_o_comanda_noua_pe_acelasi_articol_expira_bifa(self):
+        self.snapshot()
+        self.bifeaza('A', 'livrat')
+        self.colecteaza('2026-11-26T08:02:11+02:00', cu(materiale_standard(), 'A', stare='livrat', termen='2026-11-26',
+                                                       termen_tip='livrat'))
+        self.colecteaza('2026-11-27T08:02:11+02:00', cu(materiale_standard(), 'A', stare='in_tranzit', termen='2026-12-15'))
+        a = self.rand_in(self.citeste(), 'A')
+        self.assertEqual(a['stare'], 'in_tranzit')
+        self.assertNotIn('bifa', a)
+        self.assertEqual(self.stocat(), {})
+
+    def test_colectare_repetata_fara_schimbare_pastreaza_bifa_si_memoria(self):
+        self.snapshot()
+        self.bifeaza('A', 'la_destinatie')
+        for ora in ('13:02:11', '16:02:11'):
+            self.snapshot(generat='2026-11-25T%s+02:00' % ora)
+        a = self.rand_in(self.citeste(), 'A')
+        self.assertEqual((a['stare'], a['stare_colector']), ('la_destinatie', 'confirmat'))
+        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'la_destinatie', 'la': LA, 'colector': MEM_A}}})
+
+    def test_raspunsul_bifei_nu_arata_memoria(self):
+        self.snapshot()
+        r = self.bifeaza('A', 'livrat').get_json()
+        self.assertEqual(r, {'ok': True, 'bifa': {'stare': 'livrat', 'la': LA}})
+        self.assertEqual(self.rand_in(self.citeste(), 'A')['bifa'], {'stare': 'livrat', 'la': LA})
+
+    def test_bifa_veche_fara_memorie_ramane_activa_si_primeste_memoria_la_colectarea_urmatoare(self):
+        # Bife scrise inainte de memorie: nu au cu ce se compara, deci nu expira (ca pana acum). Prima colectare le
+        # fixeaza punctul de pornire, iar de acolo o schimbare le expira.
+        self.snapshot()
+        self.sql("INSERT INTO app_settings (key, value, updated_at) VALUES ('materiale_bife', ?, 'x')",
+                 json.dumps({PID: {'A': {'stare': 'livrat', 'la': LA}}}))
+        self.assertEqual(self.rand_in(self.citeste(), 'A')['stare'], 'livrat')
+        self.snapshot(generat='2026-11-25T13:02:11+02:00')
+        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
+        self.assertEqual(self.rand_in(self.citeste(), 'A')['stare'], 'livrat')
+        self.colecteaza('2026-11-26T08:02:11+02:00', cu(materiale_standard(), 'A', termen='2026-12-20'))
+        self.assertEqual(self.rand_in(self.citeste(), 'A')['stare'], 'confirmat')
+        self.assertEqual(self.stocat(), {})
+
+    def test_bifa_expirata_dar_nesterse_nu_se_aplica_si_o_noua_bifare_o_inlocuieste(self):
+        # Curatarea de la colectare poate pica (baza ocupata): citirea trebuie sa ignore singura bifa expirata.
+        self.snapshot()
+        self.sql("INSERT INTO app_settings (key, value, updated_at) VALUES ('materiale_bife', ?, 'x')",
+                 json.dumps({PID: {'A': {'stare': 'livrat', 'la': '2026-11-20T09:00:00Z',
+                                         'colector': {'stare': 'in_tranzit', 'termen': '2026-11-21'}}}}))
+        a = self.rand_in(self.citeste(), 'A')
+        self.assertEqual(a['stare'], 'confirmat')
+        self.assertNotIn('bifa', a)
+        r = self.bifeaza('A', 'livrat')                            # Ion o bifeaza din nou: nu e „aceeasi bifa"
+        self.assertEqual(r.get_json()['bifa'], {'stare': 'livrat', 'la': LA})
+        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
+        self.assertEqual(self.rand_in(self.citeste(), 'A')['stare'], 'livrat')
+
+
+class BifeOrfane(Baza):
+    """Scoaterea bifei merge si pentru un articol iesit din snapshot, iar colectorul curata bifele fara randul lor."""
+
+    def stocheaza(self, bife):
+        self.sql("DELETE FROM app_settings WHERE key = 'materiale_bife'")
+        self.sql("INSERT INTO app_settings (key, value, updated_at) VALUES ('materiale_bife', ?, 'x')", json.dumps(bife))
+
+    def test_scoaterea_bifei_unui_articol_iesit_din_snapshot_da_200(self):
+        self.snapshot()
+        self.stocheaza({PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A},
+                                'Z': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
+        r = self.bifeaza('Z', None)
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'bifa': None}), r.get_data(as_text=True))
+        self.assertEqual(list(self.stocat()[PID]), ['A'])
+
+    def test_scoaterea_bifei_unui_proiect_iesit_din_snapshot_da_200_si_nu_lasa_proiectul_gol(self):
+        self.snapshot()
+        self.stocheaza({PID2: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
+        r = self.bifeaza('A', None, pid=PID2)
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'bifa': None}), r.get_data(as_text=True))
+        self.assertEqual(self.stocat(), {})
+
+    def test_scoaterea_cere_ca_bifa_sa_existe_altfel_articolul_necunoscut_ramane_409(self):
+        self.snapshot()
+        self.stocheaza({PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
+        for pid, cod in ((PID, 'Z'), (PID2, 'A')):
+            r = self.bifeaza(cod, None, pid=pid)
+            self.assertEqual(r.status_code, 409, r.get_data(as_text=True))
+        self.assertEqual(list(self.stocat()[PID]), ['A'])
+
+    def test_bifarea_unui_articol_iesit_din_snapshot_ramane_409_chiar_cu_bifa_veche(self):
+        self.snapshot()
+        self.stocheaza({PID: {'Z': {'stare': 'la_destinatie', 'la': LA, 'colector': MEM_A}}})
+        self.assertEqual(self.bifeaza('Z', 'livrat').status_code, 409)
+        self.assertEqual(self.stocat()[PID]['Z']['stare'], 'la_destinatie')
+
+    def test_scoaterea_merge_si_fara_niciun_snapshot_cand_bifa_exista(self):
+        self.stocheaza({PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
+        self.assertEqual(self.bifeaza('A', None).status_code, 200)
+        self.assertEqual(self.stocat(), {})
+        self.assertEqual(self.bifeaza('A', None).status_code, 409)
+
+    def test_colectorul_curata_bifele_articolelor_si_proiectelor_care_nu_mai_sunt(self):
+        self.snapshot(proiect(), proiect(PID2))
+        self.bifeaza('A', 'livrat')
+        self.bifeaza('B', 'la_destinatie')
+        self.bifeaza('A', 'livrat', pid=PID2)
+        fara_b = [m for m in materiale_standard() if m['cod_bc'] != 'B']
+        self.snapshot(proiect(mat=fara_b), generat='2026-11-25T13:02:11+02:00')       # PID2 a iesit, B a iesit din PID
+        self.assertEqual(self.stocat(), {PID: {'A': {'stare': 'livrat', 'la': LA, 'colector': MEM_A}}})
+
+    def test_curatarea_e_idempotenta_si_nu_atinge_o_valoare_stricata(self):
+        self.snapshot(proiect(), proiect(PID2))
+        self.bifeaza('A', 'livrat', pid=PID2)
+        self.snapshot(generat='2026-11-25T13:02:11+02:00')
+        self.assertEqual(self.stocat(), {})
+        r = self.client.put('/api/materiale', json=corp(proiect(), generat='2026-11-25T13:02:11+02:00'),
+                            headers=self.bearer())
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self.stocat(), {})
+        self.sql("UPDATE app_settings SET value = 'nu e json {' WHERE key = 'materiale_bife'")
+        self.snapshot(generat='2026-11-25T16:02:11+02:00')
+        self.assertEqual(self.sql("SELECT value FROM app_settings WHERE key = 'materiale_bife'"), [('nu e json {',)])
+
+    def test_fara_nicio_bifa_colectorul_nu_creeaza_cheia(self):
+        self.snapshot()
+        self.assertIsNone(self.stocat())

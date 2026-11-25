@@ -77,9 +77,9 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| PUT | `/api/materiale` | `put_materiale` | 559 |
-| GET | `/api/materiale` | `get_materiale` | 628 |
-| PUT | `/api/materiale/bifa` | `put_bifa` | 643 |
+| PUT | `/api/materiale` | `put_materiale` | 667 |
+| GET | `/api/materiale` | `get_materiale` | 741 |
+| PUT | `/api/materiale/bifa` | `put_bifa` | 770 |
 
 ## blueprints/obsidian.py (4 rute)
 
