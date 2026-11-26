@@ -267,12 +267,14 @@ class Materiale(CuAplicatia):
 
     def test_numele_proiectului_vine_din_baza(self):
         r = self.client.post('/api/proiecte', json={'id': PID, 'nume': 'Service traductor', 'tip': 'PIF',
-                                                    'client': 'ROMKUVERT IND SRL'}, headers=self.bearer())
+                                                    'client': 'ROMKUVERT IND SRL', 'locatie': 'Pitesti'},
+                             headers=self.bearer())
         self.assertIn(r.status_code, (200, 201), r.get_data(as_text=True))
         self.pune(corp(proiect(), proiect('p-sters', '26_000')))
         j = self.citeste()
         self.assertEqual(self.proiect_in(j)['proiect']['nume'], 'Service traductor')
         self.assertEqual(self.proiect_in(j)['proiect']['client'], 'ROMKUVERT IND SRL')
+        self.assertEqual(self.proiect_in(j)['proiect']['locatie'], 'Pitesti')     # E-446: Torqa o scrie sub nume
         self.assertIsNone(self.proiect_in(j, 'p-sters')['proiect'])
 
     def test_snapshotul_de_pe_disc_nu_primeste_marcajele(self):

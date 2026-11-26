@@ -38,7 +38,7 @@ Torqa (serverul nu mai are interfață), cu brief separat.
   (nr), mail (entry_id, altfel data și subiectul). Același articol de mai multe ori pe același CT (cazul
   real CT26003799) se împerechează în ordinea (cantitate, termen). Torqa doar afișează.
 - **Ce mai adaugă GET-ul.** `termen_neregulat` pe termenele din lista de mai sus; `proiect` (`nume`,
-  `client`, `status`) citit din `proiecte`, `null` pentru un proiect șters; `comparat_cu` (data
+  `client`, `locatie`, `status`) citit din `proiecte`, `null` pentru un proiect șters; `comparat_cu` (data
   anteriorului); `vechi`, adevărat când de la `generat` a trecut mai mult de o zi lucrătoare (L–V, fără
   sărbători) plus 2 ore de marjă: vinerea de la 08:00 rămâne proaspătă până luni la 10:00. Fără snapshot
   sau cu fișier stricat: 200, `generat` null, `vechi` true, `proiecte` [] (warning în log, nu 500).

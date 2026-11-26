@@ -405,21 +405,22 @@ def e_vechi(generat, acum=None):
 
 
 def _date_proiecte(ids):
-    """{id: {nume, client, status}} din baza, doar citire. O eroare de baza nu strica GET-ul."""
+    """{id: {nume, client, locatie, status}} din baza, doar citire. O eroare de baza nu strica GET-ul."""
     if not ids:
         return {}
     try:
         conn = get_db()
         try:
             semne = ','.join('?' * len(ids))
-            rows = conn.execute('SELECT id, nume, client, status FROM proiecte WHERE id IN (%s)' % semne,
+            rows = conn.execute('SELECT id, nume, client, locatie, status FROM proiecte WHERE id IN (%s)' % semne,
                                 list(ids)).fetchall()
         finally:
             conn.close()
     except Exception:
         logger.exception('Materiale: proiectele nu se pot citi din baza')
         return {}
-    return {r['id']: {'nume': r['nume'], 'client': r['client'], 'status': r['status']} for r in rows}
+    return {r['id']: {'nume': r['nume'], 'client': r['client'], 'locatie': r['locatie'],
+                    'status': r['status']} for r in rows}
 
 
 # --------------------------------------------------------------------------- bifele manuale
