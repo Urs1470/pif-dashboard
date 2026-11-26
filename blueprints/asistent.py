@@ -6,7 +6,7 @@
 #
 # Trei parti, trei feluri de acces:
 #   - asistentul (token de MASINA, sesiune): PUT registru, GET/POST actiuni, POST fir (cine=asistent),
-#     GET fir/noi, POST fir/<id>/stare, PUT fir/<id>/detalii, PUT fir/<id>/live. Tokenul de DISPOZITIV primeste 403 pe ele.
+#     GET fir/noi, POST fir/<id>/stare, PUT fir/<id> (v1.5), PUT fir/<id>/detalii, PUT fir/<id>/live. Tokenul de DISPOZITIV primeste 403 pe ele.
 #   - Torqa (sesiune sau token de dispozitiv): GET /api/asistent, POST actiune, POST fir (mesajul lui
 #     Ion), push/token, GET fir/<id>/detalii, GET fir/<id>/live si live/flux. Serviciul nativ Android foloseste acelasi
 #     token de dispozitiv.
@@ -42,6 +42,13 @@
 # (<=40 de caractere, unice, fara caractere de control) pe care Ion le poate trimite cu o atingere. Torqa le arata ca butoane
 # sub ultimul mesaj al asistentului cat Ion n-a scris dupa el; apasarea trimite textul ca mesaj obisnuit al lui Ion, cu
 # `raspuns_la` = mesajul cu sugestii. Fara schema si fara ruta noua; un Torqa vechi ignora campul.
+#
+# v1.5 (actualizare pe loc): `PUT /api/asistent/fir/<id>` {text, titlu?} rescrie mesajul `lucreaza` al asistentului, ca o lucrare sa
+# tina UN singur mesaj de progres ("lucreaza pe IONPC din 21:40, minutul 12: <pasul>") in loc de trei notificari; rezultatul ramane
+# un mesaj nou. Doar tipul `lucreaza` (alt tip sau mesajul lui Ion: 409), token de masina sau sesiune (dispozitiv 403). Pune
+# `actualizat` (null cat mesajul n-a fost editat; apare in `GET /api/asistent` si `fir/noi`), nu atinge `ts`, nu trimite push, scrie
+# sub aceeasi blocare ca firul. Un text si un titlu identice cu cele de pe disc nu rescriu firul (200 cu `actualizat` vechi).
+# Fara schema, fara migrare; Torqa citeste tot firul la fiecare reimprospatare, deci un mesaj editat se vede fara schimbare in client.
 #
 # Validarea e STRICTA: camp necunoscut, lipsa sau tip gresit da 400 cu calea campului, iar starea
 # veche ramane. Trimiterea FCM nu schimba niciodata statusul raspunsului: o eroare intra in `push.erori`.
@@ -125,6 +132,7 @@ TIPURI_ASISTENT = ('brief', 'alerta', 'raspuns', 'lucreaza', 'rezultat', 'info',
 TIPURI_CU_OPTIUNI = ('intrebare', 'asteapta')
 TIPURI_CU_SUGESTII = ('raspuns', 'info')            # v1.4: raspunsurile rapide (conversatia), nu deciziile (`optiuni`)
 MAX_SUGESTII, MAX_SUGESTIE = 3, 40
+MAX_TEXT_MESAJ, MAX_TITLU_MESAJ = 2000, 140               # v1.5: limitele textului si titlului la PUT /fir/<id> (ca la POST)
 MASINI = (('server', 'Server'), ('pc-job', 'PC job'), ('ionpc', 'IONPC'))   # ordinea din `masini`
 IDS_MASINI = tuple(m for m, _ in MASINI)
 TINTE = ('auto',) + IDS_MASINI
@@ -170,6 +178,7 @@ CAMPURI_PREZENTA = frozenset(('activ', 'idle_s', 'versiune', 'claude'))
 CAMPURI_CLAUDE = frozenset(('logat', 'expira', 'verificat'))
 CAMPURI_PUSH = frozenset(('prioritate',))
 CAMPURI_DETALII = frozenset(('detalii',))
+CAMPURI_EDITARE = frozenset(('text', 'titlu'))                  # v1.5: PUT /api/asistent/fir/<id>
 CAMPURI_LIVE = frozenset(('text', 'unealta', 'gata'))
 CAMPURI_STARE = frozenset(('stare', 'task_id', 'mesaj'))
 CAMPURI_TOKEN = frozenset(('token', 'platforma', 'aplicatie', 'versiune'))
@@ -748,6 +757,7 @@ def _mesaj(r, cu_detalii):
             'alegere': r.get('alegere'),
             'optiuni': r.get('optiuni') if isinstance(r.get('optiuni'), list) else [],
             'sugestii': r.get('sugestii') if isinstance(r.get('sugestii'), list) else [],
+            'actualizat': r.get('actualizat'),
             'masina': r.get('masina'),
             'raspuns': r.get('raspuns') if isinstance(r.get('raspuns'), dict) else None,
             'are_detalii': r['id'] in cu_detalii}
@@ -1313,6 +1323,52 @@ def post_stare(id_):
         logger.exception('Asistent: scrierea firului a esuat pe disc')
         return _eroare(500, 'Eroare pe disc la salvarea firului.')
     return jsonify({'ok': True, 'id': id_, 'stare': stare})
+
+
+@asistent_bp.route('/api/asistent/fir/<id_>', methods=['PUT'])
+@login_required
+@_doar_masina
+def put_mesaj(id_):
+    """v1.5: actualizeaza pe loc mesajul `lucreaza` al asistentului: {text: 1-2000 de caractere dupa strip, titlu?: <= 140 | null}.
+    `titlu` lipsa = ramane, `null` = se sterge. Pune `actualizat` (ISO UTC cu Z); `ts` ramane. Token de masina sau sesiune;
+    dispozitivul 403. 404 id invalid sau mesaj necunoscut (inclusiv scos din fir la plafon), 409 mesajul nu e al asistentului
+    sau nu e de tip `lucreaza`, 400 corp invalid (camp necunoscut, tip gresit, gol, peste limita, surogat). Mesajul se cauta si firul
+    se rescrie sub aceeasi blocare. Un text (si titlu, daca e in corp) identic cu cel de pe disc nu rescrie firul: 200 cu `actualizat`
+    vechi (null la un mesaj needitat). Fara push. Raspuns: {ok, id, actualizat}."""
+    corp, eroare = _corp_json(MAX_CORP)
+    if eroare:
+        return eroare
+    try:
+        _obiect(corp, 'corpul', CAMPURI_EDITARE)
+        text = _text(corp, 'text', 'corpul', MAX_CORP, nevid=True).strip()
+        if len(text) > MAX_TEXT_MESAJ:
+            raise EroareCorp('corpul.text: maximum %d de caractere (dupa strip)' % MAX_TEXT_MESAJ)
+        schimba_titlu = 'titlu' in corp
+        titlu = _nul_text(corp, 'titlu', 'corpul', MAX_TITLU_MESAJ)
+        titlu = titlu.strip() if titlu is not None else None
+    except EroareCorp as e:
+        return _eroare(400, str(e))
+    if not _RE_MSG.fullmatch(id_):
+        return _eroare(404, 'mesaj necunoscut')
+    try:
+        with _blocat():
+            randuri = _citeste_fir(True)
+            rand = next((r for r in randuri if r['id'] == id_), None)
+            if rand is None:
+                return _eroare(404, 'mesaj necunoscut')
+            if rand.get('cine') != 'asistent' or rand.get('tip') != 'lucreaza':
+                return _eroare(409, 'doar mesajele asistentului de tip lucreaza se actualizeaza')
+            if rand.get('text') != text or (schimba_titlu and rand.get('titlu') != titlu):
+                rand['text'] = text
+                if schimba_titlu:
+                    rand['titlu'] = titlu
+                rand['actualizat'] = _z(_acum())
+                _scrie_fir(randuri)
+            actualizat = rand.get('actualizat')
+    except OSError:
+        logger.exception('Asistent: scrierea firului a esuat pe disc')
+        return _eroare(500, 'Eroare pe disc la salvarea firului.')
+    return jsonify({'ok': True, 'id': id_, 'actualizat': actualizat})
 
 
 @asistent_bp.route('/api/asistent/fir/<id_>/detalii', methods=['PUT'])

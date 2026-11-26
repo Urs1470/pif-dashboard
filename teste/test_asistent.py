@@ -37,6 +37,11 @@ v1.3 (clasa `Live`):
   - `GET .../live`: 404 / 200 / 204 cu `?dupa=<seq>` (400 la valoare gresita), si cu dispozitivul sau sesiunea;
   - `GET .../live/flux` (SSE): antete, `retry`, un eveniment pe seq nou, inchidere la `gata`, ping la 15 s, plafon 60 s,
     `gol` dupa 20 s fara fisier, `Last-Event-ID`, 204 la reconectare dupa `gata`; ceasul e de proba, nimic nu asteapta.
+v1.5 (clasa `EditareV15`):
+  - `PUT /api/asistent/fir/<id>` {text, titlu?}: doar mesajul `lucreaza` al asistentului (409 la alt tip si la mesajul lui Ion), token de
+    masina sau sesiune (dispozitiv 403, fara token 401), text 1-2000 dupa strip, `titlu` <= 140 sau null (il sterge), alt camp 400 cu calea,
+    404 la id invalid / necunoscut / scos la plafon; pune `actualizat`, nu atinge `ts`, nu trimite push, scrie sub blocarea firului;
+    text identic = 200 fara rescrierea firului; `actualizat` pe fiecare mesaj din GET (null cat n-a fost editat).
 Directorul datelor e unul temporar: un test nu scrie niciodata in `uploads/` din proiect. Nicio proba nu atinge
 reteaua: `fcm.trimite_date` sau `fcm._http_post` sunt inlocuite.
 """
@@ -346,7 +351,7 @@ class Vedere(Baza):
         self.assertEqual((len(fir), fir[0]['text'], fir[-1]['text']), (100, 'mesaj 30', 'mesaj 129'))
         self.assertEqual(set(fir[0]), {'id', 'ts', 'cine', 'tip', 'titlu', 'text', 'sursa', 'item_id', 'task_id',
                                         'link', 'butoane', 'raspuns_la', 'stare', 'stare_detaliu', 'via',
-                                        'ref', 'tinta', 'alegere', 'optiuni', 'masina', 'raspuns', 'are_detalii', 'sugestii'})
+                                        'ref', 'tinta', 'alegere', 'optiuni', 'masina', 'raspuns', 'are_detalii', 'sugestii', 'actualizat'})
         self.assertEqual(fir[0]['butoane'], [])
 
     def test_sesiunea_si_tokenul_de_masina_citesc_la_fel(self):
@@ -567,7 +572,8 @@ class Fir(Baza):
                              'text': 'Ce am azi?', 'sursa': 'dictat', 'item_id': None, 'task_id': None, 'link': None,
                              'butoane': [], 'raspuns_la': None, 'stare': 'nou', 'stare_detaliu': None,
                              'via': 'dispozitiv', 'ref': None, 'tinta': 'auto', 'alegere': None, 'optiuni': [],
-                             'masina': None, 'raspuns': None, 'are_detalii': False, 'sugestii': []})
+                             'masina': None, 'raspuns': None, 'are_detalii': False, 'sugestii': [],
+                             'actualizat': None})
 
     def test_sursa_implicita_scris_si_cine_ion_acceptat(self):
         self.scrie_ion(cine='ion')
@@ -1668,6 +1674,275 @@ class SugestiiV14(Baza):
         ion = self.vedere()['fir'][1]
         self.assertEqual((ion['cine'], ion['text'], ion['raspuns_la'], ion['alegere']), ('ion', 'Da, pornește', mid, None))
         self.assertEqual([m['text'] for m in self.noi()], ['Da, pornește'])
+
+
+# --------------------------------------------------------------------------- v1.5: mesajul `lucreaza` se actualizeaza pe loc
+
+class EditareV15(Baza):
+    """`PUT /api/asistent/fir/<id>` {text, titlu?}: asistentul tine UN mesaj `lucreaza` pe lucrare si il rescrie pe loc;
+    rezultatul ramane mesaj nou. `actualizat` apare pe fiecare mesaj (null cat n-a fost editat)."""
+
+    def lucreaza(self, text='Asteapta pe PC job, offline de la 19:44', **camp):
+        r = self.scrie_asistent(tip='lucreaza', text=text, **camp)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        return r.get_json()['id']
+
+    def edit(self, id_, corp, token=FULL):
+        return self.client.put('/api/asistent/fir/%s' % id_, json=corp, headers=self.h(token))
+
+    def mesaj(self, id_):
+        return next(m for m in self.vedere()['fir'] if m['id'] == id_)
+
+    # ----- efectul
+
+    def test_inlocuieste_textul_si_pune_actualizat(self):
+        id_ = self.lucreaza(titlu='Lucrarea X')
+        ts = self.mesaj(id_)['ts']
+        self.acum = ACUM + timedelta(minutes=12, seconds=5)
+        r = self.edit(id_, {'text': 'Lucreaza pe IONPC din 21:40, minutul 12: pasul 3'})
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'id': id_, 'actualizat': '2026-11-22T08:12:05Z'}))
+        m = self.mesaj(id_)
+        self.assertEqual((m['text'], m['actualizat'], m['ts'], m['titlu']),
+                         ('Lucreaza pe IONPC din 21:40, minutul 12: pasul 3', '2026-11-22T08:12:05Z', ts, 'Lucrarea X'))
+        self.assertEqual(len(self.randuri('fir.jsonl')), 1, 'se rescrie pe loc, nu se adauga')
+
+    def test_actualizat_avanseaza_la_fiecare_text_nou_si_ordinea_firului_ramane(self):
+        a = self.lucreaza('a')
+        b = self.scrie_asistent(tip='info', text='intre').get_json()['id']
+        for minute, text in ((1, 'unu'), (2, 'doi'), (3, 'trei')):
+            self.acum = ACUM + timedelta(minutes=minute)
+            self.assertEqual(self.edit(a, {'text': text}).status_code, 200)
+        fir = self.vedere()['fir']
+        self.assertEqual([(m['id'], m['text']) for m in fir], [(a, 'trei'), (b, 'intre')])
+        self.assertEqual((fir[0]['actualizat'], fir[1]['actualizat']), ('2026-11-22T08:03:00Z', None))
+
+    def test_textul_se_stocheaza_fara_spatiile_de_la_capete(self):
+        id_ = self.lucreaza()
+        self.assertEqual(self.edit(id_, {'text': '  \n pas ăîșț \U0001F600 \t '}).status_code, 200)
+        self.assertEqual(self.mesaj(id_)['text'], 'pas ăîșț \U0001F600')
+
+    def test_titlu_lipsa_ramane_titlu_nou_se_pune_null_il_sterge(self):
+        id_ = self.lucreaza(titlu='Vechi')
+        self.edit(id_, {'text': 'a'})
+        self.assertEqual(self.mesaj(id_)['titlu'], 'Vechi', 'fara cheie, titlul nu se atinge')
+        self.edit(id_, {'text': 'b', 'titlu': '  Nou ț  '})
+        self.assertEqual(self.mesaj(id_)['titlu'], 'Nou ț')
+        self.edit(id_, {'text': 'c', 'titlu': None})
+        m = self.mesaj(id_)
+        self.assertEqual((m['titlu'], m['text']), (None, 'c'))
+        self.assertIsNone(self.randuri('fir.jsonl')[0]['titlu'])
+
+    def test_nu_atinge_nimic_altceva_din_mesaj_nici_detalii_nici_celelalte_mesaje(self):
+        id_ = self.lucreaza(item_id='claude:t1', butoane=['claude'], masina='ionpc', detalii='# Jurnal')
+        alt = self.scrie_asistent(tip='rezultat', text='altul').get_json()['id']
+        inainte = {m['id']: dict(m) for m in self.vedere()['fir']}
+        self.acum = ACUM + timedelta(minutes=5)
+        self.edit(id_, {'text': 'nou'})
+        dupa = {m['id']: m for m in self.vedere()['fir']}
+        self.assertEqual(dupa[alt], inainte[alt])
+        schimbate = {k for k in dupa[id_] if dupa[id_][k] != inainte[id_][k]}
+        self.assertEqual(schimbate, {'text', 'actualizat'})
+        self.assertEqual(self.fisier('detalii/%s.md' % id_), b'# Jurnal')
+        self.assertTrue(dupa[id_]['are_detalii'])
+
+    def test_fara_push_niciodata(self):
+        id_ = self.lucreaza()
+        with mock.patch.object(fcm, 'trimite_date') as trimite, mock.patch.object(asistent, '_trimite_push') as push:
+            r = self.edit(id_, {'text': 'altul'})
+        self.assertEqual(r.status_code, 200)
+        trimite.assert_not_called()
+        push.assert_not_called()
+        self.assertEqual(sorted(r.get_json()), ['actualizat', 'id', 'ok'], 'raspunsul nu poarta `push`')
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'push.json')))
+
+    def test_scrierea_se_face_sub_blocarea_firului(self):
+        id_ = self.lucreaza()
+        with mock.patch.object(asistent, '_blocat', wraps=asistent._blocat) as blocat:
+            self.assertEqual(self.edit(id_, {'text': 'x'}).status_code, 200)
+        self.assertEqual(blocat.call_count, 1)
+
+    # ----- idempotenta si textul identic
+
+    def test_aceeasi_cerere_de_doua_ori_lasa_acelasi_text_si_nu_rescrie_firul(self):
+        id_ = self.lucreaza()
+        self.acum = ACUM + timedelta(minutes=1)
+        prima = self.edit(id_, {'text': 'acelasi'}).get_json()
+        fisier = self.fisier('fir.jsonl')
+        self.acum = ACUM + timedelta(minutes=9)
+        a_doua = self.edit(id_, {'text': 'acelasi'})
+        self.assertEqual((a_doua.status_code, a_doua.get_json()), (200, prima))
+        self.assertEqual(self.fisier('fir.jsonl'), fisier, 'text identic: firul nu se rescrie')
+        self.assertEqual(self.mesaj(id_)['actualizat'], '2026-11-22T08:01:00Z')
+        self.assertEqual(os.listdir(self.dir).count('fir.jsonl.tmp'), 0)
+
+    def test_text_identic_cu_titlu_schimbat_se_scrie_iar_cu_titlu_identic_nu(self):
+        id_ = self.lucreaza('t', titlu='A')
+        self.acum = ACUM + timedelta(minutes=1)
+        self.edit(id_, {'text': 't', 'titlu': 'B'})
+        self.assertEqual((self.mesaj(id_)['titlu'], self.mesaj(id_)['actualizat']), ('B', '2026-11-22T08:01:00Z'))
+        self.acum = ACUM + timedelta(minutes=2)
+        self.edit(id_, {'text': 't', 'titlu': 'B'})
+        self.assertEqual(self.mesaj(id_)['actualizat'], '2026-11-22T08:01:00Z')
+        self.edit(id_, {'text': '  t  '})
+        self.assertEqual(self.mesaj(id_)['actualizat'], '2026-11-22T08:01:00Z', 'compararea se face dupa strip')
+
+    def test_text_identic_pe_un_mesaj_needitat_intoarce_actualizat_null_si_nu_scrie(self):
+        id_ = self.lucreaza('la fel')
+        fisier = self.fisier('fir.jsonl')
+        r = self.edit(id_, {'text': 'la fel'})
+        self.assertEqual((r.status_code, r.get_json()), (200, {'ok': True, 'id': id_, 'actualizat': None}))
+        self.assertEqual(self.fisier('fir.jsonl'), fisier)
+        self.assertIsNone(self.mesaj(id_)['actualizat'])
+
+    # ----- actualizat in GET si fir/noi
+
+    def test_actualizat_e_null_pe_mesajele_needitate_vechi_si_ale_lui_ion(self):
+        self.scrie_randuri('fir.jsonl', [{'id': 'm_0000a1', 'ts': '2026-11-20T10:00:00Z', 'cine': 'asistent', 'tip': 'lucreaza',
+                                          'text': 'vechi'}])
+        self.scrie_asistent(tip='info')
+        self.scrie_ion('Salut')
+        self.assertEqual([m['actualizat'] for m in self.vedere()['fir']], [None, None, None])
+        self.assertEqual([m['actualizat'] for m in self.noi()], [None])
+
+    def test_actualizat_apare_in_get_pentru_sesiune_dispozitiv_si_masina(self):
+        id_ = self.lucreaza()
+        self.edit(id_, {'text': 'x'})
+        for token in (DEVICE, FULL):
+            with self.subTest(token=token):
+                self.assertEqual(self.mesaj_cu(token, id_)['actualizat'], '2026-11-22T08:00:00Z')
+        self.login()
+        r = self.client.get('/api/asistent')
+        self.assertEqual(next(m for m in r.get_json()['fir'] if m['id'] == id_)['actualizat'], '2026-11-22T08:00:00Z')
+
+    def mesaj_cu(self, token, id_):
+        return next(m for m in self.vedere(token)['fir'] if m['id'] == id_)
+
+    # ----- validare
+
+    def test_text_invalid_da_400_cu_calea_si_pastreaza_mesajul(self):
+        id_ = self.lucreaza('vechi')
+        fisier = self.fisier('fir.jsonl')
+        cazuri = (('lipsa', {}, 'corpul.text'), ('numar', {'text': 5}, 'corpul.text'), ('null', {'text': None}, 'corpul.text'),
+                  ('lista', {'text': ['a']}, 'corpul.text'), ('gol', {'text': ''}, 'corpul.text'),
+                  ('spatii', {'text': ' \n\t '}, 'corpul.text'), ('2001', {'text': 'a' * 2001}, 'corpul.text'),
+                  ('2001 cu spatii', {'text': ' ' + 'a' * 2001}, 'corpul.text'),
+                  ('camp necunoscut', {'text': 'x', 'alt': 1}, 'corpul.alt'),
+                  ('detalii nu se editeaza aici', {'text': 'x', 'detalii': 'y'}, 'corpul.detalii'),
+                  ('tip nu se schimba', {'text': 'x', 'tip': 'rezultat'}, 'corpul.tip'),
+                  ('titlu numar', {'text': 'x', 'titlu': 7}, 'corpul.titlu'), ('titlu gol', {'text': 'x', 'titlu': ''}, 'corpul.titlu'),
+                  ('titlu spatii', {'text': 'x', 'titlu': '  '}, 'corpul.titlu'),
+                  ('titlu 141', {'text': 'x', 'titlu': 't' * 141}, 'corpul.titlu'),
+                  ('titlu lista', {'text': 'x', 'titlu': ['a']}, 'corpul.titlu'), ('corp lista', ['x'], 'corpul'))
+        for nume, corp, cale in cazuri:
+            with self.subTest(nume):
+                r = self.edit(id_, corp)
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn(cale, r.get_json()['error'])
+        self.assertEqual(self.fisier('fir.jsonl'), fisier)
+
+    def test_surogat_si_json_invalid_dau_400(self):
+        id_ = self.lucreaza('vechi')
+        for corp in ('{"text": "a\\ud83db"}', '{"text": "x", "titlu": "a\\ud83db"}'):
+            with self.subTest(corp=corp):
+                r = self.client.put('/api/asistent/fir/%s' % id_, data=corp, content_type='application/json', headers=self.h(FULL))
+                self.assertEqual(r.status_code, 400)
+                self.assertIn('corpul.', r.get_json()['error'])
+        r = self.client.put('/api/asistent/fir/%s' % id_, data='nu e json', content_type='application/json', headers=self.h(FULL))
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(self.mesaj(id_)['text'], 'vechi')
+
+    def test_limitele_trec(self):
+        id_ = self.lucreaza()
+        for text in ('a', 'a' * 2000, ' \n' + 'b' * 2000 + '\t ', 'ț' * 2000):
+            with self.subTest(len=len(text)):
+                self.assertEqual(self.edit(id_, {'text': text}).status_code, 200)
+                self.assertEqual(self.mesaj(id_)['text'], text.strip())
+        self.assertEqual(self.edit(id_, {'text': 'x', 'titlu': 't' * 140}).status_code, 200)
+        self.assertEqual(len(self.mesaj(id_)['titlu']), 140)
+
+    def test_corpul_peste_32_kb_da_413(self):
+        id_ = self.lucreaza('vechi')
+        r = self.client.put('/api/asistent/fir/%s' % id_, data=b'{"text": "' + b'a' * (33 * 1024) + b'"}',
+                            content_type='application/json', headers=self.h(FULL))
+        self.assertEqual(r.status_code, 413)
+        self.assertEqual(self.mesaj(id_)['text'], 'vechi')
+
+    # ----- ce se poate edita
+
+    def test_doar_mesajele_asistentului_de_tip_lucreaza(self):
+        ion = self.scrie_ion().get_json()['id']
+        self.assertEqual(self.edit(ion, {'text': 'x'}).status_code, 409)
+        for tip, extra in (('brief', {}), ('alerta', {}), ('raspuns', {}), ('rezultat', {}), ('info', {}),
+                           ('intrebare', {'optiuni': OPTIUNI}), ('asteapta', {'optiuni': OPTIUNI})):
+            with self.subTest(tip=tip):
+                id_ = self.scrie_asistent(tip=tip, text='original', **extra).get_json()['id']
+                r = self.edit(id_, {'text': 'x'})
+                self.assertEqual(r.status_code, 409, r.get_data(as_text=True))
+                self.assertEqual(self.mesaj(id_)['text'], 'original')
+        self.assertEqual(self.mesaj(ion)['text'], 'Fa-mi un rezumat')
+        self.assertTrue(all(m['actualizat'] is None for m in self.vedere()['fir']))
+
+    def test_un_corp_invalid_pe_alt_tip_da_400_nu_409(self):
+        id_ = self.scrie_asistent(tip='rezultat').get_json()['id']
+        self.assertEqual(self.edit(id_, {'text': ''}).status_code, 400)
+
+    def test_mesaj_necunoscut_404(self):
+        self.lucreaza()
+        for id_ in ('m_abcdef', 'm_' + 'a' * 16):
+            with self.subTest(id_=id_):
+                self.assertEqual(self.edit(id_, {'text': 'x'}).status_code, 404)
+
+    def test_mesajul_scos_din_fir_la_plafon_da_404(self):
+        id_ = self.lucreaza()
+        self.assertEqual(self.edit(id_, {'text': 'inainte'}).status_code, 200)
+        randuri = self.randuri('fir.jsonl') + [{'id': 'm_%06x' % (i + 100), 'ts': '2026-11-21T07:00:00Z', 'cine': 'asistent',
+                                               'tip': 'info', 'text': 'x', 'stare': None} for i in range(499)]
+        self.scrie_randuri('fir.jsonl', randuri)
+        self.assertEqual(self.scrie_asistent(tip='info', text='scoate cel mai vechi').status_code, 201)
+        self.assertNotIn(id_, [m['id'] for m in self.vedere()['fir']])
+        self.assertEqual(self.edit(id_, {'text': 'dupa'}).status_code, 404)
+
+    ID_RELE = ('..', '%2e%2e', 'm_abcdef%2f..%2f..%2fregistru', 'm_abcdef%5c..', 'm_abcdef%00', 'm_abcde', 'm_' + 'a' * 17,
+               'M_ABCDEF', 'm_abcdeg', 'm_abcdef.md', ' m_abcdef', 'registru.json', 'noi', 'm_abcdef/..')
+
+    def test_id_invalid_da_404_si_nu_scrie_nimic(self):
+        self.lucreaza()
+        lista, fir = sorted(os.listdir(self.dir)), self.fisier('fir.jsonl')
+        for id_ in self.ID_RELE:
+            with self.subTest(id_=id_):
+                r = self.client.put('/api/asistent/fir/%s' % id_, json={'text': 'x'}, headers=self.h(FULL))
+                self.assertEqual(r.status_code, 404, r.get_data(as_text=True))
+        self.assertEqual((sorted(os.listdir(self.dir)), self.fisier('fir.jsonl')), (lista, fir))
+
+    # ----- acces
+
+    def test_acces(self):
+        id_ = self.lucreaza('vechi')
+        self.assertEqual(self.edit(id_, {'text': 'x'}, token=DEVICE).status_code, 403)
+        self.assertEqual(self.edit(id_, {'text': 'x'}, token=None).status_code, 401)
+        self.assertEqual(self.edit(id_, {'text': 'x'}, token='gresit').status_code, 401)
+        self.assertEqual(self.mesaj(id_)['text'], 'vechi')
+
+    def test_cu_sesiune_trece(self):
+        id_ = self.lucreaza()
+        self.login()
+        self.client.get('/api/asistent')
+        csrf = {'X-CSRF-Token': self.client.get_cookie('csrf_token').value}
+        r = self.client.put('/api/asistent/fir/%s' % id_, json={'text': 'din sesiune'}, headers=csrf)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual(self.mesaj(id_)['text'], 'din sesiune')
+
+    # ----- disc
+
+    def test_eroare_de_disc_da_500_si_pastreaza_mesajul(self):
+        id_ = self.lucreaza('vechi')
+        fisier = self.fisier('fir.jsonl')
+        with mock.patch.object(asistent, '_scrie_atomic', side_effect=OSError('disc plin')):
+            self.assertEqual(self.edit(id_, {'text': 'nou'}).status_code, 500)
+        self.assertEqual(self.fisier('fir.jsonl'), fisier)
+        with mock.patch.object(asistent, '_citeste_fir', side_effect=OSError('permisiuni')):
+            self.assertEqual(self.edit(id_, {'text': 'nou'}).status_code, 500)
+        self.assertEqual(self.fisier('fir.jsonl'), fisier)
 
 
 # --------------------------------------------------------------------------- v1.1: raspunsul la intrebare

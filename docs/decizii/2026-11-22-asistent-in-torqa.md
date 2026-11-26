@@ -5,7 +5,7 @@ laptop-server), un fir de chat cu asistentul (mesajele lui Ion devin taskuri în
 vin înapoi în fir) și notificări push native prin FCM. pif-dashboard e doar **depozitul și poșta**: stochează
 registrul, acțiunile, firul și tokenurile și trimite push-ul. Nu rulează LLM și nu creează taskuri.
 Codul: `blueprints/asistent.py` (rutele), `blueprints/fcm.py` (transportul FCM, doar bibliotecă standard). v1.1 (aditiv: `ref`, `tinta`,
-`alegere`, întrebări cu opțiuni, prezența mașinilor): secțiunea „v1.1” mai jos. v1.2 (aditiv: detaliile unui mesaj al asistentului, `are_detalii`): secțiunea „v1.2”.
+`alegere`, întrebări cu opțiuni, prezența mașinilor): secțiunea „v1.1” mai jos. v1.2 (aditiv: detaliile unui mesaj al asistentului, `are_detalii`): secțiunea „v1.2”. v1.5 (aditiv: `PUT /api/asistent/fir/<id>`, mesajul `lucreaza` se actualizează pe loc, `actualizat`): secțiunea „v1.5”.
 
 Trei părți vorbesc prin pif-dashboard (fișiere ca `blueprints/sistem.py`, fără tabele, fără migrare):
 - **asistentul** de pe laptop-server (`tools/asistent/atentie.py` în Knowledge), cu tokenul de MAȘINĂ;
@@ -118,6 +118,7 @@ sunt obligatorii; `termen`, `prima_data`, `amanat_pana`, `link` pot lipsi sau fi
 
 `stare_detaliu` (aditiv): `mesaj`-ul de la `POST .../stare`. `via` (aditiv): de unde vine mesajul lui Ion, pus de server după felul
 autentificării (sesiune cu PIN, token de dispozitiv, token de mașină); `null` la mesajele asistentului. Clientul nu-l poate trimite (400).
+`actualizat` (aditiv, v1.5): momentul ultimei editări (`PUT /api/asistent/fir/<id>`), `null` cât mesajul n-a fost editat.
 
 ## Push FCM (în backend)
 
@@ -284,6 +285,33 @@ Ion, ideea din „Probleme/idei Torqa”: „asistentul să propună butoane de 
 
 Fără schemă, fără migrare, fără rută nouă. Rollback: `git revert` al commitului v1.4; câmpul deja scris în `fir.jsonl` rămâne inofensiv (`_mesaj`
 nu-l mai întoarce).
+
+## v1.5 (2026-11-26, aditiv): mesajul `lucreaza` se actualizează pe loc
+
+Ion vrea asistentul transparent, dar fără bombardament de notificări. În loc de trei mesaje pe o lucrare („am pus-o”, „lucrează”, „gata”),
+asistentul ține **un singur** mesaj `lucreaza` pe lucrare și îl rescrie pe loc („așteaptă pe PC job, offline de la 19:44”, „lucrează pe IONPC
+din 21:40, minutul 12: <pasul>”); rezultatul final rămâne mesaj nou `rezultat`. Torqa citește tot firul la fiecare reîmprospătare
+(`GET /api/asistent`), deci un mesaj editat se vede fără nicio schimbare în client. O rută nouă, fără schemă și fără migrare.
+
+- **`PUT /api/asistent/fir/<id>`** `{"text": "…", "titlu": "…" | null}` → 200 `{"ok": true, "id", "actualizat"}`. `text` obligatoriu, **1–2000 de
+  caractere după strip** (se stochează fără spațiile de la capete), fără surogate singure. `titlu` opțional: lipsă = rămâne, `null` = se șterge,
+  altfel 1–140 de caractere (nevid, tot fără spațiile de la capete). Alt câmp (`detalii`, `tip`, …) → 400 cu calea (`corpul.<câmp>: camp necunoscut`),
+  ca la restul rutelor. Corp peste 32 KB → 413.
+- **Acces:** token de mașină sau sesiune; tokenul de dispozitiv 403; fără autentificare 401. Id care nu e `m_<6–16 cifre hex>` sau mesaj inexistent
+  (și unul scos din fir la plafonul de 500) → 404. **Doar mesajele asistentului de tip `lucreaza`** se pot edita: orice alt tip și mesajul lui Ion → 409.
+  Corpul se validează înaintea mesajului, deci un corp invalid dă 400 chiar și pe un mesaj de alt tip.
+- **Efect:** înlocuiește `text` (și `titlu` dacă e în corp) și pune `actualizat` = acum (ISO UTC cu `Z`). `ts` rămâne momentul creării, deci mesajul nu se
+  mută în fir. Mesajul se caută și firul se rescrie sub aceeași blocare (`_blocat`, citire + `_scrie_fir`), deci o editare nu pierde un mesaj scris
+  concomitent și un mesaj scos la plafon nu poate fi „reînviat”. Detaliile (`detalii/<id>.md`), butoanele și restul câmpurilor nu se ating. **Fără push, niciodată**
+  (răspunsul nu are cheia `push`).
+- **Idempotență:** aceeași cerere de două ori lasă același text. O actualizare cu text identic (și titlu identic, dacă e în corp) cu cel de pe disc **nu
+  rescrie firul**: 200 cu `actualizat` vechi, adică `null` pe un mesaj care n-a fost încă editat. Deci `actualizat` avansează doar la o schimbare reală.
+  Altfel nu există limită nouă de rată: o lucrare poate actualiza des.
+- **`GET /api/asistent` și `fir/noi`:** fiecare mesaj are `actualizat` (`null` la mesajele needitate, la cele vechi și la ale lui Ion).
+- **Compatibilitate:** un Torqa fără v1.5 ignoră `actualizat`; un dashboard fără v1.5 răspunde 404 la PUT, iar asistentul cade pe mesaj nou.
+
+Fără schemă, fără migrare. Rollback: `git revert` al commitului v1.5; `actualizat` deja scris în `fir.jsonl` rămâne inofensiv (`_mesaj` nu-l mai întoarce),
+iar textele editate rămân cele din urmă.
 
 ## Ce nu intră
 
