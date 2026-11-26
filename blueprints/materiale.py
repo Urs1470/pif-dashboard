@@ -21,7 +21,8 @@
 # ci in `app_settings`, cheia `materiale_bife` ({proiect_id: {cod_bc: {stare, la, colector: {stare, termen}}}}), ca
 # sa intre in backup si sa supravietuiasca colectarii urmatoare. `GET /api/materiale` le aplica pe randurile din
 # `proiecte[].materiale` (`stare`, `stare_colector`, `intarziat`, `rezumat`); alertele de livrare calculate la PUT le
-# respecta (blueprints/materiale_alerte.py). `colector` e memoria bifei: starea si termenul pe care le trimitea
+# respecta (blueprints/materiale_alerte.py), iar la GET se aliniaza din nou cu bifele de acum (`realinia_alerte_start`,
+# decizia 2026-11-26). `colector` e memoria bifei: starea si termenul pe care le trimitea
 # colectorul cand Ion a bifat; nu iese niciodata in raspuns. O colectare care schimba starea sau termenul articolului
 # (alta comanda pe acelasi cod) fara sa ajunga la starea bifei o expira: bifa se sterge, ca sa nu ascunda comanda
 # noua (`mentine_bife`). Aceeasi colectare scoate bifele articolelor si proiectelor iesite din snapshot.
@@ -637,6 +638,31 @@ def aplica_bife(p, bife_proiect):
         rez['ultima_asteptata'] = viitoare[-1]['termen'] if viitoare else None
 
 
+TIPURI_ALERTA_START = ('livrare_dupa_start', 'livrare_aproape_start')
+
+
+def realinia_alerte_start(p, bife_proiect=None):
+    """Aliniaza alertele de livrare fata de start ale proiectului `p` (copia pentru GET, dupa `aplica_bife`) cu bifele de
+    acum: un articol bifat iese din `livrare_dupa_start` / `livrare_aproape_start`, unul cu bifa scoasa intre timp
+    intra la loc, fara sa astepte colectarea urmatoare (decizia 2026-11-26). Aceeasi regula si aceeasi perioada ca la PUT
+    (`rezumat.perioada`, cea cu care a calculat colectarea alertele), deci textul e cel pe care l-ar scrie PUT-ul cu
+    bifele de acum. Nu atinge celelalte alerte, taskurile (create la PUT, nu se sterg) si rezumatul (il ajusteaza
+    `aplica_bife`). Fara `rezumat.perioada` (colectare fara perioada, sau alerte trimise de colector) nu face nimic."""
+    rez, alerte, materiale = p.get('rezumat'), p.get('alerte'), p.get('materiale')
+    perioada = rez.get('perioada') if isinstance(rez, dict) else None
+    if not isinstance(perioada, dict) or not isinstance(alerte, list) or not isinstance(materiale, list):
+        return
+    # `bifa` o pune `aplica_bife` doar pe randul cu bifa valida; `alerte_start` lucreaza pe copii, ca sa nu refaca
+    # marcajele `fata_de_start` pe care `aplica_bife` tocmai le-a scos de pe randurile bifate
+    valide = {m['cod_bc']: m['bifa'] for m in materiale if isinstance(m, dict) and isinstance(m.get('cod_bc'), str)
+              and isinstance(m.get('bifa'), dict)}
+    noi = materiale_alerte.alerte_start([dict(m) for m in materiale if isinstance(m, dict)], perioada, valide)
+    vechi = {(a.get('tip'), a.get('ref')): a for a in alerte if isinstance(a, dict) and a.get('tip') in TIPURI_ALERTA_START}
+    for a in noi:
+        a['schimbare'] = (vechi.get((a['tip'], a['ref'])) or {}).get('schimbare')
+    p['alerte'] = [a for a in alerte if not (isinstance(a, dict) and a.get('tip') in TIPURI_ALERTA_START)] + noi
+
+
 def vedere(curent, anterior, acum=None, bife=None):
     """Raspunsul GET din cele doua snapshot-uri (oricare poate fi None) si bifele manuale
     ({proiect_id: {cod_bc: {stare, la}}}, vezi `aplica_bife`)."""
@@ -651,7 +677,10 @@ def vedere(curent, anterior, acum=None, bife=None):
     proiecte = []
     for p in curent['proiecte']:
         q = _proiect_cu_marcaje(p, prev_pe_id.get(p['proiect_id']))
-        aplica_bife(q, bife.get(p['proiect_id']) if isinstance(bife, dict) else None)
+        bife_proiect = bife.get(p['proiect_id']) if isinstance(bife, dict) else None
+        aplica_bife(q, bife_proiect)
+        if (curent.get('sursa') or {}).get('alerte') == 'server':
+            realinia_alerte_start(q, bife_proiect)
         q['proiect'] = din_baza.get(p['proiect_id'])        # None: proiect sters intre timp
         proiecte.append(q)
     return {

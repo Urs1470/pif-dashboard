@@ -492,12 +492,82 @@ class AlerteDeLivrare(Baza):
         self.assertEqual(self.alerte_livrare()[0]['n'], 1)
 
     def test_get_dupa_bifa_arata_deja_randul_scos_din_marcajul_de_start(self):
-        # Alerta din `alerte[]` se reface la colectarea urmatoare; marcajul de pe rand si numaratoarea, imediat.
+        # Marcajul de pe rand si numaratoarea se ajusteaza la citire; alerta din `alerte[]` o aliniaza testele de mai jos.
         self.pune()
         self.bifeaza('A', 'livrat')
         j = self.citeste()
         self.assertIsNone(self.rand_in(j, 'A')['fata_de_start'])
         self.assertEqual(self.proiect_in(j)['rezumat']['dupa_start'], 1)
+
+    def test_get_dupa_bifa_scoate_articolul_din_alerta_de_livrare_fara_o_noua_colectare(self):
+        # Ion bifeaza intre doua colectari: alerta cu articolul lui nu mai ramane pe pagina pana la 08:00 / 13:00.
+        self.pune()
+        self.assertEqual(self.bifeaza('A', 'la_destinatie').status_code, 200)
+        a = self.alerte_livrare()
+        self.assertEqual(len(a), 1)
+        self.assertEqual(a[0]['n'], 1)
+        self.assertIn('iar 1 materiale vin după start', a[0]['text'])
+        self.assertIn('Vine dupa si el', a[0]['text'])
+        self.assertNotIn('Vine dupa (', a[0]['text'])
+        self.assertEqual(a[0]['ref'], 'perioada|in-curs|2026-11-16')
+
+    def test_get_cu_toate_articolele_bifate_nu_mai_are_alerta_de_livrare(self):
+        self.pune()
+        self.bifeaza('A', 'livrat')
+        self.bifeaza('B', 'la_destinatie')
+        self.assertEqual(self.alerte_livrare(), [])
+        p = self.proiect_in(self.citeste())
+        self.assertEqual([a['tip'] for a in p['alerte']], [], 'celelalte alerte ale proiectului raman neatinse')
+
+    def test_get_dupa_scoaterea_bifei_alerta_revine_fara_o_noua_colectare(self):
+        self.pune()
+        self.bifeaza('A', 'livrat')
+        self.bifeaza('B', 'livrat')
+        self.pune()                                                  # snapshot-ul se scrie fara nicio alerta de livrare
+        self.assertEqual(self.alerte_livrare(), [])
+        self.assertEqual(self.bifeaza('B', None).status_code, 200)
+        a = self.alerte_livrare()
+        self.assertEqual([x['n'] for x in a], [1])
+        self.assertIn('Vine dupa si el', a[0]['text'])
+
+    def test_alerta_aproape_de_start_se_aliniaza_la_fel(self):
+        c = self.corp_server()
+        c['proiecte'][0]['materiale'] = [rand('A', 'confirmat', '2026-11-12', 'confirmat', descriere='Aproape'),
+                                         rand('B', 'confirmat', '2026-11-25', 'confirmat', descriere='Dupa')]
+        r = self.client.put('/api/materiale', json=c, headers=self.bearer())
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.assertEqual(sorted(a['tip'] for a in self.proiect_in(self.citeste())['alerte']),
+                         ['livrare_aproape_start', 'livrare_dupa_start'])
+        self.bifeaza('A', 'livrat')
+        self.assertEqual([a['tip'] for a in self.alerte_livrare()], ['livrare_dupa_start'])
+
+    def test_alerta_cu_articolul_bifat_iese_din_alertele_proiectului_si_numaratoarea_lor(self):
+        self.pune()
+        self.bifeaza('A', 'livrat')
+        self.bifeaza('B', 'livrat')
+        j = self.citeste()
+        self.assertEqual(sum(len(p['alerte']) for p in j['proiecte']), 0)
+
+    def test_citirea_nu_scrie_nimic_si_nu_creeaza_taskuri(self):
+        self.pune()
+        taskuri = self.sql('SELECT COUNT(*) FROM tasks')[0][0]
+        self.bifeaza('A', 'livrat')
+        self.citeste()
+        self.assertEqual(self.sql('SELECT COUNT(*) FROM tasks')[0][0], taskuri)
+        with open(os.path.join(self.dir, 'snapshot.json'), encoding='utf-8') as f:
+            stocat = json.load(f)
+        self.assertEqual(stocat['proiecte'][0]['alerte'][0]['n'], 2, 'snapshot-ul pastreaza alerta de la colectare')
+
+    def test_alertele_trimise_de_colector_fara_flagul_server_nu_se_ating(self):
+        c = self.corp_server()
+        c['sursa'].pop('alerte')
+        c['proiecte'][0]['alerte'] = [{'tip': 'livrare_dupa_start', 'din': '2026-11-16', 'ref': 'x',
+                                       'text': 'Alerta colectorului vine dupa start: Vine dupa'}]
+        r = self.client.put('/api/materiale', json=c, headers=self.bearer())
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        self.bifeaza('A', 'livrat')
+        a = self.proiect_in(self.citeste())['alerte']
+        self.assertEqual([x['text'] for x in a], ['Alerta colectorului vine dupa start: Vine dupa'])
 
     def test_comanda_noua_pe_un_articol_bifat_da_din_nou_alerta_de_livrare(self):
         self.pune()

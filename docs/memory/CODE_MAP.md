@@ -58,9 +58,9 @@ Harta sectiunilor si functiilor top-level. Format: `linie: functie`.
 
 `41:EroareCorp`, `45:_cale`, `49:_scrie_atomic`, `71:_citeste_json`, `79:_loturi`, `87:_primit`, `91:_curata`, `104:valideaza_export`, `124:_stare_publica`, `131:put_lot`, `156:lista_loturi`, `170:get_lot`, `181:lot_gata`
 
-## blueprints/materiale.py (837 linii)
+## blueprints/materiale.py (866 linii)
 
-`85:EroareCorp`, `91:_text`, `103:_numar`, `111:_intreg_sau_null`, `117:_data_sau_null`, `123:_lista`, `138:_lm`, `146:_termen`, `157:_necomandat`, `168:_mail`, `185:_alerta`, `197:valideaza_snapshot`, `238:_cale`, `242:_scrie_atomic`, `265:_citeste`, `286:_cheie_termen`, `290:_cheie_necomandat`, `294:_pe_chei`, `307:_ordine_termen`, `311:_ordine_necomandat`, `315:_marcheaza`, `329:_compara_termen`, `337:_compara_necomandat`, `343:_compara_lm`, `349:_cheie_mail`, `354:_proiect_cu_marcaje`, `387:_adauga_zi_lucratoare`, `394:_acum`, `398:e_vechi`, `407:_date_proiecte`, `428:_parseaza_bife`, `441:citeste_bife`, `454:_forma_bifa`, `460:_stare_colector`, `465:_memorie`, `471:_expirata`, `479:_bifa_valida`, `488:_rand_din`, `495:mentine_bife`, `535:_scrie_bife`, `542:_mentine_bife_in_baza`, `567:_nivel`, `571:_scade`, `583:aplica_bife`, `640:vedere`, `670:put_materiale`, `744:get_materiale`, `752:_eroare_bifa`, `757:_rand_din_snapshot`, `773:put_bifa`
+`86:EroareCorp`, `92:_text`, `104:_numar`, `112:_intreg_sau_null`, `118:_data_sau_null`, `124:_lista`, `139:_lm`, `147:_termen`, `158:_necomandat`, `169:_mail`, `186:_alerta`, `198:valideaza_snapshot`, `239:_cale`, `243:_scrie_atomic`, `266:_citeste`, `287:_cheie_termen`, `291:_cheie_necomandat`, `295:_pe_chei`, `308:_ordine_termen`, `312:_ordine_necomandat`, `316:_marcheaza`, `330:_compara_termen`, `338:_compara_necomandat`, `344:_compara_lm`, `350:_cheie_mail`, `355:_proiect_cu_marcaje`, `388:_adauga_zi_lucratoare`, `395:_acum`, `399:e_vechi`, `408:_date_proiecte`, `429:_parseaza_bife`, `442:citeste_bife`, `455:_forma_bifa`, `461:_stare_colector`, `466:_memorie`, `472:_expirata`, `480:_bifa_valida`, `489:_rand_din`, `496:mentine_bife`, `536:_scrie_bife`, `543:_mentine_bife_in_baza`, `568:_nivel`, `572:_scade`, `584:aplica_bife`, `644:realinia_alerte_start`, `666:vedere`, `699:put_materiale`, `773:get_materiale`, `781:_eroare_bifa`, `786:_rand_din_snapshot`, `802:put_bifa`
 
 ## blueprints/materiale_alerte.py (316 linii)
 

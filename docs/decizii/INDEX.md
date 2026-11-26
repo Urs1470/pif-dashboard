@@ -16,6 +16,7 @@ toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
 ## 2026-11-26
 
+- [2026-11-26 O alertă de livrare nu mai pomenește un material bifat](2026-11-26-materiale-bifa-alerte-la-get.md) — `GET /api/materiale` aliniază `livrare_dupa_start` / `livrare_aproape_start` cu bifele de acum (`materiale.realinia_alerte_start`, aceeași funcție ca la PUT, pe perioada din `rezumat.perioada`): articolul bifat iese din text și din `n`, alerta dispare când toate sunt bifate și revine când bifa se scoate, fără colectare nouă; doar cu `sursa.alerte = "server"`; GET nu scrie nimic și nu șterge taskuri.
 - [2026-11-26 Statusurile impuse in baza: schema v48](2026-11-26-statusuri-impuse-in-baza.md) — sase triggere (`BEFORE INSERT` / `UPDATE OF status` pe `proiecte`, `tasks`, `global_tasks`) refuza orice status din afara `labels.PROJECT_STATUSES` (`pregatire`, `finalizat`) si `TASK_STATUSES` (`to_do`, `done`), inclusiv NULL; randurile vechi se strang la migrare si la fiecare pornire (`database.impune_statusurile`, proiectele ne-finalizate isi pierd `data_finalizare`); rutele de task traduc cheile vechi si dau 400 la necunoscut, restore-ul strange statusul din backup-urile vechi. Inchide E-015.
 
 ## 2026-11-25
