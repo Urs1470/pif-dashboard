@@ -268,6 +268,23 @@ Ion: când deschide un rezultat în Torqa vrea să vadă și răspunsul lui Clau
 Rollback: `git revert` al commitului v1.2; fișierele din `detalii/` se pot șterge (`rm -r uploads/asistent/detalii`), iar `are_detalii` dispare din răspuns.
 Mesajele cu `detalii` deja scrise rămân valide pentru v1.1 (câmpul nu stă în `fir.jsonl`).
 
+## v1.4 (2026-11-26, aditiv): răspunsurile rapide
+
+Ion, ideea din „Probleme/idei Torqa”: „asistentul să propună butoane de răspuns rapid”. Opțiunile v1.1 rămân pentru decizii (`intrebare`,
+`asteapta`, cu `alegere` legată de id); răspunsurile rapide sunt pentru conversație și nu leagă nimic pe server.
+
+- **`POST /api/asistent/fir`** (mesajul asistentului, tip `raspuns` sau `info`) primește `sugestii`, opțional, `null` = lipsă: **1–3 texte**, fiecare
+  1–40 de caractere după strip, fără caractere de control, unice fără deosebire de majuscule. Se stochează fără spațiile de la capete. La alt tip
+  (inclusiv `intrebare`/`asteapta`) → 400 `corpul.sugestii: doar la raspuns|info`; la mesajul lui Ion → 400 „câmp necunoscut”.
+- **`GET /api/asistent` și `fir/noi`:** fiecare mesaj are `sugestii` (lista; `[]` la mesajele fără ele, la cele vechi și la ale lui Ion).
+- **Torqa:** arată sugestiile ca butoane sub ultimul mesaj al asistentului, cât Ion n-a scris nimic după el. Apăsarea trimite textul ca mesaj
+  obișnuit al lui Ion, cu `raspuns_la` = id-ul mesajului cu sugestii (fără `alegere`); serverul nu-l tratează altfel decât un mesaj scris.
+- **Asistentul** (Knowledge, `tools/asistent/conducator.py`): conducătorul scrie sugestiile pe ultimul rând al răspunsului; un dashboard fără v1.4
+  respinge câmpul cu 400, iar asistentul repetă POST-ul o dată fără el.
+
+Fără schemă, fără migrare, fără rută nouă. Rollback: `git revert` al commitului v1.4; câmpul deja scris în `fir.jsonl` rămâne inofensiv (`_mesaj`
+nu-l mai întoarce).
+
 ## Ce nu intră
 
 - Web push în browser (desktop): nu; pagina se reîmprospătează la deschidere și la 60 s cât e vizibilă. (Web push-ul vechi, cu `pywebpush`,

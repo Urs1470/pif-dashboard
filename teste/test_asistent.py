@@ -346,7 +346,7 @@ class Vedere(Baza):
         self.assertEqual((len(fir), fir[0]['text'], fir[-1]['text']), (100, 'mesaj 30', 'mesaj 129'))
         self.assertEqual(set(fir[0]), {'id', 'ts', 'cine', 'tip', 'titlu', 'text', 'sursa', 'item_id', 'task_id',
                                         'link', 'butoane', 'raspuns_la', 'stare', 'stare_detaliu', 'via',
-                                        'ref', 'tinta', 'alegere', 'optiuni', 'masina', 'raspuns', 'are_detalii'})
+                                        'ref', 'tinta', 'alegere', 'optiuni', 'masina', 'raspuns', 'are_detalii', 'sugestii'})
         self.assertEqual(fir[0]['butoane'], [])
 
     def test_sesiunea_si_tokenul_de_masina_citesc_la_fel(self):
@@ -567,7 +567,7 @@ class Fir(Baza):
                              'text': 'Ce am azi?', 'sursa': 'dictat', 'item_id': None, 'task_id': None, 'link': None,
                              'butoane': [], 'raspuns_la': None, 'stare': 'nou', 'stare_detaliu': None,
                              'via': 'dispozitiv', 'ref': None, 'tinta': 'auto', 'alegere': None, 'optiuni': [],
-                             'masina': None, 'raspuns': None, 'are_detalii': False})
+                             'masina': None, 'raspuns': None, 'are_detalii': False, 'sugestii': []})
 
     def test_sursa_implicita_scris_si_cine_ion_acceptat(self):
         self.scrie_ion(cine='ion')
@@ -1605,6 +1605,69 @@ class MesajAsistentV11(Baza):
             r = self.scrie_asistent(tip='intrebare', optiuni=OPTIUNI, push={'prioritate': 'urgent'})
         self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
         self.assertEqual(t.call_args[0][1]['tip'], 'intrebare')
+
+
+# --------------------------------------------------------------------------- v1.4: raspunsurile rapide
+
+class SugestiiV14(Baza):
+
+    def test_raspuns_si_info_cu_sugestii_se_intorc_fara_spatii(self):
+        for tip in ('raspuns', 'info'):
+            with self.subTest(tip=tip):
+                r = self.scrie_asistent(tip=tip, sugestii=['  Da, pornește  ', 'Mai târziu'])
+                self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        fir = self.vedere()['fir']
+        self.assertEqual([m['sugestii'] for m in fir], [['Da, pornește', 'Mai târziu']] * 2)
+
+    def test_fara_sugestii_lista_e_goala_si_null_e_ca_lipsa(self):
+        self.assertEqual(self.scrie_asistent(tip='raspuns').status_code, 201)
+        self.assertEqual(self.scrie_asistent(tip='raspuns', sugestii=None).status_code, 201)
+        self.assertEqual(self.scrie_ion('Salut').status_code, 201)
+        self.assertEqual([m['sugestii'] for m in self.vedere()['fir']], [[], [], []])
+
+    def test_mesajele_vechi_fara_camp_dau_lista_goala(self):
+        self.scrie_randuri('fir.jsonl', [{'id': 'm_0000a1', 'ts': '2026-11-20T10:00:00Z', 'cine': 'asistent', 'tip': 'raspuns',
+                              'text': 'vechi'}])
+        self.assertEqual(self.vedere()['fir'][0]['sugestii'], [])
+
+    def test_limitele_trec(self):
+        trei = ['a' * 40, 'b', 'c']
+        r = self.scrie_asistent(tip='raspuns', sugestii=trei)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        self.assertEqual(self.vedere()['fir'][0]['sugestii'], trei)
+
+    def test_validarea(self):
+        for sugestii, cale in (
+                ([], 'corpul.sugestii'), ('Da', 'corpul.sugestii'), (['a', 'b', 'c', 'd'], 'corpul.sugestii'),
+                ([3], 'corpul.sugestii[0]'), (['  '], 'corpul.sugestii[0]'), (['a' * 41], 'corpul.sugestii[0]'),
+                (['a\nb'], 'corpul.sugestii[0]'), (['Da', 'da '], 'corpul.sugestii[1]'), ([{'id': 'x'}], 'corpul.sugestii[0]')):
+            with self.subTest(sugestii=sugestii):
+                r = self.scrie_asistent(tip='raspuns', sugestii=sugestii)
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn(cale, r.get_json()['error'])
+        self.assertFalse(os.path.exists(os.path.join(self.dir, 'fir.jsonl')))
+
+    def test_sugestii_doar_la_raspuns_si_info(self):
+        for tip in ('brief', 'alerta', 'lucreaza', 'rezultat'):
+            with self.subTest(tip=tip):
+                r = self.scrie_asistent(tip=tip, sugestii=['Da'])
+                self.assertEqual(r.status_code, 400)
+                self.assertIn('corpul.sugestii', r.get_json()['error'])
+        r = self.scrie_asistent(tip='intrebare', optiuni=OPTIUNI, sugestii=['Da'])
+        self.assertEqual(r.status_code, 400)
+        self.assertIn('corpul.sugestii', r.get_json()['error'])
+
+    def test_mesajul_lui_ion_nu_poarta_sugestii(self):
+        r = self.scrie_ion('Salut', sugestii=['Da'])
+        self.assertEqual(r.status_code, 400)
+
+    def test_apasarea_e_un_mesaj_obisnuit_cu_raspuns_la(self):
+        mid = self.scrie_asistent(tip='raspuns', sugestii=['Da, pornește']).get_json()['id']
+        r = self.scrie_ion('Da, pornește', raspuns_la=mid)
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        ion = self.vedere()['fir'][1]
+        self.assertEqual((ion['cine'], ion['text'], ion['raspuns_la'], ion['alegere']), ('ion', 'Da, pornește', mid, None))
+        self.assertEqual([m['text'] for m in self.noi()], ['Da, pornește'])
 
 
 # --------------------------------------------------------------------------- v1.1: raspunsul la intrebare

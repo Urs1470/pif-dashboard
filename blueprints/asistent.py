@@ -38,6 +38,11 @@
 # (60 s total, 20 s pana apare fisierul) si un singur flux deschis pe server (al doilea primeste `event: ocupat` si trece pe
 # polling); clientul se reconecteaza singur cu `Last-Event-ID`. Fara schema: un fisier per mesaj.
 #
+# v1.4 (raspunsuri rapide): mesajul asistentului de tip `raspuns` sau `info` poate purta `sugestii`, 1-3 texte scurte
+# (<=40 de caractere, unice, fara caractere de control) pe care Ion le poate trimite cu o atingere. Torqa le arata ca butoane
+# sub ultimul mesaj al asistentului cat Ion n-a scris dupa el; apasarea trimite textul ca mesaj obisnuit al lui Ion, cu
+# `raspuns_la` = mesajul cu sugestii. Fara schema si fara ruta noua; un Torqa vechi ignora campul.
+#
 # Validarea e STRICTA: camp necunoscut, lipsa sau tip gresit da 400 cu calea campului, iar starea
 # veche ramane. Trimiterea FCM nu schimba niciodata statusul raspunsului: o eroare intra in `push.erori`.
 
@@ -118,6 +123,8 @@ DIN = ('pagina', 'notificare')
 VIA = ('sesiune', 'dispozitiv', 'masina')
 TIPURI_ASISTENT = ('brief', 'alerta', 'raspuns', 'lucreaza', 'rezultat', 'info', 'intrebare', 'asteapta')
 TIPURI_CU_OPTIUNI = ('intrebare', 'asteapta')
+TIPURI_CU_SUGESTII = ('raspuns', 'info')            # v1.4: raspunsurile rapide (conversatia), nu deciziile (`optiuni`)
+MAX_SUGESTII, MAX_SUGESTIE = 3, 40
 MASINI = (('server', 'Server'), ('pc-job', 'PC job'), ('ionpc', 'IONPC'))   # ordinea din `masini`
 IDS_MASINI = tuple(m for m, _ in MASINI)
 TINTE = ('auto',) + IDS_MASINI
@@ -155,7 +162,7 @@ CAMPURI_PICAT = frozenset(('nume', 'detaliu'))
 CAMPURI_ACTIUNE = frozenset(('item_id', 'actiune', 'zile', 'din'))
 CAMPURI_CONSUMAT = frozenset(('rezultat', 'mesaj'))
 CAMPURI_FIR_ASISTENT = frozenset(('cine', 'tip', 'text', 'titlu', 'item_id', 'task_id', 'link', 'butoane',
-                                  'raspuns_la', 'push', 'optiuni', 'masina', 'ref', 'detalii'))
+                                  'raspuns_la', 'push', 'optiuni', 'masina', 'ref', 'detalii', 'sugestii'))
 CAMPURI_FIR_ION = frozenset(('cine', 'text', 'sursa', 'raspuns_la', 'ref', 'tinta', 'alegere'))
 CAMPURI_REF = frozenset(('tip', 'id', 'titlu', 'sursa', 'masina', 'mod'))
 CAMPURI_OPTIUNE = frozenset(('id', 'eticheta'))
@@ -461,6 +468,30 @@ def _optiuni(corp, cale):
     return optiuni
 
 
+def _sugestii(corp, cale):
+    """v1.4: 1-3 raspunsuri rapide, text <=40 de caractere dupa strip, unice (fara diferenta de majuscule), fara caractere
+    de control. Se stocheaza fara spatiile de la capete: apasarea trimite exact textul ca mesaj al lui Ion."""
+    lista = _lista(corp, 'sugestii', cale, MAX_SUGESTII)
+    if not lista:
+        raise EroareCorp('%s.sugestii: minimum 1 sugestie' % cale)
+    sugestii, vazute = [], set()
+    for ix, v in enumerate(lista):
+        c = '%s.sugestii[%d]' % (cale, ix)
+        if not isinstance(v, str):
+            raise EroareCorp('%s: trebuie sa fie text' % c)
+        v = v.strip()
+        if not v:
+            raise EroareCorp('%s: nu poate fi gol' % c)
+        if len(v) > MAX_SUGESTIE:
+            raise EroareCorp('%s: maximum %d de caractere' % (c, MAX_SUGESTIE))
+        _fara_control(v, c)
+        if v.casefold() in vazute:
+            raise EroareCorp('%s: duplicat' % c)
+        vazute.add(v.casefold())
+        sugestii.append(v)
+    return sugestii
+
+
 # Caractere care nu au ce cauta intr-un link: de control (C0, DEL, C1), separatoare de linie si de paragraf,
 # marcajele de directie (bidi) cu care un nume de fisier sau un host se poate rasturna la afisare.
 _LINK_INTERZISE = frozenset(chr(c) for c in (*range(0, 32), *range(127, 160), 0x061C, 0x200E, 0x200F,
@@ -716,6 +747,7 @@ def _mesaj(r, cu_detalii):
             'tinta': r.get('tinta') or ('auto' if r.get('cine') == 'ion' else None),
             'alegere': r.get('alegere'),
             'optiuni': r.get('optiuni') if isinstance(r.get('optiuni'), list) else [],
+            'sugestii': r.get('sugestii') if isinstance(r.get('sugestii'), list) else [],
             'masina': r.get('masina'),
             'raspuns': r.get('raspuns') if isinstance(r.get('raspuns'), dict) else None,
             'are_detalii': r['id'] in cu_detalii}
@@ -1655,6 +1687,11 @@ def _fir_asistent(corp):
             optiuni = _optiuni(corp, 'corpul')
         elif corp.get('optiuni') is not None:
             raise EroareCorp('corpul.optiuni: doar la %s' % '|'.join(TIPURI_CU_OPTIUNI))
+        sugestii = []
+        if corp.get('sugestii') is not None:
+            if tip not in TIPURI_CU_SUGESTII:
+                raise EroareCorp('corpul.sugestii: doar la %s' % '|'.join(TIPURI_CU_SUGESTII))
+            sugestii = _sugestii(corp, 'corpul')
         masina = _enum(corp, 'masina', 'corpul', IDS_MASINI) if corp.get('masina') is not None else None
         ref = _ref(corp['ref'], 'corpul.ref') if corp.get('ref') is not None else None
         detalii = _detalii_text(corp, 'corpul') if corp.get('detalii') is not None else None
@@ -1670,7 +1707,7 @@ def _fir_asistent(corp):
             rand = {'id': _id_mesaj(randuri), 'ts': _z(_acum()), 'cine': 'asistent', 'tip': tip, 'titlu': titlu,
                     'text': text, 'sursa': None, 'item_id': item_id, 'task_id': task_id, 'link': link,
                     'butoane': butoane, 'raspuns_la': raspuns_la, 'stare': None, 'stare_detaliu': None, 'via': None,
-                    'optiuni': optiuni, 'masina': masina, 'ref': ref, 'raspuns': None}
+                    'optiuni': optiuni, 'masina': masina, 'ref': ref, 'raspuns': None, 'sugestii': sugestii}
             randuri.append(rand)
             if detalii is not None:
                 # Intai fisierul, apoi firul: daca scrierea firului pica, fisierul se scoate si cererea da 500 fara
