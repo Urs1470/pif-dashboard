@@ -35,7 +35,8 @@
 # v1.3 (live): `PUT /api/asistent/fir/<id>/live` (token de masina) pune textul cumulat al raspunsului la mesajul lui Ion
 # `<id>`; Torqa il arata cat se scrie: `GET .../live` (polling, Android: CapacitorHttp nu face stream; `?dupa=<seq>` da 204
 # cand nu s-a schimbat nimic) si `GET .../live/flux` (SSE, web). Un flux tine un worker sync cat dureaza, deci are plafoane
-# (60 s total, 20 s pana apare fisierul); clientul se reconecteaza singur cu `Last-Event-ID`. Fara schema: un fisier per mesaj.
+# (60 s total, 20 s pana apare fisierul) si un singur flux deschis pe server (al doilea primeste `event: ocupat` si trece pe
+# polling); clientul se reconecteaza singur cu `Last-Event-ID`. Fara schema: un fisier per mesaj.
 #
 # Validarea e STRICTA: camp necunoscut, lipsa sau tip gresit da 400 cu calea campului, iar starea
 # veche ramane. Trimiterea FCM nu schimba niciodata statusul raspunsului: o eroare intra in `push.erori`.
@@ -91,6 +92,7 @@ FLUX_PING_S = 15                                   # `: ping` cand nu s-a schimb
 FLUX_TOTAL_S = 60                                  # plafonul unui flux: gunicorn are 2 workeri sync, fluxul tine unul
 FLUX_FARA_FISIER_S = 20                            # fisierul nu apare in atatea secunde: `event: gol` si inchidere
 FLUX_RETRY_MS = 2000
+F_FLUX_LOC = 'flux.lock'                           # sub `live/`: locul unicului flux deschis (vezi `_ia_locul_fluxului`)
 MAX_ITEMI = 300
 MAX_SURSE = 30
 MAX_PICATE = 100
@@ -905,7 +907,52 @@ def _corp_live(corp):
     return text, unealta, corp['gata']
 
 
+def _ia_locul_fluxului():
+    """Fisierul de blocare al fluxului, luat EXCLUSIV si FARA asteptare, sau None cand il tine alt flux. Gunicorn are 2
+    workeri sync si un flux tine unul cat dureaza: doua fluxuri deodata (doua taburi, o reconectare peste un flux inca viu)
+    ar ingheta tot API-ul, inclusiv PUT-ul live al asistentului. Asa ramane mereu un worker liber; clientul care primeste
+    `event: ocupat` citeste prin polling (`GET .../live?dupa=`). Blocarea e pe descriptor (flock), deci tine si intre fire."""
+    os.makedirs(_cale(D_LIVE), exist_ok=True)
+    fh = open(_cale(os.path.join(D_LIVE, F_FLUX_LOC)), 'a+b')
+    try:
+        if fcntl is not None:
+            fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        else:                                     # pragma: no cover - doar Windows
+            fh.seek(0)
+            msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        fh.close()
+        return None
+    return fh
+
+
+def _lasa_locul_fluxului(fh):
+    try:
+        if fcntl is not None:
+            fcntl.flock(fh, fcntl.LOCK_UN)
+        else:                                     # pragma: no cover
+            fh.seek(0)
+            msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+    except OSError:
+        pass
+    finally:
+        fh.close()
+
+
 def _flux_live(id_, ultim):
+    """Fluxul SSE, cu locul unic luat (`_ia_locul_fluxului`): fara loc, `retry` + `event: ocupat` si inchidere. Locul se
+    elibereaza cand generatorul se termina sau cand serverul il inchide (clientul a plecat: prima scriere esuata)."""
+    loc = _ia_locul_fluxului()
+    if loc is None:
+        yield 'retry: %d\n\nevent: ocupat\ndata: {}\n\n' % FLUX_RETRY_MS
+        return
+    try:
+        yield from _flux_live_corp(id_, ultim)
+    finally:
+        _lasa_locul_fluxului(loc)
+
+
+def _flux_live_corp(id_, ultim):
     """Generatorul SSE al unui mesaj. `ultim` = ultimul seq pe care clientul il are deja (`Last-Event-ID`, 0 la inceput):
     nu se retrimite nimic cu seq <= `ultim`. Citeste fisierul la FLUX_PAS_S; la seq nou: `id`/`event: live`/`data` (JSON
     compact pe un rand). Se termina dupa evenimentul cu `gata`, dupa FLUX_TOTAL_S, sau, daca fisierul nu apare in
@@ -1424,8 +1471,11 @@ def get_live(id_):
     except OSError:
         logger.exception('Asistent: live %s nu se poate citi', id_)
         return _eroare(500, 'Eroare pe disc la citirea textului live.')
-    if live is None:
-        return _eroare(404, 'nimic live pentru mesaj')
+    if live is None:                               # normal la polling, inainte de primul PUT: fara rand de log
+        raspuns = jsonify({'error': 'nimic live pentru mesaj'})
+        raspuns.status_code = 404
+        raspuns.headers['Cache-Control'] = 'no-store'
+        return raspuns
     if brut is not None and live['seq'] <= int(brut):
         raspuns = Response(status=204)
     else:
@@ -1442,7 +1492,8 @@ def get_live_flux(id_):
     evenimentul cu `gata`, dupa 60 s in total (un flux tine un worker sync cat dureaza), sau dupa `event: gol` daca
     fisierul nu apare in 20 s; clientul inchide el `EventSource` la `gata` si la `gol`, altfel browserul se reconecteaza.
     `Last-Event-ID` (il pune browserul la reconectare): nu se retrimite seq <= acela. Reconectare dupa un `gata` deja primit:
-    204, care opreste reconectarea EventSource. 404 id invalid."""
+    204, care opreste reconectarea EventSource. 404 id invalid. Un singur flux deschis pe tot serverul: al doilea primeste
+    `event: ocupat` si se inchide; clientul il inchide si trece pe polling."""
     if not _RE_MSG.fullmatch(id_):
         return _eroare(404, 'mesaj necunoscut')
     brut = request.headers.get('Last-Event-ID', '').strip()

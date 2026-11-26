@@ -2914,6 +2914,48 @@ class Live(Baza):
         self.assertLess(self.t, 3.0, 'se inchide la gata, nu la plafon')
         self.assertEqual(self.programate, [])
 
+    def test_al_doilea_flux_deodata_primeste_ocupat_si_nu_tine_workerul(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Scriu')
+        loc = asistent._ia_locul_fluxului()                      # un flux deschis in alt worker
+        self.assertIsNotNone(loc)
+        try:
+            r = self.flux(id_)
+            self.assertEqual(r.status_code, 200)
+            self.assertEqual(r.get_data(as_text=True), 'retry: 2000\n\nevent: ocupat\ndata: {}\n\n')
+            self.assertEqual(self.somnuri, 0, 'se inchide pe loc, nu tine workerul')
+        finally:
+            asistent._lasa_locul_fluxului(loc)
+        self.pune_ok(id_, 'Scriu tot', gata=True)
+        self.assertEqual([b[0] for b in self.blocuri(self.flux(id_))], ['retry: 2000', 'id: 2'], 'locul s-a eliberat')
+
+    def test_fluxul_terminat_isi_elibereaza_locul(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Gata', gata=True)
+        for _ in range(3):
+            self.assertEqual([b[0] for b in self.blocuri(self.flux(id_))], ['retry: 2000', 'id: 1'])
+        loc = asistent._ia_locul_fluxului()
+        self.assertIsNotNone(loc, 'dupa trei fluxuri inchise, locul e liber')
+        asistent._lasa_locul_fluxului(loc)
+
+    def test_fluxul_abandonat_de_client_elibereaza_locul(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Scriu')
+        gen = asistent._flux_live(id_, 0)
+        self.assertEqual(next(gen), 'retry: 2000\n\n')
+        self.assertIsNone(asistent._ia_locul_fluxului(), 'cat ruleaza, locul e luat')
+        gen.close()                                               # serverul inchide iteratorul cand clientul a plecat
+        loc = asistent._ia_locul_fluxului()
+        self.assertIsNotNone(loc)
+        asistent._lasa_locul_fluxului(loc)
+
+    def test_get_fara_fisier_404_fara_rand_de_log(self):
+        id_ = self.mesaj_ion()
+        with self.assertNoLogs('pif_dashboard', 'WARNING'):
+            r = self.citeste(id_, dupa=0)
+        self.assertEqual(r.status_code, 404)
+        self.assertEqual(r.headers['Cache-Control'], 'no-store')
+
     def test_flux_cu_text_pe_mai_multe_randuri_ramane_un_singur_rand_data(self):
         id_ = self.mesaj_ion()
         text = 'rand 1\nrand 2\r\nrand 3   ă ș \U0001F600'

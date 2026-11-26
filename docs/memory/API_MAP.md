@@ -30,22 +30,22 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| PUT | `/api/asistent/registru` | `put_registru` | 1112 |
-| GET | `/api/asistent/actiuni` | `get_actiuni` | 1138 |
-| POST | `/api/asistent/actiuni/<uid>/consumat` | `post_consumat` | 1153 |
-| GET | `/api/asistent/fir/noi` | `get_fir_noi` | 1186 |
-| POST | `/api/asistent/fir/<id_>/stare` | `post_stare` | 1196 |
-| PUT | `/api/asistent/fir/<id_>/detalii` | `put_detalii` | 1239 |
-| PUT | `/api/asistent/fir/<id_>/live` | `put_live` | 1277 |
-| PUT | `/api/asistent/prezenta/<masina>` | `put_prezenta` | 1327 |
-| GET | `/api/asistent` | `get_asistent` | 1365 |
-| GET | `/api/asistent/fir/<id_>/detalii` | `get_detalii` | 1394 |
-| GET | `/api/asistent/fir/<id_>/live` | `get_live` | 1411 |
-| GET | `/api/asistent/fir/<id_>/live/flux` | `get_live_flux` | 1437 |
-| POST | `/api/asistent/actiune` | `post_actiune` | 1462 |
-| POST | `/api/asistent/fir` | `post_fir` | 1668 |
-| POST | `/api/asistent/push/token` | `post_token` | 1711 |
-| DELETE | `/api/asistent/push/token` | `sterge_token` | 1747 |
+| PUT | `/api/asistent/registru` | `put_registru` | 1159 |
+| GET | `/api/asistent/actiuni` | `get_actiuni` | 1185 |
+| POST | `/api/asistent/actiuni/<uid>/consumat` | `post_consumat` | 1200 |
+| GET | `/api/asistent/fir/noi` | `get_fir_noi` | 1233 |
+| POST | `/api/asistent/fir/<id_>/stare` | `post_stare` | 1243 |
+| PUT | `/api/asistent/fir/<id_>/detalii` | `put_detalii` | 1286 |
+| PUT | `/api/asistent/fir/<id_>/live` | `put_live` | 1324 |
+| PUT | `/api/asistent/prezenta/<masina>` | `put_prezenta` | 1374 |
+| GET | `/api/asistent` | `get_asistent` | 1412 |
+| GET | `/api/asistent/fir/<id_>/detalii` | `get_detalii` | 1441 |
+| GET | `/api/asistent/fir/<id_>/live` | `get_live` | 1458 |
+| GET | `/api/asistent/fir/<id_>/live/flux` | `get_live_flux` | 1487 |
+| POST | `/api/asistent/actiune` | `post_actiune` | 1513 |
+| POST | `/api/asistent/fir` | `post_fir` | 1719 |
+| POST | `/api/asistent/push/token` | `post_token` | 1762 |
+| DELETE | `/api/asistent/push/token` | `sterge_token` | 1798 |
 
 ## blueprints/echipa.py (5 rute)
 
