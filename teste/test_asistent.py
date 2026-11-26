@@ -30,6 +30,13 @@ v1.2 (clasa `Detalii`):
     fara surogate, `null` = lipsa / sterge; 404 / 409 / 403 / 401; id-ul nu poate iesi din `detalii/`;
   - fisierul `detalii/<id>.md` (atomic, nu intra in `fir.jsonl`) cade cu mesajul la plafonul de 500, iar cursa dintre
     PUT si scrierea firului nu lasa fisier orfan; `are_detalii` pe fiecare mesaj, false pe cele vechi.
+v1.3 (clasa `Live`):
+  - `PUT /api/asistent/fir/<id>/live` (token de masina; dispozitiv 403, fara token 401, sesiune cu CSRF): doar pe un mesaj al lui
+    Ion (404 altfel, 400 la id invalid), corp strict (`text` 0-65 536 dupa strip, `unealta` <= 80 sau null, `gata` bool), `seq`
+    creste cu 1, 409 dupa `gata`, fisierul `live/<id>.json` atomic; fiecare PUT matura fisierele de peste 15 minute;
+  - `GET .../live`: 404 / 200 / 204 cu `?dupa=<seq>` (400 la valoare gresita), si cu dispozitivul sau sesiunea;
+  - `GET .../live/flux` (SSE): antete, `retry`, un eveniment pe seq nou, inchidere la `gata`, ping la 15 s, plafon 60 s,
+    `gol` dupa 20 s fara fisier, `Last-Event-ID`, 204 la reconectare dupa `gata`; ceasul e de proba, nimic nu asteapta.
 Directorul datelor e unul temporar: un test nu scrie niciodata in `uploads/` din proiect. Nicio proba nu atinge
 reteaua: `fcm.trimite_date` sau `fcm._http_post` sunt inlocuite.
 """
@@ -364,6 +371,7 @@ class Acces(Baza):
         ('put', '/api/asistent/registru'), ('get', '/api/asistent/actiuni'),
         ('post', '/api/asistent/actiuni/0123456789ab/consumat'), ('get', '/api/asistent/fir/noi'),
         ('post', '/api/asistent/fir/m_ab12cd/stare'), ('put', '/api/asistent/fir/m_ab12cd/detalii'),
+        ('put', '/api/asistent/fir/m_ab12cd/live'),
     )
 
     def test_dispozitivul_primeste_403_pe_rutele_asistentului(self):
@@ -382,6 +390,8 @@ class Acces(Baza):
         for metoda, cale in self.RUTE_MASINA + (('get', '/api/asistent'), ('post', '/api/asistent/actiune'),
                                                  ('post', '/api/asistent/fir'), ('post', '/api/asistent/push/token'),
                                                  ('get', '/api/asistent/fir/m_ab12cd/detalii'),
+                                                 ('get', '/api/asistent/fir/m_ab12cd/live'),
+                                                 ('get', '/api/asistent/fir/m_ab12cd/live/flux'),
                                                  ('delete', '/api/asistent/push/token')):
             with self.subTest(cale=cale, metoda=metoda):
                 self.assertEqual(self.client.open(cale, method=metoda.upper(), json={}).status_code, 401)
@@ -2594,3 +2604,434 @@ class Detalii(Baza):
         self.assertTrue(os.path.exists(nume))
         self.assertEqual(self.scrie_ion().status_code, 201)
         self.assertFalse(os.path.exists(nume))
+
+
+# --------------------------------------------------------------------------- v1.3: textul live al raspunsului
+
+class Live(Baza):
+    """`PUT/GET /api/asistent/fir/<id>/live` si fluxul SSE `.../live/flux`. Ceasul fluxului (`_monoton`, `_somn`) e inlocuit
+    cu unul de proba: `self.t` avanseaza doar cand fluxul „doarme”, iar `self.la(t, fn)` ruleaza `fn` cand ceasul trece de `t`
+    (asa se simuleaza un PUT al asistentului in mijlocul fluxului); niciun test nu asteapta in realitate."""
+
+    def setUp(self):
+        super().setUp()
+        self.t = 0.0
+        self.somnuri = 0
+        self.programate = []
+        self.patch(asistent, '_monoton', lambda: self.t)
+        self.patch(asistent, '_somn', self.somn)
+        self.masina = self.app_module.app.test_client()          # al doilea client: PUT-urile din mijlocul fluxului
+
+    def somn(self, secunde):
+        self.t += secunde
+        self.somnuri += 1
+        gata = [p for p in self.programate if p[0] <= self.t]
+        self.programate = [p for p in self.programate if p[0] > self.t]
+        for _, fn in gata:
+            fn()
+
+    def la(self, t, fn):
+        self.programate.append((t, fn))
+
+    def mesaj_ion(self):
+        r = self.scrie_ion()
+        self.assertEqual(r.status_code, 201, r.get_data(as_text=True))
+        return r.get_json()['id']
+
+    def pune_live(self, id_, text='Salut', token=FULL, client=None, **camp):
+        corp = {'text': text, 'gata': False}
+        corp.update(camp)
+        return (client or self.client).put('/api/asistent/fir/%s/live' % id_, json=corp, headers=self.h(token))
+
+    def pune_ok(self, id_, text='Salut', **camp):
+        r = self.pune_live(id_, text, **camp)
+        self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
+        return r.get_json()['seq']
+
+    def citeste(self, id_, token=DEVICE, **query):
+        return self.client.get('/api/asistent/fir/%s/live' % id_, headers=self.h(token), query_string=query or None)
+
+    def flux(self, id_, token=DEVICE, ultim=None):
+        antete = self.h(token)
+        if ultim is not None:
+            antete['Last-Event-ID'] = str(ultim)
+        return self.client.get('/api/asistent/fir/%s/live/flux' % id_, headers=antete)
+
+    def pe_disc(self):
+        d = os.path.join(self.dir, 'live')
+        return sorted(os.listdir(d)) if os.path.isdir(d) else []
+
+    @staticmethod
+    def blocuri(r):
+        """Blocurile unui flux (separate de o linie goala), ca liste de linii."""
+        return [b.split('\n') for b in r.get_data(as_text=True).split('\n\n') if b]
+
+    @staticmethod
+    def data(bloc):
+        return json.loads(next(l for l in bloc if l.startswith('data: '))[len('data: '):])
+
+    # ----- PUT
+
+    def test_put_scrie_fisierul_cu_seq_crescator(self):
+        id_ = self.mesaj_ion()
+        self.assertEqual(self.pe_disc(), [], 'directorul se creeaza doar la nevoie')
+        self.assertEqual(self.pune_live(id_, 'Incep', unealta='stare').get_json(), {'seq': 1})
+        self.assertEqual(json.loads(self.fisier('live/%s.json' % id_)),
+                         {'id': id_, 'text': 'Incep', 'unealta': 'stare', 'gata': False, 'seq': 1, 'la': '2026-11-22T08:00:00Z'})
+        self.assertEqual(self.pune_live(id_, 'Incep si continui').get_json(), {'seq': 2})
+        self.assertEqual(self.pune_live(id_, 'Incep si continui', gata=True).get_json(), {'seq': 3})
+        scris = json.loads(self.fisier('live/%s.json' % id_))
+        self.assertEqual((scris['seq'], scris['text'], scris['unealta'], scris['gata']), (3, 'Incep si continui', None, True))
+        self.assertEqual(self.pe_disc(), [id_ + '.json'], 'niciun .tmp ramas')
+        self.assertNotIn(b'Incep', self.fisier('fir.jsonl'), 'textul live nu intra in fir.jsonl')
+
+    def test_o_retrimitere_inainte_de_gata_da_acelasi_text_cu_seq_mai_mare(self):
+        id_ = self.mesaj_ion()
+        self.assertEqual([self.pune_ok(id_, 'la fel') for _ in range(2)], [1, 2])
+        self.assertEqual(self.citeste(id_).get_json()['text'], 'la fel')
+
+    def test_text_cu_strip_gol_si_la_limita(self):
+        id_ = self.mesaj_ion()
+        for nume, text, asteptat in (('strip', '  \n Salut \t ', 'Salut'), ('gol', '', ''), ('doar spatii', ' \n ', ''),
+                                     ('exact 65536', 'a' * 65536, 'a' * 65536),
+                                     ('65536 cu spatii la capete', ' \n' + 'b' * 65536 + '\t ', 'b' * 65536)):
+            with self.subTest(nume):
+                self.pune_ok(id_, text)
+                self.assertEqual(json.loads(self.fisier('live/%s.json' % id_))['text'], asteptat)
+
+    def test_unealta_lipsa_null_si_goala_dau_null(self):
+        id_ = self.mesaj_ion()
+        for camp in ({}, {'unealta': None}, {'unealta': '  '}):
+            with self.subTest(camp=camp):
+                self.pune_ok(id_, **camp)
+                self.assertIsNone(json.loads(self.fisier('live/%s.json' % id_))['unealta'])
+        self.pune_ok(id_, unealta='x' * 80)
+        self.assertEqual(json.loads(self.fisier('live/%s.json' % id_))['unealta'], 'x' * 80)
+
+    def test_put_fara_token_401_cu_dispozitiv_403(self):
+        id_ = self.mesaj_ion()
+        self.assertEqual(self.pune_live(id_, token=None).status_code, 401)
+        self.assertEqual(self.pune_live(id_, token='gresit').status_code, 401)
+        r = self.pune_live(id_, token=DEVICE)
+        self.assertEqual(r.status_code, 403)
+        self.assertIn('dispozitiv', r.get_json()['error'])
+        self.assertEqual(self.pe_disc(), [], 'nimic scris fara token de masina')
+
+    def test_put_cu_sesiune_cere_csrf(self):
+        id_ = self.mesaj_ion()
+        self.login()
+        r = self.client.put('/api/asistent/fir/%s/live' % id_, json={'text': 'x', 'gata': False})
+        self.assertEqual(r.status_code, 403)
+        csrf = {'X-CSRF-Token': self.client.get_cookie('csrf_token').value}
+        r = self.client.put('/api/asistent/fir/%s/live' % id_, json={'text': 'x', 'gata': False}, headers=csrf)
+        self.assertEqual((r.status_code, r.get_json()), (200, {'seq': 1}))
+
+    def test_put_pe_mesaj_inexistent_sau_al_asistentului_da_404(self):
+        asistent_id = self.scrie_asistent().get_json()['id']
+        for nume, id_ in (('inexistent', 'm_abcdef'), ('al asistentului', asistent_id)):
+            with self.subTest(nume):
+                r = self.pune_live(id_)
+                self.assertEqual(r.status_code, 404)
+                self.assertIn('error', r.get_json())
+        self.assertEqual(self.pe_disc(), [])
+
+    def test_put_cu_id_invalid_da_400(self):
+        for id_ in ('m_zz', 'abc', 'm_12345', 'm_' + 'a' * 17, 'M_ABCDEF', 'm_abcdef.json'):
+            with self.subTest(id_=id_):
+                r = self.pune_live(id_)
+                self.assertEqual(r.status_code, 400)
+                self.assertIn('error', r.get_json())
+        self.assertEqual(self.pe_disc(), [])
+
+    def test_put_cu_corp_invalid_da_400_si_nu_atinge_fisierul(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'bun')
+        bun = self.fisier('live/%s.json' % id_)
+        cazuri = (
+            ('camp necunoscut', {'text': 'x', 'gata': False, 'extra': 1}, 'corpul.extra'),
+            ('text lipseste', {'gata': False}, 'corpul.text'),
+            ('text numar', {'text': 5, 'gata': False}, 'corpul.text'),
+            ('text null', {'text': None, 'gata': False}, 'corpul.text'),
+            ('text prea lung', {'text': 'a' * 65537, 'gata': False}, 'corpul.text'),
+            ('unealta numar', {'text': 'x', 'gata': False, 'unealta': 7}, 'corpul.unealta'),
+            ('unealta 81', {'text': 'x', 'gata': False, 'unealta': 'x' * 81}, 'corpul.unealta'),
+            ('unealta cu control', {'text': 'x', 'gata': False, 'unealta': 'a\nb'}, 'corpul.unealta'),
+            ('gata lipseste', {'text': 'x'}, 'corpul.gata'),
+            ('gata text', {'text': 'x', 'gata': 'true'}, 'corpul.gata'),
+            ('gata numar', {'text': 'x', 'gata': 1}, 'corpul.gata'),
+            ('gata null', {'text': 'x', 'gata': None}, 'corpul.gata'),
+            ('corp lista', ['x'], 'corpul'),
+        )
+        for nume, corp, camp in cazuri:
+            with self.subTest(nume):
+                r = self.client.put('/api/asistent/fir/%s/live' % id_, json=corp, headers=self.h(FULL))
+                self.assertEqual(r.status_code, 400, r.get_data(as_text=True))
+                self.assertIn(camp, r.get_json()['error'])
+        for nume, brut in (('nu e JSON', b'{'), ('surogat izolat', b'{"text": "\\ud83d", "gata": false}'), ('gol', b'')):
+            with self.subTest(nume):
+                r = self.client.put('/api/asistent/fir/%s/live' % id_, data=brut, content_type='application/json',
+                                    headers=self.h(FULL))
+                self.assertEqual(r.status_code, 400)
+        self.assertEqual(self.fisier('live/%s.json' % id_), bun)
+
+    def test_dupa_gata_orice_put_da_409_si_fisierul_ramane(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Gata', gata=True)
+        final = self.fisier('live/%s.json' % id_)
+        for gata in (True, False):
+            with self.subTest(gata=gata):
+                r = self.pune_live(id_, 'altceva', gata=gata)
+                self.assertEqual(r.status_code, 409)
+                self.assertIn('error', r.get_json())
+        self.assertEqual(self.fisier('live/%s.json' % id_), final)
+
+    def test_put_cu_eroare_de_disc_da_500_si_seq_ramane(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'unu')
+        with mock.patch.object(asistent, '_scrie_atomic', side_effect=OSError('disc')):
+            r = self.pune_live(id_, 'doi')
+        self.assertEqual(r.status_code, 500)
+        self.assertEqual(self.pune_live(id_, 'doi').get_json(), {'seq': 2})
+
+    def test_fisier_live_stricat_se_comporta_ca_lipsa(self):
+        id_ = self.mesaj_ion()
+        os.makedirs(os.path.join(self.dir, 'live'))
+        for continut in (b'{', b'[]', b'{"seq": "3", "gata": false}', b'{"seq": 3, "gata": "nu"}', b'\xff\xfe'):
+            with self.subTest(continut=continut):
+                with open(os.path.join(self.dir, 'live', id_ + '.json'), 'wb') as fh:
+                    fh.write(continut)
+                self.assertEqual(self.citeste(id_).status_code, 404)
+        self.assertEqual(self.pune_live(id_).get_json(), {'seq': 1})
+
+    # ----- matura
+
+    def test_matura_sterge_fisierele_vechi_de_15_minute_la_fiecare_put(self):
+        a, b = self.mesaj_ion(), self.mesaj_ion()
+        os.makedirs(os.path.join(self.dir, 'live'))
+        limita = ACUM.timestamp() - 900
+        fisiere = {'m_0000a1.json': limita - 1,              # vechi: se sterge
+                   'm_0000a2.json': limita,                  # exact 15 minute: ramane
+                   'm_0000a3.json': limita + 1,              # proaspat: ramane
+                   'm_0000a4.json.a1b2c3.tmp': limita - 1,   # .tmp vechi de la un proces mort: se sterge
+                   'm_0000a5.json.a1b2c3.tmp': limita + 1,   # .tmp proaspat: ramane
+                   'straina.json': limita - 3600,            # nu e al nostru: nu se atinge
+                   'm_0000a6.json.bak': limita - 3600}
+        for nume, mtime in fisiere.items():
+            with open(os.path.join(self.dir, 'live', nume), 'w') as fh:
+                fh.write('{}')
+            os.utime(os.path.join(self.dir, 'live', nume), (mtime, mtime))
+        self.pune_ok(a)
+        self.assertEqual(self.pe_disc(), sorted(set(fisiere) - {'m_0000a1.json', 'm_0000a4.json.a1b2c3.tmp'} | {a + '.json'}))
+        self.acum = ACUM + timedelta(seconds=901)
+        self.pune_ok(b)
+        self.assertEqual(self.pe_disc(), sorted(['straina.json', 'm_0000a6.json.bak', b + '.json']),
+                         'la ACUM+901 s toate fisierele noastre mai vechi de ACUM+1 s cad, si cel al lui `a`; straine raman')
+
+    def test_un_raspuns_vechi_inchis_nu_mai_blocheaza_cu_409_dupa_matura(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Gata', gata=True)
+        self.assertEqual(self.pune_live(id_).status_code, 409)
+        self.acum = ACUM + timedelta(seconds=901)
+        self.assertEqual(self.pune_live(id_, 'din nou').get_json(), {'seq': 1})
+
+    def test_matura_care_nu_poate_sterge_nu_strica_put_ul(self):
+        a, b = self.mesaj_ion(), self.mesaj_ion()
+        self.pune_ok(a)
+        self.acum = ACUM + timedelta(seconds=901)
+        with mock.patch.object(os, 'remove', side_effect=PermissionError('x')):
+            self.assertEqual(self.pune_live(b).status_code, 200)
+        self.assertEqual(self.pe_disc(), sorted([a + '.json', b + '.json']))
+        self.assertEqual(self.pune_live(b).status_code, 200)
+        self.assertEqual(self.pe_disc(), [b + '.json'])
+
+    # ----- GET (polling)
+
+    def test_get_404_200_si_204_cu_dupa(self):
+        id_ = self.mesaj_ion()
+        r = self.citeste(id_)
+        self.assertEqual(r.status_code, 404)
+        self.assertIn('error', r.get_json())
+        self.pune_ok(id_, 'Salut', unealta='stare')
+        self.pune_ok(id_, 'Salut din nou')
+        r = self.citeste(id_)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.get_json(), {'id': id_, 'text': 'Salut din nou', 'unealta': None, 'gata': False, 'seq': 2,
+                                        'la': '2026-11-22T08:00:00Z'})
+        self.assertEqual(r.headers['Cache-Control'], 'no-store')
+        for dupa, status in ((0, 200), (1, 200), (2, 204), (3, 204), (999999, 204)):
+            with self.subTest(dupa=dupa):
+                r = self.citeste(id_, dupa=dupa)
+                self.assertEqual(r.status_code, status)
+                if status == 204:
+                    self.assertEqual(r.get_data(), b'')
+                else:
+                    self.assertEqual(r.get_json()['seq'], 2)
+        self.pune_ok(id_, 'Salut din nou si inca', gata=True)
+        self.assertEqual(self.citeste(id_, dupa=2).get_json()['seq'], 3)
+        self.assertTrue(self.citeste(id_, dupa=2).get_json()['gata'])
+
+    def test_get_cu_dupa_invalid_da_400_iar_dupa_fara_fisier_404(self):
+        id_ = self.mesaj_ion()
+        self.assertEqual(self.citeste(id_, dupa=5).status_code, 404)
+        self.pune_ok(id_)
+        for dupa in ('abc', '-1', '1.5', '', '1' * 10):
+            with self.subTest(dupa=dupa):
+                self.assertEqual(self.citeste(id_, dupa=dupa).status_code, 400)
+
+    def test_get_cu_id_invalid_404_si_acces(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_)
+        self.assertEqual(self.citeste('m_zz').status_code, 404)
+        self.assertEqual(self.citeste(id_, token=None).status_code, 401)
+        self.assertEqual(self.citeste(id_, token='gresit').status_code, 401)
+        for token in (DEVICE, FULL):
+            self.assertEqual(self.citeste(id_, token=token).status_code, 200)
+        self.login()
+        self.assertEqual(self.citeste(id_, token=None).status_code, 200, 'si cu sesiune')
+
+    # ----- SSE
+
+    def test_flux_antete_retry_si_evenimentele_pana_la_gata(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Incep', unealta='stare')
+        self.la(1.0, lambda: self.pune_live(id_, 'Incep si continui', client=self.masina))
+        self.la(2.0, lambda: self.pune_live(id_, 'Incep si continui pana la capat', gata=True, client=self.masina))
+        r = self.flux(id_)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.headers['Content-Type'], 'text/event-stream; charset=utf-8')
+        self.assertEqual(r.headers['Cache-Control'], 'no-cache')
+        self.assertEqual(r.headers['X-Accel-Buffering'], 'no')
+        blocuri = self.blocuri(r)
+        self.assertEqual(blocuri[0], ['retry: 2000'])
+        self.assertEqual(len(blocuri), 4, blocuri)
+        self.assertEqual([b[:2] for b in blocuri[1:]], [['id: 1', 'event: live'], ['id: 2', 'event: live'], ['id: 3', 'event: live']])
+        self.assertEqual([self.data(b)['seq'] for b in blocuri[1:]], [1, 2, 3])
+        self.assertEqual([self.data(b)['gata'] for b in blocuri[1:]], [False, False, True])
+        self.assertEqual(self.data(blocuri[1]), {'id': id_, 'text': 'Incep', 'unealta': 'stare', 'gata': False, 'seq': 1,
+                                                 'la': '2026-11-22T08:00:00Z'})
+        self.assertEqual(self.data(blocuri[3])['text'], 'Incep si continui pana la capat')
+        self.assertIn('data: {"id":"%s","text":"Incep","unealta":"stare"' % id_, r.get_data(as_text=True), 'JSON compact')
+        self.assertLess(self.t, 3.0, 'se inchide la gata, nu la plafon')
+        self.assertEqual(self.programate, [])
+
+    def test_flux_cu_text_pe_mai_multe_randuri_ramane_un_singur_rand_data(self):
+        id_ = self.mesaj_ion()
+        text = 'rand 1\nrand 2\r\nrand 3   ă ș \U0001F600'
+        self.pune_ok(id_, text, gata=True)
+        bloc = self.blocuri(self.flux(id_))[1]
+        self.assertEqual(len(bloc), 3, bloc)
+        self.assertEqual(self.data(bloc)['text'], text)
+
+    def test_flux_cu_fisier_deja_gata_trimite_evenimentul_si_se_inchide_fara_sa_doarma(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Totul', gata=True)
+        blocuri = self.blocuri(self.flux(id_))
+        self.assertEqual([b[0] for b in blocuri], ['retry: 2000', 'id: 1'])
+        self.assertEqual(self.somnuri, 0)
+
+    def test_flux_fara_fisier_trimite_gol_dupa_20_s(self):
+        id_ = self.mesaj_ion()
+        r = self.flux(id_)
+        self.assertEqual(r.get_data(as_text=True), 'retry: 2000\n\n: ping\n\nevent: gol\ndata: {}\n\n',
+                         'un ping la 15 s, apoi gol')
+        self.assertGreaterEqual(self.t, 20.0)
+        self.assertLess(self.t, 20.5)
+
+    def test_flux_fara_fisier_dar_cu_fisier_aparut_la_timp_nu_trimite_gol(self):
+        id_ = self.mesaj_ion()
+        self.la(19.0, lambda: self.pune_live(id_, 'Tarziu', gata=True, client=self.masina))
+        blocuri = self.blocuri(self.flux(id_))
+        self.assertEqual([b[0] for b in blocuri], ['retry: 2000', ': ping', 'id: 1'])
+        self.assertNotIn('gol', json.dumps(blocuri))
+
+    def test_flux_cu_fisier_neinchis_trimite_ping_la_15_s_si_se_opreste_la_60_s(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Scriu')
+        r = self.flux(id_)
+        self.assertEqual(r.get_data(as_text=True).count(': ping\n\n'), 3, 'la 15, 30 si 45 s; la 60 s se inchide')
+        self.assertEqual([b[0] for b in self.blocuri(r) if not b[0].startswith(':')], ['retry: 2000', 'id: 1'])
+        self.assertGreaterEqual(self.t, 60.0)
+        self.assertLess(self.t, 60.5)
+
+    def test_un_eveniment_reseteaza_numaratoarea_pingului(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Scriu')
+        self.la(10.0, lambda: self.pune_live(id_, 'Scriu mai mult', client=self.masina))
+        self.la(25.0, lambda: self.pune_live(id_, 'Scriu si mai mult', gata=True, client=self.masina))
+        blocuri = self.blocuri(self.flux(id_))
+        self.assertEqual([b[0] for b in blocuri], ['retry: 2000', 'id: 1', 'id: 2', 'id: 3'],
+                         'ultimul eveniment la 10 s, urmatorul la 25 s: sub 15 s intre ele, deci niciun ping')
+
+    def test_last_event_id_nu_retrimite_ce_stie_clientul(self):
+        id_ = self.mesaj_ion()
+        for text in ('unu', 'doi', 'trei'):
+            self.pune_ok(id_, text)
+        for ultim in (None, 0, 2, 'abc', '-1', ''):
+            with self.subTest(ultim=ultim):
+                self.t = 0.0
+                ids = [self.data(b)['seq'] for b in self.blocuri(self.flux(id_, ultim=ultim)) if b[0].startswith('id: ')]
+                self.assertEqual(ids, [3], 'un Last-Event-ID care nu e intreg nu se ia in seama')
+        self.t = 0.0
+        r = self.flux(id_, ultim=3)
+        self.assertEqual([b[0] for b in self.blocuri(r)], ['retry: 2000'] + [': ping'] * 3, 'clientul are deja seq 3')
+        self.assertGreaterEqual(self.t, 60.0, 'raspunsul nu e gata, deci fluxul asteapta pana la plafon')
+
+    def test_last_event_id_si_un_seq_nou_in_timpul_fluxului(self):
+        id_ = self.mesaj_ion()
+        for text in ('unu', 'doi', 'trei'):
+            self.pune_ok(id_, text)
+        self.la(1.0, lambda: self.pune_live(id_, 'patru', gata=True, client=self.masina))
+        blocuri = self.blocuri(self.flux(id_, ultim=3))
+        self.assertEqual([b[0] for b in blocuri], ['retry: 2000', 'id: 4'])
+        self.assertEqual(self.data(blocuri[1])['text'], 'patru')
+
+    def test_reconectare_dupa_gata_primit_da_204_care_opreste_reconectarea(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'unu')
+        self.pune_ok(id_, 'doi', gata=True)
+        for ultim in (2, 3, 99):
+            with self.subTest(ultim=ultim):
+                r = self.flux(id_, ultim=ultim)
+                self.assertEqual((r.status_code, r.get_data()), (204, b''))
+        r = self.flux(id_, ultim=1)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual([b[0] for b in self.blocuri(r)], ['retry: 2000', 'id: 2'])
+
+    def test_flux_cu_sesiune_fara_bearer(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Salut', gata=True)
+        self.assertEqual(self.flux(id_, token=None).status_code, 401)
+        self.login()
+        r = self.flux(id_, token=None)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual([b[0] for b in self.blocuri(r)], ['retry: 2000', 'id: 1'])
+
+    def test_flux_acces_si_id_invalid(self):
+        id_ = self.mesaj_ion()
+        self.assertEqual(self.flux(id_, token='gresit').status_code, 401)
+        r = self.flux(id_, token=FULL)
+        self.assertEqual((r.status_code, r.get_data(as_text=True)), (200, 'retry: 2000\n\n: ping\n\nevent: gol\ndata: {}\n\n'))
+        r = self.flux('m_zz')
+        self.assertEqual(r.status_code, 404)
+        self.assertIn('error', r.get_json())
+
+    def test_flux_citeste_fisierul_la_250_ms(self):
+        id_ = self.mesaj_ion()
+        self.flux(id_).get_data()
+        self.assertEqual(self.somnuri, 80, '20 s / 0,25 s')
+
+    def test_o_eroare_de_citire_in_flux_nu_il_opreste(self):
+        id_ = self.mesaj_ion()
+        self.pune_ok(id_, 'Salut', gata=True)
+        citeste = asistent._citeste_live
+        apeluri = []
+
+        def capricios(i):
+            apeluri.append(i)
+            if len(apeluri) == 2:                          # primul apel e cel din ruta, al doilea (primul din generator) cade
+                raise PermissionError('os.replace in curs')
+            return citeste(i)
+        with mock.patch.object(asistent, '_citeste_live', capricios):
+            blocuri = self.blocuri(self.flux(id_))
+        self.assertEqual([b[0] for b in blocuri], ['retry: 2000', 'id: 1'])
+        self.assertEqual(self.somnuri, 1, 'un singur ciclu a esuat; apoi fisierul se citeste si fluxul se inchide la gata')

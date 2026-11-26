@@ -6,9 +6,10 @@
 #
 # Trei parti, trei feluri de acces:
 #   - asistentul (token de MASINA, sesiune): PUT registru, GET/POST actiuni, POST fir (cine=asistent),
-#     GET fir/noi, POST fir/<id>/stare. Tokenul de DISPOZITIV primeste 403 pe ele.
+#     GET fir/noi, POST fir/<id>/stare, PUT fir/<id>/detalii, PUT fir/<id>/live. Tokenul de DISPOZITIV primeste 403 pe ele.
 #   - Torqa (sesiune sau token de dispozitiv): GET /api/asistent, POST actiune, POST fir (mesajul lui
-#     Ion), push/token. Serviciul nativ Android foloseste acelasi token de dispozitiv.
+#     Ion), push/token, GET fir/<id>/detalii, GET fir/<id>/live si live/flux. Serviciul nativ Android foloseste acelasi
+#     token de dispozitiv.
 #
 # Fisiere, nu tabele (tiparul `blueprints/sistem.py`: fiecare rulare trimite starea completa, se reface
 # singura; fara schema, fara migrare). Pe disc, sub `<uploads>/asistent/`:
@@ -19,6 +20,8 @@
 #   prezenta.json    ultima raportare a fiecarei masini (v1.1), atomic
 #   asistent.lock    doar blocarea (fcntl): doi workeri nu rescriu deodata
 #   detalii/<id>.md  detaliile (Markdown) unui mesaj al asistentului, un fisier per mesaj (v1.2), atomic
+#   live/<id>.json   textul partial al raspunsului la un mesaj al lui Ion, cat il scrie asistentul (v1.3), atomic;
+#                    efemer: se matura la 15 minute
 #
 # v1.1 (decizia 2026-11-22-asistent-in-torqa.md, sectiunea v1.1): `ref`, `tinta`, `alegere` pe mesajul lui Ion;
 # `intrebare`/`asteapta` cu `optiuni`, `masina` si `ref` pe mesajul asistentului; raspunsul lui Ion la o intrebare
@@ -28,6 +31,11 @@
 # `are_detalii` pe fiecare mesaj din GET si fir/noi, `GET .../fir/<id>/detalii`. Fisierul unui mesaj se scrie si se sterge
 # DOAR sub aceeasi blocare ca firul, iar fiecare scriere a firului matura fisierele fara mesaj: un mesaj scos la plafon nu
 # lasa fisier orfan, oricum ar fi curse PUT-ul si scrierea firului.
+#
+# v1.3 (live): `PUT /api/asistent/fir/<id>/live` (token de masina) pune textul cumulat al raspunsului la mesajul lui Ion
+# `<id>`; Torqa il arata cat se scrie: `GET .../live` (polling, Android: CapacitorHttp nu face stream; `?dupa=<seq>` da 204
+# cand nu s-a schimbat nimic) si `GET .../live/flux` (SSE, web). Un flux tine un worker sync cat dureaza, deci are plafoane
+# (60 s total, 20 s pana apare fisierul); clientul se reconecteaza singur cu `Last-Event-ID`. Fara schema: un fisier per mesaj.
 #
 # Validarea e STRICTA: camp necunoscut, lipsa sau tip gresit da 400 cu calea campului, iar starea
 # veche ramane. Trimiterea FCM nu schimba niciodata statusul raspunsului: o eroare intra in `push.erori`.
@@ -51,7 +59,7 @@ except ImportError:                               # Windows
     fcntl = None
     import msvcrt
 
-from flask import Blueprint, g, jsonify, request, session
+from flask import Blueprint, Response, g, jsonify, request, session, stream_with_context
 
 from blueprints import fcm
 from blueprints.sistem import EroareCorp, _corp_json as _corp_json_brut, _lista, _obiect, _text
@@ -69,11 +77,20 @@ F_PUSH = 'push.json'
 F_PREZENTA = 'prezenta.json'
 F_BLOCARE = 'asistent.lock'
 D_DETALII = 'detalii'
+D_LIVE = 'live'
 
 MAX_CORP_REGISTRU = 1024 * 1024
 MAX_CORP = 32 * 1024
 MAX_DETALII = 65536                                # caractere, dupa strip (v1.2)
 MAX_CORP_DETALII = 1024 * 1024                     # 65 536 de caractere pot fi 786 KB in JSON (un emoji scapat = 12 octeti)
+MAX_LIVE = 65536                                   # caractere, dupa strip (v1.3)
+MAX_UNEALTA = 80
+LIVE_VECHI_S = 900                                 # un fisier live neatins de 15 minute se sterge la urmatorul PUT
+FLUX_PAS_S = 0.25                                  # cat de des citeste fluxul fisierul
+FLUX_PING_S = 15                                   # `: ping` cand nu s-a schimbat nimic atata timp
+FLUX_TOTAL_S = 60                                  # plafonul unui flux: gunicorn are 2 workeri sync, fluxul tine unul
+FLUX_FARA_FISIER_S = 20                            # fisierul nu apare in atatea secunde: `event: gol` si inchidere
+FLUX_RETRY_MS = 2000
 MAX_ITEMI = 300
 MAX_SURSE = 30
 MAX_PICATE = 100
@@ -115,6 +132,8 @@ TRANZITII = {'nou': ('preluat', 'gata', 'eroare'), 'preluat': ('gata', 'eroare')
 _RE_UID = re.compile(r'[0-9a-f]{12}')
 _RE_MSG = re.compile(r'm_[0-9a-f]{6,16}')
 _RE_FISIER_DETALII = re.compile(r'(m_[0-9a-f]{6,16})\.md')
+_RE_NUME_LIVE = re.compile(r'm_[0-9a-f]{6,16}\.json(\.[0-9a-f]{6}\.tmp)?')   # ce are voie sa stearga matura din `live/`
+_RE_NUMAR = re.compile(r'[0-9]{1,9}')
 _RE_TMP_DETALII = re.compile(r'm_[0-9a-f]{6,16}\.md\.[0-9a-f]{6}\.tmp')   # ce lasa `_scrie_atomic` cand procesul moare la mijloc
 TMP_VECHI_S = 300                                  # un .tmp mai vechi de 5 minute nu mai e al nimanui
 _RE_SURSA_REG = re.compile(r'[a-z0-9][a-z0-9_-]{0,39}')
@@ -142,6 +161,7 @@ CAMPURI_PREZENTA = frozenset(('activ', 'idle_s', 'versiune', 'claude'))
 CAMPURI_CLAUDE = frozenset(('logat', 'expira', 'verificat'))
 CAMPURI_PUSH = frozenset(('prioritate',))
 CAMPURI_DETALII = frozenset(('detalii',))
+CAMPURI_LIVE = frozenset(('text', 'unealta', 'gata'))
 CAMPURI_STARE = frozenset(('stare', 'task_id', 'mesaj'))
 CAMPURI_TOKEN = frozenset(('token', 'platforma', 'aplicatie', 'versiune'))
 CAMPURI_TOKEN_STERS = frozenset(('token',))
@@ -799,6 +819,127 @@ def _matura_detalii(ramase):
             logger.warning('Asistent: %s/%s nu s-a putut sterge', D_DETALII, ce, exc_info=True)
 
 
+# --------------------------------------------------------------------------- live (v1.3)
+
+def _somn(secunde):
+    """Somnul fluxului SSE. Functie de modul, ca testele sa o inlocuiasca (impreuna cu `_monoton`) si sa nu astepte 60 s."""
+    time.sleep(secunde)
+
+
+def _monoton():
+    return time.monotonic()
+
+
+def _nume_live(id_):
+    """Numele (relativ la DIR_ASISTENT) fisierului live al unui mesaj; aceeasi garda ca `_nume_detalii`: id-ul se
+    potriveste STRICT cu `m_<6-16 cifre hex>`, deci numele nu iese din `live/`."""
+    if not isinstance(id_, str) or not _RE_MSG.fullmatch(id_):
+        raise ValueError('id de mesaj invalid')
+    return os.path.join(D_LIVE, id_ + '.json')
+
+
+def _citeste_live(id_):
+    """Obiectul din `live/<id>.json` sau None (lipsa, sau continut care nu are forma scrisa de PUT: se logheaza si se
+    comporta ca un fisier lipsa). Alta eroare de citire (OSError) se ridica."""
+    try:
+        with open(_cale(_nume_live(id_)), 'rb') as fh:
+            brut = fh.read()
+    except FileNotFoundError:
+        return None
+    try:
+        v = json.loads(brut.decode('utf-8'))
+    except (ValueError, RecursionError):
+        v = None
+    if not isinstance(v, dict) or type(v.get('seq')) is not int or not isinstance(v.get('gata'), bool):
+        logger.warning('Asistent: %s/%s.json are alta forma; se ignora', D_LIVE, id_)
+        return None
+    return v
+
+
+def _matura_live():
+    """Sterge din `live/` fisierele (si .tmp-urile ramase de la un proces mort) neatinse de mai mult de LIVE_VECHI_S,
+    dupa ceasul aplicatiei: PUT-ul rescrie fisierul, deci data modificarii e a ultimului PUT. Doar sub `_blocat()`. Fara
+    efect asupra raspunsului: o eroare de disc se logheaza, iar urmatorul PUT reia stergerea."""
+    limita = _acum().timestamp() - LIVE_VECHI_S
+    try:
+        nume = os.listdir(_cale(D_LIVE))
+    except FileNotFoundError:
+        return
+    except OSError:
+        logger.warning('Asistent: %s/ nu se poate citi; nu se matura', D_LIVE, exc_info=True)
+        return
+    for n in nume:
+        if not _RE_NUME_LIVE.fullmatch(n):
+            continue
+        cale = _cale(os.path.join(D_LIVE, n))
+        try:
+            if os.stat(cale).st_mtime < limita:
+                os.remove(cale)
+        except FileNotFoundError:
+            pass
+        except OSError:
+            logger.warning('Asistent: %s/%s nu s-a putut sterge', D_LIVE, n, exc_info=True)
+
+
+def _corp_live(corp):
+    """(text, unealta, gata) din corpul unui PUT live, strict. `text`: 0-65 536 de caractere DUPA strip (se stocheaza
+    asa; poate fi gol). `unealta`: lipsa, null sau text de cel mult 80 de caractere fara control (gol dupa strip = null).
+    `gata`: obligatoriu, bool."""
+    _obiect(corp, 'corpul', CAMPURI_LIVE)
+    text = _text(corp, 'text', 'corpul', MAX_CORP_DETALII).strip()
+    if len(text) > MAX_LIVE:
+        raise EroareCorp('corpul.text: maximum %d de caractere (dupa strip)' % MAX_LIVE)
+    unealta = corp.get('unealta')
+    if unealta is not None:
+        if not isinstance(unealta, str):
+            raise EroareCorp('corpul.unealta: trebuie sa fie text sau null')
+        unealta = unealta.strip()
+        if len(unealta) > MAX_UNEALTA:
+            raise EroareCorp('corpul.unealta: maximum %d de caractere' % MAX_UNEALTA)
+        _fara_control(unealta, 'corpul.unealta')
+        unealta = unealta or None
+    if 'gata' not in corp:
+        raise EroareCorp('corpul.gata: lipseste')
+    if not isinstance(corp['gata'], bool):
+        raise EroareCorp('corpul.gata: trebuie sa fie true sau false')
+    return text, unealta, corp['gata']
+
+
+def _flux_live(id_, ultim):
+    """Generatorul SSE al unui mesaj. `ultim` = ultimul seq pe care clientul il are deja (`Last-Event-ID`, 0 la inceput):
+    nu se retrimite nimic cu seq <= `ultim`. Citeste fisierul la FLUX_PAS_S; la seq nou: `id`/`event: live`/`data` (JSON
+    compact pe un rand). Se termina dupa evenimentul cu `gata`, dupa FLUX_TOTAL_S, sau, daca fisierul nu apare in
+    FLUX_FARA_FISIER_S, dupa `event: gol`. Timpul vine din `_monoton`/`_somn` (inlocuibile in teste)."""
+    inceput = ultima = _monoton()                  # `ultima`: ultimul eveniment sau ping trimis
+    aparut = logat = False
+    yield 'retry: %d\n\n' % FLUX_RETRY_MS
+    while True:
+        try:
+            live = _citeste_live(id_)
+        except OSError:                            # ex. Windows: cititorul se loveste de `os.replace`; ciclul urmator
+            if not logat:                          # un rand pe flux, nu unul la 250 ms
+                logger.warning('Asistent: %s/%s.json nu se poate citi', D_LIVE, id_, exc_info=True)
+                logat = True
+            live = None
+        acum = _monoton()
+        if live is not None:
+            aparut = True
+            if live['seq'] > ultim:
+                ultim, ultima = live['seq'], acum
+                yield 'id: %d\nevent: live\ndata: %s\n\n' % (ultim, json.dumps(live, ensure_ascii=False, separators=(',', ':')))
+            if live['gata']:
+                return
+        elif not aparut and acum - inceput >= FLUX_FARA_FISIER_S:
+            yield 'event: gol\ndata: {}\n\n'
+            return
+        if acum - inceput >= FLUX_TOTAL_S:
+            return
+        if acum - ultima >= FLUX_PING_S:
+            ultima = acum
+            yield ': ping\n\n'
+        _somn(FLUX_PAS_S)
+
+
 # --------------------------------------------------------------------------- prezenta masinilor
 
 def _citeste_prezenta(strict=False):
@@ -1133,6 +1274,46 @@ def put_detalii(id_):
     return jsonify({'ok': True, 'id': id_, 'are_detalii': detalii is not None})
 
 
+@asistent_bp.route('/api/asistent/fir/<id_>/live', methods=['PUT'])
+@login_required
+@_doar_masina
+def put_live(id_):
+    """Asistentul trimite textul PARTIAL al raspunsului la mesajul lui Ion `<id_>`, cat il scrie: {text, unealta?, gata}.
+    `text` = tot ce s-a scris pana acum (cumulat, nu un adaos), 0-65 536 de caractere dupa strip; `unealta` = numele uneltei
+    care ruleaza acum (<= 80 de caractere) sau null; `gata: true` inchide raspunsul. Scrie atomic `live/<id>.json`
+    = {id, text, unealta, gata, seq, la}; `seq` creste cu 1 la fiecare PUT, sub aceeasi blocare ca firul. Token de masina
+    sau sesiune; dispozitivul 403. 400 id invalid sau corp invalid (camp necunoscut, tip gresit), 404 mesajul nu e in fir
+    sau nu e al lui Ion, 409 dupa `gata: true` (si la o retrimitere a PUT-ului final: clientul trateaza 409 ca „deja inchis”).
+    O retrimitere inainte de `gata` e inofensiva: acelasi text cumulat, cu seq mai mare. Fiecare PUT sterge fisierele live
+    neatinse de 15 minute. Raspuns: {seq}."""
+    if not _RE_MSG.fullmatch(id_):
+        return _eroare(400, 'id de mesaj invalid')
+    corp, eroare = _corp_json(MAX_CORP_DETALII)
+    if eroare:
+        return eroare
+    try:
+        text, unealta, gata = _corp_live(corp)
+    except EroareCorp as e:
+        return _eroare(400, str(e))
+    try:
+        with _blocat():
+            _matura_live()
+            rand = next((r for r in _citeste_fir(True) if r['id'] == id_), None)
+            if rand is None or rand.get('cine') != 'ion':
+                return _eroare(404, 'mesaj necunoscut sau nu e al lui Ion')
+            curent = _citeste_live(id_)
+            if curent is not None and curent['gata']:
+                return _eroare(409, 'raspunsul live e inchis (gata)')
+            seq = curent['seq'] + 1 if curent is not None else 1
+            acum = _acum()
+            _scrie_atomic(_nume_live(id_), _json_bytes({'id': id_, 'text': text, 'unealta': unealta, 'gata': gata,
+                                                         'seq': seq, 'la': _z(acum)}), acum)
+    except OSError:
+        logger.exception('Asistent: scrierea live a esuat pe disc')
+        return _eroare(500, 'Eroare pe disc la salvarea textului live.')
+    return jsonify({'seq': seq})
+
+
 def _idle_s(corp):
     """`idle_s`: intreg sau numar finit >= 0 (scripturile il citesc ca float din gdbus / xprintidle); se rotunjeste
     in jos la intreg. Negativ, NaN, inf, bool, text sau peste MAX_IDLE_S: 400."""
@@ -1225,6 +1406,57 @@ def get_detalii(id_):
     if gasit is None:
         return _eroare(404, 'mesajul nu are detalii')
     return jsonify({'id': id_, 'detalii': gasit[0], 'ts': gasit[1]})
+
+
+@asistent_bp.route('/api/asistent/fir/<id_>/live', methods=['GET'])
+@login_required
+def get_live(id_):
+    """Starea live a unui mesaj, pentru polling (Android): {id, text, unealta, gata, seq, la}. Sesiune sau orice Bearer
+    valid (inclusiv dispozitivul). 404 cand nu exista fisier live (mesaj necunoscut, nimic trimis inca, sau maturat la
+    15 minute). `?dupa=<seq>` (intreg >= 0, altfel 400): daca seq-ul curent <= dupa, 204 fara corp."""
+    brut = request.args.get('dupa')
+    if brut is not None and not _RE_NUMAR.fullmatch(brut):
+        return _eroare(400, 'dupa: intreg >= 0')
+    if not _RE_MSG.fullmatch(id_):
+        return _eroare(404, 'mesaj necunoscut')
+    try:
+        live = _citeste_live(id_)
+    except OSError:
+        logger.exception('Asistent: live %s nu se poate citi', id_)
+        return _eroare(500, 'Eroare pe disc la citirea textului live.')
+    if live is None:
+        return _eroare(404, 'nimic live pentru mesaj')
+    if brut is not None and live['seq'] <= int(brut):
+        raspuns = Response(status=204)
+    else:
+        raspuns = jsonify(live)
+    raspuns.headers['Cache-Control'] = 'no-store'
+    return raspuns
+
+
+@asistent_bp.route('/api/asistent/fir/<id_>/live/flux', methods=['GET'])
+@login_required
+def get_live_flux(id_):
+    """Fluxul SSE al starii live (web: sesiune cu cookie, acelasi origin; si orice Bearer valid). Intai `retry: 2000`; la
+    fiecare seq nou `id: <seq>`, `event: live`, `data: <json compact>`; `: ping` la 15 s fara schimbare. Se inchide dupa
+    evenimentul cu `gata`, dupa 60 s in total (un flux tine un worker sync cat dureaza), sau dupa `event: gol` daca
+    fisierul nu apare in 20 s; clientul inchide el `EventSource` la `gata` si la `gol`, altfel browserul se reconecteaza.
+    `Last-Event-ID` (il pune browserul la reconectare): nu se retrimite seq <= acela. Reconectare dupa un `gata` deja primit:
+    204, care opreste reconectarea EventSource. 404 id invalid."""
+    if not _RE_MSG.fullmatch(id_):
+        return _eroare(404, 'mesaj necunoscut')
+    brut = request.headers.get('Last-Event-ID', '').strip()
+    ultim = int(brut) if _RE_NUMAR.fullmatch(brut) else 0
+    try:
+        live = _citeste_live(id_)
+    except OSError:
+        live = None
+    if live is not None and live['gata'] and live['seq'] <= ultim:
+        return Response(status=204)
+    raspuns = Response(stream_with_context(_flux_live(id_, ultim)), content_type='text/event-stream; charset=utf-8')
+    raspuns.headers['Cache-Control'] = 'no-cache'
+    raspuns.headers['X-Accel-Buffering'] = 'no'
+    return raspuns
 
 
 @asistent_bp.route('/api/asistent/actiune', methods=['POST'])
