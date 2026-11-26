@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 
 from database import get_db, row_to_dict, LISTA_SISTEM
+from labels import status_task_canonic
 from utils import generate_uuid, login_required, get_json_or_400, id_ocupat as _id_ocupat
 
 tasks_bp = Blueprint('tasks', __name__)
@@ -51,6 +52,20 @@ def _eroare_recurenta(data):
     baza = data.get('recurenta_baza')
     if baza is not None and baza not in RECURENTA_BAZE:
         return "recurenta_baza invalida (acceptat: 'scadenta' sau 'finalizare')"
+    return None
+
+
+def _eroare_status(data):
+    """Strange `status` din body in vocabular (`to_do`|`done`; cheile vechi din labels.py se
+    traduc) si intoarce mesajul unui 400 pentru o valoare necunoscuta, altfel None. Fara verificarea
+    asta, triggerul din baza (v48, E-015) ar refuza scrierea si ruta ar raspunde 500.
+    None = cheia lipseste sau e null (la PUT, COALESCE o lasa neatinsa; la POST ramane `to_do`)."""
+    if data.get('status') is None:
+        return None
+    canonic = status_task_canonic(data['status'])
+    if canonic is None:
+        return "status invalid (acceptat: 'to_do' sau 'done')"
+    data['status'] = canonic
     return None
 
 
@@ -242,7 +257,7 @@ def get_tasks(project_id):
 @login_required
 def create_task(project_id):
     data = get_json_or_400()
-    eroare = _eroare_recurenta(data)
+    eroare = _eroare_recurenta(data) or _eroare_status(data)
     if eroare:
         return jsonify({'error': eroare}), 400
     conn = get_db()
@@ -283,7 +298,7 @@ def create_task(project_id):
         task_id,
         project_id,
         data.get('titlu', ''),
-        data.get('status', 'to_do'),
+        data.get('status') or 'to_do',
         data_scadenta,
         data.get('data_finalizare', ''),
         max_ordine + 1,
@@ -306,7 +321,7 @@ def create_task(project_id):
 @login_required
 def update_task(task_id):
     data = get_json_or_400()
-    eroare = _eroare_recurenta(data)
+    eroare = _eroare_recurenta(data) or _eroare_status(data)
     if eroare:
         return jsonify({'error': eroare}), 400
     conn = get_db()
@@ -632,7 +647,7 @@ def get_global_tasks():
 @login_required
 def create_global_task():
     data = get_json_or_400()
-    eroare = _eroare_recurenta(data)
+    eroare = _eroare_recurenta(data) or _eroare_status(data)
     if eroare:
         return jsonify({'error': eroare}), 400
     sfera = data.get('sfera') or 'munca'
@@ -664,7 +679,7 @@ def create_global_task():
         task_id,
         data.get('titlu', ''),
         data.get('descriere', ''),
-        data.get('status', 'to_do'),
+        data.get('status') or 'to_do',
         data.get('categorie', 'General'),
         sfera,
         data.get('data_scadenta', ''),
@@ -701,7 +716,7 @@ def get_global_task(task_id):
 @login_required
 def update_global_task(task_id):
     data = get_json_or_400()
-    eroare = _eroare_recurenta(data)
+    eroare = _eroare_recurenta(data) or _eroare_status(data)
     if eroare:
         return jsonify({'error': eroare}), 400
     # Patch de sfera permis (portita API pentru un task creat in sfera gresita);

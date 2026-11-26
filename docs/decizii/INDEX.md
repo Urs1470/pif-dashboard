@@ -14,6 +14,10 @@ Unde aceeași decizie a fost scrisă de două ori (o dată în `CLAUDE.md`, o da
 din `CLAUDE.md`; un fișier de aici poate descrie o stare depășită (multe chiar o fac — vezi
 toată epoca Gantt din iulie, ștearsă pe 2026-08-15).
 
+## 2026-11-26
+
+- [2026-11-26 Statusurile impuse in baza: schema v48](2026-11-26-statusuri-impuse-in-baza.md) — sase triggere (`BEFORE INSERT` / `UPDATE OF status` pe `proiecte`, `tasks`, `global_tasks`) refuza orice status din afara `labels.PROJECT_STATUSES` (`pregatire`, `finalizat`) si `TASK_STATUSES` (`to_do`, `done`), inclusiv NULL; randurile vechi se strang la migrare si la fiecare pornire (`database.impune_statusurile`, proiectele ne-finalizate isi pierd `data_finalizare`); rutele de task traduc cheile vechi si dau 400 la necunoscut, restore-ul strange statusul din backup-urile vechi. Inchide E-015.
+
 ## 2026-11-25
 
 - [2026-11-25 Bifa manuală pe materiale: `PUT /api/materiale/bifa`](2026-11-25-materiale-bifa.md) — Ion bifează în Torqa un articol `la_destinatie` sau `livrat` (sau `null` = scoate bifa) peste starea colectorului; bifa stă în `app_settings`, cheia `materiale_bife` (intră în backup, fără schemă), nu în snapshot, deci supraviețuiește colectărilor; `GET /api/materiale` pune `bifa` pe rând și, când bifa e peste colector, `stare`, `stare_colector`, `intarziat` false și ajustează `rezumat` (`pe_stare`, `intarziate`, `urmatoarea`); alertele de livrare calculate pe server la PUT nu mai includ articolele bifate; scrie și tokenul de dispozitiv (409 fără snapshot sau articol necunoscut). Codul: `blueprints/materiale.py`, `blueprints/materiale_alerte.py`.

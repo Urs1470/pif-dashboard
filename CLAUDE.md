@@ -37,7 +37,7 @@ o data per clona: `git config core.hooksPath .githooks`.
 ```
 app.py              # intrare Flask, auth PIN, CSP (nonce, fara surse externe), rate limit pe IP-ul din
                     #   socket (CF-Connecting-IP doar de la proxy de incredere), webhook deploy; / duce la /torqa/
-database.py         # schema v47, migrari v1-v47 idempotente, WAL
+database.py         # schema v48, migrari v1-v48 idempotente, WAL
 utils.py            # login_required, UUID, app_settings, norm_date, tokenurile de masina/dispozitiv
 csrf.py labels.py   # CSRF double-submit; etichetele de status
 ratelimit.py        # limita de PIN pe fisier SQLite separat (comuna workerilor, peste redeploy)
@@ -73,6 +73,8 @@ Regulile datelor, care nu se deduc din cod uitandu-te la el, si care se strica t
 1. **Un task are O SINGURA data** — `data_scadenta`, termenul. Nu exista „data planificata".
    A pune un task pe azi = a-i da termenul de azi; a-l scoate = a-i sterge data.
 2. **Un proiect are doua statusuri:** `pregatire` si `finalizat`. Atat.
+   Din v48 le impune baza: triggere pe `proiecte`, `tasks` si `global_tasks` (taskurile: `to_do`|`done`)
+   refuza orice alta valoare, si NULL; vocabularul sta in `labels.py` (`PROJECT_STATUSES`, `TASK_STATUSES`).
 3. **`data_finalizare` exista daca si numai daca statusul e `finalizat`.** Se pune automat la
    inchidere, se **sterge** la redeschidere. Fara invariant, formularul tine data agatata si
    o re-inchidere te intoarce tacut in ziua veche.
@@ -203,8 +205,6 @@ acest fisier; pana pe 2026-10-05 stateau in agentul `pif-dashboard-dev`.
 
 ## Limitari cunoscute
 
-- Statusurile sunt string-uri magice, centralizate in `labels.py` dar **neimpuse la nivel de
-  baza** — un `UPDATE` direct poate scrie orice.
 - Ce a ramas fara cod dupa retragere a plecat din baza: cheile `app_settings` `push_*`,
   `plan_departament_url`, `ics_feed_key`, `fault_data_rev` in v42; Ganttul (`task_dependencies`,
   `tasks.data_start/progres/is_milestone`), `ordine_agenda`, `calcule`, `clienti` si

@@ -18,6 +18,7 @@ from utils import (
     TASK_PROIECT_VIU,
 )
 from database import get_db, row_to_dict, get_schema_version, DATABASE_PATH, LISTE_FIXE, asigura_listele_fixe
+from labels import PROJECT_STATUSES, status_task_canonic
 from blueprints.outlook import citeste_snapshot, evenimente_in_fereastra
 from blueprints.echipa import echipa_in_fereastra
 
@@ -159,9 +160,34 @@ def _ajusteaza_perioada(rand):
 # Tabelele care nu mai exista (jurnal, timer_sessions din v22; checklist_pif, checklist_categorii,
 # project_templates, assistant_memory din v23) pot aparea in backup-uri vechi: restore-ul citeste
 # doar tabelele din TABELE_BACKUP, deci le ignora.
+# Statusul se strange in vocabular la restore (v48, E-015): un backup de dinainte de v31/v34 poarta
+# chei vechi (`in_lucru`, `finalizat` la taskuri), iar triggerele bazei ar refuza randul si ar anula
+# tot restore-ul. Aceeasi regula ca `impune_statusurile` din database.py.
+def _status_proiect_restore(rand):
+    if rand.get('status') not in PROJECT_STATUSES:
+        rand['status'] = 'pregatire'
+        if rand.get('data_finalizare'):
+            rand['data_finalizare'] = ''    # invariantul 3: fara `finalizat`, fara data de finalizare
+
+
+def _status_task_restore(rand):
+    rand['status'] = status_task_canonic(rand.get('status')) or 'to_do'
+
+
+def _ajusteaza_task(rand):
+    _termen_din_planificata(rand)
+    _status_task_restore(rand)
+
+
+def _ajusteaza_global_cu_status(rand):
+    _ajusteaza_global(rand)
+    _status_task_restore(rand)
+
+
 AJUSTARI_RESTORE = {
-    'tasks': _termen_din_planificata,
-    'global_tasks': _ajusteaza_global,
+    'proiecte': _status_proiect_restore,
+    'tasks': _ajusteaza_task,
+    'global_tasks': _ajusteaza_global_cu_status,
     'implementari': _ajusteaza_perioada,
 }
 

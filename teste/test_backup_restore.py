@@ -56,8 +56,15 @@ ID_LISTE = {1: 'munca', 2: 'personal'}
 RANDURI = 2
 
 
+# Statusul are vocabular impus de triggere (v48, E-015): valoarea de proba e cea permisa, diferita
+# de implicita (`pregatire`, `to_do`).
+STATUS_PROBA = {'proiecte': 'finalizat', 'tasks': 'done', 'global_tasks': 'done'}
+
+
 def valoare(tabela, coloana, tip, dflt, pk, n):
     """O valoare pentru randul `n`, DIFERITA de implicita (o verifica `genereaza`)."""
+    if coloana == 'status' and tabela in STATUS_PROBA:
+        return STATUS_PROBA[tabela]
     if (tabela, coloana) in LEGATURI:
         return LEGATURI[(tabela, coloana)](n)
     if pk:
@@ -308,12 +315,13 @@ class BackupSiRestore(CuAplicatia):
         r = self.restaureaza(vechi, self.destinatie)
         self.assertEqual(r.status_code, 200, r.get_data(as_text=True))
         p = citeste(self.destinatie, 'proiecte')[0]
-        self.assertEqual((p['status'], p['confirmat_client'], p['client']), ('in_lucru', 1, 'ACME'))
+        # Cheile vechi de status se strang la restore (v48): `in_lucru` e `pregatire` la proiect, `to_do` la task.
+        self.assertEqual((p['status'], p['confirmat_client'], p['client']), ('pregatire', 1, 'ACME'))
         self.assertEqual((p['vault_folder'], p['data_finalizare']), (None, None),
                          'coloanele care nu erau in backup iau implicita')
         self.assertNotIn('notify_on_complete', p, 'coloana scoasa in v43 nu revine din backup')
         t = citeste(self.destinatie, 'tasks')[0]
-        self.assertEqual((t['data_scadenta'], t['ordine'], t['status']), ('2025-02-03', 2, 'in_lucru'))
+        self.assertEqual((t['data_scadenta'], t['ordine'], t['status']), ('2025-02-03', 2, 'to_do'))
         self.assertFalse({'data_start', 'progres', 'is_milestone', 'ordine_agenda'} & set(t),
                          'coloanele Ganttului si ale agendei nu revin din backup')
         g = citeste(self.destinatie, 'global_tasks')[0]

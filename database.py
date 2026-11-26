@@ -4,6 +4,8 @@ import logging
 import re
 from datetime import datetime
 
+from labels import PROJECT_STATUSES, TASK_STATUSES
+
 logger = logging.getLogger('pif_dashboard')
 
 # PIF_DB_PATH permite rularea pe o baza de unica folosinta (vezi scripts/smoke_ui.py,
@@ -128,10 +130,68 @@ def close_db(exc=None):
 #      pentru sincronizarea in trei cai (blueprints/echipa.py). Nullable, fara valoare implicita;
 #      migrarea doar adauga coloanele, nu completeaza nimic. Decizia: docs/decizii/2026-11-18-gantt-srp.md
 #      (amendamente).
-SCHEMA_VERSION = 47
+# v48: statusurile se impun in baza (E-015). Triggere BEFORE INSERT / UPDATE OF status pe
+#      `proiecte` (`pregatire`|`finalizat`), `tasks` si `global_tasks` (`to_do`|`done`) refuza orice
+#      alta valoare, inclusiv NULL. Randurile existente cu chei vechi sau necunoscute se strang intai
+#      in vocabular (`impune_statusurile`), la migrare si la fiecare pornire (o baza veche urcata cu
+#      db-upload). Vocabularul sta in `labels.py` (PROJECT_STATUSES, TASK_STATUSES).
+SCHEMA_VERSION = 48
 
 # Coloanele v47 ale `implementari` (sincronizarea cu Gantt-ul SRP); migrarea si self-heal-ul le citesc de aici.
 COLOANE_SRP = ('srp_activitate_id', 'srp_sincron_start', 'srp_sincron_end')
+
+# v48 (E-015): ce status are voie sa stea in fiecare tabela. Tuplurile vin din `labels.py`, ca
+# vocabularul sa fie scris o singura data; triggerele se construiesc din ele.
+TABELE_STATUS = (('proiecte', PROJECT_STATUSES), ('tasks', TASK_STATUSES), ('global_tasks', TASK_STATUSES))
+
+
+def _sql_triggere_status():
+    """DDL-ul celor sase triggere (INSERT si UPDATE OF status, pe fiecare tabela). Un CHECK nu se
+    poate adauga cu ALTER TABLE in SQLite, iar reconstruirea tabelelor ar atinge cheile straine si
+    cascada; triggerele dau aceeasi garantie fara sa mute niciun rand."""
+    ddl = []
+    for tabela, permise in TABELE_STATUS:
+        lista = ', '.join("'%s'" % v for v in permise)
+        mesaj = 'status invalid in %s: permise %s' % (tabela, ', '.join(permise))
+        for cand, eveniment in (('insert', 'INSERT'), ('update', 'UPDATE OF status')):
+            ddl.append(
+                f"CREATE TRIGGER IF NOT EXISTS status_{tabela}_{cand} BEFORE {eveniment} ON {tabela} "
+                f"WHEN NEW.status IS NULL OR NEW.status NOT IN ({lista}) "
+                f"BEGIN SELECT RAISE(ABORT, '{mesaj}'); END")
+    return ddl
+
+
+def impune_statusurile(conn):
+    """Strange statusurile din afara vocabularului si pune triggerele. Idempotenta: pe o baza
+    curata nu schimba niciun rand. Intoarce {tabela: randuri schimbate}.
+
+    Regula de strangere e a lui `labels.py`: la proiecte doar `finalizat` ramane `finalizat`, restul
+    (chei vechi, necunoscute, NULL) devine `pregatire`, iar `data_finalizare` se goleste (invariantul
+    3); la taskuri `done`/`finalizat` devin `done`, restul `to_do`."""
+    schimbate = {}
+    tabele = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    for tabela, permise in TABELE_STATUS:
+        if tabela not in tabele:
+            continue
+        semne = ', '.join('?' * len(permise))
+        conditie = f'status IS NULL OR status NOT IN ({semne})'
+        vechi = conn.execute(f'SELECT status, COUNT(*) FROM {tabela} WHERE {conditie} GROUP BY status',
+                             permise).fetchall()
+        if not vechi:
+            continue
+        if tabela == 'proiecte':
+            conn.execute(f"UPDATE proiecte SET data_finalizare = '' WHERE ({conditie}) "
+                         "AND COALESCE(status, '') != 'finalizat'", permise)
+            conn.execute(f"UPDATE proiecte SET status = CASE WHEN status = 'finalizat' THEN 'finalizat' "
+                         f"ELSE 'pregatire' END WHERE {conditie}", permise)
+        else:
+            conn.execute(f"UPDATE {tabela} SET status = CASE WHEN status IN ('done', 'finalizat') "
+                         f"THEN 'done' ELSE 'to_do' END WHERE {conditie}", permise)
+        schimbate[tabela] = sum(n for _, n in vechi)
+        logger.warning("Statusuri stranse in %s: %s", tabela, {s: n for s, n in vechi})
+    for ddl in _sql_triggere_status():
+        conn.execute(ddl)
+    return schimbate
 
 # DDL-ul celor doua tabele noi din v44 sta intr-un singur loc: il folosesc si `init_db()`, si
 # `migrate_v43_to_v44()`; scris de doua ori, cele doua s-ar putea abate si schema ar diferi intre
@@ -1723,6 +1783,17 @@ def migrate_v46_to_v47():
     logger.info("Migration v46->v47 completed (implementari.srp_activitate_id, srp_sincron_start, srp_sincron_end)")
 
 
+def migrate_v47_to_v48():
+    """v47 -> v48: statusurile impuse in baza (E-015). Strange randurile cu chei vechi sau
+    necunoscute in vocabular si pune triggerele care refuza de acum orice alta valoare. Nu adauga
+    coloane si nu reconstruieste tabele; idempotenta (`impune_statusurile`)."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    schimbate = impune_statusurile(conn)
+    conn.commit()
+    conn.close()
+    logger.info("Migration v47->v48 completed (triggere de status; randuri stranse: %s)", schimbate)
+
+
 def run_migrations():
     """Check current schema version and apply needed migrations"""
     current_version = get_schema_version()
@@ -1957,6 +2028,11 @@ def run_migrations():
         set_schema_version(47)
         current_version = 47
 
+    if current_version < 48:
+        migrate_v47_to_v48()
+        set_schema_version(48)
+        current_version = 48
+
     # Self-heal: a backup/restore can leave schema_version at the latest while
     # an earlier migration's structural changes never ran. Re-apply migrations
     # if their structures are missing — all are idempotent.
@@ -2072,6 +2148,14 @@ def run_migrations():
     if not set(COLOANE_SRP) <= cols_i:
         logger.warning("Self-heal: re-running v46->v47 (implementari.srp_* missing)")
         migrate_v46_to_v47()
+
+    # v48, la FIECARE pornire si DUPA toate heal-urile de mai sus: o baza veche urcata cu db-upload
+    # (sau un heal care reconstruieste o tabela si ii pierde triggerele) ar ramane altfel fara ele.
+    # Pe o baza curata nu schimba niciun rand; doar `CREATE TRIGGER IF NOT EXISTS`.
+    conn_v48 = get_db()
+    impune_statusurile(conn_v48)
+    conn_v48.commit()
+    conn_v48.close()
 
     if current_version == SCHEMA_VERSION:
         logger.info(f"Database schema is up to date (v{SCHEMA_VERSION})")

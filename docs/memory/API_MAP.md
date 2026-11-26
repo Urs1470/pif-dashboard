@@ -10,13 +10,13 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/stats` | `get_stats` | 42 |
-| GET | `/api/backup` | `backup_database` | 78 |
-| POST | `/api/restore` | `restore_database` | 195 |
-| GET | `/admin/db-upload` | `admin_db_upload_page` | 289 |
-| POST | `/api/admin/db-upload` | `admin_db_upload` | 341 |
-| GET | `/api/admin/db-dump` | `admin_db_dump` | 418 |
-| GET | `/api/calendar` | `calendar_view` | 460 |
+| GET | `/api/stats` | `get_stats` | 43 |
+| GET | `/api/backup` | `backup_database` | 79 |
+| POST | `/api/restore` | `restore_database` | 221 |
+| GET | `/admin/db-upload` | `admin_db_upload_page` | 315 |
+| POST | `/api/admin/db-upload` | `admin_db_upload` | 367 |
+| GET | `/api/admin/db-dump` | `admin_db_dump` | 444 |
+| GET | `/api/calendar` | `calendar_view` | 486 |
 
 ## blueprints/app_update.py (3 rute)
 
@@ -100,23 +100,23 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/proiecte` | `get_proiecte` | 73 |
-| POST | `/api/proiecte` | `create_proiect` | 123 |
-| GET | `/api/proiecte/<project_id>` | `get_proiect` | 191 |
-| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 219 |
-| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 344 |
-| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 395 |
-| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 503 |
-| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 514 |
-| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 545 |
-| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 592 |
-| GET | `/api/proiecte/<project_id>/stari` | `get_stari` | 618 |
-| POST | `/api/proiecte/<project_id>/stari` | `create_stare` | 630 |
-| DELETE | `/api/stari/<stare_id>` | `delete_stare` | 672 |
-| GET | `/api/sabloane` | `get_sabloane` | 732 |
-| POST | `/api/sabloane` | `create_sablon` | 743 |
-| PUT | `/api/sabloane/<sablon_id>` | `update_sablon` | 769 |
-| DELETE | `/api/sabloane/<sablon_id>` | `delete_sablon` | 795 |
+| GET | `/api/proiecte` | `get_proiecte` | 70 |
+| POST | `/api/proiecte` | `create_proiect` | 120 |
+| GET | `/api/proiecte/<project_id>` | `get_proiect` | 188 |
+| PUT | `/api/proiecte/<project_id>` | `update_proiect` | 216 |
+| DELETE | `/api/proiecte/<project_id>` | `delete_proiect` | 341 |
+| GET | `/api/proiecte/<project_id>/snapshot` | `get_project_snapshot` | 392 |
+| GET | `/api/proiecte/<project_id>/implementari` | `get_implementari` | 500 |
+| POST | `/api/proiecte/<project_id>/implementari` | `create_implementare` | 511 |
+| PUT | `/api/implementari/<impl_id>` | `update_implementare` | 542 |
+| DELETE | `/api/implementari/<impl_id>` | `delete_implementare` | 589 |
+| GET | `/api/proiecte/<project_id>/stari` | `get_stari` | 615 |
+| POST | `/api/proiecte/<project_id>/stari` | `create_stare` | 627 |
+| DELETE | `/api/stari/<stare_id>` | `delete_stare` | 669 |
+| GET | `/api/sabloane` | `get_sabloane` | 729 |
+| POST | `/api/sabloane` | `create_sablon` | 740 |
+| PUT | `/api/sabloane/<sablon_id>` | `update_sablon` | 766 |
+| DELETE | `/api/sabloane/<sablon_id>` | `delete_sablon` | 792 |
 
 ## blueprints/sistem.py (8 rute)
 
@@ -141,19 +141,19 @@ Toate rutele Flask. Pentru schema DB vezi `DB_MAP.md` (generat din baza).
 
 | Metode | Path | Functie | Linie |
 |---|---|---|---|
-| GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 194 |
-| POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 241 |
-| PUT | `/api/tasks/<task_id>` | `update_task` | 305 |
-| DELETE | `/api/tasks/<task_id>` | `delete_task` | 389 |
-| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 409 |
-| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 420 |
-| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 454 |
-| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 475 |
-| GET | `/api/global-tasks` | `get_global_tasks` | 550 |
-| POST | `/api/global-tasks` | `create_global_task` | 631 |
-| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 685 |
-| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 700 |
-| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 787 |
+| GET | `/api/proiecte/<project_id>/tasks` | `get_tasks` | 209 |
+| POST | `/api/proiecte/<project_id>/tasks` | `create_task` | 256 |
+| PUT | `/api/tasks/<task_id>` | `update_task` | 320 |
+| DELETE | `/api/tasks/<task_id>` | `delete_task` | 404 |
+| GET | `/api/tasks/<task_id>/subtasks` | `get_subtasks` | 424 |
+| POST | `/api/tasks/<task_id>/subtasks` | `create_subtask` | 435 |
+| PUT | `/api/subtasks/<subtask_id>` | `update_subtask` | 469 |
+| DELETE | `/api/subtasks/<subtask_id>` | `delete_subtask` | 490 |
+| GET | `/api/global-tasks` | `get_global_tasks` | 565 |
+| POST | `/api/global-tasks` | `create_global_task` | 646 |
+| GET | `/api/global-tasks/<task_id>` | `get_global_task` | 700 |
+| PUT | `/api/global-tasks/<task_id>` | `update_global_task` | 715 |
+| DELETE | `/api/global-tasks/<task_id>` | `delete_global_task` | 802 |
 
 ## blueprints/torqa_web.py (4 rute)
 

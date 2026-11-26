@@ -32,3 +32,27 @@ TASK_STATUS_LABELS = {
     'blocat': 'De făcut',
 }
 
+
+
+# Ce are voie sa stea in baza (v48, E-015). Pana in v48 vocabularul era doar o conventie a
+# aplicatiei: un `UPDATE` direct, un client cu un status vechi sau un restore dintr-un backup
+# vechi puteau scrie orice. Acum triggerele din `database.py` (SQL_TRIGGERE_STATUS) refuza
+# la INSERT si UPDATE orice valoare din afara tuplurilor de mai jos, iar rutele si restore-ul
+# trec intai prin `status_*_canonic`, ca o cheie veche sa se stranga, nu sa pice.
+PROJECT_STATUSES = ('pregatire', 'finalizat')
+TASK_STATUSES = ('to_do', 'done')
+
+
+def status_proiect_canonic(valoare):
+    """'pregatire' | 'finalizat' pentru o cheie cunoscuta (si veche), altfel None."""
+    if not isinstance(valoare, str) or valoare.strip() not in PROJECT_STATUS_LABELS:
+        return None
+    return 'finalizat' if valoare.strip() == 'finalizat' else 'pregatire'
+
+
+def status_task_canonic(valoare):
+    """'to_do' | 'done' pentru o cheie cunoscuta (si veche), altfel None. `finalizat` e cheia
+    veche pentru facut."""
+    if not isinstance(valoare, str) or valoare.strip() not in TASK_STATUS_LABELS:
+        return None
+    return 'done' if valoare.strip() in ('done', 'finalizat') else 'to_do'

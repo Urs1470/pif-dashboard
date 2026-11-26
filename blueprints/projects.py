@@ -12,7 +12,7 @@ from flask import Blueprint, request, jsonify
 
 from blueprints.tasks import muta_taskurile_ancorate
 from database import get_db, row_to_dict
-from labels import PROJECT_STATUS_LABELS
+from labels import status_proiect_canonic
 from utils import (
     safe_table, generate_uuid, login_required, UPLOAD_FOLDER, id_ocupat,
     get_json_or_400, refuse_device_token_fields, norm_date,
@@ -26,14 +26,11 @@ projects_bp = Blueprint('projects', __name__)
 # frontmatter-ul README-ului din vault (se comite in Knowledge). Primeste doar cele doua valori
 # ale invariantului 2; cheile vechi din labels.py (`in_lucru`...) se strang in `pregatire`, ca un
 # `pif-sync.py create` cu un frontmatter vechi sa nu pice.
+# Din v48 (E-015) baza refuza ea insasi orice alta valoare (triggere); verificarea de aici da 400
+# in locul erorii de baza.
 def status_proiect(valoare):
     """'pregatire' | 'finalizat' pentru o valoare cunoscuta, altfel None."""
-    if not isinstance(valoare, str):
-        return None
-    valoare = valoare.strip()
-    if valoare not in PROJECT_STATUS_LABELS:
-        return None
-    return 'finalizat' if valoare == 'finalizat' else 'pregatire'
+    return status_proiect_canonic(valoare)
 
 
 _STATUS_NECUNOSCUT = 'Status necunoscut: pregatire sau finalizat'

@@ -227,16 +227,17 @@ def gen_db_map():
             out.append(f'| `{col}` | {typ} | {note} |')
         out.append('')
     labels = parse_labels()
+    text_labels = (ROOT / 'labels.py').read_text(encoding='utf-8')
     if labels:
         out += ['## Valori de status (din `labels.py`)', '']
         for dict_name, keys in sorted(labels.items()):
-            canon = [k for k in keys if k not in
-                     ('in_lucru', 'in_asteptare', 'in_așteptare', 'blocat', 'finalizat')
-                     or dict_name.startswith('PROJECT') and k == 'finalizat'
-                     or dict_name.startswith('TASK') and k == 'done']
-            out.append(f'- `{dict_name}` — scrise de aplicatie: '
+            # Valorile permise vin din tuplul impus de triggerele v48 (`PROJECT_STATUSES`,
+            # `TASK_STATUSES`), nu dintr-o lista scrisa aici.
+            tuplu = re.search(r'^%s\s*=\s*\(([^)]*)\)' % dict_name.replace('_LABELS', 'ES'), text_labels, re.M)
+            canon = re.findall(r"'([^']+)'", tuplu.group(1)) if tuplu else []
+            out.append(f'- `{dict_name}` — permise in baza (triggere v48): '
                        + ', '.join(f'`{k}`' for k in canon))
-            out.append('  (mai sunt mapate, doar la CITIRE, cheile vechi: '
+            out.append('  (cheile vechi, stranse la scriere si mapate la citire: '
                        + ', '.join(f'`{k}`' for k in keys if k not in canon) + ')')
         out.append('')
     return '\n'.join(out) + '\n'
